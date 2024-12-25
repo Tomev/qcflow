@@ -1,2 +1,0 @@
-exclude mlflow/server/js/node_modules/**/*
-exclude tests/**/*
