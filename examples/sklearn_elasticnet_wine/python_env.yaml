@@ -1,6 +1,0 @@
-build_dependencies:
-  - pip
-dependencies:
-  - scikit-learn==1.4.2
-  - mlflow>=1.0
-  - pandas
