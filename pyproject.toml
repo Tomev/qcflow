@@ -3,18 +3,17 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mlflow"
-version = "2.19.1.dev0"
-description = "MLflow is an open source platform for the complete machine learning lifecycle"
+name = "qcflow"
+version = "0.0.0.dev0"
+description = "QCFlow is an open source platform for the complete quantum computing project lifecycle."
 readme = "README.md"
-keywords = ["mlflow", "ai", "databricks"]
+keywords = ["qcflow", "qc", "quantum"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
   "Intended Audience :: End Users/Desktop",
   "Intended Audience :: Science/Research",
   "Intended Audience :: Information Technology",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
