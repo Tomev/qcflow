@@ -116,3 +116,6 @@ a.md
 
 # Ignore a gunicorn config file
 gunicorn.conf.py
+
+# TR utility
+quick_test.py
