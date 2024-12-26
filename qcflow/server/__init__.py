@@ -140,6 +140,8 @@ def serve():
     if os.path.exists(os.path.join(app.static_folder, "index.html")):
         return send_from_directory(app.static_folder, "index.html")
 
+    print(f"Didn't find index.html in {app.static_folder}. Serving placeholder message.")
+
     text = textwrap.dedent(
         """
     Unable to display QCFlow UI - landing page (index.html) not found.
