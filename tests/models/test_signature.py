@@ -8,12 +8,12 @@ import pyspark
 import pytest
 from sklearn.ensemble import RandomForestRegressor
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelSignature, infer_signature, rag_signatures, set_signature
-from mlflow.models.model import get_model_info
-from mlflow.types import DataType
-from mlflow.types.schema import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelSignature, infer_signature, rag_signatures, set_signature
+from qcflow.models.model import get_model_info
+from qcflow.types import DataType
+from qcflow.types.schema import (
     Array,
     ColSpec,
     ParamSchema,
@@ -210,8 +210,8 @@ def test_signature_inference_infers_datime_types_as_expected():
 
 def test_set_signature_to_logged_model():
     artifact_path = "regr-model"
-    with mlflow.start_run() as run:
-        mlflow.sklearn.log_model(RandomForestRegressor(), artifact_path)
+    with qcflow.start_run() as run:
+        qcflow.sklearn.log_model(RandomForestRegressor(), artifact_path)
     signature = infer_signature(np.array([1]))
     run_id = run.info.run_id
     model_uri = f"runs:/{run_id}/{artifact_path}"
@@ -222,10 +222,10 @@ def test_set_signature_to_logged_model():
 
 def test_set_signature_to_saved_model(tmp_path):
     model_path = str(tmp_path)
-    mlflow.sklearn.save_model(
+    qcflow.sklearn.save_model(
         RandomForestRegressor(),
         model_path,
-        serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+        serialization_format=qcflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
     )
     signature = infer_signature(np.array([1]))
     set_signature(model_path, signature)
@@ -234,8 +234,8 @@ def test_set_signature_to_saved_model(tmp_path):
 
 def test_set_signature_overwrite():
     artifact_path = "regr-model"
-    with mlflow.start_run() as run:
-        mlflow.sklearn.log_model(
+    with qcflow.start_run() as run:
+        qcflow.sklearn.log_model(
             RandomForestRegressor(),
             artifact_path,
             signature=infer_signature(np.array([1])),
@@ -282,7 +282,7 @@ def test_signature_construction():
 def test_signature_with_errors():
     with pytest.raises(
         TypeError,
-        match=r"inputs must be either None, mlflow.models.signature.Schema, or a dataclass",
+        match=r"inputs must be either None, qcflow.models.signature.Schema, or a dataclass",
     ):
         ModelSignature(inputs=1)
 

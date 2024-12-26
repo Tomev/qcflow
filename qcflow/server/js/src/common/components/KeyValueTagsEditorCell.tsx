@@ -27,7 +27,7 @@ export const KeyValueTagsEditorCell = ({ tags = [], onAddEdit }: KeyValueTagsEdi
     >
       {tags.length < 1 ? (
         <Button
-          componentId="codegen_mlflow_app_src_common_components_keyvaluetagseditorcell.tsx_29"
+          componentId="codegen_qcflow_app_src_common_components_keyvaluetagseditorcell.tsx_29"
           size="small"
           type="link"
           onClick={onAddEdit}
@@ -40,7 +40,7 @@ export const KeyValueTagsEditorCell = ({ tags = [], onAddEdit }: KeyValueTagsEdi
             <KeyValueTag tag={tag} key={`${tag.key}-${tag.value}`} />
           ))}
           <Button
-            componentId="codegen_mlflow_app_src_common_components_keyvaluetagseditorcell.tsx_37"
+            componentId="codegen_qcflow_app_src_common_components_keyvaluetagseditorcell.tsx_37"
             size="small"
             icon={<PencilIcon />}
             onClick={onAddEdit}

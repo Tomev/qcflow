@@ -1,7 +1,7 @@
 from llama_index.core import Document, VectorStoreIndex
 
-import mlflow
+import qcflow
 
 index = VectorStoreIndex.from_documents(documents=[Document.example()])
 
-mlflow.models.set_model(index)
+qcflow.models.set_model(index)

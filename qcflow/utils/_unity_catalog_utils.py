@@ -1,18 +1,18 @@
 import logging
 from typing import Callable, Optional
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModel,
     RegisteredModelAlias,
     RegisteredModelTag,
 )
-from mlflow.entities.model_registry.model_version_search import ModelVersionSearch
-from mlflow.entities.model_registry.registered_model_search import RegisteredModelSearch
-from mlflow.environment_variables import MLFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.entities.model_registry.model_version_search import ModelVersionSearch
+from qcflow.entities.model_registry.registered_model_search import RegisteredModelSearch
+from qcflow.environment_variables import QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     EmitModelVersionLineageRequest,
     EmitModelVersionLineageResponse,
     IsDatabricksSdkModelsArtifactRepositoryEnabledRequest,
@@ -21,26 +21,26 @@ from mlflow.protos.databricks_uc_registry_messages_pb2 import (
     SseEncryptionAlgorithm,
     TemporaryCredentials,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import ModelVersion as ProtoModelVersion
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import ModelVersion as ProtoModelVersion
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     ModelVersionStatus as ProtoModelVersionStatus,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     ModelVersionTag as ProtoModelVersionTag,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     RegisteredModel as ProtoRegisteredModel,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     RegisteredModelTag as ProtoRegisteredModelTag,
 )
-from mlflow.protos.databricks_uc_registry_service_pb2 import UcModelRegistryService
-from mlflow.protos.unity_catalog_oss_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_service_pb2 import UcModelRegistryService
+from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     TemporaryCredentials as TemporaryCredentialsOSS,
 )
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.rest_utils import (
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.rest_utils import (
     _REST_API_PATH_PREFIX,
     call_endpoint,
     extract_api_info_for_service,
@@ -117,7 +117,7 @@ def registered_model_search_from_uc_proto(uc_proto: ProtoRegisteredModel) -> Reg
     )
 
 
-def uc_registered_model_tag_from_mlflow_tags(
+def uc_registered_model_tag_from_qcflow_tags(
     tags: Optional[list[RegisteredModelTag]],
 ) -> list[ProtoRegisteredModelTag]:
     if tags is None:
@@ -125,7 +125,7 @@ def uc_registered_model_tag_from_mlflow_tags(
     return [ProtoRegisteredModelTag(key=t.key, value=t.value) for t in tags]
 
 
-def uc_model_version_tag_from_mlflow_tags(
+def uc_model_version_tag_from_qcflow_tags(
     tags: Optional[list[ModelVersionTag]],
 ) -> list[ProtoModelVersionTag]:
     if tags is None:
@@ -169,8 +169,8 @@ def get_artifact_repo_from_storage_info(
         raise MlflowException(
             "Unable to import necessary dependencies to access model version files in "
             "Unity Catalog. Please ensure you have the necessary dependencies installed, "
-            "e.g. by running 'pip install mlflow[databricks]' or "
-            "'pip install mlflow-skinny[databricks]'"
+            "e.g. by running 'pip install qcflow[databricks]' or "
+            "'pip install qcflow-skinny[databricks]'"
         ) from e
 
 
@@ -184,7 +184,7 @@ def _get_artifact_repo_from_storage_info(
         # Verify upfront that boto3 is importable
         import boto3  # noqa: F401
 
-        from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+        from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
 
         aws_creds = scoped_token.aws_temp_credentials
         s3_upload_extra_args = _parse_aws_sse_credential(scoped_token)
@@ -211,7 +211,7 @@ def _get_artifact_repo_from_storage_info(
     elif credential_type == "azure_user_delegation_sas":
         from azure.core.credentials import AzureSasCredential
 
-        from mlflow.store.artifact.azure_data_lake_artifact_repo import (
+        from qcflow.store.artifact.azure_data_lake_artifact_repo import (
             AzureDataLakeArtifactRepository,
         )
 
@@ -234,7 +234,7 @@ def _get_artifact_repo_from_storage_info(
         from google.cloud.storage import Client
         from google.oauth2.credentials import Credentials
 
-        from mlflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
+        from qcflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
 
         credentials = Credentials(scoped_token.gcp_oauth_token.oauth_token)
 
@@ -245,14 +245,14 @@ def _get_artifact_repo_from_storage_info(
                 "oauth_token": new_gcp_creds.oauth_token,
             }
 
-        client = Client(project="mlflow", credentials=credentials)
+        client = Client(project="qcflow", credentials=credentials)
         return GCSArtifactRepository(
             artifact_uri=storage_location,
             client=client,
             credential_refresh_def=gcp_credential_refresh,
         )
     elif credential_type == "r2_temp_credentials":
-        from mlflow.store.artifact.r2_artifact_repo import R2ArtifactRepository
+        from qcflow.store.artifact.r2_artifact_repo import R2ArtifactRepository
 
         r2_creds = scoped_token.r2_temp_credentials
 
@@ -276,7 +276,7 @@ def _get_artifact_repo_from_storage_info(
         raise MlflowException(
             f"Got unexpected credential type {credential_type} when attempting to "
             "access model version files in Unity Catalog. Try upgrading to the latest "
-            "version of the MLflow Python client."
+            "version of the QCFlow Python client."
         )
 
 
@@ -291,7 +291,7 @@ def _get_artifact_repo_from_storage_info_oss(
         # Verify upfront that boto3 is importable
         import boto3  # noqa: F401
 
-        from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+        from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
 
         aws_creds = scoped_token.aws_temp_credentials
 
@@ -314,7 +314,7 @@ def _get_artifact_repo_from_storage_info_oss(
     elif len(scoped_token.azure_user_delegation_sas.sas_token) > 0:
         from azure.core.credentials import AzureSasCredential
 
-        from mlflow.store.artifact.azure_data_lake_artifact_repo import (
+        from qcflow.store.artifact.azure_data_lake_artifact_repo import (
             AzureDataLakeArtifactRepository,
         )
 
@@ -337,16 +337,16 @@ def _get_artifact_repo_from_storage_info_oss(
         from google.cloud.storage import Client
         from google.oauth2.credentials import Credentials
 
-        from mlflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
+        from qcflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
 
         credentials = Credentials(scoped_token.gcp_oauth_token.oauth_token)
-        client = Client(project="mlflow", credentials=credentials)
+        client = Client(project="qcflow", credentials=credentials)
         return GCSArtifactRepository(artifact_uri=storage_location, client=client)
     else:
         raise MlflowException(
             "Got no credential type when attempting to "
             "access model version files in Unity Catalog. Try upgrading to the latest "
-            "version of the MLflow Python client."
+            "version of the QCFlow Python client."
         )
 
 
@@ -394,8 +394,8 @@ def get_full_name_from_sc(name, spark) -> str:
 
 def is_databricks_sdk_models_artifact_repository_enabled(host_creds):
     # Return early if the environment variable is set to use the SDK models artifact repository
-    if MLFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC.defined:
-        return MLFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC.get()
+    if QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC.defined:
+        return QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC.get()
 
     endpoint, method = _METHOD_TO_INFO[IsDatabricksSdkModelsArtifactRepositoryEnabledRequest]
     req_body = message_to_json(IsDatabricksSdkModelsArtifactRepositoryEnabledRequest())

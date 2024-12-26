@@ -33,7 +33,7 @@ import { Figure } from 'react-plotly.js';
 import { ReduxState } from '../../../../../redux-types';
 import { shallowEqual, useSelector } from 'react-redux';
 import { useCompareRunChartSelectedRange } from '../../hooks/useCompareRunChartSelectedRange';
-import { MetricHistoryByName } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { MetricHistoryByName } from '@qcflow/qcflow/src/experiment-tracking/types';
 import type { RunsGroupByConfig } from '../../../experiment-page/utils/experimentPage.group-row-utils';
 import { useGroupedChartRunData } from '../../../runs-compare/hooks/useGroupedChartRunData';
 import {

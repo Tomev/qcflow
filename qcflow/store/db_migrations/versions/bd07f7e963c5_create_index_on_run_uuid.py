@@ -16,7 +16,7 @@ depends_on = None
 
 
 def upgrade():
-    # As a fix for https://github.com/mlflow/mlflow/issues/3785, create an index on run_uuid columns
+    # As a fix for https://github.com/qcflow/qcflow/issues/3785, create an index on run_uuid columns
     # that have a foreign key constraint to speed up SQL operations.
     for table in ["params", "metrics", "latest_metrics", "tags"]:
         op.create_index(f"index_{table}_run_uuid", table, ["run_uuid"])

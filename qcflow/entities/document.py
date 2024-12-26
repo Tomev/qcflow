@@ -6,7 +6,7 @@ from typing import Any, Optional
 @dataclass
 class Document:
     """
-    An entity used in MLflow Tracing to represent retrieved documents in a RETRIEVER span.
+    An entity used in QCFlow Tracing to represent retrieved documents in a RETRIEVER span.
 
     Args:
         page_content: The content of the document.

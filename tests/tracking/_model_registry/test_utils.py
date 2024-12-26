@@ -4,18 +4,18 @@ from unittest import mock
 
 import pytest
 
-from mlflow.environment_variables import MLFLOW_TRACKING_URI
-from mlflow.store._unity_catalog.registry.rest_store import UcModelRegistryStore
-from mlflow.store.db.db_types import DATABASE_ENGINES
-from mlflow.store.model_registry.rest_store import RestStore
-from mlflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
-from mlflow.tracking._model_registry.utils import _get_store, get_registry_uri, set_registry_uri
-from mlflow.tracking.registry import UnsupportedModelRegistryStoreURIException
+from qcflow.environment_variables import QCFLOW_TRACKING_URI
+from qcflow.store._unity_catalog.registry.rest_store import UcModelRegistryStore
+from qcflow.store.db.db_types import DATABASE_ENGINES
+from qcflow.store.model_registry.rest_store import RestStore
+from qcflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
+from qcflow.tracking._model_registry.utils import _get_store, get_registry_uri, set_registry_uri
+from qcflow.tracking.registry import UnsupportedModelRegistryStoreURIException
 
 # Disable mocking tracking URI here, as we want to test setting the tracking URI via
 # environment variable. See
 # http://doc.pytest.org/en/latest/skipping.html#skip-all-test-functions-of-a-class-or-module
-# and https://github.com/mlflow/mlflow/blob/master/CONTRIBUTING.md#writing-python-tests
+# and https://github.com/qcflow/qcflow/blob/master/CONTRIBUTING.md#writing-python-tests
 # for more information.
 pytestmark = pytest.mark.notrackingurimock
 
@@ -28,7 +28,7 @@ def reset_registry_uri():
 
 def test_set_get_registry_uri():
     with mock.patch(
-        "mlflow.tracking._model_registry.utils.get_tracking_uri"
+        "qcflow.tracking._model_registry.utils.get_tracking_uri"
     ) as get_tracking_uri_mock:
         get_tracking_uri_mock.return_value = "databricks://tracking_sldkfj"
         uri = "databricks://registry/path"
@@ -39,7 +39,7 @@ def test_set_get_registry_uri():
 
 def test_set_get_empty_registry_uri():
     with mock.patch(
-        "mlflow.tracking._model_registry.utils.get_tracking_uri"
+        "qcflow.tracking._model_registry.utils.get_tracking_uri"
     ) as get_tracking_uri_mock:
         get_tracking_uri_mock.return_value = None
         set_registry_uri("")
@@ -49,7 +49,7 @@ def test_set_get_empty_registry_uri():
 
 def test_default_get_registry_uri_no_tracking_uri():
     with mock.patch(
-        "mlflow.tracking._model_registry.utils.get_tracking_uri"
+        "qcflow.tracking._model_registry.utils.get_tracking_uri"
     ) as get_tracking_uri_mock:
         get_tracking_uri_mock.return_value = None
         set_registry_uri(None)
@@ -59,7 +59,7 @@ def test_default_get_registry_uri_no_tracking_uri():
 def test_default_get_registry_uri_with_tracking_uri_set():
     tracking_uri = "databricks://tracking_werohoz"
     with mock.patch(
-        "mlflow.tracking._model_registry.utils.get_tracking_uri"
+        "qcflow.tracking._model_registry.utils.get_tracking_uri"
     ) as get_tracking_uri_mock:
         get_tracking_uri_mock.return_value = tracking_uri
         set_registry_uri(None)
@@ -67,14 +67,14 @@ def test_default_get_registry_uri_with_tracking_uri_set():
 
 
 def test_get_store_rest_store_from_arg(monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, "https://my-tracking-server:5050")
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, "https://my-tracking-server:5050")
     store = _get_store("http://some/path")
     assert isinstance(store, RestStore)
     assert store.get_host_creds().host == "http://some/path"
 
 
 def test_fallback_to_tracking_store(monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, "https://my-tracking-server:5050")
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, "https://my-tracking-server:5050")
     store = _get_store()
     assert isinstance(store, RestStore)
     assert store.get_host_creds().host == "https://my-tracking-server:5050"
@@ -84,13 +84,13 @@ def test_fallback_to_tracking_store(monkeypatch):
 @pytest.mark.parametrize("db_type", DATABASE_ENGINES)
 def test_get_store_sqlalchemy_store(db_type, monkeypatch):
     uri = f"{db_type}://hostname/database"
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, uri)
-    monkeypatch.delenv("MLFLOW_SQLALCHEMYSTORE_POOLCLASS", raising=False)
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, uri)
+    monkeypatch.delenv("QCFLOW_SQLALCHEMYSTORE_POOLCLASS", raising=False)
     with (
         mock.patch("sqlalchemy.create_engine") as mock_create_engine,
-        mock.patch("mlflow.store.db.utils._initialize_tables"),
+        mock.patch("qcflow.store.db.utils._initialize_tables"),
         mock.patch(
-            "mlflow.store.model_registry.sqlalchemy_store.SqlAlchemyStore."
+            "qcflow.store.model_registry.sqlalchemy_store.SqlAlchemyStore."
             "_verify_registry_tables_exist"
         ),
     ):
@@ -103,7 +103,7 @@ def test_get_store_sqlalchemy_store(db_type, monkeypatch):
 
 @pytest.mark.parametrize("bad_uri", ["badsql://imfake", "yoursql://hi"])
 def test_get_store_bad_uris(bad_uri, monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, bad_uri)
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, bad_uri)
     with pytest.raises(
         UnsupportedModelRegistryStoreURIException,
         match="Model registry functionality is unavailable",
@@ -134,9 +134,9 @@ def test_get_store_uc_registry_uri(store_uri):
 def test_store_object_can_be_serialized_by_pickle():
     """
     This test ensures a store object generated by `_get_store` can be serialized by pickle
-    to prevent issues such as https://github.com/mlflow/mlflow/issues/2954
+    to prevent issues such as https://github.com/qcflow/qcflow/issues/2954
     """
     pickle.dump(_get_store("https://example.com"), io.BytesIO())
     pickle.dump(_get_store("databricks"), io.BytesIO())
-    # pickle.dump(_get_store(f"sqlite:///{tmpdir.strpath}/mlflow.db"), io.BytesIO())
+    # pickle.dump(_get_store(f"sqlite:///{tmpdir.strpath}/qcflow.db"), io.BytesIO())
     # This throws `AttributeError: Can't pickle local object 'create_engine.<locals>.connect'`

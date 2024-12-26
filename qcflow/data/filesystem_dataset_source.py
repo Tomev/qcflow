@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Any
 
-from mlflow.data.dataset_source import DatasetSource
+from qcflow.data.dataset_source import DatasetSource
 
 
 class FileSystemDatasetSource(DatasetSource):

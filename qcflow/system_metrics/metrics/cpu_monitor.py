@@ -2,7 +2,7 @@
 
 import psutil
 
-from mlflow.system_metrics.metrics.base_metrics_monitor import BaseMetricsMonitor
+from qcflow.system_metrics.metrics.base_metrics_monitor import BaseMetricsMonitor
 
 
 class CPUMonitor(BaseMetricsMonitor):

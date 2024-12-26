@@ -3,8 +3,8 @@ from typing import Any, Optional
 import numpy as np
 import pandas as pd
 
-import mlflow
-from mlflow.pyfunc import PythonModel
+import qcflow
+from qcflow.pyfunc import PythonModel
 
 
 class WrappedRecipeModel(PythonModel):
@@ -17,7 +17,7 @@ class WrappedRecipeModel(PythonModel):
         self.target_column_class_labels = target_column_class_labels
 
     def load_context(self, context):
-        self._classifier = mlflow.sklearn.load_model(context.artifacts["model_path"])
+        self._classifier = qcflow.sklearn.load_model(context.artifacts["model_path"])
 
     def predict(
         self,

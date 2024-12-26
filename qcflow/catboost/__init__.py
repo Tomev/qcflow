@@ -1,10 +1,10 @@
 """
-The ``mlflow.catboost`` module provides an API for logging and loading CatBoost models.
+The ``qcflow.catboost`` module provides an API for logging and loading CatBoost models.
 This module exports CatBoost models with the following flavors:
 
 CatBoost (native) format
     This is the main flavor that can be loaded back into CatBoost.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
 
 .. _CatBoost:
@@ -26,34 +26,34 @@ from typing import Any, Optional
 
 import yaml
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "catboost"
 _MODEL_TYPE_KEY = "model_type"
@@ -67,7 +67,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -77,10 +77,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
@@ -89,7 +89,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -107,7 +107,7 @@ def save_model(
         code_paths: A list of local filesystem paths to Python file dependencies (or directories
             containing file dependencies). These files are *prepended* to the system
             path when the model is loaded.
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
         signature: {{ signature }}
         input_example: {{ input_example }}
         pip_requirements: {{ pip_requirements }}
@@ -124,9 +124,9 @@ def save_model(
     _validate_and_prepare_target_save_path(path)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _CatboostModelWrapper(cb_model)
@@ -135,17 +135,17 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     model_data_path = os.path.join(path, _MODEL_BINARY_FILE_NAME)
     cb_model.save_model(model_data_path, **kwargs)
 
     model_bin_kwargs = {_MODEL_BINARY_KEY: _MODEL_BINARY_FILE_NAME}
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.catboost",
+        qcflow_model,
+        loader_module="qcflow.catboost",
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
@@ -157,19 +157,19 @@ def save_model(
         _SAVE_FORMAT_KEY: kwargs.get("format", "cbm"),
         **model_bin_kwargs,
     }
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME, catboost_version=cb.__version__, code=code_dir_subpath, **flavor_conf
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -213,7 +213,7 @@ def log_model(
     metadata=None,
     **kwargs,
 ):
-    """Log a CatBoost model as an MLflow artifact for the current run.
+    """Log a CatBoost model as an QCFlow artifact for the current run.
 
     Args:
         cb_model: CatBoost model (an instance of `CatBoost`_, `CatBoostClassifier`_,
@@ -238,13 +238,13 @@ def log_model(
         kwargs: kwargs to pass to `CatBoost.save_model`_ method.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.catboost,
+        flavor=qcflow.catboost,
         registered_model_name=registered_model_name,
         cb_model=cb_model,
         conda_env=conda_env,
@@ -287,7 +287,7 @@ def _load_pyfunc(path):
     """Load PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``catboost`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``catboost`` flavor.
     """
     flavor_conf = _get_flavor_configuration(
         model_path=os.path.dirname(path), flavor_name=FLAVOR_NAME
@@ -301,15 +301,15 @@ def load_model(model_uri, dst_path=None):
     """Load a CatBoost model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output

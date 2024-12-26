@@ -11,10 +11,10 @@ from pyspark.sql import functions as F
 from pyspark.sql.types import LongType
 from sklearn import datasets
 
-import mlflow
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow import pyfunc
-from mlflow.pyfunc import spark_udf
+import qcflow
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow import pyfunc
+from qcflow.pyfunc import spark_udf
 
 from tests.helper_functions import pyfunc_serve_and_score_model
 from tests.pyfunc.test_spark import score_model_as_udf
@@ -88,9 +88,9 @@ def model_path(tmp_path):
 
 
 def test_model_export(spark_model, model_path):
-    mlflow.spark.save_model(spark_model.model, path=model_path)
+    qcflow.spark.save_model(spark_model.model, path=model_path)
     # 1. score and compare reloaded sparkml model
-    reloaded_model = mlflow.spark.load_model(model_uri=model_path)
+    reloaded_model = qcflow.spark.load_model(model_uri=model_path)
     preds_df = reloaded_model.transform(spark_model.pandas_df.copy(deep=False))
     pd.testing.assert_frame_equal(spark_model.predictions, preds_df, check_dtype=False)
 
@@ -107,23 +107,23 @@ def test_model_export(spark_model, model_path):
 
 
 def test_sparkml_model_log(spark_model):
-    with mlflow.start_run():
-        model_info = mlflow.spark.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.spark.log_model(
             spark_model.model,
             "model",
         )
     model_uri = model_info.model_uri
 
-    reloaded_model = mlflow.spark.load_model(model_uri=model_uri)
+    reloaded_model = qcflow.spark.load_model(model_uri=model_uri)
     preds_df = reloaded_model.transform(spark_model.pandas_df.copy(deep=False))
     pd.testing.assert_frame_equal(spark_model.predictions, preds_df, check_dtype=False)
 
 
 def test_pyfunc_serve_and_score(spark_model):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.spark.log_model(spark_model.model, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.spark.log_model(spark_model.model, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     input_data = pd.DataFrame({"features": spark_model.pandas_df["features"].map(list)})
     resp = pyfunc_serve_and_score_model(

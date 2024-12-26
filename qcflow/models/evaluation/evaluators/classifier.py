@@ -8,17 +8,17 @@ import numpy as np
 import pandas as pd
 from sklearn import metrics as sk_metrics
 
-import mlflow
-from mlflow import MlflowException
-from mlflow.environment_variables import _MLFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS
-from mlflow.models.evaluation.artifacts import CsvEvaluationArtifact
-from mlflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
-from mlflow.models.evaluation.default_evaluator import (
+import qcflow
+from qcflow import MlflowException
+from qcflow.environment_variables import _QCFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS
+from qcflow.models.evaluation.artifacts import CsvEvaluationArtifact
+from qcflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
+from qcflow.models.evaluation.default_evaluator import (
     BuiltInEvaluator,
     _extract_raw_model,
     _get_aggregate_metrics_values,
 )
-from mlflow.models.utils import plot_lines
+from qcflow.models.utils import plot_lines
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class ClassifierEvaluator(BuiltInEvaluator):
 
     def _evaluate(
         self,
-        model: Optional["mlflow.pyfunc.PyFuncModel"],
+        model: Optional["qcflow.pyfunc.PyFuncModel"],
         extra_metrics: list[EvaluationMetric],
         custom_artifacts=None,
         **kwargs,
@@ -200,9 +200,9 @@ class ClassifierEvaluator(BuiltInEvaluator):
         artifact_file_name = f"{artifact_name}.csv"
         artifact_file_local_path = self.temp_dir.path(artifact_file_name)
         pandas_df.to_csv(artifact_file_local_path, index=False)
-        mlflow.log_artifact(artifact_file_local_path)
+        qcflow.log_artifact(artifact_file_local_path)
         artifact = CsvEvaluationArtifact(
-            uri=mlflow.get_artifact_uri(artifact_file_name),
+            uri=qcflow.get_artifact_uri(artifact_file_name),
             content=pandas_df,
         )
         artifact._load(artifact_file_local_path)
@@ -278,7 +278,7 @@ class ClassifierEvaluator(BuiltInEvaluator):
         self._log_image_artifact(_plot_pr_curve, "precision_recall_curve_plot")
 
     def _log_lift_curve(self):
-        from mlflow.models.evaluation.lift_curve import plot_lift_curve
+        from qcflow.models.evaluation.lift_curve import plot_lift_curve
 
         def _plot_lift_curve():
             return plot_lift_curve(self.y_true, self.y_probs, pos_label=self.pos_label)
@@ -372,7 +372,7 @@ def _extract_predict_fn_and_prodict_proba_fn(model):
         predict_fn = raw_model.predict
         predict_proba_fn = getattr(raw_model, "predict_proba", None)
         try:
-            from mlflow.xgboost import (
+            from qcflow.xgboost import (
                 _wrapped_xgboost_model_predict_fn,
                 _wrapped_xgboost_model_predict_proba_fn,
             )
@@ -395,7 +395,7 @@ def _extract_predict_fn_and_prodict_proba_fn(model):
 def _suppress_class_imbalance_errors(exception_type=Exception, log_warning=True):
     """
     Exception handler context manager to suppress Exceptions if the private environment
-    variable `_MLFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS` is set to `True`.
+    variable `_QCFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS` is set to `True`.
     The purpose of this handler is to prevent an evaluation call for a binary or multiclass
     classification automl run from aborting due to an extreme minority class imbalance
     encountered during iterative training cycles due to the non deterministic sampling
@@ -407,7 +407,7 @@ def _suppress_class_imbalance_errors(exception_type=Exception, log_warning=True)
     try:
         yield
     except exception_type as e:
-        if _MLFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS.get():
+        if _QCFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS.get():
             if log_warning:
                 _logger.warning(
                     "Failed to calculate metrics due to class imbalance. "

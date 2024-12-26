@@ -2,14 +2,14 @@
 
 set -ex
 
-mlflow_envs=$(
+qcflow_envs=$(
   conda env list |                 # list (env name, env path) pairs
   cut -d' ' -f1 |                  # extract env names
-  grep "^mlflow-[a-z0-9]\{40\}\$"  # filter envs created by mlflow
+  grep "^qcflow-[a-z0-9]\{40\}\$"  # filter envs created by qcflow
 ) || true
 
-if [ ! -z "$mlflow_envs" ]; then
-  for env in $mlflow_envs
+if [ ! -z "$qcflow_envs" ]; then
+  for env in $qcflow_envs
   do
     conda remove --all --yes --name $env
   done

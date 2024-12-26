@@ -51,7 +51,7 @@ export const RunsChartsFullScreenModal = <TContext,>({
 
   return (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsfullscreenmodal.tsx_53"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsfullscreenmodal.tsx_53"
       visible
       onCancel={onCancel}
       title={

@@ -1,6 +1,6 @@
-from mlflow.tracking.context.abstract_context import RunContextProvider
-from mlflow.utils import databricks_utils
-from mlflow.utils.mlflow_tags import MLFLOW_DATABRICKS_CLUSTER_ID
+from qcflow.tracking.context.abstract_context import RunContextProvider
+from qcflow.utils import databricks_utils
+from qcflow.utils.qcflow_tags import QCFLOW_DATABRICKS_CLUSTER_ID
 
 
 class DatabricksClusterRunContext(RunContextProvider):
@@ -11,5 +11,5 @@ class DatabricksClusterRunContext(RunContextProvider):
         cluster_id = databricks_utils.get_cluster_id()
         tags = {}
         if cluster_id is not None:
-            tags[MLFLOW_DATABRICKS_CLUSTER_ID] = cluster_id
+            tags[QCFLOW_DATABRICKS_CLUSTER_ID] = cluster_id
         return tags

@@ -1,5 +1,5 @@
-from mlflow.entities import SpanEvent
-from mlflow.exceptions import MlflowException
+from qcflow.entities import SpanEvent
+from qcflow.exceptions import MlflowException
 
 
 def test_from_exception():

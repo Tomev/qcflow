@@ -1,8 +1,8 @@
-from mlflow.entities.model_registry import RegisteredModel
-from mlflow.protos.unity_catalog_oss_messages_pb2 import (
+from qcflow.entities.model_registry import RegisteredModel
+from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     RegisteredModelInfo,
 )
-from mlflow.utils._unity_catalog_oss_utils import get_registered_model_from_uc_oss_proto
+from qcflow.utils._unity_catalog_oss_utils import get_registered_model_from_uc_oss_proto
 
 
 def test_registered_model_from_uc_oss_proto():

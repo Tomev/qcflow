@@ -17,8 +17,8 @@ export const getExtension = (path: any) => {
 
 export const getLanguage = (path: any) => {
   const ext = getExtension(path).toLowerCase();
-  if (ext in MLFLOW_FILE_LANGUAGES) {
-    return MLFLOW_FILE_LANGUAGES[ext];
+  if (ext in QCFLOW_FILE_LANGUAGES) {
+    return QCFLOW_FILE_LANGUAGES[ext];
   }
   return ext;
 };
@@ -26,7 +26,7 @@ export const getLanguage = (path: any) => {
 export const MLPROJECT_FILE_NAME = 'mlproject';
 export const MLMODEL_FILE_NAME = 'mlmodel';
 
-export const MLFLOW_FILE_LANGUAGES = {
+export const QCFLOW_FILE_LANGUAGES = {
   [MLPROJECT_FILE_NAME.toLowerCase()]: 'yaml',
   [MLMODEL_FILE_NAME.toLowerCase()]: 'yaml',
 };

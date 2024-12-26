@@ -1,6 +1,6 @@
 # Instructions
 
-This directory contains files to test MLflow tracking operations using the following databases:
+This directory contains files to test QCFlow tracking operations using the following databases:
 
 - PostgreSQL
 - MySQL
@@ -16,7 +16,7 @@ This directory contains files to test MLflow tracking operations using the follo
 
 ```bash
 # Build a service
-service=mlflow-sqlite
+service=qcflow-sqlite
 ./tests/db/compose.sh build --build-arg DEPENDENCIES="$(cat requirements/skinny-requirements.txt requirements/core-requirements.txt | grep -Ev '^(#|$)')" $service
 
 # Build all services
@@ -30,7 +30,7 @@ service=mlflow-sqlite
 ./tests/db/compose.sh run --rm $service
 
 # Run all services
-for service in $(./tests/db/compose.sh config --services | grep '^mlflow-')
+for service in $(./tests/db/compose.sh config --services | grep '^qcflow-')
 do
   ./tests/db/compose.sh run --rm "$service"
 done

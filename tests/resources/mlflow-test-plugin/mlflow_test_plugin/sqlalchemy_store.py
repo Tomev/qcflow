@@ -1,6 +1,6 @@
 import urllib.parse
 
-from mlflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
+from qcflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
 
 
 class PluginRegistrySqlAlchemyStore(SqlAlchemyStore):

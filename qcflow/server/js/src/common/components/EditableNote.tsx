@@ -35,7 +35,7 @@ export class EditableNoteImpl extends Component<EditableNoteImplProps, EditableN
     defaultSelectedTab: 'write',
     showEditor: false,
     saveText: (
-      <FormattedMessage defaultMessage="Save" description="Default text for save button on editable notes in MLflow" />
+      <FormattedMessage defaultMessage="Save" description="Default text for save button on editable notes in QCFlow" />
     ),
     confirmLoading: false,
     toolbarCommands: [
@@ -81,7 +81,7 @@ export class EditableNoteImpl extends Component<EditableNoteImplProps, EditableN
                 ? e.getMessageField()
                 : this.props.intl.formatMessage({
                     defaultMessage: 'Failed to submit',
-                    description: 'Message text for failing to save changes in editable note in MLflow',
+                    description: 'Message text for failing to save changes in editable note in QCFlow',
                   }),
           });
         });
@@ -112,7 +112,7 @@ export class EditableNoteImpl extends Component<EditableNoteImplProps, EditableN
       <div className="editable-note-actions" data-testid="editable-note-actions">
         <div>
           <Button
-            componentId="codegen_mlflow_app_src_common_components_editablenote.tsx_114"
+            componentId="codegen_qcflow_app_src_common_components_editablenote.tsx_114"
             type="primary"
             className="editable-note-save-button"
             onClick={this.handleSubmitClick}
@@ -123,7 +123,7 @@ export class EditableNoteImpl extends Component<EditableNoteImplProps, EditableN
             {this.props.saveText}
           </Button>
           <Button
-            componentId="codegen_mlflow_app_src_common_components_editablenote.tsx_124"
+            componentId="codegen_qcflow_app_src_common_components_editablenote.tsx_124"
             htmlType="button"
             className="editable-note-cancel-button"
             onClick={this.handleCancelClick}
@@ -131,7 +131,7 @@ export class EditableNoteImpl extends Component<EditableNoteImplProps, EditableN
           >
             <FormattedMessage
               defaultMessage="Cancel"
-              description="Text for the cancel button in an editable note in MLflow"
+              description="Text for the cancel button in an editable note in QCFlow"
             />
           </Button>
         </div>
@@ -175,11 +175,11 @@ export class EditableNoteImpl extends Component<EditableNoteImplProps, EditableN
             </div>
             {error && (
               <Alert
-                componentId="codegen_mlflow_app_src_common_components_editablenote.tsx_178"
+                componentId="codegen_qcflow_app_src_common_components_editablenote.tsx_178"
                 type="error"
                 message={this.props.intl.formatMessage({
                   defaultMessage: 'There was an error submitting your note.',
-                  description: 'Error message text when saving an editable note in MLflow',
+                  description: 'Error message text when saving an editable note in QCFlow',
                 })}
                 description={error}
                 closable
@@ -190,7 +190,7 @@ export class EditableNoteImpl extends Component<EditableNoteImplProps, EditableN
               when={this.contentHasChanged()}
               message={this.props.intl.formatMessage({
                 defaultMessage: 'Are you sure you want to navigate away? Your pending text changes will be lost.',
-                description: 'Prompt text for navigating away before saving changes in editable note in MLflow',
+                description: 'Prompt text for navigating away before saving changes in editable note in QCFlow',
               })}
             />
           </React.Fragment>
@@ -242,7 +242,7 @@ function HTMLNoteContent(props: HTMLNoteContentProps) {
     </div>
   ) : (
     <div>
-      <FormattedMessage defaultMessage="None" description="Default text for no content in an editable note in MLflow" />
+      <FormattedMessage defaultMessage="None" description="Default text for no content in an editable note in QCFlow" />
     </div>
   );
 }

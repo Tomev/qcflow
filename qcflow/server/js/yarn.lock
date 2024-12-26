@@ -2207,9 +2207,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@databricks/design-system@file:./vendor/design-system::locator=%40mlflow%2Fmlflow%40workspace%3A.":
+"@databricks/design-system@file:./vendor/design-system::locator=%40qcflow%2Fqcflow%40workspace%3A.":
   version: 1.0.0-58145b8d
-  resolution: "@databricks/design-system@file:./vendor/design-system#./vendor/design-system::hash=1efbe4&locator=%40mlflow%2Fmlflow%40workspace%3A."
+  resolution: "@databricks/design-system@file:./vendor/design-system#./vendor/design-system::hash=1efbe4&locator=%40qcflow%2Fqcflow%40workspace%3A."
   dependencies:
     "@ant-design/icons": "npm:^4.7.0"
     "@babel/runtime": "npm:^7.26.0"
@@ -3969,9 +3969,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mlflow/mlflow@workspace:.":
+"@qcflow/qcflow@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@mlflow/mlflow@workspace:."
+  resolution: "@qcflow/qcflow@workspace:."
   dependencies:
     "@ag-grid-community/client-side-row-model": "npm:^27.2.1"
     "@ag-grid-community/core": "npm:^27.2.1"
@@ -26629,9 +26629,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rc-virtual-list@patch:rc-virtual-list@npm%3A3.2.0#yarn/patches/rc-virtual-list-npm-3.2.0-5efaefc12e.patch::locator=%40mlflow%2Fmlflow%40workspace%3A.":
+"rc-virtual-list@patch:rc-virtual-list@npm%3A3.2.0#yarn/patches/rc-virtual-list-npm-3.2.0-5efaefc12e.patch::locator=%40qcflow%2Fqcflow%40workspace%3A.":
   version: 3.2.0
-  resolution: "rc-virtual-list@patch:rc-virtual-list@npm%3A3.2.0#yarn/patches/rc-virtual-list-npm-3.2.0-5efaefc12e.patch::version=3.2.0&hash=0bf170&locator=%40mlflow%2Fmlflow%40workspace%3A."
+  resolution: "rc-virtual-list@patch:rc-virtual-list@npm%3A3.2.0#yarn/patches/rc-virtual-list-npm-3.2.0-5efaefc12e.patch::version=3.2.0&hash=0bf170&locator=%40qcflow%2Fqcflow%40workspace%3A."
   dependencies:
     classnames: "npm:^2.2.6"
     rc-resize-observer: "npm:^0.2.3"

@@ -2,7 +2,7 @@
 {{pipInstall}}
 
 from databricks.agents.evals import generate_evals_df
-import mlflow
+import qcflow
 
 agent_description = "A chatbot that answers questions about Databricks."
 question_guidelines = """
@@ -19,4 +19,4 @@ evals = generate_evals_df(
     agent_description=agent_description,
     question_guidelines=question_guidelines,
 )
-eval_result = mlflow.evaluate(data=evals, model="{{ modelUri }}", model_type="databricks-agent")
+eval_result = qcflow.evaluate(data=evals, model="{{ modelUri }}", model_type="databricks-agent")

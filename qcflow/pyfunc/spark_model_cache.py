@@ -1,4 +1,4 @@
-from mlflow.utils._spark_utils import _SparkDirectoryDistributor
+from qcflow.utils._spark_utils import _SparkDirectoryDistributor
 
 
 class SparkModelCache:
@@ -42,7 +42,7 @@ class SparkModelCache:
 
         # We must rely on a supposed cyclic import here because we want this behavior
         # on the Spark Executors (i.e., don't try to pickle the load_model function).
-        from mlflow.pyfunc import load_model
+        from qcflow.pyfunc import load_model
 
         SparkModelCache._models[archive_path] = (load_model(local_model_dir), local_model_dir)
         return SparkModelCache._models[archive_path]

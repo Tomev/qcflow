@@ -39,7 +39,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
             source: '{}',
             sourceType: 'local',
           },
-          tags: [{ key: 'mlflow.data.context', value: 'training' } as any],
+          tags: [{ key: 'qcflow.data.context', value: 'training' } as any],
         },
         {
           dataset: {
@@ -50,7 +50,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
             source: '{}',
             sourceType: 'local',
           },
-          tags: [{ key: 'mlflow.data.context', value: 'eval' } as any],
+          tags: [{ key: 'qcflow.data.context', value: 'eval' } as any],
         },
       ],
     },
@@ -58,26 +58,26 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
       '123456789': {
         experimentId: '123456789',
         name: '/Users/john.doe@databricks.com/test-experiment',
-        artifactLocation: 'dbfs:/databricks/mlflow-tracking/123456789',
+        artifactLocation: 'dbfs:/databricks/qcflow-tracking/123456789',
         lifecycleStage: 'active',
         lastUpdateTime: 1654502190803,
         creationTime: 1654502190803,
         tags: [
-          { key: 'mlflow.ownerId', value: '987654321' },
+          { key: 'qcflow.ownerId', value: '987654321' },
           {
-            key: 'mlflow.experiment.sourceName',
+            key: 'qcflow.experiment.sourceName',
             value: '/Users/john.doe@databricks.com/test-experiment',
           },
-          { key: 'mlflow.ownerId', value: '987654321' },
-          { key: 'mlflow.ownerEmail', value: 'john.doe@databricks.com' },
-          { key: 'mlflow.experimentType', value: 'NOTEBOOK' },
+          { key: 'qcflow.ownerId', value: '987654321' },
+          { key: 'qcflow.ownerEmail', value: 'john.doe@databricks.com' },
+          { key: 'qcflow.experimentType', value: 'NOTEBOOK' },
         ],
         allowedActions: ['MODIFIY_PERMISSION', 'DELETE', 'RENAME'],
       },
       '654321': {
         experimentId: '654321',
         name: '/Users/john.doe@databricks.com/test-experiment',
-        artifactLocation: 'dbfs:/databricks/mlflow-tracking/654321',
+        artifactLocation: 'dbfs:/databricks/qcflow-tracking/654321',
         lifecycleStage: 'active',
         lastUpdateTime: 1654502190603,
         creationTime: 1654502190603,
@@ -87,7 +87,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
       '789': {
         experimentId: '789',
         name: '/Users/john.doe@databricks.com/test-experiment',
-        artifactLocation: 'dbfs:/databricks/mlflow-tracking/789',
+        artifactLocation: 'dbfs:/databricks/qcflow-tracking/789',
         lifecycleStage: 'active',
         lastUpdateTime: 1000502190603,
         creationTime: 1000502190603,
@@ -97,7 +97,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
       '3210': {
         experimentId: '3210',
         name: '/Users/john.doe@databricks.com/test-experiment',
-        artifactLocation: 'dbfs:/databricks/mlflow-tracking/3210',
+        artifactLocation: 'dbfs:/databricks/qcflow-tracking/3210',
         lifecycleStage: 'active',
         lastUpdateTime: 1000502190604,
         creationTime: 1000502190604,
@@ -113,7 +113,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
         status: 'FINISHED',
         startTime: 1660116336860,
         endTime: 1660116337489,
-        artifactUri: 'dbfs:/databricks/mlflow-tracking/123456789/experiment123456789_run1/artifacts',
+        artifactUri: 'dbfs:/databricks/qcflow-tracking/123456789/experiment123456789_run1/artifacts',
         lifecycleStage: 'active',
       },
       experiment123456789_run2: {
@@ -123,7 +123,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
         status: 'FINISHED',
         startTime: 1660116265829,
         endTime: 1660116266518,
-        artifactUri: 'dbfs:/databricks/mlflow-tracking/123456789/experiment123456789_run2/artifacts',
+        artifactUri: 'dbfs:/databricks/qcflow-tracking/123456789/experiment123456789_run2/artifacts',
         lifecycleStage: 'active',
       },
       experiment123456789_run3: {
@@ -133,7 +133,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
         status: 'FINISHED',
         startTime: 1660116197855,
         endTime: 1660116198498,
-        artifactUri: 'dbfs:/databricks/mlflow-tracking/123456789/experiment123456789_run3/artifacts',
+        artifactUri: 'dbfs:/databricks/qcflow-tracking/123456789/experiment123456789_run3/artifacts',
         lifecycleStage: 'active',
       },
       experiment123456789_run4: {
@@ -143,7 +143,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
         status: 'FINISHED',
         startTime: 1660116194167,
         endTime: 1660116194802,
-        artifactUri: 'dbfs:/databricks/mlflow-tracking/123456789/experiment123456789_run4/artifacts',
+        artifactUri: 'dbfs:/databricks/qcflow-tracking/123456789/experiment123456789_run4/artifacts',
         lifecycleStage: 'active',
       },
       experiment123456789_run5: {
@@ -153,7 +153,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
         status: 'FINISHED',
         startTime: 1660116194167,
         endTime: 1660116194802,
-        artifactUri: 'dbfs:/databricks/mlflow-tracking/123456789/experiment123456789_run5/artifacts',
+        artifactUri: 'dbfs:/databricks/qcflow-tracking/123456789/experiment123456789_run5/artifacts',
         lifecycleStage: 'deleted',
       },
       experiment654321_run1: {
@@ -163,7 +163,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
         status: 'FINISHED',
         startTime: 1660116161320,
         endTime: 1660116194039,
-        artifactUri: 'dbfs:/databricks/mlflow-tracking/654321/experiment654321_run1/artifacts',
+        artifactUri: 'dbfs:/databricks/qcflow-tracking/654321/experiment654321_run1/artifacts',
         lifecycleStage: 'active',
       },
       experiment3210_run1: {
@@ -173,7 +173,7 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
         status: 'FINISHED',
         startTime: 1660116161321,
         endTime: 1660116194042,
-        artifactUri: 'dbfs:/databricks/mlflow-tracking/3210/experiment3210_run1/artifacts',
+        artifactUri: 'dbfs:/databricks/qcflow-tracking/3210/experiment3210_run1/artifacts',
         lifecycleStage: 'active',
       },
     },
@@ -449,20 +449,20 @@ export const EXPERIMENT_RUNS_MOCK_STORE: { entities: ExperimentStoreEntities } =
     },
     experimentTagsByExperimentId: {
       '123456789': {
-        'mlflow.ownerId': {
-          key: 'mlflow.ownerId',
+        'qcflow.ownerId': {
+          key: 'qcflow.ownerId',
           value: '987654321',
         },
-        'mlflow.experiment.sourceName': {
-          key: 'mlflow.experiment.sourceName',
+        'qcflow.experiment.sourceName': {
+          key: 'qcflow.experiment.sourceName',
           value: '/Users/john.doe@databricks.com/test-experiment',
         },
-        'mlflow.ownerEmail': {
-          key: 'mlflow.ownerEmail',
+        'qcflow.ownerEmail': {
+          key: 'qcflow.ownerEmail',
           value: 'john.doe@databricks.com',
         },
-        'mlflow.experimentType': {
-          key: 'mlflow.experimentType',
+        'qcflow.experimentType': {
+          key: 'qcflow.experimentType',
           value: 'NOTEBOOK',
         },
       },

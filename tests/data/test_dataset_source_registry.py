@@ -3,16 +3,16 @@ from unittest import mock
 
 import pytest
 
-from mlflow.data.dataset_source_registry import DatasetSourceRegistry
-from mlflow.exceptions import MlflowException
+from qcflow.data.dataset_source_registry import DatasetSourceRegistry
+from qcflow.exceptions import MlflowException
 
 from tests.resources.data.dataset_source import SampleDatasetSource
 
 
 def test_register_entrypoints_and_resolve(tmp_path):
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
 
-    from mlflow_test_plugin.dummy_dataset_source import DummyDatasetSource
+    from qcflow_test_plugin.dummy_dataset_source import DummyDatasetSource
 
     registry = DatasetSourceRegistry()
     registry.register_entrypoints()
@@ -95,9 +95,9 @@ def test_load_from_json_throws_for_unrecognized_source_type(tmp_path):
 
 
 def test_resolve_dataset_source_maintains_consistent_order_and_uses_last_registered_match(tmp_path):
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
 
-    from mlflow_test_plugin.dummy_dataset_source import DummyDatasetSource
+    from qcflow_test_plugin.dummy_dataset_source import DummyDatasetSource
 
     class SampleDatasetSourceCopy1(SampleDatasetSource):
         pass
@@ -150,7 +150,7 @@ def test_resolve_dataset_source_warns_when_multiple_matching_sources_found(tmp_p
     registry1.register(SampleDatasetSourceCopy1)
     registry1.register(SampleDatasetSourceCopy2)
 
-    with mock.patch("mlflow.data.dataset_source_registry.warnings.warn") as mock_warn:
+    with mock.patch("qcflow.data.dataset_source_registry.warnings.warn") as mock_warn:
         registry1.resolve("test:/" + str(tmp_path))
         mock_warn.assert_called_once()
         call_args, _ = mock_warn.call_args
@@ -163,19 +163,19 @@ def test_resolve_dataset_source_warns_when_multiple_matching_sources_found(tmp_p
             in multiple_match_msg
         )
         assert (
-            "MLflow will assume that this is a SampleDatasetSourceCopy2 source"
+            "QCFlow will assume that this is a SampleDatasetSourceCopy2 source"
             in multiple_match_msg
         )
 
 
 def test_dataset_sources_are_importable_from_sources_module(tmp_path):
-    from mlflow.data.sources import LocalArtifactDatasetSource
+    from qcflow.data.sources import LocalArtifactDatasetSource
 
     src = LocalArtifactDatasetSource(tmp_path)
     assert src._get_source_type() == "local"
     assert src.uri == tmp_path
 
-    from mlflow.data.sources import DeltaDatasetSource
+    from qcflow.data.sources import DeltaDatasetSource
 
     src = DeltaDatasetSource(path=tmp_path)
     assert src._get_source_type() == "delta_table"

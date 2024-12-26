@@ -66,7 +66,7 @@ export const PreviewSidebar = ({
             {copyText && <CopyButton copyText={copyText} showLabel={false} icon={<CopyIcon />} />}
             {onClose && (
               <Button
-                componentId="codegen_mlflow_app_src_common_components_previewsidebar.tsx_67"
+                componentId="codegen_qcflow_app_src_common_components_previewsidebar.tsx_67"
                 type="primary"
                 icon={<CloseIcon />}
                 onClick={onClose}

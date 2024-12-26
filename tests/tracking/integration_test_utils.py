@@ -6,8 +6,8 @@ import sys
 import time
 from subprocess import Popen
 
-import mlflow
-from mlflow.server import ARTIFACT_ROOT_ENV_VAR, BACKEND_STORE_URI_ENV_VAR
+import qcflow
+from qcflow.server import ARTIFACT_ROOT_ENV_VAR, BACKEND_STORE_URI_ENV_VAR
 
 from tests.helper_functions import LOCALHOST, get_safe_port
 
@@ -31,14 +31,14 @@ def _await_server_up_or_die(port, timeout=30):
 
 
 @contextlib.contextmanager
-def _init_server(backend_uri, root_artifact_uri, extra_env=None, app="mlflow.server:app"):
+def _init_server(backend_uri, root_artifact_uri, extra_env=None, app="qcflow.server:app"):
     """
     Launch a new REST server using the tracking store specified by backend_uri and root artifact
     directory specified by root_artifact_uri.
     :returns A tuple (url, process) containing the string URL of the server and a handle to the
              server process (a multiprocessing.Process object).
     """
-    mlflow.set_tracking_uri(None)
+    qcflow.set_tracking_uri(None)
     server_port = get_safe_port()
     with Popen(
         [
@@ -74,7 +74,7 @@ def _init_server(backend_uri, root_artifact_uri, extra_env=None, app="mlflow.ser
 
 def _send_rest_tracking_post_request(tracking_server_uri, api_path, json_payload, auth=None):
     """
-    Make a POST request to the specified MLflow Tracking API and retrieve the
+    Make a POST request to the specified QCFlow Tracking API and retrieve the
     corresponding `requests.Response` object
     """
     import requests

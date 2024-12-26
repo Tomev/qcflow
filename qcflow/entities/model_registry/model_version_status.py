@@ -1,8 +1,8 @@
-from mlflow.protos.model_registry_pb2 import ModelVersionStatus as ProtoModelVersionStatus
+from qcflow.protos.model_registry_pb2 import ModelVersionStatus as ProtoModelVersionStatus
 
 
 class ModelVersionStatus:
-    """Enum for status of an :py:class:`mlflow.entities.model_registry.ModelVersion`."""
+    """Enum for status of an :py:class:`qcflow.entities.model_registry.ModelVersion`."""
 
     PENDING_REGISTRATION = ProtoModelVersionStatus.Value("PENDING_REGISTRATION")
     FAILED_REGISTRATION = ProtoModelVersionStatus.Value("FAILED_REGISTRATION")

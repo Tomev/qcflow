@@ -3,18 +3,18 @@ from contextlib import contextmanager
 
 import pytest
 
-import mlflow
-from mlflow import MlflowException
-from mlflow.environment_variables import MLFLOW_TRACKING_PASSWORD, MLFLOW_TRACKING_USERNAME
-from mlflow.protos.databricks_pb2 import (
+import qcflow
+from qcflow import MlflowException
+from qcflow.environment_variables import QCFLOW_TRACKING_PASSWORD, QCFLOW_TRACKING_USERNAME
+from qcflow.protos.databricks_pb2 import (
     PERMISSION_DENIED,
     RESOURCE_DOES_NOT_EXIST,
     UNAUTHENTICATED,
     ErrorCode,
 )
-from mlflow.server.auth import auth_config
-from mlflow.server.auth.client import AuthServiceClient
-from mlflow.utils.os import is_windows
+from qcflow.server.auth import auth_config
+from qcflow.server.auth.client import AuthServiceClient
+from qcflow.utils.os import is_windows
 
 from tests.helper_functions import random_str
 from tests.server.auth.auth_test_utils import (
@@ -31,7 +31,7 @@ from tests.tracking.integration_test_utils import _init_server
 @pytest.fixture(autouse=True)
 def clear_credentials(monkeypatch):
     monkeypatch.delenvs(
-        [MLFLOW_TRACKING_USERNAME.name, MLFLOW_TRACKING_PASSWORD.name], raising=False
+        [QCFLOW_TRACKING_USERNAME.name, QCFLOW_TRACKING_PASSWORD.name], raising=False
     )
 
 
@@ -48,7 +48,7 @@ def client(tmp_path):
     with _init_server(
         backend_uri=backend_uri,
         root_artifact_uri=tmp_path.joinpath("artifacts").as_uri(),
-        app="mlflow.server.auth:create_app",
+        app="qcflow.server.auth:create_app",
     ) as url:
         yield AuthServiceClient(url)
 
@@ -68,7 +68,7 @@ def assert_unauthorized():
 
 
 def test_get_client():
-    client = mlflow.server.get_app_client("basic-auth", "uri:/fake")
+    client = qcflow.server.get_app_client("basic-auth", "uri:/fake")
     assert isinstance(client, AuthServiceClient)
 
 

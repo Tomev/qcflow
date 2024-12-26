@@ -1,5 +1,5 @@
 import { compact } from 'lodash';
-import { MLFLOW_RUN_TYPE_TAG, MLFLOW_RUN_TYPE_VALUE_EVALUATION } from '../../../constants';
+import { QCFLOW_RUN_TYPE_TAG, QCFLOW_RUN_TYPE_VALUE_EVALUATION } from '../../../constants';
 import { ExperimentEntity } from '../../../types';
 import { ExperimentPageUIState } from '../models/ExperimentPageUIState';
 import { EXPERIMENT_PARENT_ID_TAG } from './experimentPage.common-utils';
@@ -11,7 +11,7 @@ export const expandedEvaluationRunRowsUIStateInitializer = (
   runsData: ExperimentRunsSelectorResult,
 ) => {
   const evaluationRunIds = runsData.runInfos
-    .filter((run, index) => runsData.tagsList[index]?.[MLFLOW_RUN_TYPE_TAG]?.value === MLFLOW_RUN_TYPE_VALUE_EVALUATION)
+    .filter((run, index) => runsData.tagsList[index]?.[QCFLOW_RUN_TYPE_TAG]?.value === QCFLOW_RUN_TYPE_VALUE_EVALUATION)
     .map(({ runUuid }) => runUuid);
 
   const parentIdsOfEvaluationRunIds = compact(

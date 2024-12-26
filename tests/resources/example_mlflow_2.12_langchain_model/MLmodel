@@ -20,12 +20,12 @@ flavors:
     env:
       conda: conda.yaml
       virtualenv: python_env.yaml
-    loader_module: mlflow.langchain
+    loader_module: qcflow.langchain
     model_code_path: /tmp/lc_model.py
     predict_stream_fn: predict_stream
     python_version: 3.10.12
     streamable: true
-mlflow_version: 2.12.2
+qcflow_version: 2.12.2
 model_size_bytes: 6875
 model_uuid: bbdda59aafe84e11b2fc25a95e46aee1
 resources:

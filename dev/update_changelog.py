@@ -36,7 +36,7 @@ class PullRequest(NamedTuple):
 
     @property
     def url(self):
-        return f"https://github.com/mlflow/mlflow/pull/{self.number}"
+        return f"https://github.com/qcflow/qcflow/pull/{self.number}"
 
     @property
     def release_note_labels(self):
@@ -88,7 +88,7 @@ def is_shallow():
 
 @click.command(help="Update CHANGELOG.md")
 @click.option("--prev-version", required=True, help="Previous version")
-@click.option("--release-version", required=True, help="MLflow version to release.")
+@click.option("--release-version", required=True, help="QCFlow version to release.")
 @click.option(
     "--remote", required=False, default="origin", help="Git remote to use (default: origin). "
 )
@@ -125,8 +125,8 @@ def main(prev_version, release_version, remote):
             continue
         print(f"Fetching PR #{pr_num}...")
         resp = requests.get(
-            f"https://api.github.com/repos/mlflow/mlflow/pulls/{pr_num}",
-            auth=("mlflow-automation", os.getenv("GITHUB_TOKEN")),
+            f"https://api.github.com/repos/qcflow/qcflow/pulls/{pr_num}",
+            auth=("qcflow-automation", os.getenv("GITHUB_TOKEN")),
         )
         resp.raise_for_status()
         pr = resp.json()
@@ -143,7 +143,7 @@ def main(prev_version, release_version, remote):
     author_to_prs = defaultdict(list)
     unlabelled_prs = []
     for pr in prs:
-        if pr.author == "mlflow-automation":
+        if pr.author == "qcflow-automation":
             continue
 
         if len(pr.release_note_labels) == 0:
@@ -183,7 +183,7 @@ def main(prev_version, release_version, remote):
             str,
             [
                 get_header_for_version(release_version),
-                f"MLflow {release_version} includes several major features and improvements",
+                f"QCFlow {release_version} includes several major features and improvements",
                 breaking_changes,
                 features,
                 bug_fixes,

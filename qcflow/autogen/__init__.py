@@ -1,5 +1,5 @@
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import autologging_integration
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import autologging_integration
 
 FLAVOR_NAME = "autogen"
 
@@ -11,19 +11,19 @@ def autolog(
     silent: bool = False,
 ):
     """
-    Enables (or disables) and configures autologging from Autogen to MLflow. Currently, MLflow
+    Enables (or disables) and configures autologging from Autogen to QCFlow. Currently, QCFlow
     only supports tracing for Autogen agents.
 
     Args:
         log_traces: If ``True``, traces are logged for Autogen agents by using runtime logging.
             If ``False``, no traces are collected during inference. Default to ``True``.
         disable: If ``True``, disables the Autogen autologging. Default to ``False``.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during Autogen
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during Autogen
             autologging. If ``False``, show all events and warnings.
     """
     from autogen import runtime_logging
 
-    from mlflow.autogen.autogen_logger import MlflowAutogenLogger
+    from qcflow.autogen.autogen_logger import MlflowAutogenLogger
 
     # NB: The @autologging_integration annotation is used for adding shared logic. However, one
     # caveat is that the wrapped function is NOT executed when disable=True is passed. This prevents
@@ -38,7 +38,7 @@ def autolog(
     _autolog(log_traces=log_traces, disable=disable, silent=silent)
 
 
-# This is required by mlflow.autolog()
+# This is required by qcflow.autolog()
 autolog.integration_name = FLAVOR_NAME
 
 

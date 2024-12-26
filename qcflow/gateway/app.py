@@ -10,22 +10,22 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from mlflow.deployments.server.config import Endpoint
-from mlflow.deployments.server.constants import (
-    MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE,
-    MLFLOW_DEPLOYMENTS_ENDPOINTS_BASE,
-    MLFLOW_DEPLOYMENTS_HEALTH_ENDPOINT,
-    MLFLOW_DEPLOYMENTS_LIMITS_BASE,
-    MLFLOW_DEPLOYMENTS_LIST_ENDPOINTS_PAGE_SIZE,
-    MLFLOW_DEPLOYMENTS_QUERY_SUFFIX,
+from qcflow.deployments.server.config import Endpoint
+from qcflow.deployments.server.constants import (
+    QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE,
+    QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE,
+    QCFLOW_DEPLOYMENTS_HEALTH_ENDPOINT,
+    QCFLOW_DEPLOYMENTS_LIMITS_BASE,
+    QCFLOW_DEPLOYMENTS_LIST_ENDPOINTS_PAGE_SIZE,
+    QCFLOW_DEPLOYMENTS_QUERY_SUFFIX,
 )
-from mlflow.environment_variables import (
-    MLFLOW_GATEWAY_CONFIG,
-    MLFLOW_GATEWAY_RATE_LIMITS_STORAGE_URI,
+from qcflow.environment_variables import (
+    QCFLOW_GATEWAY_CONFIG,
+    QCFLOW_GATEWAY_RATE_LIMITS_STORAGE_URI,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.base_models import SetLimitsModel
-from mlflow.gateway.config import (
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.base_models import SetLimitsModel
+from qcflow.gateway.config import (
     GatewayConfig,
     LimitsConfig,
     Route,
@@ -33,19 +33,19 @@ from mlflow.gateway.config import (
     RouteType,
     _load_route_config,
 )
-from mlflow.gateway.constants import (
-    MLFLOW_GATEWAY_CRUD_ROUTE_BASE,
-    MLFLOW_GATEWAY_HEALTH_ENDPOINT,
-    MLFLOW_GATEWAY_LIMITS_BASE,
-    MLFLOW_GATEWAY_ROUTE_BASE,
-    MLFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE,
-    MLFLOW_QUERY_SUFFIX,
+from qcflow.gateway.constants import (
+    QCFLOW_GATEWAY_CRUD_ROUTE_BASE,
+    QCFLOW_GATEWAY_HEALTH_ENDPOINT,
+    QCFLOW_GATEWAY_LIMITS_BASE,
+    QCFLOW_GATEWAY_ROUTE_BASE,
+    QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE,
+    QCFLOW_QUERY_SUFFIX,
 )
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers import get_provider
-from mlflow.gateway.schemas import chat, completions, embeddings
-from mlflow.gateway.utils import SearchRoutesToken, make_streaming_response
-from mlflow.version import VERSION
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers import get_provider
+from qcflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.utils import SearchRoutesToken, make_streaming_response
+from qcflow.version import VERSION
 
 
 class GatewayAPI(FastAPI):
@@ -62,13 +62,13 @@ class GatewayAPI(FastAPI):
             # TODO: Remove deployments server URLs after deprecation window elapses
             self.add_api_route(
                 path=(
-                    MLFLOW_DEPLOYMENTS_ENDPOINTS_BASE + route.name + MLFLOW_DEPLOYMENTS_QUERY_SUFFIX
+                    QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE + route.name + QCFLOW_DEPLOYMENTS_QUERY_SUFFIX
                 ),
                 endpoint=_route_type_to_endpoint(route, limiter, "deployments"),
                 methods=["POST"],
             )
             self.add_api_route(
-                path=f"{MLFLOW_GATEWAY_ROUTE_BASE}{route.name}{MLFLOW_QUERY_SUFFIX}",
+                path=f"{QCFLOW_GATEWAY_ROUTE_BASE}{route.name}{QCFLOW_QUERY_SUFFIX}",
                 endpoint=_route_type_to_endpoint(route, limiter, "gateway"),
                 methods=["POST"],
                 include_in_schema=False,
@@ -81,7 +81,7 @@ class GatewayAPI(FastAPI):
 
 def _translate_http_exception(func):
     """
-    Decorator for translating MLflow exceptions to HTTP exceptions
+    Decorator for translating QCFlow exceptions to HTTP exceptions
     """
 
     @functools.wraps(func)
@@ -248,14 +248,14 @@ def create_app_from_config(config: GatewayConfig) -> GatewayAPI:
     Create the GatewayAPI app from the gateway configuration.
     """
     limiter = Limiter(
-        key_func=get_remote_address, storage_uri=MLFLOW_GATEWAY_RATE_LIMITS_STORAGE_URI.get()
+        key_func=get_remote_address, storage_uri=QCFLOW_GATEWAY_RATE_LIMITS_STORAGE_URI.get()
     )
     app = GatewayAPI(
         config=config,
         limiter=limiter,
-        title="MLflow AI Gateway",
+        title="QCFlow AI Gateway",
         description="The core deployments API for reverse proxy interface using remote inference "
-        "endpoints within MLflow",
+        "endpoints within QCFlow",
         version=VERSION,
         docs_url=None,
     )
@@ -278,18 +278,18 @@ def create_app_from_config(config: GatewayConfig) -> GatewayAPI:
     async def docs():
         return get_swagger_ui_html(
             openapi_url="/openapi.json",
-            title="MLflow AI Gateway",
+            title="QCFlow AI Gateway",
             swagger_favicon_url="/favicon.ico",
         )
 
     # TODO: Remove deployments server URLs after deprecation window elapses
-    @app.get(MLFLOW_DEPLOYMENTS_HEALTH_ENDPOINT)
-    @app.get(MLFLOW_GATEWAY_HEALTH_ENDPOINT, include_in_schema=False)
+    @app.get(QCFLOW_DEPLOYMENTS_HEALTH_ENDPOINT)
+    @app.get(QCFLOW_GATEWAY_HEALTH_ENDPOINT, include_in_schema=False)
     async def health() -> HealthResponse:
         return {"status": "OK"}
 
     # TODO: Remove deployments server URLs after deprecation window elapses
-    @app.get(MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE + "{endpoint_name}")
+    @app.get(QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE + "{endpoint_name}")
     async def get_endpoint(endpoint_name: str) -> Endpoint:
         if matched := app.get_dynamic_route(endpoint_name):
             return matched.to_endpoint()
@@ -300,7 +300,7 @@ def create_app_from_config(config: GatewayConfig) -> GatewayAPI:
             "verify the endpoint name.",
         )
 
-    @app.get(MLFLOW_GATEWAY_CRUD_ROUTE_BASE + "{route_name}", include_in_schema=False)
+    @app.get(QCFLOW_GATEWAY_CRUD_ROUTE_BASE + "{route_name}", include_in_schema=False)
     async def get_route(route_name: str) -> Route:
         if matched := app.get_dynamic_route(route_name):
             return matched
@@ -312,11 +312,11 @@ def create_app_from_config(config: GatewayConfig) -> GatewayAPI:
         )
 
     # TODO: Remove deployments server URLs after deprecation window elapses
-    @app.get(MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE)
+    @app.get(QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE)
     async def list_endpoints(page_token: Optional[str] = None) -> ListEndpointsResponse:
         start_idx = SearchRoutesToken.decode(page_token).index if page_token is not None else 0
 
-        end_idx = start_idx + MLFLOW_DEPLOYMENTS_LIST_ENDPOINTS_PAGE_SIZE
+        end_idx = start_idx + QCFLOW_DEPLOYMENTS_LIST_ENDPOINTS_PAGE_SIZE
         routes = list(app.dynamic_routes.values())
         result = {
             "endpoints": [route.to_route().to_endpoint() for route in routes[start_idx:end_idx]]
@@ -327,11 +327,11 @@ def create_app_from_config(config: GatewayConfig) -> GatewayAPI:
 
         return result
 
-    @app.get(MLFLOW_GATEWAY_CRUD_ROUTE_BASE, include_in_schema=False)
+    @app.get(QCFLOW_GATEWAY_CRUD_ROUTE_BASE, include_in_schema=False)
     async def search_routes(page_token: Optional[str] = None) -> SearchRoutesResponse:
         start_idx = SearchRoutesToken.decode(page_token).index if page_token is not None else 0
 
-        end_idx = start_idx + MLFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
+        end_idx = start_idx + QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
         routes = list(app.dynamic_routes.values())
         result = {"routes": [r.to_route() for r in routes[start_idx:end_idx]]}
         if len(routes[end_idx:]) > 0:
@@ -341,14 +341,14 @@ def create_app_from_config(config: GatewayConfig) -> GatewayAPI:
         return result
 
     # TODO: Remove deployments server URLs after deprecation window elapses
-    @app.get(MLFLOW_DEPLOYMENTS_LIMITS_BASE + "{endpoint}")
-    @app.get(MLFLOW_GATEWAY_LIMITS_BASE + "{endpoint}", include_in_schema=False)
+    @app.get(QCFLOW_DEPLOYMENTS_LIMITS_BASE + "{endpoint}")
+    @app.get(QCFLOW_GATEWAY_LIMITS_BASE + "{endpoint}", include_in_schema=False)
     async def get_limits(endpoint: str) -> LimitsConfig:
         raise HTTPException(status_code=501, detail="The get_limits API is not available yet.")
 
     # TODO: Remove deployments server URLs after deprecation window elapses
-    @app.post(MLFLOW_DEPLOYMENTS_LIMITS_BASE)
-    @app.post(MLFLOW_GATEWAY_LIMITS_BASE, include_in_schema=False)
+    @app.post(QCFLOW_DEPLOYMENTS_LIMITS_BASE)
+    @app.post(QCFLOW_GATEWAY_LIMITS_BASE, include_in_schema=False)
     async def set_limits(payload: SetLimitsModel) -> LimitsConfig:
         raise HTTPException(status_code=501, detail="The set_limits API is not available yet.")
 
@@ -427,10 +427,10 @@ def create_app_from_env() -> GatewayAPI:
     """
     Load the path from the environment variable and generate the GatewayAPI app instance.
     """
-    if config_path := MLFLOW_GATEWAY_CONFIG.get():
+    if config_path := QCFLOW_GATEWAY_CONFIG.get():
         return create_app_from_path(config_path)
 
     raise MlflowException(
-        f"Environment variable {MLFLOW_GATEWAY_CONFIG!r} is not set. "
+        f"Environment variable {QCFLOW_GATEWAY_CONFIG!r} is not set. "
         "Please set it to the path of the gateway configuration file."
     )

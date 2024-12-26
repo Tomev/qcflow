@@ -6,29 +6,29 @@ import pytest
 from google.cloud.storage import Client
 from requests import Response
 
-from mlflow import MlflowClient
-from mlflow.entities.file_info import FileInfo
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow import MlflowClient
+from qcflow.entities.file_info import FileInfo
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     AwsCredentials,
     StorageMode,
     TemporaryCredentials,
 )
-from mlflow.store.artifact.azure_data_lake_artifact_repo import AzureDataLakeArtifactRepository
-from mlflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
-from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
-from mlflow.store.artifact.presigned_url_artifact_repo import PresignedUrlArtifactRepository
-from mlflow.store.artifact.unity_catalog_models_artifact_repo import (
+from qcflow.store.artifact.azure_data_lake_artifact_repo import AzureDataLakeArtifactRepository
+from qcflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
+from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+from qcflow.store.artifact.presigned_url_artifact_repo import PresignedUrlArtifactRepository
+from qcflow.store.artifact.unity_catalog_models_artifact_repo import (
     UnityCatalogModelsArtifactRepository,
 )
-from mlflow.utils._unity_catalog_utils import (
+from qcflow.utils._unity_catalog_utils import (
     _ACTIVE_CATALOG_QUERY,
     _ACTIVE_SCHEMA_QUERY,
     get_artifact_repo_from_storage_info,
 )
-from mlflow.utils.uri import _DATABRICKS_UNITY_CATALOG_SCHEME
+from qcflow.utils.uri import _DATABRICKS_UNITY_CATALOG_SCHEME
 
-MODELS_ARTIFACT_REPOSITORY_PACKAGE = "mlflow.store.artifact.unity_catalog_models_artifact_repo"
+MODELS_ARTIFACT_REPOSITORY_PACKAGE = "qcflow.store.artifact.unity_catalog_models_artifact_repo"
 MODELS_ARTIFACT_REPOSITORY = (
     MODELS_ARTIFACT_REPOSITORY_PACKAGE + ".UnityCatalogModelsArtifactRepository"
 )
@@ -78,7 +78,7 @@ def test_uc_models_artifact_repo_init_not_using_databricks_registry_raises():
 )
 def test_uc_models_artifact_repo_with_stage_uri_raises(model_uri, expected_error_msg):
     with (
-        mock.patch("mlflow.utils.databricks_utils.get_databricks_host_creds"),
+        mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"),
         pytest.raises(
             MlflowException,
             match=expected_error_msg,
@@ -127,13 +127,13 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_aws(mon
     }
     fake_local_path = "/tmp/fake_path"
     with (
-        mock.patch("mlflow.utils.databricks_utils.get_databricks_host_creds"),
+        mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"),
         mock.patch.object(
             MlflowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
-        mock.patch("mlflow.utils.rest_utils.http_request") as request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository"
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository"
         ) as optimized_s3_artifact_repo_class_mock,
     ):
         mock_s3_repo = mock.MagicMock(autospec=OptimizedS3ArtifactRepository)
@@ -155,7 +155,7 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_aws(mon
         mock_s3_repo.download_artifacts.assert_called_once_with("artifact_path", "dst_path")
         request_mock.assert_called_with(
             host_creds=ANY,
-            endpoint="/api/2.0/mlflow/unity-catalog/model-versions/generate-temporary-credentials",
+            endpoint="/api/2.0/qcflow/unity-catalog/model-versions/generate-temporary-credentials",
             method="POST",
             json={"name": "MyModel", "version": "12", "operation": "MODEL_VERSION_OPERATION_READ"},
             extra_headers=ANY,
@@ -181,9 +181,9 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_azure(m
         mock.patch.object(
             MlflowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
-        mock.patch("mlflow.utils.rest_utils.http_request") as request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch(
-            "mlflow.store.artifact.azure_data_lake_artifact_repo.AzureDataLakeArtifactRepository"
+            "qcflow.store.artifact.azure_data_lake_artifact_repo.AzureDataLakeArtifactRepository"
         ) as adls_artifact_repo_class_mock,
     ):
         mock_adls_repo = mock.MagicMock(autospec=AzureDataLakeArtifactRepository)
@@ -203,7 +203,7 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_azure(m
         mock_adls_repo.download_artifacts.assert_called_once_with("artifact_path", "dst_path")
         request_mock.assert_called_with(
             host_creds=ANY,
-            endpoint="/api/2.0/mlflow/unity-catalog/model-versions/generate-temporary-credentials",
+            endpoint="/api/2.0/qcflow/unity-catalog/model-versions/generate-temporary-credentials",
             method="POST",
             json={"name": "MyModel", "version": "12", "operation": "MODEL_VERSION_OPERATION_READ"},
             extra_headers=ANY,
@@ -226,14 +226,14 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_gcp(mon
     }
     fake_local_path = "/tmp/fake_path"
     with (
-        mock.patch("mlflow.utils.databricks_utils.get_databricks_host_creds"),
+        mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"),
         mock.patch.object(
             MlflowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
-        mock.patch("mlflow.utils.rest_utils.http_request") as request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch("google.cloud.storage.Client") as gcs_client_class_mock,
         mock.patch(
-            "mlflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository"
+            "qcflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository"
         ) as gcs_artifact_repo_class_mock,
     ):
         mock_gcs_client = mock.MagicMock(autospec=Client)
@@ -255,7 +255,7 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_gcp(mon
         assert credentials.token == fake_oauth_token
         request_mock.assert_called_with(
             host_creds=ANY,
-            endpoint="/api/2.0/mlflow/unity-catalog/model-versions/generate-temporary-credentials",
+            endpoint="/api/2.0/qcflow/unity-catalog/model-versions/generate-temporary-credentials",
             method="POST",
             json={"name": "MyModel", "version": "12", "operation": "MODEL_VERSION_OPERATION_READ"},
             extra_headers=ANY,
@@ -264,7 +264,7 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_gcp(mon
 
 def test_uc_models_artifact_repo_uses_active_catalog_and_schema():
     with mock.patch(
-        "mlflow.store.artifact.unity_catalog_models_artifact_repo._get_active_spark_session"
+        "qcflow.store.artifact.unity_catalog_models_artifact_repo._get_active_spark_session"
     ) as spark_session_getter:
         spark = mock.MagicMock()
         spark_session_getter.return_value = spark
@@ -298,13 +298,13 @@ def test_uc_models_artifact_repo_list_artifacts_uses_temporary_creds(monkeypatch
     }
     fake_local_path = "/tmp/fake_path"
     with (
-        mock.patch("mlflow.utils.databricks_utils.get_databricks_host_creds"),
+        mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"),
         mock.patch.object(
             MlflowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
-        mock.patch("mlflow.utils.rest_utils.http_request") as request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch(
-            "mlflow.store.artifact.azure_data_lake_artifact_repo.AzureDataLakeArtifactRepository"
+            "qcflow.store.artifact.azure_data_lake_artifact_repo.AzureDataLakeArtifactRepository"
         ) as adls_artifact_repo_class_mock,
     ):
         mock_adls_repo = mock.MagicMock(autospec=AzureDataLakeArtifactRepository)
@@ -325,7 +325,7 @@ def test_uc_models_artifact_repo_list_artifacts_uses_temporary_creds(monkeypatch
         mock_adls_repo.list_artifacts.assert_called_once_with(path="artifact_path")
         request_mock.assert_called_with(
             host_creds=ANY,
-            endpoint="/api/2.0/mlflow/unity-catalog/model-versions/generate-temporary-credentials",
+            endpoint="/api/2.0/qcflow/unity-catalog/model-versions/generate-temporary-credentials",
             method="POST",
             json={"name": "MyModel", "version": "12", "operation": "MODEL_VERSION_OPERATION_READ"},
             extra_headers=ANY,
@@ -333,17 +333,17 @@ def test_uc_models_artifact_repo_list_artifacts_uses_temporary_creds(monkeypatch
 
 
 def test_get_feature_dependencies_doesnt_throw():
-    import mlflow
+    import qcflow
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model("model", python_model=MyModel())
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model("model", python_model=MyModel())
 
     assert (
-        mlflow.store._unity_catalog.registry.rest_store.get_feature_dependencies(
+        qcflow.store._unity_catalog.registry.rest_store.get_feature_dependencies(
             model_info.model_uri
         )
         == ""
@@ -351,8 +351,8 @@ def test_get_feature_dependencies_doesnt_throw():
 
 
 def test_store_use_presigned_url_store_when_disabled(monkeypatch):
-    store_package = "mlflow.store.artifact.unity_catalog_models_artifact_repo"
-    monkeypatch.setenv("MLFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "false")
+    store_package = "qcflow.store.artifact.unity_catalog_models_artifact_repo"
+    monkeypatch.setenv("QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "false")
     monkeypatch.setenvs(
         {
             "DATABRICKS_HOST": "my-host",
@@ -399,8 +399,8 @@ def test_store_use_presigned_url_store_when_enabled(monkeypatch):
             "DATABRICKS_TOKEN": "my-token",
         }
     )
-    monkeypatch.setenv("MLFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "false")
-    store_package = "mlflow.store.artifact.unity_catalog_models_artifact_repo"
+    monkeypatch.setenv("QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "false")
+    store_package = "qcflow.store.artifact.unity_catalog_models_artifact_repo"
     creds = TemporaryCredentials(storage_mode=StorageMode.DEFAULT_STORAGE)
     with mock.patch(
         f"{store_package}.UnityCatalogModelsArtifactRepository._get_scoped_token",

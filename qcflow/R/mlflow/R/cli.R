@@ -1,4 +1,4 @@
-# Runs a generic MLflow command through the command-line interface.
+# Runs a generic QCFlow command through the command-line interface.
 #
 # @param ... The parameters to pass to the command line.
 # @param background Should this command be triggered as a background task?
@@ -7,43 +7,43 @@
 #   \code{TRUE}, does not apply to background tasks.
 # @param stderr_callback \code{NULL} (the default), or a function to call for 
 #   every chunk of the standard error, passed to \code{\link[=processx:run]{processx::run()}}.
-# @param client MLflow client to provide environment for the cli process.
+# @param client QCFlow client to provide environment for the cli process.
 #
 # @return A \code{processx} task.
 #' @importFrom processx run
 #' @importFrom processx process
 #' @importFrom withr with_envvar
-mlflow_cli <- function(...,
+qcflow_cli <- function(...,
                        background = FALSE,
                        echo = TRUE,
                        stderr_callback = NULL,
-                       client = mlflow_client()) {
+                       client = qcflow_client()) {
   env <- if (is.null(client)) list() else client$get_cli_env()
   args <- list(...)
-  verbose <- mlflow_is_verbose()
+  verbose <- qcflow_is_verbose()
   python <- dirname(python_bin())
-  mlflow_bin <- python_mlflow_bin()
+  qcflow_bin <- python_qcflow_bin()
   env <- modifyList(list(
     PATH = paste(python, Sys.getenv("PATH"), sep = ":"),
-    MLFLOW_TRACKING_URI = mlflow_get_tracking_uri(),
-    MLFLOW_BIN = mlflow_bin,
-    MLFLOW_PYTHON_BIN = python_bin()
+    QCFLOW_TRACKING_URI = qcflow_get_tracking_uri(),
+    QCFLOW_BIN = qcflow_bin,
+    QCFLOW_PYTHON_BIN = python_bin()
   ), env)
-  MLFLOW_CONDA_HOME <- Sys.getenv("MLFLOW_CONDA_HOME", NA)
-  if (!is.na(MLFLOW_CONDA_HOME)) {
-    env$MLFLOW_CONDA_HOME <- MLFLOW_CONDA_HOME
+  QCFLOW_CONDA_HOME <- Sys.getenv("QCFLOW_CONDA_HOME", NA)
+  if (!is.na(QCFLOW_CONDA_HOME)) {
+    env$QCFLOW_CONDA_HOME <- QCFLOW_CONDA_HOME
   }
   with_envvar(env, {
     if (background) {
-      result <- process$new(mlflow_bin, args = unlist(args), echo_cmd = verbose, supervise = TRUE)
+      result <- process$new(qcflow_bin, args = unlist(args), echo_cmd = verbose, supervise = TRUE)
     } else {
-      result <- run(mlflow_bin, args = unlist(args), echo = echo, echo_cmd = verbose, stderr_callback = stderr_callback)
+      result <- run(qcflow_bin, args = unlist(args), echo = echo, echo_cmd = verbose, stderr_callback = stderr_callback)
     }
   })
   invisible(result)
 }
 
-mlflow_cli_file_output <- function(response) {
+qcflow_cli_file_output <- function(response) {
   temp_file <- tempfile(fileext = ".txt")
   writeLines(response$stdout, temp_file)
   temp_file

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from mlflow.entities.evaluation import Evaluation as EvaluationEntity
+from qcflow.entities.evaluation import Evaluation as EvaluationEntity
 
 
 def evaluations_to_dataframes(
@@ -184,6 +184,6 @@ def _apply_schema_to_dataframe(df: pd.DataFrame, schema: dict[str, str]) -> pd.D
     for column in df.columns:
         df[column] = df[column].astype(schema[column])
     # By default, null values are represented as `pd.NA` in pandas when reading a dataframe from
-    # JSON. However, MLflow entities use `None` to represent null values. Accordingly, we convert
-    # instances of pd.NA to None so that DataFrame rows can be parsed as MLflow entities
+    # JSON. However, QCFlow entities use `None` to represent null values. Accordingly, we convert
+    # instances of pd.NA to None so that DataFrame rows can be parsed as QCFlow entities
     return df.replace(pd.NA, None)

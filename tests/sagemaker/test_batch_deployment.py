@@ -12,21 +12,21 @@ from click.testing import CliRunner
 from moto.core import DEFAULT_ACCOUNT_ID
 from sklearn.linear_model import LogisticRegression
 
-import mlflow
-import mlflow.pyfunc
-import mlflow.sagemaker as mfs
-import mlflow.sagemaker.cli as mfscli
-import mlflow.sklearn
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model
-from mlflow.protos.databricks_pb2 import (
+import qcflow
+import qcflow.pyfunc
+import qcflow.sagemaker as mfs
+import qcflow.sagemaker.cli as mfscli
+import qcflow.sklearn
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model
+from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
 
 from tests.helper_functions import set_boto_credentials  # noqa: F401
 from tests.sagemaker.mock import TransformJob, TransformJobOperation, mock_sagemaker
@@ -37,13 +37,13 @@ TrainedModel = namedtuple("TrainedModel", ["model_path", "run_id", "model_uri"])
 @pytest.fixture
 def pretrained_model():
     model_path = "model"
-    with mlflow.start_run():
+    with qcflow.start_run():
         X = np.array([-2, -1, 0, 1, 2, 1]).reshape(-1, 1)
         y = np.array([0, 0, 1, 1, 1, 0])
         lr = LogisticRegression(solver="lbfgs")
         lr.fit(X, y)
-        mlflow.sklearn.log_model(lr, model_path)
-        run_id = mlflow.active_run().info.run_id
+        qcflow.sklearn.log_model(lr, model_path)
+        run_id = qcflow.active_run().info.run_id
         model_uri = "runs:/" + run_id + "/" + model_path
         return TrainedModel(model_path, run_id, model_uri)
 
@@ -67,7 +67,7 @@ def mock_sagemaker_aws_services(fn):
     @mock_sts
     @wraps(fn)
     def mock_wrapper(*args, **kwargs):
-        # Create an ECR repository for the `mlflow-pyfunc` SageMaker docker image
+        # Create an ECR repository for the `qcflow-pyfunc` SageMaker docker image
         ecr_client = boto3.client("ecr", region_name="us-west-2")
         ecr_client.create_repository(repositoryName=mfs.DEFAULT_IMAGE_NAME)
 
@@ -132,7 +132,7 @@ def test_batch_deployment_of_model_with_no_supported_flavors_raises_exception(pr
     logged_model_path = _download_artifact_from_uri(pretrained_model.model_uri)
     model_config_path = os.path.join(logged_model_path, "MLmodel")
     model_config = Model.load(model_config_path)
-    del model_config.flavors[mlflow.pyfunc.FLAVOR_NAME]
+    del model_config.flavors[qcflow.pyfunc.FLAVOR_NAME]
     model_config.save(path=model_config_path)
 
     match = "The specified model does not contain any of the supported flavors for deployment"

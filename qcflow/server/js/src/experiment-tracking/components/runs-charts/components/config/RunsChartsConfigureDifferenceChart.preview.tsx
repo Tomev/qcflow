@@ -9,7 +9,7 @@ import { DifferenceViewPlot } from '../charts/DifferenceViewPlot';
 import { DifferenceViewPlotV2 } from '../charts/DifferenceViewPlotV2';
 
 import type { RunsGroupByConfig } from '../../../experiment-page/utils/experimentPage.group-row-utils';
-import { shouldEnableNewDifferenceViewCharts } from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+import { shouldEnableNewDifferenceViewCharts } from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 
 export const RunsChartsConfigureDifferenceChartPreview = ({
   previewData,

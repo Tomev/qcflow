@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow
 from tensorflow.keras.callbacks import TensorBoard
 
-from mlflow.utils.autologging_utils import (
+from qcflow.utils.autologging_utils import (
     INPUT_EXAMPLE_SAMPLE_ROWS,
     ExceptionSafeClass,
 )
@@ -138,7 +138,7 @@ def extract_input_example_from_tf_input_fn(input_fn):
         input_fn: Tensorflow's input function used for train method
 
     Returns:
-        A slice (of limit ``mlflow.utils.autologging_utils.INPUT_EXAMPLE_SAMPLE_ROWS``)
+        A slice (of limit ``qcflow.utils.autologging_utils.INPUT_EXAMPLE_SAMPLE_ROWS``)
         of the input of type `np.ndarray`.
         Returns `None` if the return type of ``input_fn`` is unsupported.
     """
@@ -167,7 +167,7 @@ def extract_tf_keras_input_example(input_training_data):
     Returns:
         a slice of type ndarray or
         dict (str -> ndarray) limited to
-        ``mlflow.utils.autologging_utils.INPUT_EXAMPLE_SAMPLE_ROWS``.
+        ``qcflow.utils.autologging_utils.INPUT_EXAMPLE_SAMPLE_ROWS``.
         Throws ``MlflowException`` exception, if input_training_data is unsupported.
         Returns `None` if the type of input_training_data is unsupported.
     """

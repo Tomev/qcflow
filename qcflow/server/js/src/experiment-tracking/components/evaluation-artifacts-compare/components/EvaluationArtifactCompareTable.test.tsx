@@ -29,7 +29,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_a',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -38,8 +38,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table.json", "type": "table"}]',
           },
         },
@@ -61,7 +61,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_b',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -70,8 +70,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table.json", "type": "table"}]',
           },
         },
@@ -93,7 +93,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_c',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -102,8 +102,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table_c.json", "type": "table"}]',
           },
         },
@@ -329,7 +329,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_a',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -338,8 +338,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table.json", "type": "table"}]',
           },
         },
@@ -361,7 +361,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_b',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -370,8 +370,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table.json", "type": "table"}]',
           },
         },
@@ -393,7 +393,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_c',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -402,8 +402,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table_c.json", "type": "table"}]',
           },
         },
@@ -582,7 +582,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_a',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -591,8 +591,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table.json", "type": "table"}]',
           },
         },
@@ -614,7 +614,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_b',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -623,8 +623,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table.json", "type": "table"}]',
           },
         },
@@ -646,7 +646,7 @@ describe('EvaluationArtifactCompareTable', () => {
         runInfo: {
           runUuid: 'run_c',
           status: 'FINISHED',
-          artifactUri: 'dbfs:/databricks/mlflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
+          artifactUri: 'dbfs:/databricks/qcflow-tracking/676587362364997/9b1b553bb1ca4e948c248c5ca426ae52/artifacts',
           endTime: 1717111275344,
           experimentId: '676587362364997',
           lifecycleStage: 'active',
@@ -655,8 +655,8 @@ describe('EvaluationArtifactCompareTable', () => {
         },
         duration: '1.8s',
         tags: {
-          'mlflow.loggedArtifacts': {
-            key: 'mlflow.loggedArtifacts',
+          'qcflow.loggedArtifacts': {
+            key: 'qcflow.loggedArtifacts',
             value: '[{"path": "table_c.json", "type": "table"}]',
           },
         },

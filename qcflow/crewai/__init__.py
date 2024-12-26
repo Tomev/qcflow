@@ -1,5 +1,5 @@
 """
-The ``mlflow.crewai`` module provides an API for tracing CrewAI AI agents.
+The ``qcflow.crewai`` module provides an API for tracing CrewAI AI agents.
 """
 
 import importlib
@@ -7,11 +7,11 @@ import logging
 
 from packaging.version import Version
 
-from mlflow.crewai.autolog import (
+from qcflow.crewai.autolog import (
     patched_class_call,
 )
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import autologging_integration, safe_patch
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import autologging_integration, safe_patch
 
 _logger = logging.getLogger(__name__)
 
@@ -26,14 +26,14 @@ def autolog(
     silent: bool = False,
 ):
     """
-    Enables (or disables) and configures autologging from CrewAI to MLflow.
+    Enables (or disables) and configures autologging from CrewAI to QCFlow.
     Note that asynchnorous APIs and Tool calling are not recorded now.
 
     Args:
         log_traces: If ``True``, traces are logged for CrewAI agents.
             If ``False``, no traces are collected during inference. Default to ``True``.
         disable: If ``True``, disables the CrewAI autologging. Default to ``False``.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during CrewAI
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during CrewAI
             autologging. If ``False``, show all events and warnings.
     """
     # TODO: Handle asynchronous tasks and crew executions

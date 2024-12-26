@@ -103,7 +103,7 @@ export const EvaluationRunHeaderCellRenderer = ({
         <div css={{ flexBasis: theme.spacing.sm, flexShrink: 0 }} />
 
         <Button
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadercellrenderer.tsx_112"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadercellrenderer.tsx_112"
           onClick={() => onHideRun(run.runUuid)}
           size="small"
           icon={<VisibleIcon />}
@@ -115,7 +115,7 @@ export const EvaluationRunHeaderCellRenderer = ({
             <div css={{ flexBasis: theme.spacing.sm }} />
             <LegacyTooltip title={evaluateAllTooltipContent}>
               <Button
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadercellrenderer.tsx_118"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadercellrenderer.tsx_118"
                 disabled={!evaluateAllButtonEnabled}
                 size="small"
                 onClick={() => evaluateAllClick(run)}
@@ -141,14 +141,14 @@ export const EvaluationRunHeaderCellRenderer = ({
           <DropdownMenu.Root modal={false}>
             <DropdownMenu.Trigger asChild>
               <Button
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadercellrenderer.tsx_143"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadercellrenderer.tsx_143"
                 size="small"
                 icon={<OverflowIcon />}
               />
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadercellrenderer.tsx_150"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadercellrenderer.tsx_150"
                 onClick={() => onDuplicateRun(run)}
               >
                 <FormattedMessage

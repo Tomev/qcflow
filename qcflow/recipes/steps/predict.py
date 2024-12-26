@@ -3,25 +3,25 @@ import os
 import time
 from typing import Any
 
-import mlflow
-from mlflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.recipes.artifacts import DataframeArtifact, RegisteredModelVersionInfo
-from mlflow.recipes.cards import BaseCard
-from mlflow.recipes.step import BaseStep, StepClass
-from mlflow.recipes.steps.register import _REGISTERED_MV_INFO_FILE
-from mlflow.recipes.utils.execution import get_step_output_path
-from mlflow.recipes.utils.step import get_pandas_data_profiles
-from mlflow.recipes.utils.tracking import (
+import qcflow
+from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.recipes.artifacts import DataframeArtifact, RegisteredModelVersionInfo
+from qcflow.recipes.cards import BaseCard
+from qcflow.recipes.step import BaseStep, StepClass
+from qcflow.recipes.steps.register import _REGISTERED_MV_INFO_FILE
+from qcflow.recipes.utils.execution import get_step_output_path
+from qcflow.recipes.utils.step import get_pandas_data_profiles
+from qcflow.recipes.utils.tracking import (
     TrackingConfig,
     apply_recipe_tracking_config,
     get_recipe_tracking_config,
 )
-from mlflow.utils._spark_utils import (
+from qcflow.utils._spark_utils import (
     _create_local_spark_session_for_recipes,
     _get_active_spark_session,
 )
-from mlflow.utils.databricks_utils import get_databricks_env_vars
-from mlflow.utils.file_utils import write_spark_dataframe_to_parquet_on_local_disk
+from qcflow.utils.databricks_utils import get_databricks_env_vars
+from qcflow.utils.file_utils import write_spark_dataframe_to_parquet_on_local_disk
 
 _logger = logging.getLogger(__name__)
 
@@ -120,7 +120,7 @@ class PredictStep(BaseStep):
 
         apply_recipe_tracking_config(self.tracking_config)
         if self.registry_uri:
-            mlflow.set_registry_uri(self.registry_uri)
+            qcflow.set_registry_uri(self.registry_uri)
 
         # Get or create spark session
         try:
@@ -167,7 +167,7 @@ class PredictStep(BaseStep):
 
         # scored dataset
         result_type = self.step_config.get("result_type", "double")
-        predict = mlflow.pyfunc.spark_udf(
+        predict = qcflow.pyfunc.spark_udf(
             spark, model_uri, result_type=result_type, env_manager=_ENV_MANAGER
         )
         scored_sdf = input_sdf.withColumn(

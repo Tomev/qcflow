@@ -7,16 +7,16 @@ import pandas as pd
 import pytest
 from google.protobuf.text_format import Parse as ParseTextIntoProto
 
-from mlflow.entities import Experiment, Metric
-from mlflow.entities.model_registry import ModelVersion, RegisteredModel
-from mlflow.exceptions import MlflowException
-from mlflow.protos.model_registry_pb2 import RegisteredModel as ProtoRegisteredModel
-from mlflow.protos.service_pb2 import Experiment as ProtoExperiment
-from mlflow.protos.service_pb2 import Metric as ProtoMetric
-from mlflow.types import ColSpec, DataType, Schema, TensorSpec
-from mlflow.types.schema import Array, Map, Object, Property
-from mlflow.types.utils import _infer_schema
-from mlflow.utils.proto_json_utils import (
+from qcflow.entities import Experiment, Metric
+from qcflow.entities.model_registry import ModelVersion, RegisteredModel
+from qcflow.exceptions import MlflowException
+from qcflow.protos.model_registry_pb2 import RegisteredModel as ProtoRegisteredModel
+from qcflow.protos.service_pb2 import Experiment as ProtoExperiment
+from qcflow.protos.service_pb2 import Metric as ProtoMetric
+from qcflow.types import ColSpec, DataType, Schema, TensorSpec
+from qcflow.types.schema import Array, Map, Object, Property
+from qcflow.types.utils import _infer_schema
+from qcflow.utils.proto_json_utils import (
     MlflowFailedTypeConversion,
     _CustomJsonEncoder,
     _stringify_all_experiment_ids,
@@ -138,7 +138,7 @@ def test_message_to_json():
             field_inner_repeated_int64: [105, 106]
         }
         oneof1: 207
-        [mlflow.ExtensionMessage.field_extended_int64]: 100
+        [qcflow.ExtensionMessage.field_extended_int64]: 100
         field_map1: [{key: 51 value: "52"}, {key: 53 value: "54"}]
         field_map2: [{key: "61" value: 62}, {key: "63" value: 64}]
         field_map3: [{key: 561 value: 562}, {key: 563 value: 564}]
@@ -192,7 +192,7 @@ def test_message_to_json():
                 "field_inner_string": "str1",
             },
         },
-        "[mlflow.ExtensionMessage.field_extended_int64]": "100",
+        "[qcflow.ExtensionMessage.field_extended_int64]": "100",
     }
     new_test_message = SampleMessage()
     parse_dict(json_dict, new_test_message)

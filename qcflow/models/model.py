@@ -13,21 +13,21 @@ from urllib.parse import urlparse
 import yaml
 from packaging.requirements import InvalidRequirement, Requirement
 
-import mlflow
-from mlflow.artifacts import download_artifacts
-from mlflow.environment_variables import MLFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING
-from mlflow.exceptions import MlflowException
-from mlflow.models.resources import Resource, ResourceType, _ResourceBuilder
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, RESOURCE_DOES_NOT_EXIST
-from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
-from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking._tracking_service.utils import _resolve_tracking_uri
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri, _upload_artifact_to_uri
-from mlflow.utils.annotations import experimental
-from mlflow.utils.databricks_utils import get_databricks_runtime_version, is_in_databricks_runtime
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+from qcflow.artifacts import download_artifacts
+from qcflow.environment_variables import QCFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING
+from qcflow.exceptions import MlflowException
+from qcflow.models.resources import Resource, ResourceType, _ResourceBuilder
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, RESOURCE_DOES_NOT_EXIST
+from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
+from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking._tracking_service.utils import _resolve_tracking_uri
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri, _upload_artifact_to_uri
+from qcflow.utils.annotations import experimental
+from qcflow.utils.databricks_utils import get_databricks_runtime_version, is_in_databricks_runtime
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
@@ -36,8 +36,8 @@ from mlflow.utils.environment import (
     _remove_requirements,
     _write_requirements_to_file,
 )
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.uri import (
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.uri import (
     append_to_uri_path,
     get_uri_scheme,
 )
@@ -46,16 +46,16 @@ _logger = logging.getLogger(__name__)
 
 # NOTE: The MLMODEL_FILE_NAME constant is considered @developer_stable
 MLMODEL_FILE_NAME = "MLmodel"
-_DATABRICKS_FS_LOADER_MODULE = "databricks.feature_store.mlflow_model"
+_DATABRICKS_FS_LOADER_MODULE = "databricks.feature_store.qcflow_model"
 _LOG_MODEL_METADATA_WARNING_TEMPLATE = (
     "Logging model metadata to the tracking server has failed. The model artifacts "
     "have been logged successfully under %s. Set logging level to DEBUG via "
-    '`logging.getLogger("mlflow").setLevel(logging.DEBUG)` to see the full traceback.'
+    '`logging.getLogger("qcflow").setLevel(logging.DEBUG)` to see the full traceback.'
 )
 _LOG_MODEL_MISSING_SIGNATURE_WARNING = (
     "Model logged without a signature. Signatures are required for Databricks UC model registry "
     "as they validate model inputs and denote the expected schema of model outputs. "
-    f"Please visit https://www.mlflow.org/docs/{mlflow.__version__.replace('.dev0', '')}/"
+    f"Please visit https://www.qcflow.org/docs/{qcflow.__version__.replace('.dev0', '')}/"
     "model/signatures.html#how-to-set-signatures-on-models for instructions on setting "
     "signature on models."
 )
@@ -63,8 +63,8 @@ _LOG_MODEL_MISSING_INPUT_EXAMPLE_WARNING = (
     "Model logged without a signature and input example. Please set `input_example` parameter "
     "when logging the model to auto infer the model signature."
 )
-# NOTE: The _MLFLOW_VERSION_KEY constant is considered @developer_stable
-_MLFLOW_VERSION_KEY = "mlflow_version"
+# NOTE: The _QCFLOW_VERSION_KEY constant is considered @developer_stable
+_QCFLOW_VERSION_KEY = "qcflow_version"
 METADATA_FILES = [
     MLMODEL_FILE_NAME,
     _CONDA_ENV_FILE_NAME,
@@ -86,7 +86,7 @@ ENV_VAR_FILE_HEADER = (
 
 class ModelInfo:
     """
-    The metadata of a logged MLflow Model.
+    The metadata of a logged QCFlow Model.
     """
 
     def __init__(
@@ -99,7 +99,7 @@ class ModelInfo:
         saved_input_example_info: Optional[dict[str, Any]],
         signature,  # Optional[ModelSignature]
         utc_time_created: str,
-        mlflow_version: str,
+        qcflow_version: str,
         signature_dict: Optional[dict[str, Any]] = None,
         metadata: Optional[dict[str, Any]] = None,
         registered_model_version: Optional[int] = None,
@@ -114,7 +114,7 @@ class ModelInfo:
         self._signature_dict = signature_dict
         self._signature = signature
         self._utc_time_created = utc_time_created
-        self._mlflow_version = mlflow_version
+        self._qcflow_version = qcflow_version
         self._metadata = metadata
         self._registered_model_version = registered_model_version
         self._env_vars = env_vars
@@ -145,7 +145,7 @@ class ModelInfo:
             {
                 "python_function": {
                     "model_path": "model.pkl",
-                    "loader_module": "mlflow.sklearn",
+                    "loader_module": "qcflow.sklearn",
                     "python_version": "3.8.10",
                     "env": "conda.yaml",
                 },
@@ -207,7 +207,7 @@ class ModelInfo:
     def signature_dict(self) -> Optional[dict[str, Any]]:
         """
         A dictionary that describes the model input and output generated by
-        :py:meth:`ModelSignature.to_dict() <mlflow.models.ModelSignature.to_dict>`.
+        :py:meth:`ModelSignature.to_dict() <qcflow.models.ModelSignature.to_dict>`.
 
         :getter: Gets the model signature as a dictionary
         :type: Optional[Dict[str, Any]]
@@ -222,7 +222,7 @@ class ModelInfo:
     @property
     def signature(self):  # -> Optional[ModelSignature]
         """
-        A :py:class:`ModelSignature <mlflow.models.ModelSignature>` that describes the
+        A :py:class:`ModelSignature <qcflow.models.ModelSignature>` that describes the
         model input and output.
 
         :getter: Gets the model signature if it is defined
@@ -241,14 +241,14 @@ class ModelInfo:
         return self._utc_time_created
 
     @property
-    def mlflow_version(self) -> str:
+    def qcflow_version(self) -> str:
         """
-        Version of MLflow used to log the model
+        Version of QCFlow used to log the model
 
-        :getter: Gets the version of MLflow that was installed when a model was logged
+        :getter: Gets the version of QCFlow that was installed when a model was logged
         :type: str
         """
-        return self._mlflow_version
+        return self._qcflow_version
 
     @property
     def env_vars(self) -> Optional[list[str]]:
@@ -282,15 +282,15 @@ class ModelInfo:
 
             from sklearn import datasets
             from sklearn.ensemble import RandomForestClassifier
-            import mlflow
-            from mlflow.models import infer_signature
+            import qcflow
+            from qcflow.models import infer_signature
 
-            with mlflow.start_run():
+            with qcflow.start_run():
                 iris = datasets.load_iris()
                 clf = RandomForestClassifier()
                 clf.fit(iris.data, iris.target)
                 signature = infer_signature(iris.data, iris.target)
-                mlflow.sklearn.log_model(
+                qcflow.sklearn.log_model(
                     clf,
                     "iris_rf",
                     signature=signature,
@@ -302,11 +302,11 @@ class ModelInfo:
             model_uri = "models:/model-with-metadata/1"
 
             # Load the model and access the custom metadata from its ModelInfo object
-            model = mlflow.pyfunc.load_model(model_uri=model_uri)
+            model = qcflow.pyfunc.load_model(model_uri=model_uri)
             assert model.metadata.get_model_info().metadata["metadata_key"] == "metadata_value"
 
             # Load the ModelInfo and access the custom metadata
-            model_info = mlflow.models.get_model_info(model_uri=model_uri)
+            model_info = qcflow.models.get_model_info(model_uri=model_uri)
             assert model_info.metadata["metadata_key"] == "metadata_value"
         """
         return self._metadata
@@ -329,7 +329,7 @@ class ModelInfo:
 
 class Model:
     """
-    An MLflow Model that can support multiple model flavors. Provides APIs for implementing
+    An QCFlow Model that can support multiple model flavors. Provides APIs for implementing
     new Model flavors.
     """
 
@@ -342,7 +342,7 @@ class Model:
         signature=None,  # ModelSignature
         saved_input_example_info: Optional[dict[str, Any]] = None,
         model_uuid: Union[str, Callable, None] = lambda: uuid.uuid4().hex,
-        mlflow_version: Union[str, None] = mlflow.version.VERSION,
+        qcflow_version: Union[str, None] = qcflow.version.VERSION,
         metadata: Optional[dict[str, Any]] = None,
         model_size_bytes: Optional[int] = None,
         resources: Optional[Union[str, list[Resource]]] = None,
@@ -357,7 +357,7 @@ class Model:
         self.signature = signature
         self.saved_input_example_info = saved_input_example_info
         self.model_uuid = model_uuid() if callable(model_uuid) else model_uuid
-        self.mlflow_version = mlflow_version
+        self.qcflow_version = qcflow_version
         self.metadata = metadata
         self.model_size_bytes = model_size_bytes
         self.resources = resources
@@ -399,7 +399,7 @@ class Model:
         Returns:
             Serving input example or None if the model has no serving input example.
         """
-        from mlflow.models.utils import _load_serving_input_example
+        from qcflow.models.utils import _load_serving_input_example
 
         return _load_serving_input_example(self, path)
 
@@ -419,7 +419,7 @@ class Model:
 
         # Just-in-time import to only load example-parsing libraries (e.g. numpy, pandas, etc.) if
         # example is requested.
-        from mlflow.models.utils import _read_example
+        from qcflow.models.utils import _read_example
 
         return _read_example(self, path)
 
@@ -434,7 +434,7 @@ class Model:
         Returns:
             params (dict) or None if the model has no params.
         """
-        from mlflow.models.utils import _read_example_params
+        from qcflow.models.utils import _read_example_params
 
         return _read_example_params(self, path)
 
@@ -462,15 +462,15 @@ class Model:
             # Create and log a model with metadata to the Model Registry
             from sklearn import datasets
             from sklearn.ensemble import RandomForestClassifier
-            import mlflow
-            from mlflow.models import infer_signature
+            import qcflow
+            from qcflow.models import infer_signature
 
-            with mlflow.start_run():
+            with qcflow.start_run():
                 iris = datasets.load_iris()
                 clf = RandomForestClassifier()
                 clf.fit(iris.data, iris.target)
                 signature = infer_signature(iris.data, iris.target)
-                mlflow.sklearn.log_model(
+                qcflow.sklearn.log_model(
                     clf,
                     "iris_rf",
                     signature=signature,
@@ -482,7 +482,7 @@ class Model:
             model_uri = "models:/model-with-metadata/1"
 
             # Load the model and access the custom metadata
-            model = mlflow.pyfunc.load_model(model_uri=model_uri)
+            model = qcflow.pyfunc.load_model(model_uri=model_uri)
             assert model.metadata.metadata["metadata_key"] == "metadata_value"
         """
 
@@ -579,7 +579,7 @@ class Model:
 
     def get_model_info(self) -> ModelInfo:
         """
-        Create a :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        Create a :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         model metadata.
         """
         return ModelInfo(
@@ -592,7 +592,7 @@ class Model:
             signature_dict=self.signature.to_dict() if self.signature else None,
             signature=self.signature,
             utc_time_created=self.utc_time_created,
-            mlflow_version=self.mlflow_version,
+            qcflow_version=self.qcflow_version,
             metadata=self.metadata,
             env_vars=self.env_vars,
         )
@@ -628,8 +628,8 @@ class Model:
             res["is_signature_from_type_hint"] = self.signature._is_signature_from_type_hint
         if self.saved_input_example_info is not None:
             res["saved_input_example_info"] = self.saved_input_example_info
-        if self.mlflow_version is None and _MLFLOW_VERSION_KEY in res:
-            res.pop(_MLFLOW_VERSION_KEY)
+        if self.qcflow_version is None and _QCFLOW_VERSION_KEY in res:
+            res.pop(_QCFLOW_VERSION_KEY)
         if self.metadata is not None:
             res["metadata"] = self.metadata
         if self.resources is not None:
@@ -676,7 +676,7 @@ class Model:
         .. code-block:: python
             :caption: example
 
-            from mlflow.models import Model
+            from qcflow.models import Model
 
             # Load the Model object from a local MLmodel file
             model1 = Model.load("~/path/to/my/MLmodel")
@@ -714,7 +714,7 @@ class Model:
     def from_dict(cls, model_dict) -> "Model":
         """Load a model from its YAML representation."""
 
-        from mlflow.models.signature import ModelSignature
+        from qcflow.models.signature import ModelSignature
 
         model_dict = model_dict.copy()
         if "signature" in model_dict and isinstance(model_dict["signature"], dict):
@@ -728,8 +728,8 @@ class Model:
         if "model_uuid" not in model_dict:
             model_dict["model_uuid"] = None
 
-        if _MLFLOW_VERSION_KEY not in model_dict:
-            model_dict[_MLFLOW_VERSION_KEY] = None
+        if _QCFLOW_VERSION_KEY not in model_dict:
+            model_dict[_QCFLOW_VERSION_KEY] = None
 
         return cls(**model_dict)
 
@@ -754,7 +754,7 @@ class Model:
             artifact_path: Run relative path identifying the model.
             flavor: Flavor module to save the model with. The module must have
                 the ``save_model`` function that will persist the model as a valid
-                MLflow model.
+                QCFlow model.
             registered_model_name: If given, create a model version under
                 ``registered_model_name``, also creating a registered model if
                 one with the given name does not exist.
@@ -769,20 +769,20 @@ class Model:
             kwargs: Extra args passed to the model flavor.
 
         Returns:
-            A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+            A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
             metadata of the logged model.
         """
-        from mlflow.utils.model_utils import _validate_and_get_model_config_from_file
+        from qcflow.utils.model_utils import _validate_and_get_model_config_from_file
 
         registered_model = None
         with TempDir() as tmp:
             local_path = tmp.path("model")
             if run_id is None:
-                run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
-            mlflow_model = cls(
+                run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
+            qcflow_model = cls(
                 artifact_path=artifact_path, run_id=run_id, metadata=metadata, resources=resources
             )
-            flavor.save_model(path=local_path, mlflow_model=mlflow_model, **kwargs)
+            flavor.save_model(path=local_path, qcflow_model=qcflow_model, **kwargs)
             # `save_model` calls `load_model` to infer the model requirements, which may result in
             # __pycache__ directories being created in the model directory.
             for pycache in Path(local_path).rglob("__pycache__"):
@@ -792,10 +792,10 @@ class Model:
                 _copy_model_metadata_for_uc_sharing(local_path, flavor)
 
             tracking_uri = _resolve_tracking_uri()
-            serving_input = mlflow_model.get_serving_input(local_path)
+            serving_input = qcflow_model.get_serving_input(local_path)
             # We check signature presence here as some flavors have a default signature as a
             # fallback when not provided by user, which is set during flavor's save_model() call.
-            if mlflow_model.signature is None:
+            if qcflow_model.signature is None:
                 if serving_input is None:
                     _logger.warning(
                         _LOG_MODEL_MISSING_INPUT_EXAMPLE_WARNING, extra={"color": "red"}
@@ -806,8 +806,8 @@ class Model:
             env_vars = None
             # validate input example works for serving when logging the model
             if serving_input and kwargs.get("validate_serving_input", True):
-                from mlflow.models import validate_serving_input
-                from mlflow.utils.model_utils import RECORD_ENV_VAR_ALLOWLIST, env_var_tracker
+                from qcflow.models import validate_serving_input
+                from qcflow.utils.model_utils import RECORD_ENV_VAR_ALLOWLIST, env_var_tracker
 
                 with env_var_tracker() as tracked_env_names:
                     try:
@@ -821,10 +821,10 @@ class Model:
                             "Alternatively, you can avoid passing input example and pass model "
                             "signature instead when logging the model. To ensure the input example "
                             "is valid prior to serving, please try calling "
-                            "`mlflow.models.validate_serving_input` on the model uri and serving "
+                            "`qcflow.models.validate_serving_input` on the model uri and serving "
                             "input example. A serving input example can be generated from model "
                             "input example using "
-                            "`mlflow.models.convert_input_example_to_serving_input` function.\n"
+                            "`qcflow.models.convert_input_example_to_serving_input` function.\n"
                             f"Got error: {e}",
                             exc_info=_logger.isEnabledFor(logging.DEBUG),
                         )
@@ -849,10 +849,10 @@ class Model:
                     "Found the following environment variables used during model inference: "
                     f"{env_var_info}. Please check if you need to set them when deploying the "
                     "model. To disable this message, set environment variable "
-                    f"`{MLFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING.name}` to `false`."
+                    f"`{QCFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING.name}` to `false`."
                 )
-            mlflow_model.env_vars = env_vars
-            mlflow.tracking.fluent.log_artifacts(local_path, mlflow_model.artifact_path, run_id)
+            qcflow_model.env_vars = env_vars
+            qcflow.tracking.fluent.log_artifacts(local_path, qcflow_model.artifact_path, run_id)
 
             # if the model_config kwarg is passed in, then log the model config as an params
             if model_config := kwargs.get("model_config"):
@@ -874,7 +874,7 @@ class Model:
                         _logger.warning("Failed to load model config from %s: %s", model_config, e)
 
                 try:
-                    from mlflow.models.utils import _flatten_nested_params
+                    from qcflow.models.utils import _flatten_nested_params
 
                     # We are using the `/` separator to flatten the nested params
                     # since we are using the same separator to log nested metrics.
@@ -884,31 +884,31 @@ class Model:
                     params_to_log = model_config
 
                 try:
-                    mlflow.tracking.fluent.log_params(params_to_log or {}, run_id=run_id)
+                    qcflow.tracking.fluent.log_params(params_to_log or {}, run_id=run_id)
                 except Exception as e:
                     _logger.warning("Failed to log model config as params: %s", str(e))
 
             try:
-                mlflow.tracking.fluent._record_logged_model(mlflow_model, run_id)
+                qcflow.tracking.fluent._record_logged_model(qcflow_model, run_id)
             except MlflowException:
-                # We need to swallow all mlflow exceptions to maintain backwards compatibility with
+                # We need to swallow all qcflow exceptions to maintain backwards compatibility with
                 # older tracking servers. Only print out a warning for now.
-                _logger.warning(_LOG_MODEL_METADATA_WARNING_TEMPLATE, mlflow.get_artifact_uri())
+                _logger.warning(_LOG_MODEL_METADATA_WARNING_TEMPLATE, qcflow.get_artifact_uri())
                 _logger.debug("", exc_info=True)
 
             if registered_model_name is not None:
-                registered_model = mlflow.tracking._model_registry.fluent._register_model(
-                    f"runs:/{run_id}/{mlflow_model.artifact_path}",
+                registered_model = qcflow.tracking._model_registry.fluent._register_model(
+                    f"runs:/{run_id}/{qcflow_model.artifact_path}",
                     registered_model_name,
                     await_registration_for=await_registration_for,
                     local_model_path=local_path,
                 )
-            model_info = mlflow_model.get_model_info()
+            model_info = qcflow_model.get_model_info()
             if registered_model is not None:
                 model_info.registered_model_version = registered_model.version
 
         # If the model signature is Mosaic AI Agent compatible, render a recipe for evaluation.
-        from mlflow.models.display_utils import maybe_render_agent_eval_recipe
+        from qcflow.models.display_utils import maybe_render_agent_eval_recipe
 
         maybe_render_agent_eval_recipe(model_info)
 
@@ -924,7 +924,7 @@ def _copy_model_metadata_for_uc_sharing(local_path: str, flavor) -> None:
         local_path: Local path to the model directory.
         flavor: Flavor module to save the model with.
     """
-    from mlflow.models.wheeled_model import _ORIGINAL_REQ_FILE_NAME, WheeledModel
+    from qcflow.models.wheeled_model import _ORIGINAL_REQ_FILE_NAME, WheeledModel
 
     metadata_path = os.path.join(local_path, "metadata")
     if isinstance(flavor, WheeledModel):
@@ -952,47 +952,47 @@ def get_model_info(model_uri: str) -> ModelInfo:
     Get metadata for the specified model, such as its input/output signature.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
         :caption: Example usage of get_model_info
 
-        import mlflow.models
-        import mlflow.sklearn
+        import qcflow.models
+        import qcflow.sklearn
         from sklearn.ensemble import RandomForestRegressor
 
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             params = {"n_estimators": 3, "random_state": 42}
             X, y = [[0, 1]], [1]
-            signature = mlflow.models.infer_signature(X, y)
+            signature = qcflow.models.infer_signature(X, y)
             rfr = RandomForestRegressor(**params).fit(X, y)
-            mlflow.log_params(params)
-            mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            qcflow.log_params(params)
+            qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
         model_uri = f"runs:/{run.info.run_id}/sklearn-model"
         # Get model info with model_uri
-        model_info = mlflow.models.get_model_info(model_uri)
+        model_info = qcflow.models.get_model_info(model_uri)
         # Get model signature directly
         model_signature = model_info.signature
         assert model_signature == signature
     """
-    from mlflow.pyfunc import _download_artifact_from_uri
+    from qcflow.pyfunc import _download_artifact_from_uri
 
     meta_file_uri = model_uri.rstrip("/") + "/" + MLMODEL_FILE_NAME
     meta_local_path = _download_artifact_from_uri(artifact_uri=meta_file_uri)
@@ -1007,7 +1007,7 @@ def get_model_info(model_uri: str) -> ModelInfo:
         signature_dict=model_meta.signature.to_dict() if model_meta.signature else None,
         signature=model_meta.signature,
         utc_time_created=model_meta.utc_time_created,
-        mlflow_version=model_meta.mlflow_version,
+        qcflow_version=model_meta.qcflow_version,
         metadata=model_meta.metadata,
     )
 
@@ -1056,16 +1056,16 @@ def update_model_requirements(
     found in the existing files will be ignored.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
         operation: The operation to perform. Must be one of "add" or "remove".
@@ -1128,13 +1128,13 @@ def update_model_requirements(
     _upload_artifact_to_uri(requirements_txt_path, resolved_uri)
 
 
-__mlflow_model__ = None
+__qcflow_model__ = None
 
 
 def _validate_langchain_model(model):
     from langchain_core.runnables.base import Runnable
 
-    from mlflow.models.utils import _validate_and_get_model_code_path
+    from qcflow.models.utils import _validate_and_get_model_code_path
 
     if isinstance(model, str):
         return _validate_and_get_model_code_path(model, None)
@@ -1149,7 +1149,7 @@ def _validate_langchain_model(model):
 
 
 def _validate_llama_index_model(model):
-    from mlflow.llama_index import _validate_and_prepare_llama_index_model_or_path
+    from qcflow.llama_index import _validate_and_prepare_llama_index_model_or_path
 
     return _validate_and_prepare_llama_index_model_or_path(model, None)
 
@@ -1167,20 +1167,20 @@ def set_model(model) -> None:
                 - A Langchain model or path to a Langchain model.
                 - A Llama Index model or path to a Llama Index model.
     """
-    from mlflow.pyfunc import PythonModel
+    from qcflow.pyfunc import PythonModel
 
     if isinstance(model, str):
-        raise mlflow.MlflowException(SET_MODEL_ERROR)
+        raise qcflow.MlflowException(SET_MODEL_ERROR)
 
     if isinstance(model, PythonModel) or callable(model):
-        globals()["__mlflow_model__"] = model
+        globals()["__qcflow_model__"] = model
         return
 
     for validate_function in [_validate_langchain_model, _validate_llama_index_model]:
         try:
-            globals()["__mlflow_model__"] = validate_function(model)
+            globals()["__qcflow_model__"] = validate_function(model)
             return
         except Exception:
             pass
 
-    raise mlflow.MlflowException(SET_MODEL_ERROR)
+    raise qcflow.MlflowException(SET_MODEL_ERROR)

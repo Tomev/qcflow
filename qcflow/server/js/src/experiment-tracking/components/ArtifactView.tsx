@@ -45,7 +45,7 @@ import { Button } from '@databricks/design-system';
 import { CopyIcon } from '@databricks/design-system';
 import { DownloadIcon } from '@databricks/design-system';
 import { Checkbox } from '@databricks/design-system';
-import { getLoggedTablesFromTags } from '@mlflow/mlflow/src/common/utils/TagUtils';
+import { getLoggedTablesFromTags } from '@qcflow/qcflow/src/common/utils/TagUtils';
 import { CopyButton } from '../../shared/building_blocks/CopyButton';
 import { isExperimentLoggedModelsUIEnabled } from '../../common/utils/FeatureUtils';
 import type { LoggedModelArtifactViewerProps } from './artifact-view-components/ArtifactViewComponents.types';
@@ -225,7 +225,7 @@ export class ArtifactViewImpl extends Component<ArtifactViewImplProps, ArtifactV
         <div style={{ display: 'inline-flex', alignItems: 'center' }}>
           {this.shouldShowViewAsTableCheckbox && (
             <Checkbox
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_artifactview.tsx_288"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_artifactview.tsx_288"
               isChecked={this.state.viewAsTable}
               onChange={() =>
                 this.setState({
@@ -248,7 +248,7 @@ export class ArtifactViewImpl extends Component<ArtifactViewImplProps, ArtifactV
             })}
           >
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_artifactview.tsx_337"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_artifactview.tsx_337"
               icon={<DownloadIcon />}
               onClick={() => this.onDownloadClick(runUuid, activeNodeId)}
             />
@@ -613,7 +613,7 @@ function NoArtifactView({ useAutoHeight }: { useAutoHeight?: boolean }) {
         }
         description={
           <FormattedMessage
-            defaultMessage="Use the log artifact APIs to store file outputs from MLflow runs."
+            defaultMessage="Use the log artifact APIs to store file outputs from QCFlow runs."
             description="Information in the empty state explaining how one could log artifacts output files for the experiment runs"
           />
         }

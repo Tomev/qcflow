@@ -1,6 +1,6 @@
 # nocov start
 
-mlflow_swagger <- function() {
+qcflow_swagger <- function() {
   def <- c(
     swagger_header(),
     swagger_paths(),
@@ -14,9 +14,9 @@ swagger_header <- function() {
   list(
     swagger = jsonlite::unbox("2.0"),
     info = list(
-      description = jsonlite::unbox("API to MLflow Model."),
+      description = jsonlite::unbox("API to QCFlow Model."),
       version = jsonlite::unbox("1.0.0"),
-      title = jsonlite::unbox("MLflow Model")
+      title = jsonlite::unbox("QCFlow Model")
     ),
     basePath = jsonlite::unbox("/"),
     schemes = list(

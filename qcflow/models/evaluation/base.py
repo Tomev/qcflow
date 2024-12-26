@@ -15,28 +15,28 @@ from inspect import Parameter, Signature
 from types import FunctionType
 from typing import Any, Optional, Union
 
-import mlflow
-from mlflow.data.dataset import Dataset
-from mlflow.data.evaluation_dataset import (
+import qcflow
+from qcflow.data.dataset import Dataset
+from qcflow.data.evaluation_dataset import (
     EvaluationDataset,
-    convert_data_to_mlflow_dataset,
+    convert_data_to_qcflow_dataset,
 )
-from mlflow.entities.dataset_input import DatasetInput
-from mlflow.entities.input_tag import InputTag
-from mlflow.exceptions import MlflowException
-from mlflow.models.evaluation.utils.trace import configure_autologging_for_evaluation
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.tracking.client import MlflowClient
-from mlflow.utils import _get_fully_qualified_class_name
-from mlflow.utils.annotations import developer_stable, experimental
-from mlflow.utils.class_utils import _get_class_from_string
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.mlflow_tags import MLFLOW_DATASET_CONTEXT
-from mlflow.utils.proto_json_utils import NumpyEncoder
+from qcflow.entities.dataset_input import DatasetInput
+from qcflow.entities.input_tag import InputTag
+from qcflow.exceptions import MlflowException
+from qcflow.models.evaluation.utils.trace import configure_autologging_for_evaluation
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.tracking.client import MlflowClient
+from qcflow.utils import _get_fully_qualified_class_name
+from qcflow.utils.annotations import developer_stable, experimental
+from qcflow.utils.class_utils import _get_class_from_string
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.qcflow_tags import QCFLOW_DATASET_CONTEXT
+from qcflow.utils.proto_json_utils import NumpyEncoder
 
 try:
-    # `pandas` is not required for `mlflow-skinny`.
+    # `pandas` is not required for `qcflow-skinny`.
     import pandas as pd
 except ImportError:
     pass
@@ -100,7 +100,7 @@ class EvaluationMetric:
                         kwargs: Includes a list of args that are used to compute the metric. These
                             args could be information coming from input data, model outputs,
                             other metrics, or parameters specified in the `evaluator_config`
-                            argument of the `mlflow.evaluate` API.
+                            argument of the `qcflow.evaluate` API.
 
                     Returns: MetricValue with per-row scores, per-row justifications, and aggregate
                         results.
@@ -184,7 +184,7 @@ def _generate_eval_metric_class(eval_fn, require_strict_signature=False):
     Returns:
         A dynamically generated callable CallableEvaluationMetric class.
     """
-    from mlflow.metrics.base import MetricValue
+    from qcflow.metrics.base import MetricValue
 
     if require_strict_signature:
         allowed_kwargs_names = [
@@ -213,8 +213,8 @@ def _generate_eval_metric_class(eval_fn, require_strict_signature=False):
                 _convert_val_to_pd_Series(predictions, "predictions"),
                 metrics or {},
                 _convert_val_to_pd_Series(inputs, "inputs"),
-                # Note: based on https://github.com/mlflow/mlflow/blob/4fef77afdbe4d76302cb0b1aad2bd72b5cde64e9/mlflow/metrics/genai/genai_metric.py#L49-L53
-                # the extra params passed https://github.com/mlflow/mlflow/blob/4fef77afdbe4d76302cb0b1aad2bd72b5cde64e9/mlflow/metrics/genai/genai_metric.py#L513
+                # Note: based on https://github.com/qcflow/qcflow/blob/4fef77afdbe4d76302cb0b1aad2bd72b5cde64e9/qcflow/metrics/genai/genai_metric.py#L49-L53
+                # the extra params passed https://github.com/qcflow/qcflow/blob/4fef77afdbe4d76302cb0b1aad2bd72b5cde64e9/qcflow/metrics/genai/genai_metric.py#L513
                 # should always be pandas Series
                 *[
                     _convert_val_to_pd_Series(kwargs[arg_name], arg_name)
@@ -359,11 +359,11 @@ def make_metric(
                             model (i.e. classifier or regressor).  kwargs: Includes a list of args
                             that are used to compute the metric. These args could information coming
                             from input data, model outputs or parameters specified in the
-                            `evaluator_config` argument of the `mlflow.evaluate` API.
+                            `evaluator_config` argument of the `qcflow.evaluate` API.
                         kwargs: Includes a list of args that are used to compute the metric. These
                             args could be information coming from input data, model outputs,
                             other metrics, or parameters specified in the `evaluator_config`
-                            argument of the `mlflow.evaluate` API.
+                            argument of the `qcflow.evaluate` API.
 
                     Returns: MetricValue with per-row scores, per-row justifications, and aggregate
                         results.
@@ -384,8 +384,8 @@ def make_metric(
 
     .. seealso::
 
-        - :py:class:`mlflow.models.EvaluationMetric`
-        - :py:func:`mlflow.evaluate`
+        - :py:class:`qcflow.models.EvaluationMetric`
+        - :py:func:`qcflow.evaluate`
     '''
     return _make_metric(
         eval_fn=eval_fn,
@@ -440,11 +440,11 @@ def _make_metric(
                             model (i.e. classifier or regressor).  kwargs: Includes a list of args
                             that are used to compute the metric. These args could information coming
                             from input data, model outputs or parameters specified in the
-                            `evaluator_config` argument of the `mlflow.evaluate` API.
+                            `evaluator_config` argument of the `qcflow.evaluate` API.
                         kwargs: Includes a list of args that are used to compute the metric. These
                             args could be information coming from input data, model outputs,
                             other metrics, or parameters specified in the `evaluator_config`
-                            argument of the `mlflow.evaluate` API.
+                            argument of the `qcflow.evaluate` API.
 
                     Returns: MetricValue with per-row scores, per-row justifications, and aggregate
                         results.
@@ -480,8 +480,8 @@ def _make_metric(
 
     .. seealso::
 
-        - :py:class:`mlflow.models.EvaluationMetric`
-        - :py:func:`mlflow.evaluate`
+        - :py:class:`qcflow.models.EvaluationMetric`
+        - :py:func:`qcflow.evaluate`
     '''
     if name is None:
         if isinstance(eval_fn, FunctionType) and eval_fn.__name__ == "<lambda>":
@@ -518,7 +518,7 @@ def _make_metric(
 
     if name in ["predictions", "targets", "metrics"]:
         _logger.warning(
-            f"The metric name '{name}' is used as a special parameter in MLflow metrics, which "
+            f"The metric name '{name}' is used as a special parameter in QCFlow metrics, which "
             "will prevent its use as a base metric for derived metrics. Please use a different "
             "name to enable creation of derived metrics that use the given metric."
         )
@@ -594,7 +594,7 @@ class EvaluationArtifact(metaclass=ABCMeta):
 
 class EvaluationResult:
     """
-    Represents the model evaluation outputs of a `mlflow.evaluate()` API call, containing
+    Represents the model evaluation outputs of a `qcflow.evaluate()` API call, containing
     both scalar metrics and output artifacts such as performance plots.
     """
 
@@ -604,7 +604,7 @@ class EvaluationResult:
         self._run_id = (
             run_id
             if run_id is not None
-            else (mlflow.active_run().info.run_id if mlflow.active_run() is not None else None)
+            else (qcflow.active_run().info.run_id if qcflow.active_run() is not None else None)
         )
 
     @classmethod
@@ -661,7 +661,7 @@ class EvaluationResult:
         return self._metrics
 
     @property
-    def artifacts(self) -> dict[str, "mlflow.models.EvaluationArtifact"]:
+    def artifacts(self) -> dict[str, "qcflow.models.EvaluationArtifact"]:
         """
         A dictionary mapping standardized artifact names (e.g. "roc_data") to
         artifact content and location information
@@ -684,7 +684,7 @@ class EvaluationResult:
             path = urllib.parse.urlparse(table_path.uri).path
             table_fileName = os.path.basename(path)
             try:
-                eval_tables[table_name] = mlflow.load_table(table_fileName, run_ids=[self._run_id])
+                eval_tables[table_name] = qcflow.load_table(table_fileName, run_ids=[self._run_id])
             except Exception:
                 pass  # Swallow the exception since we assume its not a table.
 
@@ -730,9 +730,9 @@ class ModelEvaluator(metaclass=ABCMeta):
         Args:
             model_type: A string describing the model type
                 (e.g., ``"regressor"``, ``"classifier"``, …).
-            dataset: An instance of `mlflow.models.evaluation.base._EvaluationDataset`
+            dataset: An instance of `qcflow.models.evaluation.base._EvaluationDataset`
                 containing features and labels (optional) for model evaluation.
-            run_id: The ID of the MLflow Run to which to log results.
+            run_id: The ID of the QCFlow Run to which to log results.
             evaluator_config: A dictionary of additional configurations for
                 the evaluator.
             model: A pyfunc model instance. If None, the model output is supposed to be found in
@@ -747,7 +747,7 @@ class ModelEvaluator(metaclass=ABCMeta):
                 may be added to the evaluation interface in the future.
 
         Returns:
-            A :py:class:`mlflow.models.EvaluationResult` instance containing
+            A :py:class:`qcflow.models.EvaluationResult` instance containing
             evaluation metrics and artifacts for the model.
         """
 
@@ -757,7 +757,7 @@ def list_evaluators():
     Return a name list for all available Evaluators.
     """
     # import _model_evaluation_registry inside function to avoid circuit importing
-    from mlflow.models.evaluation.evaluator_registry import _model_evaluation_registry
+    from qcflow.models.evaluation.evaluator_registry import _model_evaluation_registry
 
     return list(_model_evaluation_registry._registry.keys())
 
@@ -770,10 +770,10 @@ def _start_run_or_reuse_active_run():
      - otherwise start a mflow run with the specified run_id,
        if specified run_id is None, start a new run.
     """
-    active_run = mlflow.active_run()
+    active_run = qcflow.active_run()
     if not active_run:
-        # Note `mlflow.start_run` throws if `run_id` is not found.
-        with mlflow.start_run() as run:
+        # Note `qcflow.start_run` throws if `run_id` is not found.
+        with qcflow.start_run() as run:
             yield run.info.run_id
     else:
         yield active_run.info.run_id
@@ -794,7 +794,7 @@ def _resolve_default_evaluator(model_type, default_config) -> list[EvaluatorBund
     """
     Determine which built-in evaluators should be used for the given model type by default.
 
-    Previously, MLflow evaluate API only had a single "default" evaluator used for all models like
+    Previously, QCFlow evaluate API only had a single "default" evaluator used for all models like
     classifier, regressor, etc. We split it into multiple built-in evaluators for different model
     types for maintainability, but in order to maintain backward compatibility, we need to map
     the "default" provided by users to the correct built-in evaluators.
@@ -804,7 +804,7 @@ def _resolve_default_evaluator(model_type, default_config) -> list[EvaluatorBund
         default_config: A dictionary of configurations for the "default" evaluator. If any
             non-default built-in evaluator is applicable, this config will be applied to them.
     """
-    from mlflow.models.evaluation.evaluator_registry import _model_evaluation_registry
+    from qcflow.models.evaluation.evaluator_registry import _model_evaluation_registry
 
     builtin_evaluators = []
     for name in _model_evaluation_registry._registry:
@@ -843,7 +843,7 @@ def resolve_evaluators_and_configs(
     Returns:
         A list of EvaluatorBundle that contains name, evaluator, config for each evaluator.
     """
-    from mlflow.models.evaluation.evaluator_registry import _model_evaluation_registry as rg
+    from qcflow.models.evaluation.evaluator_registry import _model_evaluation_registry as rg
 
     # NB: The `databricks-agents` package must be installed to use the 'databricks-agent' model
     # type. Ideally this check should be done in the 'databricks-agent' evaluator implementation,
@@ -990,7 +990,7 @@ def _evaluate(
     model_type,
     dataset,
     run_id,
-    # The `evaluator_name_list` and `evaluator_name_to_conf_map` are not used by MLflow at all,
+    # The `evaluator_name_list` and `evaluator_name_to_conf_map` are not used by QCFlow at all,
     # but we need to keep these for backward compatibility.
     evaluator_name_list,
     evaluator_name_to_conf_map,
@@ -1056,9 +1056,9 @@ def _evaluate(
 
 
 def _get_model_from_function(fn):
-    from mlflow.pyfunc.model import _PythonModelPyfuncWrapper
+    from qcflow.pyfunc.model import _PythonModelPyfuncWrapper
 
-    class ModelFromFunction(mlflow.pyfunc.PythonModel):
+    class ModelFromFunction(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input: pd.DataFrame):
             return fn(model_input)
 
@@ -1070,7 +1070,7 @@ def _is_model_deployment_endpoint_uri(model: Any) -> bool:
     if not isinstance(model, str):
         return False
 
-    from mlflow.metrics.genai.model_utils import _parse_model_uri
+    from qcflow.metrics.genai.model_utils import _parse_model_uri
 
     try:
         schema, path = _parse_model_uri(model)
@@ -1082,8 +1082,8 @@ def _is_model_deployment_endpoint_uri(model: Any) -> bool:
 def _get_model_from_deployment_endpoint_uri(
     endpoint_uri: str, params: Optional[dict[str, Any]] = None
 ):
-    from mlflow.metrics.genai.model_utils import _parse_model_uri
-    from mlflow.pyfunc.model import ModelFromDeploymentEndpoint, _PythonModelPyfuncWrapper
+    from qcflow.metrics.genai.model_utils import _parse_model_uri
+    from qcflow.pyfunc.model import ModelFromDeploymentEndpoint, _PythonModelPyfuncWrapper
 
     _, endpoint = _parse_model_uri(endpoint_uri)
     params = params or {}
@@ -1117,7 +1117,7 @@ def evaluate(  # noqa: D417
     Evaluate the model performance on given data and selected metrics.
 
     This function evaluates a PyFunc model or custom callable on the specified dataset using
-    specified ``evaluators``, and logs resulting metrics & artifacts to MLflow tracking server.
+    specified ``evaluators``, and logs resulting metrics & artifacts to QCFlow tracking server.
     Users can also skip setting ``model`` and put the model outputs in ``data`` directly for
     evaluation. For detailed information, please read
     :ref:`the Model Evaluation documentation <model-evaluation>`.
@@ -1243,9 +1243,9 @@ def evaluate(  # noqa: D417
             https://pypi.org/project/textstat
 
      - For retriever models, the default evaluator logs:
-        - **metrics**: :mod:`precision_at_k(k) <mlflow.metrics.precision_at_k>`,
-          :mod:`recall_at_k(k) <mlflow.metrics.recall_at_k>` and
-          :mod:`ndcg_at_k(k) <mlflow.metrics.ndcg_at_k>` - all have a default value of
+        - **metrics**: :mod:`precision_at_k(k) <qcflow.metrics.precision_at_k>`,
+          :mod:`recall_at_k(k) <qcflow.metrics.recall_at_k>` and
+          :mod:`ndcg_at_k(k) <qcflow.metrics.ndcg_at_k>` - all have a default value of
           ``retriever_k`` = 3.
         - **artifacts**: A JSON file containing the inputs, outputs, targets, and per-row metrics
           of the model in tabular format.
@@ -1253,13 +1253,13 @@ def evaluate(  # noqa: D417
      - For sklearn models, the default evaluator additionally logs the model's evaluation criterion
        (e.g. mean accuracy for a classifier) computed by `model.score` method.
 
-     - The metrics/artifacts listed above are logged to the active MLflow run.
-       If no active run exists, a new MLflow run is created for logging these metrics and
+     - The metrics/artifacts listed above are logged to the active QCFlow run.
+       If no active run exists, a new QCFlow run is created for logging these metrics and
        artifacts.
 
      - Additionally, information about the specified dataset - hash, name (if specified), path
        (if specified), and the UUID of the model that evaluated it - is logged to the
-       ``mlflow.datasets`` tag.
+       ``qcflow.datasets`` tag.
 
      - The available ``evaluator_config`` options for the default evaluator include:
         - **log_model_explainability**: A boolean value specifying whether or not to log model
@@ -1280,7 +1280,7 @@ def evaluate(  # noqa: D417
         - **metric_prefix**: An optional prefix to prepend to the name of each metric and artifact
           produced during evaluation.
         - **log_metrics_with_dataset_info**: A boolean value specifying whether or not to include
-          information about the evaluation dataset in the name of each metric logged to MLflow
+          information about the evaluation dataset in the name of each metric logged to QCFlow
           Tracking during evaluation, default value is True.
         - **pos_label**: If specified, the positive label to use when computing classification
           metrics such as precision, recall, f1, etc. for binary classification models. For
@@ -1295,9 +1295,9 @@ def evaluate(  # noqa: D417
           predictions to column names used when invoking the evaluation functions.
         - **retriever_k**: A parameter used when ``model_type="retriever"`` as the number of
           top-ranked retrieved documents to use when computing the built-in metric
-          :mod:`precision_at_k(k) <mlflow.metrics.precision_at_k>`,
-          :mod:`recall_at_k(k) <mlflow.metrics.recall_at_k>` and
-          :mod:`ndcg_at_k(k) <mlflow.metrics.ndcg_at_k>`. Default value is 3. For all other
+          :mod:`precision_at_k(k) <qcflow.metrics.precision_at_k>`,
+          :mod:`recall_at_k(k) <qcflow.metrics.recall_at_k>` and
+          :mod:`ndcg_at_k(k) <qcflow.metrics.ndcg_at_k>`. Default value is 3. For all other
           model types, this parameter will be ignored.
 
      - Limitations of evaluation dataset:
@@ -1323,13 +1323,13 @@ def evaluate(  # noqa: D417
 
      - Limitations when environment restoration is enabled:
         - When environment restoration is enabled for the evaluated model (i.e. a non-local
-          ``env_manager`` is specified), the model is loaded as a client that invokes a MLflow
+          ``env_manager`` is specified), the model is loaded as a client that invokes a QCFlow
           Model Scoring Server process in an independent Python environment with the model's
           training time dependencies installed. As such, methods like ``predict_proba`` (for
           probability outputs) or ``score`` (computes the evaluation criterian for sklearn models)
           of the model become inaccessible and the default evaluator does not compute metrics or
           artifacts that require those methods.
-        - Because the model is an MLflow Model Server process, SHAP explanations are slower to
+        - Because the model is an QCFlow Model Server process, SHAP explanations are slower to
           compute. As such, model explainaibility is disabled when a non-local ``env_manager``
           specified, unless the ``evaluator_config`` option **log_model_explainability** is
           explicitly set to ``True``.
@@ -1339,22 +1339,22 @@ def evaluate(  # noqa: D417
 
             - A pyfunc model instance
             - A URI referring to a pyfunc model
-            - A URI referring to an MLflow Deployments endpoint e.g. ``"endpoints:/my-chat"``
+            - A URI referring to an QCFlow Deployments endpoint e.g. ``"endpoints:/my-chat"``
             - A callable function: This function should be able to take in model input and
               return predictions. It should follow the signature of the
-              :py:func:`predict <mlflow.pyfunc.PyFuncModel.predict>` method. Here's an example
+              :py:func:`predict <qcflow.pyfunc.PyFuncModel.predict>` method. Here's an example
               of a valid function:
 
               .. code-block:: python
 
-                  model = mlflow.pyfunc.load_model(model_uri)
+                  model = qcflow.pyfunc.load_model(model_uri)
 
 
                   def fn(model_input):
                       return model.predict(model_input)
 
             If omitted, it indicates a static dataset will be used for evaluation instead of a
-            model.  In this case, the ``data`` argument must be a Pandas DataFrame or an mlflow
+            model.  In this case, the ``data`` argument must be a Pandas DataFrame or an qcflow
             PandasDataset that contains model outputs, and the ``predictions`` argument must be the
             name of the column in ``data`` that contains model outputs.
 
@@ -1372,7 +1372,7 @@ def evaluate(  # noqa: D417
                 column are regarded as feature columns. Otherwise, only column names present in
                 ``feature_names`` are regarded as feature columns. Only the first 10000 rows in
                 the Spark DataFrame will be used as evaluation data.
-            - A :py:class:`mlflow.data.dataset.Dataset` instance containing evaluation
+            - A :py:class:`qcflow.data.dataset.Dataset` instance containing evaluation
                 features, labels, and optionally model outputs. Model outputs are only supported
                 with a PandasDataset. Model outputs are required when model is unspecified, and
                 should be specified via the ``predictions`` prerty of the PandasDataset.
@@ -1399,7 +1399,7 @@ def evaluate(  # noqa: D417
             labels. If ``data`` is a DataFrame, the string name of a column from ``data``
             that contains evaluation labels. Required for classifier and regressor models,
             but optional for question-answering, text-summarization, and text models. If
-            ``data`` is a :py:class:`mlflow.data.dataset.Dataset` that defines targets,
+            ``data`` is a :py:class:`qcflow.data.dataset.Dataset` that defines targets,
             then ``targets`` is optional.
 
         predictions: Optional. The name of the column that contains model outputs.
@@ -1437,7 +1437,7 @@ def evaluate(  # noqa: D417
                     # other arguments if needed
                 )
         dataset_path: (Optional) The path where the data is stored. Must not contain double
-            quotes (``“``). If specified, the path is logged to the ``mlflow.datasets``
+            quotes (``“``). If specified, the path is logged to the ``qcflow.datasets``
             tag for lineage tracking purposes.
 
         feature_names: (Optional) A list. If the ``data`` argument is a numpy array or list,
@@ -1453,7 +1453,7 @@ def evaluate(  # noqa: D417
             evaluator names. If unspecified, all evaluators capable of evaluating the
             specified model on the specified dataset are used. The default evaluator
             can be referred to by the name ``"default"``. To see all available
-            evaluators, call :py:func:`mlflow.models.list_evaluators`.
+            evaluators, call :py:func:`qcflow.models.list_evaluators`.
 
         evaluator_config: A dictionary of additional configurations to supply to the evaluator.
             If multiple evaluators are specified, each configuration should be
@@ -1461,16 +1461,16 @@ def evaluate(  # noqa: D417
 
         custom_metrics: Deprecated. Use ``extra_metrics`` instead.
         extra_metrics:
-            (Optional) A list of :py:class:`EvaluationMetric <mlflow.models.EvaluationMetric>`
+            (Optional) A list of :py:class:`EvaluationMetric <qcflow.models.EvaluationMetric>`
             objects.  These metrics are computed in addition to the default metrics associated with
             pre-defined `model_type`, and setting `model_type=None` will only compute the metrics
-            specified in `extra_metrics`. See the `mlflow.metrics` module for more information about
+            specified in `extra_metrics`. See the `qcflow.metrics` module for more information about
             the builtin metrics and how to define extra metrics.
 
             .. code-block:: python
                 :caption: Example usage of extra metrics
 
-                import mlflow
+                import qcflow
                 import numpy as np
 
 
@@ -1478,11 +1478,11 @@ def evaluate(  # noqa: D417
                     return np.sqrt((np.abs(eval_df["prediction"] - eval_df["target"]) ** 2).mean())
 
 
-                rmse_metric = mlflow.models.make_metric(
+                rmse_metric = qcflow.models.make_metric(
                     eval_fn=root_mean_squared_error,
                     greater_is_better=False,
                 )
-                mlflow.evaluate(..., extra_metrics=[rmse_metric])
+                qcflow.evaluate(..., extra_metrics=[rmse_metric])
 
         custom_artifacts:
             (Optional) A list of custom artifact functions with the following signature:
@@ -1520,7 +1520,7 @@ def evaluate(  # noqa: D417
 
             Object types that artifacts can be represented as:
 
-                - A string uri representing the file path to the artifact. MLflow will infer the
+                - A string uri representing the file path to the artifact. QCFlow will infer the
                   type of the artifact based on the file extension.
                 - A string representation of a JSON object. This will be saved as a .json artifact.
                 - Pandas DataFrame. This will be resolved as a CSV artifact.
@@ -1536,7 +1536,7 @@ def evaluate(  # noqa: D417
             .. code-block:: python
                 :caption: Example usage of custom artifacts
 
-                import mlflow
+                import qcflow
                 import matplotlib.pyplot as plt
 
 
@@ -1554,12 +1554,12 @@ def evaluate(  # noqa: D417
                     return {"pred_sample": pred_sample.head(10)}
 
 
-                mlflow.evaluate(..., custom_artifacts=[scatter_plot, pred_sample])
+                qcflow.evaluate(..., custom_artifacts=[scatter_plot, pred_sample])
 
-        validation_thresholds: DEPRECATED. Please use :py:func:`mlflow.validate_evaluation_results`
+        validation_thresholds: DEPRECATED. Please use :py:func:`qcflow.validate_evaluation_results`
             API instead for running model validation against baseline.
 
-        baseline_model: DEPRECATED. Please use :py:func:`mlflow.validate_evaluation_results`
+        baseline_model: DEPRECATED. Please use :py:func:`qcflow.validate_evaluation_results`
             API instead for running model validation against baseline.
 
         env_manager: Specify an environment manager to load the candidate ``model`` in
@@ -1580,20 +1580,20 @@ def evaluate(  # noqa: D417
             specific model. If not indicated, the default model configuration
             from the model is used (if any).
 
-        baseline_config: DEPRECATED. Please use :py:func:`mlflow.validate_evaluation_results`
+        baseline_config: DEPRECATED. Please use :py:func:`qcflow.validate_evaluation_results`
             API instead for running model validation against baseline.
 
         inference_params: (Optional) A dictionary of inference parameters to be passed to the model
             when making predictions, such as ``{"max_tokens": 100}``. This is only used when
-            the ``model`` is an MLflow Deployments endpoint URI e.g. ``"endpoints:/my-chat"``
+            the ``model`` is an QCFlow Deployments endpoint URI e.g. ``"endpoints:/my-chat"``
 
     Returns:
-        An :py:class:`mlflow.models.EvaluationResult` instance containing
+        An :py:class:`qcflow.models.EvaluationResult` instance containing
         metrics of evaluating the model with the given dataset.
     '''
-    from mlflow.models.evaluation.evaluator_registry import _model_evaluation_registry
-    from mlflow.pyfunc import PyFuncModel, _load_model_or_server, _ServedPyFuncModel
-    from mlflow.utils import env_manager as _EnvManager
+    from qcflow.models.evaluation.evaluator_registry import _model_evaluation_registry
+    from qcflow.pyfunc import PyFuncModel, _load_model_or_server, _ServedPyFuncModel
+    from qcflow.utils import env_manager as _EnvManager
 
     # Inference params are currently only supported for passing a deployment endpoint as the model.
     # TODO: We should support inference_params for other model types
@@ -1601,7 +1601,7 @@ def evaluate(  # noqa: D417
     if inference_params is not None and not _is_model_deployment_endpoint_uri(model):
         raise MlflowException(
             message="The inference_params argument can only be specified when the model "
-            "is an MLflow Deployments endpoint URI like `endpoints:/my-chat`",
+            "is an QCFlow Deployments endpoint URI like `endpoints:/my-chat`",
             error_code=INVALID_PARAMETER_VALUE,
         )
 
@@ -1623,23 +1623,23 @@ def evaluate(  # noqa: D417
     _EnvManager.validate(env_manager)
 
     # If Dataset is provided, the targets can only be specified by the Dataset,
-    # not the targets parameters of the mlflow.evaluate() API.
+    # not the targets parameters of the qcflow.evaluate() API.
     if isinstance(data, Dataset) and targets is not None:
         raise MlflowException(
             message="The top-level targets parameter should not be specified since a Dataset "
             "is used. Please only specify the targets column name in the Dataset. For example: "
-            "`data = mlflow.data.from_pandas(df=X.assign(y=y), targets='y')`. "
-            "Meanwhile, please specify `mlflow.evaluate(..., targets=None, ...)`.",
+            "`data = qcflow.data.from_pandas(df=X.assign(y=y), targets='y')`. "
+            "Meanwhile, please specify `qcflow.evaluate(..., targets=None, ...)`.",
             error_code=INVALID_PARAMETER_VALUE,
         )
     # If Dataset is provided and model is None, then the predictions can only be specified by the
-    # Dataset, not the predictions parameters of the mlflow.evaluate() API.
+    # Dataset, not the predictions parameters of the qcflow.evaluate() API.
     if isinstance(data, Dataset) and model is None and predictions is not None:
         raise MlflowException(
             message="The top-level predictions parameter should not be specified since a Dataset "
             "is used. Please only specify the predictions column name in the Dataset. For example:"
-            " `data = mlflow.data.from_pandas(df=X.assign(y=y), predictions='y')`"
-            "Meanwhile, please specify `mlflow.evaluate(..., predictions=None, ...)`.",
+            " `data = qcflow.data.from_pandas(df=X.assign(y=y), predictions='y')`"
+            "Meanwhile, please specify `qcflow.evaluate(..., predictions=None, ...)`.",
             error_code=INVALID_PARAMETER_VALUE,
         )
     # If Dataset is provided and model is specified, then the data.predictions cannot be specified.
@@ -1662,7 +1662,7 @@ def evaluate(  # noqa: D417
                 raise MlflowException(
                     message="The targets column name must be specified in the provided Dataset "
                     f"for {model_type} models. For example: "
-                    "`data = mlflow.data.from_pandas(df=X.assign(y=y), targets='y')`",
+                    "`data = qcflow.data.from_pandas(df=X.assign(y=y), targets='y')`",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
         else:
@@ -1685,7 +1685,7 @@ def evaluate(  # noqa: D417
             model = _load_model_or_server(model, env_manager, model_config)
     elif env_manager != _EnvManager.LOCAL:
         raise MlflowException(
-            message="The model argument must be a string URI referring to an MLflow model when a "
+            message="The model argument must be a string URI referring to an QCFlow model when a "
             "non-local env_manager is specified.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1695,7 +1695,7 @@ def evaluate(  # noqa: D417
                 message="Indicating ``model_config`` when passing a `PyFuncModel`` object as "
                 "model argument is not allowed. If you need to change the model configuration "
                 "for the evaluation model, use "
-                "``mlflow.pyfunc.load_model(model_uri, model_config=<value>)`` and indicate "
+                "``qcflow.pyfunc.load_model(model_uri, model_config=<value>)`` and indicate "
                 "the desired configuration there.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -1703,8 +1703,8 @@ def evaluate(  # noqa: D417
         model = _get_model_from_function(model)
     elif model is not None:
         raise MlflowException(
-            message="The model argument must be a string URI referring to an MLflow model, "
-            "an MLflow Deployments endpoint URI, an instance of `mlflow.pyfunc.PyFuncModel`, "
+            message="The model argument must be a string URI referring to an QCFlow model, "
+            "an QCFlow Deployments endpoint URI, an instance of `qcflow.pyfunc.PyFuncModel`, "
             "a function, or None.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1713,22 +1713,22 @@ def evaluate(  # noqa: D417
         evaluators, evaluator_config, model_type
     )
 
-    # NB: MLflow do not use either of these two variables. However, we need to pass these to
+    # NB: QCFlow do not use either of these two variables. However, we need to pass these to
     # _evaluate() function for backward compatibility.
     evaluator_name_list = [evaluator.name for evaluator in evaluators]
     evaluator_name_to_conf_map = {evaluator.name: evaluator.config for evaluator in evaluators}
 
     with _start_run_or_reuse_active_run() as run_id:
         if not isinstance(data, Dataset):
-            # Convert data to `mlflow.data.dataset.Dataset`.
+            # Convert data to `qcflow.data.dataset.Dataset`.
             if model is None:
-                data = convert_data_to_mlflow_dataset(
+                data = convert_data_to_qcflow_dataset(
                     data=data, targets=targets, predictions=predictions
                 )
             else:
-                data = convert_data_to_mlflow_dataset(data=data, targets=targets)
+                data = convert_data_to_qcflow_dataset(data=data, targets=targets)
 
-        from mlflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin
+        from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin
 
         if isinstance(data, Dataset) and issubclass(data.__class__, PyFuncConvertibleDatasetMixin):
             dataset = data.to_evaluation_dataset(dataset_path, feature_names)
@@ -1741,8 +1741,8 @@ def evaluate(  # noqa: D417
                     break
 
             client = MlflowClient()
-            tags = [InputTag(key=MLFLOW_DATASET_CONTEXT, value=context)] if context else []
-            dataset_input = DatasetInput(dataset=data._to_mlflow_entity(), tags=tags)
+            tags = [InputTag(key=QCFLOW_DATASET_CONTEXT, value=context)] if context else []
+            dataset_input = DatasetInput(dataset=data._to_qcflow_entity(), tags=tags)
             client.log_inputs(run_id, [dataset_input])
         else:
             dataset = EvaluationDataset(
@@ -1775,11 +1775,11 @@ def evaluate(  # noqa: D417
     # TODO: Remove this block in a future release when we
     # remove the deprecated arguments.
     if baseline_model is not None and validation_thresholds is not None:
-        from mlflow.models.evaluation.validation import validate_evaluation_results
+        from qcflow.models.evaluation.validation import validate_evaluation_results
 
         warnings.warn(
-            "Model validation functionality is moved from `mlflow.evaluate` to the "
-            "`mlflow.validate_evaluation_results()` API. The "
+            "Model validation functionality is moved from `qcflow.evaluate` to the "
+            "`qcflow.validate_evaluation_results()` API. The "
             "`baseline_model` argument will be removed in a future release.",
             category=FutureWarning,
             stacklevel=2,

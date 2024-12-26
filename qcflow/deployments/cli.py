@@ -5,16 +5,16 @@ from inspect import signature
 
 import click
 
-from mlflow.deployments import interface
-from mlflow.environment_variables import MLFLOW_DEPLOYMENTS_CONFIG
-from mlflow.utils import cli_args
-from mlflow.utils.annotations import experimental
-from mlflow.utils.os import is_windows
-from mlflow.utils.proto_json_utils import NumpyEncoder, _get_jsonable_obj
+from qcflow.deployments import interface
+from qcflow.environment_variables import QCFLOW_DEPLOYMENTS_CONFIG
+from qcflow.utils import cli_args
+from qcflow.utils.annotations import experimental
+from qcflow.utils.os import is_windows
+from qcflow.utils.proto_json_utils import NumpyEncoder, _get_jsonable_obj
 
 
 def _user_args_to_dict(user_list):
-    # Similar function in mlflow.cli is throwing exception on import
+    # Similar function in qcflow.cli is throwing exception on import
     user_dict = {}
     for s in user_list:
         try:
@@ -50,14 +50,14 @@ target_details = click.option(
     required=True,
     help=f"""
                                    Deployment target URI. Run
-                                   `mlflow deployments help --target-name <target-name>` for
+                                   `qcflow deployments help --target-name <target-name>` for
                                    more details on the supported URI format and config options
                                    for a given target.
                                    {supported_targets_msg}
 
                                    See all supported deployment targets and installation
                                    instructions at
-                                   https://mlflow.org/docs/latest/plugins.html#community-plugins
+                                   https://qcflow.org/docs/latest/plugins.html#community-plugins
                                    """,
 )
 deployment_name = click.option("--name", "name", required=True, help="Name of the deployment")
@@ -95,32 +95,32 @@ optional_endpoint_param = click.option("--endpoint", help="Name of the endpoint"
 @click.group(
     "deployments",
     help=f"""
-    Deploy MLflow models to custom targets.
-    Run `mlflow deployments help --target-name <target-name>` for
+    Deploy QCFlow models to custom targets.
+    Run `qcflow deployments help --target-name <target-name>` for
     more details on the supported URI format and config options for a given target.
     {supported_targets_msg}
 
     See all supported deployment targets and installation instructions in
-    https://mlflow.org/docs/latest/plugins.html#community-plugins
+    https://qcflow.org/docs/latest/plugins.html#community-plugins
 
     You can also write your own plugin for deployment to a custom target. For instructions on
     writing and distributing a plugin, see
-    https://mlflow.org/docs/latest/plugins.html#writing-your-own-mlflow-plugins.
+    https://qcflow.org/docs/latest/plugins.html#writing-your-own-qcflow-plugins.
 """,
 )
 def commands():
     """
-    Deploy MLflow models to custom targets. Support is currently installed for
-    the following targets: {targets}. Run `mlflow deployments help --target-name <target-name>` for
+    Deploy QCFlow models to custom targets. Support is currently installed for
+    the following targets: {targets}. Run `qcflow deployments help --target-name <target-name>` for
     more details on the supported URI format and config options for a given target.
 
     To deploy to other targets, you must first install an
     appropriate third-party Python plugin. See the list of known community-maintained plugins
-    at https://mlflow.org/docs/latest/plugins.html#community-plugins.
+    at https://qcflow.org/docs/latest/plugins.html#community-plugins.
 
     You can also write your own plugin for deployment to a custom target. For instructions on
     writing and distributing a plugin, see
-    https://mlflow.org/docs/latest/plugins.html#writing-your-own-mlflow-plugins.
+    https://qcflow.org/docs/latest/plugins.html#writing-your-own-qcflow-plugins.
     """
 
 
@@ -167,7 +167,7 @@ def create_deployment(flavor, model_uri, target, name, config, endpoint):
     help="URI to the model. A local path, a 'runs:/' URI, or a"
     " remote storage URI (e.g., an 's3://' URI). For more information"
     " about supported remote URIs for model artifacts, see"
-    " https://mlflow.org/docs/latest/tracking.html"
+    " https://qcflow.org/docs/latest/tracking.html"
     "#artifact-stores",
 )
 @click.option(
@@ -349,11 +349,11 @@ def explain(target, name, input_path, output_path, endpoint):
     Generate explanations of model predictions on the specified input for
     the deployed model for the given input(s). Explanation output formats vary
     by deployment target, and can include details like feature importance for
-    understanding/debugging predictions. Run `mlflow deployments help` or
+    understanding/debugging predictions. Run `qcflow deployments help` or
     consult the documentation for your plugin for details on explanation format.
     For information about the input data formats accepted by this function,
     see the following documentation:
-    https://www.mlflow.org/docs/latest/models.html#built-in-deployment-tools
+    https://www.qcflow.org/docs/latest/models.html#built-in-deployment-tools
     """
     import pandas as pd
 
@@ -463,7 +463,7 @@ def get_endpoint(target, endpoint):
 
 
 def validate_config_path(_ctx, _param, value):
-    from mlflow.gateway.config import _validate_config
+    from qcflow.gateway.config import _validate_config
 
     try:
         _validate_config(value)
@@ -473,10 +473,10 @@ def validate_config_path(_ctx, _param, value):
 
 
 @experimental
-@commands.command("start-server", help="Start MLflow AI Gateway")
+@commands.command("start-server", help="Start QCFlow AI Gateway")
 @click.option(
     "--config-path",
-    envvar=MLFLOW_DEPLOYMENTS_CONFIG.name,
+    envvar=QCFLOW_DEPLOYMENTS_CONFIG.name,
     callback=validate_config_path,
     required=True,
     help="The path to the deployments configuration file.",
@@ -498,13 +498,13 @@ def validate_config_path(_ctx, _param, value):
 )
 def start_server(config_path: str, host: str, port: str, workers: int):
     warnings.warn(
-        "`mlflow deployments start-server` is deprecated and will be removed in a future release. "
-        "Use `mlflow gateway start` instead.",
+        "`qcflow deployments start-server` is deprecated and will be removed in a future release. "
+        "Use `qcflow gateway start` instead.",
         FutureWarning,
     )
     if is_windows():
-        raise click.ClickException("MLflow AI Gateway does not support Windows.")
+        raise click.ClickException("QCFlow AI Gateway does not support Windows.")
 
-    from mlflow.gateway.runner import run_app
+    from qcflow.gateway.runner import run_app
 
     run_app(config_path=config_path, host=host, port=port, workers=workers)

@@ -18,7 +18,7 @@ import { defineMessages } from 'react-intl';
 import type { ExperimentChartImageDownloadHandler } from '../hooks/useChartImageDownloadHandler';
 import { quantile } from 'd3-array';
 import type { UseGetRunQueryResponseRunInfo } from '../../run-page/hooks/useGetRunQuery';
-import { shouldEnableChartExpressions } from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+import { shouldEnableChartExpressions } from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 import {
   type RunsChartsLineChartExpression,
   RunsChartsLineChartYAxisType,

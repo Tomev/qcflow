@@ -9,7 +9,7 @@ import {
 } from '@databricks/design-system';
 import { Divider } from 'antd';
 import { FormattedMessage } from 'react-intl';
-import { PROMPT_TEMPLATE_EXAMPLES } from '@mlflow/mlflow/src/experiment-tracking/components/evaluation-artifacts-compare/utils/PromptExamples';
+import { PROMPT_TEMPLATE_EXAMPLES } from '@qcflow/qcflow/src/experiment-tracking/components/evaluation-artifacts-compare/utils/PromptExamples';
 
 const { TextArea } = Input;
 type Props = {
@@ -39,7 +39,7 @@ export const EvaluationCreatePromptRunModalExamples = ({
 
   return (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodalexamples.tsx_42"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodalexamples.tsx_42"
       verticalSizing="maxed_out"
       visible={isOpen}
       onCancel={closeModal}
@@ -47,7 +47,7 @@ export const EvaluationCreatePromptRunModalExamples = ({
         <div>
           <Typography.Title level={2} css={{ marginTop: theme.spacing.sm, marginBottom: theme.spacing.xs }}>
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodalexamples.tsx_48"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodalexamples.tsx_48"
               css={{ marginRight: theme.spacing.sm, marginBottom: theme.spacing.sm }}
               icon={<ArrowLeftIcon />}
               onClick={closeExamples}
@@ -90,7 +90,7 @@ export const EvaluationCreatePromptRunModalExamples = ({
                 description="Experiment page > new run modal > prompt examples > prompt template title"
               />
               <Button
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodalexamples.tsx_90"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodalexamples.tsx_90"
                 type="tertiary"
                 size="small"
                 style={{ float: 'right' }}

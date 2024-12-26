@@ -1,9 +1,9 @@
 context("UI")
 
-test_that("mlflow can launch the UI", {
+test_that("qcflow can launch the UI", {
   skip_on_travis()
 
-  url <- mlflow_ui()
+  url <- qcflow_ui()
 
   response <- httr::GET(url)
   status <- httr::status_code(response)

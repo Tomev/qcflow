@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { ExperimentViewRunsControlsActionsSelectTags } from './ExperimentViewRunsControlsActionsSelectTags';
-import { KeyValueEntity, RunInfoEntity } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { KeyValueEntity, RunInfoEntity } from '@qcflow/qcflow/src/experiment-tracking/types';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter } from '../../../../../common/utils/RoutingUtils';
-import { setRunTagsBulkApi } from '@mlflow/mlflow/src/experiment-tracking/actions';
+import { setRunTagsBulkApi } from '@qcflow/qcflow/src/experiment-tracking/actions';
 import { MockedReduxStoreProvider } from '../../../../../common/utils/TestUtils';
 import userEvent from '@testing-library/user-event-14';
 
-jest.mock('@mlflow/mlflow/src/experiment-tracking/actions', () => ({
+jest.mock('@qcflow/qcflow/src/experiment-tracking/actions', () => ({
   setRunTagsBulkApi: jest.fn(() => ({ type: 'setRunTagsBulkApi', payload: Promise.resolve() })),
 }));
 

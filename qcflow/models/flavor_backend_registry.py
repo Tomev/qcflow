@@ -1,6 +1,6 @@
 """
 Registry of supported flavor backends. Contains a mapping of flavors to flavor backends. This
-mapping is used to select suitable flavor when deploying generic MLflow models.
+mapping is used to select suitable flavor when deploying generic QCFlow models.
 
 Flavor backend can deploy particular flavor locally to generate predictions, deploy as a local
 REST api endpoint, or build a docker image for serving the model locally or remotely.
@@ -9,20 +9,20 @@ Not all flavors have a flavor backend.
 
 import logging
 
-from mlflow.models.model import Model
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.tracking.artifact_utils import (
+from qcflow.models.model import Model
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.tracking.artifact_utils import (
     _get_root_uri_and_artifact_path,
 )
-from mlflow.utils.file_utils import TempDir
+from qcflow.utils.file_utils import TempDir
 
 _logger = logging.getLogger(__name__)
 
 
 def _get_flavor_backend_for_local_model(model=None, build_docker=True, **kwargs):
-    from mlflow import pyfunc, rfunc
-    from mlflow.pyfunc.backend import PyFuncBackend
-    from mlflow.rfunc.backend import RFuncBackend
+    from qcflow import pyfunc, rfunc
+    from qcflow.pyfunc.backend import PyFuncBackend
+    from qcflow.rfunc.backend import RFuncBackend
 
     if not model:
         return pyfunc.FLAVOR_NAME, PyFuncBackend({}, **kwargs)

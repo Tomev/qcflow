@@ -9,7 +9,7 @@ is parsed into pandas.DataFrame and passed to the model.
 Defines four endpoints:
     /ping used for health check
     /health (same as /ping)
-    /version used for getting the mlflow version
+    /version used for getting the qcflow version
     /invocations used for scoring
 """
 
@@ -22,38 +22,38 @@ import sys
 import traceback
 from typing import Any, NamedTuple, Optional
 
-from mlflow.environment_variables import MLFLOW_SCORING_SERVER_REQUEST_TIMEOUT
+from qcflow.environment_variables import QCFLOW_SCORING_SERVER_REQUEST_TIMEOUT
 
-# NB: We need to be careful what we import form mlflow here. Scoring server is used from within
-# model's conda environment. The version of mlflow doing the serving (outside) and the version of
-# mlflow in the model's conda environment (inside) can differ. We should therefore keep mlflow
+# NB: We need to be careful what we import form qcflow here. Scoring server is used from within
+# model's conda environment. The version of qcflow doing the serving (outside) and the version of
+# qcflow in the model's conda environment (inside) can differ. We should therefore keep qcflow
 # dependencies to the minimum here.
-# ALl of the mlflow dependencies below need to be backwards compatible.
-from mlflow.exceptions import MlflowException
-from mlflow.pyfunc.model import _log_warning_if_params_not_in_predict_signature
-from mlflow.types import ParamSchema, Schema
-from mlflow.utils import reraise
-from mlflow.utils.annotations import deprecated
-from mlflow.utils.file_utils import path_to_local_file_uri
-from mlflow.utils.os import is_windows
-from mlflow.utils.proto_json_utils import (
+# ALl of the qcflow dependencies below need to be backwards compatible.
+from qcflow.exceptions import MlflowException
+from qcflow.pyfunc.model import _log_warning_if_params_not_in_predict_signature
+from qcflow.types import ParamSchema, Schema
+from qcflow.utils import reraise
+from qcflow.utils.annotations import deprecated
+from qcflow.utils.file_utils import path_to_local_file_uri
+from qcflow.utils.os import is_windows
+from qcflow.utils.proto_json_utils import (
     MlflowInvalidInputException,
     NumpyEncoder,
     _get_jsonable_obj,
     dataframe_from_parsed_json,
     parse_tf_serving_input,
 )
-from mlflow.version import VERSION
+from qcflow.version import VERSION
 
 try:
-    from mlflow.pyfunc import PyFuncModel, load_model
+    from qcflow.pyfunc import PyFuncModel, load_model
 except ImportError:
-    from mlflow.pyfunc import load_pyfunc as load_model
+    from qcflow.pyfunc import load_pyfunc as load_model
 from io import StringIO
 
-from mlflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
-from mlflow.pyfunc.utils.serving_data_parser import is_unified_llm_input
-from mlflow.server.handlers import catch_mlflow_exception
+from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
+from qcflow.pyfunc.utils.serving_data_parser import is_unified_llm_input
+from qcflow.server.handlers import catch_qcflow_exception
 
 _SERVER_MODEL_PATH = "__pyfunc_model_path__"
 SERVING_MODEL_CONFIG = "SERVING_MODEL_CONFIG"
@@ -80,19 +80,19 @@ REQUIRED_INPUT_FORMAT = (
     f"The input must be a JSON dictionary with exactly one of the input fields {SUPPORTED_FORMATS}"
 )
 SCORING_PROTOCOL_CHANGE_INFO = (
-    "IMPORTANT: The MLflow Model scoring protocol has changed in MLflow version 2.0. If you are"
+    "IMPORTANT: The QCFlow Model scoring protocol has changed in QCFlow version 2.0. If you are"
     " seeing this error, you are likely using an outdated scoring request format. To resolve the"
-    " error, either update your request format or adjust your MLflow Model's requirements file to"
-    " specify an older version of MLflow (for example, change the 'mlflow' requirement specifier"
-    " to 'mlflow==1.30.0'). If you are making a request using the MLflow client"
-    " (e.g. via `mlflow.pyfunc.spark_udf()`), upgrade your MLflow client to a version >= 2.0 in"
-    " order to use the new request format. For more information about the updated MLflow"
-    " Model scoring protocol in MLflow 2.0, see"
-    " https://mlflow.org/docs/latest/models.html#deploy-mlflow-models."
+    " error, either update your request format or adjust your QCFlow Model's requirements file to"
+    " specify an older version of QCFlow (for example, change the 'qcflow' requirement specifier"
+    " to 'qcflow==1.30.0'). If you are making a request using the QCFlow client"
+    " (e.g. via `qcflow.pyfunc.spark_udf()`), upgrade your QCFlow client to a version >= 2.0 in"
+    " order to use the new request format. For more information about the updated QCFlow"
+    " Model scoring protocol in QCFlow 2.0, see"
+    " https://qcflow.org/docs/latest/models.html#deploy-qcflow-models."
 )
 
 
-def load_model_with_mlflow_config(model_uri):
+def load_model_with_qcflow_config(model_uri):
     extra_kwargs = {}
     if model_config_json := os.environ.get(SERVING_MODEL_CONFIG):
         extra_kwargs["model_config"] = json.loads(model_config_json)
@@ -101,7 +101,7 @@ def load_model_with_mlflow_config(model_uri):
 
 
 # Keep this method to maintain compatibility with MLServer
-# https://github.com/SeldonIO/MLServer/blob/caa173ab099a4ec002a7c252cbcc511646c261a6/runtimes/mlflow/mlserver_mlflow/runtime.py#L13C5-L13C31
+# https://github.com/SeldonIO/MLServer/blob/caa173ab099a4ec002a7c252cbcc511646c261a6/runtimes/qcflow/mlserver_qcflow/runtime.py#L13C5-L13C31
 @deprecated("infer_and_parse_data", "2.6.0")
 def infer_and_parse_json_input(json_input, schema: Schema = None):
     """
@@ -283,7 +283,7 @@ def _handle_serving_error(error_message, error_code, include_traceback=True):
     Args:
         error_message: A message for the reraised exception.
         error_code: An appropriate error code for the reraised exception. This should be one of
-            the codes listed in the `mlflow.protos.databricks_pb2` proto.
+            the codes listed in the `qcflow.protos.databricks_pb2` proto.
         include_traceback: Whether to include the current traceback in the returned error.
     """
     if include_traceback:
@@ -446,12 +446,12 @@ def init(model: PyFuncModel):
     @app.route("/version", methods=["GET"])
     def version():
         """
-        Returns the current mlflow version.
+        Returns the current qcflow version.
         """
         return flask.Response(response=VERSION, status=200, mimetype="application/json")
 
     @app.route("/invocations", methods=["POST"])
-    @catch_mlflow_exception
+    @catch_qcflow_exception
     def transformation():
         """
         Do an inference on a single batch of data. In this sample server,
@@ -527,9 +527,9 @@ def get_cmd(
     nworkers: Optional[int] = None,
 ) -> tuple[str, dict[str, str]]:
     local_uri = path_to_local_file_uri(model_uri)
-    timeout = timeout or MLFLOW_SCORING_SERVER_REQUEST_TIMEOUT.get()
+    timeout = timeout or QCFLOW_SCORING_SERVER_REQUEST_TIMEOUT.get()
 
-    # NB: Absolute windows paths do not work with mlflow apis, use file uri to ensure
+    # NB: Absolute windows paths do not work with qcflow apis, use file uri to ensure
     # platform compatibility.
     if not is_windows():
         args = [f"--timeout={timeout}"]
@@ -544,7 +544,7 @@ def get_cmd(
 
         command = (
             f"gunicorn {' '.join(args)} ${{GUNICORN_CMD_ARGS}}"
-            " -- mlflow.pyfunc.scoring_server.wsgi:app"
+            " -- qcflow.pyfunc.scoring_server.wsgi:app"
         )
     else:
         args = []
@@ -556,7 +556,7 @@ def get_cmd(
 
         command = (
             f"waitress-serve {' '.join(args)} "
-            "--ident=mlflow mlflow.pyfunc.scoring_server.wsgi:app"
+            "--ident=qcflow qcflow.pyfunc.scoring_server.wsgi:app"
         )
 
     command_env = os.environ.copy()

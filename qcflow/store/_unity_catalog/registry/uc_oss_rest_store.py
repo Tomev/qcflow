@@ -3,9 +3,9 @@ import os
 import shutil
 from contextlib import contextmanager
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.protos.unity_catalog_oss_messages_pb2 import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     READ_WRITE_MODEL_VERSION,
     CreateModelVersion,
     CreateRegisteredModel,
@@ -23,31 +23,31 @@ from mlflow.protos.unity_catalog_oss_messages_pb2 import (
     UpdateModelVersion,
     UpdateRegisteredModel,
 )
-from mlflow.protos.unity_catalog_oss_service_pb2 import UnityCatalogService
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry.base_rest_store import BaseRestStore
-from mlflow.utils._unity_catalog_oss_utils import (
+from qcflow.protos.unity_catalog_oss_service_pb2 import UnityCatalogService
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry.base_rest_store import BaseRestStore
+from qcflow.utils._unity_catalog_oss_utils import (
     get_model_version_from_uc_oss_proto,
     get_model_version_search_from_uc_oss_proto,
     get_registered_model_from_uc_oss_proto,
     get_registered_model_search_from_uc_oss_proto,
     parse_model_name,
 )
-from mlflow.utils._unity_catalog_utils import (
+from qcflow.utils._unity_catalog_utils import (
     get_artifact_repo_from_storage_info,
     get_full_name_from_sc,
 )
-from mlflow.utils.annotations import experimental
-from mlflow.utils.oss_registry_utils import get_oss_host_creds
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.rest_utils import (
+from qcflow.utils.annotations import experimental
+from qcflow.utils.oss_registry_utils import get_oss_host_creds
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.rest_utils import (
     _UC_OSS_REST_API_PATH_PREFIX,
     call_endpoint,
     extract_all_api_info_for_service,
     extract_api_info_for_service,
 )
-from mlflow.utils.uri import is_file_uri, is_fuse_or_uc_volumes_uri
+from qcflow.utils.uri import is_file_uri, is_fuse_or_uc_volumes_uri
 
 _METHOD_TO_INFO = extract_api_info_for_service(UnityCatalogService, _UC_OSS_REST_API_PATH_PREFIX)
 _METHOD_TO_ALL_INFO = extract_all_api_info_for_service(
@@ -113,7 +113,7 @@ class UnityCatalogOssStore(BaseRestStore):
             description: Description of the model.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.RegisteredModel`
+            A single object of :py:class:`qcflow.entities.model_registry.RegisteredModel`
             created in the backend.
 
         """
@@ -142,7 +142,7 @@ class UnityCatalogOssStore(BaseRestStore):
             description: New description.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
         """
         full_name = get_full_name_from_sc(name, None)
         comment = description if description else ""
@@ -206,7 +206,7 @@ class UnityCatalogOssStore(BaseRestStore):
                 a ``search_registered_models`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.RegisteredModel` objects
+            A PagedList of :py:class:`qcflow.entities.model_registry.RegisteredModel` objects
             that satisfy the search expressions. The pagination token for the next page can be
             obtained via the ``token`` attribute of the object.
 
@@ -367,7 +367,7 @@ class UnityCatalogOssStore(BaseRestStore):
                 a ``search_model_versions`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A PagedList of :py:class:`qcflow.entities.model_registry.ModelVersion`
             objects that satisfy the search expressions. The pagination token for the next
             page can be obtained via the ``token`` attribute of the object.
 
@@ -437,7 +437,7 @@ class UnityCatalogOssStore(BaseRestStore):
             version: Model version number.
 
         Returns:
-            mlflow.protos.unity_catalog_oss_messages_pb2.TemporaryCredentials containing
+            qcflow.protos.unity_catalog_oss_messages_pb2.TemporaryCredentials containing
             temporary model version credentials.
         """
         req_body = message_to_json(
@@ -461,7 +461,7 @@ class UnityCatalogOssStore(BaseRestStore):
             yield local_model_path
         else:
             try:
-                local_model_dir = mlflow.artifacts.download_artifacts(
+                local_model_dir = qcflow.artifacts.download_artifacts(
                     artifact_uri=source, tracking_uri=self.tracking_uri
                 )
             except Exception as e:
@@ -469,7 +469,7 @@ class UnityCatalogOssStore(BaseRestStore):
                     "Unable to download model artifacts from source artifact location "
                     f"'{source}' in order to upload them to Unity Catalog. Please ensure "
                     "the source artifact location exists and that you can download from "
-                    "it via mlflow.artifacts.download_artifacts()"
+                    "it via qcflow.artifacts.download_artifacts()"
                 ) from e
             try:
                 yield local_model_dir
@@ -478,7 +478,7 @@ class UnityCatalogOssStore(BaseRestStore):
                 # model directory was created if the `source` is not a local path
                 # (must be downloaded from remote to a temporary directory) and
                 # `local_model_dir` is not a FUSE-mounted path. The check for FUSE-mounted
-                # paths is important as mlflow.artifacts.download_artifacts() can return
+                # paths is important as qcflow.artifacts.download_artifacts() can return
                 # a FUSE mounted path equivalent to the (remote) source path in some cases,
                 # e.g. return /dbfs/some/path for source dbfs:/some/path.
                 if not os.path.exists(source) and not is_fuse_or_uc_volumes_uri(local_model_dir):

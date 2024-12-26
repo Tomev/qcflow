@@ -6,9 +6,9 @@ import pydantic
 import pydantic.fields
 from packaging.version import Version
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.types.schema import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.types.schema import (
     COLSPEC_TYPES,
     AnyType,
     Array,
@@ -120,13 +120,13 @@ def _infer_colspec_type_from_type_hint(type_hint: type[Any]) -> ColSpecType:
                 else:
                     _logger.warning(
                         "Union type hint with multiple non-None types is inferred as AnyType, "
-                        "and MLflow doesn't validate the data against its internal types."
+                        "and QCFlow doesn't validate the data against its internal types."
                     )
                     return ColSpecType(dtype=AnyType(), required=False)
             # Union type with all valid types is matched as AnyType
             else:
                 _logger.warning(
-                    "Union type hint is inferred as AnyType, and MLflow doesn't validate the data "
+                    "Union type hint is inferred as AnyType, and QCFlow doesn't validate the data "
                     "against its internal types."
                 )
                 return ColSpecType(dtype=AnyType(), required=True)
@@ -362,7 +362,7 @@ def _get_origin_type(type_hint: type[Any]) -> Any:
 def _convert_data_to_type_hint(data: Any, type_hint: type[Any]) -> Any:
     """
     Convert data to the expected format based on the type hint.
-    This function should only used in limited situations such as mlflow.evaluate.
+    This function should only used in limited situations such as qcflow.evaluate.
     Supported conversions:
         - pandas DataFrame with a single column + list[...] type hint -> list
     """

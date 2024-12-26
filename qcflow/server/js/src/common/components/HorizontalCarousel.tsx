@@ -91,7 +91,7 @@ export const HorizontalCarousel = ({ children, title }: { children: React.ReactN
           {isOverflowing && (
             <>
               <Button
-                componentId="codegen_mlflow_app_src_common_components_horizontalcarousel.tsx_93"
+                componentId="codegen_qcflow_app_src_common_components_horizontalcarousel.tsx_93"
                 size="small"
                 disabled={!canScrollLeft}
                 onClick={scrollLeft}
@@ -99,7 +99,7 @@ export const HorizontalCarousel = ({ children, title }: { children: React.ReactN
                 icon={<ChevronLeftIcon />}
               />
               <Button
-                componentId="codegen_mlflow_app_src_common_components_horizontalcarousel.tsx_100"
+                componentId="codegen_qcflow_app_src_common_components_horizontalcarousel.tsx_100"
                 size="small"
                 disabled={!canScrollRight}
                 onClick={scrollRight}

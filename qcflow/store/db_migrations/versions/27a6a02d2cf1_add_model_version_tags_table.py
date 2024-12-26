@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-from mlflow.store.model_registry.dbmodels.models import SqlModelVersionTag
+from qcflow.store.model_registry.dbmodels.models import SqlModelVersionTag
 
 revision = "27a6a02d2cf1"
 down_revision = "728d730b5ebd"

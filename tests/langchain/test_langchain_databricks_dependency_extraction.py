@@ -6,14 +6,14 @@ import pytest
 from databricks.vector_search.client import VectorSearchIndex
 from packaging.version import Version
 
-from mlflow.langchain.databricks_dependencies import (
+from qcflow.langchain.databricks_dependencies import (
     _detect_databricks_dependencies,
     _extract_databricks_dependencies_from_chat_model,
     _extract_databricks_dependencies_from_llm,
     _extract_databricks_dependencies_from_retriever,
     _extract_dependency_list_from_lc_model,
 )
-from mlflow.models.resources import (
+from qcflow.models.resources import (
     DatabricksFunction,
     DatabricksServingEndpoint,
     DatabricksSQLWarehouse,
@@ -61,7 +61,7 @@ def remove_langchain_community(monkeypatch):
 def test_parsing_dependency_from_databricks_llm(monkeypatch: pytest.MonkeyPatch):
     from langchain_community.llms import Databricks
 
-    from mlflow.langchain.utils import IS_PICKLE_SERIALIZATION_RESTRICTED
+    from qcflow.langchain.utils import IS_PICKLE_SERIALIZATION_RESTRICTED
 
     monkeypatch.setattr(
         "langchain_community.llms.databricks._DatabricksServingEndpointClient",
@@ -184,7 +184,7 @@ def test_parsing_dependency_from_databricks_retriever(monkeypatch, use_partner_p
     vectorstore_1 = get_vector_search(
         use_partner_package=use_partner_package,
         endpoint_name="vs_endpoint",
-        index_name="mlflow.rag.vs_index_1",
+        index_name="qcflow.rag.vs_index_1",
         text_column="content",
         embedding=embedding_model,
     )
@@ -194,7 +194,7 @@ def test_parsing_dependency_from_databricks_retriever(monkeypatch, use_partner_p
     vectorstore_2 = get_vector_search(
         use_partner_package=use_partner_package,
         endpoint_name="vs_endpoint",
-        index_name="mlflow.rag.vs_index_2",
+        index_name="qcflow.rag.vs_index_2",
         has_embedding_endpoint=True,
     )
     retriever_2 = vectorstore_2.as_retriever()
@@ -202,12 +202,12 @@ def test_parsing_dependency_from_databricks_retriever(monkeypatch, use_partner_p
     llm = ChatOpenAI(temperature=0)
 
     assert list(_extract_databricks_dependencies_from_retriever(retriever_1)) == [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index_1"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index_1"),
         DatabricksServingEndpoint(endpoint_name="databricks-bge-large-en"),
     ]
 
     assert list(_extract_databricks_dependencies_from_retriever(retriever_2)) == [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index_2"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index_2"),
         DatabricksServingEndpoint(endpoint_name="embedding-model"),
     ]
 
@@ -215,7 +215,7 @@ def test_parsing_dependency_from_databricks_retriever(monkeypatch, use_partner_p
 
     multi_query_retriever = MultiQueryRetriever.from_llm(retriever=retriever_1, llm=llm)
     assert list(_extract_databricks_dependencies_from_retriever(multi_query_retriever)) == [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index_1"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index_1"),
         DatabricksServingEndpoint(endpoint_name="databricks-bge-large-en"),
     ]
 
@@ -227,7 +227,7 @@ def test_parsing_dependency_from_databricks_retriever(monkeypatch, use_partner_p
         base_compressor=compressor, base_retriever=retriever_1
     )
     assert list(_extract_databricks_dependencies_from_retriever(compression_retriever)) == [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index_1"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index_1"),
         DatabricksServingEndpoint(endpoint_name="databricks-bge-large-en"),
     ]
 
@@ -237,9 +237,9 @@ def test_parsing_dependency_from_databricks_retriever(monkeypatch, use_partner_p
         retrievers=[retriever_1, retriever_2], weights=[0.5, 0.5]
     )
     assert list(_extract_databricks_dependencies_from_retriever(ensemble_retriever)) == [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index_1"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index_1"),
         DatabricksServingEndpoint(endpoint_name="databricks-bge-large-en"),
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index_2"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index_2"),
         DatabricksServingEndpoint(endpoint_name="embedding-model"),
     ]
 
@@ -249,7 +249,7 @@ def test_parsing_dependency_from_databricks_retriever(monkeypatch, use_partner_p
         vectorstore=vectorstore_1, decay_rate=0.0000000000000000000000001, k=1
     )
     assert list(_extract_databricks_dependencies_from_retriever(time_weighted_retriever)) == [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index_1"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index_1"),
         DatabricksServingEndpoint(endpoint_name="databricks-bge-large-en"),
     ]
 
@@ -262,13 +262,13 @@ def test_parsing_dependency_from_retriever_with_embedding_endpoint_in_index(use_
     vectorstore = get_vector_search(
         use_partner_package=use_partner_package,
         endpoint_name="dbdemos_vs_endpoint",
-        index_name="mlflow.rag.vs_index",
+        index_name="qcflow.rag.vs_index",
         has_embedding_endpoint=True,
     )
     retriever = vectorstore.as_retriever()
     resources = list(_extract_databricks_dependencies_from_retriever(retriever))
     assert resources == [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index"),
         DatabricksServingEndpoint(endpoint_name="embedding-model"),
     ]
 
@@ -410,7 +410,7 @@ def test_parsing_multiple_dependency_from_agent(monkeypatch, use_partner_package
     vectorstore = get_vector_search(
         use_partner_package=use_partner_package,
         endpoint_name="dbdemos_vs_endpoint",
-        index_name="mlflow.rag.vs_index",
+        index_name="qcflow.rag.vs_index",
         has_embedding_endpoint=True,
     )
     retriever = vectorstore.as_retriever()
@@ -425,7 +425,7 @@ def test_parsing_multiple_dependency_from_agent(monkeypatch, use_partner_package
     resources = list(_extract_dependency_list_from_lc_model(agent))
     # Ensure all resources are added in
     expected = [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index"),
         DatabricksServingEndpoint(endpoint_name="embedding-model"),
         DatabricksServingEndpoint(endpoint_name="databricks-llama-2-70b-chat"),
     ]
@@ -435,7 +435,7 @@ def test_parsing_multiple_dependency_from_agent(monkeypatch, use_partner_package
             DatabricksFunction(function_name="rag.test.test_function"),
             DatabricksFunction(function_name="rag.test.test_function_2"),
             DatabricksFunction(function_name="rag.test.test_function_3"),
-            DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index"),
+            DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index"),
             DatabricksServingEndpoint(endpoint_name="embedding-model"),
             DatabricksSQLWarehouse(warehouse_id="testId1"),
         ]
@@ -498,7 +498,7 @@ def test_parsing_dependency_from_databricks(monkeypatch, use_partner_package):
     vectorstore = get_vector_search(
         use_partner_package=use_partner_package,
         endpoint_name="dbdemos_vs_endpoint",
-        index_name="mlflow.rag.vs_index",
+        index_name="qcflow.rag.vs_index",
         has_embedding_endpoint=True,
     )
     retriever = vectorstore.as_retriever()
@@ -508,7 +508,7 @@ def test_parsing_dependency_from_databricks(monkeypatch, use_partner_package):
     model = retriever | llm | llm2
     resources = _detect_databricks_dependencies(model)
     assert resources == [
-        DatabricksVectorSearchIndex(index_name="mlflow.rag.vs_index"),
+        DatabricksVectorSearchIndex(index_name="qcflow.rag.vs_index"),
         DatabricksServingEndpoint(endpoint_name="embedding-model"),
         DatabricksServingEndpoint(endpoint_name="databricks-llama-2-70b-chat"),
     ]

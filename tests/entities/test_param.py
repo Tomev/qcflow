@@ -1,4 +1,4 @@
-from mlflow.entities import Param
+from qcflow.entities import Param
 
 from tests.helper_functions import random_int, random_str
 

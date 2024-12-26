@@ -2,9 +2,9 @@ import re
 
 import pytest
 
-from mlflow.entities import Metric
-from mlflow.exceptions import MlflowException
-from mlflow.utils.time import get_current_time_millis
+from qcflow.entities import Metric
+from qcflow.exceptions import MlflowException
+from qcflow.utils.time import get_current_time_millis
 
 from tests.helper_functions import random_int, random_str
 

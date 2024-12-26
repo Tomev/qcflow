@@ -3,8 +3,8 @@ from typing import Any
 
 from packaging.version import Version
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 MAX_ROWS = 10000
 

@@ -1,4 +1,4 @@
-"""Functions for loading Keras models saved with MLflow."""
+"""Functions for loading Keras models saved with QCFlow."""
 
 import os
 
@@ -6,11 +6,11 @@ import keras
 import numpy as np
 import pandas as pd
 
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.models import Model
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.annotations import experimental
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.models import Model
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.annotations import experimental
 
 _MODEL_SAVE_PATH = "model"
 
@@ -75,22 +75,22 @@ def _load_keras_model(path, model_conf, custom_objects=None, **load_model_kwargs
 @experimental
 def load_model(model_uri, dst_path=None, custom_objects=None, load_model_kwargs=None):
     """
-    Load Keras model from MLflow.
+    Load Keras model from QCFlow.
 
-    This method loads a saved Keras model from MLflow, and returns a Keras model instance.
+    This method loads a saved Keras model from QCFlow, and returns a Keras model instance.
 
     Args:
-        model_uri: The URI of the saved Keras model in MLflow. For example:
+        model_uri: The URI of the saved Keras model in QCFlow. For example:
 
             - `/Users/me/path/to/local/model`
             - `relative/path/to/local/model`
             - `s3://my_bucket/path/to/model`
-            - `runs:/<mlflow_run_id>/run-relative/path/to/model`
+            - `runs:/<qcflow_run_id>/run-relative/path/to/model`
             - `models:/<model_name>/<model_version>`
             - `models:/<model_name>/<stage>`
 
             For more information about supported URI schemes, see `Referencing
-            Artifacts <https://www.mlflow.org/docs/latest/concepts.html#artifact-locations>`_.
+            Artifacts <https://www.qcflow.org/docs/latest/concepts.html#artifact-locations>`_.
         dst_path: The local filesystem path to which to download the
             model artifact. If unspecified, a local output path will be created.
         custom_objects: The `custom_objects` arg in
@@ -101,7 +101,7 @@ def load_model(model_uri, dst_path=None, custom_objects=None, load_model_kwargs=
         :caption: Example
 
         import keras
-        import mlflow
+        import qcflow
         import numpy as np
 
         model = keras.Sequential(
@@ -111,11 +111,11 @@ def load_model(model_uri, dst_path=None, custom_objects=None, load_model_kwargs=
                 keras.layers.Dense(2),
             ]
         )
-        with mlflow.start_run() as run:
-            mlflow.keras.log_model(model)
+        with qcflow.start_run() as run:
+            qcflow.keras.log_model(model)
 
         model_url = f"runs:/{run.info.run_id}/{model_path}"
-        loaded_model = mlflow.keras.load_model(model_url)
+        loaded_model = qcflow.keras.load_model(model_url)
 
         # Test the loaded model produces the same output for the same input as the model.
         test_input = np.random.uniform(size=[2, 28, 28, 3])
@@ -139,10 +139,10 @@ def load_model(model_uri, dst_path=None, custom_objects=None, load_model_kwargs=
 def _load_pyfunc(path):
     """Logics of loading a saved Keras model as a PyFunc model.
 
-    This function is called by `mlflow.pyfunc.load_model`.
+    This function is called by `qcflow.pyfunc.load_model`.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the `keras` flavor.
+        path: Local filesystem path to the QCFlow Model with the `keras` flavor.
     """
     model_meta_path1 = os.path.join(path, MLMODEL_FILE_NAME)
     model_meta_path2 = os.path.join(os.path.dirname(path), MLMODEL_FILE_NAME)

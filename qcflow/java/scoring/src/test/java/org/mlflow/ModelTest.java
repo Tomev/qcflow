@@ -1,13 +1,13 @@
-package org.mlflow.models;
+package org.qcflow.models;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mlflow.mleap.MLeapFlavor;
+import org.qcflow.mleap.MLeapFlavor;
 
 /**
- * Unit tests associated with MLflow model configuration parsing and other operations associated
+ * Unit tests associated with QCFlow model configuration parsing and other operations associated
  * with the {@link Model} class
  */
 public class ModelTest {
@@ -40,7 +40,7 @@ public class ModelTest {
 
   @Test
   public void testModelIsLoadedCorrectlyWhenMlflowVersionDoesNotExist() {
-    String configPath = getClass().getResource("sample_model_root/MLmodel.no.mlflow_version").getFile();
+    String configPath = getClass().getResource("sample_model_root/MLmodel.no.qcflow_version").getFile();
     try {
       Model model = Model.fromConfigPath(configPath);
       Assert.assertFalse(model.getMlflowVersion().isPresent());

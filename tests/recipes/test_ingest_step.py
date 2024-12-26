@@ -10,11 +10,11 @@ import pandas as pd
 import pytest
 from pyspark.sql import SparkSession
 
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.steps.ingest import IngestStep
-from mlflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.utils.file_utils import read_yaml
+from qcflow.exceptions import MlflowException
+from qcflow.recipes.steps.ingest import IngestStep
+from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.utils.file_utils import read_yaml
 
 
 @pytest.fixture
@@ -200,8 +200,8 @@ def test_ingests_remote_http_datasets_with_multiple_files_successfully(tmp_path)
                         "skip_data_profiling": True,
                         "using": "csv",
                         "location": [
-                            "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-red.csv",
-                            "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-white.csv",
+                            "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-red.csv",
+                            "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-white.csv",
                         ],
                         "loader_method": "load_file_as_dataframe",
                     }
@@ -388,7 +388,7 @@ def test_ingests_remote_s3_datasets_successfully(mock_s3_bucket, pandas_df, tmp_
 
 @pytest.mark.usefixtures("enter_test_recipe_directory")
 def test_ingests_remote_http_datasets_successfully(tmp_path):
-    dataset_url = "https://raw.githubusercontent.com/mlflow/mlflow/594a08f2a49c5754bb65d76cd719c15c5b8266e9/examples/sklearn_elasticnet_wine/wine-quality.csv"
+    dataset_url = "https://raw.githubusercontent.com/qcflow/qcflow/594a08f2a49c5754bb65d76cd719c15c5b8266e9/examples/sklearn_elasticnet_wine/wine-quality.csv"
     IngestStep.from_recipe_config(
         recipe_config={
             "target_col": "density",
@@ -661,7 +661,7 @@ def test_ingest_throws_when_spark_unavailable_for_spark_based_dataset(spark_df, 
 
     with (
         mock.patch(
-            "mlflow.recipes.steps.ingest.datasets._get_active_spark_session",
+            "qcflow.recipes.steps.ingest.datasets._get_active_spark_session",
             side_effect=Exception("Spark unavailable"),
         ),
         pytest.raises(
@@ -688,7 +688,7 @@ def test_ingest_makes_spark_session_if_not_available_for_spark_based_dataset(spa
     dataset_path = tmp_path / "test.delta"
     spark_df.write.format("delta").save(str(dataset_path))
 
-    with mock.patch("mlflow.utils._spark_utils._get_active_spark_session", return_value=None):
+    with mock.patch("qcflow.utils._spark_utils._get_active_spark_session", return_value=None):
         IngestStep.from_recipe_config(
             recipe_config={
                 "target_col": "label",
@@ -839,7 +839,7 @@ def test_ingest_skips_profiling_when_specified(pandas_df, tmp_path):
     dataset_path = tmp_path / "df.parquet"
     pandas_df.to_parquet(dataset_path)
 
-    with mock.patch("mlflow.recipes.utils.step.get_pandas_data_profiles") as mock_profiling:
+    with mock.patch("qcflow.recipes.utils.step.get_pandas_data_profiles") as mock_profiling:
         IngestStep.from_recipe_config(
             recipe_config={
                 "target_col": "C",

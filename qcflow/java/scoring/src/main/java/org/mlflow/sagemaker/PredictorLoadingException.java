@@ -1,8 +1,8 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
 /**
  * An exception indicating a failure during the process of creating a {@link
- * org.mlflow.sagemaker.Predictor} from an MLflow model
+ * org.qcflow.sagemaker.Predictor} from an QCFlow model
  */
 public class PredictorLoadingException extends RuntimeException {
   /**

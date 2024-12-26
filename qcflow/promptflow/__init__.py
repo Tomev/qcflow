@@ -1,10 +1,10 @@
 """
-The ``mlflow.promptflow`` module provides an API for logging and loading Promptflow models.
+The ``qcflow.promptflow`` module provides an API for logging and loading Promptflow models.
 This module exports Promptflow models with the following flavors:
 
 Promptflow (native) format
     This is the main flavor that can be accessed with Promptflow APIs.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
 
 .. _Promptflow:
@@ -20,33 +20,33 @@ from typing import Any, Optional, Union
 import pandas as pd
 import yaml
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.models import Model, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import ModelInputExample, _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.annotations import experimental
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.models import Model, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import ModelInputExample, _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.annotations import experimental
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import write_to
+from qcflow.utils.model_utils import (
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 _logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ FLAVOR_NAME = "promptflow"
 _MODEL_FLOW_DIRECTORY = "flow"
 _FLOW_ENV_REQUIREMENTS = "python_requirements_txt"
 _UNSUPPORTED_MODEL_ERROR_MESSAGE = (
-    "MLflow promptflow flavor only supports instance defined with 'flow.dag.yaml' file "
+    "QCFlow promptflow flavor only supports instance defined with 'flow.dag.yaml' file "
     "and loaded by ~promptflow.load_flow(), found {instance_type}."
 )
 _INVALID_PREDICT_INPUT_ERROR_MESSAGE = (
@@ -69,7 +69,7 @@ _CONNECTION_OVERRIDES_CONFIG_KEY = "connection_overrides"
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at a minimum, contains these requirements.
     """
@@ -87,10 +87,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @experimental
@@ -111,7 +111,7 @@ def log_model(
     example_no_conversion=None,
 ):
     """
-    Log a Promptflow model as an MLflow artifact for the current run.
+    Log a Promptflow model as an QCFlow artifact for the current run.
 
     Args:
         model: A promptflow model loaded by `promptflow.load_flow()`.
@@ -133,7 +133,7 @@ def log_model(
             during inference. These arguments are used exclusively for the case of loading
             the model as a ``pyfunc`` Model.
             These values are not applied to a returned flow from a call to
-            ``mlflow.promptflow.load_model()``.
+            ``qcflow.promptflow.load_model()``.
             To override configs for a loaded flow with promptflow flavor,
             please update the ``pf_model.context`` directly.
 
@@ -166,20 +166,20 @@ def log_model(
                     "connection_overrides": {"local_conn_name": "remote_conn_name"},
                 }
 
-                with mlflow.start_run():
-                    logged_model = mlflow.promptflow.log_model(
+                with qcflow.start_run():
+                    logged_model = qcflow.promptflow.log_model(
                         flow, artifact_path="promptflow_model", model_config=model_config
                     )
         example_no_conversion: {{ example_no_conversion }}
 
     Returns
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
     """
 
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.promptflow,
+        flavor=qcflow.promptflow,
         registered_model_name=registered_model_name,
         model=model,
         conda_env=conda_env,
@@ -202,7 +202,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -219,7 +219,7 @@ def save_model(
         path: Local path where the serialized model (as YAML) is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
         signature: {{ signature }}
         input_example: {{ input_example }}
         pip_requirements: {{ pip_requirements }}
@@ -229,7 +229,7 @@ def save_model(
             during inference. These arguments are used exclusively for the case of loading
             the model as a ``pyfunc`` Model.
             These values are not applied to a returned flow from a call to
-            ``mlflow.promptflow.load_model()``.
+            ``qcflow.promptflow.load_model()``.
             To override configs for a loaded flow with promptflow flavor,
             please update the ``pf_model.context`` directly.
 
@@ -262,14 +262,14 @@ def save_model(
                     "connection_overrides": {"local_conn_name": "remote_conn_name"},
                 }
 
-                with mlflow.start_run():
-                    logged_model = mlflow.promptflow.log_model(
+                with qcflow.start_run():
+                    logged_model = qcflow.promptflow.log_model(
                         flow, artifact_path="promptflow_model", model_config=model_config
                     )
         example_no_conversion: {{ example_no_conversion }}
     """
     import promptflow
-    from promptflow._sdk._mlflow import (
+    from promptflow._sdk._qcflow import (
         DAG_FILE_NAME,
         Flow,
         _merge_local_code_and_additional_includes,
@@ -283,7 +283,7 @@ def save_model(
         or not hasattr(model, "flow_dag_path")
         or not hasattr(model, "code")
     ):
-        raise mlflow.MlflowException.invalid_parameter_value(
+        raise qcflow.MlflowException.invalid_parameter_value(
             _UNSUPPORTED_MODEL_ERROR_MESSAGE.format(instance_type=type(model).__name__)
         )
 
@@ -305,44 +305,44 @@ def save_model(
     # Get flow env in flow dag
     flow_env = _resolve_env_from_flow(model.flow_dag_path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path, example_no_conversion)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path, example_no_conversion)
 
     if signature is None and saved_example is not None:
         wrapped_model = _PromptflowModelWrapper(model)
         signature = _infer_signature_from_input_example(saved_example, wrapped_model)
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
-    # update flavor info to mlflow_model
-    mlflow_model.add_flavor(
+    # update flavor info to qcflow_model
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         version=promptflow.__version__,
         entry=f"{_MODEL_FLOW_DIRECTORY}/{DAG_FILE_NAME}",
         **flow_env,
     )
 
-    # append loader_module, data and env data to mlflow_model
+    # append loader_module, data and env data to qcflow_model
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.promptflow",
+        qcflow_model,
+        loader_module="qcflow.promptflow",
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
         model_config=model_config,
     )
 
-    # save mlflow_model to path/MLmodel
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    # save qcflow_model to path/MLmodel
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path, FLAVOR_NAME, fallback=default_reqs
             )
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
@@ -383,7 +383,7 @@ def _resolve_env_from_flow(flow_dag_path):
 
 class _PromptflowModelWrapper:
     def __init__(self, model, model_config: Optional[dict[str, Any]] = None):
-        from promptflow._sdk._mlflow import FlowInvoker
+        from promptflow._sdk._qcflow import FlowInvoker
 
         self.model = model
         # TODO: Improve this if we have more configs afterwards
@@ -414,7 +414,7 @@ class _PromptflowModelWrapper:
             data: Model input data. Either a pandas DataFrame with only 1 row or a dictionary.
 
                      .. code-block:: python
-                        loaded_model = mlflow.pyfunc.load_model(logged_model.model_uri)
+                        loaded_model = qcflow.pyfunc.load_model(logged_model.model_uri)
                         # Predict on a flow input dictionary.
                         print(loaded_model.predict({"text": "Python Hello World!"}))
 
@@ -426,7 +426,7 @@ class _PromptflowModelWrapper:
         if isinstance(data, pd.DataFrame):
             messages = data.to_dict(orient="records")
             if len(messages) > 1:
-                raise mlflow.MlflowException.invalid_parameter_value(
+                raise qcflow.MlflowException.invalid_parameter_value(
                     _INVALID_PREDICT_INPUT_ERROR_MESSAGE
                 )
             messages = messages[0]
@@ -434,7 +434,7 @@ class _PromptflowModelWrapper:
         elif isinstance(data, dict):
             messages = data
             return self.model_invoker.invoke(messages)
-        raise mlflow.MlflowException.invalid_parameter_value(_INVALID_PREDICT_INPUT_ERROR_MESSAGE)
+        raise qcflow.MlflowException.invalid_parameter_value(_INVALID_PREDICT_INPUT_ERROR_MESSAGE)
 
 
 def _load_pyfunc(path, model_config: Optional[dict[str, Any]] = None):  # noqa: D417
@@ -442,7 +442,7 @@ def _load_pyfunc(path, model_config: Optional[dict[str, Any]] = None):  # noqa: 
     Load PyFunc implementation for Promptflow. Called by ``pyfunc.load_model``.
 
     Args
-        path: Local filesystem path to the MLflow Model with the ``promptflow`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``promptflow`` flavor.
     """
     from promptflow import load_flow
 
@@ -457,17 +457,17 @@ def load_model(model_uri, dst_path=None):
     Load a Promptflow model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output

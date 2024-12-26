@@ -4,28 +4,28 @@ from typing import Any, Optional
 
 import requests.exceptions
 
-from mlflow import MlflowException
-from mlflow.gateway.config import LimitsConfig, Route
-from mlflow.gateway.constants import (
-    MLFLOW_GATEWAY_CLIENT_QUERY_RETRY_CODES,
-    MLFLOW_GATEWAY_CLIENT_QUERY_TIMEOUT_SECONDS,
-    MLFLOW_GATEWAY_CRUD_ROUTE_BASE,
-    MLFLOW_GATEWAY_LIMITS_BASE,
-    MLFLOW_GATEWAY_ROUTE_BASE,
-    MLFLOW_QUERY_SUFFIX,
+from qcflow import MlflowException
+from qcflow.gateway.config import LimitsConfig, Route
+from qcflow.gateway.constants import (
+    QCFLOW_GATEWAY_CLIENT_QUERY_RETRY_CODES,
+    QCFLOW_GATEWAY_CLIENT_QUERY_TIMEOUT_SECONDS,
+    QCFLOW_GATEWAY_CRUD_ROUTE_BASE,
+    QCFLOW_GATEWAY_LIMITS_BASE,
+    QCFLOW_GATEWAY_ROUTE_BASE,
+    QCFLOW_QUERY_SUFFIX,
 )
-from mlflow.gateway.utils import (
+from qcflow.gateway.utils import (
     assemble_uri_path,
     gateway_deprecated,
     get_gateway_uri,
     resolve_route_url,
 )
-from mlflow.protos.databricks_pb2 import BAD_REQUEST
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.utils.credentials import get_default_host_creds
-from mlflow.utils.databricks_utils import get_databricks_host_creds
-from mlflow.utils.rest_utils import augmented_raise_for_status, http_request
-from mlflow.utils.uri import get_uri_scheme
+from qcflow.protos.databricks_pb2 import BAD_REQUEST
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.utils.credentials import get_default_host_creds
+from qcflow.utils.databricks_utils import get_databricks_host_creds
+from qcflow.utils.rest_utils import augmented_raise_for_status, http_request
+from qcflow.utils.uri import get_uri_scheme
 
 _logger = logging.getLogger(__name__)
 
@@ -33,12 +33,12 @@ _logger = logging.getLogger(__name__)
 @gateway_deprecated
 class MlflowGatewayClient:
     """
-    Client for interacting with the MLflow Gateway API.
+    Client for interacting with the QCFlow Gateway API.
 
     Args:
         gateway_uri: Optional URI of the gateway. If not provided, attempts to resolve from
             first the stored result of `set_gateway_uri()`, then the  environment variable
-            `MLFLOW_GATEWAY_URI`.
+            `QCFLOW_GATEWAY_URI`.
     """
 
     def __init__(self, gateway_uri: Optional[str] = None):
@@ -66,7 +66,7 @@ class MlflowGatewayClient:
     @property
     def gateway_uri(self):
         """
-        Get the current value for the URI of the MLflow Gateway.
+        Get the current value for the URI of the QCFlow Gateway.
 
         Returns:
             The gateway URI.
@@ -99,8 +99,8 @@ class MlflowGatewayClient:
             host_creds=self._host_creds,
             endpoint=route,
             method=method,
-            timeout=MLFLOW_GATEWAY_CLIENT_QUERY_TIMEOUT_SECONDS,
-            retry_codes=MLFLOW_GATEWAY_CLIENT_QUERY_RETRY_CODES,
+            timeout=QCFLOW_GATEWAY_CLIENT_QUERY_TIMEOUT_SECONDS,
+            retry_codes=QCFLOW_GATEWAY_CLIENT_QUERY_RETRY_CODES,
             raise_on_status=False,
             **call_kwargs,
         )
@@ -111,7 +111,7 @@ class MlflowGatewayClient:
     def get_route(self, name: str):
         """
         Get a specific query route from the gateway. The routes that are available to retrieve
-        are only those that have been configured through the MLflow Gateway Server configuration
+        are only those that have been configured through the QCFlow Gateway Server configuration
         file (set during server start or through server update commands).
 
         Args:
@@ -123,7 +123,7 @@ class MlflowGatewayClient:
             and provider) for the requested route endpoint.
 
         """
-        route = assemble_uri_path([MLFLOW_GATEWAY_CRUD_ROUTE_BASE, name])
+        route = assemble_uri_path([QCFLOW_GATEWAY_CRUD_ROUTE_BASE, name])
         response = self._call_endpoint("GET", route).json()
         response["route_url"] = resolve_route_url(self._gateway_uri, response["route_url"])
 
@@ -139,14 +139,14 @@ class MlflowGatewayClient:
                 a prior ``search_routes()`` call.
 
         Returns:
-            Returns a list of all configured and initialized `Route` data for the MLflow
+            Returns a list of all configured and initialized `Route` data for the QCFlow
             Gateway Server. The return will be a list of dictionaries that detail the name, type,
             and model details of each active route endpoint.
 
         """
         request_parameters = {"page_token": page_token} if page_token is not None else None
         response_json = self._call_endpoint(
-            "GET", MLFLOW_GATEWAY_CRUD_ROUTE_BASE, json_body=json.dumps(request_parameters)
+            "GET", QCFLOW_GATEWAY_CRUD_ROUTE_BASE, json_body=json.dumps(request_parameters)
         ).json()
         routes = [
             Route(
@@ -194,18 +194,18 @@ class MlflowGatewayClient:
             newly created route endpoint.
 
         Raises:
-            mlflow.MlflowException: If the function is not running within Databricks.
+            qcflow.MlflowException: If the function is not running within Databricks.
 
         .. note::
 
-            See the official Databricks documentation for MLflow Gateway for examples of supported
+            See the official Databricks documentation for QCFlow Gateway for examples of supported
             model configurations and how to dynamically create new routes within Databricks.
 
         Example usage from within Databricks:
 
         .. code-block:: python
 
-            from mlflow.gateway import MlflowGatewayClient
+            from qcflow.gateway import MlflowGatewayClient
 
             gateway_client = MlflowGatewayClient("databricks")
 
@@ -237,7 +237,7 @@ class MlflowGatewayClient:
             "model": model,
         }
         response = self._call_endpoint(
-            "POST", MLFLOW_GATEWAY_CRUD_ROUTE_BASE, json.dumps(payload)
+            "POST", QCFLOW_GATEWAY_CRUD_ROUTE_BASE, json.dumps(payload)
         ).json()
         return Route(**response)
 
@@ -256,13 +256,13 @@ class MlflowGatewayClient:
             name: The name of the route to delete.
 
         Raises:
-            mlflow.MlflowException: If the function is not running within Databricks.
+            qcflow.MlflowException: If the function is not running within Databricks.
 
         Example usage from within Databricks:
 
         .. code-block:: python
 
-            from mlflow.gateway import MlflowGatewayClient
+            from qcflow.gateway import MlflowGatewayClient
 
             gateway_client = MlflowGatewayClient("databricks")
             gateway_client.delete_route("my-existing-route")
@@ -275,7 +275,7 @@ class MlflowGatewayClient:
                 "the route entry from the configuration file.",
                 error_code=BAD_REQUEST,
             )
-        route = assemble_uri_path([MLFLOW_GATEWAY_CRUD_ROUTE_BASE, name])
+        route = assemble_uri_path([QCFLOW_GATEWAY_CRUD_ROUTE_BASE, name])
         self._call_endpoint("DELETE", route)
 
     @gateway_deprecated
@@ -292,7 +292,7 @@ class MlflowGatewayClient:
 
                 .. code-block:: python
 
-                    from mlflow.gateway import MlflowGatewayClient
+                    from qcflow.gateway import MlflowGatewayClient
 
                     gateway_client = MlflowGatewayClient("http://my.gateway:8888")
 
@@ -309,7 +309,7 @@ class MlflowGatewayClient:
 
                 .. code-block:: python
 
-                    from mlflow.gateway import MlflowGatewayClient
+                    from qcflow.gateway import MlflowGatewayClient
 
                     gateway_client = MlflowGatewayClient("http://my.gateway:8888")
 
@@ -321,7 +321,7 @@ class MlflowGatewayClient:
 
                 .. code-block:: python
 
-                    from mlflow.gateway import MlflowGatewayClient
+                    from qcflow.gateway import MlflowGatewayClient
 
                     gateway_client = MlflowGatewayClient("http://my.gateway:8888")
 
@@ -336,7 +336,7 @@ class MlflowGatewayClient:
 
                 .. code-block:: python
 
-                    from mlflow.gateway import MlflowGatewayClient
+                    from qcflow.gateway import MlflowGatewayClient
 
                     gateway_client = MlflowGatewayClient("http://my.gateway:8888")
 
@@ -356,7 +356,7 @@ class MlflowGatewayClient:
 
         data = json.dumps(data)
 
-        query_route = assemble_uri_path([MLFLOW_GATEWAY_ROUTE_BASE, route, MLFLOW_QUERY_SUFFIX])
+        query_route = assemble_uri_path([QCFLOW_GATEWAY_ROUTE_BASE, route, QCFLOW_QUERY_SUFFIX])
 
         try:
             return self._call_endpoint("POST", query_route, data).json()
@@ -367,7 +367,7 @@ class MlflowGatewayClient:
                     "query. Please evaluate the available parameters for the query "
                     "that you are submitting. Some parameter values and inputs can "
                     "increase the computation time beyond the allowable route "
-                    f"timeout of {MLFLOW_GATEWAY_CLIENT_QUERY_TIMEOUT_SECONDS} "
+                    f"timeout of {QCFLOW_GATEWAY_CLIENT_QUERY_TIMEOUT_SECONDS} "
                     "seconds."
                 )
                 raise MlflowException(message=timeout_message, error_code=BAD_REQUEST)
@@ -405,7 +405,7 @@ class MlflowGatewayClient:
 
         .. code-block:: python
 
-            from mlflow.gateway import MlflowGatewayClient
+            from qcflow.gateway import MlflowGatewayClient
 
             gateway_client = MlflowGatewayClient("databricks")
 
@@ -419,7 +419,7 @@ class MlflowGatewayClient:
         }
 
         response = self._call_endpoint(
-            "POST", MLFLOW_GATEWAY_LIMITS_BASE, json.dumps(payload)
+            "POST", QCFLOW_GATEWAY_LIMITS_BASE, json.dumps(payload)
         ).json()
         return LimitsConfig(**response)
 
@@ -443,7 +443,7 @@ class MlflowGatewayClient:
 
         .. code-block:: python
 
-            from mlflow.gateway import MlflowGatewayClient
+            from qcflow.gateway import MlflowGatewayClient
 
             gateway_client = MlflowGatewayClient("databricks")
 
@@ -451,6 +451,6 @@ class MlflowGatewayClient:
         """
         if not route:
             raise MlflowException("A non-empty string is required for the route.", BAD_REQUEST)
-        route_uri = assemble_uri_path([MLFLOW_GATEWAY_LIMITS_BASE, route])
+        route_uri = assemble_uri_path([QCFLOW_GATEWAY_LIMITS_BASE, route])
         response = self._call_endpoint("GET", route_uri).json()
         return LimitsConfig(**response)

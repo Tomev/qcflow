@@ -1,19 +1,19 @@
-mlflow.types
+qcflow.types
 ==============
 
-.. automodule:: mlflow.types
+.. automodule:: qcflow.types
     :members:
     :show-inheritance:
 
-.. automodule:: mlflow.types.llm
+.. automodule:: qcflow.types.llm
     :members:
 
-.. automodule:: mlflow.types.chat
+.. automodule:: qcflow.types.chat
     :members:
 
-.. automodule:: mlflow.types.schema
+.. automodule:: qcflow.types.schema
     :members: Array, Map, Object, Property, AnyType
     :undoc-members:
 
-.. automodule:: mlflow.types.llm._BaseDataclass
+.. automodule:: qcflow.types.llm._BaseDataclass
     :undoc-members:

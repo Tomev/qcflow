@@ -2,9 +2,9 @@ import urllib
 from typing import Optional
 from urllib.parse import urlparse
 
-from mlflow.environment_variables import MLFLOW_DEPLOYMENTS_TARGET
-from mlflow.exceptions import MlflowException
-from mlflow.utils.uri import append_to_uri_path
+from qcflow.environment_variables import QCFLOW_DEPLOYMENTS_TARGET
+from qcflow.exceptions import MlflowException
+from qcflow.utils.uri import append_to_uri_path
 
 _deployments_target: Optional[str] = None
 
@@ -54,10 +54,10 @@ def resolve_endpoint_url(base_url: str, endpoint: str) -> str:
 
 
 def set_deployments_target(target: str):
-    """Sets the target deployment client for MLflow deployments
+    """Sets the target deployment client for QCFlow deployments
 
     Args:
-        target: The full uri of a running MLflow AI Gateway or, if running on
+        target: The full uri of a running QCFlow AI Gateway or, if running on
             Databricks, "databricks".
     """
     if not _is_valid_target(target):
@@ -71,19 +71,19 @@ def set_deployments_target(target: str):
 
 def get_deployments_target() -> str:
     """
-    Returns the currently set MLflow deployments target iff set.
+    Returns the currently set QCFlow deployments target iff set.
     If the deployments target has not been set by using ``set_deployments_target``, an
     ``MlflowException`` is raised.
     """
     if _deployments_target is not None:
         return _deployments_target
-    elif uri := MLFLOW_DEPLOYMENTS_TARGET.get():
+    elif uri := QCFLOW_DEPLOYMENTS_TARGET.get():
         return uri
     else:
         raise MlflowException(
-            "No deployments target has been set. Please either set the MLflow deployments target"
-            " via `mlflow.deployments.set_deployments_target()` or set the environment variable "
-            f"{MLFLOW_DEPLOYMENTS_TARGET} to the running deployment server's uri"
+            "No deployments target has been set. Please either set the QCFlow deployments target"
+            " via `qcflow.deployments.set_deployments_target()` or set the environment variable "
+            f"{QCFLOW_DEPLOYMENTS_TARGET} to the running deployment server's uri"
         )
 
 

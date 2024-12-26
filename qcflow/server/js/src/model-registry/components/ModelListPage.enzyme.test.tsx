@@ -17,7 +17,7 @@ import {
   Stages,
 } from '../constants';
 import { Provider } from 'react-redux';
-import { MemoryRouter, createMLflowRoutePath } from '../../common/utils/RoutingUtils';
+import { MemoryRouter, createQCFlowRoutePath } from '../../common/utils/RoutingUtils';
 import { ModelListPageImpl } from './ModelListPage';
 import { IntlProvider } from 'react-intl';
 
@@ -145,7 +145,7 @@ describe('ModelListPage', () => {
       2,
     );
     const expectedUrl = `/models?searchInput=name%20ilike%20%22%25name%25%22%20AND%20tag.key%3Dvalue&orderByKey=timestamp&orderByAsc=false&page=2`;
-    expect(navigateSpy).toHaveBeenCalledWith(createMLflowRoutePath(expectedUrl));
+    expect(navigateSpy).toHaveBeenCalledWith(createQCFlowRoutePath(expectedUrl));
   });
 
   test('should construct pushes URL correctly from old URLs with nameSearchInput', () => {
@@ -162,7 +162,7 @@ describe('ModelListPage', () => {
     instance = wrapper.find(ModelListPageImpl).instance();
     const expectedUrl = '/models?searchInput=abc';
     instance.render();
-    expect(navigateSpy).toHaveBeenCalledWith(createMLflowRoutePath(expectedUrl));
+    expect(navigateSpy).toHaveBeenCalledWith(createQCFlowRoutePath(expectedUrl));
   });
 
   test('should pushes URL correctly from old URLs with tagSearchInput', () => {
@@ -179,7 +179,7 @@ describe('ModelListPage', () => {
     instance = wrapper.find(ModelListPageImpl).instance();
     const expectedUrl = `/models?searchInput=tags.k%20%3D%20%22v%22`;
     instance.render();
-    expect(navigateSpy).toHaveBeenCalledWith(createMLflowRoutePath(expectedUrl));
+    expect(navigateSpy).toHaveBeenCalledWith(createQCFlowRoutePath(expectedUrl));
   });
 
   test('should pushes URL correctly from old URLs with nameSearchInput and tagSearchInput', () => {
@@ -196,7 +196,7 @@ describe('ModelListPage', () => {
     instance = wrapper.find(ModelListPageImpl).instance();
     const expectedUrl = '/models?searchInput=name%20ilike%20%27%25abc%25%27%20AND%20tags.k%20%3D%20%22v%22';
     instance.render();
-    expect(navigateSpy).toHaveBeenCalledWith(createMLflowRoutePath(expectedUrl));
+    expect(navigateSpy).toHaveBeenCalledWith(createQCFlowRoutePath(expectedUrl));
   });
 
   test('should pushes URL correctly from URLs with searchInput', () => {
@@ -213,7 +213,7 @@ describe('ModelListPage', () => {
     instance = wrapper.find(ModelListPageImpl).instance();
     const expectedUrl = '/models?searchInput=name%20ilike%20%22%25ab%25%22%20AND%20tags.a%20%3D%201';
     instance.render();
-    expect(navigateSpy).toHaveBeenCalledWith(createMLflowRoutePath(expectedUrl));
+    expect(navigateSpy).toHaveBeenCalledWith(createQCFlowRoutePath(expectedUrl));
   });
   // eslint-disable-next-line
 });

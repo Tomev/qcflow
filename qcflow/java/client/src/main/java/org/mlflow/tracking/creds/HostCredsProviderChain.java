@@ -1,4 +1,4 @@
-package org.mlflow.tracking.creds;
+package org.qcflow.tracking.creds;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,7 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.mlflow.tracking.MlflowClientException;
+import org.qcflow.tracking.MlflowClientException;
 
 public class HostCredsProviderChain implements MlflowHostCredsProvider {
   private static final Logger logger = LoggerFactory.getLogger(HostCredsProviderChain.class);
@@ -35,7 +35,7 @@ public class HostCredsProviderChain implements MlflowHostCredsProvider {
         exceptionMessages.add(message);
       }
     }
-    throw new MlflowClientException("Unable to load MLflow Host/Credentials from any provider in" +
+    throw new MlflowClientException("Unable to load QCFlow Host/Credentials from any provider in" +
       " the chain: " + exceptionMessages);
   }
 

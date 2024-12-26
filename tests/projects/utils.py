@@ -5,9 +5,9 @@ import shutil
 
 import pytest
 
-from mlflow.entities import RunStatus
-from mlflow.projects import _project_spec
-from mlflow.utils.file_utils import TempDir, _copy_project
+from qcflow.entities import RunStatus
+from qcflow.projects import _project_spec
+from qcflow.utils.file_utils import TempDir, _copy_project
 
 TEST_DIR = "tests"
 TEST_PROJECT_DIR = os.path.abspath(os.path.join(TEST_DIR, "resources", "example_project"))
@@ -21,9 +21,9 @@ TEST_VIRTUALENV_NO_PYTHON_ENV = os.path.join(
 )
 TEST_PROJECT_NAME = "example_project"
 TEST_NO_SPEC_PROJECT_DIR = os.path.join(TEST_DIR, "resources", "example_project_no_spec")
-GIT_PROJECT_URI = "https://github.com/mlflow/mlflow-example"
+GIT_PROJECT_URI = "https://github.com/qcflow/qcflow-example"
 GIT_PROJECT_BRANCH = "test-branch"
-SSH_PROJECT_URI = "git@github.com:mlflow/mlflow-example.git"
+SSH_PROJECT_URI = "git@github.com:qcflow/qcflow-example.git"
 
 _logger = logging.getLogger(__name__)
 
@@ -50,23 +50,23 @@ def docker_example_base_image():
     import docker
     from docker.errors import APIError, BuildError
 
-    mlflow_home = os.environ.get("MLFLOW_HOME", None)
-    if not mlflow_home:
+    qcflow_home = os.environ.get("QCFLOW_HOME", None)
+    if not qcflow_home:
         raise Exception(
-            "MLFLOW_HOME environment variable is not set. Please set the variable to "
-            "point to your mlflow dev root."
+            "QCFLOW_HOME environment variable is not set. Please set the variable to "
+            "point to your qcflow dev root."
         )
     with TempDir() as tmp:
         cwd = tmp.path()
-        mlflow_dir = _copy_project(src_path=mlflow_home, dst_path=cwd)
+        qcflow_dir = _copy_project(src_path=qcflow_home, dst_path=cwd)
         shutil.copy(os.path.join(TEST_DOCKER_PROJECT_DIR, "Dockerfile"), tmp.path("Dockerfile"))
         with open(tmp.path("Dockerfile"), "a") as f:
-            f.write(f"COPY {mlflow_dir} /opt/mlflow\nRUN pip install -U -e /opt/mlflow\n")
+            f.write(f"COPY {qcflow_dir} /opt/qcflow\nRUN pip install -U -e /opt/qcflow\n")
 
         client = docker.from_env()
         try:
             client.images.build(
-                tag="mlflow-docker-example",
+                tag="qcflow-docker-example",
                 forcerm=True,
                 nocache=True,
                 dockerfile="Dockerfile",

@@ -1,10 +1,10 @@
-package org.mlflow;
+package org.qcflow;
 
 import java.io.IOException;
 import java.util.Optional;
-import org.mlflow.models.Model;
-import org.mlflow.sagemaker.Predictor;
-import org.mlflow.sagemaker.PredictorLoadingException;
+import org.qcflow.models.Model;
+import org.qcflow.sagemaker.Predictor;
+import org.qcflow.sagemaker.PredictorLoadingException;
 
 /**
  * A generic loader for encapsulating flavor-specific model deserialization logic. By extending
@@ -13,7 +13,7 @@ import org.mlflow.sagemaker.PredictorLoadingException;
  */
 public abstract class LoaderModule<T extends Flavor> {
   /**
-   * Loads an MLflow model as a generic predictor that can be used for inference
+   * Loads an QCFlow model as a generic predictor that can be used for inference
    *
    * Throws {@link PredictorLoadingException} for any failure encountered while attempting to load
    *     the model
@@ -38,11 +38,11 @@ public abstract class LoaderModule<T extends Flavor> {
   }
 
   /**
-   * Loads an MLflow model as a generic predictor that can be used for inference
+   * Loads an QCFlow model as a generic predictor that can be used for inference
    * Throws {@link PredictorLoadingException} for any failure encountered while attempting to load
    *     the model
    *
-   * @param modelRootPath The path to the root directory of the MLflow model
+   * @param modelRootPath The path to the root directory of the QCFlow model
    */
   public Predictor load(String modelRootPath) throws PredictorLoadingException {
     try {
@@ -51,17 +51,17 @@ public abstract class LoaderModule<T extends Flavor> {
     } catch (IOException e) {
       throw new PredictorLoadingException(
           "Failed to load the model configuration at the specified path. Please ensure that"
-              + " this is the path to the root directory of a valid MLflow model", e);
+              + " this is the path to the root directory of a valid QCFlow model", e);
     }
   }
 
   /**
-   * Creates a {@link Predictor} from an MLflow model using the specified flavor configuration
+   * Creates a {@link Predictor} from an QCFlow model using the specified flavor configuration
    *
    * <p>Implementations of this method are expected to throw a {@link PredictorLoadingException}
    * when errors are encountered while loading the model
    *
-   * @param modelRootPath The path to the root directory of the MLflow model
+   * @param modelRootPath The path to the root directory of the QCFlow model
    * @param flavor The flavor configuration to use when creating the {@link Predictor}. This
    *     configuration provides additional metadata that may be necessary for {@link Predictor}
    *     creation.
@@ -70,7 +70,7 @@ public abstract class LoaderModule<T extends Flavor> {
       throws PredictorLoadingException;
 
   /**
-   * @return The {@link org.mlflow.Flavor} class associated with this loader module. This is
+   * @return The {@link org.qcflow.Flavor} class associated with this loader module. This is
    *     required during the {@link #load(Model)} procedure
    */
   protected abstract Class<T> getFlavorClass();

@@ -1,8 +1,8 @@
 from typing import Any
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.types.schema import Schema
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.types.schema import Schema
 
 
 class TensorDatasetSchema:
@@ -13,12 +13,12 @@ class TensorDatasetSchema:
     def __init__(self, features: Schema, targets: Schema = None):
         if not isinstance(features, Schema):
             raise MlflowException(
-                f"features must be mlflow.types.Schema, got '{type(features)}'",
+                f"features must be qcflow.types.Schema, got '{type(features)}'",
                 INVALID_PARAMETER_VALUE,
             )
         if targets is not None and not isinstance(targets, Schema):
             raise MlflowException(
-                f"targets must be either None or mlflow.types.Schema, got '{type(features)}'",
+                f"targets must be either None or qcflow.types.Schema, got '{type(features)}'",
                 INVALID_PARAMETER_VALUE,
             )
         self.features = features
@@ -33,7 +33,7 @@ class TensorDatasetSchema:
         """
 
         return {
-            "mlflow_tensorspec": {
+            "qcflow_tensorspec": {
                 "features": self.features.to_json(),
                 "targets": self.targets.to_json() if self.targets is not None else None,
             },
@@ -51,13 +51,13 @@ class TensorDatasetSchema:
             TensorDatasetSchema populated with the data from the dictionary.
 
         """
-        if "mlflow_tensorspec" not in schema_dict:
+        if "qcflow_tensorspec" not in schema_dict:
             raise MlflowException(
-                "TensorDatasetSchema dictionary is missing expected key 'mlflow_tensorspec'",
+                "TensorDatasetSchema dictionary is missing expected key 'qcflow_tensorspec'",
                 INVALID_PARAMETER_VALUE,
             )
 
-        schema_dict = schema_dict["mlflow_tensorspec"]
+        schema_dict = schema_dict["qcflow_tensorspec"]
         features = Schema.from_json(schema_dict["features"])
         if "targets" in schema_dict and schema_dict["targets"] is not None:
             targets = Schema.from_json(schema_dict["targets"])

@@ -9,7 +9,7 @@ from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import FakeEmbeddings
 from langchain_community.vectorstores import FAISS
 
-from mlflow.models import ModelConfig, set_model
+from qcflow.models import ModelConfig, set_model
 
 base_config = ModelConfig(development_config="config.yml")
 

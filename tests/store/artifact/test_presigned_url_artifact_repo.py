@@ -8,9 +8,9 @@ from unittest.mock import ANY
 import pytest
 import requests
 
-from mlflow.exceptions import RestException
-from mlflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
-from mlflow.protos.databricks_filesystem_service_pb2 import (
+from qcflow.exceptions import RestException
+from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
+from qcflow.protos.databricks_filesystem_service_pb2 import (
     CreateDownloadUrlRequest,
     CreateDownloadUrlResponse,
     CreateUploadUrlRequest,
@@ -19,25 +19,25 @@ from mlflow.protos.databricks_filesystem_service_pb2 import (
     HttpHeader,
     ListDirectoryResponse,
 )
-from mlflow.store.artifact.artifact_repo import _retry_with_new_creds
-from mlflow.store.artifact.presigned_url_artifact_repo import (
+from qcflow.store.artifact.artifact_repo import _retry_with_new_creds
+from qcflow.store.artifact.presigned_url_artifact_repo import (
     DIRECTORIES_ENDPOINT,
     FILESYSTEM_METHOD_TO_INFO,
     PresignedUrlArtifactRepository,
 )
-from mlflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.proto_json_utils import message_to_json
 
 MODEL_NAME = "catalog.schema.model"
 MODEL_VERSION = 1
 MODEL_URI = "/Models/catalog/schema/model/1"
-PRESIGNED_URL_ARTIFACT_REPOSITORY = "mlflow.store.artifact.presigned_url_artifact_repo"
+PRESIGNED_URL_ARTIFACT_REPOSITORY = "qcflow.store.artifact.presigned_url_artifact_repo"
 _DATABRICKS_UC_SCHEME = "databricks-uc"
 
 
 @pytest.fixture(autouse=True)
 def run_around_tests():
     # mock this call to credentials for all tests in suite
-    with mock.patch("mlflow.utils.databricks_utils.get_databricks_host_creds"):
+    with mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"):
         yield
 
 

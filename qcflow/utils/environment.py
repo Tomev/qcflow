@@ -14,35 +14,35 @@ import yaml
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import Version
 
-from mlflow.environment_variables import (
-    _MLFLOW_TESTING,
-    MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT,
-    MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS,
+from qcflow.environment_variables import (
+    _QCFLOW_TESTING,
+    QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT,
+    QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.tracking import get_tracking_uri
-from mlflow.utils import PYTHON_VERSION
-from mlflow.utils.databricks_utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.tracking import get_tracking_uri
+from qcflow.utils import PYTHON_VERSION
+from qcflow.utils.databricks_utils import (
     _get_databricks_serverless_env_vars,
     get_databricks_env_vars,
     is_databricks_connect,
     is_in_databricks_runtime,
 )
-from mlflow.utils.os import is_windows
-from mlflow.utils.process import _exec_cmd
-from mlflow.utils.requirements_utils import (
+from qcflow.utils.os import is_windows
+from qcflow.utils.process import _exec_cmd
+from qcflow.utils.requirements_utils import (
     _infer_requirements,
     _parse_requirements,
     warn_dependency_requirement_mismatches,
 )
-from mlflow.utils.timeout import MlflowTimeoutError, run_with_timeout
-from mlflow.version import VERSION
+from qcflow.utils.timeout import MlflowTimeoutError, run_with_timeout
+from qcflow.version import VERSION
 
 _logger = logging.getLogger(__name__)
 
 _conda_header = """\
-name: mlflow-env
+name: qcflow-env
 channels:
   - conda-forge
 """
@@ -66,7 +66,7 @@ class _PythonEnv:
 
     def __init__(self, python=None, build_dependencies=None, dependencies=None):
         """
-        Represents environment information for MLflow Models and Projects.
+        Represents environment information for QCFlow Models and Projects.
 
         Args:
             python: Python version for the environment. If unspecified, defaults to the current
@@ -204,15 +204,15 @@ class _PythonEnv:
         return cls.from_dict(cls.get_dependencies_from_conda_yaml(path))
 
 
-def _mlflow_conda_env(  # noqa: D417
+def _qcflow_conda_env(  # noqa: D417
     path=None,
     additional_conda_deps=None,
     additional_pip_deps=None,
     additional_conda_channels=None,
-    install_mlflow=True,
+    install_qcflow=True,
 ):
     """Creates a Conda environment with the specified package channels and dependencies. If there
-    are any pip dependencies, including from the install_mlflow parameter, then pip will be added to
+    are any pip dependencies, including from the install_qcflow parameter, then pip will be added to
     the conda dependencies. This is done to ensure that the pip inside the conda environment is
     used to install the pip dependencies.
 
@@ -231,12 +231,12 @@ def _mlflow_conda_env(  # noqa: D417
 
     """
     additional_pip_deps = additional_pip_deps or []
-    mlflow_deps = (
-        [f"mlflow=={VERSION}"]
-        if install_mlflow and not _contains_mlflow_requirement(additional_pip_deps)
+    qcflow_deps = (
+        [f"qcflow=={VERSION}"]
+        if install_qcflow and not _contains_qcflow_requirement(additional_pip_deps)
         else []
     )
-    pip_deps = mlflow_deps + additional_pip_deps
+    pip_deps = qcflow_deps + additional_pip_deps
     conda_deps = additional_conda_deps if additional_conda_deps else []
     if pip_deps:
         pip_version = _get_package_version("pip")
@@ -275,7 +275,7 @@ def _get_package_version(package_name: str) -> Optional[str]:
         return None
 
 
-def _mlflow_additional_pip_env(pip_deps, path=None):
+def _qcflow_additional_pip_env(pip_deps, path=None):
     requirements = "\n".join(pip_deps)
     if path is not None:
         with open(path, "w") as out:
@@ -336,7 +336,7 @@ def _overwrite_pip_deps(conda_env, new_pip_deps):
 
 def _log_pip_requirements(conda_env, path, requirements_file=_REQUIREMENTS_FILE_NAME):
     pip_deps = _get_pip_deps(conda_env)
-    _mlflow_additional_pip_env(pip_deps, path=os.path.join(path, requirements_file))
+    _qcflow_additional_pip_env(pip_deps, path=os.path.join(path, requirements_file))
 
 
 def _parse_pip_requirements(pip_requirements):
@@ -410,7 +410,7 @@ def infer_pip_requirements(model_uri, flavor, fallback=None, timeout=None, extra
         A list of inferred pip requirements (e.g. ``["scikit-learn==0.24.2", ...]``).
 
     """
-    raise_on_error = MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS.get()
+    raise_on_error = QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS.get()
 
     if timeout and is_windows():
         timeout = None
@@ -439,7 +439,7 @@ def infer_pip_requirements(model_uri, flavor, fallback=None, timeout=None, extra
                 "Attempted to infer pip requirements for the saved model or pipeline but the "
                 f"operation timed out in {timeout} seconds. Fall back to return {fallback}. "
                 "You can specify a different timeout by setting the environment variable "
-                f"{MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT}."
+                f"{QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT}."
             )
         else:
             msg = _INFER_PIP_REQUIREMENTS_GENERAL_ERROR_MESSAGE.format(
@@ -477,19 +477,19 @@ def _get_pip_requirement_specifier(requirement_string):
     return requirement_string
 
 
-def _is_mlflow_requirement(requirement_string):
+def _is_qcflow_requirement(requirement_string):
     """
-    Returns True if `requirement_string` represents a requirement for mlflow (e.g. 'mlflow==1.2.3').
+    Returns True if `requirement_string` represents a requirement for qcflow (e.g. 'qcflow==1.2.3').
     """
-    # "/opt/mlflow" is the path where we mount the mlflow source code in the Docker container
+    # "/opt/qcflow" is the path where we mount the qcflow source code in the Docker container
     # when running tests.
-    if _MLFLOW_TESTING.get() and requirement_string == "/opt/mlflow":
+    if _QCFLOW_TESTING.get() and requirement_string == "/opt/qcflow":
         return True
 
     try:
         # `Requirement` throws an `InvalidRequirement` exception if `requirement_string` doesn't
         # conform to PEP 508 (https://www.python.org/dev/peps/pep-0508).
-        return Requirement(requirement_string).name.lower() in ["mlflow", "mlflow-skinny"]
+        return Requirement(requirement_string).name.lower() in ["qcflow", "qcflow-skinny"]
     except InvalidRequirement:
         # A local file path or URL falls into this branch.
 
@@ -500,57 +500,57 @@ def _is_mlflow_requirement(requirement_string):
         requirement_specifier = _get_pip_requirement_specifier(requirement_string)
         try:
             # Try again with the per-requirement options removed
-            return Requirement(requirement_specifier).name.lower() == "mlflow"
+            return Requirement(requirement_specifier).name.lower() == "qcflow"
         except InvalidRequirement:
             # Support defining branch dependencies for local builds or direct GitHub builds
             # from source.
-            # Example: mlflow @ git+https://github.com/mlflow/mlflow@branch_2.0
-            repository_matches = ["/mlflow", "mlflow@git"]
+            # Example: qcflow @ git+https://github.com/qcflow/qcflow@branch_2.0
+            repository_matches = ["/qcflow", "qcflow@git"]
 
             return any(
                 match in requirement_string.replace(" ", "").lower() for match in repository_matches
             )
 
 
-def _generate_mlflow_version_pinning() -> str:
-    """Returns a pinned requirement for the current MLflow version (e.g., "mlflow==3.2.1").
+def _generate_qcflow_version_pinning() -> str:
+    """Returns a pinned requirement for the current QCFlow version (e.g., "qcflow==3.2.1").
 
     Returns:
-        A pinned requirement for the current MLflow version.
+        A pinned requirement for the current QCFlow version.
 
     """
-    if _MLFLOW_TESTING.get():
-        # The local PyPI server should be running. It serves a wheel for the current MLflow version.
-        return f"mlflow=={VERSION}"
+    if _QCFLOW_TESTING.get():
+        # The local PyPI server should be running. It serves a wheel for the current QCFlow version.
+        return f"qcflow=={VERSION}"
 
     version = Version(VERSION)
     if not version.is_devrelease:
-        # mlflow is installed from PyPI.
-        return f"mlflow=={VERSION}"
+        # qcflow is installed from PyPI.
+        return f"qcflow=={VERSION}"
 
-    # We reach here when mlflow is installed from the source outside of the MLflow CI environment
+    # We reach here when qcflow is installed from the source outside of the QCFlow CI environment
     # (e.g., Databricks notebook).
 
-    # mlflow installed from the source for development purposes. A dev version (e.g., 2.8.1.dev0)
+    # qcflow installed from the source for development purposes. A dev version (e.g., 2.8.1.dev0)
     # is always a micro-version ahead of the latest release (unless it's manually modified)
     # and can't be installed from PyPI. We therefore subtract 1 from the micro version when running
     # tests.
-    return f"mlflow=={version.major}.{version.minor}.{version.micro - 1}"
+    return f"qcflow=={version.major}.{version.minor}.{version.micro - 1}"
 
 
-def _contains_mlflow_requirement(requirements):
+def _contains_qcflow_requirement(requirements):
     """
-    Returns True if `requirements` contains a requirement for mlflow (e.g. 'mlflow==1.2.3').
+    Returns True if `requirements` contains a requirement for qcflow (e.g. 'qcflow==1.2.3').
     """
-    return any(map(_is_mlflow_requirement, requirements))
+    return any(map(_is_qcflow_requirement, requirements))
 
 
 def _process_pip_requirements(
     default_pip_requirements, pip_requirements=None, extra_pip_requirements=None
 ):
     """
-    Processes `pip_requirements` and `extra_pip_requirements` passed to `mlflow.*.save_model` or
-    `mlflow.*.log_model`, and returns a tuple of (conda_env, pip_requirements, pip_constraints).
+    Processes `pip_requirements` and `extra_pip_requirements` passed to `qcflow.*.save_model` or
+    `qcflow.*.log_model`, and returns a tuple of (conda_env, pip_requirements, pip_constraints).
     """
     constraints = []
     if pip_requirements is not None:
@@ -561,8 +561,8 @@ def _process_pip_requirements(
     else:
         pip_reqs = default_pip_requirements
 
-    if not _contains_mlflow_requirement(pip_reqs):
-        pip_reqs.insert(0, _generate_mlflow_version_pinning())
+    if not _contains_qcflow_requirement(pip_reqs):
+        pip_reqs.insert(0, _generate_qcflow_version_pinning())
 
     sanitized_pip_reqs = _deduplicate_requirements(pip_reqs)
 
@@ -572,8 +572,8 @@ def _process_pip_requirements(
     if constraints:
         sanitized_pip_reqs.append(f"-c {_CONSTRAINTS_FILE_NAME}")
 
-    # Set `install_mlflow` to False because `pip_reqs` already contains `mlflow`
-    conda_env = _mlflow_conda_env(additional_pip_deps=sanitized_pip_reqs, install_mlflow=False)
+    # Set `install_qcflow` to False because `pip_reqs` already contains `qcflow`
+    conda_env = _qcflow_conda_env(additional_pip_deps=sanitized_pip_reqs, install_qcflow=False)
     return conda_env, sanitized_pip_reqs, constraints
 
 
@@ -709,7 +709,7 @@ def _validate_version_constraints(requirements):
 
 def _process_conda_env(conda_env):
     """
-    Processes `conda_env` passed to `mlflow.*.save_model` or `mlflow.*.log_model`, and returns
+    Processes `conda_env` passed to `qcflow.*.save_model` or `qcflow.*.log_model`, and returns
     a tuple of (conda_env, pip_requirements, pip_constraints).
     """
     if isinstance(conda_env, str):
@@ -724,8 +724,8 @@ def _process_conda_env(conda_env):
     # User-specified `conda_env` may contain requirements/constraints file references
     pip_reqs = _get_pip_deps(conda_env)
     pip_reqs, constraints = _parse_pip_requirements(pip_reqs)
-    if not _contains_mlflow_requirement(pip_reqs):
-        pip_reqs.insert(0, _generate_mlflow_version_pinning())
+    if not _contains_qcflow_requirement(pip_reqs):
+        pip_reqs.insert(0, _generate_qcflow_version_pinning())
 
     # Check if pip requirements contain incompatible version with the current environment
     warn_dependency_requirement_mismatches(pip_reqs)
@@ -737,31 +737,31 @@ def _process_conda_env(conda_env):
     return conda_env, pip_reqs, constraints
 
 
-def _get_mlflow_env_name(s):
-    """Creates an environment name for an MLflow model by hashing the given string.
+def _get_qcflow_env_name(s):
+    """Creates an environment name for an QCFlow model by hashing the given string.
 
     Args:
         s: String to hash (e.g. the content of `conda.yaml`).
 
     Returns:
-        String in the form of "mlflow-{hash}"
-        (e.g. "mlflow-da39a3ee5e6b4b0d3255bfef95601890afd80709")
+        String in the form of "qcflow-{hash}"
+        (e.g. "qcflow-da39a3ee5e6b4b0d3255bfef95601890afd80709")
 
     """
-    return "mlflow-" + hashlib.sha1(s.encode("utf-8"), usedforsecurity=False).hexdigest()
+    return "qcflow-" + hashlib.sha1(s.encode("utf-8"), usedforsecurity=False).hexdigest()
 
 
-def _get_pip_install_mlflow():
+def _get_pip_install_qcflow():
     """
-    Returns a command to pip-install mlflow. If the MLFLOW_HOME environment variable exists,
-    returns "pip install -e {MLFLOW_HOME} 1>&2", otherwise
-    "pip install mlflow=={mlflow.__version__} 1>&2".
+    Returns a command to pip-install qcflow. If the QCFLOW_HOME environment variable exists,
+    returns "pip install -e {QCFLOW_HOME} 1>&2", otherwise
+    "pip install qcflow=={qcflow.__version__} 1>&2".
     """
-    mlflow_home = os.getenv("MLFLOW_HOME")
-    if mlflow_home:  # dev version
-        return f"pip install -e {mlflow_home} 1>&2"
+    qcflow_home = os.getenv("QCFLOW_HOME")
+    if qcflow_home:  # dev version
+        return f"pip install -e {qcflow_home} 1>&2"
     else:
-        return f"pip install mlflow=={VERSION} 1>&2"
+        return f"pip install qcflow=={VERSION} 1>&2"
 
 
 def _get_requirements_from_file(

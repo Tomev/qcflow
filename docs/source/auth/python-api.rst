@@ -2,21 +2,21 @@
 .. _auth-python-api:
 
 ================================
-MLflow Authentication Python API
+QCFlow Authentication Python API
 ================================
 
-mlflow.server.auth.client
+qcflow.server.auth.client
 =========================
 
-.. autoclass:: mlflow.server.auth.client.AuthServiceClient()
+.. autoclass:: qcflow.server.auth.client.AuthServiceClient()
     :members:
     :undoc-members:
     :show-inheritance:
 
-mlflow.server.auth.entities
+qcflow.server.auth.entities
 ===========================
 
-.. automodule:: mlflow.server.auth.entities
+.. automodule:: qcflow.server.auth.entities
     :members:
     :undoc-members:
     :show-inheritance:

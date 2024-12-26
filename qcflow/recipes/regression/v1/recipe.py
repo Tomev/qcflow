@@ -1,11 +1,11 @@
 """
-.. _mlflow-regression-recipe:
+.. _qcflow-regression-recipe:
 
-The MLflow Regression Recipe is an MLflow Recipe for developing high-quality regression models.
+The QCFlow Regression Recipe is an QCFlow Recipe for developing high-quality regression models.
 It is designed for developing models using scikit-learn and frameworks that integrate with
 scikit-learn, such as the ``XGBRegressor`` API from XGBoost. The corresponding recipe
-template repository is available at https://github.com/mlflow/recipes-regression-template, and the
-`RegressionRecipe API Documentation <https://github.com/mlflow/recipes-regression-template/blob/main/README.md>_`
+template repository is available at https://github.com/qcflow/recipes-regression-template, and the
+`RegressionRecipe API Documentation <https://github.com/qcflow/recipes-regression-template/blob/main/README.md>_`
 provides instructions for executing the recipe and inspecting its results.
 
 The training recipe contains the following sequential steps:
@@ -30,7 +30,7 @@ The recipe steps are defined as follows:
             use the updated dataset in the recipe. The **ingest** step does *not* automatically
             detect changes in the dataset.
 
-   .. _mlflow-regression-recipe-split-step:
+   .. _qcflow-regression-recipe-split-step:
 
    - **split**
       - The **split** step splits the ingested dataset produced by the **ingest** step into
@@ -48,7 +48,7 @@ The recipe steps are defined as follows:
         transformed datasets that are used by subsequent steps for estimator training and model
         performance evaluation.
 
-   .. _mlflow-regression-recipe-train-step:
+   .. _qcflow-regression-recipe-train-step:
 
    - **train**
       - The **train** step uses the transformed training dataset output from the **transform**
@@ -58,8 +58,8 @@ The recipe steps are defined as follows:
         transformed training and validation datasets to compute performance metrics; custom
         metrics are computed according to definitions in |steps/custom_metrics.py| and the
         |'custom_metrics' section of recipe.yaml|. The model recipe and its associated parameters,
-        performance metrics, and lineage information are logged to MLflow Tracking, producing
-        an MLflow Run.
+        performance metrics, and lineage information are logged to QCFlow Tracking, producing
+        an QCFlow Run.
 
             .. note::
                 The **train** step supports hyperparameter tuning with hyperopt by adding
@@ -71,29 +71,29 @@ The recipe steps are defined as follows:
         the test dataset output from the **split** step, computing performance metrics and
         model explanations. Performance metrics are compared against configured thresholds to
         compute a ``model_validation_status``, which indicates whether or not a model is good
-        enough to be registered to the MLflow Model Registry by the subsequent **register**
+        enough to be registered to the QCFlow Model Registry by the subsequent **register**
         step. Custom performance metrics are computed according to definitions in
         |steps/custom_metrics.py| and the |'custom_metrics' section of recipe.yaml|. Model
         performance thresholds are defined in the
         |'validation_criteria' section of the 'evaluate' step definition in recipe.yaml|. Model
-        performance metrics and explanations are logged to the same MLflow Tracking Run used by
+        performance metrics and explanations are logged to the same QCFlow Tracking Run used by
         the **train** step.
 
    - **register**
       - The **register** step checks the ``model_validation_status`` output of the preceding
         **evaluate** step and, if model validation was successful
         (as indicated by the ``'VALIDATED'`` status), registers the model recipe created by
-        the **train** step to the MLflow Model Registry. If the ``model_validation_status`` does
+        the **train** step to the QCFlow Model Registry. If the ``model_validation_status`` does
         not indicate that the model passed validation checks (i.e. its value is ``'REJECTED'``),
-        the model recipe is not registered to the MLflow Model Registry.
-        If the model recipe is registered to the MLflow Model Registry, a
+        the model recipe is not registered to the QCFlow Model Registry.
+        If the model recipe is registered to the QCFlow Model Registry, a
         ``registered_model_version`` is produced containing the model name and the model version.
 
             .. note::
                 The model validation status check can be disabled by specifying
                 ``allow_non_validated_model: true`` in the
                 |'register' step definition of recipe.yaml|, in which case the model recipe is
-                always registered with the MLflow Model Registry when the **register** step is
+                always registered with the QCFlow Model Registry when the **register** step is
                 executed.
 
    - **ingest_scoring**
@@ -116,38 +116,38 @@ The recipe steps are defined as follows:
                 DBFS.
 
 .. |'ingest' step definition in recipe.yaml|
-    replace:: `'ingest' step definition in recipe.yaml <https://github.com/mlflow/recipes-regression-template/blob/main/recipe.yaml#L30>`__
+    replace:: `'ingest' step definition in recipe.yaml <https://github.com/qcflow/recipes-regression-template/blob/main/recipe.yaml#L30>`__
 .. |'split' step definition in recipe.yaml|
-    replace:: `'split' step definition in recipe.yaml <https://github.com/mlflow/recipes-regression-template/blob/main/recipe.yaml#L31-L39>`__
+    replace:: `'split' step definition in recipe.yaml <https://github.com/qcflow/recipes-regression-template/blob/main/recipe.yaml#L31-L39>`__
 .. |'register' step definition of recipe.yaml|
-    replace:: `'register' step definition of recipe.yaml <https://github.com/mlflow/recipes-regression-template/blob/main/recipe.yaml#L57-L62>`__
+    replace:: `'register' step definition of recipe.yaml <https://github.com/qcflow/recipes-regression-template/blob/main/recipe.yaml#L57-L62>`__
 .. |'ingest_scoring' section in recipe.yaml|
-    replace:: `'ingest_scoring' step definition in recipe.yaml <https://github.com/mlflow/recipes-regression-template/blob/main/recipe.yaml#L63>`__
+    replace:: `'ingest_scoring' step definition in recipe.yaml <https://github.com/qcflow/recipes-regression-template/blob/main/recipe.yaml#L63>`__
 .. |'custom_metrics' section of recipe.yaml|
-    replace:: `'custom_metrics' section of recipe.yaml <https://github.com/mlflow/recipes-regression-template/blob/main/recipe.yaml#L69-L73>`__
+    replace:: `'custom_metrics' section of recipe.yaml <https://github.com/qcflow/recipes-regression-template/blob/main/recipe.yaml#L69-L73>`__
 .. |'validation_criteria' section of the 'evaluate' step definition in recipe.yaml|
-    replace:: `'validation_criteria' section of the 'evaluate' step definition in recipe.yaml <https://github.com/mlflow/recipes-regression-template/blob/main/recipe.yaml#L54-L56>`__
+    replace:: `'validation_criteria' section of the 'evaluate' step definition in recipe.yaml <https://github.com/qcflow/recipes-regression-template/blob/main/recipe.yaml#L54-L56>`__
 .. |'tuning' section of the 'train' step definition in recipe.yaml|
-    replace:: `'tuning' section of the 'train' step definition in recipe.yaml <https://github.com/mlflow/recipes-regression-template/blob/main/recipe.yaml#L45>`__
-.. |steps/ingest.py| replace:: `steps/ingest.py <https://github.com/mlflow/recipes-regression-template/blob/main/steps/ingest.py>`__
-.. |steps/split.py| replace:: `steps/split.py <https://github.com/mlflow/recipes-regression-template/blob/main/steps/split.py>`__
-.. |steps/train.py| replace:: `steps/train.py <https://github.com/mlflow/recipes-regression-template/blob/main/steps/train.py>`__
-.. |steps/transform.py| replace:: `steps/transform.py <https://github.com/mlflow/recipes-regression-template/blob/main/steps/transform.py>`__
-.. |steps/custom_metrics.py| replace:: `steps/custom_metrics.py <https://github.com/mlflow/recipes-regression-template/blob/main/steps/custom_metrics.py>`__
+    replace:: `'tuning' section of the 'train' step definition in recipe.yaml <https://github.com/qcflow/recipes-regression-template/blob/main/recipe.yaml#L45>`__
+.. |steps/ingest.py| replace:: `steps/ingest.py <https://github.com/qcflow/recipes-regression-template/blob/main/steps/ingest.py>`__
+.. |steps/split.py| replace:: `steps/split.py <https://github.com/qcflow/recipes-regression-template/blob/main/steps/split.py>`__
+.. |steps/train.py| replace:: `steps/train.py <https://github.com/qcflow/recipes-regression-template/blob/main/steps/train.py>`__
+.. |steps/transform.py| replace:: `steps/transform.py <https://github.com/qcflow/recipes-regression-template/blob/main/steps/transform.py>`__
+.. |steps/custom_metrics.py| replace:: `steps/custom_metrics.py <https://github.com/qcflow/recipes-regression-template/blob/main/steps/custom_metrics.py>`__
 """
 
 import logging
 from typing import Any, Optional
 
-from mlflow.recipes.recipe import BaseRecipe
-from mlflow.recipes.step import BaseStep
-from mlflow.recipes.steps.evaluate import EvaluateStep
-from mlflow.recipes.steps.ingest import IngestScoringStep, IngestStep
-from mlflow.recipes.steps.predict import PredictStep
-from mlflow.recipes.steps.register import RegisterStep
-from mlflow.recipes.steps.split import SplitStep
-from mlflow.recipes.steps.train import TrainStep
-from mlflow.recipes.steps.transform import TransformStep
+from qcflow.recipes.recipe import BaseRecipe
+from qcflow.recipes.step import BaseStep
+from qcflow.recipes.steps.evaluate import EvaluateStep
+from qcflow.recipes.steps.ingest import IngestScoringStep, IngestStep
+from qcflow.recipes.steps.predict import PredictStep
+from qcflow.recipes.steps.register import RegisterStep
+from qcflow.recipes.steps.split import SplitStep
+from qcflow.recipes.steps.train import TrainStep
+from qcflow.recipes.steps.transform import TransformStep
 
 _logger = logging.getLogger(__name__)
 
@@ -157,7 +157,7 @@ class RegressionRecipe(BaseRecipe):
     A recipe for developing high-quality regression models. The recipe is designed for
     developing models using scikit-learn and frameworks that integrate with scikit-learn,
     such as the ``XGBRegressor`` API from XGBoost. The corresponding recipe
-    template repository is available at https://github.com/mlflow/recipes-regression-template.
+    template repository is available at https://github.com/qcflow/recipes-regression-template.
     The training recipe contains the following sequential steps:
 
     **ingest** -> **split** -> **transform** -> **train** -> **evaluate** -> **register**
@@ -170,7 +170,7 @@ class RegressionRecipe(BaseRecipe):
         :caption: Example
 
         import os
-        from mlflow.recipes import Recipe
+        from qcflow.recipes import Recipe
 
         os.chdir("~/recipes-regression-template")
         regression_recipe = Recipe(profile="local")
@@ -253,13 +253,13 @@ class RegressionRecipe(BaseRecipe):
                   performance metrics and model explanations. Then, compares performance
                   metrics against thresholds configured in the recipe's ``recipe.yaml``
                   configuration file to compute a ``model_validation_status``, which indicates
-                  whether or not the model is good enough to be registered to the MLflow Model
+                  whether or not the model is good enough to be registered to the QCFlow Model
                   Registry by the subsequent **register** step.
 
                 - ``"register"``: checks the ``model_validation_status`` output of the
                   preceding **evaluate** step and, if model validation was successful (as
                   indicated by the ``'VALIDATED'`` status), registers the model recipe
-                  created by the **train** step to the MLflow Model Registry.
+                  created by the **train** step to the QCFlow Model Registry.
 
                 - ``"predict"``: uses the ingested dataset for scoring created by the
                   **ingest_scoring** step and applies the specified model to the dataset.
@@ -268,7 +268,7 @@ class RegressionRecipe(BaseRecipe):
             :caption: Example
 
             import os
-            from mlflow.recipes import Recipe
+            from qcflow.recipes import Recipe
 
             os.chdir("~/recipes-regression-template")
             regression_recipe = Recipe(profile="local")
@@ -313,20 +313,20 @@ class RegressionRecipe(BaseRecipe):
                 - ``"transformed_validation_data"``: returns the transformed validation
                   dataset created in the **transform** step as a pandas DataFrame.
 
-                - ``"model"``: returns the MLflow Model recipe created in the **train**
-                  step as a :py:class:`PyFuncModel <mlflow.pyfunc.PyFuncModel>` instance.
+                - ``"model"``: returns the QCFlow Model recipe created in the **train**
+                  step as a :py:class:`PyFuncModel <qcflow.pyfunc.PyFuncModel>` instance.
 
                 - ``"transformer"``: returns the scikit-learn transformer created in the
                   **transform** step.
 
                 - ``"run"``: returns the
-                  :py:class:`MLflow Tracking Run <mlflow.entities.Run>` containing the
+                  :py:class:`QCFlow Tracking Run <qcflow.entities.Run>` containing the
                   model recipe created in the **train** step and its associated
                   parameters, as well as performance metrics and model explanations created
                   during the **train** and **evaluate** steps.
 
-                - ``"registered_model_version``": returns the MLflow Model Registry
-                  :py:class:`ModelVersion <mlflow.entities.model_registry.ModelVersion>`
+                - ``"registered_model_version``": returns the QCFlow Model Registry
+                  :py:class:`ModelVersion <qcflow.entities.model_registry.ModelVersion>`
                   created by the **register** step.
 
                 - ``"scored_data"``: returns the scored dataset created in the
@@ -354,7 +354,7 @@ class RegressionRecipe(BaseRecipe):
         .. code-block:: python
 
             import os
-            from mlflow.recipes import Recipe
+            from qcflow.recipes import Recipe
 
             os.chdir("~/recipes-regression-template")
             regression_recipe = Recipe(profile="local")
@@ -385,7 +385,7 @@ class RegressionRecipe(BaseRecipe):
 
             .. code-block:: python
               import os
-              from mlflow.recipes import Recipe
+              from qcflow.recipes import Recipe
 
               os.chdir("~/recipes-regression-template")
               regression_recipe = Recipe(profile="local")

@@ -11,7 +11,7 @@ import logging
 from alembic import op
 from sqlalchemy import orm, func, distinct, and_
 from sqlalchemy import Column, String, ForeignKey, Float, BigInteger, PrimaryKeyConstraint, Boolean
-from mlflow.store.tracking.dbmodels.models import SqlMetric, SqlLatestMetric
+from qcflow.store.tracking.dbmodels.models import SqlMetric, SqlLatestMetric
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.INFO)
@@ -44,10 +44,10 @@ def _describe_migration_if_necessary(session):
         " encounter failures while executing this migration, please file a GitHub issue at"
         " {issues_link}.".format(
             readme_link=(
-                "https://github.com/mlflow/mlflow/blob/master/mlflow/store/db_migrations/README.md"
+                "https://github.com/qcflow/qcflow/blob/master/qcflow/store/db_migrations/README.md"
                 "#89d4b8295536_create_latest_metrics_table"
             ),
-            issues_link="https://github.com/mlflow/mlflow/issues",
+            issues_link="https://github.com/qcflow/qcflow/issues",
         )
     )
 

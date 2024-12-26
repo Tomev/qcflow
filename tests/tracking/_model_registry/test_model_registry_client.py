@@ -8,27 +8,27 @@ from unittest.mock import ANY
 
 import pytest
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModel,
     RegisteredModelTag,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry import (
+from qcflow.exceptions import MlflowException
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_DEFAULT,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
 )
-from mlflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
-from mlflow.tracking._model_registry.client import ModelRegistryClient
+from qcflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
+from qcflow.tracking._model_registry.client import ModelRegistryClient
 
 
 @pytest.fixture
 def mock_store():
     mock_store = mock.MagicMock()
     mock_store.create_model_version = mock.create_autospec(SqlAlchemyStore.create_model_version)
-    with mock.patch("mlflow.tracking._model_registry.utils._get_store", return_value=mock_store):
+    with mock.patch("qcflow.tracking._model_registry.utils._get_store", return_value=mock_store):
         yield mock_store
 
 

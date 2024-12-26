@@ -1,5 +1,5 @@
 import { DeepPartial } from 'redux';
-import { renderWithIntl, act, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, act, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import { RunDatasetWithTags, RunInfoEntity } from '../../../types';
 import { RunViewDatasetBox } from './RunViewDatasetBox';
 import userEvent from '@testing-library/user-event-14';
@@ -34,7 +34,7 @@ describe('RunViewDatasetBox', () => {
 
   test('Render single dataset', async () => {
     const testDatasetWithTags = {
-      tags: [{ key: 'mlflow.data.context', value: 'train' }],
+      tags: [{ key: 'qcflow.data.context', value: 'train' }],
       dataset: {
         digest: '12345',
         name: 'dataset_train',
@@ -63,14 +63,14 @@ describe('RunViewDatasetBox', () => {
   test('Render multiple datasets', async () => {
     const datasets = [
       {
-        tags: [{ key: 'mlflow.data.context', value: 'train' }],
+        tags: [{ key: 'qcflow.data.context', value: 'train' }],
         dataset: {
           digest: '12345',
           name: 'dataset_train',
         },
       },
       {
-        tags: [{ key: 'mlflow.data.context', value: 'eval' }],
+        tags: [{ key: 'qcflow.data.context', value: 'eval' }],
         dataset: {
           digest: '54321',
           name: 'dataset_eval',

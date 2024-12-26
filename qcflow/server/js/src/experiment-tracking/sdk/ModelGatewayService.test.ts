@@ -18,21 +18,21 @@ describe('ModelGatewayService', () => {
     jest.clearAllMocks();
   });
 
-  test('Creates a request call to the MLflow deployments model route', async () => {
+  test('Creates a request call to the QCFlow deployments model route', async () => {
     const result = await ModelGatewayService.queryModelGatewayRoute(
       {
         name: 'chat_route',
-        key: 'mlflow_deployment_endpoint:test-mlflow-deployment-endpoint-chat',
+        key: 'qcflow_deployment_endpoint:test-qcflow-deployment-endpoint-chat',
         task: ModelGatewayRouteTask.LLM_V1_CHAT,
-        type: 'mlflow_deployment_endpoint',
-        mlflowDeployment: {
+        type: 'qcflow_deployment_endpoint',
+        qcflowDeployment: {
           endpoint_type: ModelGatewayRouteTask.LLM_V1_CHAT,
           endpoint_url: '/endpoint-url',
           model: {
             name: 'mpt-7b',
             provider: 'mosaic',
           },
-          name: 'test-mlflow-deployment-endpoint-chat',
+          name: 'test-qcflow-deployment-endpoint-chat',
         },
       },
       { inputText: 'input text', parameters: { temperature: 0.5, max_tokens: 50 } },
@@ -57,17 +57,17 @@ describe('ModelGatewayService', () => {
       await ModelGatewayService.queryModelGatewayRoute(
         {
           name: 'embeddings_route',
-          key: 'mlflow_deployment_endpoint:test-mlflow-deployment-endpoint-embeddings',
+          key: 'qcflow_deployment_endpoint:test-qcflow-deployment-endpoint-embeddings',
           task: ModelGatewayRouteTask.LLM_V1_EMBEDDINGS,
-          type: 'mlflow_deployment_endpoint',
-          mlflowDeployment: {
+          type: 'qcflow_deployment_endpoint',
+          qcflowDeployment: {
             endpoint_type: ModelGatewayRouteTask.LLM_V1_EMBEDDINGS,
             endpoint_url: '/endpoint-url',
             model: {
               name: 'mpt-7b',
               provider: 'mosaic',
             },
-            name: 'test-mlflow-deployment-endpoint-embeddings',
+            name: 'test-qcflow-deployment-endpoint-embeddings',
           },
         },
         { inputText: 'input text', parameters: { temperature: 0.5, max_tokens: 50 } },

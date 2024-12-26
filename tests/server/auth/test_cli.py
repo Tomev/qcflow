@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 
-from mlflow.server.auth import cli
+from qcflow.server.auth import cli
 
 
 def test_cli():

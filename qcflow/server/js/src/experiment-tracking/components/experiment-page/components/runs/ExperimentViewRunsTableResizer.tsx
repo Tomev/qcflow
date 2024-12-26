@@ -130,7 +130,7 @@ const ExperimentViewRunsTableResizerHandle = React.forwardRef<
           }}
         >
           <Button
-            componentId="mlflow.experiment_page.table_resizer.collapse"
+            componentId="qcflow.experiment_page.table_resizer.collapse"
             onClick={() => updateRunListHidden(!runListHidden)}
             icon={runListHidden ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             size="small"

@@ -10,9 +10,9 @@ from alembic import op
 from packaging.version import Version
 from sqlalchemy import CheckConstraint, Enum
 
-from mlflow.entities import RunStatus, ViewType
-from mlflow.entities.lifecycle_stage import LifecycleStage
-from mlflow.store.tracking.dbmodels.models import SqlRun, SourceTypes
+from qcflow.entities import RunStatus, ViewType
+from qcflow.entities.lifecycle_stage import LifecycleStage
+from qcflow.store.tracking.dbmodels.models import SqlRun, SourceTypes
 
 # revision identifiers, used by Alembic.
 revision = "cfd24bdc0731"

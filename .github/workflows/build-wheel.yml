@@ -1,4 +1,4 @@
-# Build a wheel for MLflow and upload it as an artifact.
+# Build a wheel for QCFlow and upload it as an artifact.
 name: build-wheel
 
 on:
@@ -47,7 +47,7 @@ jobs:
       - uses: ./.github/actions/setup-node
 
       - name: Build UI
-        working-directory: mlflow/server/js
+        working-directory: qcflow/server/js
         run: |
           yarn
           yarn build
@@ -107,12 +107,12 @@ jobs:
       - name: Test installation from tarball
         run: |
           pip install ${{ steps.build-dist.outputs.sdist-path }}
-          python -c "import mlflow; print(mlflow.__version__)"
+          python -c "import qcflow; print(qcflow.__version__)"
 
       - name: Test installation from wheel
         run: |
           pip install --force-reinstall ${{ steps.build-dist.outputs.wheel-path }}
-          python -c "import mlflow; print(mlflow.__version__)"
+          python -c "import qcflow; print(qcflow.__version__)"
 
       # Anyone with read access can download the uploaded wheel on GitHub.
       - name: Upload wheel

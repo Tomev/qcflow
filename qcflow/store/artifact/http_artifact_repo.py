@@ -5,29 +5,29 @@ import posixpath
 import requests
 from requests import HTTPError
 
-from mlflow.entities import FileInfo
-from mlflow.entities.multipart_upload import (
+from qcflow.entities import FileInfo
+from qcflow.entities.multipart_upload import (
     CreateMultipartUploadResponse,
     MultipartUploadCredential,
     MultipartUploadPart,
 )
-from mlflow.environment_variables import (
-    MLFLOW_ENABLE_PROXY_MULTIPART_UPLOAD,
-    MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
-    MLFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE,
+from qcflow.environment_variables import (
+    QCFLOW_ENABLE_PROXY_MULTIPART_UPLOAD,
+    QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
+    QCFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE,
 )
-from mlflow.exceptions import MlflowException, _UnsupportedMultipartUploadException
-from mlflow.store.artifact.artifact_repo import (
+from qcflow.exceptions import MlflowException, _UnsupportedMultipartUploadException
+from qcflow.store.artifact.artifact_repo import (
     ArtifactRepository,
     MultipartUploadMixin,
     verify_artifact_path,
 )
-from mlflow.store.artifact.cloud_artifact_repo import _complete_futures, _compute_num_chunks
-from mlflow.utils.credentials import get_default_host_creds
-from mlflow.utils.file_utils import read_chunk, relative_path_to_artifact_path
-from mlflow.utils.mime_type_utils import _guess_mime_type
-from mlflow.utils.rest_utils import augmented_raise_for_status, http_request
-from mlflow.utils.uri import validate_path_is_safe
+from qcflow.store.artifact.cloud_artifact_repo import _complete_futures, _compute_num_chunks
+from qcflow.utils.credentials import get_default_host_creds
+from qcflow.utils.file_utils import read_chunk, relative_path_to_artifact_path
+from qcflow.utils.mime_type_utils import _guess_mime_type
+from qcflow.utils.rest_utils import augmented_raise_for_status, http_request
+from qcflow.utils.uri import validate_path_is_safe
 
 _logger = logging.getLogger(__name__)
 
@@ -45,8 +45,8 @@ class HttpArtifactRepository(ArtifactRepository, MultipartUploadMixin):
         # Try to perform multipart upload if the file is large.
         # If the server does not support, or if the upload failed, revert to normal upload.
         if (
-            MLFLOW_ENABLE_PROXY_MULTIPART_UPLOAD.get()
-            and os.path.getsize(local_file) >= MLFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE.get()
+            QCFLOW_ENABLE_PROXY_MULTIPART_UPLOAD.get()
+            and os.path.getsize(local_file) >= QCFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE.get()
         ):
             try:
                 self._try_multipart_upload(local_file, artifact_path)
@@ -80,7 +80,7 @@ class HttpArtifactRepository(ArtifactRepository, MultipartUploadMixin):
                 self.log_artifact(os.path.join(root, f), artifact_dir)
 
     def list_artifacts(self, path=None):
-        endpoint = "/mlflow-artifacts/artifacts"
+        endpoint = "/qcflow-artifacts/artifacts"
         url, tail = self.artifact_uri.split(endpoint, maxsplit=1)
         root = tail.lstrip("/")
         params = {"path": posixpath.join(root, path) if path else root}
@@ -114,7 +114,7 @@ class HttpArtifactRepository(ArtifactRepository, MultipartUploadMixin):
         augmented_raise_for_status(resp)
 
     def _construct_mpu_uri_and_path(self, base_endpoint, artifact_path):
-        uri, path = self.artifact_uri.split("/mlflow-artifacts/artifacts", maxsplit=1)
+        uri, path = self.artifact_uri.split("/qcflow-artifacts/artifacts", maxsplit=1)
         path = path.strip("/")
         endpoint = (
             posixpath.join(base_endpoint, path, artifact_path)
@@ -125,7 +125,7 @@ class HttpArtifactRepository(ArtifactRepository, MultipartUploadMixin):
 
     def create_multipart_upload(self, local_file, num_parts=1, artifact_path=None):
         uri, endpoint = self._construct_mpu_uri_and_path(
-            "/mlflow-artifacts/mpu/create", artifact_path
+            "/qcflow-artifacts/mpu/create", artifact_path
         )
         host_creds = get_default_host_creds(uri)
         params = {
@@ -138,7 +138,7 @@ class HttpArtifactRepository(ArtifactRepository, MultipartUploadMixin):
 
     def complete_multipart_upload(self, local_file, upload_id, parts=None, artifact_path=None):
         uri, endpoint = self._construct_mpu_uri_and_path(
-            "/mlflow-artifacts/mpu/complete", artifact_path
+            "/qcflow-artifacts/mpu/complete", artifact_path
         )
         host_creds = get_default_host_creds(uri)
         params = {
@@ -151,7 +151,7 @@ class HttpArtifactRepository(ArtifactRepository, MultipartUploadMixin):
 
     def abort_multipart_upload(self, local_file, upload_id, artifact_path=None):
         uri, endpoint = self._construct_mpu_uri_and_path(
-            "/mlflow-artifacts/mpu/abort", artifact_path
+            "/qcflow-artifacts/mpu/abort", artifact_path
         )
         host_creds = get_default_host_creds(uri)
         params = {
@@ -178,7 +178,7 @@ class HttpArtifactRepository(ArtifactRepository, MultipartUploadMixin):
         Returns if the multipart upload is successful.
         Raises UnsupportedMultipartUploadException if multipart upload is unsupported.
         """
-        chunk_size = MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
+        chunk_size = QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
         num_parts = _compute_num_chunks(local_file, chunk_size)
 
         try:

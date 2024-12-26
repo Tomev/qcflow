@@ -1,9 +1,9 @@
-mlflow_is_verbose <- function() {
-  nchar(Sys.getenv("MLFLOW_VERBOSE")) > 0 || getOption("mlflow.verbose", FALSE)
+qcflow_is_verbose <- function() {
+  nchar(Sys.getenv("QCFLOW_VERBOSE")) > 0 || getOption("qcflow.verbose", FALSE)
 }
 
-mlflow_verbose_message <- function(...) {
-  if (mlflow_is_verbose()) {
+qcflow_verbose_message <- function(...) {
+  if (qcflow_is_verbose()) {
     message(...)
   }
 }

@@ -4,17 +4,17 @@ import inspect
 
 import importlib_metadata
 
-from mlflow.deployments.base import BaseDeploymentClient
-from mlflow.deployments.utils import parse_target_uri
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
-from mlflow.utils.annotations import developer_stable
-from mlflow.utils.plugins import get_entry_points
+from qcflow.deployments.base import BaseDeploymentClient
+from qcflow.deployments.utils import parse_target_uri
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
+from qcflow.utils.annotations import developer_stable
+from qcflow.utils.plugins import get_entry_points
 
-# TODO: refactor to have a common base class for all the plugin implementation in MLflow
-#   mlflow/tracking/context/registry.py
-#   mlflow/tracking/registry
-#   mlflow/store/artifact/artifact_repository_registry.py
+# TODO: refactor to have a common base class for all the plugin implementation in QCFlow
+#   qcflow/tracking/context/registry.py
+#   qcflow/tracking/registry
+#   qcflow/store/artifact/artifact_repository_registry.py
 
 
 @developer_stable
@@ -80,7 +80,7 @@ class PluginManager(abc.ABC):
 @developer_stable
 class DeploymentPlugins(PluginManager):
     def __init__(self):
-        super().__init__("mlflow.deployments")
+        super().__init__("qcflow.deployments")
         self.register_entrypoints()
 
     def __getitem__(self, item):
@@ -93,7 +93,7 @@ class DeploymentPlugins(PluginManager):
                 f'No plugin found for managing model deployments to "{item}". '
                 f'In order to deploy models to "{item}", find and install an appropriate '
                 "plugin from "
-                "https://mlflow.org/docs/latest/plugins.html#community-plugins using "
+                "https://qcflow.org/docs/latest/plugins.html#community-plugins using "
                 "your package manager (pip, conda etc)."
             )
             raise MlflowException(msg, error_code=RESOURCE_DOES_NOT_EXIST)

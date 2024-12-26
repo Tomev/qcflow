@@ -5,7 +5,7 @@
  * annotations are already looking good, please remove this comment.
  */
 
-import { MLFLOW_LOGGED_ARTIFACTS_TAG } from '../constants';
+import { QCFLOW_LOGGED_ARTIFACTS_TAG } from '../constants';
 import { type KeyValueEntity, RunLoggedArtifactType, type RunLoggedArtifactsDeclaration } from '../types';
 
 export class ArtifactNode {
@@ -79,7 +79,7 @@ export class ArtifactNode {
  * Extracts the list of tables logged in the run from the run tags.
  */
 export const extractLoggedTablesFromRunTags = (runTags: Record<string, KeyValueEntity>) => {
-  const rawLoggedArtifactsDeclaration = runTags?.[MLFLOW_LOGGED_ARTIFACTS_TAG]?.value;
+  const rawLoggedArtifactsDeclaration = runTags?.[QCFLOW_LOGGED_ARTIFACTS_TAG]?.value;
   const tablesInRun: Set<string> = new Set();
   if (rawLoggedArtifactsDeclaration) {
     try {
@@ -92,7 +92,7 @@ export const extractLoggedTablesFromRunTags = (runTags: Record<string, KeyValueE
         });
     } catch (error) {
       if (error instanceof SyntaxError) {
-        throw new SyntaxError(`The "${MLFLOW_LOGGED_ARTIFACTS_TAG}" tag is malformed!`);
+        throw new SyntaxError(`The "${QCFLOW_LOGGED_ARTIFACTS_TAG}" tag is malformed!`);
       }
       throw error;
     }

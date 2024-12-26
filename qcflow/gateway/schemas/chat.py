@@ -1,10 +1,10 @@
 """
-This module defines the schemas for the MLflow AI Gateway's chat endpoint.
+This module defines the schemas for the QCFlow AI Gateway's chat endpoint.
 
 The schemas must be compatible with OpenAI's Chat Completion API.
 https://platform.openai.com/docs/api-reference/chat
 
-NB: These Pydantic models just alias the models defined in mlflow.types.chat to avoid code
+NB: These Pydantic models just alias the models defined in qcflow.types.chat to avoid code
     duplication, but with the addition of RequestModel and ResponseModel base classes.
 """
 
@@ -12,10 +12,10 @@ from typing import Literal, Optional
 
 from pydantic import Field
 
-from mlflow.gateway.base_models import RequestModel, ResponseModel
+from qcflow.gateway.base_models import RequestModel, ResponseModel
 
 # Import marked with noqa is for backward compatibility
-from mlflow.types.chat import (
+from qcflow.types.chat import (
     ChatChoice,
     ChatChoiceDelta,
     ChatChunkChoice,
@@ -28,7 +28,7 @@ from mlflow.types.chat import (
     FunctionToolDefinition,
     ToolCall,  # noqa F401
 )
-from mlflow.utils import IS_PYDANTIC_V2_OR_NEWER
+from qcflow.utils import IS_PYDANTIC_V2_OR_NEWER
 
 # NB: `import x as y` does not work and will cause a Pydantic error.
 StreamDelta = ChatChoiceDelta
@@ -44,7 +44,7 @@ class ChatToolWithUC(RequestModel):
     """
     A tool definition for the chat endpoint with Unity Catalog integration.
     The Gateway request accepts a special tool type 'uc_function' for Unity Catalog integration.
-    https://mlflow.org/docs/latest/llms/deployments/uc_integration.html
+    https://qcflow.org/docs/latest/llms/deployments/uc_integration.html
     """
 
     type: Literal["function", "uc_function"]

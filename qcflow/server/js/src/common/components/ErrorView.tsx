@@ -69,7 +69,7 @@ export class ErrorViewImpl extends Component<ErrorViewImplProps> {
       return (
         <FormattedMessage
           defaultMessage="{subMessage}, go back to <link>the home page.</link>"
-          description="Default error message for error views in MLflow"
+          description="Default error message for error views in QCFlow"
           values={{
             link: (chunks: any) => (
               <Link data-testid="error-view-link" to={fallbackHomePageReactRoute || Routes.rootRoute}>
@@ -84,7 +84,7 @@ export class ErrorViewImpl extends Component<ErrorViewImplProps> {
       return (
         <FormattedMessage
           defaultMessage="Go back to <link>the home page.</link>"
-          description="Default error message for error views in MLflow"
+          description="Default error message for error views in QCFlow"
           values={{
             link: (chunks: any) => (
               <Link data-testid="error-view-link" to={fallbackHomePageReactRoute || Routes.rootRoute}>

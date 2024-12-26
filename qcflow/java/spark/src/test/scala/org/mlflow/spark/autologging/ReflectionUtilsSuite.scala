@@ -1,4 +1,4 @@
-package org.mlflow.spark.autologging
+package org.qcflow.spark.autologging
 
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -41,7 +41,7 @@ class ReflectionUtilsSuite extends AnyFunSuite {
   }
 
   test("Can get Scala object and call methods via reflection") {
-    val obj = ReflectionUtils.getScalaObjectByName("org.mlflow.spark.autologging.TestObject")
+    val obj = ReflectionUtils.getScalaObjectByName("org.qcflow.spark.autologging.TestObject")
     val res = ReflectionUtils.callMethod(obj, "myMethod", Seq.empty).asInstanceOf[String]
     assert(res == "hi")
   }
@@ -54,13 +54,13 @@ class ReflectionUtilsSuite extends AnyFunSuite {
   }
 
   test("maybeCallMethod invokes the method if the method is found") {
-    val obj = ReflectionUtils.getScalaObjectByName("org.mlflow.spark.autologging.TestObject")
+    val obj = ReflectionUtils.getScalaObjectByName("org.qcflow.spark.autologging.TestObject")
     val res0 = ReflectionUtils.maybeCallMethod(obj, "myMethod", Seq.empty).getOrElse("")
     assert(res0 == "hi")
   }
 
   test("chaining maybeCallMethod works") {
-    val fileIndex = ReflectionUtils.getScalaObjectByName("org.mlflow.spark.autologging.TestFileIndex")
+    val fileIndex = ReflectionUtils.getScalaObjectByName("org.qcflow.spark.autologging.TestFileIndex")
 
     val versionOpt0 = ReflectionUtils.maybeCallMethod(fileIndex, "version", Seq.empty).orElse(
       Option("second thing")

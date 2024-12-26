@@ -3,15 +3,15 @@ import inspect
 import logging
 from typing import Any, Callable
 
-from mlflow.ml_package_versions import FLAVOR_TO_MODULE_NAME
-from mlflow.utils.autologging_utils import (
+from qcflow.ml_package_versions import FLAVOR_TO_MODULE_NAME
+from qcflow.utils.autologging_utils import (
     AUTOLOGGING_INTEGRATIONS,
     autologging_conf_lock,
     get_autolog_function,
     is_autolog_supported,
 )
-from mlflow.utils.autologging_utils.safety import revert_patches
-from mlflow.utils.import_hooks import (
+from qcflow.utils.autologging_utils.safety import revert_patches
+from qcflow.utils.import_hooks import (
     _post_import_hooks,
     get_post_import_hooks,
     register_post_import_hook,
@@ -74,7 +74,7 @@ def configure_autologging_for_evaluation(enable_tracing: bool = True):
                         _logger.info(
                             "Auto tracing is temporarily enabled during the model evaluation "
                             "for computing some metrics and debugging. To disable tracing, call "
-                            "`mlflow.autolog(disable=True)`."
+                            "`qcflow.autolog(disable=True)`."
                         )
                         _SHOWN_TRACE_MESSAGE_BEFORE = True
                 else:
@@ -131,13 +131,13 @@ def _should_enable_tracing(flavor: str, autologging_config: dict[str, Any]) -> b
     """
     # 1. Check if the autologging or tracing is globally disabled
     # TODO: This check should not take precedence over the flavor-specific configuration
-    # set by the explicit mlflow.<flavor>.autolog() call by users.
-    # However, in Databricks, sometimes mlflow.<flavor>.autolog() is automatically
+    # set by the explicit qcflow.<flavor>.autolog() call by users.
+    # However, in Databricks, sometimes qcflow.<flavor>.autolog() is automatically
     # called in the kernel startup, which is confused with the user's action. In
     # such cases, even when user disables autologging globally, the flavor-specific
     # autologging remains enabled. We are going to fix the Databricks side issue,
     # and after that, we should move this check down after the flavor-specific check.
-    global_config = autologging_config.get("mlflow", {})
+    global_config = autologging_config.get("qcflow", {})
     if global_config.get("disable", False) or (not global_config.get("log_traces", True)):
         return False
 

@@ -11,19 +11,19 @@ from packaging.version import Version
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
-import mlflow
-import mlflow.pytorch
-from mlflow import MlflowClient
-from mlflow.exceptions import MlflowException
-from mlflow.pytorch._lightning_autolog import _get_optimizer_name
-from mlflow.utils.file_utils import TempDir
+import qcflow
+import qcflow.pytorch
+from qcflow import MlflowClient
+from qcflow.exceptions import MlflowException
+from qcflow.pytorch._lightning_autolog import _get_optimizer_name
+from qcflow.utils.file_utils import TempDir
 
 NUM_EPOCHS = 20
 
 
 @pytest.fixture
 def pytorch_model():
-    mlflow.pytorch.autolog()
+    qcflow.pytorch.autolog()
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
@@ -36,7 +36,7 @@ def pytorch_model():
 
 @pytest.fixture
 def pytorch_model_without_validation():
-    mlflow.pytorch.autolog()
+    qcflow.pytorch.autolog()
     model = IrisClassificationWithoutValidation()
     dm = IrisDataModuleWithoutValidation()
     dm.setup(stage="fit")
@@ -50,7 +50,7 @@ def pytorch_model_without_validation():
 @pytest.fixture(params=[(1, 1), (1, 10), (2, 1)])
 def pytorch_model_with_steps_logged(request):
     log_every_n_epoch, log_every_n_step = request.param
-    mlflow.pytorch.autolog(log_every_n_epoch=log_every_n_epoch, log_every_n_step=log_every_n_step)
+    qcflow.pytorch.autolog(log_every_n_epoch=log_every_n_epoch, log_every_n_step=log_every_n_step)
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
@@ -64,7 +64,7 @@ def pytorch_model_with_steps_logged(request):
 @pytest.fixture(params=[(1, 1), (1, 10), (2, 1)])
 def pytorch_multi_optimizer_model(request):
     log_every_n_epoch, log_every_n_step = request.param
-    mlflow.pytorch.autolog(log_every_n_epoch=log_every_n_epoch, log_every_n_step=log_every_n_step)
+    qcflow.pytorch.autolog(log_every_n_epoch=log_every_n_epoch, log_every_n_step=log_every_n_step)
     model = IrisClassificationMultiOptimizer()
     dm = IrisDataModule()
     dm.setup(stage="fit")
@@ -77,7 +77,7 @@ def pytorch_multi_optimizer_model(request):
 
 @pytest.mark.parametrize("log_models", [True, False])
 def test_pytorch_autolog_log_models_configuration(log_models):
-    mlflow.pytorch.autolog(log_models=log_models)
+    qcflow.pytorch.autolog(log_models=log_models)
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
@@ -102,16 +102,16 @@ def test_pytorch_autolog_logs_default_params(pytorch_model):
 
 
 def test_extra_tags_pytorch_autolog():
-    mlflow.pytorch.autolog(extra_tags={"test_tag": "pytorch_autolog"})
+    qcflow.pytorch.autolog(extra_tags={"test_tag": "pytorch_autolog"})
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
     trainer.fit(model, dm)
 
-    run = mlflow.last_active_run()
+    run = qcflow.last_active_run()
     assert run.data.tags["test_tag"] == "pytorch_autolog"
-    assert run.data.tags[mlflow.utils.mlflow_tags.MLFLOW_AUTOLOGGING] == "pytorch"
+    assert run.data.tags[qcflow.utils.qcflow_tags.QCFLOW_AUTOLOGGING] == "pytorch"
 
 
 def test_pytorch_autolog_logs_expected_data(pytorch_model):
@@ -215,7 +215,7 @@ def test_pytorch_autolog_log_on_step_with_multiple_optimizers(
     reason="Logging step metrics is supported since PyTorch-Lightning 1.1.0",
 )
 def test_pytorch_autolog_raises_error_when_step_logging_unsupported():
-    mlflow.pytorch.autolog(log_every_n_step=1)
+    qcflow.pytorch.autolog(log_every_n_step=1)
     model = IrisClassification()
     dm = IrisDataModule()
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
@@ -226,25 +226,25 @@ def test_pytorch_autolog_raises_error_when_step_logging_unsupported():
 
 
 def test_pytorch_autolog_persists_manually_created_run():
-    with mlflow.start_run() as manual_run:
-        mlflow.pytorch.autolog()
+    with qcflow.start_run() as manual_run:
+        qcflow.pytorch.autolog()
         model = IrisClassification()
         dm = IrisDataModule()
         dm.setup(stage="fit")
         trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
         trainer.fit(model, dm)
         trainer.test(datamodule=dm)
-        assert mlflow.active_run() is not None
-        assert mlflow.active_run().info.run_id == manual_run.info.run_id
+        assert qcflow.active_run() is not None
+        assert qcflow.active_run().info.run_id == manual_run.info.run_id
 
 
 def test_pytorch_autolog_ends_auto_created_run(pytorch_model):
-    assert mlflow.active_run() is None
+    assert qcflow.active_run() is None
 
 
 @pytest.fixture
 def pytorch_model_with_callback(patience):
-    mlflow.pytorch.autolog()
+    qcflow.pytorch.autolog()
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
@@ -295,7 +295,7 @@ def test_pytorch_autolog_model_can_load_from_artifact(pytorch_model_with_callbac
     artifacts = client.list_artifacts(run_id)
     artifacts = (x.path for x in artifacts)
     assert "model" in artifacts
-    model = mlflow.pytorch.load_model("runs:/" + run_id + "/model")
+    model = qcflow.pytorch.load_model("runs:/" + run_id + "/model")
     result = model(torch.Tensor([1.5, 2, 2.5, 3.5]).unsqueeze(0))
     assert result is not None
 
@@ -303,7 +303,7 @@ def test_pytorch_autolog_model_can_load_from_artifact(pytorch_model_with_callbac
 @pytest.mark.parametrize("log_models", [True, False])
 @pytest.mark.parametrize("patience", [3])
 def test_pytorch_with_early_stopping_autolog_log_models_configuration_with(log_models, patience):
-    mlflow.pytorch.autolog(log_models=log_models)
+    qcflow.pytorch.autolog(log_models=log_models)
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
@@ -357,12 +357,12 @@ def test_pytorch_autolog_non_early_stop_callback_does_not_log(pytorch_model):
 
 @pytest.fixture
 def pytorch_model_tests():
-    mlflow.pytorch.autolog()
+    qcflow.pytorch.autolog()
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, datamodule=dm)
         trainer.test(datamodule=dm)
     client = MlflowClient()
@@ -396,7 +396,7 @@ def test_get_optimizer_name_with_lightning_optimizer():
 
 
 def test_pytorch_autologging_supports_data_parallel_execution():
-    mlflow.pytorch.autolog()
+    qcflow.pytorch.autolog()
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
@@ -415,7 +415,7 @@ def test_pytorch_autologging_supports_data_parallel_execution():
         **extra_kwargs,
     )
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, datamodule=dm)
         trainer.test(datamodule=dm)
 
@@ -444,13 +444,13 @@ def test_pytorch_autologging_supports_data_parallel_execution():
 
 def test_autolog_registering_model():
     registered_model_name = "test_autolog_registered_model"
-    mlflow.pytorch.autolog(registered_model_name=registered_model_name)
+    qcflow.pytorch.autolog(registered_model_name=registered_model_name)
     model = IrisClassification()
     dm = IrisDataModule()
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         trainer.fit(model, dm)
 
         registered_model = MlflowClient().get_registered_model(registered_model_name)
@@ -462,7 +462,7 @@ def test_autolog_registering_model():
     reason="`Automatic model checkpointing doesn't exist in pytorch-lightning < 1.6.0",
 )
 def test_automatic_checkpoint_per_epoch_callback():
-    mlflow.pytorch.autolog(
+    qcflow.pytorch.autolog(
         checkpoint=True,
         checkpoint_monitor=None,
         checkpoint_mode=None,
@@ -476,19 +476,19 @@ def test_automatic_checkpoint_per_epoch_callback():
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=1)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
 
     run_id = run.info.run_id
 
     logged_metrics = {k: float(v) for k, v in trainer.callback_metrics.items()}
     logged_metrics.update({"epoch": 0, "global_step": 33})
-    assert logged_metrics == mlflow.artifacts.load_dict(
+    assert logged_metrics == qcflow.artifacts.load_dict(
         f"runs:/{run_id}/checkpoints/epoch_0/checkpoint_metrics.json"
     )
 
     IrisClassification.load_from_checkpoint(
-        mlflow.artifacts.download_artifacts(
+        qcflow.artifacts.download_artifacts(
             run_id=run_id, artifact_path="checkpoints/epoch_0/checkpoint.pth"
         )
     )
@@ -499,7 +499,7 @@ def test_automatic_checkpoint_per_epoch_callback():
     reason="`Automatic model checkpointing doesn't exist in pytorch-lightning < 1.6.0",
 )
 def test_automatic_checkpoint_per_epoch_save_weight_only_callback():
-    mlflow.pytorch.autolog(
+    qcflow.pytorch.autolog(
         checkpoint=True,
         checkpoint_monitor=None,
         checkpoint_mode=None,
@@ -513,19 +513,19 @@ def test_automatic_checkpoint_per_epoch_save_weight_only_callback():
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=1)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
 
     run_id = run.info.run_id
 
     logged_metrics = {k: float(v) for k, v in trainer.callback_metrics.items()}
     logged_metrics.update({"epoch": 0, "global_step": 33})
-    assert logged_metrics == mlflow.artifacts.load_dict(
+    assert logged_metrics == qcflow.artifacts.load_dict(
         f"runs:/{run_id}/checkpoints/epoch_0/checkpoint_metrics.json"
     )
 
     IrisClassification.load_from_checkpoint(
-        mlflow.artifacts.download_artifacts(
+        qcflow.artifacts.download_artifacts(
             run_id=run_id, artifact_path="checkpoints/epoch_0/checkpoint.weights.pth"
         )
     )
@@ -536,7 +536,7 @@ def test_automatic_checkpoint_per_epoch_save_weight_only_callback():
     reason="`Automatic model checkpointing doesn't exist in pytorch-lightning < 1.6.0",
 )
 def test_automatic_checkpoint_per_10_steps_callback():
-    mlflow.pytorch.autolog(
+    qcflow.pytorch.autolog(
         checkpoint=True,
         checkpoint_monitor=None,
         checkpoint_mode=None,
@@ -550,19 +550,19 @@ def test_automatic_checkpoint_per_10_steps_callback():
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=1)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
 
     run_id = run.info.run_id
 
     metric_keys = {"epoch", "loss_forked_step", "loss", "global_step", "loss_forked"}
     assert metric_keys == set(
-        mlflow.artifacts.load_dict(
+        qcflow.artifacts.load_dict(
             f"runs:/{run_id}/checkpoints/global_step_10/checkpoint_metrics.json"
         )
     )
     IrisClassification.load_from_checkpoint(
-        mlflow.artifacts.download_artifacts(
+        qcflow.artifacts.download_artifacts(
             run_id=run_id, artifact_path="checkpoints/global_step_10/checkpoint.pth"
         )
     )
@@ -573,7 +573,7 @@ def test_automatic_checkpoint_per_10_steps_callback():
     reason="`Automatic model checkpointing doesn't exist in pytorch-lightning < 1.6.0",
 )
 def test_automatic_checkpoint_per_30_steps_save_best_only_callback():
-    mlflow.pytorch.autolog(
+    qcflow.pytorch.autolog(
         checkpoint=True,
         checkpoint_monitor="loss_forked_step",
         checkpoint_mode="min",
@@ -587,20 +587,20 @@ def test_automatic_checkpoint_per_30_steps_save_best_only_callback():
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=1)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
 
     run_id = run.info.run_id
 
     metric_keys = {"epoch", "loss_forked_step", "loss", "global_step", "loss_forked"}
-    logged_metrics = mlflow.artifacts.load_dict(
+    logged_metrics = qcflow.artifacts.load_dict(
         f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json"
     )
     assert logged_metrics["global_step"] == 30
     assert metric_keys == set(logged_metrics)
 
     IrisClassification.load_from_checkpoint(
-        mlflow.artifacts.download_artifacts(
+        qcflow.artifacts.download_artifacts(
             run_id=run_id, artifact_path="checkpoints/latest_checkpoint.pth"
         )
     )
@@ -611,7 +611,7 @@ def test_automatic_checkpoint_per_30_steps_save_best_only_callback():
     reason="`Automatic model checkpointing doesn't exist in pytorch-lightning < 1.6.0",
 )
 def test_automatic_checkpoint_per_epoch_save_best_only_min_monitor_callback():
-    mlflow.pytorch.autolog(
+    qcflow.pytorch.autolog(
         checkpoint=True,
         checkpoint_monitor="custom_metric",
         checkpoint_mode="min",
@@ -637,51 +637,51 @@ def test_automatic_checkpoint_per_epoch_save_best_only_min_monitor_callback():
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=1)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
 
     run_id = run.info.run_id
 
     logged_metrics = {k: float(v) for k, v in trainer.callback_metrics.items()}
     logged_metrics.update({"epoch": 0, "global_step": 33})
-    assert logged_metrics == mlflow.artifacts.load_dict(
+    assert logged_metrics == qcflow.artifacts.load_dict(
         f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json"
     )
 
     IrisClassification.load_from_checkpoint(
-        mlflow.artifacts.download_artifacts(
+        qcflow.artifacts.download_artifacts(
             run_id=run_id, artifact_path="checkpoints/latest_checkpoint.pth"
         )
     )
 
     trainer = pl.Trainer(max_epochs=2)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
     run_id = run.info.run_id
     assert (
-        mlflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
+        qcflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
             "epoch"
         ]
         == 0
     )
 
     trainer = pl.Trainer(max_epochs=3)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
     run_id = run.info.run_id
     assert (
-        mlflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
+        qcflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
             "epoch"
         ]
         == 0
     )
 
     trainer = pl.Trainer(max_epochs=4)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
     run_id = run.info.run_id
     assert (
-        mlflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
+        qcflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
             "epoch"
         ]
         == 3
@@ -693,7 +693,7 @@ def test_automatic_checkpoint_per_epoch_save_best_only_min_monitor_callback():
     reason="`Automatic model checkpointing doesn't exist in pytorch-lightning < 1.6.0",
 )
 def test_automatic_checkpoint_per_epoch_save_best_only_max_monitor_callback():
-    mlflow.pytorch.autolog(
+    qcflow.pytorch.autolog(
         checkpoint=True,
         checkpoint_monitor="custom_metric",
         checkpoint_mode="max",
@@ -717,40 +717,40 @@ def test_automatic_checkpoint_per_epoch_save_best_only_max_monitor_callback():
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=1)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
 
     run_id = run.info.run_id
 
     logged_metrics = {k: float(v) for k, v in trainer.callback_metrics.items()}
     logged_metrics.update({"epoch": 0, "global_step": 33})
-    assert logged_metrics == mlflow.artifacts.load_dict(
+    assert logged_metrics == qcflow.artifacts.load_dict(
         f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json"
     )
 
     IrisClassification.load_from_checkpoint(
-        mlflow.artifacts.download_artifacts(
+        qcflow.artifacts.download_artifacts(
             run_id=run_id, artifact_path="checkpoints/latest_checkpoint.pth"
         )
     )
 
     trainer = pl.Trainer(max_epochs=2)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
     run_id = run.info.run_id
     assert (
-        mlflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
+        qcflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
             "epoch"
         ]
         == 0
     )
 
     trainer = pl.Trainer(max_epochs=3)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         trainer.fit(model, dm)
     run_id = run.info.run_id
     assert (
-        mlflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
+        qcflow.artifacts.load_dict(f"runs:/{run_id}/checkpoints/latest_checkpoint_metrics.json")[
             "epoch"
         ]
         == 2

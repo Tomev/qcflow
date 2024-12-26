@@ -7,17 +7,17 @@ import pandas as pd
 if TYPE_CHECKING:
     from sklearn.base import BaseEstimator
 
-import mlflow
-from mlflow import MlflowException
-from mlflow.models import EvaluationMetric
-from mlflow.models.evaluation.evaluators.classifier import _get_binary_classifier_metrics
-from mlflow.models.evaluation.evaluators.regressor import _get_regressor_metrics
-from mlflow.recipes.utils.metrics import RecipeMetric, _load_custom_metrics
+import qcflow
+from qcflow import MlflowException
+from qcflow.models import EvaluationMetric
+from qcflow.models.evaluation.evaluators.classifier import _get_binary_classifier_metrics
+from qcflow.models.evaluation.evaluators.regressor import _get_regressor_metrics
+from qcflow.recipes.utils.metrics import RecipeMetric, _load_custom_metrics
 
 _logger = logging.getLogger(__name__)
 
 _AUTOML_DEFAULT_TIME_BUDGET = 600
-_MLFLOW_TO_FLAML_METRICS = {
+_QCFLOW_TO_FLAML_METRICS = {
     "mean_absolute_error": "mae",
     "mean_squared_error": "mse",
     "root_mean_squared_error": "rmse",
@@ -129,8 +129,8 @@ def _create_model_automl(
         raise MlflowException("Please install FLAML to use AutoML!")
 
     try:
-        if primary_metric in _MLFLOW_TO_FLAML_METRICS and primary_metric in evaluation_metrics:
-            metric = _MLFLOW_TO_FLAML_METRICS[primary_metric]
+        if primary_metric in _QCFLOW_TO_FLAML_METRICS and primary_metric in evaluation_metrics:
+            metric = _QCFLOW_TO_FLAML_METRICS[primary_metric]
             if primary_metric == "roc_auc" and extended_task == "classification/multiclass":
                 metric = "roc_auc_ovr"
         elif primary_metric in _SKLEARN_METRICS and primary_metric in evaluation_metrics:
@@ -159,10 +159,10 @@ def _create_model_automl(
         automl_settings["task"] = task
         # Disabled Autologging, because during the hyperparameter search
         # it tries to log the same parameters multiple times.
-        mlflow.autolog(disable=True)
+        qcflow.autolog(disable=True)
         automl = AutoML()
         automl.fit(X, y, **automl_settings)
-        mlflow.autolog(disable=False, log_models=False)
+        qcflow.autolog(disable=False, log_models=False)
         if automl.model is None:
             raise MlflowException(
                 "AutoML (FLAML) could not train a suitable algorithm. "

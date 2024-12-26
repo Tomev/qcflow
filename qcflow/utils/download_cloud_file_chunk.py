@@ -21,7 +21,7 @@ def parse_args():
 
 def main():
     file_path = os.path.join(os.path.dirname(__file__), "request_utils.py")
-    module_name = "mlflow.utils.request_utils"
+    module_name = "qcflow.utils.request_utils"
 
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     module = importlib.util.module_from_spec(spec)

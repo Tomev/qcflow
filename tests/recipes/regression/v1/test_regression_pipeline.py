@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.regression.v1.recipe import RegressionRecipe
+from qcflow.exceptions import MlflowException
+from qcflow.recipes.regression.v1.recipe import RegressionRecipe
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
 # Based ons: https://github.com/openai/openai-cookbook/blob/6df6ceff470eeba26a56de131254e775292eac22/examples/api_request_parallel_processor.py
-# Several changes were made to make it work with MLflow.
+# Several changes were made to make it work with QCFlow.
 
 """
 API REQUEST PARALLEL PROCESSOR
@@ -25,7 +25,7 @@ from concurrent.futures import FIRST_EXCEPTION, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from typing import Any, Callable
 
-import mlflow
+import qcflow
 
 _logger = logging.getLogger(__name__)
 
@@ -75,13 +75,13 @@ def call_api(
         status_tracker.complete_task(success=False)
         _logger.debug(f"Request #{index} failed with: {e}")
         status_tracker.increment_num_rate_limit_errors()
-        status_tracker.error = mlflow.MlflowException(
+        status_tracker.error = qcflow.MlflowException(
             f"Request #{index} failed with rate limit: {e}."
         )
     except Exception as e:
         status_tracker.complete_task(success=False)
         _logger.debug(f"Request #{index} failed with: {e}")
-        status_tracker.error = mlflow.MlflowException(
+        status_tracker.error = qcflow.MlflowException(
             f"Request #{index} failed with: {e.__cause__}"
         )
 
@@ -114,7 +114,7 @@ def process_api_requests(
     if status_tracker.num_tasks_failed > 0:
         if status_tracker.num_tasks_failed == 1:
             raise status_tracker.error
-        raise mlflow.MlflowException(
+        raise qcflow.MlflowException(
             f"{status_tracker.num_tasks_failed} tasks failed. See logs for details."
         )
     if status_tracker.num_rate_limit_errors > 0:

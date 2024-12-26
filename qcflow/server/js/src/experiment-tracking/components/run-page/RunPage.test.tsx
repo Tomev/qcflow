@@ -1,5 +1,5 @@
 import { MockedReduxStoreProvider } from '../../../common/utils/TestUtils';
-import { renderWithIntl, screen, waitFor } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen, waitFor } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import { getExperimentApi, getRunApi, updateRunApi } from '../../actions';
 import { searchModelVersionsApi } from '../../../model-registry/actions';
 import { merge } from 'lodash';
@@ -170,7 +170,7 @@ describe('RunPage (GraphQL API)', () => {
         if (req.variables.data.runId === 'invalid-run-uuid') {
           return res(
             ctx.data({
-              mlflowGetRun: {
+              qcflowGetRun: {
                 __typename: 'MlflowGetRunResponse',
                 apiError: {
                   __typename: 'ApiError',
@@ -185,7 +185,7 @@ describe('RunPage (GraphQL API)', () => {
         }
         return res(
           ctx.data({
-            mlflowGetRun: {
+            qcflowGetRun: {
               __typename: 'MlflowGetRunResponse',
               apiError: null,
               run: {
@@ -299,7 +299,7 @@ describe('RunPage (GraphQL API)', () => {
       graphql.query<GetRun, GetRunVariables>('GetRun', (req, res, ctx) => {
         return res(
           ctx.data({
-            mlflowGetRun: {
+            qcflowGetRun: {
               __typename: 'MlflowGetRunResponse',
               apiError: null,
               run: {

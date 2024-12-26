@@ -23,10 +23,10 @@ defaults:
     shell: bash --noprofile --norc -exo pipefail {0}
 
 env:
-  MLFLOW_HOME: /home/runner/work/mlflow/mlflow
+  QCFLOW_HOME: /home/runner/work/qcflow/qcflow
   # Note miniconda is pre-installed in the virtual environments for GitHub Actions:
   # https://github.com/actions/virtual-environments/blob/main/images/linux/scripts/installers/miniconda.sh
-  MLFLOW_CONDA_HOME: /usr/share/miniconda
+  QCFLOW_CONDA_HOME: /usr/share/miniconda
   SPARK_LOCAL_IP: localhost
   PYTHONUTF8: "1"
 
@@ -73,9 +73,9 @@ jobs:
   #     - name: Install python dependencies
   #       run: |
   #         pip install -r requirements/test-requirements.txt
-  #         pip install --no-dependencies tests/resources/mlflow-test-plugin
+  #         pip install --no-dependencies tests/resources/qcflow-test-plugin
   #         pip install .
-  #         # TODO: Importing datasets in a pandas UDF (created by mlflow.pyfunc.spark_udf) crashes
+  #         # TODO: Importing datasets in a pandas UDF (created by qcflow.pyfunc.spark_udf) crashes
   #         # the Python worker. To avoid this, uninstall `datasets`. This is a temporary workaround.
   #         pip uninstall -y datasets
   #         pip install 'numpy<2.0'
@@ -86,10 +86,10 @@ jobs:
   #       env:
   #         # The default pooling implmentation 'QueuePool' can lead to errors on Windows when
   #         # multiple threads access the same SQLite database file simultaneously.
-  #         MLFLOW_SQLALCHEMYSTORE_POOLCLASS: "NullPool"
+  #         QCFLOW_SQLALCHEMYSTORE_POOLCLASS: "NullPool"
   #       run: |
   #         # Set Hadoop environment variables required for testing Spark integrations on Windows
   #         export HADOOP_HOME=/tmp/winutils/hadoop-3.2.2
   #         export PATH=$PATH:$HADOOP_HOME/bin
-  #         export MLFLOW_HOME=$(pwd)
+  #         export QCFLOW_HOME=$(pwd)
   #         pytest --splits ${{ matrix.splits }} --group ${{ matrix.group }} tests/recipes

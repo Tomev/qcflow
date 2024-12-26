@@ -1,10 +1,10 @@
 """
-The ``mlflow.onnx`` module provides APIs for logging and loading ONNX models in the MLflow Model
-format. This module exports MLflow Models with the following flavors:
+The ``qcflow.onnx`` module provides APIs for logging and loading ONNX models in the QCFlow Model
+format. This module exports QCFlow Models with the following flavors:
 
 ONNX (native) format
     This is the main flavor that can be loaded back as an ONNX model object.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
 """
 
@@ -18,35 +18,35 @@ import pandas as pd
 import yaml
 from packaging.version import Version
 
-import mlflow.tracking
-from mlflow import pyfunc
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.utils import _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow.tracking
+from qcflow import pyfunc
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.utils import _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
     _validate_onnx_session_options,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "onnx"
 ONNX_EXECUTION_PROVIDERS = ["CUDAExecutionProvider", "CPUExecutionProvider"]
@@ -60,7 +60,7 @@ _MODEL_DATA_SUBPATH = "model.onnx"
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -81,10 +81,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
@@ -93,7 +93,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -111,17 +111,17 @@ def save_model(
         path: Local path where the model is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -161,14 +161,14 @@ def save_model(
     _validate_and_prepare_target_save_path(path)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if input_example is not None:
-        _save_example(mlflow_model, input_example, path)
+        _save_example(qcflow_model, input_example, path)
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
     model_data_subpath = _MODEL_DATA_SUBPATH
     model_data_path = os.path.join(path, model_data_subpath)
 
@@ -179,8 +179,8 @@ def save_model(
         onnx.save_model(onnx_model, model_data_path)
 
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.onnx",
+        qcflow_model,
+        loader_module="qcflow.onnx",
         data=model_data_subpath,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
@@ -189,7 +189,7 @@ def save_model(
 
     _validate_onnx_session_options(onnx_session_options)
 
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         onnx_version=onnx.__version__,
         data=model_data_subpath,
@@ -198,15 +198,15 @@ def save_model(
         code=code_dir_subpath,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -290,7 +290,7 @@ class _OnnxModelWrapper:
         # function, which allows the ability to pass the list of execution providers via a
         # optional argument e.g.
         #
-        # mlflow.onnx.save_model(..., providers=['CUDAExecutionProvider'...])
+        # qcflow.onnx.save_model(..., providers=['CUDAExecutionProvider'...])
         #
         # For details of the execution providers construct of onnxruntime, see:
         # https://onnxruntime.ai/docs/execution-providers/
@@ -363,7 +363,7 @@ class _OnnxModelWrapper:
                 raise MlflowException(
                     "Unable to map numpy array input to the expected model "
                     "input. "
-                    "Numpy arrays can only be used as input for MLflow ONNX "
+                    "Numpy arrays can only be used as input for QCFlow ONNX "
                     "models that have a single input. This model requires "
                     f"{len(self.inputs)} inputs. Please pass in data as either a "
                     "dictionary or a DataFrame with the following tensors"
@@ -386,7 +386,7 @@ class _OnnxModelWrapper:
         # contains float64 values. Unfortunately, even if the original user-supplied input
         # did not contain float64 values, the serialization/deserialization between the
         # client and the scoring server can introduce 64-bit floats. This is being tracked in
-        # https://github.com/mlflow/mlflow/issues/1286. Meanwhile, we explicitly cast the input to
+        # https://github.com/qcflow/qcflow/issues/1286. Meanwhile, we explicitly cast the input to
         # 32-bit floats when needed. TODO: Remove explicit casting when issue #1286 is fixed.
         feed_dict = self._cast_float64_to_float32(feed_dict)
         predicted = self.rt.run(self.output_names, feed_dict)
@@ -395,7 +395,7 @@ class _OnnxModelWrapper:
 
             def format_output(data):
                 # Output can be list and it should be converted to a numpy array
-                # https://github.com/mlflow/mlflow/issues/2499
+                # https://github.com/qcflow/qcflow/issues/2499
                 data = np.asarray(data)
                 return data.reshape(-1)
 
@@ -418,17 +418,17 @@ def load_model(model_uri, dst_path=None):
     Load an ONNX model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model, for example:
+        model_uri: The location, in URI format, of the QCFlow model, for example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see the
-            `Artifacts Documentation <https://www.mlflow.org/docs/latest/
+            `Artifacts Documentation <https://www.qcflow.org/docs/latest/
             tracking.html#artifact-stores>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
@@ -463,7 +463,7 @@ def log_model(
     save_as_external_data=True,
 ):
     """
-    Log an ONNX model as an MLflow artifact for the current run.
+    Log an ONNX model as an QCFlow artifact for the current run.
 
     Args:
         onnx_model: ONNX model to be saved.
@@ -473,16 +473,16 @@ def log_model(
         registered_model_name: If given, create a model version under
             ``registered_model_name``, also creating a registered model if one
             with the given name does not exist.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -515,12 +515,12 @@ def log_model(
         save_as_external_data: Save tensors to external file(s).
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.onnx,
+        flavor=qcflow.onnx,
         onnx_model=onnx_model,
         conda_env=conda_env,
         code_paths=code_paths,

@@ -1,10 +1,10 @@
 import logging
 from typing import Any
 
-from mlflow.entities import SpanType
-from mlflow.entities.span import LiveSpan
-from mlflow.exceptions import MlflowException
-from mlflow.tracing import set_span_chat_messages, set_span_chat_tools
+from qcflow.entities import SpanType
+from qcflow.entities.span import LiveSpan
+from qcflow.exceptions import MlflowException
+from qcflow.tracing import set_span_chat_messages, set_span_chat_tools
 
 _logger = logging.getLogger(__name__)
 

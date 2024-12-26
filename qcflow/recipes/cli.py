@@ -1,12 +1,12 @@
 import click
 
-from mlflow.environment_variables import MLFLOW_RECIPES_PROFILE
-from mlflow.recipes import Recipe
+from qcflow.environment_variables import QCFLOW_RECIPES_PROFILE
+from qcflow.recipes import Recipe
 
 _CLI_ARG_RECIPE_PROFILE = click.option(
     "--profile",
     "-p",
-    envvar=MLFLOW_RECIPES_PROFILE.name,
+    envvar=QCFLOW_RECIPES_PROFILE.name,
     type=click.STRING,
     default=None,
     required=True,
@@ -21,7 +21,7 @@ _CLI_ARG_RECIPE_PROFILE = click.option(
 @click.group("recipes")
 def commands():
     """
-    Run MLflow Recipes and inspect recipe results.
+    Run QCFlow Recipes and inspect recipe results.
     """
 
 

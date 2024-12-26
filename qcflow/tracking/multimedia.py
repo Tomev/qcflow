@@ -1,6 +1,6 @@
 """
-Internal module implementing multi-media objects and utilities in MLflow. Multi-media objects are
-exposed to users at the top-level :py:mod:`mlflow` module.
+Internal module implementing multi-media objects and utilities in QCFlow. Multi-media objects are
+exposed to users at the top-level :py:mod:`qcflow` module.
 """
 
 import warnings
@@ -101,14 +101,14 @@ def convert_to_pil_image(image: Union["numpy.ndarray", list]) -> "PIL.Image.Imag
     return Image.fromarray(image)
 
 
-# MLflow media object: Image
+# QCFlow media object: Image
 class Image:
     """
-    `mlflow.Image` is an image media object that provides a lightweight option
-    for handling images in MLflow.
+    `qcflow.Image` is an image media object that provides a lightweight option
+    for handling images in QCFlow.
     The image can be a numpy array, a PIL image, or a file path to an image. The image is
-    stored as a PIL image and can be logged to MLflow using `mlflow.log_image` or
-    `mlflow.log_table`.
+    stored as a PIL image and can be logged to QCFlow using `qcflow.log_image` or
+    `qcflow.log_table`.
 
     Args:
         image: Image can be a numpy array, a PIL image, or a file path to an image.
@@ -116,7 +116,7 @@ class Image:
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
         import numpy as np
         from PIL import Image
 
@@ -124,7 +124,7 @@ class Image:
         image = np.zeros((100, 100, 3), dtype=np.uint8)
         image[:, :50] = [255, 128, 0]
         # Create an Image object
-        image_obj = mlflow.Image(image)
+        image_obj = qcflow.Image(image)
         # Convert the Image object to a list of pixel values
         pixel_values = image_obj.to_list()
     """
@@ -136,7 +136,7 @@ class Image:
             from PIL import Image
         except ImportError as exc:
             raise ImportError(
-                "`mlflow.Image` requires Pillow to serialize a numpy array as an image. "
+                "`qcflow.Image` requires Pillow to serialize a numpy array as an image. "
                 "Please install it via: `pip install Pillow`."
             ) from exc
 

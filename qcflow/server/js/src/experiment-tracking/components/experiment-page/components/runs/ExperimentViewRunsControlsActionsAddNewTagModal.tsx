@@ -1,6 +1,6 @@
 import { FormUI, Input, Modal, useDesignSystemTheme } from '@databricks/design-system';
 import { FormattedMessage } from 'react-intl';
-import { KeyValueEntity } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { KeyValueEntity } from '@qcflow/qcflow/src/experiment-tracking/types';
 import { useState } from 'react';
 
 export const ExperimentViewRunsControlsActionsAddNewTagModal = ({
@@ -32,7 +32,7 @@ export const ExperimentViewRunsControlsActionsAddNewTagModal = ({
 
   return (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunscontrolsactionsaddnewtagmodal.tsx_34"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunscontrolsactionsaddnewtagmodal.tsx_34"
       title={<FormattedMessage defaultMessage="Add New Tag" description="Add new key-value tag modal > Modal title" />}
       visible={isOpen}
       onCancel={() => setIsOpen(false)}
@@ -50,7 +50,7 @@ export const ExperimentViewRunsControlsActionsAddNewTagModal = ({
               <FormattedMessage defaultMessage="Key" description="Add new key-value tag modal > Key input label" />
             </FormUI.Label>
             <Input
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunscontrolsactionsaddnewtagmodal.tsx_51"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunscontrolsactionsaddnewtagmodal.tsx_51"
               value={tagKey}
               onChange={(e) => setTagKey(e.target.value)}
               validationState={isTagKeyValid ? undefined : 'warning'}
@@ -78,7 +78,7 @@ export const ExperimentViewRunsControlsActionsAddNewTagModal = ({
               <FormattedMessage defaultMessage="Value" description="Add new key-value tag modal > Value input label" />
             </FormUI.Label>
             <Input
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunscontrolsactionsaddnewtagmodal.tsx_78"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunscontrolsactionsaddnewtagmodal.tsx_78"
               value={tagValue}
               onChange={(e) => setTagValue(e.target.value)}
               data-testid="add-new-tag-value-input"

@@ -2,11 +2,11 @@ import copy
 
 import pytest
 
-from mlflow.entities import Metric, Param, RunTag
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, ErrorCode
-from mlflow.utils.os import is_windows
-from mlflow.utils.validation import (
+from qcflow.entities import Metric, Param, RunTag
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, ErrorCode
+from qcflow.utils.os import is_windows
+from qcflow.utils.validation import (
     MAX_TAG_VAL_LENGTH,
     _is_numeric,
     _validate_batch_log_data,
@@ -286,7 +286,7 @@ def test_validate_batch_log_data(monkeypatch):
         "tags": [tags_with_bad_key, tags_with_bad_val],
     }
     good_kwargs = {"metrics": [], "params": [], "tags": []}
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "false")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
     for arg_name, arg_values in bad_kwargs.items():
         for arg_value in arg_values:
             final_kwargs = copy.deepcopy(good_kwargs)

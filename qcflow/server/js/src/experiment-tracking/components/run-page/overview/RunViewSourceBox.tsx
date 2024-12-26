@@ -9,8 +9,8 @@ import {
 } from '@databricks/design-system';
 import Utils from '../../../../common/utils/Utils';
 import type { KeyValueEntity } from '../../../types';
-import { MLFLOW_RUN_GIT_SOURCE_BRANCH_TAG } from '../../../constants';
-import { CopyButton } from '@mlflow/mlflow/src/shared/building_blocks/CopyButton';
+import { QCFLOW_RUN_GIT_SOURCE_BRANCH_TAG } from '../../../constants';
+import { CopyButton } from '@qcflow/qcflow/src/shared/building_blocks/CopyButton';
 import { ExperimentSourceTypeIcon } from '../../ExperimentSourceTypeIcon';
 
 export const RunViewSourceBox = ({
@@ -22,7 +22,7 @@ export const RunViewSourceBox = ({
   tags: Record<string, KeyValueEntity>;
   search: string;
 }) => {
-  const branchName = tags?.[MLFLOW_RUN_GIT_SOURCE_BRANCH_TAG]?.value;
+  const branchName = tags?.[QCFLOW_RUN_GIT_SOURCE_BRANCH_TAG]?.value;
   const commitHash = tags?.[Utils.gitCommitTag]?.value;
   const runSource = Utils.renderSource(tags, search, runUuid, branchName);
 
@@ -46,7 +46,7 @@ export const RunViewSourceBox = ({
       {branchName && (
         <LegacyTooltip title={branchName}>
           <Tag
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewsourcebox.tsx_48"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewsourcebox.tsx_48"
             css={{ marginRight: 0 }}
           >
             <div css={{ display: 'flex', gap: 4, whiteSpace: 'nowrap' }}>
@@ -73,7 +73,7 @@ export const RunViewSourceBox = ({
           }
         >
           <Tag
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewsourcebox.tsx_72"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewsourcebox.tsx_72"
             css={{ marginRight: 0 }}
           >
             <div css={{ display: 'flex', gap: 4, whiteSpace: 'nowrap' }}>

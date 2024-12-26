@@ -1,13 +1,13 @@
-from mlflow.entities.model_registry._model_registry_entity import _ModelRegistryEntity
-from mlflow.entities.model_registry.model_version_status import ModelVersionStatus
-from mlflow.entities.model_registry.model_version_tag import ModelVersionTag
-from mlflow.protos.model_registry_pb2 import ModelVersion as ProtoModelVersion
-from mlflow.protos.model_registry_pb2 import ModelVersionTag as ProtoModelVersionTag
+from qcflow.entities.model_registry._model_registry_entity import _ModelRegistryEntity
+from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
+from qcflow.entities.model_registry.model_version_tag import ModelVersionTag
+from qcflow.protos.model_registry_pb2 import ModelVersion as ProtoModelVersion
+from qcflow.protos.model_registry_pb2 import ModelVersionTag as ProtoModelVersionTag
 
 
 class ModelVersion(_ModelRegistryEntity):
     """
-    MLflow entity for Model Version.
+    QCFlow entity for Model Version.
     """
 
     def __init__(
@@ -103,12 +103,12 @@ class ModelVersion(_ModelRegistryEntity):
 
     @property
     def run_id(self):
-        """String. MLflow run ID that generated this model."""
+        """String. QCFlow run ID that generated this model."""
         return self._run_id
 
     @property
     def run_link(self):
-        """String. MLflow run link referring to the exact run that generated this model version."""
+        """String. QCFlow run link referring to the exact run that generated this model version."""
         return self._run_link
 
     @property
@@ -146,7 +146,7 @@ class ModelVersion(_ModelRegistryEntity):
     # proto mappers
     @classmethod
     def from_proto(cls, proto):
-        # input: mlflow.protos.model_registry_pb2.ModelVersion
+        # input: qcflow.protos.model_registry_pb2.ModelVersion
         # returns: ModelVersion entity
         model_version = cls(
             proto.name,
@@ -169,7 +169,7 @@ class ModelVersion(_ModelRegistryEntity):
 
     def to_proto(self):
         # input: ModelVersion entity
-        # returns mlflow.protos.model_registry_pb2.ModelVersion
+        # returns qcflow.protos.model_registry_pb2.ModelVersion
         model_version = ProtoModelVersion()
         model_version.name = self.name
         model_version.version = str(self.version)

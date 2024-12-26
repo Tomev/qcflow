@@ -6,7 +6,7 @@
  */
 
 import React, { Component } from 'react';
-import spinner from '../static/mlflow-spinner.png';
+import spinner from '../static/qcflow-spinner.png';
 import { keyframes } from '@emotion/react';
 
 type Props = {

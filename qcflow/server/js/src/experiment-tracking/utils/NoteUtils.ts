@@ -5,10 +5,10 @@
  * annotations are already looking good, please remove this comment.
  */
 
-import { MLFLOW_INTERNAL_PREFIX } from '../../common/utils/TagUtils';
+import { QCFLOW_INTERNAL_PREFIX } from '../../common/utils/TagUtils';
 import { KeyValueEntity } from '../types';
 
-export const NOTE_CONTENT_TAG = MLFLOW_INTERNAL_PREFIX + 'note.content';
+export const NOTE_CONTENT_TAG = QCFLOW_INTERNAL_PREFIX + 'note.content';
 
 export class NoteInfo {
   constructor(content: any) {

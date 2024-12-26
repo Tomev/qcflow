@@ -1,4 +1,4 @@
-from mlflow.protos.service_pb2 import DatasetSummary
+from qcflow.protos.service_pb2 import DatasetSummary
 
 
 class _DatasetSummary:

@@ -1,14 +1,14 @@
-from mlflow.environment_variables import (
-    MLFLOW_ENABLE_ASYNC_LOGGING,
+from qcflow.environment_variables import (
+    QCFLOW_ENABLE_ASYNC_LOGGING,
 )
-from mlflow.system_metrics import (
+from qcflow.system_metrics import (
     disable_system_metrics_logging,
     enable_system_metrics_logging,
     set_system_metrics_node_id,
     set_system_metrics_samples_before_logging,
     set_system_metrics_sampling_interval,
 )
-from mlflow.tracking import (
+from qcflow.tracking import (
     get_registry_uri,
     get_tracking_uri,
     is_tracking_uri_set,
@@ -26,19 +26,19 @@ def enable_async_logging(enable=True):
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        mlflow.config.enable_async_logging(True)
+        qcflow.config.enable_async_logging(True)
 
-        with mlflow.start_run():
-            mlflow.log_param("a", 1)  # This will be logged asynchronously
+        with qcflow.start_run():
+            qcflow.log_param("a", 1)  # This will be logged asynchronously
 
-        mlflow.config.enable_async_logging(False)
-        with mlflow.start_run():
-            mlflow.log_param("a", 1)  # This will be logged synchronously
+        qcflow.config.enable_async_logging(False)
+        with qcflow.start_run():
+            qcflow.log_param("a", 1)  # This will be logged synchronously
     """
 
-    MLFLOW_ENABLE_ASYNC_LOGGING.set(enable)
+    QCFLOW_ENABLE_ASYNC_LOGGING.set(enable)
 
 
 __all__ = [

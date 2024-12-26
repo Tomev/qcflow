@@ -5,11 +5,11 @@ from cachetools import TTLCache
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanExporter
 
-from mlflow.environment_variables import (
-    MLFLOW_TRACE_BUFFER_MAX_SIZE,
-    MLFLOW_TRACE_BUFFER_TTL_SECONDS,
+from qcflow.environment_variables import (
+    QCFLOW_TRACE_BUFFER_MAX_SIZE,
+    QCFLOW_TRACE_BUFFER_TTL_SECONDS,
 )
-from mlflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracing.trace_manager import InMemoryTraceManager
 
 _logger = logging.getLogger(__name__)
 
@@ -28,8 +28,8 @@ def pop_trace(request_id: str) -> Optional[dict[str, Any]]:
 # that is used within Databricks model serving.
 def _initialize_trace_buffer():  # Define as a function for testing purposes
     return TTLCache(
-        maxsize=MLFLOW_TRACE_BUFFER_MAX_SIZE.get(),
-        ttl=MLFLOW_TRACE_BUFFER_TTL_SECONDS.get(),
+        maxsize=QCFLOW_TRACE_BUFFER_MAX_SIZE.get(),
+        ttl=QCFLOW_TRACE_BUFFER_TTL_SECONDS.get(),
     )
 
 

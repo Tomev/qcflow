@@ -1,6 +1,6 @@
 import { fulfilled } from '../../common/utils/ActionUtils';
 import { GET_RUN_API, LOAD_MORE_RUNS_API, SEARCH_RUNS_API } from '../actions';
-import { MLFLOW_RUN_COLOR_TAG } from '../constants';
+import { QCFLOW_RUN_COLOR_TAG } from '../constants';
 import { RunEntity } from '../types';
 
 export const RUN_COLOR_ACTION_INITIALIZE_RUN_COLORS = 'INITIALIZE_RUN_COLORS';
@@ -23,7 +23,7 @@ export const colorByRunUuid = (state: Record<string, string> = {}, action: any) 
     case fulfilled(GET_RUN_API): {
       const run: RunEntity = action.payload.run;
       const runUuid = run.info.runUuid;
-      const colorTag = run?.data?.tags?.find((tag) => tag.key === MLFLOW_RUN_COLOR_TAG);
+      const colorTag = run?.data?.tags?.find((tag) => tag.key === QCFLOW_RUN_COLOR_TAG);
       if (colorTag) {
         return { ...state, [runUuid]: colorTag.value };
       }
@@ -36,7 +36,7 @@ export const colorByRunUuid = (state: Record<string, string> = {}, action: any) 
       if (action.payload && action.payload.runs) {
         for (const run of action.payload.runs as RunEntity[]) {
           const runUuid = run.info.runUuid;
-          const colorTag = run?.data?.tags?.find((tag) => tag.key === MLFLOW_RUN_COLOR_TAG);
+          const colorTag = run?.data?.tags?.find((tag) => tag.key === QCFLOW_RUN_COLOR_TAG);
           if (colorTag) {
             newState[runUuid] = colorTag.value;
           }

@@ -1,7 +1,7 @@
-mlflow.shap
+qcflow.shap
 ===========
 
-.. automodule:: mlflow.shap
+.. automodule:: qcflow.shap
     :members:
     :undoc-members:
     :show-inheritance:

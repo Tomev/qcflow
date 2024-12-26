@@ -7,9 +7,9 @@ import pandas as pd
 import pydantic
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, Property, Schema
-from mlflow.types.type_hints import (
+from qcflow.exceptions import MlflowException
+from qcflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, Property, Schema
+from qcflow.types.type_hints import (
     PYDANTIC_V1_OR_OLDER,
     InvalidTypeHintException,
     _convert_data_to_type_hint,
@@ -419,7 +419,7 @@ def test_maybe_convert_data_for_type_hint(data, type_hint, expected_data):
 
 
 def test_maybe_convert_data_for_type_hint_errors():
-    with mock.patch("mlflow.types.type_hints._logger.warning") as mock_warning:
+    with mock.patch("qcflow.types.type_hints._logger.warning") as mock_warning:
         _convert_data_to_type_hint(pd.DataFrame({"a": ["x", "y"], "b": ["c", "d"]}), list[str])
         assert mock_warning.call_count == 1
         assert (

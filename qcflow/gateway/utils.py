@@ -10,10 +10,10 @@ import warnings
 from typing import Any, AsyncGenerator, Optional
 from urllib.parse import urlparse
 
-from mlflow.environment_variables import MLFLOW_GATEWAY_URI
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.constants import MLFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES
-from mlflow.utils.uri import append_to_uri_path
+from qcflow.environment_variables import QCFLOW_GATEWAY_URI
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.constants import QCFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES
+from qcflow.utils.uri import append_to_uri_path
 
 _logger = logging.getLogger(__name__)
 _gateway_uri: Optional[str] = None
@@ -114,8 +114,8 @@ def _prepend(docstring: Optional[str], text: str) -> str:
 
 def gateway_deprecated(obj):
     msg = (
-        "MLflow AI gateway is deprecated and has been replaced by the deployments API for "
-        "generative AI. See https://mlflow.org/docs/latest/llms/gateway/migration.html for "
+        "QCFlow AI gateway is deprecated and has been replaced by the deployments API for "
+        "generative AI. See https://qcflow.org/docs/latest/llms/gateway/migration.html for "
         "migration."
     )
     warning = f"""
@@ -148,12 +148,12 @@ def gateway_deprecated(obj):
 
 @gateway_deprecated
 def set_gateway_uri(gateway_uri: str):
-    """Sets the uri of a configured and running MLflow AI Gateway server in a global context.
-    Providing a valid uri and calling this function is required in order to use the MLflow
+    """Sets the uri of a configured and running QCFlow AI Gateway server in a global context.
+    Providing a valid uri and calling this function is required in order to use the QCFlow
     AI Gateway fluent APIs.
 
     Args:
-        gateway_uri: The full uri of a running MLflow AI Gateway server or, if running on
+        gateway_uri: The full uri of a running QCFlow AI Gateway server or, if running on
             Databricks, "databricks".
     """
     if not _is_valid_uri(gateway_uri):
@@ -169,19 +169,19 @@ def set_gateway_uri(gateway_uri: str):
 @gateway_deprecated
 def get_gateway_uri() -> str:
     """
-    Returns the currently set MLflow AI Gateway server uri iff set.
+    Returns the currently set QCFlow AI Gateway server uri iff set.
     If the Gateway uri has not been set by using ``set_gateway_uri``, an ``MlflowException``
     is raised.
     """
     if _gateway_uri is not None:
         return _gateway_uri
-    elif uri := MLFLOW_GATEWAY_URI.get():
+    elif uri := QCFLOW_GATEWAY_URI.get():
         return uri
     else:
         raise MlflowException(
-            "No Gateway server uri has been set. Please either set the MLflow Gateway URI via "
-            "`mlflow.gateway.set_gateway_uri()` or set the environment variable "
-            f"{MLFLOW_GATEWAY_URI} to the running Gateway API server's uri"
+            "No Gateway server uri has been set. Please either set the QCFlow Gateway URI via "
+            "`qcflow.gateway.set_gateway_uri()` or set the environment variable "
+            f"{QCFLOW_GATEWAY_URI} to the running Gateway API server's uri"
         )
 
 
@@ -258,7 +258,7 @@ class SearchRoutesToken:
 def is_valid_mosiacml_chat_model(model_name: str) -> bool:
     return any(
         model_name.lower().startswith(supported)
-        for supported in MLFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES
+        for supported in QCFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES
     )
 
 

@@ -8,7 +8,7 @@ from langchain_core.outputs import ChatGenerationChunk
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 
-import mlflow
+import qcflow
 
 
 class FakeOpenAI(ChatOpenAI, extra="allow"):
@@ -69,4 +69,4 @@ def create_openai_agent():
 
 
 agent = create_openai_agent()
-mlflow.models.set_model(agent)
+qcflow.models.set_model(agent)

@@ -1,4 +1,4 @@
-from mlflow.entities import Dataset, DatasetInput, InputTag
+from qcflow.entities import Dataset, DatasetInput, InputTag
 
 
 def _check(dataset_input, tags, dataset):

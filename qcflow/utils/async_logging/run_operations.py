@@ -1,12 +1,12 @@
 class RunOperations:
-    """Class that helps manage the futures of MLflow async logging."""
+    """Class that helps manage the futures of QCFlow async logging."""
 
     def __init__(self, operation_futures):
         self._operation_futures = operation_futures or []
 
     def wait(self):
         """Blocks on completion of all futures."""
-        from mlflow.exceptions import MlflowException
+        from qcflow.exceptions import MlflowException
 
         failed_operations = []
         for future in self._operation_futures:

@@ -1,7 +1,7 @@
 import { getArtifactChunkedText, getArtifactLocationUrl } from '../../common/utils/ArtifactUtils';
 import { EvaluationArtifactTable, EvaluationArtifactTableEntry } from '../types';
 
-// Reflects structure logged by mlflow.log_table()
+// Reflects structure logged by qcflow.log_table()
 export interface RawEvaluationArtifact {
   columns: string[];
   data: (string | number | null | boolean | Record<string, any>)[][];

@@ -1,6 +1,6 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
-/** Input/output data representation for use by {@link org.mlflow.sagemaker.Predictor} objects */
+/** Input/output data representation for use by {@link org.qcflow.sagemaker.Predictor} objects */
 public class PredictorDataWrapper {
   public enum ContentType {
     Json,

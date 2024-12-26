@@ -6,10 +6,10 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-import mlflow
-from mlflow.entities.metric import Metric
-from mlflow.exceptions import MlflowException
-from mlflow.metrics import (
+import qcflow
+from qcflow.entities.metric import Metric
+from qcflow.exceptions import MlflowException
+from qcflow.metrics import (
     MetricValue,
     ari_grade_level,
     exact_match,
@@ -24,15 +24,15 @@ from mlflow.metrics import (
     token_count,
     toxicity,
 )
-from mlflow.metrics.genai.genai_metric import _GENAI_CUSTOM_METRICS_FILE_NAME
-from mlflow.models.evaluation.artifacts import JsonEvaluationArtifact
-from mlflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
-from mlflow.models.evaluation.default_evaluator import (
+from qcflow.metrics.genai.genai_metric import _GENAI_CUSTOM_METRICS_FILE_NAME
+from qcflow.models.evaluation.artifacts import JsonEvaluationArtifact
+from qcflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
+from qcflow.models.evaluation.default_evaluator import (
     _LATENCY_METRIC_NAME,
     BuiltInEvaluator,
     _extract_predict_fn,
 )
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 _logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class DefaultEvaluator(BuiltInEvaluator):
 
     def _evaluate(
         self,
-        model: Optional["mlflow.pyfunc.PyFuncModel"],
+        model: Optional["qcflow.pyfunc.PyFuncModel"],
         extra_metrics: list[EvaluationMetric],
         custom_artifacts=None,
         **kwargs,
@@ -126,7 +126,7 @@ class DefaultEvaluator(BuiltInEvaluator):
 
     def _generate_model_predictions(
         self,
-        model: Optional["mlflow.pyfunc.PyFuncModel"],
+        model: Optional["qcflow.pyfunc.PyFuncModel"],
         input_df: pd.DataFrame,
         compute_latency=False,
     ):
@@ -224,11 +224,11 @@ class DefaultEvaluator(BuiltInEvaluator):
 
         data = {"name": names, "version": versions, "metric_args": metric_args_list}
 
-        mlflow.log_table(data, artifact_file=_GENAI_CUSTOM_METRICS_FILE_NAME)
+        qcflow.log_table(data, artifact_file=_GENAI_CUSTOM_METRICS_FILE_NAME)
 
         artifact_name = os.path.splitext(_GENAI_CUSTOM_METRICS_FILE_NAME)[0]
         self.artifacts[artifact_name] = JsonEvaluationArtifact(
-            uri=mlflow.get_artifact_uri(_GENAI_CUSTOM_METRICS_FILE_NAME)
+            uri=qcflow.get_artifact_uri(_GENAI_CUSTOM_METRICS_FILE_NAME)
         )
 
 

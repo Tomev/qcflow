@@ -1,37 +1,37 @@
 import base64
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.protos.databricks_uc_registry_service_pb2 import UcModelRegistryService
-from mlflow.protos.unity_catalog_oss_messages_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.protos.databricks_uc_registry_service_pb2 import UcModelRegistryService
+from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     READ_MODEL_VERSION as MODEL_VERSION_OPERATION_READ_OSS,
 )
-from mlflow.protos.unity_catalog_oss_messages_pb2 import (
+from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     GenerateTemporaryModelVersionCredential as GenerateTemporaryModelVersionCredentialsOSS,
 )
-from mlflow.protos.unity_catalog_oss_messages_pb2 import (
+from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     TemporaryCredentials,
 )
-from mlflow.protos.unity_catalog_oss_service_pb2 import UnityCatalogService
-from mlflow.store._unity_catalog.lineage.constants import _DATABRICKS_LINEAGE_ID_HEADER
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.store.artifact.utils.models import (
+from qcflow.protos.unity_catalog_oss_service_pb2 import UnityCatalogService
+from qcflow.store._unity_catalog.lineage.constants import _DATABRICKS_LINEAGE_ID_HEADER
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.store.artifact.utils.models import (
     get_model_name_and_version,
 )
-from mlflow.utils._spark_utils import _get_active_spark_session
-from mlflow.utils._unity_catalog_utils import (
+from qcflow.utils._spark_utils import _get_active_spark_session
+from qcflow.utils._unity_catalog_utils import (
     get_artifact_repo_from_storage_info,
     get_full_name_from_sc,
 )
-from mlflow.utils.oss_registry_utils import get_oss_host_creds
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.rest_utils import (
+from qcflow.utils.oss_registry_utils import get_oss_host_creds
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.rest_utils import (
     _REST_API_PATH_PREFIX,
     _UC_OSS_REST_API_PATH_PREFIX,
     call_endpoint,
     extract_api_info_for_service,
 )
-from mlflow.utils.uri import (
+from qcflow.utils.uri import (
     _OSS_UNITY_CATALOG_SCHEME,
     get_databricks_profile_uri_from_artifact_uri,
     get_db_info_from_uri,
@@ -45,8 +45,8 @@ _METHOD_TO_INFO_OSS = extract_api_info_for_service(
 
 import urllib.parse
 
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from mlflow.utils.uri import is_file_uri
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.utils.uri import is_file_uri
 
 
 class UnityCatalogOSSModelsArtifactRepository(ArtifactRepository):
@@ -69,12 +69,12 @@ class UnityCatalogOSSModelsArtifactRepository(ArtifactRepository):
                 f"OSS Unity Catalog with non-Unity Catalog registry URI '{registry_uri}'. "
                 f"Please specify a Unity Catalog registry URI of the "
                 f"form '{_OSS_UNITY_CATALOG_SCHEME}[://profile]', e.g. by calling "
-                f"mlflow.set_registry_uri('{_OSS_UNITY_CATALOG_SCHEME}') if using the "
-                f"MLflow Python client",
+                f"qcflow.set_registry_uri('{_OSS_UNITY_CATALOG_SCHEME}') if using the "
+                f"QCFlow Python client",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         super().__init__(artifact_uri)
-        from mlflow.tracking.client import MlflowClient
+        from qcflow.tracking.client import MlflowClient
 
         registry_uri_from_artifact_uri = get_databricks_profile_uri_from_artifact_uri(
             artifact_uri, result_scheme=_OSS_UNITY_CATALOG_SCHEME

@@ -1,8 +1,8 @@
 import pytest
 from opentelemetry import trace as trace_api
 
-from mlflow.entities import SpanStatus, SpanStatusCode
-from mlflow.exceptions import MlflowException
+from qcflow.entities import SpanStatus, SpanStatusCode
+from qcflow.exceptions import MlflowException
 
 
 @pytest.mark.parametrize("status_code", [SpanStatusCode.OK, "OK"])

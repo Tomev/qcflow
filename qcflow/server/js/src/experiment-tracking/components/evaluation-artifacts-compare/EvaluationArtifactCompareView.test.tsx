@@ -4,10 +4,10 @@ import { EvaluationArtifactCompareView } from './EvaluationArtifactCompareView';
 import configureStore from 'redux-mock-store';
 import { RunRowType } from '../experiment-page/utils/experimentPage.row-types';
 import { ExperimentPageViewState } from '../experiment-page/models/ExperimentPageViewState';
-import { renderWithIntl, act, within, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, act, within, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 
 import { getEvaluationTableArtifact } from '../../actions';
-import { MLFLOW_LOGGED_ARTIFACTS_TAG, MLFLOW_RUN_SOURCE_TYPE_TAG, MLflowRunSourceType } from '../../constants';
+import { QCFLOW_LOGGED_ARTIFACTS_TAG, QCFLOW_RUN_SOURCE_TYPE_TAG, QCFlowRunSourceType } from '../../constants';
 import { EvaluationArtifactCompareTableProps } from './components/EvaluationArtifactCompareTable';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
@@ -58,8 +58,8 @@ const SAMPLE_COMPARED_RUNS: RunRowType[] = [
   {
     runUuid: 'run_a',
     tags: {
-      [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-        key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+      [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+        key: QCFLOW_LOGGED_ARTIFACTS_TAG,
         value: '[{"path":"/table.json","type":"table"}]',
       },
     },
@@ -67,8 +67,8 @@ const SAMPLE_COMPARED_RUNS: RunRowType[] = [
   {
     runUuid: 'run_b',
     tags: {
-      [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-        key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+      [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+        key: QCFLOW_LOGGED_ARTIFACTS_TAG,
         value: '[{"path":"/table.json","type":"table"}]',
       },
     },
@@ -76,8 +76,8 @@ const SAMPLE_COMPARED_RUNS: RunRowType[] = [
   {
     runUuid: 'run_c',
     tags: {
-      [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-        key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+      [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+        key: QCFLOW_LOGGED_ARTIFACTS_TAG,
         value: '[{"path":"/table_c.json","type":"table"}]',
       },
     },
@@ -226,8 +226,8 @@ describe('EvaluationArtifactCompareView', () => {
         {
           runUuid: 'run_a',
           tags: {
-            [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-              key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+            [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+              key: QCFLOW_LOGGED_ARTIFACTS_TAG,
               value: '[{"path":"/table_a.json","type":"table"}]',
             },
           },
@@ -235,8 +235,8 @@ describe('EvaluationArtifactCompareView', () => {
         {
           runUuid: 'run_b',
           tags: {
-            [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-              key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+            [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+              key: QCFLOW_LOGGED_ARTIFACTS_TAG,
               value: '[{"path":"/table_b.json","type":"table"}]',
             },
           },
@@ -319,12 +319,12 @@ describe('EvaluationArtifactCompareView', () => {
           runUuid: 'run_a',
           params: [{ key: 'prompt_template', value: 'prompt template with {{input_a}} and {{input_b}}' }],
           tags: {
-            [MLFLOW_RUN_SOURCE_TYPE_TAG]: {
-              key: MLFLOW_RUN_SOURCE_TYPE_TAG,
-              value: MLflowRunSourceType.PROMPT_ENGINEERING,
+            [QCFLOW_RUN_SOURCE_TYPE_TAG]: {
+              key: QCFLOW_RUN_SOURCE_TYPE_TAG,
+              value: QCFlowRunSourceType.PROMPT_ENGINEERING,
             },
-            [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-              key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+            [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+              key: QCFLOW_LOGGED_ARTIFACTS_TAG,
               value: '[{"path":"/table_a.json","type":"table"}]',
             },
           },
@@ -333,12 +333,12 @@ describe('EvaluationArtifactCompareView', () => {
           runUuid: 'run_b',
           params: [{ key: 'prompt_template', value: 'prompt template with {{input_c}}' }],
           tags: {
-            [MLFLOW_RUN_SOURCE_TYPE_TAG]: {
-              key: MLFLOW_RUN_SOURCE_TYPE_TAG,
-              value: MLflowRunSourceType.PROMPT_ENGINEERING,
+            [QCFLOW_RUN_SOURCE_TYPE_TAG]: {
+              key: QCFLOW_RUN_SOURCE_TYPE_TAG,
+              value: QCFlowRunSourceType.PROMPT_ENGINEERING,
             },
-            [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-              key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+            [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+              key: QCFLOW_LOGGED_ARTIFACTS_TAG,
               value: '[{"path":"/table_b.json","type":"table"}]',
             },
           },
@@ -385,12 +385,12 @@ describe('EvaluationArtifactCompareView', () => {
           runUuid: 'run_a',
           params: [{ key: 'prompt_template', value: 'prompt template with {{input_a}} and {{input_b}}' }],
           tags: {
-            [MLFLOW_RUN_SOURCE_TYPE_TAG]: {
-              key: MLFLOW_RUN_SOURCE_TYPE_TAG,
-              value: MLflowRunSourceType.PROMPT_ENGINEERING,
+            [QCFLOW_RUN_SOURCE_TYPE_TAG]: {
+              key: QCFLOW_RUN_SOURCE_TYPE_TAG,
+              value: QCFlowRunSourceType.PROMPT_ENGINEERING,
             },
-            [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-              key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+            [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+              key: QCFLOW_LOGGED_ARTIFACTS_TAG,
               value: '[{"path":"/table_a.json","type":"table"}]',
             },
           },
@@ -399,12 +399,12 @@ describe('EvaluationArtifactCompareView', () => {
           runUuid: 'run_b',
           params: [{ key: 'prompt_template', value: 'prompt template with {{input_c}}' }],
           tags: {
-            [MLFLOW_RUN_SOURCE_TYPE_TAG]: {
-              key: MLFLOW_RUN_SOURCE_TYPE_TAG,
-              value: MLflowRunSourceType.PROMPT_ENGINEERING,
+            [QCFLOW_RUN_SOURCE_TYPE_TAG]: {
+              key: QCFLOW_RUN_SOURCE_TYPE_TAG,
+              value: QCFlowRunSourceType.PROMPT_ENGINEERING,
             },
-            [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-              key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+            [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+              key: QCFLOW_LOGGED_ARTIFACTS_TAG,
               value: '[{"path":"/table_b.json","type":"table"}]',
             },
           },
@@ -435,12 +435,12 @@ describe('EvaluationArtifactCompareView', () => {
         runUuid: 'run_a',
         params: [{ key: 'prompt_template', value: 'prompt template with {{input_a}} and {{input_b}}' }],
         tags: {
-          [MLFLOW_RUN_SOURCE_TYPE_TAG]: {
-            key: MLFLOW_RUN_SOURCE_TYPE_TAG,
-            value: MLflowRunSourceType.PROMPT_ENGINEERING,
+          [QCFLOW_RUN_SOURCE_TYPE_TAG]: {
+            key: QCFLOW_RUN_SOURCE_TYPE_TAG,
+            value: QCFlowRunSourceType.PROMPT_ENGINEERING,
           },
-          [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-            key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+          [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+            key: QCFLOW_LOGGED_ARTIFACTS_TAG,
             value: '[{"path":"/eval_results_table.json","type":"table"}]',
           },
         },
@@ -450,12 +450,12 @@ describe('EvaluationArtifactCompareView', () => {
         runUuid: 'run_b',
         params: [{ key: 'prompt_template', value: 'prompt template with {{input_b}}' }],
         tags: {
-          [MLFLOW_RUN_SOURCE_TYPE_TAG]: {
-            key: MLFLOW_RUN_SOURCE_TYPE_TAG,
-            value: MLflowRunSourceType.PROMPT_ENGINEERING,
+          [QCFLOW_RUN_SOURCE_TYPE_TAG]: {
+            key: QCFLOW_RUN_SOURCE_TYPE_TAG,
+            value: QCFlowRunSourceType.PROMPT_ENGINEERING,
           },
-          [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-            key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+          [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+            key: QCFLOW_LOGGED_ARTIFACTS_TAG,
             value: '[{"path":"/eval_results_table.json","type":"table"}]',
           },
         },

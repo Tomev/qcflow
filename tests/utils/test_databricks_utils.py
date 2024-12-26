@@ -8,27 +8,27 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.legacy_databricks_cli.configure.provider import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.legacy_databricks_cli.configure.provider import (
     DatabricksConfig,
     DatabricksModelServingConfigProvider,
 )
-from mlflow.utils import databricks_utils
-from mlflow.utils.databricks_utils import (
+from qcflow.utils import databricks_utils
+from qcflow.utils.databricks_utils import (
     DatabricksConfigProvider,
     check_databricks_secret_scope_access,
     get_databricks_host_creds,
     get_databricks_runtime_major_minor_version,
     get_dbconnect_udf_sandbox_info,
-    get_mlflow_credential_context_by_run_id,
+    get_qcflow_credential_context_by_run_id,
     get_workspace_info_from_databricks_secrets,
     get_workspace_info_from_dbutils,
     get_workspace_url,
     is_databricks_default_tracking_uri,
     is_running_in_ipython_environment,
 )
-from mlflow.utils.os import is_windows
+from qcflow.utils.os import is_windows
 
 from tests.helper_functions import mock_method_chain
 from tests.pyfunc.test_spark import spark  # noqa: F401
@@ -46,14 +46,14 @@ def test_no_throw():
     assert not databricks_utils.is_in_databricks_runtime()
 
 
-@mock.patch("mlflow.utils.databricks_utils.ProfileConfigProvider")
+@mock.patch("qcflow.utils.databricks_utils.ProfileConfigProvider")
 def test_databricks_registry_profile(ProfileConfigProvider):
     mock_provider = mock.MagicMock()
     mock_provider.get_config.return_value = None
     ProfileConfigProvider.return_value = mock_provider
     mock_dbutils = mock.MagicMock()
     mock_dbutils.secrets.get.return_value = "random"
-    with mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
+    with mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
         params = databricks_utils.get_databricks_host_creds("databricks://profile:prefix")
         mock_dbutils.secrets.get.assert_any_call(key="prefix-host", scope="profile")
         mock_dbutils.secrets.get.assert_any_call(key="prefix-token", scope="profile")
@@ -90,7 +90,7 @@ def oauth_file(tmp_path):
 
 def test_get_model_dependency_token(oauth_file):
     with mock.patch(
-        "mlflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
+        "qcflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
     ):
         token = databricks_utils.get_model_dependency_oauth_token()
         assert token == "token2"
@@ -118,7 +118,7 @@ def test_databricks_params_model_serving_oauth_cache_databricks(
     # oauth file still needs to be present for should_fetch_model_serving_environment_oauth()
     #  to evaluate true
     with mock.patch(
-        "mlflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
+        "qcflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
     ):
         params = databricks_utils.get_databricks_host_creds()
         assert params.host == "host"
@@ -132,7 +132,7 @@ def test_databricks_params_model_serving_oauth_cache_expired(monkeypatch, oauth_
     monkeypatch.setenv("DB_DEPENDENCY_OAUTH_CACHE", "token")
     monkeypatch.setenv("DB_DEPENDENCY_OAUTH_CACHE_EXPIRY_TS", str(time.time() - 5))
     with mock.patch(
-        "mlflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
+        "qcflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
     ):
         params = databricks_utils.get_databricks_host_creds()
         # cache should get updated with new token
@@ -147,7 +147,7 @@ def test_databricks_params_model_serving_read_oauth(monkeypatch, oauth_file):
     monkeypatch.setenv("IS_IN_DB_MODEL_SERVING_ENV", "true")
     monkeypatch.setenv("DATABRICKS_MODEL_SERVING_HOST_URL", "host")
     with mock.patch(
-        "mlflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
+        "qcflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
     ):
         params = databricks_utils.get_databricks_host_creds()
         assert os.environ["DB_DEPENDENCY_OAUTH_CACHE"] == "token2"
@@ -164,7 +164,7 @@ def test_databricks_params_env_var_overrides_model_serving_oauth(monkeypatch, oa
     # oauth file still needs to be present for should_fetch_model_serving_environment_oauth()
     #  to evaluate true
     with mock.patch(
-        "mlflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
+        "qcflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
     ):
         params = databricks_utils.get_databricks_host_creds()
         # should use token and host from envvar, rather than token from oauthfile
@@ -184,7 +184,7 @@ def test_model_serving_config_provider_errors_caught():
 def test_get_workspace_info_from_databricks_secrets():
     mock_dbutils = mock.MagicMock()
     mock_dbutils.secrets.get.return_value = "workspace-placeholder-info"
-    with mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
+    with mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
         workspace_host, workspace_id = get_workspace_info_from_databricks_secrets(
             "databricks://profile:prefix"
         )
@@ -198,13 +198,13 @@ def test_get_workspace_info_from_dbutils():
     mock_dbutils = mock.MagicMock()
     methods = ["notebook.entry_point.getDbutils", "notebook", "getContext"]
     mock_method_chain(
-        mock_dbutils, methods + ["browserHostName", "get"], return_value="mlflow.databricks.com"
+        mock_dbutils, methods + ["browserHostName", "get"], return_value="qcflow.databricks.com"
     )
     mock_method_chain(mock_dbutils, methods + ["workspaceId", "get"], return_value="1111")
 
-    with mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
+    with mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
         workspace_host, workspace_id = get_workspace_info_from_dbutils()
-        assert workspace_host == "https://mlflow.databricks.com"
+        assert workspace_host == "https://qcflow.databricks.com"
         assert workspace_id == "1111"
 
 
@@ -213,12 +213,12 @@ def test_get_workspace_info_from_dbutils_no_browser_host_name():
     methods = ["notebook.entry_point.getDbutils", "notebook", "getContext"]
     mock_method_chain(mock_dbutils, methods + ["browserHostName", "get"], return_value=None)
     mock_method_chain(
-        mock_dbutils, methods + ["apiUrl", "get"], return_value="https://mlflow.databricks.com"
+        mock_dbutils, methods + ["apiUrl", "get"], return_value="https://qcflow.databricks.com"
     )
     mock_method_chain(mock_dbutils, methods + ["workspaceId", "get"], return_value="1111")
-    with mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
+    with mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
         workspace_host, workspace_id = get_workspace_info_from_dbutils()
-        assert workspace_host == "https://mlflow.databricks.com"
+        assert workspace_host == "https://qcflow.databricks.com"
         assert workspace_id == "1111"
 
 
@@ -228,10 +228,10 @@ def test_get_workspace_info_from_dbutils_old_runtimes():
     mock_method_chain(
         mock_dbutils,
         methods + ["toJson", "get"],
-        return_value='{"tags": {"orgId" : "1111", "browserHostName": "mlflow.databricks.com"}}',
+        return_value='{"tags": {"orgId" : "1111", "browserHostName": "qcflow.databricks.com"}}',
     )
     mock_method_chain(
-        mock_dbutils, methods + ["browserHostName", "get"], return_value="mlflow.databricks.com"
+        mock_dbutils, methods + ["browserHostName", "get"], return_value="qcflow.databricks.com"
     )
 
     # Mock out workspace ID tag
@@ -248,14 +248,14 @@ def test_get_workspace_info_from_dbutils_old_runtimes():
         methods + ["workspaceId"],
         side_effect=Exception("workspaceId method not defined!"),
     )
-    with mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
+    with mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
         workspace_host, workspace_id = get_workspace_info_from_dbutils()
-        assert workspace_host == "https://mlflow.databricks.com"
+        assert workspace_host == "https://qcflow.databricks.com"
         assert workspace_id == "1111"
 
 
 def test_get_workspace_info_from_dbutils_when_no_dbutils_available():
-    with mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=None):
+    with mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=None):
         workspace_host, workspace_id = get_workspace_info_from_dbutils()
         assert workspace_host is None
         assert workspace_id is None
@@ -278,7 +278,7 @@ def test_is_databricks_default_tracking_uri(tracking_uri, result):
     assert is_databricks_default_tracking_uri(tracking_uri) == result
 
 
-@mock.patch("mlflow.utils.databricks_utils.ProfileConfigProvider")
+@mock.patch("qcflow.utils.databricks_utils.ProfileConfigProvider")
 def test_databricks_params_throws_errors(ProfileConfigProvider):
     # No hostname
     mock_provider = mock.MagicMock()
@@ -327,7 +327,7 @@ def test_should_fetch_model_serving_environment_oauth(monkeypatch, oauth_file):
     assert not databricks_utils.should_fetch_model_serving_environment_oauth()
 
     with mock.patch(
-        "mlflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
+        "qcflow.utils.databricks_utils._MODEL_DEPENDENCY_OAUTH_TOKEN_FILE_PATH", str(oauth_file)
     ):
         # both file mount and env var exist, both values should return true
         assert databricks_utils.should_fetch_model_serving_environment_oauth()
@@ -343,7 +343,7 @@ def test_get_repl_id():
 
     mock_dbutils = mock.MagicMock()
     mock_dbutils.entry_point.getReplId.return_value = "testReplId1"
-    with mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
+    with mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
         assert databricks_utils.get_repl_id() == "testReplId1"
 
     mock_sparkcontext_inst = mock.MagicMock()
@@ -374,7 +374,7 @@ def test_use_repl_context_if_available(tmp_path, monkeypatch):
     command_context_mock.jobId().get.return_value = "job_id"
     command_context_mock.tags().get("jobType").get.return_value = "NORMAL"
     with mock.patch(
-        "mlflow.utils.databricks_utils._get_command_context", return_value=command_context_mock
+        "qcflow.utils.databricks_utils._get_command_context", return_value=command_context_mock
     ) as mock_get_command_context:
         assert databricks_utils.get_job_id() == "job_id"
         mock_get_command_context.assert_called_once()
@@ -397,7 +397,7 @@ def get_context():
             return_value=None,
         ) as mock_get_context,
         mock.patch(
-            "mlflow.utils.databricks_utils._get_command_context", return_value=command_context_mock
+            "qcflow.utils.databricks_utils._get_command_context", return_value=command_context_mock
         ) as mock_get_command_context,
     ):
         assert databricks_utils.get_job_id() == "job_id"
@@ -408,7 +408,7 @@ def get_context():
             "dbruntime.databricks_repl_context.get_context",
             return_value=mock.MagicMock(jobId="job_id"),
         ) as mock_get_context,
-        mock.patch("mlflow.utils.databricks_utils._get_dbutils") as mock_dbutils,
+        mock.patch("qcflow.utils.databricks_utils._get_dbutils") as mock_dbutils,
     ):
         assert databricks_utils.get_job_id() == "job_id"
         mock_get_context.assert_called_once()
@@ -422,7 +422,7 @@ def get_context():
             ),
         ) as mock_get_context,
         mock.patch(
-            "mlflow.utils.databricks_utils._get_property_from_spark_context"
+            "qcflow.utils.databricks_utils._get_property_from_spark_context"
         ) as mock_spark_context,
     ):
         assert databricks_utils.get_notebook_id() == "notebook_id"
@@ -438,7 +438,7 @@ def get_context():
             ),
         ) as mock_get_context,
         mock.patch(
-            "mlflow.utils.databricks_utils._get_property_from_spark_context"
+            "qcflow.utils.databricks_utils._get_property_from_spark_context"
         ) as mock_spark_context,
     ):
         assert not databricks_utils.is_in_databricks_repo_notebook()
@@ -448,7 +448,7 @@ def get_context():
             "dbruntime.databricks_repl_context.get_context",
             return_value=mock.MagicMock(isInCluster=True),
         ) as mock_get_context,
-        mock.patch("mlflow.utils._spark_utils._get_active_spark_session") as mock_spark_session,
+        mock.patch("qcflow.utils._spark_utils._get_active_spark_session") as mock_spark_session,
     ):
         assert databricks_utils.is_in_cluster()
         mock_get_context.assert_called_once()
@@ -467,20 +467,20 @@ def test_is_running_in_ipython_environment_works(get_ipython):
             assert is_running_in_ipython_environment() == (get_ipython is not None)
 
 
-def test_get_mlflow_credential_context_by_run_id():
+def test_get_qcflow_credential_context_by_run_id():
     with (
         mock.patch(
-            "mlflow.tracking.artifact_utils.get_artifact_uri", return_value="dbfs:/path/to/artifact"
+            "qcflow.tracking.artifact_utils.get_artifact_uri", return_value="dbfs:/path/to/artifact"
         ) as mock_get_artifact_uri,
         mock.patch(
-            "mlflow.utils.uri.get_databricks_profile_uri_from_artifact_uri",
+            "qcflow.utils.uri.get_databricks_profile_uri_from_artifact_uri",
             return_value="databricks://path/to/profile",
         ) as mock_get_databricks_profile,
         mock.patch(
-            "mlflow.utils.databricks_utils.MlflowCredentialContext"
+            "qcflow.utils.databricks_utils.MlflowCredentialContext"
         ) as mock_credential_context,
     ):
-        get_mlflow_credential_context_by_run_id(run_id="abc")
+        get_qcflow_credential_context_by_run_id(run_id="abc")
         mock_get_artifact_uri.assert_called_once_with(run_id="abc")
         mock_get_databricks_profile.assert_called_once_with("dbfs:/path/to/artifact")
         mock_credential_context.assert_called_once_with("databricks://path/to/profile")
@@ -489,7 +489,7 @@ def test_get_mlflow_credential_context_by_run_id():
 def test_check_databricks_secret_scope_access():
     mock_dbutils = mock.MagicMock()
     mock_dbutils.secrets.list.return_value = "random"
-    with mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
+    with mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils):
         check_databricks_secret_scope_access("scope")
         mock_dbutils.secrets.list.assert_called_once_with("scope")
 
@@ -498,15 +498,15 @@ def test_check_databricks_secret_scope_access_error():
     mock_dbutils = mock.MagicMock()
     mock_dbutils.secrets.list.side_effect = Exception("no scope access")
     with (
-        mock.patch("mlflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils),
-        mock.patch("mlflow.utils.databricks_utils._logger.warning") as mock_warning,
+        mock.patch("qcflow.utils.databricks_utils._get_dbutils", return_value=mock_dbutils),
+        mock.patch("qcflow.utils.databricks_utils._logger.warning") as mock_warning,
     ):
         check_databricks_secret_scope_access("scope")
         mock_warning.assert_called_once_with(
             "Unable to access Databricks secret scope 'scope' for OpenAI credentials that will be "
             "used to deploy the model to Databricks Model Serving. Please verify that the current "
             "Databricks user has 'READ' permission for this scope. For more information, see "
-            "https://mlflow.org/docs/latest/python_api/openai/index.html#credential-management-for-openai-on-databricks. "  # noqa: E501
+            "https://qcflow.org/docs/latest/python_api/openai/index.html#credential-management-for-openai-on-databricks. "  # noqa: E501
             "Error: no scope access"
         )
         mock_dbutils.secrets.list.assert_called_once_with("scope")
@@ -567,7 +567,7 @@ def test_prioritize_env_var_config_provider(monkeypatch):
     ],
 )
 def test_get_workspace_url(input_url, expected_result):
-    with mock.patch("mlflow.utils.databricks_utils._get_workspace_url", return_value=input_url):
+    with mock.patch("qcflow.utils.databricks_utils._get_workspace_url", return_value=input_url):
         result = get_workspace_url()
         assert result == expected_result
 
@@ -584,7 +584,7 @@ def test_get_dbconnect_udf_sandbox_info(spark, monkeypatch):
     )
 
     info = get_dbconnect_udf_sandbox_info(spark)
-    assert info.mlflow_version == mlflow.__version__
+    assert info.qcflow_version == qcflow.__version__
     assert info.image_version == "client.1.2"
     assert info.runtime_version == "15.4"
     assert info.platform_machine == platform.machine()
@@ -593,7 +593,7 @@ def test_get_dbconnect_udf_sandbox_info(spark, monkeypatch):
     databricks_utils._dbconnect_udf_sandbox_info_cache = None
 
     info = get_dbconnect_udf_sandbox_info(spark)
-    assert info.mlflow_version == mlflow.__version__
+    assert info.qcflow_version == qcflow.__version__
     assert info.image_version == "15.4"
     assert info.runtime_version == "15.4"
     assert info.platform_machine == platform.machine()

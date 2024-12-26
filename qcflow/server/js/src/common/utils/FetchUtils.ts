@@ -28,7 +28,7 @@ export const HTTPRetryStatuses = [429, 556];
 // a set of cookies with a key prefix of "$appName-request-header-$headerName",
 // which will be added as an HTTP header to all requests.
 export const getDefaultHeadersFromCookies = (cookieStr: any) => {
-  const headerCookiePrefix = 'mlflow-request-header-';
+  const headerCookiePrefix = 'qcflow-request-header-';
   const parsedCookie = cookie.parse(cookieStr);
   if (!parsedCookie || Object.keys(parsedCookie).length === 0) {
     return {};
@@ -52,8 +52,8 @@ export const getDefaultHeaders = (cookieStr: any) => {
 };
 
 export const getAjaxUrl = (relativeUrl: any) => {
-  // @ts-expect-error TS(4111): Property 'MLFLOW_USE_ABSOLUTE_AJAX_URLS' comes from an in... Remove this comment to see the full error message
-  if (process.env.MLFLOW_USE_ABSOLUTE_AJAX_URLS === 'true' && !relativeUrl.startsWith('/')) {
+  // @ts-expect-error TS(4111): Property 'QCFLOW_USE_ABSOLUTE_AJAX_URLS' comes from an in... Remove this comment to see the full error message
+  if (process.env.QCFLOW_USE_ABSOLUTE_AJAX_URLS === 'true' && !relativeUrl.startsWith('/')) {
     return '/' + relativeUrl;
   }
   return relativeUrl;

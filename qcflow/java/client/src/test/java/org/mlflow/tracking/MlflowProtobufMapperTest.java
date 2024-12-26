@@ -1,4 +1,4 @@
-package org.mlflow.tracking;
+package org.qcflow.tracking;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import com.google.gson.reflect.TypeToken;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import org.mlflow.api.proto.Service;
+import org.qcflow.api.proto.Service;
 
 public class MlflowProtobufMapperTest {
   @Test

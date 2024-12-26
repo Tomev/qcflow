@@ -2,7 +2,7 @@
 {{pipInstall}}
 
 import pandas as pd
-import mlflow
+import qcflow
 
 evals = [
     {
@@ -17,6 +17,6 @@ evals = [
         ],
     }
 ]
-eval_result = mlflow.evaluate(
+eval_result = qcflow.evaluate(
     data=pd.DataFrame.from_records(evals), model="{{ modelUri }}", model_type="databricks-agent"
 )

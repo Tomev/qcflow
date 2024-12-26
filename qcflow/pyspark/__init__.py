@@ -1,3 +1,3 @@
-from mlflow.pyspark import ml
+from qcflow.pyspark import ml
 
 __all__ = ["ml"]

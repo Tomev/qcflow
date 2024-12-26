@@ -1,12 +1,12 @@
 """
-The ``mlflow.johnsnowlabs`` module provides an API for logging and loading Spark NLP and NLU models.
+The ``qcflow.johnsnowlabs`` module provides an API for logging and loading Spark NLP and NLU models.
 This module exports the following flavors:
 
 Johnsnowlabs (native) format
     Allows models to be loaded as Spark Transformers for scoring in a Spark session.
     Models with this flavor can be loaded as NluPipelines, with underlying Spark MLlib PipelineModel
     This is the main flavor and is always produced.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Supports deployment outside of Spark by instantiating a SparkContext and reading
     input data as a Spark DataFrame prior to scoring. Also supports deployment in Spark
     as a Spark UDF. Models with this flavor can be loaded as Python functions
@@ -56,51 +56,51 @@ from typing import Any, Optional
 
 import yaml
 
-import mlflow
-from mlflow import mleap, pyfunc
-from mlflow.environment_variables import MLFLOW_DFS_TMP
-from mlflow.models import Model
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import ModelSignature
-from mlflow.models.utils import ModelInputExample, _save_example
-from mlflow.spark import (
+import qcflow
+from qcflow import mleap, pyfunc
+from qcflow.environment_variables import QCFLOW_DFS_TMP
+from qcflow.models import Model
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import ModelSignature
+from qcflow.models.utils import ModelInputExample, _save_example
+from qcflow.spark import (
     _HadoopFileSystem,
     _maybe_save_model,
-    _mlflowdbfs_path,
-    _should_use_mlflowdbfs,
+    _qcflowdbfs_path,
+    _should_use_qcflowdbfs,
 )
-from mlflow.store.artifact.databricks_artifact_repo import DatabricksArtifactRepository
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import (
+from qcflow.store.artifact.databricks_artifact_repo import DatabricksArtifactRepository
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import (
     _download_artifact_from_uri,
     _get_root_uri_and_artifact_path,
 )
-from mlflow.utils import databricks_utils
-from mlflow.utils.annotations import experimental
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.utils import databricks_utils
+from qcflow.utils.annotations import experimental
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
 )
-from mlflow.utils.file_utils import (
+from qcflow.utils.file_utils import (
     TempDir,
     get_total_file_size,
     shutil_copytree_without_file_permissions,
     write_to,
 )
-from mlflow.utils.model_utils import (
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration_from_uri,
     _validate_and_copy_code_paths,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
-from mlflow.utils.uri import (
+from qcflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.uri import (
     append_to_uri_path,
     dbfs_hdfs_uri_to_fuse_path,
     generate_tmp_dfs_path,
@@ -136,7 +136,7 @@ def _set_env_vars():
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -186,10 +186,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @experimental
@@ -212,8 +212,8 @@ def log_model(
 ):
     """
     Log a ``Johnsnowlabs NLUPipeline`` created via `nlp.load()
-    <https://nlp.johnsnowlabs.com/docs/en/jsl/load_api>`_, as an MLflow artifact for the current
-    run. This uses the MLlib persistence format and produces an MLflow Model with the
+    <https://nlp.johnsnowlabs.com/docs/en/jsl/load_api>`_, as an QCFlow artifact for the current
+    run. This uses the MLlib persistence format and produces an QCFlow Model with the
     ``johnsnowlabs`` flavor.
 
     Note: If no run is active, it will instantiate a run to obtain a run_id.
@@ -231,7 +231,7 @@ def log_model(
             environment::
 
                 {
-                    'name': 'mlflow-env',
+                    'name': 'qcflow-env',
                     'channels': ['defaults'],
                     'dependencies': [
                         'python=3.8.15',
@@ -244,23 +244,23 @@ def log_model(
             destination and then copied into the model's artifact directory. This is
             necessary as Spark ML models read from and write to DFS if running on a
             cluster. If this operation completes successfully, all temporary files
-            created on the DFS are removed. Defaults to ``/tmp/mlflow``.
+            created on the DFS are removed. Defaults to ``/tmp/qcflow``.
         sample_input: A sample input used to add the MLeap flavor to the model.
             This must be a PySpark DataFrame that the model can evaluate. If
             ``sample_input`` is ``None``, the MLeap flavor is not added.
         registered_model_name: If given, create a model version under
             ``registered_model_name``, also creating a registered model if one
             with the given name does not exist.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models.signature import infer_signature
+                from qcflow.models.signature import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -277,7 +277,7 @@ def log_model(
             it.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
@@ -286,7 +286,7 @@ def log_model(
         import os
         import json
         import pandas as pd
-        import mlflow
+        import qcflow
         from johnsnowlabs import nlp
 
         # Write your raw license.json string into the 'JOHNSNOWLABS_LICENSE_JSON' env variable
@@ -315,12 +315,12 @@ def log_model(
         trained_classifier.predict("He hates covid")
 
         # Log it
-        mlflow.johnsnowlabs.log_model(trained_classifier, "my_trained_model")
+        qcflow.johnsnowlabs.log_model(trained_classifier, "my_trained_model")
     """
 
     _validate_env_vars()
-    run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
-    run_root_artifact_uri = mlflow.get_artifact_uri()
+    run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
+    run_root_artifact_uri = qcflow.get_artifact_uri()
     remote_model_path = None
 
     # If the artifact URI is a local filesystem path, defer to Model.log() to persist the model,
@@ -335,7 +335,7 @@ def log_model(
     ):
         return Model.log(
             artifact_path=artifact_path,
-            flavor=mlflow.johnsnowlabs,
+            flavor=qcflow.johnsnowlabs,
             spark_model=spark_model,
             conda_env=conda_env,
             code_paths=code_paths,
@@ -350,13 +350,13 @@ def log_model(
             metadata=metadata,
         )
     # Otherwise, override the default model log behavior and save model directly to artifact repo
-    mlflow_model = Model(artifact_path=artifact_path, run_id=run_id)
+    qcflow_model = Model(artifact_path=artifact_path, run_id=run_id)
     with TempDir() as tmp:
         tmp_model_metadata_dir = tmp.path()
         _save_model_metadata(
             tmp_model_metadata_dir,
             spark_model,
-            mlflow_model,
+            qcflow_model,
             sample_input,
             conda_env,
             code_paths,
@@ -367,21 +367,21 @@ def log_model(
             remote_model_path=remote_model_path,
             store_license=store_license,
         )
-        mlflow.tracking.fluent.log_artifacts(tmp_model_metadata_dir, artifact_path)
-        mlflow.tracking.fluent._record_logged_model(mlflow_model)
+        qcflow.tracking.fluent.log_artifacts(tmp_model_metadata_dir, artifact_path)
+        qcflow.tracking.fluent._record_logged_model(qcflow_model)
         if registered_model_name is not None:
-            mlflow.register_model(
+            qcflow.register_model(
                 f"runs:/{run_id}/{artifact_path}",
                 registered_model_name,
                 await_registration_for,
             )
-        return mlflow_model.get_model_info()
+        return qcflow_model.get_model_info()
 
 
 def _save_model_metadata(
     dst_dir,
     spark_model,
-    mlflow_model,
+    qcflow_model,
     sample_input,
     conda_env,
     code_paths,
@@ -394,30 +394,30 @@ def _save_model_metadata(
 ):
     """
     Saves model metadata into the passed-in directory.
-    If mlflowdbfs is not used, the persisted metadata assumes that a model can be
+    If qcflowdbfs is not used, the persisted metadata assumes that a model can be
     loaded from a relative path to the metadata file (currently hard-coded to "jsl-model").
-    If mlflowdbfs is used, remote_model_path should be provided, and the model needs to
+    If qcflowdbfs is used, remote_model_path should be provided, and the model needs to
     be loaded from the remote_model_path.
     """
 
     if sample_input is not None:
         mleap.add_to_model(
-            mlflow_model=mlflow_model,
+            qcflow_model=qcflow_model,
             path=dst_dir,
             spark_model=spark_model,
             sample_input=sample_input,
         )
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if input_example is not None:
-        _save_example(mlflow_model, input_example, dst_dir)
+        _save_example(qcflow_model, input_example, dst_dir)
 
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, dst_dir)
 
     # add the johnsnowlabs flavor
     import pyspark
 
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         pyspark_version=pyspark.__version__,
         model_data=_JOHNSNOWLABS_MODEL_PATH_SUB,
@@ -426,16 +426,16 @@ def _save_model_metadata(
 
     # add the pyfunc flavor
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.johnsnowlabs",
+        qcflow_model,
+        loader_module="qcflow.johnsnowlabs",
         data=_JOHNSNOWLABS_MODEL_PATH_SUB,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
     )
     if size := get_total_file_size(dst_dir):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(str(Path(dst_dir) / MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(str(Path(dst_dir) / MLMODEL_FILE_NAME))
 
     if conda_env is None:
         default_reqs = get_default_pip_requirements() if pip_requirements is None else None
@@ -490,7 +490,7 @@ def _save_jars_and_lic(dst_dir, store_license=False):
 def save_model(
     spark_model,
     path,
-    mlflow_model=None,
+    qcflow_model=None,
     conda_env=None,
     code_paths=None,
     dfs_tmpdir=None,
@@ -514,7 +514,7 @@ def save_model(
             saved. `Every johnsnowlabs model <https://nlp.johnsnowlabs.com/models>`_
             is a PipelineModel and loadable as nlu.NLUPipeline.
         path: Local path where the model is to be saved.
-        mlflow_model: MLflow model config this flavor is being added to.
+        qcflow_model: QCFlow model config this flavor is being added to.
         conda_env: Either a dictionary representation of a Conda environment or the path to a
             Conda environment yaml file. If provided, this describes the environment
             this model should be run in. At minimum, it should specify the dependencies
@@ -524,7 +524,7 @@ def save_model(
             environment::
 
                 {
-                    'name': 'mlflow-env',
+                    'name': 'qcflow-env',
                     'channels': ['defaults'],
                     'dependencies': [
                         'python=3.8.15',
@@ -537,20 +537,20 @@ def save_model(
             destination and then copied to the requested local path. This is necessary
             as Spark ML models read from and write to DFS if running on a cluster. All
             temporary files created on the DFS are removed if this operation
-            completes successfully. Defaults to ``/tmp/mlflow``.
+            completes successfully. Defaults to ``/tmp/qcflow``.
         sample_input: A sample input that is used to add the MLeap flavor to the model.
             This must be a PySpark DataFrame that the model can evaluate. If
             ``sample_input`` is ``None``, the MLeap flavor is not added.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models.signature import infer_signature
+                from qcflow.models.signature import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -566,7 +566,7 @@ def save_model(
         :caption: Example
 
         from johnsnowlabs import nlp
-        import mlflow
+        import qcflow
         import os
 
         # Write your raw license.json string into the 'JOHNSNOWLABS_LICENSE_JSON' env variable
@@ -586,21 +586,21 @@ def save_model(
         model.predict(["I hate covid", "I love covid"])
 
         # Save model as pyfunc and johnsnowlabs format
-        mlflow.johnsnowlabs.save_model(model, "saved_model")
-        model = mlflow.johnsnowlabs.load_model("saved_model")
+        qcflow.johnsnowlabs.save_model(model, "saved_model")
+        model = qcflow.johnsnowlabs.load_model("saved_model")
         # Predict with reloaded model,
         # supports datatypes defined in https://nlp.johnsnowlabs.com/docs/en/jsl/predict_api#supported-data-types
         model.predict(["I hate covid", "I love covid"])
     """
     _validate_env_vars()
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
     # Spark ML stores the model on DFS if running on a cluster
     # Save it to a DFS temp dir first and copy it to local path
     if dfs_tmpdir is None:
-        dfs_tmpdir = MLFLOW_DFS_TMP.get()
+        dfs_tmpdir = QCFLOW_DFS_TMP.get()
     tmp_path = generate_tmp_dfs_path(dfs_tmpdir)
 
     _unpack_and_save_model(spark_model, tmp_path)
@@ -620,7 +620,7 @@ def save_model(
     _save_model_metadata(
         dst_dir=path,
         spark_model=spark_model,
-        mlflow_model=mlflow_model,
+        qcflow_model=qcflow_model,
         sample_input=sample_input,
         conda_env=conda_env,
         code_paths=code_paths,
@@ -649,7 +649,7 @@ def _load_model_databricks(dfs_tmpdir, local_model_path):
 def _load_model(model_uri, dfs_tmpdir_base=None, local_model_path=None):
     from johnsnowlabs import nlp
 
-    dfs_tmpdir = generate_tmp_dfs_path(dfs_tmpdir_base or MLFLOW_DFS_TMP.get())
+    dfs_tmpdir = generate_tmp_dfs_path(dfs_tmpdir_base or QCFLOW_DFS_TMP.get())
     if databricks_utils.is_in_cluster() and databricks_utils.is_dbfs_fuse_available():
         return _load_model_databricks(
             dfs_tmpdir, local_model_path or _download_artifact_from_uri(model_uri)
@@ -667,24 +667,24 @@ def _load_model(model_uri, dfs_tmpdir_base=None, local_model_path=None):
 
 def load_model(model_uri, dfs_tmpdir=None, dst_path=None):
     """
-    Load the Johnsnowlabs MLflow model from the path.
+    Load the Johnsnowlabs QCFlow model from the path.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
         dfs_tmpdir: Temporary directory path on Distributed (Hadoop) File System (DFS) or local
             filesystem if running in local mode. The model is loaded from this
-            destination. Defaults to ``/tmp/mlflow``.
+            destination. Defaults to ``/tmp/qcflow``.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
             path will be created.
@@ -696,7 +696,7 @@ def load_model(model_uri, dfs_tmpdir=None, dst_path=None):
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
         from johnsnowlabs import nlp
         import os
 
@@ -711,37 +711,37 @@ def load_model(model_uri, dfs_tmpdir=None, dst_path=None):
 
         # start a spark session
         nlp.start()
-        # Load you MLflow Model
-        model = mlflow.johnsnowlabs.load_model("johnsnowlabs_model")
+        # Load you QCFlow Model
+        model = qcflow.johnsnowlabs.load_model("johnsnowlabs_model")
 
         # Make predictions on test documents
         # supports datatypes defined in https://nlp.johnsnowlabs.com/docs/en/jsl/predict_api#supported-data-types
         prediction = model.transform(["I love Covid", "I hate Covid"])
     """
     # This MUST be called prior to appending the model flavor to `model_uri` in order
-    # for `artifact_path` to take on the correct value for model loading via mlflowdbfs.
+    # for `artifact_path` to take on the correct value for model loading via qcflowdbfs.
     _validate_env_vars()
     root_uri, artifact_path = _get_root_uri_and_artifact_path(model_uri)
 
     flavor_conf = _get_flavor_configuration_from_uri(model_uri, FLAVOR_NAME, _logger)
-    local_mlflow_model_path = _download_artifact_from_uri(
+    local_qcflow_model_path = _download_artifact_from_uri(
         artifact_uri=model_uri, output_path=dst_path
     )
-    _add_code_from_conf_to_system_path(local_mlflow_model_path, flavor_conf)
+    _add_code_from_conf_to_system_path(local_qcflow_model_path, flavor_conf)
 
-    if _should_use_mlflowdbfs(model_uri):
+    if _should_use_qcflowdbfs(model_uri):
         from pyspark.ml.pipeline import PipelineModel
 
-        mlflowdbfs_path = _mlflowdbfs_path(
+        qcflowdbfs_path = _qcflowdbfs_path(
             DatabricksArtifactRepository._extract_run_id(model_uri), artifact_path
         )
         with databricks_utils.MlflowCredentialContext(
             get_databricks_profile_uri_from_artifact_uri(root_uri)
         ):
-            return PipelineModel.load(mlflowdbfs_path)
+            return PipelineModel.load(qcflowdbfs_path)
 
     sparkml_model_uri = append_to_uri_path(model_uri, flavor_conf["model_data"])
-    local_sparkml_model_path = str(Path(local_mlflow_model_path) / flavor_conf["model_data"])
+    local_sparkml_model_path = str(Path(local_qcflow_model_path) / flavor_conf["model_data"])
     return _load_model(
         model_uri=sparkml_model_uri,
         dfs_tmpdir_base=dfs_tmpdir,
@@ -753,7 +753,7 @@ def _load_pyfunc(path, spark=None):
     """Load PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``johnsnowlabs`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``johnsnowlabs`` flavor.
         spark: Optionally pass spark context when using pyfunc as UDF. required, because
             we cannot fetch the Sparkcontext inside of the Workernode which executes the UDF.
 
@@ -783,7 +783,7 @@ def _get_or_create_sparksession(model_path=None):  # noqa: D417
     """
     from johnsnowlabs import nlp
 
-    from mlflow.utils._spark_utils import _get_active_spark_session
+    from qcflow.utils._spark_utils import _get_active_spark_session
 
     _validate_env_vars()
 
@@ -849,9 +849,9 @@ def _unpack_and_save_model(spark_model, dst):
         try:
             spark_model.vanilla_transformer_pipe.write().overwrite().save(dst)
         except Exception:
-            # for mlflowdbfs_path we cannot use overwrite, gives
+            # for qcflowdbfs_path we cannot use overwrite, gives
             # org.apache.hadoop.fs.UnsupportedFileSystemException: No FileSystem for scheme
-            # "mlflowdbfs"
+            # "qcflowdbfs"
             spark_model.save(dst)
 
 

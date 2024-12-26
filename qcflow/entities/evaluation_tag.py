@@ -1,4 +1,4 @@
-from mlflow.entities._mlflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _MlflowObject
 
 
 class EvaluationTag(_MlflowObject):

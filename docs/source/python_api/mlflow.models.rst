@@ -1,10 +1,10 @@
-mlflow.models
+qcflow.models
 ==============
 
-.. automodule:: mlflow.models
+.. automodule:: qcflow.models
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. autoclass:: mlflow.models.model.ModelInfo
+.. autoclass:: qcflow.models.model.ModelInfo
     :members:

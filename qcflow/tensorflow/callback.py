@@ -1,16 +1,16 @@
 from tensorflow import keras
 from tensorflow.keras.callbacks import Callback
 
-from mlflow import log_metrics, log_params, log_text
-from mlflow.utils.autologging_utils import ExceptionSafeClass
-from mlflow.utils.checkpoint_utils import MlflowModelCheckpointCallbackBase
+from qcflow import log_metrics, log_params, log_text
+from qcflow.utils.autologging_utils import ExceptionSafeClass
+from qcflow.utils.checkpoint_utils import MlflowModelCheckpointCallbackBase
 
 
 class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
-    """Callback for logging Tensorflow training metrics to MLflow.
+    """Callback for logging Tensorflow training metrics to QCFlow.
 
     This callback logs model information at training start, and logs training metrics every epoch or
-    every n steps (defined by the user) to MLflow.
+    every n steps (defined by the user) to QCFlow.
 
     Args:
         log_every_epoch: bool, If True, log metrics every epoch. If False, log metrics every n
@@ -22,7 +22,7 @@ class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
         :caption: Example
 
         from tensorflow import keras
-        import mlflow
+        import qcflow
         import numpy as np
 
         # Prepare data for a 2-class classification.
@@ -43,13 +43,13 @@ class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
             metrics=[keras.metrics.SparseCategoricalAccuracy()],
         )
 
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(
                 data,
                 label,
                 batch_size=4,
                 epochs=2,
-                callbacks=[mlflow.keras.MlflowCallback(run)],
+                callbacks=[qcflow.keras.MlflowCallback(run)],
             )
     """
 
@@ -106,7 +106,7 @@ class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
 
 
 class MlflowModelCheckpointCallback(Callback, MlflowModelCheckpointCallbackBase):
-    """Callback for automatic Keras model checkpointing to MLflow.
+    """Callback for automatic Keras model checkpointing to QCFlow.
 
     Args:
         monitor: In automatic model checkpointing, the metric name to monitor if
@@ -132,9 +132,9 @@ class MlflowModelCheckpointCallback(Callback, MlflowModelCheckpointCallbackBase)
 
         from tensorflow import keras
         import tensorflow as tf
-        import mlflow
+        import qcflow
         import numpy as np
-        from mlflow.tensorflow import MlflowModelCheckpointCallback
+        from qcflow.tensorflow import MlflowModelCheckpointCallback
 
         # Prepare data for a 2-class classification.
         data = tf.random.uniform([8, 28, 28, 3])
@@ -154,7 +154,7 @@ class MlflowModelCheckpointCallback(Callback, MlflowModelCheckpointCallbackBase)
             metrics=[keras.metrics.SparseCategoricalAccuracy()],
         )
 
-        mlflow_checkpoint_callback = MlflowModelCheckpointCallback(
+        qcflow_checkpoint_callback = MlflowModelCheckpointCallback(
             monitor="sparse_categorical_accuracy",
             mode="max",
             save_best_only=True,
@@ -162,13 +162,13 @@ class MlflowModelCheckpointCallback(Callback, MlflowModelCheckpointCallbackBase)
             save_freq="epoch",
         )
 
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(
                 data,
                 label,
                 batch_size=4,
                 epochs=2,
-                callbacks=[mlflow_checkpoint_callback],
+                callbacks=[qcflow_checkpoint_callback],
             )
     """
 

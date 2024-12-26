@@ -4,14 +4,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import mlflow.data
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.filesystem_dataset_source import FileSystemDatasetSource
-from mlflow.data.numpy_dataset import NumpyDataset
-from mlflow.data.pyfunc_dataset_mixin import PyFuncInputsOutputs
-from mlflow.data.schema import TensorDatasetSchema
-from mlflow.types.utils import _infer_schema
+import qcflow.data
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.filesystem_dataset_source import FileSystemDatasetSource
+from qcflow.data.numpy_dataset import NumpyDataset
+from qcflow.data.pyfunc_dataset_mixin import PyFuncInputsOutputs
+from qcflow.data.schema import TensorDatasetSchema
+from qcflow.types.utils import _infer_schema
 
 from tests.resources.data.dataset_source import SampleDatasetSource
 
@@ -208,18 +208,18 @@ def test_from_numpy_features_only(tmp_path):
     features = np.array([1, 2, 3])
     path = tmp_path / "temp.csv"
     pd.DataFrame(features).to_csv(path)
-    mlflow_features = mlflow.data.from_numpy(features, source=path)
+    qcflow_features = qcflow.data.from_numpy(features, source=path)
 
-    assert isinstance(mlflow_features, NumpyDataset)
-    assert np.array_equal(mlflow_features.features, features)
-    assert mlflow_features.schema == TensorDatasetSchema(features=_infer_schema(features))
-    assert mlflow_features.profile == {
+    assert isinstance(qcflow_features, NumpyDataset)
+    assert np.array_equal(qcflow_features.features, features)
+    assert qcflow_features.schema == TensorDatasetSchema(features=_infer_schema(features))
+    assert qcflow_features.profile == {
         "features_shape": features.shape,
         "features_size": features.size,
         "features_nbytes": features.nbytes,
     }
 
-    assert isinstance(mlflow_features.source, FileSystemDatasetSource)
+    assert isinstance(qcflow_features.source, FileSystemDatasetSource)
 
 
 def test_from_numpy_features_and_targets(tmp_path):
@@ -227,15 +227,15 @@ def test_from_numpy_features_and_targets(tmp_path):
     targets = np.array([4, 5, 6])
     path = tmp_path / "temp.csv"
     pd.DataFrame(features).to_csv(path)
-    mlflow_ds = mlflow.data.from_numpy(features, targets=targets, source=path)
+    qcflow_ds = qcflow.data.from_numpy(features, targets=targets, source=path)
 
-    assert isinstance(mlflow_ds, NumpyDataset)
-    assert np.array_equal(mlflow_ds.features, features)
-    assert np.array_equal(mlflow_ds.targets, targets)
-    assert mlflow_ds.schema == TensorDatasetSchema(
+    assert isinstance(qcflow_ds, NumpyDataset)
+    assert np.array_equal(qcflow_ds.features, features)
+    assert np.array_equal(qcflow_ds.targets, targets)
+    assert qcflow_ds.schema == TensorDatasetSchema(
         features=_infer_schema(features), targets=_infer_schema(targets)
     )
-    assert mlflow_ds.profile == {
+    assert qcflow_ds.profile == {
         "features_shape": features.shape,
         "features_size": features.size,
         "features_nbytes": features.nbytes,
@@ -244,14 +244,14 @@ def test_from_numpy_features_and_targets(tmp_path):
         "targets_nbytes": targets.nbytes,
     }
 
-    assert isinstance(mlflow_ds.source, FileSystemDatasetSource)
+    assert isinstance(qcflow_ds.source, FileSystemDatasetSource)
 
 
 def test_from_numpy_no_source_specified():
     features = np.array([1, 2, 3])
-    mlflow_features = mlflow.data.from_numpy(features)
+    qcflow_features = qcflow.data.from_numpy(features)
 
-    assert isinstance(mlflow_features, NumpyDataset)
+    assert isinstance(qcflow_features, NumpyDataset)
 
-    assert isinstance(mlflow_features.source, CodeDatasetSource)
-    assert "mlflow.source.name" in mlflow_features.source.to_json()
+    assert isinstance(qcflow_features.source, CodeDatasetSource)
+    assert "qcflow.source.name" in qcflow_features.source.to_json()

@@ -4,14 +4,14 @@ import shutil
 from io import StringIO
 from typing import ForwardRef, get_args, get_origin
 
-from mlflow.exceptions import MlflowException
-from mlflow.models.flavor_backend_registry import get_flavor_backend
-from mlflow.utils import env_manager as _EnvManager
-from mlflow.utils.annotations import experimental
-from mlflow.utils.databricks_utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.models.flavor_backend_registry import get_flavor_backend
+from qcflow.utils import env_manager as _EnvManager
+from qcflow.utils.annotations import experimental
+from qcflow.utils.databricks_utils import (
     is_databricks_connect,
 )
-from mlflow.utils.file_utils import TempDir
+from qcflow.utils.file_utils import TempDir
 
 _logger = logging.getLogger(__name__)
 UV_INSTALLATION_INSTRUCTIONS = (
@@ -22,23 +22,23 @@ UV_INSTALLATION_INSTRUCTIONS = (
 
 def build_docker(
     model_uri=None,
-    name="mlflow-pyfunc",
+    name="qcflow-pyfunc",
     env_manager=_EnvManager.VIRTUALENV,
-    mlflow_home=None,
+    qcflow_home=None,
     install_java=False,
-    install_mlflow=False,
+    install_qcflow=False,
     enable_mlserver=False,
     base_image=None,
 ):
     """
-    Builds a Docker image whose default entrypoint serves an MLflow model at port 8080, using the
+    Builds a Docker image whose default entrypoint serves an QCFlow model at port 8080, using the
     python_function flavor. The container serves the model referenced by ``model_uri``, if
-    specified. If ``model_uri`` is not specified, an MLflow Model directory must be mounted as a
+    specified. If ``model_uri`` is not specified, an QCFlow Model directory must be mounted as a
     volume into the /opt/ml/model directory in the container.
 
     .. important::
 
-        Since MLflow 2.10.1, the Docker image built with ``--model-uri`` does **not install Java**
+        Since QCFlow 2.10.1, the Docker image built with ``--model-uri`` does **not install Java**
         for improved performance, unless the model flavor is one of ``["johnsnowlabs", "h2o",
         "mleap", "spark"]``. If you need to install Java for other flavors, e.g. custom Python model
         that uses SparkML, please specify ``install-java=True`` to enforce Java installation.
@@ -58,26 +58,26 @@ def build_docker(
 
         docker run -p 5001:8080 -e DISABLE_NGINX=true "my-image-name"
 
-    See https://www.mlflow.org/docs/latest/python_api/mlflow.pyfunc.html for more information on the
+    See https://www.qcflow.org/docs/latest/python_api/qcflow.pyfunc.html for more information on the
     'python_function' flavor.
 
     Args:
         model_uri: URI to the model. A local path, a 'runs:/' URI, or a remote storage URI (e.g.,
             an 's3://' URI). For more information about supported remote URIs for model artifacts,
-            see https://mlflow.org/docs/latest/tracking.html#artifact-stores
-        name: Name of the Docker image to build. Defaults to 'mlflow-pyfunc'.
+            see https://qcflow.org/docs/latest/tracking.html#artifact-stores
+        name: Name of the Docker image to build. Defaults to 'qcflow-pyfunc'.
         env_manager: If specified, create an environment for MLmodel using the specified environment
             manager. The following values are supported: (1) virtualenv (default): use virtualenv
             and pyenv for Python version management (2) conda: use conda (3) local: use the local
             environment without creating a new one.
-        mlflow_home: Path to local clone of MLflow project. Use for development only.
+        qcflow_home: Path to local clone of QCFlow project. Use for development only.
         install_java: If specified, install Java in the image. Default is False in order to
             reduce both the image size and the build time. Model flavors requiring Java will enable
             this setting automatically, such as the Spark flavor. (This argument is only available
-            in MLflow 2.10.1 and later. In earlier versions, Java is always installed to the image.)
-        install_mlflow: If specified and there is a conda or virtualenv environment to be activated
-            mlflow will be installed into the environment after it has been activated.
-            The version of installed mlflow will be the same as the one used to invoke this command.
+            in QCFlow 2.10.1 and later. In earlier versions, Java is always installed to the image.)
+        install_qcflow: If specified and there is a conda or virtualenv environment to be activated
+            qcflow will be installed into the environment after it has been activated.
+            The version of installed qcflow will be the same as the one used to invoke this command.
         enable_mlserver: If specified, the image will be built with the Seldon MLserver as backend.
         base_image: Base image for the Docker image. If not specified, the default image is either
             UBUNTU_BASE_IMAGE = "ubuntu:20.04" or PYTHON_SLIM_BASE_IMAGE = "python:{version}-slim"
@@ -88,9 +88,9 @@ def build_docker(
     get_flavor_backend(model_uri, docker_build=True, env_manager=env_manager).build_image(
         model_uri,
         name,
-        mlflow_home=mlflow_home,
+        qcflow_home=qcflow_home,
         install_java=install_java,
-        install_mlflow=install_mlflow,
+        install_qcflow=install_qcflow,
         enable_mlserver=enable_mlserver,
         base_image=base_image,
     )
@@ -108,24 +108,24 @@ def predict(
     content_type=_CONTENT_TYPE_JSON,
     output_path=None,
     env_manager=_EnvManager.VIRTUALENV,
-    install_mlflow=False,
+    install_qcflow=False,
     pip_requirements_override=None,
     extra_envs=None,
     # TODO: add an option to force recreating the env
 ):
     """
-    Generate predictions in json format using a saved MLflow model. For information about the input
+    Generate predictions in json format using a saved QCFlow model. For information about the input
     data formats accepted by this function, see the following documentation:
-    https://www.mlflow.org/docs/latest/models.html#built-in-deployment-tools.
+    https://www.qcflow.org/docs/latest/models.html#built-in-deployment-tools.
 
     Args:
         model_uri: URI to the model. A local path, a local or remote URI e.g. runs:/, s3://.
         input_data: Input data for prediction. Must be valid input for the PyFunc model. Refer
-            to the :py:func:`mlflow.pyfunc.PyFuncModel.predict()` for the supported input types.
+            to the :py:func:`qcflow.pyfunc.PyFuncModel.predict()` for the supported input types.
 
             .. note::
                 If this API fails due to errors in input_data, use
-                `mlflow.models.convert_input_example_to_serving_input` to manually validate
+                `qcflow.models.convert_input_example_to_serving_input` to manually validate
                 your input data.
         input_path: Path to a file containing input data. If provided, 'input_data' must be None.
         content_type: Content type of the input data. Can be one of {‘json’, ‘csv’}.
@@ -137,16 +137,16 @@ def predict(
             - "local": use the local environment
             - "conda": use conda
 
-        install_mlflow: If specified and there is a conda or virtualenv environment to be activated
-            mlflow will be installed into the environment after it has been activated. The version
-            of installed mlflow will be the same as the one used to invoke this command.
+        install_qcflow: If specified and there is a conda or virtualenv environment to be activated
+            qcflow will be installed into the environment after it has been activated. The version
+            of installed qcflow will be the same as the one used to invoke this command.
         pip_requirements_override: If specified, install the specified python dependencies to the
             model inference environment. This is particularly useful when you want to add extra
             dependencies or try different versions of the dependencies defined in the logged model.
 
             .. tip::
                 After validating the pip requirements override works as expected, you can update
-                the logged model's dependency using `mlflow.models.update_model_requirements` API
+                the logged model's dependency using `qcflow.models.update_model_requirements` API
                 without re-logging it. Note that a registered model is immutable, so you need to
                 register a new model version with the updated model.
         extra_envs: If specified, a dictionary of extra environment variables will be passed to the
@@ -162,25 +162,25 @@ def predict(
 
     .. code-block:: python
 
-        import mlflow
+        import qcflow
 
         run_id = "..."
 
-        mlflow.models.predict(
+        qcflow.models.predict(
             model_uri=f"runs:/{run_id}/model",
             input_data={"x": 1, "y": 2},
             content_type="json",
         )
 
         # Run prediction with "uv" as the environment manager
-        mlflow.models.predict(
+        qcflow.models.predict(
             model_uri=f"runs:/{run_id}/model",
             input_data={"x": 1, "y": 2},
             env_manager="uv",
         )
 
         # Run prediction with additional pip dependencies and extra environment variables
-        mlflow.models.predict(
+        qcflow.models.predict(
             model_uri=f"runs:/{run_id}/model",
             input_data={"x": 1, "y": 2},
             content_type="json",
@@ -190,7 +190,7 @@ def predict(
 
     """
     # to avoid circular imports
-    from mlflow.pyfunc import _PREBUILD_ENV_ROOT_LOCATION
+    from qcflow.pyfunc import _PREBUILD_ENV_ROOT_LOCATION
 
     if content_type not in [_CONTENT_TYPE_JSON, _CONTENT_TYPE_CSV]:
         raise MlflowException.invalid_parameter_value(
@@ -216,7 +216,7 @@ def predict(
     else:
         _logger.info(
             f"It is highly recommended to use `{_EnvManager.UV}` as the environment manager for "
-            "predicting with MLflow models as its performance is significantly better than other "
+            "predicting with QCFlow models as its performance is significantly better than other "
             f"environment managers. {UV_INSTALLATION_INSTRUCTIONS}"
         )
 
@@ -238,7 +238,7 @@ def predict(
         return get_flavor_backend(
             model_uri,
             env_manager=env_manager,
-            install_mlflow=install_mlflow,
+            install_qcflow=install_qcflow,
             **pyfunc_backend_env_root_config,
         ).predict(
             model_uri=model_uri,
@@ -268,8 +268,8 @@ def predict(
 
 
 def _get_pyfunc_supported_input_types():
-    # Importing here as the util module depends on optional packages not available in mlflow-skinny
-    import mlflow.models.utils as base_module
+    # Importing here as the util module depends on optional packages not available in qcflow-skinny
+    import qcflow.models.utils as base_module
 
     supported_input_types = []
     for input_type in get_args(base_module.PyFuncInput):
@@ -287,13 +287,13 @@ def _get_pyfunc_supported_input_types():
 
 
 def _serialize_input_data(input_data, content_type):
-    # build-docker command is available in mlflow-skinny (which doesn't contain pandas)
+    # build-docker command is available in qcflow-skinny (which doesn't contain pandas)
     # so we shouldn't import pandas at the top level
     import pandas as pd
 
     # this introduces numpy as dependency, we shouldn't import it at the top level
-    # as it is not available in mlflow-skinny
-    from mlflow.models.utils import convert_input_example_to_serving_input
+    # as it is not available in qcflow-skinny
+    from qcflow.models.utils import convert_input_example_to_serving_input
 
     valid_input_types = {
         _CONTENT_TYPE_CSV: (str, list, dict, pd.DataFrame),
@@ -325,7 +325,7 @@ def _serialize_input_data(input_data, content_type):
     except Exception as e:
         raise MlflowException.invalid_parameter_value(
             "Invalid input data, please make sure the data is acceptable by the "
-            "loaded pyfunc model. Use `mlflow.models.convert_input_example_to_serving_input` "
+            "loaded pyfunc model. Use `qcflow.models.convert_input_example_to_serving_input` "
             "to manually validate your input data."
         ) from e
 

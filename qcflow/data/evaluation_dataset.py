@@ -7,14 +7,14 @@ import sys
 
 from packaging.version import Version
 
-import mlflow
-from mlflow.entities import RunTag
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.utils.string_utils import generate_feature_name_if_not_string
+import qcflow
+from qcflow.entities import RunTag
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.utils.string_utils import generate_feature_name_if_not_string
 
 try:
-    # `numpy` and `pandas` are not required for `mlflow-skinny`.
+    # `numpy` and `pandas` are not required for `qcflow-skinny`.
     import numpy as np
     import pandas as pd
 except ImportError:
@@ -176,11 +176,11 @@ def _gen_md5_for_arraylike_obj(md5_gen, data):
         md5_gen.update(_hash_array_like_obj_as_bytes(tail_rows))
 
 
-def convert_data_to_mlflow_dataset(data, targets=None, predictions=None):
-    """Convert input data to mlflow dataset."""
+def convert_data_to_qcflow_dataset(data, targets=None, predictions=None):
+    """Convert input data to qcflow dataset."""
     supported_dataframe_types = [pd.DataFrame]
     if "pyspark" in sys.modules:
-        from mlflow.utils.spark_utils import get_spark_dataframe_type
+        from qcflow.utils.spark_utils import get_spark_dataframe_type
 
         spark_df_type = get_spark_dataframe_type()
         supported_dataframe_types.append(spark_df_type)
@@ -195,19 +195,19 @@ def convert_data_to_mlflow_dataset(data, targets=None, predictions=None):
         if not isinstance(data[0], (list, np.ndarray)):
             data = [[elm] for elm in data]
 
-        return mlflow.data.from_numpy(
+        return qcflow.data.from_numpy(
             np.array(data), targets=np.array(targets) if targets else None
         )
     elif isinstance(data, np.ndarray):
-        return mlflow.data.from_numpy(data, targets=targets)
+        return qcflow.data.from_numpy(data, targets=targets)
     elif isinstance(data, pd.DataFrame):
-        return mlflow.data.from_pandas(df=data, targets=targets, predictions=predictions)
+        return qcflow.data.from_pandas(df=data, targets=targets, predictions=predictions)
     elif "pyspark" in sys.modules and isinstance(data, spark_df_type):
-        return mlflow.data.from_spark(df=data, targets=targets, predictions=predictions)
+        return qcflow.data.from_spark(df=data, targets=targets, predictions=predictions)
     else:
-        # Cannot convert to mlflow dataset, return original data.
+        # Cannot convert to qcflow dataset, return original data.
         _logger.info(
-            "Cannot convert input data to `evaluate()` to an mlflow dataset, input must be a list, "
+            "Cannot convert input data to `evaluate()` to an qcflow dataset, input must be a list, "
             f"a numpy array, a panda Dataframe or a spark Dataframe, but received {type(data)}."
         )
         return data
@@ -221,7 +221,7 @@ def _validate_dataset_type_supports_predictions(data, supported_predictions_data
         raise MlflowException(
             message=(
                 "If predictions is specified, data must be one of the following types, or an"
-                " MLflow Dataset that represents one of the following types:"
+                " QCFlow Dataset that represents one of the following types:"
                 f" {supported_predictions_dataset_types}."
             ),
             error_code=INVALID_PARAMETER_VALUE,
@@ -231,7 +231,7 @@ def _validate_dataset_type_supports_predictions(data, supported_predictions_data
 class EvaluationDataset:
     """
     An input dataset for model evaluation. This is intended for use with the
-    :py:func:`mlflow.models.evaluate()`
+    :py:func:`qcflow.models.evaluate()`
     API.
     """
 
@@ -278,7 +278,7 @@ class EvaluationDataset:
             # add checking `'pyspark' in sys.modules` to avoid importing pyspark when user
             # run code not related to pyspark.
             if "pyspark" in sys.modules:
-                from mlflow.utils.spark_utils import get_spark_dataframe_type
+                from qcflow.utils.spark_utils import get_spark_dataframe_type
 
                 spark_df_type = get_spark_dataframe_type()
                 self._supported_dataframe_types = (pd.DataFrame, spark_df_type)
@@ -508,11 +508,11 @@ class EvaluationDataset:
 
     def _log_dataset_tag(self, client, run_id, model_uuid):
         """
-        Log dataset metadata as a tag "mlflow.datasets", if the tag already exists, it will
+        Log dataset metadata as a tag "qcflow.datasets", if the tag already exists, it will
         append current dataset metadata into existing tag content.
         """
         existing_dataset_metadata_str = client.get_run(run_id).data.tags.get(
-            "mlflow.datasets", "[]"
+            "qcflow.datasets", "[]"
         )
         dataset_metadata_list = json.loads(existing_dataset_metadata_str)
 
@@ -529,7 +529,7 @@ class EvaluationDataset:
         dataset_metadata_str = json.dumps(dataset_metadata_list, separators=(",", ":"))
         client.log_batch(
             run_id,
-            tags=[RunTag("mlflow.datasets", dataset_metadata_str)],
+            tags=[RunTag("qcflow.datasets", dataset_metadata_str)],
         )
 
     def __hash__(self):

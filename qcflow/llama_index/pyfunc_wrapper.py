@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 if TYPE_CHECKING:
     from llama_index.core import QueryBundle
 
-from mlflow.models.utils import _convert_llm_input_data
+from qcflow.models.utils import _convert_llm_input_data
 
 CHAT_ENGINE_NAME = "chat"
 QUERY_ENGINE_NAME = "query"
@@ -19,12 +19,12 @@ def _convert_llm_input_data_with_unwrapping(data):
     """
     Transforms the input data to the format expected by the LlamaIndex engine.
 
-    TODO: Migrate the unwrapping logic to mlflow.evaluate() function or _convert_llm_input_data,
+    TODO: Migrate the unwrapping logic to qcflow.evaluate() function or _convert_llm_input_data,
     # because it is not specific to LlamaIndex.
     """
     data = _convert_llm_input_data(data)
 
-    # For mlflow.evaluate() call, the input dataset will be a pandas DataFrame. The DF should have
+    # For qcflow.evaluate() call, the input dataset will be a pandas DataFrame. The DF should have
     # a column named "inputs" which contains the actual query data. After the preprocessing, the
     # each row will be passed here as a dictionary with the key "inputs". Therefore, we need to
     # extract the actual query data from the dictionary.
@@ -178,7 +178,7 @@ class WorkflowWrapper(_LlamaIndexModelWrapperBase):
     def predict(self, data, params: Optional[dict[str, Any]] = None) -> Union[list[str], str]:
         inputs = self._format_predict_input(data, params)
 
-        # LlamaIndex Workflow runs async but MLflow pyfunc doesn't support async inference yet.
+        # LlamaIndex Workflow runs async but QCFlow pyfunc doesn't support async inference yet.
         predictions = self._wait_async_task(self._run_predictions(inputs))
 
         # Even if the input is single instance, the signature enforcement convert it to a Pandas

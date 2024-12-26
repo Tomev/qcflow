@@ -1,9 +1,9 @@
 import inspect
 
-import mlflow
-import mlflow.gemini
-from mlflow.entities import SpanType
-from mlflow.utils.autologging_utils.config import AutoLoggingConfig
+import qcflow
+import qcflow.gemini
+from qcflow.entities import SpanType
+from qcflow.utils.autologging_utils.config import AutoLoggingConfig
 
 
 def _get_span_type(task_name: str) -> str:
@@ -31,10 +31,10 @@ def construct_full_inputs(func, *args, **kwargs):
 
 
 def patched_class_call(original, self, *args, **kwargs):
-    config = AutoLoggingConfig.init(flavor_name=mlflow.gemini.FLAVOR_NAME)
+    config = AutoLoggingConfig.init(flavor_name=qcflow.gemini.FLAVOR_NAME)
 
     if config.log_traces:
-        with mlflow.start_span(
+        with qcflow.start_span(
             name=f"{self.__class__.__name__}.{original.__name__}",
             span_type=_get_span_type(original.__name__),
         ) as span:
@@ -49,10 +49,10 @@ def patched_class_call(original, self, *args, **kwargs):
 
 
 def patched_module_call(original, *args, **kwargs):
-    config = AutoLoggingConfig.init(flavor_name=mlflow.gemini.FLAVOR_NAME)
+    config = AutoLoggingConfig.init(flavor_name=qcflow.gemini.FLAVOR_NAME)
 
     if config.log_traces:
-        with mlflow.start_span(
+        with qcflow.start_span(
             name=f"{original.__name__}",
             span_type=_get_span_type(original.__name__),
         ) as span:

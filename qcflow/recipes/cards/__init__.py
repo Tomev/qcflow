@@ -14,7 +14,7 @@ from typing import Optional, Union
 
 from packaging.version import Version
 
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
 
 CARD_PICKLE_NAME = "card.pkl"
 CARD_HTML_NAME = "card.html"

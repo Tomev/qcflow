@@ -38,10 +38,10 @@ export const ExperimentViewDatasetSchemaTable = ({
   return (
     <Table scrollable css={{ width: '100%' }}>
       <TableRow isHeader>
-        <TableHeader componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewdatasetschematable.tsx_57">
+        <TableHeader componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewdatasetschematable.tsx_57">
           {getNameHeader()}
         </TableHeader>
-        <TableHeader componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewdatasetschematable.tsx_58">
+        <TableHeader componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewdatasetschematable.tsx_58">
           {getTypeHeader()}
         </TableHeader>
       </TableRow>

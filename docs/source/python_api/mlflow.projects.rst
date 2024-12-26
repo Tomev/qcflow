@@ -1,7 +1,7 @@
-mlflow.projects
+qcflow.projects
 ===============
 
-.. automodule:: mlflow.projects
+.. automodule:: qcflow.projects
     :members:
     :undoc-members:
     :show-inheritance:

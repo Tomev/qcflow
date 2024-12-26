@@ -10,21 +10,21 @@ import warnings
 import cloudpickle
 import yaml
 
-import mlflow
-from mlflow.entities import SourceType, ViewType
-from mlflow.environment_variables import MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME
-from mlflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.models import Model
-from mlflow.recipes.artifacts import (
+import qcflow
+from qcflow.entities import SourceType, ViewType
+from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME
+from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.models import Model
+from qcflow.recipes.artifacts import (
     DataframeArtifact,
     HyperParametersArtifact,
     ModelArtifact,
     RunArtifact,
 )
-from mlflow.recipes.cards import BaseCard
-from mlflow.recipes.step import BaseStep, StepClass
-from mlflow.recipes.utils.execution import get_step_output_path
-from mlflow.recipes.utils.metrics import (
+from qcflow.recipes.cards import BaseCard
+from qcflow.recipes.step import BaseStep, StepClass
+from qcflow.recipes.utils.execution import get_step_output_path
+from qcflow.recipes.utils.metrics import (
     _get_builtin_metrics,
     _get_custom_metrics,
     _get_error_fn,
@@ -34,30 +34,30 @@ from mlflow.recipes.utils.metrics import (
     _load_custom_metrics,
     transform_multiclass_metrics_dict,
 )
-from mlflow.recipes.utils.step import (
+from qcflow.recipes.utils.step import (
     get_merged_eval_metrics,
     get_pandas_data_profiles,
     validate_classification_config,
 )
-from mlflow.recipes.utils.tracking import (
+from qcflow.recipes.utils.tracking import (
     TrackingConfig,
     apply_recipe_tracking_config,
     get_recipe_tracking_config,
     get_run_tags_env_vars,
     log_code_snapshot,
 )
-from mlflow.recipes.utils.wrapped_recipe_model import WrappedRecipeModel
-from mlflow.tracking import MlflowClient
-from mlflow.tracking.fluent import _get_experiment_id
-from mlflow.utils.databricks_utils import get_databricks_env_vars, get_databricks_run_url
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_RECIPE_PROFILE_NAME,
-    MLFLOW_RECIPE_STEP_NAME,
-    MLFLOW_RECIPE_TEMPLATE_NAME,
-    MLFLOW_SOURCE_TYPE,
+from qcflow.recipes.utils.wrapped_recipe_model import WrappedRecipeModel
+from qcflow.tracking import MlflowClient
+from qcflow.tracking.fluent import _get_experiment_id
+from qcflow.utils.databricks_utils import get_databricks_env_vars, get_databricks_run_url
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_RECIPE_PROFILE_NAME,
+    QCFLOW_RECIPE_STEP_NAME,
+    QCFLOW_RECIPE_TEMPLATE_NAME,
+    QCFLOW_SOURCE_TYPE,
 )
-from mlflow.utils.string_utils import strip_prefix
+from qcflow.utils.string_utils import strip_prefix
 
 _REBALANCING_CUTOFF = 5000
 _REBALANCING_DEFAULT_RATIO = 0.3
@@ -290,7 +290,7 @@ class TrainStep(BaseStep):
             from sklearn.pipeline import make_pipeline
             from sklearn.utils.class_weight import compute_class_weight
 
-            from mlflow.models import infer_signature
+            from qcflow.models import infer_signature
 
             with open(os.path.join(output_directory, "warning_logs.txt"), "w"):
                 pass
@@ -356,16 +356,16 @@ class TrainStep(BaseStep):
             )
 
             tags = {
-                MLFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.RECIPE),
-                MLFLOW_RECIPE_TEMPLATE_NAME: self.step_config["recipe"],
-                MLFLOW_RECIPE_PROFILE_NAME: self.step_config["profile"],
-                MLFLOW_RECIPE_STEP_NAME: MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.get(),
+                QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.RECIPE),
+                QCFLOW_RECIPE_TEMPLATE_NAME: self.step_config["recipe"],
+                QCFLOW_RECIPE_PROFILE_NAME: self.step_config["profile"],
+                QCFLOW_RECIPE_STEP_NAME: QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.get(),
             }
 
             run_name = self.tracking_config.run_name
             best_estimator_params = None
-            mlflow.autolog(log_models=False, silent=True)
-            with mlflow.start_run(run_name=run_name, tags=tags) as run:
+            qcflow.autolog(log_models=False, silent=True)
+            with qcflow.start_run(run_name=run_name, tags=tags) as run:
                 estimator = self._resolve_estimator(
                     X_train, y_train, validation_df, run, output_directory
                 )
@@ -373,12 +373,12 @@ class TrainStep(BaseStep):
                 fitted_estimator, additional_fitted_args = self._fitted_estimator(
                     estimator, X_train, y_train
                 )
-                logged_estimator = self._log_estimator_to_mlflow(fitted_estimator, X_train)
+                logged_estimator = self._log_estimator_to_qcflow(fitted_estimator, X_train)
 
                 # Create a recipe consisting of the transformer+model for test data evaluation
                 with open(transformer_path, "rb") as f:
                     transformer = cloudpickle.load(f)
-                mlflow.sklearn.log_model(
+                qcflow.sklearn.log_model(
                     transformer, "transform/transformer", code_paths=self.code_paths
                 )
 
@@ -409,38 +409,38 @@ class TrainStep(BaseStep):
                 if os.path.exists(sklearn_model_uri):
                     shutil.rmtree(sklearn_model_uri)
 
-                # Saving the sklearn model as a separate output since `mlflow.evaluate()`, which is
+                # Saving the sklearn model as a separate output since `qcflow.evaluate()`, which is
                 # used in evaluate step of the recipe, needs this model's sklearn representation
                 # to computes metrics (the pyfunc representation of the user-facing model logged to
-                # MLflow Tracking is not currently compatible with `mlflow.evaluate()`)
-                mlflow.sklearn.save_model(trained_pipeline, sklearn_model_uri)
+                # QCFlow Tracking is not currently compatible with `qcflow.evaluate()`)
+                qcflow.sklearn.save_model(trained_pipeline, sklearn_model_uri)
                 artifacts = {"model_path": sklearn_model_uri}
                 with TempDir() as tmp:
                     # Saving a temp model so that the output schema (signature) of the model's
                     # pyfunc representation can be inferred and included when logging the model
-                    # to MLflow Tracking. Unfortunately, there is currently no easy way to infer
+                    # to QCFlow Tracking. Unfortunately, there is currently no easy way to infer
                     # the model's signature without first saving a copy of it, and there is no easy
                     # way to add an inferred signature to an existing model
                     pyfunc_model_tmp_path = os.path.join(tmp.path(), "pyfunc_model")
-                    mlflow.pyfunc.save_model(
+                    qcflow.pyfunc.save_model(
                         path=pyfunc_model_tmp_path,
                         python_model=wrapped_model,
                         artifacts=artifacts,
                     )
-                    tempModel = mlflow.pyfunc.load_model(pyfunc_model_tmp_path)
+                    tempModel = qcflow.pyfunc.load_model(pyfunc_model_tmp_path)
                     model_schema = infer_signature(
                         raw_X_train, tempModel.predict(raw_X_train.copy())
                     )
-                    mlflow.pyfunc.save_model(
+                    qcflow.pyfunc.save_model(
                         path=model_uri,
                         python_model=wrapped_model,
                         artifacts=artifacts,
                         signature=model_schema,
                         code_path=self.code_paths,
                     )
-                model = mlflow.pyfunc.load_model(model_uri)
+                model = qcflow.pyfunc.load_model(model_uri)
                 # Adding a sklearn flavor to the pyfunc model so models could be loaded easily
-                # using mlflow.sklearn.load_model
+                # using qcflow.sklearn.load_model
                 tmp_model_info = Model.load(model_uri)
                 model_data_subpath = os.path.join(
                     "artifacts", TrainStep.SKLEARN_MODEL_ARTIFACT_RELATIVE_PATH, "model.pkl"
@@ -453,18 +453,18 @@ class TrainStep(BaseStep):
                     signature=tmp_model_info.signature,  # ModelSignature
                     saved_input_example_info=tmp_model_info.saved_input_example_info,
                     model_uuid=tmp_model_info.model_uuid,
-                    mlflow_version=tmp_model_info.mlflow_version,
+                    qcflow_version=tmp_model_info.qcflow_version,
                     metadata=tmp_model_info.metadata,
                 )
                 model_info.add_flavor(
-                    mlflow.sklearn.FLAVOR_NAME,
+                    qcflow.sklearn.FLAVOR_NAME,
                     pickled_model=model_data_subpath,
                     sklearn_version=sklearn.__version__,
-                    serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+                    serialization_format=qcflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
                     code="code",
                 )
                 model_info.save(f"{model_uri}/MLmodel")
-                mlflow.log_artifacts(model_uri, "train/model")
+                qcflow.log_artifacts(model_uri, "train/model")
 
                 with open(os.path.join(output_directory, "run_id"), "w") as f:
                     f.write(run.info.run_id)
@@ -483,7 +483,7 @@ class TrainStep(BaseStep):
                     }
                     if self.positive_class is not None:
                         eval_config["pos_label"] = self.positive_class
-                    eval_result = mlflow.evaluate(
+                    eval_result = qcflow.evaluate(
                         model=logged_estimator.model_uri,
                         data=dataset,
                         targets=self.target_col,
@@ -672,7 +672,7 @@ class TrainStep(BaseStep):
     def _resolve_estimator_plugin(self, plugin_str, X_train, y_train, output_directory):
         plugin_str = plugin_str.replace("/", ".")
         estimator_fn = importlib.import_module(
-            f"mlflow.recipes.steps.{plugin_str}"
+            f"qcflow.recipes.steps.{plugin_str}"
         ).get_estimator_and_best_params
         estimator, best_parameters = estimator_fn(
             X_train,
@@ -704,7 +704,7 @@ class TrainStep(BaseStep):
     def _get_leaderboard_df(self, run, eval_metrics):
         import pandas as pd
 
-        mlflow_client = MlflowClient()
+        qcflow_client = MlflowClient()
         exp_id = _get_experiment_id()
 
         primary_metric_greater_is_better = self.evaluation_metrics[
@@ -713,7 +713,7 @@ class TrainStep(BaseStep):
         primary_metric_order = "DESC" if primary_metric_greater_is_better else "ASC"
 
         search_max_results = 100
-        search_result = mlflow_client.search_runs(
+        search_result = qcflow_client.search_runs(
             experiment_ids=exp_id,
             run_view_type=ViewType.ACTIVE_ONLY,
             max_results=search_max_results,
@@ -800,9 +800,9 @@ class TrainStep(BaseStep):
         order_str = (
             "DESC" if self.evaluation_metrics_greater_is_better[self.primary_metric] else "ASC"
         )
-        tuning_runs = mlflow.search_runs(
+        tuning_runs = qcflow.search_runs(
             [exp_id],
-            filter_string=f"tags.mlflow.parentRunId like '{run.info.run_id}'",
+            filter_string=f"tags.qcflow.parentRunId like '{run.info.run_id}'",
             order_by=[f"{primary_metric_tag} {order_str}", "attribute.start_time ASC"],
         )
         if params:
@@ -882,7 +882,7 @@ class TrainStep(BaseStep):
         # Tab 3: Model architecture.
         set_config(display="diagram")
         model_repr = estimator_html_repr(
-            mlflow.sklearn.load_model(
+            qcflow.sklearn.load_model(
                 os.path.join(model_uri, "artifacts", TrainStep.SKLEARN_MODEL_ARTIFACT_RELATIVE_PATH)
             )
         )
@@ -890,7 +890,7 @@ class TrainStep(BaseStep):
 
         # Tab 4: Inferred model (transformer + estimator) schema.
         def render_schema(inputs, title):
-            from mlflow.types import ColSpec
+            from qcflow.types import ColSpec
 
             table = BaseCard.render_table(
                 {
@@ -1013,28 +1013,28 @@ class TrainStep(BaseStep):
         )
         model_uri_path = f"runs:/{run_id}/train/model"
         run_url = get_databricks_run_url(
-            tracking_uri=mlflow.get_tracking_uri(),
+            tracking_uri=qcflow.get_tracking_uri(),
             run_id=run_id,
         )
         model_url = get_databricks_run_url(
-            tracking_uri=mlflow.get_tracking_uri(),
+            tracking_uri=qcflow.get_tracking_uri(),
             run_id=run_id,
             artifact_path=re.sub(rf"^.*?{run_id}", "", model_uri_path),
         )
 
         if run_url is not None:
             run_card_tab.add_html(
-                "RUN_ID", f"<b>MLflow Run ID:</b> <a href={run_url}>{run_id}</a><br><br>"
+                "RUN_ID", f"<b>QCFlow Run ID:</b> <a href={run_url}>{run_id}</a><br><br>"
             )
         else:
-            run_card_tab.add_markdown("RUN_ID", f"**MLflow Run ID:** `{run_id}`")
+            run_card_tab.add_markdown("RUN_ID", f"**QCFlow Run ID:** `{run_id}`")
 
         if model_url is not None:
             run_card_tab.add_html(
-                "MODEL_URI", f"<b>MLflow Model URI:</b> <a href={model_url}>{model_uri_path}</a>"
+                "MODEL_URI", f"<b>QCFlow Model URI:</b> <a href={model_url}>{model_uri_path}</a>"
             )
         else:
-            run_card_tab.add_markdown("MODEL_URI", f"**MLflow Model URI:** `{model_uri_path}`")
+            run_card_tab.add_markdown("MODEL_URI", f"**QCFlow Model URI:** `{model_uri_path}`")
 
         return card
 
@@ -1112,13 +1112,13 @@ class TrainStep(BaseStep):
                 parent_tags = client.get_run(parent_run_id).data.tags
                 child_run = client.create_run(
                     _get_experiment_id(),
-                    tags={**parent_tags, "mlflow.parentRunId": parent_run_id},
+                    tags={**parent_tags, "qcflow.parentRunId": parent_run_id},
                     run_name=run_name,
                 )
                 run_args = {"run_id": child_run.info.run_id}
             else:
                 run_args = {"run_name": run_name, "nested": True}
-            with mlflow.start_run(**run_args) as tuning_run:
+            with qcflow.start_run(**run_args) as tuning_run:
                 estimator_args = dict(estimator_hardcoded_params, **hyperparameter_args)
                 estimator = estimator_fn(estimator_args)
 
@@ -1137,11 +1137,11 @@ class TrainStep(BaseStep):
                     estimator, X_train_sampled, y_train_sampled
                 )
 
-                logged_estimator = self._log_estimator_to_mlflow(
+                logged_estimator = self._log_estimator_to_qcflow(
                     fitted_estimator, X_train_sampled, on_worker=on_worker
                 )
 
-                eval_result = mlflow.evaluate(
+                eval_result = qcflow.evaluate(
                     model=logged_estimator.model_uri,
                     data=validation_df,
                     targets=self.target_col,
@@ -1156,7 +1156,7 @@ class TrainStep(BaseStep):
                         "pos_label": self.positive_class,
                     },
                 )
-                autologged_params = mlflow.get_run(run_id=tuning_run.info.run_id).data.params
+                autologged_params = qcflow.get_run(run_id=tuning_run.info.run_id).data.params
                 manual_log_params = {}
                 for param_name, param_value in estimator_args.items():
                     if param_name in autologged_params:
@@ -1175,7 +1175,7 @@ class TrainStep(BaseStep):
                         manual_log_params[param_name] = param_value
 
                 if len(manual_log_params) > 0:
-                    mlflow.log_params(manual_log_params)
+                    qcflow.log_params(manual_log_params)
 
                 # return +/- metric
                 transformed_metrics = transform_multiclass_metrics_dict(
@@ -1194,7 +1194,7 @@ class TrainStep(BaseStep):
             from pyspark.sql import SparkSession
 
             spark_session = SparkSession.builder.config(
-                "spark.databricks.mlflow.trackHyperopt.enabled", "false"
+                "spark.databricks.qcflow.trackHyperopt.enabled", "false"
             ).getOrCreate()
             sc = spark_session.sparkContext
 
@@ -1248,27 +1248,27 @@ class TrainStep(BaseStep):
             best_hardcoded_params = {}
         return (best_hardcoded_params, best_hp_params)
 
-    def _log_estimator_to_mlflow(self, estimator, X_train_sampled, on_worker=False):
-        from mlflow.models import infer_signature
+    def _log_estimator_to_qcflow(self, estimator, X_train_sampled, on_worker=False):
+        from qcflow.models import infer_signature
 
         if hasattr(estimator, "best_score_") and (type(estimator.best_score_) in [int, float]):
-            mlflow.log_metric("best_cv_score", estimator.best_score_)
+            qcflow.log_metric("best_cv_score", estimator.best_score_)
         if hasattr(estimator, "best_params_"):
-            mlflow.log_params(estimator.best_params_)
+            qcflow.log_params(estimator.best_params_)
 
         if on_worker:
-            mlflow.log_params(estimator.get_params())
+            qcflow.log_params(estimator.get_params())
             estimator_tags = {
                 "estimator_name": estimator.__class__.__name__,
                 "estimator_class": (
                     estimator.__class__.__module__ + "." + estimator.__class__.__name__
                 ),
             }
-            mlflow.set_tags(estimator_tags)
+            qcflow.set_tags(estimator_tags)
         estimator_schema = infer_signature(
             X_train_sampled, estimator.predict(X_train_sampled.copy())
         )
-        return mlflow.sklearn.log_model(
+        return qcflow.sklearn.log_model(
             estimator,
             f"{self.name}/estimator",
             signature=estimator_schema,
@@ -1294,7 +1294,7 @@ class TrainStep(BaseStep):
                     best_hardcoded_params or {}, file, "hardcoded parameters"
                 )
                 self._write_one_param_output(default_params or {}, file, "default parameters")
-            mlflow.log_artifact(best_parameters_path, artifact_path="train")
+            qcflow.log_artifact(best_parameters_path, artifact_path="train")
 
     def _write_one_param_output(self, params, file, caption):
         if params:

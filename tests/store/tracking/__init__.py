@@ -2,9 +2,9 @@ import json
 
 import pytest
 
-from mlflow.entities import RunTag
-from mlflow.models import Model
-from mlflow.utils.mlflow_tags import MLFLOW_LOGGED_MODELS
+from qcflow.entities import RunTag
+from qcflow.models import Model
+from qcflow.utils.qcflow_tags import QCFLOW_LOGGED_MODELS
 
 
 class AbstractStoreTest:
@@ -24,7 +24,7 @@ class AbstractStoreTest:
             run_id=run_id,
             params=[],
             metrics=[],
-            tags=[RunTag(MLFLOW_LOGGED_MODELS, json.dumps([m.to_dict()]))],
+            tags=[RunTag(QCFLOW_LOGGED_MODELS, json.dumps([m.to_dict()]))],
         )
         m2 = Model(
             artifact_path="some/other/path", run_id=run_id, flavors={"R": {"property": "value"}}
@@ -35,7 +35,7 @@ class AbstractStoreTest:
             run_id,
             params=[],
             metrics=[],
-            tags=[RunTag(MLFLOW_LOGGED_MODELS, json.dumps([m.to_dict(), m2.to_dict()]))],
+            tags=[RunTag(QCFLOW_LOGGED_MODELS, json.dumps([m.to_dict(), m2.to_dict()]))],
         )
         m3 = Model(
             artifact_path="some/other/path2", run_id=run_id, flavors={"R2": {"property": "value"}}
@@ -47,12 +47,12 @@ class AbstractStoreTest:
             params=[],
             metrics=[],
             tags=[
-                RunTag(MLFLOW_LOGGED_MODELS, json.dumps([m.to_dict(), m2.to_dict(), m3.to_dict()]))
+                RunTag(QCFLOW_LOGGED_MODELS, json.dumps([m.to_dict(), m2.to_dict(), m3.to_dict()]))
             ],
         )
         with pytest.raises(
             TypeError,
-            match="Argument 'mlflow_model' should be mlflow.models.Model, got '<class 'dict'>'",
+            match="Argument 'qcflow_model' should be qcflow.models.Model, got '<class 'dict'>'",
         ):
             store.record_logged_model(run_id, m.to_dict())
 

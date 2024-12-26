@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for submitting an issue. Please refer to our [issue policy](https://www.github.com/mlflow/mlflow/blob/master/ISSUE_POLICY.md) for additional information about bug reports. For help with debugging your code, please refer to [Stack Overflow](https://stackoverflow.com/questions/tagged/mlflow).
+        Thank you for submitting an issue. Please refer to our [issue policy](https://www.github.com/qcflow/qcflow/blob/master/ISSUE_POLICY.md) for additional information about bug reports. For help with debugging your code, please refer to [Stack Overflow](https://stackoverflow.com/questions/tagged/qcflow).
         #### Please fill in this bug report template to ensure a timely and thorough response.
   - type: checkboxes
     attributes:
@@ -15,7 +15,7 @@ body:
       description: |
         I understand that failure to adhere to the issues guidance may result in my issue being closed without warning or response.
       options:
-        - label: I have read and agree to submit bug reports in accordance with the [issues policy](https://www.github.com/mlflow/mlflow/blob/master/ISSUE_POLICY.md)
+        - label: I have read and agree to submit bug reports in accordance with the [issues policy](https://www.github.com/qcflow/qcflow/blob/master/ISSUE_POLICY.md)
           required: true
   - type: dropdown
     attributes:
@@ -32,8 +32,8 @@ body:
     validations:
       required: true
     attributes:
-      label: MLflow version
-      description: MLflow version (run `mlflow --version`) or commit SHA if you have MLflow installed from source (run `pip freeze | grep mlflow`). The tracking server version is required if `mlflow server` or `mlflow ui` is used.
+      label: QCFlow version
+      description: QCFlow version (run `qcflow --version`) or commit SHA if you have QCFlow installed from source (run `pip freeze | grep qcflow`). The tracking server version is required if `qcflow server` or `qcflow ui` is used.
       value: |
         - Client: 1.x.y
         - Tracking server: 1.x.y
@@ -60,17 +60,17 @@ body:
     attributes:
       label: Tracking information
       description: |
-        For bugs related to the tracking features (e.g. mlflow should log a run in my database but it doesn't), please insert the following code in your python script / notebook where you encountered the bug and run it:
+        For bugs related to the tracking features (e.g. qcflow should log a run in my database but it doesn't), please insert the following code in your python script / notebook where you encountered the bug and run it:
         ```python
-        # MLflow < 2.0
-        print("MLflow version:", mlflow.__version__)
-        print("Tracking URI:", mlflow.get_tracking_uri())
-        print("Artifact URI:", mlflow.get_artifact_uri())
+        # QCFlow < 2.0
+        print("QCFlow version:", qcflow.__version__)
+        print("Tracking URI:", qcflow.get_tracking_uri())
+        print("Artifact URI:", qcflow.get_artifact_uri())
 
-        # MLflow >= 2.0
-        mlflow.doctor()
+        # QCFlow >= 2.0
+        qcflow.doctor()
         ```
-        Then, make sure the printed out information matches what you expect and paste it (with sensitive information masked) in the box below. If you know the command that was used to launch your tracking server (e.g. `mlflow server -h 0.0.0.0 -p 5000`), please provide it.
+        Then, make sure the printed out information matches what you expect and paste it (with sensitive information masked) in the box below. If you know the command that was used to launch your tracking server (e.g. `qcflow server -h 0.0.0.0 -p 5000`), please provide it.
       value: |
         <!-- PLEASE KEEP BACKTICKS AND CHECK PREVIEW -->
         ```shell
@@ -90,8 +90,8 @@ body:
         Requires modifications (e.g., adding missing import statements) to run.
 
         ```python
-        with mlflow.start_run():  # `mlflow` is not imported
-            mlflow.sklearn.log_model(model, "model")  # `model` is undefined
+        with qcflow.start_run():  # `qcflow` is not imported
+            qcflow.sklearn.log_model(model, "model")  # `model` is undefined
         ```
 
         ### Good
@@ -101,12 +101,12 @@ body:
         ```python
         from sklearn.datasets import load_iris
         from sklearn.linear_model import LogisticRegression
-        import mlflow
+        import qcflow
 
         X, y = load_iris(return_X_y=True)
         model = LogisticRegression().fit(X, y)
-        with mlflow.start_run():
-            mlflow.sklearn.log_model(model, "model")
+        with qcflow.start_run():
+            qcflow.sklearn.log_model(model, "model")
         ```
 
       value: |
@@ -134,18 +134,18 @@ body:
         ```python
         Traceback (most recent call last):
           File "a.py", line 3, in <module>
-            mlflow.log_param(1, 2)
-          File "/home/user/mlflow/mlflow/tracking/fluent.py", line 541, in log_param
+            qcflow.log_param(1, 2)
+          File "/home/user/qcflow/qcflow/tracking/fluent.py", line 541, in log_param
             return MlflowClient().log_param(run_id, key, value)
-          File "/home/user/mlflow/mlflow/tracking/client.py", line 742, in log_param
+          File "/home/user/qcflow/qcflow/tracking/client.py", line 742, in log_param
             self._tracking_client.log_param(run_id, key, value)
-          File "/home/user/mlflow/mlflow/tracking/_tracking_service/client.py", line 295, in log_param
+          File "/home/user/qcflow/qcflow/tracking/_tracking_service/client.py", line 295, in log_param
             self.store.log_param(run_id, param)
-          File "/home/user/mlflow/mlflow/store/tracking/file_store.py", line 917, in log_param
+          File "/home/user/qcflow/qcflow/store/tracking/file_store.py", line 917, in log_param
             _validate_param(param.key, param.value)
-          File "/home/user/mlflow/mlflow/utils/validation.py", line 150, in _validate_param
+          File "/home/user/qcflow/qcflow/utils/validation.py", line 150, in _validate_param
             _validate_param_name(key)
-          File "/home/user/mlflow/mlflow/utils/validation.py", line 217, in _validate_param_name
+          File "/home/user/qcflow/qcflow/utils/validation.py", line 217, in _validate_param_name
             if not _VALID_PARAM_AND_METRIC_NAMES.match(name):
         TypeError: expected string or bytes-like object
         ```
@@ -188,11 +188,11 @@ body:
       options:
         - label: "`area/artifacts`: Artifact stores and artifact logging"
           required: false
-        - label: "`area/build`: Build and test infrastructure for MLflow"
+        - label: "`area/build`: Build and test infrastructure for QCFlow"
           required: false
-        - label: "`area/deployments`: MLflow Deployments client APIs, server, and third-party Deployments integrations"
+        - label: "`area/deployments`: QCFlow Deployments client APIs, server, and third-party Deployments integrations"
           required: false
-        - label: "`area/docs`: MLflow documentation pages"
+        - label: "`area/docs`: QCFlow documentation pages"
           required: false
         - label: "`area/examples`: Example code"
           required: false
@@ -204,9 +204,9 @@ body:
           required: false
         - label: "`area/projects`: MLproject format, project running backends"
           required: false
-        - label: "`area/scoring`: MLflow Model server, model deployment tools, Spark UDFs"
+        - label: "`area/scoring`: QCFlow Model server, model deployment tools, Spark UDFs"
           required: false
-        - label: "`area/server-infra`: MLflow Tracking server backend"
+        - label: "`area/server-infra`: QCFlow Tracking server backend"
           required: false
         - label: "`area/tracking`: Tracking Service, tracking client APIs, autologging"
           required: false
@@ -218,7 +218,7 @@ body:
       options:
         - label: "`area/uiux`: Front-end, user experience, plotting, JavaScript, JavaScript dev server"
           required: false
-        - label: "`area/docker`: Docker use across MLflow's components, such as MLflow Projects and MLflow Models"
+        - label: "`area/docker`: Docker use across QCFlow's components, such as QCFlow Projects and QCFlow Models"
           required: false
         - label: "`area/sqlalchemy`: Use of SQLAlchemy in the Tracking Service or Model Registry"
           required: false

@@ -12,15 +12,15 @@ from langchain.chains.base import Chain
 from langchain.schema import BaseRetriever, Document
 from pydantic import Extra, Field
 
-from mlflow.utils.annotations import experimental
+from qcflow.utils.annotations import experimental
 
 
 @experimental
 class _RetrieverChain(Chain):
     """
-    Chain that wraps a retriever for use with MLflow.
+    Chain that wraps a retriever for use with QCFlow.
 
-    The MLflow ``langchain`` flavor provides the functionality to log a retriever object and
+    The QCFlow ``langchain`` flavor provides the functionality to log a retriever object and
     evaluate it individually. This is useful if you want to evaluate the quality of the
     relevant documents returned by a retriever object without directing these documents
     through a large language model (LLM) to yield a summarized response.

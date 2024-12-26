@@ -1,8 +1,8 @@
 import logging
 from typing import Any
 
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.exceptions import MlflowException
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.exceptions import MlflowException
 
 _logger = logging.getLogger(__name__)
 
@@ -10,10 +10,10 @@ _logger = logging.getLogger(__name__)
 class UCVolumeDatasetSource(DatasetSource):
     """Represents the source of a dataset stored in Databricks Unified Catalog Volume.
 
-    If you are using a delta table, please use `mlflow.data.delta_dataset_source.DeltaDatasetSource`
+    If you are using a delta table, please use `qcflow.data.delta_dataset_source.DeltaDatasetSource`
     instead. This `UCVolumeDatasetSource` does not provide loading function, and is mostly useful
-    when you are logging a `mlflow.data.meta_dataset.MetaDataset` to MLflow, i.e., you want
-    to log the source of dataset to MLflow without loading the dataset.
+    when you are logging a `qcflow.data.meta_dataset.MetaDataset` to QCFlow, i.e., you want
+    to log the source of dataset to QCFlow without loading the dataset.
 
     Args:
         path: the UC path of your data. It should be a valid UC path following the pattern
@@ -42,7 +42,7 @@ class UCVolumeDatasetSource(DatasetSource):
         except Exception:
             _logger.warning(
                 "Cannot verify the path of `UCVolumeDatasetSource` due to a connection failure "
-                "with Databricks workspace. Please run `mlflow.login()` to log in to Databricks. "
+                "with Databricks workspace. Please run `qcflow.login()` to log in to Databricks. "
                 "This does not block creating `UCVolumeDatasetSource`, but your "
                 "`UCVolumeDatasetSource` might be invalid."
             )

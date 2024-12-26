@@ -22,7 +22,7 @@ ipython
 flaml[automl]
 # Required by evaluator tests
 shap
-# Required to evaluate language models in `mlflow.evaluate`
+# Required to evaluate language models in `qcflow.evaluate`
 evaluate
 nltk
 rouge_score
@@ -31,7 +31,7 @@ tiktoken
 # Required by progress bar tests
 ipywidgets
 tqdm
-# Required for LLM eval in `mlflow.evaluate`
+# Required for LLM eval in `qcflow.evaluate`
 openai
 # Required for showing pytest stats
 psutil

@@ -1,8 +1,8 @@
-from mlflow.protos.service_pb2 import RunStatus as ProtoRunStatus
+from qcflow.protos.service_pb2 import RunStatus as ProtoRunStatus
 
 
 class RunStatus:
-    """Enum for status of an :py:class:`mlflow.entities.Run`."""
+    """Enum for status of an :py:class:`qcflow.entities.Run`."""
 
     RUNNING = ProtoRunStatus.Value("RUNNING")
     SCHEDULED = ProtoRunStatus.Value("SCHEDULED")

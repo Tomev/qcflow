@@ -1,6 +1,6 @@
 import pytest
 
-from mlflow.deployments.interface import get_deploy_client
+from qcflow.deployments.interface import get_deploy_client
 
 
 def test_get_deploy_client_no_args():
@@ -12,7 +12,7 @@ def test_get_deploy_client_none():
 
 
 def test_get_deploy_client_from_set_deployments_target():
-    from mlflow.deployments import set_deployments_target
+    from qcflow.deployments import set_deployments_target
 
     set_deployments_target("databricks")
     assert get_deploy_client(None) is not None
@@ -22,7 +22,7 @@ def test_get_deploy_client_from_set_deployments_target():
 def set_deployment_envs(monkeypatch):
     monkeypatch.setenvs(
         {
-            "MLFLOW_DEPLOYMENTS_TARGET": "databricks",
+            "QCFLOW_DEPLOYMENTS_TARGET": "databricks",
         }
     )
 

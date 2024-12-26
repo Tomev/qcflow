@@ -1,5 +1,5 @@
 """
-This test class is used for comprehensive testing of serving docker images for all MLflow flavors.
+This test class is used for comprehensive testing of serving docker images for all QCFlow flavors.
 As such, it is not intended to be run on a regular basis and is skipped by default. Rather, it
 should be run manually when making changes to the core docker logic.
 
@@ -21,13 +21,13 @@ import pandas as pd
 import pytest
 import requests
 
-import mlflow
-from mlflow.environment_variables import _MLFLOW_RUN_SLOW_TESTS
-from mlflow.models.flavor_backend_registry import get_flavor_backend
-from mlflow.models.utils import load_serving_example
+import qcflow
+from qcflow.environment_variables import _QCFLOW_RUN_SLOW_TESTS
+from qcflow.models.flavor_backend_registry import get_flavor_backend
+from qcflow.models.utils import load_serving_example
 
-# Only import model fixtures if when MLFLOW_RUN_SLOW_TESTS environment variable is set to true
-if _MLFLOW_RUN_SLOW_TESTS.get():
+# Only import model fixtures if when QCFLOW_RUN_SLOW_TESTS environment variable is set to true
+if _QCFLOW_RUN_SLOW_TESTS.get():
     from tests.catboost.test_catboost_model_export import reg_model  # noqa: F401
     from tests.diviner.test_diviner_model_export import (  # noqa: F401
         diviner_data,
@@ -48,10 +48,10 @@ if _MLFLOW_RUN_SLOW_TESTS.get():
         prophet_model as prophet_raw_model,  # noqa: F401
     )
     from tests.pyfunc.docker.conftest import (
-        MLFLOW_ROOT,
+        QCFLOW_ROOT,
         TEST_IMAGE_NAME,
         docker_client,
-        save_model_with_latest_mlflow_version,
+        save_model_with_latest_qcflow_version,
     )
     from tests.spacy.test_spacy_model_export import spacy_model_with_data  # noqa: F401
     from tests.spark.test_spark_model_export import (  # noqa: F401
@@ -68,8 +68,8 @@ if _MLFLOW_RUN_SLOW_TESTS.get():
 
 
 pytestmark = pytest.mark.skipif(
-    not _MLFLOW_RUN_SLOW_TESTS.get(),
-    reason="Skip slow tests. Set MLFLOW_RUN_SLOW_TESTS environment variable to run them.",
+    not _QCFLOW_RUN_SLOW_TESTS.get(),
+    reason="Skip slow tests. Set QCFLOW_RUN_SLOW_TESTS environment variable to run them.",
 )
 
 
@@ -165,7 +165,7 @@ def test_build_image_and_serve(flavor, request):
     backend.build_image(
         model_uri=model_path,
         image_name=TEST_IMAGE_NAME,
-        mlflow_home=MLFLOW_ROOT,  # Required to prevent installing dev version of MLflow from PyPI
+        qcflow_home=QCFLOW_ROOT,  # Required to prevent installing dev version of QCFlow from PyPI
     )
 
     # Run a container
@@ -190,7 +190,7 @@ def test_build_image_and_serve(flavor, request):
 
 @pytest.fixture
 def catboost_model(model_path, reg_model):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="catboost",
         cb_model=reg_model.model,
         path=model_path,
@@ -201,7 +201,7 @@ def catboost_model(model_path, reg_model):
 
 @pytest.fixture
 def diviner_model(model_path, grouped_prophet):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="diviner",
         diviner_model=grouped_prophet,
         path=model_path,
@@ -212,7 +212,7 @@ def diviner_model(model_path, grouped_prophet):
 
 @pytest.fixture
 def fastai_model(model_path, fastai_model_raw):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="fastai",
         fastai_learner=fastai_model_raw.model,
         path=model_path,
@@ -223,7 +223,7 @@ def fastai_model(model_path, fastai_model_raw):
 
 @pytest.fixture
 def h2o_model(model_path, h2o_iris_model):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="h2o",
         h2o_model=h2o_iris_model.model,
         path=model_path,
@@ -243,7 +243,7 @@ def keras_model(model_path, iris_data):
     model.add(Dense(1))
 
     X, y = datasets.load_iris(return_X_y=True)
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="tensorflow",
         model=model,
         path=model_path,
@@ -257,7 +257,7 @@ def langchain_model(model_path):
     from langchain.schema.runnable import RunnablePassthrough
 
     chain = RunnablePassthrough() | itemgetter("messages")
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="langchain",
         lc_model=chain,
         path=model_path,
@@ -268,7 +268,7 @@ def langchain_model(model_path):
 
 @pytest.fixture
 def lightgbm_model(model_path, lgb_model):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="lightgbm",
         lgb_model=lgb_model.model,
         path=model_path,
@@ -296,7 +296,7 @@ def onnx_model(tmp_path, model_path):
     onnx_model = onnx.load(onnx_model_path)
 
     model_path = str(tmp_path / "onnx_model")
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="onnx",
         onnx_model=onnx_model,
         path=model_path,
@@ -307,7 +307,7 @@ def onnx_model(tmp_path, model_path):
 
 @pytest.fixture
 def paddle_model(model_path, pd_model):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="paddle",
         pd_model=pd_model.model,
         path=model_path,
@@ -318,7 +318,7 @@ def paddle_model(model_path, pd_model):
 
 @pytest.fixture
 def pmdarima_model(model_path, auto_arima_object_model):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="pmdarima",
         pmdarima_model=auto_arima_object_model,
         path=model_path,
@@ -329,7 +329,7 @@ def pmdarima_model(model_path, auto_arima_object_model):
 
 @pytest.fixture
 def prophet_model(model_path, prophet_raw_model):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="prophet",
         pr_model=prophet_raw_model.model,
         path=model_path,
@@ -342,14 +342,14 @@ def prophet_model(model_path, prophet_raw_model):
 
 @pytest.fixture
 def pyfunc_model(model_path):
-    class CustomModel(mlflow.pyfunc.PythonModel):
+    class CustomModel(qcflow.pyfunc.PythonModel):
         def __init__(self):
             pass
 
         def predict(self, context, model_input):
             return model_input
 
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="pyfunc",
         python_model=CustomModel(),
         path=model_path,
@@ -363,7 +363,7 @@ def pytorch_model(model_path):
     from torch import nn, randn
 
     model = nn.Sequential(nn.Linear(4, 3), nn.ReLU(), nn.Linear(3, 1))
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="pytorch",
         pytorch_model=model,
         path=model_path,
@@ -374,7 +374,7 @@ def pytorch_model(model_path):
 
 @pytest.fixture
 def sklearn_model(model_path, sklearn_knn_model, iris_data):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="sklearn",
         sk_model=sklearn_knn_model,
         path=model_path,
@@ -385,7 +385,7 @@ def sklearn_model(model_path, sklearn_knn_model, iris_data):
 
 @pytest.fixture
 def spacy_model(model_path, spacy_model_with_data):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="spacy",
         spacy_model=spacy_model_with_data.model,
         path=model_path,
@@ -396,7 +396,7 @@ def spacy_model(model_path, spacy_model_with_data):
 
 @pytest.fixture
 def spark_model(model_path, spark_model_iris):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="spark",
         spark_model=spark_model_iris.model,
         path=model_path,
@@ -408,7 +408,7 @@ def spark_model(model_path, spark_model_iris):
 @pytest.fixture
 def statsmodels_model(model_path):
     model = ols_model()
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="statsmodels",
         statsmodels_model=model.model,
         path=model_path,
@@ -419,7 +419,7 @@ def statsmodels_model(model_path):
 
 @pytest.fixture
 def tensorflow_model(model_path, tf2_toy_model):
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="tensorflow",
         model=tf2_toy_model.model,
         path=model_path,
@@ -431,7 +431,7 @@ def tensorflow_model(model_path, tf2_toy_model):
 @pytest.fixture
 def transformers_pt_model(model_path):
     pipeline = load_text_classification_pipeline()
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="transformers",
         transformers_model=pipeline,
         path=model_path,
@@ -443,10 +443,10 @@ def transformers_pt_model(model_path):
 @pytest.fixture
 def transformers_tf_model(model_path):
     pipeline = load_small_qa_tf_pipeline()
-    save_model_with_latest_mlflow_version(
+    save_model_with_latest_qcflow_version(
         flavor="transformers",
         transformers_model=pipeline,
         path=model_path,
-        input_example={"question": "What is MLflow", "context": "It's an open source platform"},
+        input_example={"question": "What is QCFlow", "context": "It's an open source platform"},
     )
     return model_path

@@ -19,7 +19,7 @@ import sklearn.impute
 import sklearn.linear_model
 import sklearn.pipeline
 import sklearn.preprocessing
-from mlflow_test_plugin.dummy_evaluator import Array2DEvaluationArtifact, DummyEvaluator
+from qcflow_test_plugin.dummy_evaluator import Array2DEvaluationArtifact, DummyEvaluator
 from PIL import Image, ImageChops
 from pyspark.ml.linalg import Vectors
 from pyspark.ml.regression import LinearRegression as SparkLinearRegression
@@ -31,31 +31,31 @@ from sklearn.metrics import (
     mean_squared_error,
 )
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.data.evaluation_dataset import EvaluationDataset, _gen_md5_for_arraylike_obj
-from mlflow.data.pandas_dataset import from_pandas
-from mlflow.entities import Trace, TraceData
-from mlflow.exceptions import MlflowException
-from mlflow.models.evaluation import (
+import qcflow
+from qcflow import MlflowClient
+from qcflow.data.evaluation_dataset import EvaluationDataset, _gen_md5_for_arraylike_obj
+from qcflow.data.pandas_dataset import from_pandas
+from qcflow.entities import Trace, TraceData
+from qcflow.exceptions import MlflowException
+from qcflow.models.evaluation import (
     EvaluationArtifact,
     EvaluationResult,
     ModelEvaluator,
     evaluate,
 )
-from mlflow.models.evaluation.artifacts import ImageEvaluationArtifact
-from mlflow.models.evaluation.base import (
+from qcflow.models.evaluation.artifacts import ImageEvaluationArtifact
+from qcflow.models.evaluation.base import (
     _get_model_from_deployment_endpoint_uri,
     _is_model_deployment_endpoint_uri,
     _start_run_or_reuse_active_run,
     resolve_evaluators_and_configs,
 )
-from mlflow.models.evaluation.evaluator_registry import _model_evaluation_registry
-from mlflow.pyfunc import _ServedPyFuncModel
-from mlflow.pyfunc.scoring_server.client import ScoringServerClient
-from mlflow.tracing.constant import TraceMetadataKey
-from mlflow.tracking.artifact_utils import get_artifact_uri
-from mlflow.utils.file_utils import TempDir
+from qcflow.models.evaluation.evaluator_registry import _model_evaluation_registry
+from qcflow.pyfunc import _ServedPyFuncModel
+from qcflow.pyfunc.scoring_server.client import ScoringServerClient
+from qcflow.tracing.constant import TraceMetadataKey
+from qcflow.tracking.artifact_utils import get_artifact_uri
+from qcflow.utils.file_utils import TempDir
 
 from tests.tracing.helper import create_test_trace_info, get_traces
 from tests.utils.test_file_utils import spark_session  # noqa: F401
@@ -224,8 +224,8 @@ def get_pipeline_model_uri():
     )
     pipeline.fit(X, y)
 
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(pipeline, "pipeline_model")
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(pipeline, "pipeline_model")
         return model_info.model_uri
 
 
@@ -239,8 +239,8 @@ def get_linear_regressor_model_uri():
     reg = sklearn.linear_model.LinearRegression()
     reg.fit(X, y)
 
-    with mlflow.start_run() as run:
-        mlflow.sklearn.log_model(reg, "reg_model")
+    with qcflow.start_run() as run:
+        qcflow.sklearn.log_model(reg, "reg_model")
         return get_artifact_uri(run.info.run_id, "reg_model")
 
 
@@ -254,8 +254,8 @@ def get_spark_linear_regressor_model_uri():
     reg = SparkLinearRegression()
     spark_reg_model = reg.fit(spark_df)
 
-    with mlflow.start_run() as run:
-        mlflow.spark.log_model(spark_reg_model, "spark_reg_model")
+    with qcflow.start_run() as run:
+        qcflow.spark.log_model(spark_reg_model, "spark_reg_model")
         return get_artifact_uri(run.info.run_id, "spark_reg_model")
 
 
@@ -269,8 +269,8 @@ def multiclass_logistic_regressor_model_uri_by_max_iter(max_iter):
     clf = sklearn.linear_model.LogisticRegression(max_iter=max_iter)
     clf.fit(X, y)
 
-    with mlflow.start_run() as run:
-        mlflow.sklearn.log_model(clf, f"clf_model_{max_iter}_iters")
+    with qcflow.start_run() as run:
+        qcflow.sklearn.log_model(clf, f"clf_model_{max_iter}_iters")
         return get_artifact_uri(run.info.run_id, f"clf_model_{max_iter}_iters")
 
 
@@ -284,8 +284,8 @@ def get_binary_logistic_regressor_model_uri():
     clf = sklearn.linear_model.LogisticRegression()
     clf.fit(X, y)
 
-    with mlflow.start_run() as run:
-        mlflow.sklearn.log_model(clf, "bin_clf_model")
+    with qcflow.start_run() as run:
+        qcflow.sklearn.log_model(clf, "bin_clf_model")
         return get_artifact_uri(run.info.run_id, "bin_clf_model")
 
 
@@ -299,8 +299,8 @@ def get_svm_model_url():
     clf = sklearn.svm.LinearSVC()
     clf.fit(X, y)
 
-    with mlflow.start_run() as run:
-        mlflow.sklearn.log_model(clf, "svm_model")
+    with qcflow.start_run() as run:
+        qcflow.sklearn.log_model(clf, "svm_model")
         return get_artifact_uri(run.info.run_id, "svm_model")
 
 
@@ -335,36 +335,36 @@ def iris_pandas_df_num_cols_dataset():
     return ds
 
 
-def test_mlflow_evaluate_logs_traces():
+def test_qcflow_evaluate_logs_traces():
     eval_data = pd.DataFrame(
         {
             "inputs": [
-                "What is MLflow?",
+                "What is QCFlow?",
                 "What is Spark?",
             ],
-            "ground_truth": ["What is MLflow?", "Not what is Spark?"],
+            "ground_truth": ["What is QCFlow?", "Not what is Spark?"],
         }
     )
 
-    @mlflow.trace
+    @qcflow.trace
     def model(inputs):
         return inputs
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         evaluate(
-            model, eval_data, targets="ground_truth", extra_metrics=[mlflow.metrics.exact_match()]
+            model, eval_data, targets="ground_truth", extra_metrics=[qcflow.metrics.exact_match()]
         )
     assert len(get_traces()) == 1
     assert run.info.run_id == get_traces()[0].info.request_metadata[TraceMetadataKey.SOURCE_RUN]
 
 
 def test_pyfunc_evaluate_logs_traces():
-    class Model(mlflow.pyfunc.PythonModel):
-        @mlflow.trace()
+    class Model(qcflow.pyfunc.PythonModel):
+        @qcflow.trace()
         def predict(self, context, model_input):
             return self.add(model_input, model_input)
 
-        @mlflow.trace()
+        @qcflow.trace()
         def add(self, x, y):
             return x + y
 
@@ -375,13 +375,13 @@ def test_pyfunc_evaluate_logs_traces():
         }
     )
 
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model("model", python_model=Model())
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model("model", python_model=Model())
         evaluate(
             model_info.model_uri,
             eval_data,
             targets="ground_truth",
-            extra_metrics=[mlflow.metrics.exact_match()],
+            extra_metrics=[qcflow.metrics.exact_match()],
         )
     assert len(get_traces()) == 1
     assert len(get_traces()[0].data.spans) == 2
@@ -390,7 +390,7 @@ def test_pyfunc_evaluate_logs_traces():
 
 def test_classifier_evaluate(multiclass_logistic_regressor_model_uri, iris_dataset):
     y_true = iris_dataset.labels_data
-    classifier_model = mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
+    classifier_model = qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
     y_pred = classifier_model.predict(iris_dataset.features_data)
     expected_accuracy_score = accuracy_score(y_true, y_pred)
     expected_metrics = {
@@ -407,7 +407,7 @@ def test_classifier_evaluate(multiclass_logistic_regressor_model_uri, iris_datas
     img_buf.seek(0)
     expected_image_artifact = Image.open(img_buf)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         eval_result = evaluate(
             multiclass_logistic_regressor_model_uri,
             iris_dataset._constructor_args["data"],
@@ -465,13 +465,13 @@ def test_classifier_evaluate(multiclass_logistic_regressor_model_uri, iris_datas
             assert "confusion_matrix" in json_dict
             assert json_dict["confusion_matrix"] == {
                 "uri": confusion_matrix_artifact.uri,
-                "class_name": "mlflow_test_plugin.dummy_evaluator.Array2DEvaluationArtifact",
+                "class_name": "qcflow_test_plugin.dummy_evaluator.Array2DEvaluationArtifact",
             }
 
             assert "confusion_matrix_image" in json_dict
             assert json_dict["confusion_matrix_image"] == {
                 "uri": confusion_matrix_image_artifact.uri,
-                "class_name": "mlflow.models.evaluation.artifacts.ImageEvaluationArtifact",
+                "class_name": "qcflow.models.evaluation.artifacts.ImageEvaluationArtifact",
             }
 
         assert set(os.listdir(temp_dir.path("artifacts"))) == {
@@ -515,7 +515,7 @@ def test_classifier_evaluate(multiclass_logistic_regressor_model_uri, iris_datas
 
 def test_regressor_evaluate(linear_regressor_model_uri, diabetes_dataset):
     y_true = diabetes_dataset.labels_data
-    regressor_model = mlflow.pyfunc.load_model(linear_regressor_model_uri)
+    regressor_model = qcflow.pyfunc.load_model(linear_regressor_model_uri)
     y_pred = regressor_model.predict(diabetes_dataset.features_data)
     expected_mae = mean_absolute_error(y_true, y_pred)
     expected_mse = mean_squared_error(y_true, y_pred)
@@ -528,7 +528,7 @@ def test_regressor_evaluate(linear_regressor_model_uri, diabetes_dataset):
         "mean_squared_error": expected_mse,
     }
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         eval_result = evaluate(
             linear_regressor_model_uri,
             diabetes_dataset._constructor_args["data"],
@@ -567,7 +567,7 @@ def _load_diabetes_dataset_in_required_format(format):
 def test_regressor_evaluation(linear_regressor_model_uri, data_format):
     data, target = _load_diabetes_dataset_in_required_format(data_format)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         eval_result = evaluate(
             linear_regressor_model_uri,
             data=data,
@@ -586,17 +586,17 @@ def test_regressor_evaluation(linear_regressor_model_uri, data_format):
     assert datasets[0].dataset.source_type == "code"
 
 
-def test_pandas_df_regressor_evaluation_mlflow_dataset_with_metric_prefix(
+def test_pandas_df_regressor_evaluation_qcflow_dataset_with_metric_prefix(
     linear_regressor_model_uri,
 ):
     data = sklearn.datasets.load_diabetes()
     df = pd.DataFrame(data.data, columns=data.feature_names)
     df["y"] = data.target
-    mlflow_df = from_pandas(df=df, source="my_src", targets="y")
-    with mlflow.start_run() as run:
+    qcflow_df = from_pandas(df=df, source="my_src", targets="y")
+    with qcflow.start_run() as run:
         eval_result = evaluate(
             linear_regressor_model_uri,
-            data=mlflow_df,
+            data=qcflow_df,
             model_type="regressor",
             evaluators=["default"],
             evaluator_config={
@@ -615,15 +615,15 @@ def test_pandas_df_regressor_evaluation_mlflow_dataset_with_metric_prefix(
     assert datasets[0].tags[0].value == "eval"
 
 
-def test_pandas_df_regressor_evaluation_mlflow_dataset(linear_regressor_model_uri):
+def test_pandas_df_regressor_evaluation_qcflow_dataset(linear_regressor_model_uri):
     data = sklearn.datasets.load_diabetes()
     df = pd.DataFrame(data.data, columns=data.feature_names)
     df["y"] = data.target
-    mlflow_df = from_pandas(df=df, source="my_src", targets="y")
-    with mlflow.start_run() as run:
+    qcflow_df = from_pandas(df=df, source="my_src", targets="y")
+    with qcflow.start_run() as run:
         eval_result = evaluate(
             linear_regressor_model_uri,
-            data=mlflow_df,
+            data=qcflow_df,
             model_type="regressor",
             evaluators=["default"],
         )
@@ -637,17 +637,17 @@ def test_pandas_df_regressor_evaluation_mlflow_dataset(linear_regressor_model_ur
     assert len(datasets[0].tags) == 0
 
 
-def test_pandas_df_regressor_evaluation_mlflow_dataset_with_targets_from_dataset(
+def test_pandas_df_regressor_evaluation_qcflow_dataset_with_targets_from_dataset(
     linear_regressor_model_uri,
 ):
     data = sklearn.datasets.load_diabetes()
     df = pd.DataFrame(data.data, columns=data.feature_names)
     df["y"] = data.target
-    mlflow_df = from_pandas(df=df, source="my_src", targets="y")
-    with mlflow.start_run() as run:
+    qcflow_df = from_pandas(df=df, source="my_src", targets="y")
+    with qcflow.start_run() as run:
         eval_result = evaluate(
             linear_regressor_model_uri,
-            data=mlflow_df,
+            data=qcflow_df,
             model_type="regressor",
             evaluators=["default"],
         )
@@ -799,7 +799,7 @@ def test_dataset_from_spark_df(spark_session):
 
 def test_log_dataset_tag(iris_dataset, iris_pandas_df_dataset):
     model_uuid = uuid.uuid4().hex
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         client = MlflowClient()
         iris_dataset._log_dataset_tag(client, run.info.run_id, model_uuid=model_uuid)
         _, _, tags, _ = get_run_data(run.info.run_id)
@@ -807,15 +807,15 @@ def test_log_dataset_tag(iris_dataset, iris_pandas_df_dataset):
         logged_meta1 = {**iris_dataset._metadata, "model": model_uuid}
         logged_meta2 = {**iris_pandas_df_dataset._metadata, "model": model_uuid}
 
-        assert json.loads(tags["mlflow.datasets"]) == [logged_meta1]
+        assert json.loads(tags["qcflow.datasets"]) == [logged_meta1]
 
-        raw_tag = get_raw_tag(run.info.run_id, "mlflow.datasets")
+        raw_tag = get_raw_tag(run.info.run_id, "qcflow.datasets")
         assert " " not in raw_tag  # assert the tag string remove all whitespace chars.
 
         # Test appending dataset tag
         iris_pandas_df_dataset._log_dataset_tag(client, run.info.run_id, model_uuid=model_uuid)
         _, _, tags, _ = get_run_data(run.info.run_id)
-        assert json.loads(tags["mlflow.datasets"]) == [
+        assert json.loads(tags["qcflow.datasets"]) == [
             logged_meta1,
             logged_meta2,
         ]
@@ -823,7 +823,7 @@ def test_log_dataset_tag(iris_dataset, iris_pandas_df_dataset):
         # Test log repetitive dataset
         iris_dataset._log_dataset_tag(client, run.info.run_id, model_uuid=model_uuid)
         _, _, tags, _ = get_run_data(run.info.run_id)
-        assert json.loads(tags["mlflow.datasets"]) == [
+        assert json.loads(tags["qcflow.datasets"]) == [
             logged_meta1,
             logged_meta2,
         ]
@@ -865,7 +865,7 @@ class FakeArtifact2(EvaluationArtifact):
 
 class PyFuncModelMatcher:
     def __eq__(self, other):
-        return isinstance(other, mlflow.pyfunc.PyFuncModel)
+        return isinstance(other, qcflow.pyfunc.PyFuncModel)
 
 
 class ModelPredictFuncMatcher:
@@ -890,7 +890,7 @@ def test_evaluator_evaluation_interface(multiclass_logistic_regressor_model_uri,
                 FakeEvaluator1, "evaluate", return_value=evaluator1_return_value
             ) as mock_evaluate,
         ):
-            with mlflow.start_run():
+            with qcflow.start_run():
                 with pytest.raises(
                     MlflowException,
                     match="The model could not be evaluated by any of the registered evaluators",
@@ -915,7 +915,7 @@ def test_evaluator_evaluation_interface(multiclass_logistic_regressor_model_uri,
                 FakeEvaluator1, "evaluate", return_value=evaluator1_return_value
             ) as mock_evaluate,
         ):
-            with mlflow.start_run() as run:
+            with qcflow.start_run() as run:
                 eval1_result = evaluate(
                     multiclass_logistic_regressor_model_uri,
                     iris_dataset._constructor_args["data"],
@@ -994,7 +994,7 @@ def test_evaluate_with_multi_evaluators(
                     FakeEvaluator2, "evaluate", return_value=evaluator2_return_value
                 ) as mock_evaluate2,
             ):
-                with mlflow.start_run() as run:
+                with qcflow.start_run() as run:
                     eval_result = evaluate(
                         multiclass_logistic_regressor_model_uri,
                         iris_dataset._constructor_args["data"],
@@ -1016,7 +1016,7 @@ def test_evaluate_with_multi_evaluators(
                     }
                     mock_evaluate1.assert_called_once_with(
                         **get_evaluate_call_arg(
-                            mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri),
+                            qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri),
                             evaluator1_config,
                         )
                     )
@@ -1025,7 +1025,7 @@ def test_evaluate_with_multi_evaluators(
                     )
                     mock_evaluate2.assert_called_once_with(
                         **get_evaluate_call_arg(
-                            mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri),
+                            qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri),
                             evaluator2_config,
                         )
                     )
@@ -1047,7 +1047,7 @@ def test_custom_evaluators_no_model_or_preds(multiclass_logistic_regressor_model
             ) as mock_can_evaluate,
             mock.patch.object(FakeEvaluator1, "evaluate") as mock_evaluate,
         ):
-            with mlflow.start_run() as run:
+            with qcflow.start_run() as run:
                 evaluate(
                     model=None,
                     data=iris_dataset._constructor_args["data"],
@@ -1077,9 +1077,9 @@ def test_custom_evaluators_no_model_or_preds(multiclass_logistic_regressor_model
 
 def test_start_run_or_reuse_active_run():
     with _start_run_or_reuse_active_run() as run_id:
-        assert mlflow.active_run().info.run_id == run_id
+        assert qcflow.active_run().info.run_id == run_id
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         active_run_id = run.info.run_id
 
         with _start_run_or_reuse_active_run() as run_id:
@@ -1090,10 +1090,10 @@ def test_start_run_or_reuse_active_run():
 
 
 def test_resolve_evaluators_and_configs():
-    from mlflow.models.evaluation.evaluators.classifier import ClassifierEvaluator
-    from mlflow.models.evaluation.evaluators.default import DefaultEvaluator
-    from mlflow.models.evaluation.evaluators.regressor import RegressorEvaluator
-    from mlflow.models.evaluation.evaluators.shap import ShapEvaluator
+    from qcflow.models.evaluation.evaluators.classifier import ClassifierEvaluator
+    from qcflow.models.evaluation.evaluators.default import DefaultEvaluator
+    from qcflow.models.evaluation.evaluators.regressor import RegressorEvaluator
+    from qcflow.models.evaluation.evaluators.shap import ShapEvaluator
 
     def assert_equal(actual, expected):
         assert len(actual) == len(expected)
@@ -1236,7 +1236,7 @@ def test_resolve_evaluators_raise_for_missing_databricks_agent_dependency():
 
 
 def test_evaluate_env_manager_params(multiclass_logistic_regressor_model_uri, iris_dataset):
-    model = mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
 
     with mock.patch.object(
         _model_evaluation_registry, "_registry", {"test_evaluator1": FakeEvaluator1}
@@ -1264,7 +1264,7 @@ def test_evaluate_env_manager_params(multiclass_logistic_regressor_model_uri, ir
 
 @pytest.mark.parametrize("env_manager", ["virtualenv", "conda"])
 def test_evaluate_restores_env(tmp_path, env_manager, iris_dataset):
-    class EnvRestoringTestModel(mlflow.pyfunc.PythonModel):
+    class EnvRestoringTestModel(qcflow.pyfunc.PythonModel):
         def __init__(self):
             pass
 
@@ -1284,7 +1284,7 @@ def test_evaluate_restores_env(tmp_path, env_manager, iris_dataset):
 
     model_path = os.path.join(tmp_path, "model")
 
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=model_path,
         python_model=EnvRestoringTestModel(),
         pip_requirements=["scikit-learn==1.4.2"],
@@ -1308,7 +1308,7 @@ def test_evaluate_restores_env(tmp_path, env_manager, iris_dataset):
 
 def test_evaluate_terminates_model_servers(multiclass_logistic_regressor_model_uri, iris_dataset):
     # Mock the _load_model_or_server() results to avoid starting model servers
-    model = mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
     client = ScoringServerClient("127.0.0.1", "8080")
     served_model_1 = _ServedPyFuncModel(model_meta=model.metadata, client=client, server_pid=1)
     served_model_2 = _ServedPyFuncModel(model_meta=model.metadata, client=client, server_pid=2)
@@ -1323,7 +1323,7 @@ def test_evaluate_terminates_model_servers(multiclass_logistic_regressor_model_u
         mock.patch.object(
             FakeEvaluator1, "evaluate", return_value=EvaluationResult(metrics={}, artifacts={})
         ),
-        mock.patch("mlflow.pyfunc._load_model_or_server") as server_loader,
+        mock.patch("qcflow.pyfunc._load_model_or_server") as server_loader,
         mock.patch("os.kill") as os_mock,
     ):
         server_loader.side_effect = [served_model_1, served_model_2]
@@ -1346,11 +1346,11 @@ def test_evaluate_stdin_scoring_server():
     model = sklearn.linear_model.LogisticRegression()
     model.fit(X, y)
 
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(model, "model")
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(model, "model")
 
-    with mock.patch("mlflow.pyfunc.check_port_connectivity", return_value=False):
-        mlflow.evaluate(
+    with mock.patch("qcflow.pyfunc.check_port_connectivity", return_value=False):
+        qcflow.evaluate(
             model_info.model_uri,
             X,
             targets=y,
@@ -1363,7 +1363,7 @@ def test_evaluate_stdin_scoring_server():
 @pytest.mark.parametrize("model_type", ["regressor", "classifier"])
 def test_targets_is_required_for_regressor_and_classifier_models(model_type):
     with pytest.raises(MlflowException, match="The targets argument must be specified"):
-        mlflow.evaluate(
+        qcflow.evaluate(
             "models:/test",
             data=pd.DataFrame(),
             model_type=model_type,
@@ -1379,16 +1379,16 @@ def test_evaluate_xgboost_classifier():
     data = xgb.DMatrix(X, label=y)
     model = xgb.train({"objective": "multi:softmax", "num_class": 3}, data, num_boost_round=5)
 
-    with mlflow.start_run() as run:
-        model_info = mlflow.xgboost.log_model(model, "model")
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        model_info = qcflow.xgboost.log_model(model, "model")
+        qcflow.evaluate(
             model_info.model_uri,
             X.assign(y=y),
             targets="y",
             model_type="classifier",
         )
 
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert "accuracy_score" in run.data.metrics
     assert "recall_score" in run.data.metrics
     assert "precision_score" in run.data.metrics
@@ -1404,16 +1404,16 @@ def test_evaluate_lightgbm_regressor():
     data = lgb.Dataset(X, label=y)
     model = lgb.train({"objective": "regression"}, data, num_boost_round=5)
 
-    with mlflow.start_run() as run:
-        model_info = mlflow.lightgbm.log_model(model, "model")
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        model_info = qcflow.lightgbm.log_model(model, "model")
+        qcflow.evaluate(
             model_info.model_uri,
             X.assign(y=y),
             targets="y",
             model_type="regressor",
         )
 
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert "mean_absolute_error" in run.data.metrics
     assert "mean_squared_error" in run.data.metrics
     assert "root_mean_squared_error" in run.data.metrics
@@ -1430,62 +1430,62 @@ def test_evaluate_with_targets_error_handling():
     ERROR_TYPE_1 = (
         "The top-level targets parameter should not be specified since a Dataset "
         "is used. Please only specify the targets column name in the Dataset. For example: "
-        "`data = mlflow.data.from_pandas(df=X.assign(y=y), targets='y')`. "
-        "Meanwhile, please specify `mlflow.evaluate(..., targets=None, ...)`."
+        "`data = qcflow.data.from_pandas(df=X.assign(y=y), targets='y')`. "
+        "Meanwhile, please specify `qcflow.evaluate(..., targets=None, ...)`."
     )
     ERROR_TYPE_2 = (
         "The targets column name must be specified in the provided Dataset "
         "for regressor models. For example: "
-        "`data = mlflow.data.from_pandas(df=X.assign(y=y), targets='y')`"
+        "`data = qcflow.data.from_pandas(df=X.assign(y=y), targets='y')`"
     )
     ERROR_TYPE_3 = "The targets argument must be specified for regressor models."
 
     pandas_dataset_no_targets = X
-    mlflow_dataset_no_targets = mlflow.data.from_pandas(df=X.assign(y=y))
-    mlflow_dataset_with_targets = mlflow.data.from_pandas(df=X.assign(y=y), targets="y")
+    qcflow_dataset_no_targets = qcflow.data.from_pandas(df=X.assign(y=y))
+    qcflow_dataset_with_targets = qcflow.data.from_pandas(df=X.assign(y=y), targets="y")
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_1)):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model=model,
-                data=mlflow_dataset_with_targets,
+                data=qcflow_dataset_with_targets,
                 model_type="regressor",
                 targets="y",
             )
 
         with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_1)):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model=model,
-                data=mlflow_dataset_no_targets,
+                data=qcflow_dataset_no_targets,
                 model_type="regressor",
                 targets="y",
             )
 
         with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_1)):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model=model,
-                data=mlflow_dataset_with_targets,
+                data=qcflow_dataset_with_targets,
                 model_type="question-answering",
                 targets="y",
             )
 
         with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_1)):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model=model,
-                data=mlflow_dataset_no_targets,
+                data=qcflow_dataset_no_targets,
                 model_type="question-answering",
                 targets="y",
             )
 
         with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_2)):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model=model,
-                data=mlflow_dataset_no_targets,
+                data=qcflow_dataset_no_targets,
                 model_type="regressor",
             )
 
         with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_3)):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model=model,
                 data=pandas_dataset_no_targets,
                 model_type="regressor",
@@ -1500,20 +1500,20 @@ def test_evaluate_with_predictions_error_handling():
     y = y[::5]
     lgb_data = lgb.Dataset(X, label=y)
     model = lgb.train({"objective": "regression"}, lgb_data, num_boost_round=5)
-    mlflow_dataset_with_predictions = mlflow.data.from_pandas(
+    qcflow_dataset_with_predictions = qcflow.data.from_pandas(
         df=X.assign(y=y, model_output=y),
         targets="y",
         predictions="model_output",
     )
-    with mlflow.start_run():
+    with qcflow.start_run():
         with pytest.raises(
             MlflowException,
             match="The predictions parameter should not be specified in the Dataset since a model "
             "is specified. Please remove the predictions column from the Dataset.",
         ):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model=model,
-                data=mlflow_dataset_with_predictions,
+                data=qcflow_dataset_with_predictions,
                 model_type="regressor",
             )
 
@@ -1530,14 +1530,14 @@ def test_evaluate_with_function_input_single_output():
     def fn(X):
         return model.predict(X)
 
-    with mlflow.start_run() as run:
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        qcflow.evaluate(
             fn,
             X.assign(y=y),
             targets="y",
             model_type="regressor",
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert "mean_absolute_error" in run.data.metrics
     assert "mean_squared_error" in run.data.metrics
     assert "root_mean_squared_error" in run.data.metrics
@@ -1552,17 +1552,17 @@ def test_evaluate_with_loaded_pyfunc_model():
     data = lgb.Dataset(X, label=y)
     model = lgb.train({"objective": "regression"}, data, num_boost_round=5)
 
-    with mlflow.start_run() as run:
-        model_info = mlflow.lightgbm.log_model(model, "model")
-        loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        model_info = qcflow.lightgbm.log_model(model, "model")
+        loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
+        qcflow.evaluate(
             loaded_model,
             X.assign(y=y),
             targets="y",
             model_type="regressor",
         )
 
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert "mean_absolute_error" in run.data.metrics
     assert "mean_squared_error" in run.data.metrics
     assert "root_mean_squared_error" in run.data.metrics
@@ -1572,34 +1572,34 @@ def test_evaluate_with_static_dataset_input_single_output():
     X, y = sklearn.datasets.load_diabetes(return_X_y=True, as_frame=True)
     X = X[::5]
     y = y[::5]
-    with mlflow.start_run() as run:
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        qcflow.evaluate(
             data=X.assign(y=y, model_output=y),
             targets="y",
             predictions="model_output",
             model_type="regressor",
         )
 
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert "mean_absolute_error" in run.data.metrics
     assert "mean_squared_error" in run.data.metrics
     assert "root_mean_squared_error" in run.data.metrics
 
 
-def test_evaluate_with_static_mlflow_dataset_input():
+def test_evaluate_with_static_qcflow_dataset_input():
     X, y = sklearn.datasets.load_diabetes(return_X_y=True, as_frame=True)
     X = X[::5]
     y = y[::5]
-    data = mlflow.data.from_pandas(
+    data = qcflow.data.from_pandas(
         df=X.assign(y=y, model_output=y), targets="y", predictions="model_output"
     )
-    with mlflow.start_run() as run:
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        qcflow.evaluate(
             data=data,
             model_type="regressor",
         )
 
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert "mean_absolute_error" in run.data.metrics
     assert "mean_squared_error" in run.data.metrics
     assert "root_mean_squared_error" in run.data.metrics
@@ -1609,9 +1609,9 @@ def test_evaluate_with_static_dataset_error_handling_pandas_dataframe():
     X, y = sklearn.datasets.load_diabetes(return_X_y=True, as_frame=True)
     X = X[::5]
     y = y[::5]
-    with mlflow.start_run():
+    with qcflow.start_run():
         with pytest.raises(MlflowException, match="The data argument cannot be None."):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 data=None,
                 targets="y",
                 model_type="regressor",
@@ -1622,7 +1622,7 @@ def test_evaluate_with_static_dataset_error_handling_pandas_dataframe():
             match="The specified pandas DataFrame does not contain the specified predictions"
             " column 'prediction'.",
         ):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 data=X.assign(y=y, model_output=y),
                 targets="y",
                 predictions="prediction",
@@ -1634,26 +1634,26 @@ def test_evaluate_with_static_dataset_error_handling_pandas_dataset():
     X, y = sklearn.datasets.load_diabetes(return_X_y=True, as_frame=True)
     X = X[::5]
     y = y[::5]
-    dataset_with_predictions = mlflow.data.from_pandas(
+    dataset_with_predictions = qcflow.data.from_pandas(
         df=X.assign(y=y, model_output=y), targets="y", predictions="model_output"
     )
-    dataset_no_predictions = mlflow.data.from_pandas(df=X.assign(y=y, model_output=y), targets="y")
+    dataset_no_predictions = qcflow.data.from_pandas(df=X.assign(y=y, model_output=y), targets="y")
     ERROR_MESSAGE = (
         "The top-level predictions parameter should not be specified since a Dataset is "
         "used. Please only specify the predictions column name in the Dataset. For example: "
-        "`data = mlflow.data.from_pandas(df=X.assign(y=y), predictions='y')`"
-        "Meanwhile, please specify `mlflow.evaluate(..., predictions=None, ...)`."
+        "`data = qcflow.data.from_pandas(df=X.assign(y=y), predictions='y')`"
+        "Meanwhile, please specify `qcflow.evaluate(..., predictions=None, ...)`."
     )
-    with mlflow.start_run():
+    with qcflow.start_run():
         with pytest.raises(MlflowException, match=re.escape(ERROR_MESSAGE)):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 data=dataset_with_predictions,
                 model_type="regressor",
                 predictions="model_output",
             )
 
         with pytest.raises(MlflowException, match=re.escape(ERROR_MESSAGE)):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 data=dataset_no_predictions,
                 model_type="regressor",
                 predictions="model_output",
@@ -1663,13 +1663,13 @@ def test_evaluate_with_static_dataset_error_handling_pandas_dataset():
 def test_binary_classification_missing_minority_class_exception_override(
     binary_logistic_regressor_model_uri, breast_cancer_dataset, monkeypatch
 ):
-    monkeypatch.setenv("_MLFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS", True)
+    monkeypatch.setenv("_QCFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS", True)
 
     ds_targets = breast_cancer_dataset._constructor_args["targets"]
     # Simulate a missing target label
     ds_targets = np.where(ds_targets == 0, 1, ds_targets)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         eval_result = evaluate(
             binary_logistic_regressor_model_uri,
             breast_cancer_dataset._constructor_args["data"],
@@ -1693,13 +1693,13 @@ def test_binary_classification_missing_minority_class_exception_override(
 def test_multiclass_classification_missing_minority_class_exception_override(
     multiclass_logistic_regressor_model_uri, iris_dataset, monkeypatch
 ):
-    monkeypatch.setenv("_MLFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS", True)
+    monkeypatch.setenv("_QCFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS", True)
 
     ds_targets = iris_dataset._constructor_args["targets"]
     # Simulate a missing target label
     ds_targets = np.where(ds_targets == 0, 1, ds_targets)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         eval_result = evaluate(
             multiclass_logistic_regressor_model_uri,
             iris_dataset._constructor_args["data"],
@@ -1748,9 +1748,9 @@ _DUMMY_CHAT_RESPONSE = {
     },
 }
 
-_TEST_QUERY_LIST = ["What is MLflow?", "What is Spark?"]
+_TEST_QUERY_LIST = ["What is QCFlow?", "What is Spark?"]
 _TEST_GT_LIST = [
-    "MLflow is an open-source platform for machine learning (ML).",
+    "QCFlow is an open-source platform for machine learning (ML).",
     "Apache Spark is an open-source, distributed computing system.",
 ]
 
@@ -1819,13 +1819,13 @@ _TEST_GT_LIST = [
         ),
     ],
 )
-@mock.patch("mlflow.deployments.get_deploy_client")
+@mock.patch("qcflow.deployments.get_deploy_client")
 def test_evaluate_on_chat_model_endpoint(mock_deploy_client, input_data, feature_names, targets):
     mock_deploy_client.return_value.predict.return_value = _DUMMY_CHAT_RESPONSE
     mock_deploy_client.return_value.get_endpoint.return_value = {"task": "llm/v1/chat"}
 
-    with mlflow.start_run():
-        eval_result = mlflow.evaluate(
+    with qcflow.start_run():
+        eval_result = qcflow.evaluate(
             model="endpoints:/chat",
             data=input_data,
             model_type="question-answering",
@@ -1840,7 +1840,7 @@ def test_evaluate_on_chat_model_endpoint(mock_deploy_client, input_data, feature
         mock.call(
             endpoint="chat",
             inputs={
-                "messages": [{"content": "What is MLflow?", "role": "user"}],
+                "messages": [{"content": "What is QCFlow?", "role": "user"}],
                 "max_tokens": 10,
                 "temperature": 0.5,
             },
@@ -1891,13 +1891,13 @@ _DUMMY_COMPLETION_RESPONSE = {
         ([{"prompt": q} for q in _TEST_QUERY_LIST], None),
     ],
 )
-@mock.patch("mlflow.deployments.get_deploy_client")
+@mock.patch("qcflow.deployments.get_deploy_client")
 def test_evaluate_on_completion_model_endpoint(mock_deploy_client, input_data, feature_names):
     mock_deploy_client.return_value.predict.return_value = _DUMMY_COMPLETION_RESPONSE
     mock_deploy_client.return_value.get_endpoint.return_value = {"task": "llm/v1/completions"}
 
-    with mlflow.start_run():
-        eval_result = mlflow.evaluate(
+    with qcflow.start_run():
+        eval_result = qcflow.evaluate(
             model="endpoints:/completions",
             data=input_data,
             inference_params={"max_tokens": 10},
@@ -1908,7 +1908,7 @@ def test_evaluate_on_completion_model_endpoint(mock_deploy_client, input_data, f
     # Validate the endpoint is called with correct payloads
     call_args_list = mock_deploy_client.return_value.predict.call_args_list
     expected_calls = [
-        mock.call(endpoint="completions", inputs={"prompt": "What is MLflow?", "max_tokens": 10}),
+        mock.call(endpoint="completions", inputs={"prompt": "What is QCFlow?", "max_tokens": 10}),
         mock.call(endpoint="completions", inputs={"prompt": "What is Spark?", "max_tokens": 10}),
     ]
     assert call_args_list == expected_calls
@@ -1926,7 +1926,7 @@ def test_evaluate_on_completion_model_endpoint(mock_deploy_client, input_data, f
     assert eval_results_table["outputs"].equals(pd.Series(["This is a response"] * 2))
 
 
-@mock.patch("mlflow.deployments.get_deploy_client")
+@mock.patch("qcflow.deployments.get_deploy_client")
 def test_evaluate_on_model_endpoint_without_type(mock_deploy_client):
     # An endpoint that does not have endpoint type. For such endpoint, we simply
     # pass the input data to the endpoint without any modification and return
@@ -1947,8 +1947,8 @@ def test_evaluate_on_model_endpoint_without_type(mock_deploy_client):
         }
     )
 
-    with mlflow.start_run():
-        eval_result = mlflow.evaluate(
+    with qcflow.start_run():
+        eval_result = qcflow.evaluate(
             model="endpoints:/random",
             data=input_data,
             model_type="question-answering",
@@ -1962,7 +1962,7 @@ def test_evaluate_on_model_endpoint_without_type(mock_deploy_client):
         mock.call(
             endpoint="random",
             inputs={
-                "messages": [{"content": "What is MLflow?", "role": "user"}],
+                "messages": [{"content": "What is QCFlow?", "role": "user"}],
                 "max_tokens": 10,
                 "temperature": 0.5,
             },
@@ -1987,7 +1987,7 @@ def test_evaluate_on_model_endpoint_without_type(mock_deploy_client):
     assert eval_results_table["outputs"].equals(pd.Series(["This is a response"] * 2))
 
 
-@mock.patch("mlflow.deployments.get_deploy_client")
+@mock.patch("qcflow.deployments.get_deploy_client")
 def test_evaluate_on_model_endpoint_invalid_payload(mock_deploy_client):
     # An endpoint that does not have endpoint type. For such endpoint, we simply
     # pass the input data to the endpoint without any modification and return
@@ -2002,7 +2002,7 @@ def test_evaluate_on_model_endpoint_invalid_payload(mock_deploy_client):
     )
 
     with pytest.raises(MlflowException, match="Failed to call the deployment endpoint"):
-        mlflow.evaluate(
+        qcflow.evaluate(
             model="endpoints:/random",
             data=input_data,
             model_type="question-answering",
@@ -2037,12 +2037,12 @@ def test_evaluate_on_model_endpoint_invalid_payload(mock_deploy_client):
     ],
 )
 def test_evaluate_on_model_endpoint_invalid_input_data(input_data, error_message):
-    with mock.patch("mlflow.deployments.get_deploy_client") as mock_deploy_client:
+    with mock.patch("qcflow.deployments.get_deploy_client") as mock_deploy_client:
         mock_deploy_client.return_value.get_endpoint.return_value = {"task": "llm/v1/chat"}
 
         with pytest.raises(MlflowException, match=error_message):
-            with mlflow.start_run():
-                mlflow.evaluate(
+            with qcflow.start_run():
+                qcflow.evaluate(
                     model="endpoints:/chat",
                     data=input_data,
                     model_type="question-answering",
@@ -2057,14 +2057,14 @@ def test_evaluate_on_model_endpoint_invalid_input_data(input_data, error_message
         # Case 1: Single chat dictionary.
         # This is an expected input format from the Databricks RAG Evaluator.
         {
-            "messages": [{"content": "What is MLflow?", "role": "user"}],
+            "messages": [{"content": "What is QCFlow?", "role": "user"}],
             "max_tokens": 10,
         },
         # Case 2: List of chat dictionaries.
         # This is not a typical input format from either default or Databricks RAG evaluators,
         # but we support it for compatibility with the normal Pyfunc models.
         [
-            {"messages": [{"content": "What is MLflow?", "role": "user"}]},
+            {"messages": [{"content": "What is QCFlow?", "role": "user"}]},
             {"messages": [{"content": "What is Spark?", "role": "user"}]},
         ],
         # Case 3: DataFrame with a column of dictionaries
@@ -2072,7 +2072,7 @@ def test_evaluate_on_model_endpoint_invalid_input_data(input_data, error_message
             {
                 "inputs": [
                     {
-                        "messages": [{"content": "What is MLflow?", "role": "user"}],
+                        "messages": [{"content": "What is QCFlow?", "role": "user"}],
                         "max_tokens": 10,
                     },
                     {
@@ -2084,12 +2084,12 @@ def test_evaluate_on_model_endpoint_invalid_input_data(input_data, error_message
         # Case 4: DataFrame with a column of strings
         pd.DataFrame(
             {
-                "inputs": ["What is MLflow?", "What is Spark?"],
+                "inputs": ["What is QCFlow?", "What is Spark?"],
             }
         ),
     ],
 )
-@mock.patch("mlflow.deployments.get_deploy_client")
+@mock.patch("qcflow.deployments.get_deploy_client")
 def test_model_from_deployment_endpoint(mock_deploy_client, model_input):
     mock_deploy_client.return_value.predict.return_value = _DUMMY_CHAT_RESPONSE
     mock_deploy_client.return_value.get_endpoint.return_value = {"task": "llm/v1/chat"}
@@ -2109,19 +2109,19 @@ def test_model_from_deployment_endpoint(mock_deploy_client, model_input):
 
 def test_import_evaluation_dataset():
     # This test is to validate both imports work at the same time
-    from mlflow.models.evaluation import EvaluationDataset
-    from mlflow.models.evaluation.base import EvaluationDataset  # noqa: F401
+    from qcflow.models.evaluation import EvaluationDataset
+    from qcflow.models.evaluation.base import EvaluationDataset  # noqa: F401
 
 
 def test_evaluate_shows_server_stdout_and_stderr_on_error(
     linear_regressor_model_uri, diabetes_dataset
 ):
-    with mlflow.start_run():
+    with qcflow.start_run():
         server_proc = subprocess.Popen(
             ["echo", "test1324"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         )
         with mock.patch(
-            "mlflow.pyfunc.backend.PyFuncBackend.serve",
+            "qcflow.pyfunc.backend.PyFuncBackend.serve",
             return_value=server_proc,
         ) as mock_serve:
             with pytest.raises(MlflowException, match="test1324"):
@@ -2137,7 +2137,7 @@ def test_evaluate_shows_server_stdout_and_stderr_on_error(
 
 
 def test_env_manager_set_on_served_pyfunc_model(multiclass_logistic_regressor_model_uri):
-    model = mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
     client = ScoringServerClient("127.0.0.1", "8080")
     served_model_1 = _ServedPyFuncModel(model_meta=model.metadata, client=client, server_pid=1)
     served_model_1.env_manager = "virtualenv"

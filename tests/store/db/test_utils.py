@@ -4,17 +4,17 @@ import pytest
 from sqlalchemy.pool import NullPool
 from sqlalchemy.pool.impl import QueuePool
 
-from mlflow.store.db import utils
+from qcflow.store.db import utils
 
 
 def test_create_sqlalchemy_engine_inject_pool_options(monkeypatch):
     monkeypatch.setenvs(
         {
-            "MLFLOW_SQLALCHEMYSTORE_POOL_SIZE": "2",
-            "MLFLOW_SQLALCHEMYSTORE_POOL_RECYCLE": "3600",
-            "MLFLOW_SQLALCHEMYSTORE_MAX_OVERFLOW": "4",
-            "MLFLOW_SQLALCHEMYSTORE_ECHO": "TRUE",
-            "MLFLOW_SQLALCHEMYSTORE_POOLCLASS": "QueuePool",
+            "QCFLOW_SQLALCHEMYSTORE_POOL_SIZE": "2",
+            "QCFLOW_SQLALCHEMYSTORE_POOL_RECYCLE": "3600",
+            "QCFLOW_SQLALCHEMYSTORE_MAX_OVERFLOW": "4",
+            "QCFLOW_SQLALCHEMYSTORE_ECHO": "TRUE",
+            "QCFLOW_SQLALCHEMYSTORE_POOLCLASS": "QueuePool",
         },
     )
     with mock.patch("sqlalchemy.create_engine") as mock_create_engine:
@@ -31,7 +31,7 @@ def test_create_sqlalchemy_engine_inject_pool_options(monkeypatch):
 
 
 def test_create_sqlalchemy_engine_null_pool(monkeypatch):
-    monkeypatch.setenv("MLFLOW_SQLALCHEMYSTORE_POOLCLASS", "NullPool")
+    monkeypatch.setenv("QCFLOW_SQLALCHEMYSTORE_POOLCLASS", "NullPool")
     with mock.patch("sqlalchemy.create_engine") as mock_create_engine:
         utils.create_sqlalchemy_engine("mydb://host:port/")
         mock_create_engine.assert_called_once_with(
@@ -42,14 +42,14 @@ def test_create_sqlalchemy_engine_null_pool(monkeypatch):
 
 
 def test_create_sqlalchemy_engine_invalid_pool(monkeypatch):
-    monkeypatch.setenv("MLFLOW_SQLALCHEMYSTORE_POOLCLASS", "SomethingInvalid")
+    monkeypatch.setenv("QCFLOW_SQLALCHEMYSTORE_POOLCLASS", "SomethingInvalid")
     with mock.patch("sqlalchemy.create_engine"):
         with pytest.raises(ValueError, match=r"Invalid poolclass parameter.*"):
             utils.create_sqlalchemy_engine("mydb://host:port/")
 
 
 def test_create_sqlalchemy_engine_no_pool_options(monkeypatch):
-    monkeypatch.delenv("MLFLOW_SQLALCHEMYSTORE_POOLCLASS", raising=False)
+    monkeypatch.delenv("QCFLOW_SQLALCHEMYSTORE_POOLCLASS", raising=False)
     with mock.patch("sqlalchemy.create_engine") as mock_create_engine:
         utils.create_sqlalchemy_engine("mydb://host:port/")
         mock_create_engine.assert_called_once_with("mydb://host:port/", pool_pre_ping=True)
@@ -65,7 +65,7 @@ def test_create_sqlalchemy_engine_with_retry_success():
     with (
         mock.patch("sqlalchemy.inspect") as mock_sqlalchemy_inspect,
         mock.patch(
-            "mlflow.store.db.utils.create_sqlalchemy_engine", return_value="Engine"
+            "qcflow.store.db.utils.create_sqlalchemy_engine", return_value="Engine"
         ) as mock_create_sqlalchemy_engine,
         mock.patch("time.sleep") as mock_sleep,
     ):
@@ -80,7 +80,7 @@ def test_create_sqlalchemy_engine_with_retry_success_after_third_call():
     with (
         mock.patch("sqlalchemy.inspect", side_effect=[Exception, Exception, "Inspect"]),
         mock.patch(
-            "mlflow.store.db.utils.create_sqlalchemy_engine", return_value="Engine"
+            "qcflow.store.db.utils.create_sqlalchemy_engine", return_value="Engine"
         ) as mock_create_sqlalchemy_engine,
         mock.patch("time.sleep"),
     ):
@@ -93,7 +93,7 @@ def test_create_sqlalchemy_engine_with_retry_fail():
     with (
         mock.patch("sqlalchemy.inspect", side_effect=[Exception("failed")] * utils.MAX_RETRY_COUNT),
         mock.patch(
-            "mlflow.store.db.utils.create_sqlalchemy_engine", return_value="Engine"
+            "qcflow.store.db.utils.create_sqlalchemy_engine", return_value="Engine"
         ) as mock_create_sqlalchemy_engine,
         mock.patch("time.sleep"),
     ):

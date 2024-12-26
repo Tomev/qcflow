@@ -21,7 +21,7 @@ export const ModelVersionAliasTag = ({
   const { theme } = useDesignSystemTheme();
   return (
     <Tag
-      componentId="codegen_mlflow_app_src_model-registry_components_aliases_modelversionaliastag.tsx_23"
+      componentId="codegen_qcflow_app_src_model-registry_components_aliases_modelversionaliastag.tsx_23"
       css={{
         fontWeight: theme.typography.typographyBoldFontWeight,
         marginRight: theme.spacing.xs,

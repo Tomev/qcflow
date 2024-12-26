@@ -3,11 +3,11 @@ import re
 from typing import Any
 from urllib.parse import urlparse
 
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.utils.file_utils import create_tmp_dir
-from mlflow.utils.rest_utils import augmented_raise_for_status, cloud_storage_http_request
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.utils.file_utils import create_tmp_dir
+from qcflow.utils.rest_utils import augmented_raise_for_status, cloud_storage_http_request
 
 
 def _is_path(filename: str) -> bool:

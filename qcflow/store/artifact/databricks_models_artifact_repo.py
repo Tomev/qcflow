@@ -4,37 +4,37 @@ import os
 import posixpath
 from typing import Optional
 
-import mlflow.tracking
-from mlflow.entities import FileInfo
-from mlflow.environment_variables import (
-    MLFLOW_ENABLE_MULTIPART_DOWNLOAD,
-    MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE,
+import qcflow.tracking
+from qcflow.entities import FileInfo
+from qcflow.environment_variables import (
+    QCFLOW_ENABLE_MULTIPART_DOWNLOAD,
+    QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.store.artifact.utils.models import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.store.artifact.utils.models import (
     get_model_name_and_version,
     is_using_databricks_registry,
 )
-from mlflow.utils.databricks_utils import (
+from qcflow.utils.databricks_utils import (
     get_databricks_host_creds,
     warn_on_deprecated_cross_workspace_registry_uri,
 )
-from mlflow.utils.file_utils import (
+from qcflow.utils.file_utils import (
     download_chunk_retries,
     download_file_using_http_uri,
     parallelized_download_file_using_http_uri,
     remove_on_error,
 )
-from mlflow.utils.rest_utils import http_request
-from mlflow.utils.uri import get_databricks_profile_uri_from_artifact_uri
+from qcflow.utils.rest_utils import http_request
+from qcflow.utils.uri import get_databricks_profile_uri_from_artifact_uri
 
 _logger = logging.getLogger(__name__)
 # The constant REGISTRY_LIST_ARTIFACT_ENDPOINT is defined as @developer_stable
-REGISTRY_LIST_ARTIFACTS_ENDPOINT = "/api/2.0/mlflow/model-versions/list-artifacts"
+REGISTRY_LIST_ARTIFACTS_ENDPOINT = "/api/2.0/qcflow/model-versions/list-artifacts"
 # The constant REGISTRY_ARTIFACT_PRESIGNED_URI_ENDPOINT is defined as @developer_stable
-REGISTRY_ARTIFACT_PRESIGNED_URI_ENDPOINT = "/api/2.0/mlflow/model-versions/get-signed-download-uri"
+REGISTRY_ARTIFACT_PRESIGNED_URI_ENDPOINT = "/api/2.0/qcflow/model-versions/get-signed-download-uri"
 
 
 class DatabricksModelsArtifactRepository(ArtifactRepository):
@@ -42,7 +42,7 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
     Performs storage operations on artifacts controlled by a Databricks-hosted model registry.
 
     Signed access URIs for the appropriate cloud storage locations are fetched from the
-    MLflow service and used to download model artifacts.
+    QCFlow service and used to download model artifacts.
 
     The artifact_uri is expected to be of the form
     - `models:/<model_name>/<model_version>`
@@ -61,10 +61,10 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
                 error_code=INVALID_PARAMETER_VALUE,
             )
         super().__init__(artifact_uri)
-        from mlflow.tracking.client import MlflowClient
+        from qcflow.tracking.client import MlflowClient
 
         self.databricks_profile_uri = (
-            get_databricks_profile_uri_from_artifact_uri(artifact_uri) or mlflow.get_registry_uri()
+            get_databricks_profile_uri_from_artifact_uri(artifact_uri) or qcflow.get_registry_uri()
         )
         warn_on_deprecated_cross_workspace_registry_uri(self.databricks_profile_uri)
         client = MlflowClient(registry_uri=self.databricks_profile_uri)
@@ -144,7 +144,7 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
     def _parallelized_download_from_cloud(
         self, signed_uri, headers, file_size, dst_local_file_path, dst_run_relative_artifact_path
     ):
-        from mlflow.utils.databricks_utils import get_databricks_env_vars
+        from qcflow.utils.databricks_utils import get_databricks_env_vars
 
         with remove_on_error(dst_local_file_path):
             parallel_download_subproc_env = os.environ.copy()
@@ -159,7 +159,7 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
                 file_size=file_size,
                 # URI type is not known in this context
                 uri_type=None,
-                chunk_size=MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get(),
+                chunk_size=QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get(),
                 env=parallel_download_subproc_env,
                 headers=headers,
             )
@@ -188,11 +188,11 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
                 headers = self._extract_headers_from_signed_url(raw_headers)
             if (
                 not file_size
-                or file_size <= MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get()
-                or not MLFLOW_ENABLE_MULTIPART_DOWNLOAD.get()
+                or file_size <= QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get()
+                or not QCFLOW_ENABLE_MULTIPART_DOWNLOAD.get()
             ):
                 download_file_using_http_uri(
-                    signed_uri, local_path, MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get(), headers
+                    signed_uri, local_path, QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get(), headers
                 )
             else:
                 self._parallelized_download_from_cloud(

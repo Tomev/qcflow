@@ -5,10 +5,10 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities import FileInfo
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.utils.file_utils import TempDir
+from qcflow.entities import FileInfo
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.utils.file_utils import TempDir
 
 from tests.utils.test_logging_utils import logger, reset_logging_level  # noqa F401
 

@@ -1,16 +1,16 @@
 from abc import ABCMeta, abstractmethod
 
-from mlflow.utils.annotations import developer_stable
+from qcflow.utils.annotations import developer_stable
 
 
 @developer_stable
 class RequestHeaderProvider:
     """
     Abstract base class for specifying custom request headers to add to outgoing requests
-    (e.g. request headers specifying the environment from which mlflow is running).
+    (e.g. request headers specifying the environment from which qcflow is running).
 
-    When a request is sent, MLflow will iterate through all registered RequestHeaderProviders.
-    For each provider where ``in_context`` returns ``True``, MLflow calls the ``request_headers``
+    When a request is sent, QCFlow will iterate through all registered RequestHeaderProviders.
+    For each provider where ``in_context`` returns ``True``, QCFlow calls the ``request_headers``
     method on the provider to compute request headers.
 
     All resulting request headers will then be merged together and sent with the request.
@@ -20,7 +20,7 @@ class RequestHeaderProvider:
 
     @abstractmethod
     def in_context(self):
-        """Determine if MLflow is running in this context.
+        """Determine if QCFlow is running in this context.
 
         Returns:
             bool indicating if in this context.

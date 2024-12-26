@@ -5,11 +5,11 @@ import os
 
 import yaml
 
-from mlflow.environment_variables import MLFLOW_CONDA_CREATE_ENV_CMD, MLFLOW_CONDA_HOME
-from mlflow.exceptions import ExecutionException
-from mlflow.utils import process
-from mlflow.utils.environment import Environment
-from mlflow.utils.os import is_windows
+from qcflow.environment_variables import QCFLOW_CONDA_CREATE_ENV_CMD, QCFLOW_CONDA_HOME
+from qcflow.exceptions import ExecutionException
+from qcflow.utils import process
+from qcflow.utils.environment import Environment
+from qcflow.utils.os import is_windows
 
 _logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ CONDA_EXE = "CONDA_EXE"
 
 def get_conda_command(conda_env_name):
     #  Checking for newer conda versions
-    if not is_windows() and (CONDA_EXE in os.environ or MLFLOW_CONDA_HOME.defined):
+    if not is_windows() and (CONDA_EXE in os.environ or QCFLOW_CONDA_HOME.defined):
         conda_path = get_conda_bin_executable("conda")
         activate_conda_env = [f"source {os.path.dirname(conda_path)}/../etc/profile.d/conda.sh"]
         activate_conda_env += [f"conda activate {conda_env_name} 1>&2"]
@@ -39,11 +39,11 @@ def get_conda_bin_executable(executable_name):
     subdirectory of a conda installation.
 
     The conda home directory (expected to contain a 'bin' subdirectory) is configurable via the
-    ``mlflow.projects.MLFLOW_CONDA_HOME`` environment variable. If
-    ``mlflow.projects.MLFLOW_CONDA_HOME`` is unspecified, this method simply returns the passed-in
+    ``qcflow.projects.QCFLOW_CONDA_HOME`` environment variable. If
+    ``qcflow.projects.QCFLOW_CONDA_HOME`` is unspecified, this method simply returns the passed-in
     executable name.
     """
-    if conda_home := MLFLOW_CONDA_HOME.get():
+    if conda_home := QCFLOW_CONDA_HOME.get():
         return os.path.join(conda_home, f"bin/{executable_name}")
     # Use CONDA_EXE as per https://github.com/conda/conda/issues/7126
     if conda_exe := os.getenv(CONDA_EXE):
@@ -62,12 +62,12 @@ def _get_conda_env_name(conda_env_path, env_id=None, env_root_dir=None):
     if env_id:
         conda_env_contents += env_id
 
-    env_name = "mlflow-{}".format(
+    env_name = "qcflow-{}".format(
         hashlib.sha1(conda_env_contents.encode("utf-8"), usedforsecurity=False).hexdigest()
     )
     if env_root_dir:
         env_root_dir = os.path.normpath(env_root_dir)
-        # Generate env name with format "mlflow-{conda_env_contents_hash}-{env_root_dir_hash}"
+        # Generate env name with format "qcflow-{conda_env_contents_hash}-{env_root_dir_hash}"
         # hashing `conda_env_contents` and `env_root_dir` separately helps debugging
         env_name += "-{}".format(
             hashlib.sha1(env_root_dir.encode("utf-8"), usedforsecurity=False).hexdigest()
@@ -83,7 +83,7 @@ def _get_conda_executable_for_create_env():
 
     """
 
-    return get_conda_bin_executable(MLFLOW_CONDA_CREATE_ENV_CMD.get())
+    return get_conda_bin_executable(QCFLOW_CONDA_CREATE_ENV_CMD.get())
 
 
 def _list_conda_environments(extra_env=None):
@@ -249,8 +249,8 @@ def get_or_create_conda_env(
             "Ensure Conda is installed as per the instructions at "
             "https://conda.io/projects/conda/en/latest/"
             "user-guide/install/index.html. "
-            "You can also configure MLflow to look for a specific "
-            f"Conda executable by setting the {MLFLOW_CONDA_HOME} environment variable "
+            "You can also configure QCFlow to look for a specific "
+            f"Conda executable by setting the {QCFLOW_CONDA_HOME} environment variable "
             "to the path of the Conda executable"
         )
 
@@ -261,11 +261,11 @@ def get_or_create_conda_env(
         )
     except OSError:
         raise ExecutionException(
-            f"You have set the env variable {MLFLOW_CONDA_CREATE_ENV_CMD}, but "
+            f"You have set the env variable {QCFLOW_CONDA_CREATE_ENV_CMD}, but "
             f"{conda_env_create_path} does not exist or it is not working properly. "
             f"Note that {conda_env_create_path} and the conda executable need to be "
             "in the same conda environment. You can change the search path by"
-            f"modifying the env variable {MLFLOW_CONDA_HOME}"
+            f"modifying the env variable {QCFLOW_CONDA_HOME}"
         )
 
     conda_extra_env_vars = _get_conda_extra_env_vars(env_root_dir)

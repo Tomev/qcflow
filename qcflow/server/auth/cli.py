@@ -1,6 +1,6 @@
 import click
 
-from mlflow.server.auth.db import cli as db_cli
+from qcflow.server.auth.db import cli as db_cli
 
 
 @click.group()

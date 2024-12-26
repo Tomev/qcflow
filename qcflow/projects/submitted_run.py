@@ -3,8 +3,8 @@ import os
 import signal
 from abc import abstractmethod
 
-from mlflow.entities import RunStatus
-from mlflow.utils.annotations import developer_stable
+from qcflow.entities import RunStatus
+from qcflow.utils.annotations import developer_stable
 
 _logger = logging.getLogger(__name__)
 
@@ -12,9 +12,9 @@ _logger = logging.getLogger(__name__)
 @developer_stable
 class SubmittedRun:
     """
-    Wrapper around an MLflow project run (e.g. a subprocess running an entry point
+    Wrapper around an QCFlow project run (e.g. a subprocess running an entry point
     command or a Databricks job run) and exposing methods for waiting on and cancelling the run.
-    This class defines the interface that the MLflow project runner uses to manage the lifecycle
+    This class defines the interface that the QCFlow project runner uses to manage the lifecycle
     of runs launched in different environments (e.g. runs launched locally or on Databricks).
 
     ``SubmittedRun`` is not thread-safe. That is, concurrent calls to wait() / cancel()
@@ -24,7 +24,7 @@ class SubmittedRun:
     NOTE:
 
         Subclasses of ``SubmittedRun`` must expose a ``run_id`` member containing the
-        run's MLflow run ID.
+        run's QCFlow run ID.
     """
 
     @abstractmethod
@@ -32,7 +32,7 @@ class SubmittedRun:
         """
         Wait for the run to finish, returning True if the run succeeded and false otherwise. Note
         that in some cases (e.g. remote execution on Databricks), we may wait until the remote job
-        completes rather than until the MLflow run completes.
+        completes rather than until the QCFlow run completes.
         """
 
     @abstractmethod
@@ -45,7 +45,7 @@ class SubmittedRun:
     def cancel(self):
         """
         Cancel the run (interrupts the command subprocess, cancels the Databricks run, etc) and
-        waits for it to terminate. The MLflow run status may not be set correctly
+        waits for it to terminate. The QCFlow run status may not be set correctly
         upon run cancellation.
         """
 
@@ -87,7 +87,7 @@ class LocalSubmittedRun(SubmittedRun):
                 # The child process may have exited before we attempted to terminate it, so we
                 # ignore OSErrors raised during child process termination
                 _logger.info(
-                    "Failed to terminate child process (PID %s) corresponding to MLflow "
+                    "Failed to terminate child process (PID %s) corresponding to QCFlow "
                     "run with ID %s. The process may have already exited.",
                     self.command_proc.pid,
                     self._run_id,

@@ -1,7 +1,7 @@
-mlflow.johnsnowlabs
+qcflow.johnsnowlabs
 ===================
 
-.. automodule:: mlflow.johnsnowlabs
+.. automodule:: qcflow.johnsnowlabs
     :members:
     :undoc-members:
     :show-inheritance:

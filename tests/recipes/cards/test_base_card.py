@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.cards import BaseCard, CardTab
+from qcflow.exceptions import MlflowException
+from qcflow.recipes.cards import BaseCard, CardTab
 
 
 def test_verify_card_information():

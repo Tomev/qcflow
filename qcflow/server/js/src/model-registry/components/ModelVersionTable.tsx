@@ -306,7 +306,7 @@ export const ModelVersionTable = ({
 
   const paginationComponent = (
     <Pagination
-      componentId="codegen_mlflow_app_src_model-registry_components_modelversiontable.tsx_403"
+      componentId="codegen_qcflow_app_src_model-registry_components_modelversiontable.tsx_403"
       currentPageIndex={pagination.pageIndex + 1}
       numTotal={(versions || []).length}
       onChange={(page, pageSize) => {
@@ -329,7 +329,7 @@ export const ModelVersionTable = ({
           values={{
             link: (chunks) => (
               <Typography.Link
-                componentId="codegen_mlflow_app_src_model-registry_components_modelversiontable.tsx_425"
+                componentId="codegen_qcflow_app_src_model-registry_components_modelversiontable.tsx_425"
                 target="_blank"
                 href={getLearnMoreLinkUrl()}
               >
@@ -354,14 +354,14 @@ export const ModelVersionTable = ({
       >
         <TableRow isHeader>
           <TableRowSelectCell
-            componentId="codegen_mlflow_app_src_model-registry_components_modelversiontable.tsx_450"
+            componentId="codegen_qcflow_app_src_model-registry_components_modelversiontable.tsx_450"
             checked={table.getIsAllRowsSelected()}
             indeterminate={table.getIsSomeRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
           />
           {table.getLeafHeaders().map((header) => (
             <TableHeader
-              componentId="codegen_mlflow_app_src_model-registry_components_modelversiontable.tsx_458"
+              componentId="codegen_qcflow_app_src_model-registry_components_modelversiontable.tsx_458"
               multiline={false}
               key={header.id}
               sortable={header.column.getCanSort()}
@@ -383,7 +383,7 @@ export const ModelVersionTable = ({
             }}
           >
             <TableRowSelectCell
-              componentId="codegen_mlflow_app_src_model-registry_components_modelversiontable.tsx_477"
+              componentId="codegen_qcflow_app_src_model-registry_components_modelversiontable.tsx_477"
               checked={row.getIsSelected()}
               onChange={row.getToggleSelectedHandler()}
             />

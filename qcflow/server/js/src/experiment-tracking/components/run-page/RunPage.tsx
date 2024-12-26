@@ -28,7 +28,7 @@ import {
   shouldEnableRunDetailsPageTracesTab,
   shouldUseUnifiedRunCharts,
   shouldEnableGraphQLRunDetailsPage,
-} from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+} from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 import { useMediaQuery } from '@databricks/web-shared/hooks';
 import { RunViewTracesTab } from './RunViewTracesTab';
 import { getGraphQLErrorMessage } from '../../../graphql/get-graphql-error';

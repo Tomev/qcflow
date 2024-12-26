@@ -1,14 +1,14 @@
 import os
 
-from mlflow.deployments import BaseDeploymentClient
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.utils.openai_utils import (
+from qcflow.deployments import BaseDeploymentClient
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.utils.openai_utils import (
     _OAITokenHolder,
     _OpenAIApiConfig,
     _OpenAIEnvVar,
 )
-from mlflow.utils.rest_utils import augmented_raise_for_status
+from qcflow.utils.rest_utils import augmented_raise_for_status
 
 
 class OpenAIDeploymentClient(BaseDeploymentClient):
@@ -25,14 +25,14 @@ class OpenAIDeploymentClient(BaseDeploymentClient):
 
     .. seealso::
 
-        See https://mlflow.org/docs/latest/python_api/openai/index.html for other authentication
+        See https://qcflow.org/docs/latest/python_api/openai/index.html for other authentication
         methods.
 
     Then, create a deployment client and use it to interact with OpenAI endpoints:
 
     .. code-block:: python
 
-        from mlflow.deployments import get_deploy_client
+        from qcflow.deployments import get_deploy_client
 
         client = get_deploy_client("openai")
         client.predict(

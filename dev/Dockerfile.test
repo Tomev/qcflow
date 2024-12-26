@@ -27,7 +27,7 @@ RUN \
 ADD . /app
 
 RUN \
-    # install mlflow in editable form
+    # install qcflow in editable form
     pip install --no-cache-dir -e .
 
 RUN \
@@ -36,10 +36,10 @@ RUN \
 
 RUN \
     # adding an unprivileged user
-    groupadd --gid 10001 mlflow && \
-    useradd --uid 10001 --gid mlflow --shell /bin/bash --create-home mlflow
+    groupadd --gid 10001 qcflow && \
+    useradd --uid 10001 --gid qcflow --shell /bin/bash --create-home qcflow
 
-# the "mlflow" user created above, represented numerically for optimal compatibility with Kubernetes security policies
+# the "qcflow" user created above, represented numerically for optimal compatibility with Kubernetes security policies
 USER 10001
 
 CMD ["bash"]

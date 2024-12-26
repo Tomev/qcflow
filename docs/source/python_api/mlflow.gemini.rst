@@ -1,7 +1,7 @@
-mlflow.gemini
+qcflow.gemini
 ==============
 
-.. automodule:: mlflow.gemini
+.. automodule:: qcflow.gemini
     :members:
     :undoc-members:
     :show-inheritance:

@@ -9,7 +9,7 @@
 NOTE: The contents of this file have been inlined from the gorilla package's source code
 https://github.com/christophercrouzet/gorilla/blob/v0.3.0/gorilla.py
 
-This module has fixes / adaptations for MLflow use cases that make it different from the original
+This module has fixes / adaptations for QCFlow use cases that make it different from the original
 gorilla library
 
 The following modifications have been made:

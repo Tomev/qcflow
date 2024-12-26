@@ -3,9 +3,9 @@ import logging
 import sys
 from typing import Any, Optional
 
-from mlflow.exceptions import BAD_REQUEST, MlflowException
-from mlflow.models import EvaluationMetric, make_metric
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.exceptions import BAD_REQUEST, MlflowException
+from qcflow.models import EvaluationMetric, make_metric
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 _logger = logging.getLogger(__name__)
 
@@ -139,7 +139,7 @@ def _get_model_type_from_template(tmpl: str) -> str:
         tmpl: The template kind, e.g. `regression/v1`.
 
     Returns:
-        A model type literal compatible with the mlflow evaluation service, e.g. regressor.
+        A model type literal compatible with the qcflow evaluation service, e.g. regressor.
     """
     if tmpl == "regression/v1":
         return "regressor"
@@ -157,7 +157,7 @@ def _get_builtin_metrics(ext_task: str) -> dict[str, str]:  # noqa: D417
         tmpl: The template kind, e.g. `regression/v1`.
 
     Returns:
-        The builtin metrics for the mlflow evaluation service for the model type for
+        The builtin metrics for the qcflow evaluation service for the model type for
         this template.
     """
     if ext_task == "regression":

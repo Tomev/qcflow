@@ -1,38 +1,38 @@
 """
-The ``mlflow`` module provides a high-level "fluent" API for starting and managing MLflow runs.
+The ``qcflow`` module provides a high-level "fluent" API for starting and managing QCFlow runs.
 For example:
 
 .. code:: python
 
-    import mlflow
+    import qcflow
 
-    mlflow.start_run()
-    mlflow.log_param("my", "param")
-    mlflow.log_metric("score", 100)
-    mlflow.end_run()
+    qcflow.start_run()
+    qcflow.log_param("my", "param")
+    qcflow.log_metric("score", 100)
+    qcflow.end_run()
 
 You can also use the context manager syntax like this:
 
 .. code:: python
 
-    with mlflow.start_run() as run:
-        mlflow.log_param("my", "param")
-        mlflow.log_metric("score", 100)
+    with qcflow.start_run() as run:
+        qcflow.log_param("my", "param")
+        qcflow.log_metric("score", 100)
 
 which automatically terminates the run at the end of the ``with`` block.
 
 The fluent tracking API is not currently threadsafe. Any concurrent callers to the tracking API must
 implement mutual exclusion manually.
 
-For a lower level API, see the :py:mod:`mlflow.client` module.
+For a lower level API, see the :py:mod:`qcflow.client` module.
 """
 
 import contextlib
 
-from mlflow.version import VERSION
+from qcflow.version import VERSION
 
 __version__ = VERSION
-from mlflow import (
+from qcflow import (
     artifacts,  # noqa: F401
     client,  # noqa: F401
     config,  # noqa: F401
@@ -43,64 +43,64 @@ from mlflow import (
     tracing,  # noqa: F401
     tracking,  # noqa: F401
 )
-from mlflow.environment_variables import MLFLOW_CONFIGURE_LOGGING
-from mlflow.utils.lazy_load import LazyLoader
-from mlflow.utils.logging_utils import _configure_mlflow_loggers
+from qcflow.environment_variables import QCFLOW_CONFIGURE_LOGGING
+from qcflow.utils.lazy_load import LazyLoader
+from qcflow.utils.logging_utils import _configure_qcflow_loggers
 
-# Lazily load mlflow flavors to avoid excessive dependencies.
-anthropic = LazyLoader("mlflow.anthropic", globals(), "mlflow.anthropic")
-autogen = LazyLoader("mlflow.autogen", globals(), "mlflow.autogen")
-bedrock = LazyLoader("mlflow.bedrock", globals(), "mlflow.bedrock")
-catboost = LazyLoader("mlflow.catboost", globals(), "mlflow.catboost")
-crewai = LazyLoader("mlflow.crewai", globals(), "mlflow.crewai")
-diviner = LazyLoader("mlflow.diviner", globals(), "mlflow.diviner")
-dspy = LazyLoader("mlflow.dspy", globals(), "mlflow.dspy")
-fastai = LazyLoader("mlflow.fastai", globals(), "mlflow.fastai")
-gemini = LazyLoader("mlflow.gemini", globals(), "mlflow.gemini")
-h2o = LazyLoader("mlflow.h2o", globals(), "mlflow.h2o")
-johnsnowlabs = LazyLoader("mlflow.johnsnowlabs", globals(), "mlflow.johnsnowlabs")
-keras = LazyLoader("mlflow.keras", globals(), "mlflow.keras")
-langchain = LazyLoader("mlflow.langchain", globals(), "mlflow.langchain")
-lightgbm = LazyLoader("mlflow.lightgbm", globals(), "mlflow.lightgbm")
-litellm = LazyLoader("mlflow.litellm", globals(), "mlflow.litellm")
-llama_index = LazyLoader("mlflow.llama_index", globals(), "mlflow.llama_index")
-llm = LazyLoader("mlflow.llm", globals(), "mlflow.llm")
-metrics = LazyLoader("mlflow.metrics", globals(), "mlflow.metrics")
-mleap = LazyLoader("mlflow.mleap", globals(), "mlflow.mleap")
-onnx = LazyLoader("mlflow.onnx", globals(), "mlflow.onnx")
-openai = LazyLoader("mlflow.openai", globals(), "mlflow.openai")
-paddle = LazyLoader("mlflow.paddle", globals(), "mlflow.paddle")
-pmdarima = LazyLoader("mlflow.pmdarima", globals(), "mlflow.pmdarima")
-promptflow = LazyLoader("mlflow.promptflow", globals(), "mlflow.promptflow")
-prophet = LazyLoader("mlflow.prophet", globals(), "mlflow.prophet")
-promptlab = LazyLoader("mlflow.promptlab", globals(), "mlflow.promptlab")
-pyfunc = LazyLoader("mlflow.pyfunc", globals(), "mlflow.pyfunc")
-pyspark = LazyLoader("mlflow.pyspark", globals(), "mlflow.pyspark")
-pytorch = LazyLoader("mlflow.pytorch", globals(), "mlflow.pytorch")
-rfunc = LazyLoader("mlflow.rfunc", globals(), "mlflow.rfunc")
-recipes = LazyLoader("mlflow.recipes", globals(), "mlflow.recipes")
+# Lazily load qcflow flavors to avoid excessive dependencies.
+anthropic = LazyLoader("qcflow.anthropic", globals(), "qcflow.anthropic")
+autogen = LazyLoader("qcflow.autogen", globals(), "qcflow.autogen")
+bedrock = LazyLoader("qcflow.bedrock", globals(), "qcflow.bedrock")
+catboost = LazyLoader("qcflow.catboost", globals(), "qcflow.catboost")
+crewai = LazyLoader("qcflow.crewai", globals(), "qcflow.crewai")
+diviner = LazyLoader("qcflow.diviner", globals(), "qcflow.diviner")
+dspy = LazyLoader("qcflow.dspy", globals(), "qcflow.dspy")
+fastai = LazyLoader("qcflow.fastai", globals(), "qcflow.fastai")
+gemini = LazyLoader("qcflow.gemini", globals(), "qcflow.gemini")
+h2o = LazyLoader("qcflow.h2o", globals(), "qcflow.h2o")
+johnsnowlabs = LazyLoader("qcflow.johnsnowlabs", globals(), "qcflow.johnsnowlabs")
+keras = LazyLoader("qcflow.keras", globals(), "qcflow.keras")
+langchain = LazyLoader("qcflow.langchain", globals(), "qcflow.langchain")
+lightgbm = LazyLoader("qcflow.lightgbm", globals(), "qcflow.lightgbm")
+litellm = LazyLoader("qcflow.litellm", globals(), "qcflow.litellm")
+llama_index = LazyLoader("qcflow.llama_index", globals(), "qcflow.llama_index")
+llm = LazyLoader("qcflow.llm", globals(), "qcflow.llm")
+metrics = LazyLoader("qcflow.metrics", globals(), "qcflow.metrics")
+mleap = LazyLoader("qcflow.mleap", globals(), "qcflow.mleap")
+onnx = LazyLoader("qcflow.onnx", globals(), "qcflow.onnx")
+openai = LazyLoader("qcflow.openai", globals(), "qcflow.openai")
+paddle = LazyLoader("qcflow.paddle", globals(), "qcflow.paddle")
+pmdarima = LazyLoader("qcflow.pmdarima", globals(), "qcflow.pmdarima")
+promptflow = LazyLoader("qcflow.promptflow", globals(), "qcflow.promptflow")
+prophet = LazyLoader("qcflow.prophet", globals(), "qcflow.prophet")
+promptlab = LazyLoader("qcflow.promptlab", globals(), "qcflow.promptlab")
+pyfunc = LazyLoader("qcflow.pyfunc", globals(), "qcflow.pyfunc")
+pyspark = LazyLoader("qcflow.pyspark", globals(), "qcflow.pyspark")
+pytorch = LazyLoader("qcflow.pytorch", globals(), "qcflow.pytorch")
+rfunc = LazyLoader("qcflow.rfunc", globals(), "qcflow.rfunc")
+recipes = LazyLoader("qcflow.recipes", globals(), "qcflow.recipes")
 sentence_transformers = LazyLoader(
-    "mlflow.sentence_transformers",
+    "qcflow.sentence_transformers",
     globals(),
-    "mlflow.sentence_transformers",
+    "qcflow.sentence_transformers",
 )
-shap = LazyLoader("mlflow.shap", globals(), "mlflow.shap")
-sklearn = LazyLoader("mlflow.sklearn", globals(), "mlflow.sklearn")
-spacy = LazyLoader("mlflow.spacy", globals(), "mlflow.spacy")
-spark = LazyLoader("mlflow.spark", globals(), "mlflow.spark")
-statsmodels = LazyLoader("mlflow.statsmodels", globals(), "mlflow.statsmodels")
-tensorflow = LazyLoader("mlflow.tensorflow", globals(), "mlflow.tensorflow")
-transformers = LazyLoader("mlflow.transformers", globals(), "mlflow.transformers")
-xgboost = LazyLoader("mlflow.xgboost", globals(), "mlflow.xgboost")
+shap = LazyLoader("qcflow.shap", globals(), "qcflow.shap")
+sklearn = LazyLoader("qcflow.sklearn", globals(), "qcflow.sklearn")
+spacy = LazyLoader("qcflow.spacy", globals(), "qcflow.spacy")
+spark = LazyLoader("qcflow.spark", globals(), "qcflow.spark")
+statsmodels = LazyLoader("qcflow.statsmodels", globals(), "qcflow.statsmodels")
+tensorflow = LazyLoader("qcflow.tensorflow", globals(), "qcflow.tensorflow")
+transformers = LazyLoader("qcflow.transformers", globals(), "qcflow.transformers")
+xgboost = LazyLoader("qcflow.xgboost", globals(), "qcflow.xgboost")
 
-if MLFLOW_CONFIGURE_LOGGING.get() is True:
-    _configure_mlflow_loggers(root_module_name=__name__)
+if QCFLOW_CONFIGURE_LOGGING.get() is True:
+    _configure_qcflow_loggers(root_module_name=__name__)
 
-from mlflow.client import MlflowClient
+from qcflow.client import MlflowClient
 
 # For backward compatibility, we expose the following functions and classes at the top level in
-# addition to `mlflow.config`.
-from mlflow.config import (
+# addition to `qcflow.config`.
+from qcflow.config import (
     disable_system_metrics_logging,
     enable_system_metrics_logging,
     get_registry_uri,
@@ -112,11 +112,11 @@ from mlflow.config import (
     set_system_metrics_sampling_interval,
     set_tracking_uri,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.models import evaluate
-from mlflow.models.evaluation.validation import validate_evaluation_results
-from mlflow.projects import run
-from mlflow.tracing.fluent import (
+from qcflow.exceptions import MlflowException
+from qcflow.models import evaluate
+from qcflow.models.evaluation.validation import validate_evaluation_results
+from qcflow.projects import run
+from qcflow.tracing.fluent import (
     add_trace,
     get_current_active_span,
     get_last_active_trace,
@@ -126,12 +126,12 @@ from mlflow.tracing.fluent import (
     trace,
     update_current_trace,
 )
-from mlflow.tracking._model_registry.fluent import (
+from qcflow.tracking._model_registry.fluent import (
     register_model,
     search_model_versions,
     search_registered_models,
 )
-from mlflow.tracking.fluent import (
+from qcflow.tracking.fluent import (
     ActiveRun,
     active_run,
     autolog,
@@ -171,10 +171,10 @@ from mlflow.tracking.fluent import (
     set_tags,
     start_run,
 )
-from mlflow.tracking.multimedia import Image
-from mlflow.utils.async_logging.run_operations import RunOperations  # noqa: F401
-from mlflow.utils.credentials import login
-from mlflow.utils.doctor import doctor
+from qcflow.tracking.multimedia import Image
+from qcflow.utils.async_logging.run_operations import RunOperations  # noqa: F401
+from qcflow.utils.credentials import login
+from qcflow.utils.doctor import doctor
 
 __all__ = [
     "ActiveRun",
@@ -249,10 +249,10 @@ __all__ = [
 ]
 
 
-# `mlflow.gateway` depends on optional dependencies such as pydantic, psutil, and has version
+# `qcflow.gateway` depends on optional dependencies such as pydantic, psutil, and has version
 # restrictions for dependencies. Importing this module fails if they are not installed or
 # if invalid versions of these required packages are installed.
 with contextlib.suppress(Exception):
-    from mlflow import gateway  # noqa: F401
+    from qcflow import gateway  # noqa: F401
 
     __all__.append("gateway")

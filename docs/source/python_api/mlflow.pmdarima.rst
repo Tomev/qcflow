@@ -1,7 +1,7 @@
-mlflow.pmdarima
+qcflow.pmdarima
 ===============
 
-.. automodule:: mlflow.pmdarima
+.. automodule:: qcflow.pmdarima
     :members:
     :undoc-members:
     :show-inheritance:

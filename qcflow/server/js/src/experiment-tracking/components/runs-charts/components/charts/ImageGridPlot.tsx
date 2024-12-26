@@ -1,17 +1,17 @@
 import { useDispatch } from 'react-redux';
 import { RunsChartsImageCardConfig, RunsChartsCardConfig } from '../../runs-charts.types';
 import { RunsChartsRunData } from '../RunsCharts.common';
-import { ThunkDispatch } from '@mlflow/mlflow/src/redux-types';
+import { ThunkDispatch } from '@qcflow/qcflow/src/redux-types';
 import { useEffect } from 'react';
-import { shouldEnableImageGridCharts } from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+import { shouldEnableImageGridCharts } from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 import { ImageGridSingleKeyPlot } from './ImageGridSingleKeyPlot';
 import { ImageGridMultipleKeyPlot } from './ImageGridMultipleKeyPlot';
 import {
   DEFAULT_IMAGE_GRID_CHART_NAME,
   LOG_IMAGE_TAG_INDICATOR,
   NUM_RUNS_TO_SUPPORT_FOR_LOG_IMAGE,
-} from '@mlflow/mlflow/src/experiment-tracking/constants';
-import { RunsGroupByConfig } from '@mlflow/mlflow/src/experiment-tracking/components/experiment-page/utils/experimentPage.group-row-utils';
+} from '@qcflow/qcflow/src/experiment-tracking/constants';
+import { RunsGroupByConfig } from '@qcflow/qcflow/src/experiment-tracking/components/experiment-page/utils/experimentPage.group-row-utils';
 
 export const ImageGridPlot = ({
   previewData,

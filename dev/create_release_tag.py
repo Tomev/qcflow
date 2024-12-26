@@ -4,20 +4,20 @@ How to test this script
 # Ensure origin points to your fork
 git remote -v | grep origin
 
-# Pretend we're releasing MLflow 9.0.0
+# Pretend we're releasing QCFlow 9.0.0
 git checkout -b branch-9.0
 
 # First, test the dry run mode
 python dev/create_release_tag.py --new-version 9.0.0 --dry-run
 git tag -d v9.0.0
 
-# Open https://github.com/<username>/mlflow/tree/v9.0.0 and verify that the tag does not exist.
+# Open https://github.com/<username>/qcflow/tree/v9.0.0 and verify that the tag does not exist.
 
 # Then, test the non-dry run mode
 python dev/create_release_tag.py --new-version 9.0.0 --no-dry-run
 git tag -d v9.0.0
 
-# Open https://github.com/<username>/mlflow/tree/v9.0.0 and verify that the tag exists now.
+# Open https://github.com/<username>/qcflow/tree/v9.0.0 and verify that the tag exists now.
 
 # Clean up the remote tag
 git push --delete origin v9.0.0

@@ -2,12 +2,12 @@ import time
 
 from pydantic import BaseModel, StrictFloat, StrictStr, ValidationError, validator
 
-from mlflow.gateway.config import MlflowModelServingConfig, RouteConfig
-from mlflow.gateway.constants import MLFLOW_SERVING_RESPONSE_KEY
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.base import BaseProvider
-from mlflow.gateway.providers.utils import send_request
-from mlflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.config import MlflowModelServingConfig, RouteConfig
+from qcflow.gateway.constants import QCFLOW_SERVING_RESPONSE_KEY
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.base import BaseProvider
+from qcflow.gateway.providers.utils import send_request
+from qcflow.gateway.schemas import chat, completions, embeddings
 
 
 class ServingTextResponse(BaseModel):
@@ -50,7 +50,7 @@ class EmbeddingsResponse(BaseModel):
 
 
 class MlflowModelServingProvider(BaseProvider):
-    NAME = "MLflow Model Serving"
+    NAME = "QCFlow Model Serving"
     CONFIG_TYPE = MlflowModelServingConfig
 
     def __init__(self, config: RouteConfig) -> None:
@@ -59,17 +59,17 @@ class MlflowModelServingProvider(BaseProvider):
             config.model.config, MlflowModelServingConfig
         ):
             raise TypeError(f"Invalid config type {config.model.config}")
-        self.mlflow_config: MlflowModelServingConfig = config.model.config
+        self.qcflow_config: MlflowModelServingConfig = config.model.config
         self.headers = {"Content-Type": "application/json"}
 
     @staticmethod
-    def _extract_mlflow_response_key(response):
-        if MLFLOW_SERVING_RESPONSE_KEY not in response:
+    def _extract_qcflow_response_key(response):
+        if QCFLOW_SERVING_RESPONSE_KEY not in response:
             raise AIGatewayException(
                 status_code=502,
-                detail=f"The response is missing the required key: {MLFLOW_SERVING_RESPONSE_KEY}.",
+                detail=f"The response is missing the required key: {QCFLOW_SERVING_RESPONSE_KEY}.",
             )
-        return response[MLFLOW_SERVING_RESPONSE_KEY]
+        return response[QCFLOW_SERVING_RESPONSE_KEY]
 
     @staticmethod
     def _process_payload(payload, key):
@@ -86,7 +86,7 @@ class MlflowModelServingProvider(BaseProvider):
         return request_payload
 
     @staticmethod
-    def _process_completions_response_for_mlflow_serving(response):
+    def _process_completions_response_for_qcflow_serving(response):
         try:
             validated_response = ServingTextResponse(**response)
             inference_data = validated_response.predictions
@@ -99,7 +99,7 @@ class MlflowModelServingProvider(BaseProvider):
         ]
 
     async def completions(self, payload: completions.RequestPayload) -> completions.ResponsePayload:
-        # Example request to MLflow REST API server for completions:
+        # Example request to QCFlow REST API server for completions:
         # {
         #     "inputs": ["hi", "hello", "bye"],
         #     "params": {
@@ -110,7 +110,7 @@ class MlflowModelServingProvider(BaseProvider):
 
         resp = await send_request(
             headers=self.headers,
-            base_url=self.mlflow_config.model_server_url,
+            base_url=self.qcflow_config.model_server_url,
             path="invocations",
             payload=self._process_payload(payload, "prompt"),
         )
@@ -122,7 +122,7 @@ class MlflowModelServingProvider(BaseProvider):
             created=int(time.time()),
             object="text_completion",
             model=self.config.model.name,
-            choices=self._process_completions_response_for_mlflow_serving(resp),
+            choices=self._process_completions_response_for_qcflow_serving(resp),
             usage=completions.CompletionsUsage(
                 prompt_tokens=None,
                 completion_tokens=None,
@@ -130,7 +130,7 @@ class MlflowModelServingProvider(BaseProvider):
             ),
         )
 
-    def _process_chat_response_for_mlflow_serving(self, response):
+    def _process_chat_response_for_qcflow_serving(self, response):
         try:
             validated_response = ServingTextResponse(**response)
             inference_data = validated_response.predictions
@@ -143,7 +143,7 @@ class MlflowModelServingProvider(BaseProvider):
         ]
 
     async def chat(self, payload: chat.RequestPayload) -> chat.ResponsePayload:
-        # Example request to MLflow REST API for chat:
+        # Example request to QCFlow REST API for chat:
         # {
         #     "inputs": ["question"],
         #     "params": ["temperature": 0.2],
@@ -155,7 +155,7 @@ class MlflowModelServingProvider(BaseProvider):
         if query_count > 1:
             raise AIGatewayException(
                 status_code=422,
-                detail="MLflow chat models are only capable of processing a single query at a "
+                detail="QCFlow chat models are only capable of processing a single query at a "
                 f"time. The request submitted consists of {query_count} queries.",
             )
 
@@ -163,7 +163,7 @@ class MlflowModelServingProvider(BaseProvider):
 
         resp = await send_request(
             headers=self.headers,
-            base_url=self.mlflow_config.model_server_url,
+            base_url=self.qcflow_config.model_server_url,
             path="invocations",
             payload=payload,
         )
@@ -182,7 +182,7 @@ class MlflowModelServingProvider(BaseProvider):
                     ),
                     finish_reason=None,
                 )
-                for idx, c in enumerate(self._process_chat_response_for_mlflow_serving(resp))
+                for idx, c in enumerate(self._process_chat_response_for_qcflow_serving(resp))
             ],
             usage=chat.ChatUsage(
                 prompt_tokens=None,
@@ -191,7 +191,7 @@ class MlflowModelServingProvider(BaseProvider):
             ),
         )
 
-    def _process_embeddings_response_for_mlflow_serving(self, response):
+    def _process_embeddings_response_for_qcflow_serving(self, response):
         try:
             validated_response = EmbeddingsResponse(**response)
             inference_data = validated_response.predictions
@@ -201,7 +201,7 @@ class MlflowModelServingProvider(BaseProvider):
         return inference_data
 
     async def embeddings(self, payload: embeddings.RequestPayload) -> embeddings.ResponsePayload:
-        # Example request to MLflow REST API server for embeddings:
+        # Example request to QCFlow REST API server for embeddings:
         # {
         #     "inputs": ["a sentence", "another sentence"],
         #     "params": {
@@ -211,7 +211,7 @@ class MlflowModelServingProvider(BaseProvider):
 
         resp = await send_request(
             headers=self.headers,
-            base_url=self.mlflow_config.model_server_url,
+            base_url=self.qcflow_config.model_server_url,
             path="invocations",
             payload=self._process_payload(payload, "input"),
         )
@@ -226,7 +226,7 @@ class MlflowModelServingProvider(BaseProvider):
                     index=idx,
                 )
                 for idx, embedding in enumerate(
-                    self._process_embeddings_response_for_mlflow_serving(resp)
+                    self._process_embeddings_response_for_qcflow_serving(resp)
                 )
             ],
             model=self.config.model.name,

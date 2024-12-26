@@ -1,5 +1,5 @@
 /**
- * MLflow Tracking provides a Java CRUD interface to MLflow Experiments and Runs --
- * to create and log to MLflow runs, use the {@link org.mlflow.tracking.MlflowContext} interface.
+ * QCFlow Tracking provides a Java CRUD interface to QCFlow Experiments and Runs --
+ * to create and log to QCFlow runs, use the {@link org.qcflow.tracking.MlflowContext} interface.
  */
-package org.mlflow.tracking;
+package org.qcflow.tracking;

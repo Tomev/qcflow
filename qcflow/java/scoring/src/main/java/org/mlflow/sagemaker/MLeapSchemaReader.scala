@@ -1,4 +1,4 @@
-package org.mlflow.sagemaker
+package org.qcflow.sagemaker
 
 import java.io.File
 import java.nio.charset.Charset

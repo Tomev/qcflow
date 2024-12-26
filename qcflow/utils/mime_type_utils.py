@@ -6,8 +6,8 @@ from mimetypes import guess_type
 # TODO: Create a module to define constants to avoid circular imports
 #  and move MLMODEL_FILE_NAME and MLPROJECT_FILE_NAME in the module.
 def get_text_extensions():
-    from mlflow.models.model import MLMODEL_FILE_NAME
-    from mlflow.projects._project_spec import MLPROJECT_FILE_NAME
+    from qcflow.models.model import MLMODEL_FILE_NAME
+    from qcflow.projects._project_spec import MLPROJECT_FILE_NAME
 
     return [
         "txt",

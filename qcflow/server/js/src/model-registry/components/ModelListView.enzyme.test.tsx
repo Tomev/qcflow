@@ -13,7 +13,7 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
 import { Provider } from 'react-redux';
-import { mountWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 
 const mockStore = configureStore([thunk, promiseMiddleware()]);
 
@@ -72,7 +72,7 @@ describe('ModelListView', () => {
     Utils.updatePageTitle = mockUpdatePageTitle;
     // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
     wrapper = setupModelListViewWithIntl();
-    expect(mockUpdatePageTitle.mock.calls[0][0]).toBe('MLflow Models');
+    expect(mockUpdatePageTitle.mock.calls[0][0]).toBe('QCFlow Models');
   });
   // eslint-disable-next-line
 });

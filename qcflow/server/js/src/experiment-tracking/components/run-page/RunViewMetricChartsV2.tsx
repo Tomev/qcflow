@@ -21,7 +21,7 @@ import {
   useRemoveRunsChartFn,
   useReorderRunsChartsFn,
 } from '../runs-charts/hooks/useRunsChartsUIConfiguration';
-import { MLFLOW_MODEL_METRIC_NAME, MLFLOW_SYSTEM_METRIC_NAME, MLFLOW_SYSTEM_METRIC_PREFIX } from '../../constants';
+import { QCFLOW_MODEL_METRIC_NAME, QCFLOW_SYSTEM_METRIC_NAME, QCFLOW_SYSTEM_METRIC_PREFIX } from '../../constants';
 import LocalStorageUtils from '../../../common/utils/LocalStorageUtils';
 import { RunsChartsFullScreenModal } from '../runs-charts/components/RunsChartsFullScreenModal';
 import { useIsTabActive } from '../../../common/hooks/useIsTabActive';
@@ -148,10 +148,10 @@ export const RunViewMetricChartsV2Impl = ({
     if ((!compareRunSections || !compareRunCharts) && chartData.length > 0) {
       const { resultChartSet, resultSectionSet } = RunsChartsCardConfig.getBaseChartAndSectionConfigs({
         runsData: chartData,
-        enabledSectionNames: [mode === 'model' ? MLFLOW_MODEL_METRIC_NAME : MLFLOW_SYSTEM_METRIC_NAME],
+        enabledSectionNames: [mode === 'model' ? QCFLOW_MODEL_METRIC_NAME : QCFLOW_SYSTEM_METRIC_NAME],
         // Filter only model or system metrics
         filterMetricNames: (name) => {
-          const isSystemMetric = name.startsWith(MLFLOW_SYSTEM_METRIC_PREFIX);
+          const isSystemMetric = name.startsWith(QCFLOW_SYSTEM_METRIC_PREFIX);
           return mode === 'model' ? !isSystemMetric : isSystemMetric;
         },
       });
@@ -179,7 +179,7 @@ export const RunViewMetricChartsV2Impl = ({
         isAccordionReordered: current.isAccordionReordered,
         // Filter only model or system metrics
         filterMetricNames: (name) => {
-          const isSystemMetric = name.startsWith(MLFLOW_SYSTEM_METRIC_PREFIX);
+          const isSystemMetric = name.startsWith(QCFLOW_SYSTEM_METRIC_PREFIX);
           return mode === 'model' ? !isSystemMetric : isSystemMetric;
         },
       });
@@ -228,7 +228,7 @@ export const RunViewMetricChartsV2Impl = ({
           <RunsChartsFilterInput chartsSearchFilter={chartsSearchFilter} />
         ) : (
           <Input
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewmetricchartsv2.tsx_230"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewmetricchartsv2.tsx_230"
             role="searchbox"
             prefix={<SearchIcon />}
             value={search}
@@ -242,7 +242,7 @@ export const RunViewMetricChartsV2Impl = ({
         )}
         {shouldEnableRunDetailsPageAutoRefresh() && (
           <ToggleButton
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewmetricchartsv2.tsx_244"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewmetricchartsv2.tsx_244"
             pressed={chartUIState.autoRefreshEnabled}
             onPressedChange={(pressed) => {
               updateChartsUIState((current) => ({ ...current, autoRefreshEnabled: pressed }));

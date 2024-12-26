@@ -83,12 +83,12 @@ describe('PromptEngineering utils', () => {
   describe('canEvaluateOnRun', () => {
     const promptRun: any = {
       tags: {
-        'mlflow.runSourceType': { key: 'mlflow.runSourceType', value: 'PROMPT_ENGINEERING' },
+        'qcflow.runSourceType': { key: 'qcflow.runSourceType', value: 'PROMPT_ENGINEERING' },
       },
     };
     const genericRun: any = {
       tags: {
-        'mlflow.runSourceType': { key: 'mlflow.runSourceType', value: 'some-other-run-source' },
+        'qcflow.runSourceType': { key: 'qcflow.runSourceType', value: 'some-other-run-source' },
       },
     };
     it('correctly determines evaluateable runs', () => {

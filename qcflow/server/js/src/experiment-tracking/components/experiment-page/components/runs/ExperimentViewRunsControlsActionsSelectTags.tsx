@@ -10,12 +10,12 @@ import {
   useDesignSystemTheme,
 } from '@databricks/design-system';
 import { useEffect, useState } from 'react';
-import { shouldEnableTaggingMultipleRuns } from '@mlflow/mlflow/src/common/utils/FeatureUtils';
-import { isUserFacingTag } from '@mlflow/mlflow/src/common/utils/TagUtils';
-import { setRunTagsBulkApi } from '@mlflow/mlflow/src/experiment-tracking/actions';
-import { KeyValueEntity, RunInfoEntity } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { shouldEnableTaggingMultipleRuns } from '@qcflow/qcflow/src/common/utils/FeatureUtils';
+import { isUserFacingTag } from '@qcflow/qcflow/src/common/utils/TagUtils';
+import { setRunTagsBulkApi } from '@qcflow/qcflow/src/experiment-tracking/actions';
+import { KeyValueEntity, RunInfoEntity } from '@qcflow/qcflow/src/experiment-tracking/types';
 import { useDispatch } from 'react-redux';
-import { ThunkDispatch } from '@mlflow/mlflow/src/redux-types';
+import { ThunkDispatch } from '@qcflow/qcflow/src/redux-types';
 import { ExperimentViewRunsControlsActionsAddNewTagModal } from './ExperimentViewRunsControlsActionsAddNewTagModal';
 import { uniq } from 'lodash';
 import { FormattedMessage } from 'react-intl';
@@ -160,7 +160,7 @@ export const ExperimentViewRunsControlsActionsSelectTags = ({
   return (
     <>
       <DialogCombobox
-        componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunscontrolsactionsselecttags.tsx_162"
+        componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunscontrolsactionsselecttags.tsx_162"
         open={isMultiSelectOpen}
         label="Add tags"
         id="runs-tag-multiselect"
@@ -195,7 +195,7 @@ export const ExperimentViewRunsControlsActionsSelectTags = ({
           <DialogComboboxFooter>
             <div css={{ display: 'flex', justifyContent: 'flex-end', gap: theme.spacing.sm }}>
               <Button
-                componentId="mlflow.experiment_page.runs.add_new_tag"
+                componentId="qcflow.experiment_page.runs.add_new_tag"
                 onClick={addNewTagModal}
                 icon={<PlusIcon />}
                 data-testid="runs-add-new-tag-button"
@@ -207,7 +207,7 @@ export const ExperimentViewRunsControlsActionsSelectTags = ({
               </Button>
               <Button
                 type="primary"
-                componentId="mlflow.experiment_page.runs.add_tags"
+                componentId="qcflow.experiment_page.runs.add_tags"
                 onClick={saveTags}
                 disabled={Object.keys(selectedTags).length === 0}
                 loading={isSavingTagsLoading}

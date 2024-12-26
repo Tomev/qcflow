@@ -6,15 +6,15 @@ import re
 import urllib.parse
 from typing import Union
 
-from mlflow.entities import FileInfo
-from mlflow.entities.multipart_upload import (
+from qcflow.entities import FileInfo
+from qcflow.entities.multipart_upload import (
     CreateMultipartUploadResponse,
     MultipartUploadCredential,
 )
-from mlflow.environment_variables import MLFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repo import ArtifactRepository, MultipartUploadMixin
-from mlflow.utils.credentials import get_default_host_creds
+from qcflow.environment_variables import QCFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repo import ArtifactRepository, MultipartUploadMixin
+from qcflow.utils.credentials import get_default_host_creds
 
 
 def encode_base64(data: Union[str, bytes]) -> str:
@@ -45,7 +45,7 @@ class AzureBlobArtifactRepository(ArtifactRepository, MultipartUploadMixin):
         super().__init__(artifact_uri)
 
         _DEFAULT_TIMEOUT = 600  # 10 minutes
-        self.write_timeout = MLFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT.get() or _DEFAULT_TIMEOUT
+        self.write_timeout = QCFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT.get() or _DEFAULT_TIMEOUT
 
         # Allow override for testing
         if client:
@@ -220,7 +220,7 @@ class AzureBlobArtifactRepository(ArtifactRepository, MultipartUploadMixin):
         )
         credentials = []
         for i in range(1, num_parts + 1):
-            block_id = f"mlflow_block_{i}"
+            block_id = f"qcflow_block_{i}"
             # see https://github.com/Azure/azure-sdk-for-python/blob/18a66ef98c6f2153491489d3d7d2fe4a5849e4ac/sdk/storage/azure-storage-blob/azure/storage/blob/_blob_client.py#L2468
             safe_block_id = urllib.parse.quote(encode_base64(block_id), safe="")
             url = f"{blob_url}?comp=block&blockid={safe_block_id}&{sas_token}"

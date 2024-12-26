@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
-from mlflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS
+from qcflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS
 
 _logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class AutoLoggingConfig:
 
     def should_log_optional_artifacts(self):
         """
-        Check if any optional artifacts should be logged to MLflow.
+        Check if any optional artifacts should be logged to QCFlow.
         """
         return self.log_models or self.log_input_examples or self.log_model_signatures
 

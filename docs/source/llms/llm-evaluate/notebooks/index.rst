@@ -1,10 +1,10 @@
 LLM Evaluation Examples
 =======================
 
-The notebooks listed below contain step-by-step tutorials on how to use MLflow to evaluate LLMs. 
+The notebooks listed below contain step-by-step tutorials on how to use QCFlow to evaluate LLMs. 
 The first notebook is centered around evaluating an LLM for question-answering with a 
 prompt engineering approach. The second notebook is centered around evaluating a RAG system. 
-Both notebooks will demonstrate how to use MLflow's builtin metrics such as token_count and 
+Both notebooks will demonstrate how to use QCFlow's builtin metrics such as token_count and 
 toxicity as well as LLM-judged intelligent metrics such as answer_relevance. The third notebook 
 is the same as the second notebook, but uses Databricks's served llama2-70b as the judge instead 
 of gpt-4.
@@ -28,20 +28,20 @@ QA Evaluation Tutorial
             <div class="simple-card">
                 <a href="question-answering-evaluation.html">
                     <div class="header">
-                        LLM Question Answering Evaluation with MLflow
+                        LLM Question Answering Evaluation with QCFlow
                     </div>
                     <p>
-                        Learn how to evaluate various LLMs and RAG systems with MLflow, leveraging simple metrics such as toxicity, as well as LLM-judged metrics as relevance, and even custom LLM-judged metrics such as professionalism.
+                        Learn how to evaluate various LLMs and RAG systems with QCFlow, leveraging simple metrics such as toxicity, as well as LLM-judged metrics as relevance, and even custom LLM-judged metrics such as professionalism.
                     </p>
                 </a>
             </div>
             <div class="simple-card">
                 <a href="huggingface-evaluation.html">
                     <div class="header">
-                        Evaluating a 🤗 Hugging Face LLMs with MLflow
+                        Evaluating a 🤗 Hugging Face LLMs with QCFlow
                     </div>
                     <p>
-                        Learn how to evaluate various Open-Source LLMs available in Hugging Face, leveraging MLflow's built-in LLM metrics and experiment tracking to manage models and evaluation results.
+                        Learn how to evaluate various Open-Source LLMs available in Hugging Face, leveraging QCFlow's built-in LLM metrics and experiment tracking to manage models and evaluation results.
                     </p>
                 </a>
             </div>
@@ -58,20 +58,20 @@ RAG Evaluation Tutorials
             <div class="simple-card">
                 <a href="rag-evaluation.html">
                     <div class="header">
-                        RAG Evaluation with MLflow and GPT-4 as Judge
+                        RAG Evaluation with QCFlow and GPT-4 as Judge
                     </div>
                     <p>
-                        Learn how to evaluate RAG systems with MLflow, leveraging <b>OpenAI GPT-4</b> model as a judge.
+                        Learn how to evaluate RAG systems with QCFlow, leveraging <b>OpenAI GPT-4</b> model as a judge.
                     </p>
                 </a>
             </div>
             <div class="simple-card">
                 <a href="rag-evaluation-llama2.html">
                     <div class="header">
-                        RAG Evaluation with MLflow and Llama-2-70B as Judge
+                        RAG Evaluation with QCFlow and Llama-2-70B as Judge
                     </div>
                     <p>
-                        Learn how to evaluate RAG systems with MLflow, leveraging <b>Llama 2 70B model</b> hosted on Databricks serving endpoint.
+                        Learn how to evaluate RAG systems with QCFlow, leveraging <b>Llama 2 70B model</b> hosted on Databricks serving endpoint.
                     </p>
                 </a>
             </div>

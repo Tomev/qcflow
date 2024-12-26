@@ -1,18 +1,18 @@
-mlflow.gateway
+qcflow.gateway
 ==============
 
-.. automodule:: mlflow.gateway
+.. automodule:: qcflow.gateway
     :members:
     :undoc-members:
 
-.. automodule:: mlflow.gateway.base_models
+.. automodule:: qcflow.gateway.base_models
     :members: ConfigModel
 
-.. automodule:: mlflow.gateway.client
+.. automodule:: qcflow.gateway.client
     :members:
     :undoc-members:
 
-.. automodule:: mlflow.gateway.config
+.. automodule:: qcflow.gateway.config
     :members:
     :undoc-members:
     :exclude-members: model_computed_fields

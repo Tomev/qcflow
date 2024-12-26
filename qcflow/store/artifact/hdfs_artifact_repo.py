@@ -8,14 +8,14 @@ try:
 except ImportError:
     pass
 
-from mlflow.entities import FileInfo
-from mlflow.environment_variables import (
-    MLFLOW_KERBEROS_TICKET_CACHE,
-    MLFLOW_KERBEROS_USER,
-    MLFLOW_PYARROW_EXTRA_CONF,
+from qcflow.entities import FileInfo
+from qcflow.environment_variables import (
+    QCFLOW_KERBEROS_TICKET_CACHE,
+    QCFLOW_KERBEROS_USER,
+    QCFLOW_PYARROW_EXTRA_CONF,
 )
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.utils.file_utils import relative_path_to_artifact_path
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.utils.file_utils import relative_path_to_artifact_path
 
 
 class HdfsArtifactRepository(ArtifactRepository):
@@ -153,9 +153,9 @@ def hdfs_system(scheme, host, port):
         host: hostname or when relaying on the core-site.xml config use 'default'
         port: port or when relaying on the core-site.xml config use 0
     """
-    kerb_ticket = MLFLOW_KERBEROS_TICKET_CACHE.get()
-    kerberos_user = MLFLOW_KERBEROS_USER.get()
-    extra_conf = _parse_extra_conf(MLFLOW_PYARROW_EXTRA_CONF.get())
+    kerb_ticket = QCFLOW_KERBEROS_TICKET_CACHE.get()
+    kerberos_user = QCFLOW_KERBEROS_USER.get()
+    extra_conf = _parse_extra_conf(QCFLOW_PYARROW_EXTRA_CONF.get())
 
     host = scheme + "://" + host if host else "default"
 

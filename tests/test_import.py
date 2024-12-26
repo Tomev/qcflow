@@ -6,28 +6,28 @@ import uuid
 
 import pytest
 
-from mlflow.utils.os import is_windows
+from qcflow.utils.os import is_windows
 
 
 @pytest.mark.skipif(is_windows(), reason="This test fails on Windows")
 @pytest.mark.skipif(shutil.which("docker") is None, reason="docker is required to run this test")
-def test_import_mlflow(tmp_path):
+def test_import_qcflow(tmp_path):
     tmp_script = tmp_path.joinpath("test.sh")
     uid = uuid.uuid4().hex
     tmp_script.write_text(
         f"""
 set -ex
 
-# Install mlflow without extra dependencies
+# Install qcflow without extra dependencies
 pip install -e .
 
 # Move to /tmp/{uid} which should only contain this shell script
 cd /tmp/{uid}
 
-# Ensure mlflow can be imported
-python -c 'import mlflow'
+# Ensure qcflow can be imported
+python -c 'import qcflow'
 
-# Ensure importing mlflow does not create an mlruns directory
+# Ensure importing qcflow does not create an mlruns directory
 if [ -d "./mlruns" ]; then
     exit 1
 fi

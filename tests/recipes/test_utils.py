@@ -6,14 +6,14 @@ from unittest import mock
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.recipes.utils import (
     get_default_profile,
     get_recipe_config,
     get_recipe_name,
     get_recipe_root_path,
 )
-from mlflow.utils.file_utils import write_yaml
+from qcflow.utils.file_utils import write_yaml
 
 from tests.recipes.helper_functions import chdir
 
@@ -146,7 +146,7 @@ def test_get_recipe_config_throws_for_nonexistent_profile():
 def test_get_default_profile_works():
     assert get_default_profile() == "local"
     with mock.patch(
-        "mlflow.recipes.utils.is_in_databricks_runtime", return_value=True
+        "qcflow.recipes.utils.is_in_databricks_runtime", return_value=True
     ) as patched_is_in_databricks_runtime:
         assert get_default_profile() == "databricks"
         patched_is_in_databricks_runtime.assert_called_once()

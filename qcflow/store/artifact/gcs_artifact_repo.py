@@ -7,24 +7,24 @@ from collections import namedtuple
 
 from packaging.version import Version
 
-from mlflow.entities import FileInfo
-from mlflow.entities.multipart_upload import (
+from qcflow.entities import FileInfo
+from qcflow.entities.multipart_upload import (
     CreateMultipartUploadResponse,
     MultipartUploadCredential,
 )
-from mlflow.environment_variables import (
-    MLFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT,
-    MLFLOW_GCS_DEFAULT_TIMEOUT,
-    MLFLOW_GCS_DOWNLOAD_CHUNK_SIZE,
-    MLFLOW_GCS_UPLOAD_CHUNK_SIZE,
+from qcflow.environment_variables import (
+    QCFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT,
+    QCFLOW_GCS_DEFAULT_TIMEOUT,
+    QCFLOW_GCS_DOWNLOAD_CHUNK_SIZE,
+    QCFLOW_GCS_UPLOAD_CHUNK_SIZE,
 )
-from mlflow.exceptions import _UnsupportedMultipartUploadException
-from mlflow.store.artifact.artifact_repo import (
+from qcflow.exceptions import _UnsupportedMultipartUploadException
+from qcflow.store.artifact.artifact_repo import (
     ArtifactRepository,
     MultipartUploadMixin,
     _retry_with_new_creds,
 )
-from mlflow.utils.file_utils import relative_path_to_artifact_path
+from qcflow.utils.file_utils import relative_path_to_artifact_path
 
 GCSMPUArguments = namedtuple("GCSMPUArguments", ["transport", "url", "headers", "content_type"])
 
@@ -46,11 +46,11 @@ class GCSArtifactRepository(ArtifactRepository, MultipartUploadMixin):
         from google.cloud import storage as gcs_storage
         from google.cloud.storage.constants import _DEFAULT_TIMEOUT
 
-        self._GCS_DOWNLOAD_CHUNK_SIZE = MLFLOW_GCS_DOWNLOAD_CHUNK_SIZE.get()
-        self._GCS_UPLOAD_CHUNK_SIZE = MLFLOW_GCS_UPLOAD_CHUNK_SIZE.get()
+        self._GCS_DOWNLOAD_CHUNK_SIZE = QCFLOW_GCS_DOWNLOAD_CHUNK_SIZE.get()
+        self._GCS_UPLOAD_CHUNK_SIZE = QCFLOW_GCS_UPLOAD_CHUNK_SIZE.get()
         self._GCS_DEFAULT_TIMEOUT = (
-            MLFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT.get()
-            or MLFLOW_GCS_DEFAULT_TIMEOUT.get()
+            QCFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT.get()
+            or QCFLOW_GCS_DEFAULT_TIMEOUT.get()
             or _DEFAULT_TIMEOUT
         )
         # Method to use for refresh
@@ -92,7 +92,7 @@ class GCSArtifactRepository(ArtifactRepository, MultipartUploadMixin):
             return self._get_bucket(bucket)
         new_token = self.credential_refresh_def()
         credentials = Credentials(new_token["oauth_token"])
-        self.client = Client(project="mlflow", credentials=credentials)
+        self.client = Client(project="qcflow", credentials=credentials)
         return self._get_bucket(bucket)
 
     def log_artifact(self, local_file, artifact_path=None):

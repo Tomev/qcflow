@@ -1,13 +1,13 @@
 # nocov start
 
-#' Serve an RFunc MLflow Model
+#' Serve an RFunc QCFlow Model
 #'
-#' Serves an RFunc MLflow model as a local REST API server. This interface provides similar
-#' functionality to ``mlflow models serve`` cli command, however, it can only be used to deploy
-#' models that include RFunc flavor. The deployed server supports standard mlflow models interface
+#' Serves an RFunc QCFlow model as a local REST API server. This interface provides similar
+#' functionality to ``qcflow models serve`` cli command, however, it can only be used to deploy
+#' models that include RFunc flavor. The deployed server supports standard qcflow models interface
 #' with /ping and /invocation endpoints. In addition, R function models also support deprecated
 #' /predict endpoint for generating predictions. The /predict endpoint will be removed in a future
-#' version of mlflow.
+#' version of qcflow.
 #'
 #' @template roxlate-model-uri
 #' @param host Address to use to serve model, as a string.
@@ -15,18 +15,18 @@
 #' @param daemonized Makes `httpuv` server daemonized so R interactive sessions
 #'   are not blocked to handle requests. To terminate a daemonized server, call
 #'   `httpuv::stopDaemonizedServer()` with the handle returned from this call.
-#' @param ... Optional arguments passed to `mlflow_predict()`.
+#' @param ... Optional arguments passed to `qcflow_predict()`.
 #' @param browse Launch browser with serving landing page?
 #'
 #' @examples
 #' \dontrun{
-#' library(mlflow)
+#' library(qcflow)
 #'
 #' # save simple model with constant prediction
-#' mlflow_save_model(function(df) 1, "mlflow_constant")
+#' qcflow_save_model(function(df) 1, "qcflow_constant")
 #'
 #' # serve an existing model over a web interface
-#' mlflow_rfunc_serve("mlflow_constant")
+#' qcflow_rfunc_serve("qcflow_constant")
 #'
 #' # request prediction from server
 #' httr::POST("http://127.0.0.1:8090/predict/")
@@ -36,13 +36,13 @@
 #' @importFrom jsonlite fromJSON
 #' @import swagger
 #' @export
-mlflow_rfunc_serve <- function(model_uri,
+qcflow_rfunc_serve <- function(model_uri,
                                host = "127.0.0.1",
                                port = 8090,
                                daemonized = FALSE,
                                browse = !daemonized,
                                ...) {
-  model_path <- mlflow_download_artifacts_from_uri(model_uri)
+  model_path <- qcflow_download_artifacts_from_uri(model_uri)
   httpuv_start <- if (daemonized) httpuv::startDaemonizedServer else httpuv::runServer
   serve_run(model_path, host, port, httpuv_start, browse && interactive(), ...)
 }
@@ -60,7 +60,7 @@ serve_content_type <- function(file_path) {
 }
 
 serve_static_file_response <- function(package, file_path, replace = NULL) {
-  mlflow_verbose_message("Serving static file: ", file_path)
+  qcflow_verbose_message("Serving static file: ", file_path)
 
   file_path <- system.file(file_path, package = package)
   file_contents <- if (file.exists(file_path)) readBin(file_path, "raw", n = file.info(file_path)$size) else NULL
@@ -98,7 +98,7 @@ serve_invalid_request <- function(message = NULL) {
 }
 
 serve_prediction <- function(json_raw, model, ...) {
-  mlflow_verbose_message("Serving prediction: ", json_raw)
+  qcflow_verbose_message("Serving prediction: ", json_raw)
   df <- data.frame()
   if (length(json_raw) > 0) {
     df <- jsonlite::fromJSON(
@@ -110,7 +110,7 @@ serve_prediction <- function(json_raw, model, ...) {
 
   df <- as.data.frame(df)
 
-  mlflow_predict(model, df, ...)
+  qcflow_predict(model, df, ...)
 }
 
 serve_empty_page <- function(req, sess, model) {
@@ -132,7 +132,7 @@ serve_handlers <- function(host, port, ...) {
           "Content-Type" = paste0(serve_content_type("json"), "; charset=UTF-8")
         ),
         body = charToRaw(enc2utf8(
-          mlflow_swagger()
+          qcflow_swagger()
         ))
       )
     },
@@ -187,7 +187,7 @@ serve_handlers <- function(host, port, ...) {
         "text/csv" = utils::read.csv(text = data_raw, stringsAsFactors = FALSE),
         stop("Unsupported input format.")
       )
-      results <- mlflow_predict(model, df, ...)
+      results <- qcflow_predict(model, df, ...)
       list(
         status = 200L,
         headers = list(
@@ -206,7 +206,7 @@ serve_handlers <- function(host, port, ...) {
     }
   )
 
-  if (!getOption("mlflow.swagger", default = TRUE)) {
+  if (!getOption("qcflow.swagger", default = TRUE)) {
     handlers[["^/swagger.json"]] <- serve_empty_page
     handlers[["^/$"]] <- serve_empty_page
   }
@@ -223,7 +223,7 @@ message_serve_start <- function(host, port, model) {
 
 #' @importFrom utils browseURL
 serve_run <- function(model_path, host, port, start, browse, ...) {
-  model <- mlflow_load_model(model_path)
+  model <- qcflow_load_model(model_path)
 
   message_serve_start(host, port, model)
 

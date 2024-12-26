@@ -2,7 +2,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import ConfigurableField
 from langchain_openai import ChatOpenAI
 
-from mlflow.models import set_model
+from qcflow.models import set_model
 
 model = ChatOpenAI(temperature=0).configurable_fields(
     temperature=ConfigurableField(

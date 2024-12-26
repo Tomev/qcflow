@@ -20,14 +20,14 @@ from sqlparse.sql import (
 )
 from sqlparse.tokens import Token as TokenType
 
-from mlflow.entities import RunInfo
-from mlflow.entities.model_registry.model_version_stages import STAGE_DELETED_INTERNAL
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.db.db_types import MSSQL, MYSQL, POSTGRES, SQLITE
-from mlflow.tracing.constant import TraceMetadataKey, TraceTagKey
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATASET_CONTEXT,
+from qcflow.entities import RunInfo
+from qcflow.entities.model_registry.model_version_stages import STAGE_DELETED_INTERNAL
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.db.db_types import MSSQL, MYSQL, POSTGRES, SQLITE
+from qcflow.tracing.constant import TraceMetadataKey, TraceTagKey
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATASET_CONTEXT,
 )
 
 
@@ -617,7 +617,7 @@ class SearchUtils:
                     SearchUtils.get_comparison_func(comparator)(tag.value if tag else None, value)
                     for dataset_input in run.inputs.dataset_inputs
                     for tag in dataset_input.tags
-                    if tag.key == MLFLOW_DATASET_CONTEXT
+                    if tag.key == QCFLOW_DATASET_CONTEXT
                 )
             else:
                 return any(

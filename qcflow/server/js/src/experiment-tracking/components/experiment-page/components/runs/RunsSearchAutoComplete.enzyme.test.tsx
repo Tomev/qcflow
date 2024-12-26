@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DesignSystemProvider, Input } from '@databricks/design-system';
-import { mountWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 import { EXPERIMENT_RUNS_MOCK_STORE } from '../../fixtures/experiment-runs.fixtures';
 import { experimentRunsSelector } from '../../utils/experimentRuns.selector';
 import { RunsSearchAutoComplete } from './RunsSearchAutoComplete';

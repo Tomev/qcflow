@@ -30,7 +30,7 @@ export const DarkThemeSwitch = ({
     }}
   >
     <Switch
-      componentId="codegen_mlflow_app_src_common_components_darkthemeswitch.tsx_32"
+      componentId="codegen_qcflow_app_src_common_components_darkthemeswitch.tsx_32"
       checked={isDarkTheme}
       onChange={setIsDarkTheme}
     />

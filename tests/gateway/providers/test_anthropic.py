@@ -5,15 +5,15 @@ from aiohttp import ClientTimeout
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 
-from mlflow.gateway.config import RouteConfig
-from mlflow.gateway.constants import (
-    MLFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
-    MLFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS,
-    MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS,
+from qcflow.gateway.config import RouteConfig
+from qcflow.gateway.constants import (
+    QCFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
+    QCFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS,
+    QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS,
 )
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.anthropic import AnthropicProvider
-from mlflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.anthropic import AnthropicProvider
+from qcflow.gateway.schemas import chat, completions, embeddings
 
 from tests.gateway.tools import MockAsyncResponse, MockAsyncStreamingResponse
 
@@ -90,7 +90,7 @@ async def test_completions():
                 "prompt": "\n\nHuman: How does a car work?\n\nAssistant:",
                 "stop_sequences": ["foobazbardiddly"],
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -114,7 +114,7 @@ async def test_completions_with_default_max_tokens():
                 "max_tokens_to_sample": 200000,
                 "prompt": "\n\nHuman: How does a car work?\n\nAssistant:",
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -127,7 +127,7 @@ async def test_completions_throws_with_invalid_max_tokens_too_large():
         await provider.completions(completions.RequestPayload(**payload))
     assert (
         "Invalid value for max_tokens: cannot exceed "
-        f"{MLFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS}" in e.value.detail
+        f"{QCFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS}" in e.value.detail
     )
     assert e.value.status_code == 422
 
@@ -294,10 +294,10 @@ async def test_chat():
                     {"role": "user", "content": "Message 3"},
                 ],
                 "system": "System message",
-                "max_tokens": MLFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
+                "max_tokens": QCFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
                 "temperature": 0.25,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -368,11 +368,11 @@ async def test_chat_stream():
                     {"role": "user", "content": "Message 3"},
                 ],
                 "system": "System message",
-                "max_tokens": MLFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
+                "max_tokens": QCFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
                 "temperature": 0.25,
                 "stream": True,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 

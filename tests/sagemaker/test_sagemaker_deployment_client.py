@@ -16,21 +16,21 @@ from click.testing import CliRunner
 from moto.core import DEFAULT_ACCOUNT_ID
 from sklearn.linear_model import LogisticRegression
 
-import mlflow
-import mlflow.pyfunc
-import mlflow.sagemaker as mfs
-import mlflow.sklearn
-from mlflow.deployments.cli import commands as cli_commands
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model
-from mlflow.protos.databricks_pb2 import (
+import qcflow
+import qcflow.pyfunc
+import qcflow.sagemaker as mfs
+import qcflow.sklearn
+from qcflow.deployments.cli import commands as cli_commands
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model
+from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
 
 from tests.helper_functions import set_boto_credentials  # noqa: F401
 from tests.sagemaker.mock import Endpoint, EndpointOperation, mock_sagemaker
@@ -41,13 +41,13 @@ TrainedModel = namedtuple("TrainedModel", ["model_path", "run_id", "model_uri"])
 @pytest.fixture
 def pretrained_model():
     model_path = "model"
-    with mlflow.start_run():
+    with qcflow.start_run():
         X = np.array([-2, -1, 0, 1, 2, 1]).reshape(-1, 1)
         y = np.array([0, 0, 1, 1, 1, 0])
         lr = LogisticRegression(solver="lbfgs")
         lr.fit(X, y)
-        mlflow.sklearn.log_model(lr, model_path)
-        run_id = mlflow.active_run().info.run_id
+        qcflow.sklearn.log_model(lr, model_path)
+        run_id = qcflow.active_run().info.run_id
         model_uri = "runs:/" + run_id + "/" + model_path
         return TrainedModel(model_path, run_id, model_uri)
 
@@ -105,7 +105,7 @@ def mock_sagemaker_aws_services(fn):
     @mock_sts
     @wraps(fn)
     def mock_wrapper(*args, **kwargs):
-        # Create an ECR repository for the `mlflow-pyfunc` SageMaker docker image
+        # Create an ECR repository for the `qcflow-pyfunc` SageMaker docker image
         ecr_client = boto3.client("ecr", region_name="us-west-2")
         ecr_client.create_repository(repositoryName=mfs.DEFAULT_IMAGE_NAME)
 
@@ -460,7 +460,7 @@ def test_create_deployment_of_model_with_no_supported_flavors_raises_exception(
     logged_model_path = _download_artifact_from_uri(pretrained_model.model_uri)
     model_config_path = os.path.join(logged_model_path, "MLmodel")
     model_config = Model.load(model_config_path)
-    del model_config.flavors[mlflow.pyfunc.FLAVOR_NAME]
+    del model_config.flavors[qcflow.pyfunc.FLAVOR_NAME]
     model_config.save(path=model_config_path)
 
     match = "The specified model does not contain any of the supported flavors for deployment"
@@ -552,7 +552,7 @@ def test_create_deployment_create_sagemaker_and_s3_resources_with_expected_names
     proxies_enabled, pretrained_model, sagemaker_client, sagemaker_deployment_client, monkeypatch
 ):
     expected_model_environment = {
-        "MLFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
+        "QCFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
         "SERVING_ENVIRONMENT": "SageMaker",
         "GUNCORN_CMD_ARGS": '"--timeout 60"',
         "DISABLE_NGINX": "true",
@@ -622,7 +622,7 @@ def test_deploy_cli_creates_sagemaker_and_s3_resources_with_expected_names_and_e
     environment_variables = {"LC_ALL": "en_US.UTF-8", "LANG": "en_US.UTF-8"}
     override_environment_variables = {"DISABLE_NGINX": "true", "GUNCORN_CMD_ARGS": '"--timeout 60"'}
     expected_model_environment = {
-        "MLFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
+        "QCFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
         "SERVING_ENVIRONMENT": "SageMaker",
         "GUNCORN_CMD_ARGS": '"--timeout 60"',
         "DISABLE_NGINX": "true",
@@ -726,7 +726,7 @@ def test_create_deployment_creates_sagemaker_and_s3_resources_with_expected_name
     s3_artifact_repo.log_artifacts(local_model_path, artifact_path=artifact_path)
     model_s3_uri = f"s3://{default_bucket}/{pretrained_model.model_path}"
     expected_model_environment = {
-        "MLFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
+        "QCFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
         "SERVING_ENVIRONMENT": "SageMaker",
     }
 
@@ -792,7 +792,7 @@ def test_deploy_cli_creates_sagemaker_and_s3_resources_with_expected_names_and_e
     model_s3_uri = f"s3://{default_bucket}/{pretrained_model.model_path}"
     environment_variables = {"LC_ALL": "en_US.UTF-8", "LANG": "en_US.UTF-8"}
     expected_model_environment = {
-        "MLFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
+        "QCFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
         "SERVING_ENVIRONMENT": "SageMaker",
     }
 
@@ -1310,11 +1310,11 @@ def test_update_deployment_in_replace_mode_with_archiving_does_not_delete_resour
     ]
 
     model_uri = f"runs:/{pretrained_model.run_id}/{pretrained_model.model_path}"
-    sk_model = mlflow.sklearn.load_model(model_uri=model_uri)
+    sk_model = qcflow.sklearn.load_model(model_uri=model_uri)
     new_artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(sk_model, new_artifact_path)
-        new_model_uri = f"runs:/{mlflow.active_run().info.run_id}/{new_artifact_path}"
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(sk_model, new_artifact_path)
+        new_model_uri = f"runs:/{qcflow.active_run().info.run_id}/{new_artifact_path}"
     sagemaker_deployment_client.update_deployment(
         name=name,
         model_uri=new_model_uri,
@@ -1386,7 +1386,7 @@ def test_deploy_cli_updates_sagemaker_and_s3_resources_in_replace_mode(
         "Environment"
     ]
     expected_model_environment = {
-        "MLFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
+        "QCFLOW_DEPLOYMENT_FLAVOR_NAME": "python_function",
         "SERVING_ENVIRONMENT": "SageMaker",
     }
     if os.getenv("http_proxy") is not None:

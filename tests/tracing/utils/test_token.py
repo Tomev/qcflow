@@ -1,6 +1,6 @@
 import logging
 
-from mlflow.tracing.utils.token import suppress_token_detach_warning_to_debug_level
+from qcflow.tracing.utils.token import suppress_token_detach_warning_to_debug_level
 
 
 def test_suppress_token_detach_warning(caplog):

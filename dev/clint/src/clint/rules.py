@@ -57,7 +57,7 @@ class MlflowClassName(Rule):
         return "MLF0003"
 
     def _message(self) -> str:
-        return "Should use `Mlflow` in class name, not `MLflow` or `MLFlow`."
+        return "Should use `Mlflow` in class name, not `QCFlow` or `MLFlow`."
 
 
 class TestNameTypo(Rule):
@@ -77,7 +77,7 @@ class KeywordArtifactPath(Rule):
     def _message(self) -> str:
         return (
             "artifact_path must be passed as a positional argument. "
-            "See https://github.com/mlflow/mlflow/pull/13268 for why this is necessary."
+            "See https://github.com/qcflow/qcflow/pull/13268 for why this is necessary."
         )
 
 
@@ -206,13 +206,13 @@ class UseSysExecutable(Rule):
 
     def _message(self) -> str:
         return (
-            "Use `[sys.executable, '-m', 'mlflow', ...]` when running mlflow CLI in a subprocess."
+            "Use `[sys.executable, '-m', 'qcflow', ...]` when running qcflow CLI in a subprocess."
         )
 
     @staticmethod
     def check(node: ast.Call) -> bool:
         """
-        Returns True if `node` looks like `subprocess.Popen(["mlflow", ...])`.
+        Returns True if `node` looks like `subprocess.Popen(["qcflow", ...])`.
         """
         if (
             isinstance(node.func, ast.Attribute)
@@ -227,7 +227,7 @@ class UseSysExecutable(Rule):
                 return (
                     isinstance(first_elem, ast.Constant)
                     and isinstance(first_elem.value, str)
-                    and first_elem.value == "mlflow"
+                    and first_elem.value == "qcflow"
                 )
         return False
 

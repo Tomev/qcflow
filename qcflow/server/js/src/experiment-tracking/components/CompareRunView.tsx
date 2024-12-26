@@ -86,7 +86,7 @@ export class CompareRunView extends Component<CompareRunViewProps, CompareRunVie
     const pageTitle = this.props.intl.formatMessage(
       {
         description: 'Page title for the compare runs page',
-        defaultMessage: 'Comparing {runs} MLflow Runs',
+        defaultMessage: 'Comparing {runs} QCFlow Runs',
       },
       {
         runs: this.props.runInfos.length,
@@ -584,7 +584,7 @@ export class CompareRunView extends Component<CompareRunViewProps, CompareRunVie
         </CollapsibleSection>
         <CollapsibleSection title={paramsLabel}>
           <Switch
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_comparerunview.tsx_570"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_comparerunview.tsx_570"
             label={diffOnlyLabel}
             aria-label={[paramsLabel, diffOnlyLabel].join(' - ')}
             // @ts-expect-error TS(4111): Property 'onlyShowParamDiff' comes from an index s... Remove this comment to see the full error message
@@ -596,7 +596,7 @@ export class CompareRunView extends Component<CompareRunViewProps, CompareRunVie
         </CollapsibleSection>
         <CollapsibleSection title={metricsLabel}>
           <Switch
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_comparerunview.tsx_581"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_comparerunview.tsx_581"
             label={diffOnlyLabel}
             aria-label={[metricsLabel, diffOnlyLabel].join(' - ')}
             // @ts-expect-error TS(4111): Property 'onlyShowMetricDiff' comes from an index ... Remove this comment to see the full error message
@@ -609,7 +609,7 @@ export class CompareRunView extends Component<CompareRunViewProps, CompareRunVie
         <CollapsibleSection title={artifactsLabel}>{this.renderArtifactTable(colWidth)}</CollapsibleSection>
         <CollapsibleSection title={tagsLabel}>
           <Switch
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_comparerunview.tsx_592"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_comparerunview.tsx_592"
             label={diffOnlyLabel}
             aria-label={[tagsLabel, diffOnlyLabel].join(' - ')}
             // @ts-expect-error TS(4111): Property 'onlyShowTagDiff' comes from an index sig... Remove this comment to see the full error message

@@ -2,14 +2,14 @@ import { type ModelTraceInfo } from '@databricks/web-shared/model-trace-explorer
 import { type MessageDescriptor, defineMessage } from 'react-intl';
 import { isNil } from 'lodash';
 
-const TRACE_METADATA_FIELD_RUN_ID = 'mlflow.sourceRun';
+const TRACE_METADATA_FIELD_RUN_ID = 'qcflow.sourceRun';
 const TRACE_METADATA_FIELD_TOTAL_TOKENS = 'total_tokens';
-const TRACE_METADATA_FIELD_INPUTS = 'mlflow.traceInputs';
-const TRACE_METADATA_FIELD_OUTPUTS = 'mlflow.traceOutputs';
-export const TRACE_TAG_NAME_TRACE_NAME = 'mlflow.traceName';
+const TRACE_METADATA_FIELD_INPUTS = 'qcflow.traceInputs';
+const TRACE_METADATA_FIELD_OUTPUTS = 'qcflow.traceOutputs';
+export const TRACE_TAG_NAME_TRACE_NAME = 'qcflow.traceName';
 
 // Truncation limit for tracing metadata, taken from:
-// https://github.com/mlflow/mlflow/blob/2b457f2b46fc135a3fba77aefafe2319a899fc08/mlflow/tracing/constant.py#L23
+// https://github.com/qcflow/qcflow/blob/2b457f2b46fc135a3fba77aefafe2319a899fc08/qcflow/tracing/constant.py#L23
 const MAX_CHARS_IN_TRACE_INFO_METADATA_AND_TAGS = 250;
 
 const getTraceMetadataField = (traceInfo: ModelTraceInfo, field: string) => {

@@ -10,11 +10,11 @@ import botocore.exceptions
 import pytest
 import requests
 
-from mlflow.entities.multipart_upload import MultipartUploadPart
-from mlflow.exceptions import MlflowTraceDataCorrupted
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
-from mlflow.store.artifact.s3_artifact_repo import (
+from qcflow.entities.multipart_upload import MultipartUploadPart
+from qcflow.exceptions import MlflowTraceDataCorrupted
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+from qcflow.store.artifact.s3_artifact_repo import (
     _MAX_CACHE_SECONDS,
     S3ArtifactRepository,
     _cached_get_s3_client,
@@ -41,8 +41,8 @@ def reset_cached_get_s3_client():
 
 
 def teardown_function():
-    if "MLFLOW_S3_UPLOAD_EXTRA_ARGS" in os.environ:
-        del os.environ["MLFLOW_S3_UPLOAD_EXTRA_ARGS"]
+    if "QCFLOW_S3_UPLOAD_EXTRA_ARGS" in os.environ:
+        del os.environ["QCFLOW_S3_UPLOAD_EXTRA_ARGS"]
 
 
 def test_file_artifact_is_logged_and_downloaded_successfully(s3_artifact_repo, tmp_path):
@@ -91,7 +91,7 @@ def test_get_s3_client_hits_cache(s3_artifact_root, monkeypatch):
     assert cache_info.misses == 1
     assert cache_info.currsize == 1
 
-    monkeypatch.setenv("MLFLOW_EXPERIMENTAL_S3_SIGNATURE_VERSION", "s3v2")
+    monkeypatch.setenv("QCFLOW_EXPERIMENTAL_S3_SIGNATURE_VERSION", "s3v2")
     repo._get_s3_client()
     cache_info = _cached_get_s3_client.cache_info()
     assert cache_info.hits == 1
@@ -99,7 +99,7 @@ def test_get_s3_client_hits_cache(s3_artifact_root, monkeypatch):
     assert cache_info.currsize == 2
 
     with mock.patch(
-        "mlflow.store.artifact.s3_artifact_repo._get_utcnow_timestamp",
+        "qcflow.store.artifact.s3_artifact_repo._get_utcnow_timestamp",
         return_value=datetime.utcnow().timestamp() + _MAX_CACHE_SECONDS,
     ):
         repo._get_s3_client()
@@ -115,7 +115,7 @@ def test_get_s3_client_hits_cache(s3_artifact_root, monkeypatch):
 def test_get_s3_client_verify_param_set_correctly(
     s3_artifact_root, ignore_tls_env, verify, monkeypatch
 ):
-    monkeypatch.setenv("MLFLOW_S3_IGNORE_TLS", ignore_tls_env)
+    monkeypatch.setenv("QCFLOW_S3_IGNORE_TLS", ignore_tls_env)
     with mock.patch("boto3.client") as mock_get_s3_client:
         repo = get_artifact_repository(posixpath.join(s3_artifact_root, "some/path"))
         repo._get_s3_client()
@@ -308,7 +308,7 @@ def test_download_file_artifact_succeeds_when_artifact_root_is_s3_bucket_root(
 
 def test_get_s3_file_upload_extra_args():
     os.environ.setdefault(
-        "MLFLOW_S3_UPLOAD_EXTRA_ARGS",
+        "QCFLOW_S3_UPLOAD_EXTRA_ARGS",
         '{"ServerSideEncryption": "aws:kms", "SSEKMSKeyId": "123456"}',
     )
 
@@ -325,7 +325,7 @@ def test_get_s3_file_upload_extra_args_env_var_not_present():
 
 def test_get_s3_file_upload_extra_args_invalid_json():
     os.environ.setdefault(
-        "MLFLOW_S3_UPLOAD_EXTRA_ARGS", '"ServerSideEncryption": "aws:kms", "SSEKMSKeyId": "123456"}'
+        "QCFLOW_S3_UPLOAD_EXTRA_ARGS", '"ServerSideEncryption": "aws:kms", "SSEKMSKeyId": "123456"}'
     )
 
     with pytest.raises(json.decoder.JSONDecodeError, match=r".+"):

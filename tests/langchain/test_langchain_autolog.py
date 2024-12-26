@@ -50,18 +50,18 @@ except ImportError:
 
 from packaging.version import Version
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.langchain._langchain_autolog import (
+import qcflow
+from qcflow import MlflowClient
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.langchain._langchain_autolog import (
     UNSUPPORTED_LOG_MODEL_MESSAGE,
     _resolve_tags,
 )
-from mlflow.models import Model
-from mlflow.models.dependencies_schemas import DependenciesSchemasType, set_retriever_schema
-from mlflow.models.signature import infer_signature
-from mlflow.models.utils import _read_example
-from mlflow.tracing.constant import SpanAttributeKey, TraceMetadataKey
+from qcflow.models import Model
+from qcflow.models.dependencies_schemas import DependenciesSchemasType, set_retriever_schema
+from qcflow.models.signature import infer_signature
+from qcflow.models.utils import _read_example
+from qcflow.tracing.constant import SpanAttributeKey, TraceMetadataKey
 
 from tests.langchain.conftest import DeterministicDummyEmbeddings
 from tests.tracing.conftest import async_logging_enabled
@@ -70,10 +70,10 @@ from tests.tracing.helper import get_traces
 MODEL_DIR = "model"
 # The mock OpenAI endpoint simply echos the prompt back as the completion.
 # So the expected output will be the prompt itself.
-TEST_CONTENT = "What is MLflow?"
+TEST_CONTENT = "What is QCFlow?"
 
 
-def get_mlflow_model(artifact_uri, model_subpath=MODEL_DIR):
+def get_qcflow_model(artifact_uri, model_subpath=MODEL_DIR):
     model_conf_path = os.path.join(artifact_uri, model_subpath, "MLmodel")
     return Model.load(model_conf_path)
 
@@ -157,48 +157,48 @@ def create_runnable_sequence():
         | chat_model
         | StrOutputParser()
     )
-    input_example = {"messages": [{"role": "user", "content": "Who owns MLflow?"}]}
+    input_example = {"messages": [{"role": "user", "content": "Who owns QCFlow?"}]}
     return chain_with_history, input_example
 
 
 def test_autolog_manage_run(async_logging_enabled):
-    mlflow.langchain.autolog(log_models=True, extra_tags={"test_tag": "test"})
-    run = mlflow.start_run()
+    qcflow.langchain.autolog(log_models=True, extra_tags={"test_tag": "test"})
+    run = qcflow.start_run()
     model = create_openai_llmchain()
-    model.invoke("MLflow")
+    model.invoke("QCFlow")
     assert model.run_id == run.info.run_id
 
     # The run_id should be propagated to the second call via model instance to
     # avoid duplicate logging
-    model.invoke("MLflow")
+    model.invoke("QCFlow")
     assert model.run_id == run.info.run_id
 
     # Active run created by an user should not be terminated
-    assert mlflow.active_run() is not None
+    assert qcflow.active_run() is not None
     assert run.info.status != "FINISHED"
 
     assert MlflowClient().get_run(run.info.run_id).data.tags["test_tag"] == "test"
-    assert MlflowClient().get_run(run.info.run_id).data.tags["mlflow.autologging"] == "langchain"
-    mlflow.end_run()
+    assert MlflowClient().get_run(run.info.run_id).data.tags["qcflow.autologging"] == "langchain"
+    qcflow.end_run()
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 2
     for trace in traces:
         span = trace.data.spans[0]
         assert span.span_type == "CHAIN"
-        assert span.inputs == {"product": "MLflow"}
+        assert span.inputs == {"product": "QCFlow"}
         assert span.outputs == {"text": TEST_CONTENT}
 
 
 def test_autolog_manage_run_no_active_run():
-    mlflow.langchain.autolog(log_models=True, extra_tags={"test_tag": "test"})
-    assert mlflow.active_run() is None
+    qcflow.langchain.autolog(log_models=True, extra_tags={"test_tag": "test"})
+    assert qcflow.active_run() is None
 
     model = create_openai_llmchain()
-    model.invoke("MLflow")
+    model.invoke("QCFlow")
 
     # A new run should be created, and terminated after the inference
     run = MlflowClient().get_run(model.run_id)
@@ -207,12 +207,12 @@ def test_autolog_manage_run_no_active_run():
 
     # The run_id should be propagated to the second call via model instance to
     # avoid duplicate logging
-    model.invoke("MLflow")
+    model.invoke("QCFlow")
     assert model.run_id == run.info.run_id
 
-    assert mlflow.active_run() is None
+    assert qcflow.active_run() is None
     assert run.data.tags["test_tag"] == "test"
-    assert run.data.tags["mlflow.autologging"] == "langchain"
+    assert run.data.tags["qcflow.autologging"] == "langchain"
 
 
 def test_resolve_tags():
@@ -220,19 +220,19 @@ def test_resolve_tags():
     # System tags and extra tags should be logged
     actual_tags = set(_resolve_tags(extra_tags).keys())
     assert actual_tags == {
-        "mlflow.autologging",
-        "mlflow.source.name",
-        "mlflow.source.type",
-        "mlflow.user",
+        "qcflow.autologging",
+        "qcflow.source.name",
+        "qcflow.source.type",
+        "qcflow.user",
         "test_tag",
     }
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         actual_tags = set(_resolve_tags(extra_tags, run).keys())
 
-    # The immutable tags starts with 'mlflow.' in the run should not be overridden
+    # The immutable tags starts with 'qcflow.' in the run should not be overridden
     assert actual_tags == {
-        "mlflow.autologging",
+        "qcflow.autologging",
         "test_tag",
     }
 
@@ -243,13 +243,13 @@ def test_autolog_record_exception(async_logging_enabled):
 
     model = RunnableLambda(always_fail)
 
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     with pytest.raises(Exception, match="Error!"):
         model.invoke("test")
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 1
@@ -260,18 +260,18 @@ def test_autolog_record_exception(async_logging_enabled):
 
 
 def test_llmchain_autolog(async_logging_enabled):
-    mlflow.langchain.autolog(log_models=True)
-    question = "MLflow"
-    answer = {"product": "MLflow", "text": TEST_CONTENT}
+    qcflow.langchain.autolog(log_models=True)
+    question = "QCFlow"
+    answer = {"product": "QCFlow", "text": TEST_CONTENT}
     model = create_openai_llmchain()
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
         assert model.invoke(question) == answer
         # Call twice to test that the model is only logged once
         assert model.invoke(question) == answer
         log_model_mock.assert_called_once()
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 2
@@ -280,12 +280,12 @@ def test_llmchain_autolog(async_logging_enabled):
         assert len(spans) == 2  # chain + llm
         assert spans[0].name == "LLMChain"
         assert spans[0].span_type == "CHAIN"
-        assert spans[0].inputs == {"product": "MLflow"}
+        assert spans[0].inputs == {"product": "QCFlow"}
         assert spans[0].outputs == {"text": TEST_CONTENT}
         assert spans[1].name == "OpenAI"
         assert spans[1].parent_id == spans[0].span_id
         assert spans[1].span_type == "LLM"
-        assert spans[1].inputs == ["What is MLflow?"]
+        assert spans[1].inputs == ["What is QCFlow?"]
         assert spans[1].outputs["generations"][0][0]["text"] == TEST_CONTENT
         attrs = spans[1].attributes
         assert attrs["invocation_params"]["model_name"] == "gpt-3.5-turbo-instruct"
@@ -293,35 +293,35 @@ def test_llmchain_autolog(async_logging_enabled):
         assert attrs[SpanAttributeKey.CHAT_MESSAGES] == [
             {
                 "role": "user",
-                "content": "What is MLflow?",
+                "content": "What is QCFlow?",
             },
             {
                 "role": "assistant",
-                "content": "What is MLflow?",
+                "content": "What is QCFlow?",
             },
         ]
 
 
 def test_llmchain_autolog_should_not_generate_trace_while_saving_models(tmp_path):
-    mlflow.langchain.autolog()
-    question = "MLflow"
+    qcflow.langchain.autolog()
+    question = "QCFlow"
 
     model = create_openai_llmchain()
     # Either save_model or log_model should not generate traces
-    mlflow.langchain.save_model(model, path=tmp_path / "model", input_example=question)
-    with mlflow.start_run():
-        mlflow.langchain.log_model(model, "model", input_example=question)
+    qcflow.langchain.save_model(model, path=tmp_path / "model", input_example=question)
+    with qcflow.start_run():
+        qcflow.langchain.log_model(model, "model", input_example=question)
 
     traces = get_traces()
     assert len(traces) == 0
 
 
 def test_llmchain_autolog_no_optional_artifacts_by_default():
-    mlflow.langchain.autolog()
-    question = "MLflow"
-    answer = {"product": "MLflow", "text": TEST_CONTENT}
+    qcflow.langchain.autolog()
+    question = "QCFlow"
+    answer = {"product": "QCFlow", "text": TEST_CONTENT}
     model = create_openai_llmchain()
-    with mock.patch("mlflow.MlflowClient.create_run") as create_run_mock:
+    with mock.patch("qcflow.MlflowClient.create_run") as create_run_mock:
         assert model.invoke(question) == answer
         create_run_mock.assert_not_called()
 
@@ -333,9 +333,9 @@ def test_llmchain_autolog_no_optional_artifacts_by_default():
 
 def test_llmchain_autolog_with_registered_model_name():
     registered_model_name = "llmchain"
-    mlflow.langchain.autolog(log_models=True, registered_model_name=registered_model_name)
+    qcflow.langchain.autolog(log_models=True, registered_model_name=registered_model_name)
     model = create_openai_llmchain()
-    model.invoke("MLflow")
+    model.invoke("QCFlow")
     registered_model = MlflowClient().get_registered_model(registered_model_name)
     assert registered_model.name == registered_model_name
 
@@ -346,28 +346,28 @@ def test_llmchain_autolog_with_registered_model_name():
     reason="LLMChain saving does not work in LangChain v0.3.0",
 )
 def test_loaded_llmchain_autolog():
-    mlflow.langchain.autolog(log_models=True, log_input_examples=True)
+    qcflow.langchain.autolog(log_models=True, log_input_examples=True)
     model = create_openai_llmchain()
-    question = {"product": "MLflow"}
-    answer = {"product": "MLflow", "text": TEST_CONTENT}
-    with mlflow.start_run() as run:
+    question = {"product": "QCFlow"}
+    answer = {"product": "QCFlow", "text": TEST_CONTENT}
+    with qcflow.start_run() as run:
         assert model.invoke(question) == answer
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
-        loaded_model = mlflow.langchain.load_model(f"runs:/{run.info.run_id}/model")
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
+        loaded_model = qcflow.langchain.load_model(f"runs:/{run.info.run_id}/model")
         assert loaded_model.invoke(question) == answer
         log_model_mock.assert_not_called()
 
-        mlflow_model = get_mlflow_model(run.info.artifact_uri)
+        qcflow_model = get_qcflow_model(run.info.artifact_uri)
         model_path = os.path.join(run.info.artifact_uri, MODEL_DIR)
-        input_example = _read_example(mlflow_model, model_path)
+        input_example = _read_example(qcflow_model, model_path)
         assert input_example == question
 
-        pyfunc_model = mlflow.pyfunc.load_model(f"runs:/{run.info.run_id}/model")
+        pyfunc_model = qcflow.pyfunc.load_model(f"runs:/{run.info.run_id}/model")
         # _TestLangChainWrapper mocks this result
         assert pyfunc_model.predict(question) == [TEST_CONTENT]
         log_model_mock.assert_not_called()
 
-        signature = mlflow_model.signature
+        signature = qcflow_model.signature
         assert signature == infer_signature(question, [TEST_CONTENT])
 
 
@@ -376,7 +376,7 @@ def test_loaded_llmchain_autolog():
     reason="Callback does not pass all messages in older versions",
 )
 def test_chat_model_autolog():
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
     model = ChatOpenAI(model="gpt-4o-mini", temperature=0.9)
     messages = [
         SystemMessage(content="You are a helpful assistant."),
@@ -445,7 +445,7 @@ def test_chat_model_autolog():
     reason="ToolCall message is not available in older versions",
 )
 def test_agent_autolog(async_logging_enabled):
-    mlflow.langchain.autolog(log_models=True)
+    qcflow.langchain.autolog(log_models=True)
 
     # Load the agent definition (with OpenAI mock) from the sample script
     from tests.langchain.sample_code.openai_agent import create_openai_agent
@@ -454,7 +454,7 @@ def test_agent_autolog(async_logging_enabled):
     input = {"input": "The result of 2 * 3 is 6."}
     expected_output = {"output": "The result of 2 * 3 is 6."}
 
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
         # ensure __call__ is patched
         assert model(input, return_only_outputs=True) == expected_output
         assert model(input, return_only_outputs=True) == expected_output
@@ -462,14 +462,14 @@ def test_agent_autolog(async_logging_enabled):
 
     model = create_openai_agent()
 
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
         # ensure invoke is patched
         assert model.invoke(input, return_only_outputs=True) == expected_output
         assert model.invoke(input, return_only_outputs=True) == expected_output
         log_model_mock.assert_called_once()
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 4
@@ -481,15 +481,15 @@ def test_agent_autolog(async_logging_enabled):
 
 
 def test_runnable_sequence_autolog(async_logging_enabled):
-    mlflow.langchain.autolog(log_models=True)
+    qcflow.langchain.autolog(log_models=True)
     chain, input_example = create_runnable_sequence()
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
         assert chain.invoke(input_example) == TEST_CONTENT
         assert chain.invoke(input_example) == TEST_CONTENT
         log_model_mock.assert_called_once()
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 2
@@ -513,42 +513,42 @@ def test_runnable_sequence_autolog(async_logging_enabled):
 
 
 def test_loaded_runnable_sequence_autolog():
-    mlflow.langchain.autolog(log_models=True, log_input_examples=True)
+    qcflow.langchain.autolog(log_models=True, log_input_examples=True)
     chain, input_example = create_runnable_sequence()
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         assert chain.invoke(input_example) == TEST_CONTENT
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
-        loaded_model = mlflow.langchain.load_model(f"runs:/{run.info.run_id}/model")
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
+        loaded_model = qcflow.langchain.load_model(f"runs:/{run.info.run_id}/model")
         assert loaded_model.invoke(input_example) == TEST_CONTENT
         log_model_mock.assert_not_called()
 
-        mlflow_model = get_mlflow_model(run.info.artifact_uri)
+        qcflow_model = get_qcflow_model(run.info.artifact_uri)
         model_path = os.path.join(run.info.artifact_uri, MODEL_DIR)
-        saved_example = _read_example(mlflow_model, model_path)
+        saved_example = _read_example(qcflow_model, model_path)
         assert saved_example == input_example
 
-        pyfunc_model = mlflow.pyfunc.load_model(f"runs:/{run.info.run_id}/model")
+        pyfunc_model = qcflow.pyfunc.load_model(f"runs:/{run.info.run_id}/model")
         assert pyfunc_model.predict(input_example) == [TEST_CONTENT]
         log_model_mock.assert_not_called()
 
-        signature = mlflow_model.signature
+        signature = qcflow_model.signature
         assert signature == infer_signature(input_example, [TEST_CONTENT])
 
 
 @pytest.mark.skipif(not _LC_COMMUNITY_INSTALLED, reason="This test requires langchain_community")
 def test_retriever_autolog(tmp_path, async_logging_enabled):
-    mlflow.langchain.autolog(log_models=True)
+    qcflow.langchain.autolog(log_models=True)
     model, query = create_retriever(tmp_path)
     with (
-        mock.patch("mlflow.langchain.log_model") as log_model_mock,
-        mock.patch("mlflow.langchain._langchain_autolog._logger.info") as logger_mock,
+        mock.patch("qcflow.langchain.log_model") as log_model_mock,
+        mock.patch("qcflow.langchain._langchain_autolog._logger.info") as logger_mock,
     ):
         model.get_relevant_documents(query)
         log_model_mock.assert_not_called()
         logger_mock.assert_called_once_with(UNSUPPORTED_LOG_MODEL_MESSAGE)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 1
@@ -562,7 +562,7 @@ def test_retriever_autolog(tmp_path, async_logging_enabled):
 
 @pytest.mark.skipif(not _LC_COMMUNITY_INSTALLED, reason="This test requires langchain_community")
 def test_unsupported_log_model_models_autolog(tmp_path):
-    mlflow.langchain.autolog(log_models=True)
+    qcflow.langchain.autolog(log_models=True)
     retriever, _ = create_retriever(tmp_path)
     prompt = ChatPromptTemplate.from_template(
         "Answer the following question based on the context: {context}\nQuestion: {question}"
@@ -577,10 +577,10 @@ def test_unsupported_log_model_models_autolog(tmp_path):
         | chat_model
         | StrOutputParser()
     )
-    question = "What is MLflow?"
+    question = "What is QCFlow?"
     with (
-        mock.patch("mlflow.langchain._langchain_autolog._logger.info") as logger_mock,
-        mock.patch("mlflow.langchain.log_model") as log_model_mock,
+        mock.patch("qcflow.langchain._langchain_autolog._logger.info") as logger_mock,
+        mock.patch("qcflow.langchain.log_model") as log_model_mock,
     ):
         assert retrieval_chain.invoke(question) == TEST_CONTENT
         logger_mock.assert_called_once_with(UNSUPPORTED_LOG_MODEL_MESSAGE)
@@ -656,13 +656,13 @@ def _extract_callback_handlers(config) -> Optional[list[BaseCallbackHandler]]:
 @pytest.mark.parametrize("invoke_arg", ["args", "kwargs", None])
 @pytest.mark.parametrize("config", _CONFIG_PATTERNS)
 def test_langchain_autolog_callback_injection_in_invoke(invoke_arg, config, async_logging_enabled):
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_runnable()
     original_handlers = _extract_callback_handlers(config)
     _reset_callback_handlers(original_handlers)
 
-    input = {"product": "MLflow"}
+    input = {"product": "QCFlow"}
     if invoke_arg == "args":
         model.invoke(input, config)
     elif invoke_arg == "kwargs":
@@ -671,14 +671,14 @@ def test_langchain_autolog_callback_injection_in_invoke(invoke_arg, config, asyn
         model.invoke(input)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 1
     assert traces[0].info.status == "OK"
     assert traces[0].data.spans[0].name == "RunnableSequence"
     assert traces[0].data.spans[0].inputs == input
-    assert traces[0].data.spans[0].outputs == '[{"role": "user", "content": "What is MLflow?"}]'
+    assert traces[0].data.spans[0].outputs == '[{"role": "user", "content": "What is QCFlow?"}]'
     # Original callback should not be mutated
     handlers = _extract_callback_handlers(config)
     assert handlers == original_handlers
@@ -698,13 +698,13 @@ def test_langchain_autolog_callback_injection_in_invoke(invoke_arg, config, asyn
 async def test_langchain_autolog_callback_injection_in_ainvoke(
     invoke_arg, config, async_logging_enabled
 ):
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_runnable()
     original_handlers = _extract_callback_handlers(config)
     _reset_callback_handlers(original_handlers)
 
-    input = {"product": "MLflow"}
+    input = {"product": "QCFlow"}
     if invoke_arg == "args":
         await model.ainvoke(input, config)
     elif invoke_arg == "kwargs":
@@ -713,14 +713,14 @@ async def test_langchain_autolog_callback_injection_in_ainvoke(
         await model.ainvoke(input)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 1
     assert traces[0].info.status == "OK"
     assert traces[0].data.spans[0].name == "RunnableSequence"
     assert traces[0].data.spans[0].inputs == input
-    assert traces[0].data.spans[0].outputs == '[{"role": "user", "content": "What is MLflow?"}]'
+    assert traces[0].data.spans[0].outputs == '[{"role": "user", "content": "What is QCFlow?"}]'
 
     # Original callback should not be mutated
     handlers = _extract_callback_handlers(config)
@@ -743,13 +743,13 @@ async def test_langchain_autolog_callback_injection_in_ainvoke(
     + [[config, config] for config in _CONFIG_PATTERNS],
 )
 def test_langchain_autolog_callback_injection_in_batch(invoke_arg, config, async_logging_enabled):
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_runnable()
     original_handlers = _extract_callback_handlers(config)
     _reset_callback_handlers(original_handlers)
 
-    input = {"product": "MLflow"}
+    input = {"product": "QCFlow"}
     if invoke_arg == "args":
         model.batch([input] * 2, config)
     elif invoke_arg == "kwargs":
@@ -758,7 +758,7 @@ def test_langchain_autolog_callback_injection_in_batch(invoke_arg, config, async
         model.batch([input] * 2)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 2
@@ -766,7 +766,7 @@ def test_langchain_autolog_callback_injection_in_batch(invoke_arg, config, async
         assert trace.info.status == "OK"
         assert trace.data.spans[0].name == "RunnableSequence"
         assert trace.data.spans[0].inputs == input
-        assert trace.data.spans[0].outputs == '[{"role": "user", "content": "What is MLflow?"}]'
+        assert trace.data.spans[0].outputs == '[{"role": "user", "content": "What is QCFlow?"}]'
 
     # Original callback should not be mutated
     handlers = _extract_callback_handlers(config)
@@ -779,31 +779,31 @@ def test_langchain_autolog_callback_injection_in_batch(invoke_arg, config, async
 
 
 def test_tracing_source_run_in_batch():
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_llmchain()
-    input = {"product": "MLflow"}
-    with mlflow.start_run() as run:
+    input = {"product": "QCFlow"}
+    with qcflow.start_run() as run:
         model.batch([input] * 2)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.request_metadata[TraceMetadataKey.SOURCE_RUN] == run.info.run_id
 
 
 @pytest.mark.skipif(not _LC_COMMUNITY_INSTALLED, reason="This test requires langchain_community")
 def test_tracing_source_run_in_pyfunc_model_predict():
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_runnable()
-    input = {"product": "MLflow"}
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(model, "model")
+    input = {"product": "QCFlow"}
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(model, "model")
 
-    pyfunc_model = mlflow.pyfunc.load_model(model_info.model_uri)
-    with mlflow.start_run() as run:
+    pyfunc_model = qcflow.pyfunc.load_model(model_info.model_uri)
+    with qcflow.start_run() as run:
         pyfunc_model.predict([input] * 2)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.request_metadata[TraceMetadataKey.SOURCE_RUN] == run.info.run_id
 
 
@@ -819,13 +819,13 @@ def test_tracing_source_run_in_pyfunc_model_predict():
 async def test_langchain_autolog_callback_injection_in_abatch(
     invoke_arg, config, async_logging_enabled
 ):
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_runnable()
     original_handlers = _extract_callback_handlers(config)
     _reset_callback_handlers(original_handlers)
 
-    input = {"product": "MLflow"}
+    input = {"product": "QCFlow"}
     if invoke_arg == "args":
         await model.abatch([input] * 2, config)
     elif invoke_arg == "kwargs":
@@ -834,7 +834,7 @@ async def test_langchain_autolog_callback_injection_in_abatch(
         await model.abatch([input] * 2)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 2
@@ -842,7 +842,7 @@ async def test_langchain_autolog_callback_injection_in_abatch(
         assert trace.info.status == "OK"
         assert trace.data.spans[0].name == "RunnableSequence"
         assert trace.data.spans[0].inputs == input
-        assert trace.data.spans[0].outputs == '[{"role": "user", "content": "What is MLflow?"}]'
+        assert trace.data.spans[0].outputs == '[{"role": "user", "content": "What is QCFlow?"}]'
 
     # Original callback should not be mutated
     handlers = _extract_callback_handlers(config)
@@ -857,13 +857,13 @@ async def test_langchain_autolog_callback_injection_in_abatch(
 @pytest.mark.parametrize("invoke_arg", ["args", "kwargs", None])
 @pytest.mark.parametrize("config", _CONFIG_PATTERNS)
 def test_langchain_autolog_callback_injection_in_stream(invoke_arg, config, async_logging_enabled):
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_runnable()
     original_handlers = _extract_callback_handlers(config)
     _reset_callback_handlers(original_handlers)
 
-    input = {"product": "MLflow"}
+    input = {"product": "QCFlow"}
     if invoke_arg == "args":
         list(model.stream(input, config))
     elif invoke_arg == "kwargs":
@@ -872,7 +872,7 @@ def test_langchain_autolog_callback_injection_in_stream(invoke_arg, config, asyn
         list(model.stream(input))
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 1
@@ -896,12 +896,12 @@ def test_langchain_autolog_callback_injection_in_stream(invoke_arg, config, asyn
 async def test_langchain_autolog_callback_injection_in_astream(
     invoke_arg, config, async_logging_enabled
 ):
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_runnable()
     original_handlers = _extract_callback_handlers(config)
     _reset_callback_handlers(original_handlers)
-    input = {"product": "MLflow"}
+    input = {"product": "QCFlow"}
 
     async def invoke_astream(model, config):
         if invoke_arg == "args":
@@ -918,7 +918,7 @@ async def test_langchain_autolog_callback_injection_in_astream(
     await invoke_astream(model, config)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 1
@@ -938,7 +938,7 @@ async def test_langchain_autolog_callback_injection_in_astream(
 
 @pytest.mark.skipif(not _LC_COMMUNITY_INSTALLED, reason="This test requires langchain_community")
 def test_langchain_autolog_produces_expected_traces_with_streaming(tmp_path, async_logging_enabled):
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
     retriever, _ = create_retriever(tmp_path)
     prompt = ChatPromptTemplate.from_template(
         "Answer the following question based on the context: {context}\nQuestion: {question}"
@@ -953,12 +953,12 @@ def test_langchain_autolog_produces_expected_traces_with_streaming(tmp_path, asy
         | chat_model
         | StrOutputParser()
     )
-    question = "What is a good name for a company that makes MLflow?"
+    question = "What is a good name for a company that makes QCFlow?"
     list(retrieval_chain.stream(question))
     retrieval_chain.invoke(question)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 2
@@ -972,7 +972,7 @@ def test_langchain_autolog_produces_expected_traces_with_streaming(tmp_path, asy
 
 
 def test_langchain_autolog_tracing_thread_safe(async_logging_enabled):
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     model = create_openai_runnable()
 
@@ -980,14 +980,14 @@ def test_langchain_autolog_tracing_thread_safe(async_logging_enabled):
         # Add random sleep to simulate real LLM prediction
         time.sleep(random.uniform(0.1, 0.5))
 
-        model.invoke({"product": "MLflow"})
+        model.invoke({"product": "QCFlow"})
 
     with ThreadPoolExecutor(max_workers=8) as executor:
         futures = [executor.submit(_invoke) for _ in range(30)]
         _ = [f.result() for f in futures]
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     assert len(traces) == 30
@@ -1004,25 +1004,25 @@ def test_langchain_tracer_injection_for_arbitrary_runnables(log_traces, async_lo
     should_log_traces = log_traces is not False
 
     if log_traces is not None:
-        mlflow.langchain.autolog(log_traces=log_traces)
+        qcflow.langchain.autolog(log_traces=log_traces)
     else:
-        mlflow.langchain.autolog()
+        qcflow.langchain.autolog()
 
     add = RunnableLambda(func=lambda x: x + 1)
     square = RunnableLambda(func=lambda x: x**2)
     model = RouterRunnable(runnables={"add": add, "square": square})
 
-    with mock.patch("mlflow.langchain._langchain_autolog._logger.debug") as mock_debug:
+    with mock.patch("qcflow.langchain._langchain_autolog._logger.debug") as mock_debug:
         model.invoke({"key": "square", "input": 3})
         if should_log_traces:
             mock_debug.assert_called_once_with(
-                "Injected MLflow callbacks into the model call args."
+                "Injected QCFlow callbacks into the model call args."
             )
         else:
             mock_debug.assert_not_called()
 
     if async_logging_enabled and should_log_traces:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = get_traces()
     if should_log_traces:
@@ -1048,11 +1048,11 @@ def test_langchain_autolog_extra_model_classes_no_duplicate_patching():
         def _type(self):
             return "CHAT_MODEL"
 
-    mlflow.langchain.autolog(extra_model_classes=[CustomRunnable, AnotherRunnable])
+    qcflow.langchain.autolog(extra_model_classes=[CustomRunnable, AnotherRunnable])
     model = AnotherRunnable()
-    with mock.patch("mlflow.langchain._langchain_autolog._logger.debug") as mock_debug:
+    with mock.patch("qcflow.langchain._langchain_autolog._logger.debug") as mock_debug:
         assert model.invoke("test") == "test"
-        mock_debug.assert_called_once_with("Injected MLflow callbacks into the model call args.")
+        mock_debug.assert_called_once_with("Injected QCFlow callbacks into the model call args.")
         assert mock_debug.call_count == 1
 
 
@@ -1061,15 +1061,15 @@ def test_langchain_autolog_extra_model_classes_warning():
         def __init__(self, x):
             self.x = x
 
-    with mock.patch("mlflow.langchain.logger.warning") as mock_warning:
-        mlflow.langchain.autolog(extra_model_classes=[NotARunnable])
+    with mock.patch("qcflow.langchain.logger.warning") as mock_warning:
+        qcflow.langchain.autolog(extra_model_classes=[NotARunnable])
         mock_warning.assert_called_once_with(
             "Unsupported classes found in extra_model_classes: ['NotARunnable']. "
             "Only subclasses of Runnable are supported."
         )
         mock_warning.reset_mock()
 
-        mlflow.langchain.autolog(extra_model_classes=[Runnable])
+        qcflow.langchain.autolog(extra_model_classes=[Runnable])
         mock_warning.assert_not_called()
 
 
@@ -1083,15 +1083,15 @@ def test_set_retriever_schema_work_for_langchain_model():
     )
 
     model = create_openai_llmchain()
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(model, "model", input_example="MLflow")
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(model, "model", input_example="QCFlow")
 
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
-    pyfunc_model = mlflow.pyfunc.load_model(model_info.model_uri)
-    pyfunc_model.predict("MLflow")
+    pyfunc_model = qcflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc_model.predict("QCFlow")
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert DependenciesSchemasType.RETRIEVERS.value in trace.info.tags
 
 
@@ -1104,14 +1104,14 @@ def test_langchain_auto_tracing_work_when_langchain_parent_package_not_installed
         return original_import(name, *args)
 
     with mock.patch("builtins.__import__", side_effect=_mock_import):
-        mlflow.langchain.autolog()
+        qcflow.langchain.autolog()
 
         chain, input_example = create_runnable_sequence()
         assert chain.invoke(input_example) == TEST_CONTENT
         assert chain.invoke(input_example) == TEST_CONTENT
 
         if async_logging_enabled:
-            mlflow.flush_trace_async_logging(terminate=True)
+            qcflow.flush_trace_async_logging(terminate=True)
 
         traces = get_traces()
         assert len(traces) == 2

@@ -1,4 +1,4 @@
-"""Script that generates a dump of the MLflow tracking database schema"""
+"""Script that generates a dump of the QCFlow tracking database schema"""
 
 import os
 import sys
@@ -7,7 +7,7 @@ import tempfile
 import sqlalchemy
 from sqlalchemy.schema import CreateTable, MetaData
 
-from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
+from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
 
 
 def dump_db_schema(db_url, dst_file):

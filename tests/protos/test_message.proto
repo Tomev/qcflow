@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package mlflow;
+package qcflow;
 
 message SampleMessage {
   optional int32 field_int32 = 1;

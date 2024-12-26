@@ -82,10 +82,10 @@ def generate_schema(state):
     schema_builder += "# GENERATED FILE. PLEASE DON'T MODIFY.\n"
     schema_builder += "# Run python3 ./dev/proto_to_graphql/code_generator.py to regenerate.\n"
     schema_builder += "import graphene\n"
-    schema_builder += "import mlflow\n"
-    schema_builder += "from mlflow.server.graphql.graphql_custom_scalars import LongString\n"
-    schema_builder += "from mlflow.server.graphql.graphql_errors import ApiError\n"
-    schema_builder += "from mlflow.utils.proto_json_utils import parse_dict\n"
+    schema_builder += "import qcflow\n"
+    schema_builder += "from qcflow.server.graphql.graphql_custom_scalars import LongString\n"
+    schema_builder += "from qcflow.server.graphql.graphql_errors import ApiError\n"
+    schema_builder += "from qcflow.utils.proto_json_utils import parse_dict\n"
     schema_builder += "\n"
 
     for enum in sorted(state.enums, key=lambda item: item.full_name):
@@ -215,11 +215,11 @@ def generate_resolver_function(method):
     function_builder += f"\n{INDENT}def resolve_{full_method_name}(self, info, input):"
     function_builder += f"\n{INDENT2}input_dict = vars(input)"
     function_builder += (
-        f"\n{INDENT2}request_message = mlflow.protos.{pb2_file_name}.{pascal_case_method_name}()"
+        f"\n{INDENT2}request_message = qcflow.protos.{pb2_file_name}.{pascal_case_method_name}()"
     )
     function_builder += f"\n{INDENT2}parse_dict(input_dict, request_message)"
     function_builder += (
-        f"\n{INDENT2}return mlflow.server.handlers.{snake_case_method_name}_impl(request_message)"
+        f"\n{INDENT2}return qcflow.server.handlers.{snake_case_method_name}_impl(request_message)"
     )
     function_builder += "\n"
     return function_builder

@@ -70,17 +70,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           changed_files="$(gh pr view --repo ${{ github.repository }} ${{ needs.check-comment.outputs.pull_number }} --json files --jq '.files.[].path')"
-          protos=$([[ -z $(echo "$changed_files" | grep '^\(mlflow/protos\|tests/protos\)') ]] && echo "false" || echo "true")
-          js=$([[ -z $(echo "$changed_files" | grep '^mlflow/server/js') ]] && echo "false" || echo "true")
-          r=$([[ -z $(echo "$changed_files" | grep '^mlflow/R/mlflow') ]] && echo "false" || echo "true")
+          protos=$([[ -z $(echo "$changed_files" | grep '^\(qcflow/protos\|tests/protos\)') ]] && echo "false" || echo "true")
+          js=$([[ -z $(echo "$changed_files" | grep '^qcflow/server/js') ]] && echo "false" || echo "true")
+          r=$([[ -z $(echo "$changed_files" | grep '^qcflow/R/qcflow') ]] && echo "false" || echo "true")
           echo "protos=$protos" >> $GITHUB_OUTPUT
           echo "js=$js" >> $GITHUB_OUTPUT
           echo "r=$r" >> $GITHUB_OUTPUT
       # Merge the base branch (which is usually master) to apply formatting using the latest configurations.
       - name: Merge base branch
         run: |
-          git config user.name 'mlflow-automation'
-          git config user.email 'mlflow-automation@users.noreply.github.com'
+          git config user.name 'qcflow-automation'
+          git config user.email 'qcflow-automation@users.noreply.github.com'
           git remote add base https://github.com/${{ needs.check-comment.outputs.base_repo }}.git
           git fetch base ${{ needs.check-comment.outputs.base_ref }}
           git merge base/${{ needs.check-comment.outputs.base_ref }}
@@ -116,16 +116,16 @@ jobs:
       - if: steps.diff.outputs.js == 'true'
         uses: ./.github/actions/setup-node
       - if: steps.diff.outputs.js == 'true'
-        working-directory: mlflow/server/js
+        working-directory: qcflow/server/js
         run: |
           yarn install
       - if: steps.diff.outputs.js == 'true'
-        working-directory: mlflow/server/js
+        working-directory: qcflow/server/js
         run: |
           yarn lint:fix
           yarn prettier:fix
       - if: steps.diff.outputs.js == 'true'
-        working-directory: mlflow/server/js
+        working-directory: qcflow/server/js
         run: |
           yarn i18n
       # ************************************************************************
@@ -183,8 +183,8 @@ jobs:
           BASE_REPO: ${{ needs.check-comment.outputs.base_repo }}
           BASE_REF: ${{ needs.check-comment.outputs.base_ref }}
         run: |
-          git config user.name 'mlflow-automation'
-          git config user.email 'mlflow-automation@users.noreply.github.com'
+          git config user.name 'qcflow-automation'
+          git config user.email 'qcflow-automation@users.noreply.github.com'
           git remote add base https://github.com/${BASE_REPO}.git
           git fetch base $BASE_REF
           git merge base/${BASE_REF}

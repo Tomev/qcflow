@@ -5,11 +5,11 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from mlflow.data.dataset_source_registry import get_dataset_source_from_json, resolve_dataset_source
-from mlflow.data.http_dataset_source import HTTPDatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.utils.os import is_windows
-from mlflow.utils.rest_utils import cloud_storage_http_request
+from qcflow.data.dataset_source_registry import get_dataset_source_from_json, resolve_dataset_source
+from qcflow.data.http_dataset_source import HTTPDatasetSource
+from qcflow.exceptions import MlflowException
+from qcflow.utils.os import is_windows
+from qcflow.utils.rest_utils import cloud_storage_http_request
 
 
 def test_source_to_and_from_json():
@@ -50,7 +50,7 @@ def test_http_dataset_source_is_registered_and_resolvable():
 
 def test_source_load(tmp_path):
     source1 = HTTPDatasetSource(
-        "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-red.csv"
+        "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-red.csv"
     )
 
     loaded1 = source1.load()
@@ -69,7 +69,7 @@ def test_source_load(tmp_path):
     assert len(parsed1) > 10
 
     source2 = HTTPDatasetSource(
-        "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-red.csv#foo?query=param"
+        "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-red.csv#foo?query=param"
     )
     loaded3 = source2.load(dst_path=tmp_path)
     assert loaded3 == str(tmp_path / "winequality-red.csv")
@@ -92,10 +92,10 @@ def test_source_load(tmp_path):
         kwargs["timeout"] = 5
         return cloud_storage_http_request(*args, **kwargs)
 
-    source5 = HTTPDatasetSource("https://nonexistentwebsitebuiltbythemlflowteam112312.com")
+    source5 = HTTPDatasetSource("https://nonexistentwebsitebuiltbytheqcflowteam112312.com")
     with (
         mock.patch(
-            "mlflow.data.http_dataset_source.cloud_storage_http_request",
+            "qcflow.data.http_dataset_source.cloud_storage_http_request",
             side_effect=cloud_storage_http_request_with_fast_fail,
         ),
         pytest.raises(Exception, match="Max retries exceeded with url"),
@@ -122,11 +122,11 @@ def test_source_load_with_content_disposition_header(attachment_filename, expect
         return response
 
     with mock.patch(
-        "mlflow.data.http_dataset_source.cloud_storage_http_request",
+        "qcflow.data.http_dataset_source.cloud_storage_http_request",
         side_effect=download_with_mock_content_disposition_headers,
     ):
         source = HTTPDatasetSource(
-            "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-red.csv"
+            "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-red.csv"
         )
         source.load()
         loaded = source.load()
@@ -150,11 +150,11 @@ def test_source_load_with_content_disposition_header_invalid_filename(filename):
         return response
 
     with mock.patch(
-        "mlflow.data.http_dataset_source.cloud_storage_http_request",
+        "qcflow.data.http_dataset_source.cloud_storage_http_request",
         side_effect=download_with_mock_content_disposition_headers,
     ):
         source = HTTPDatasetSource(
-            "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-red.csv"
+            "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-red.csv"
         )
 
         with pytest.raises(MlflowException, match="Invalid filename in Content-Disposition header"):
@@ -176,11 +176,11 @@ def test_source_load_with_content_disposition_header_invalid_filename_windows(fi
         return response
 
     with mock.patch(
-        "mlflow.data.http_dataset_source.cloud_storage_http_request",
+        "qcflow.data.http_dataset_source.cloud_storage_http_request",
         side_effect=download_with_mock_content_disposition_headers,
     ):
         source = HTTPDatasetSource(
-            "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-red.csv"
+            "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-red.csv"
         )
 
         # Expect an MlflowException for invalid filenames

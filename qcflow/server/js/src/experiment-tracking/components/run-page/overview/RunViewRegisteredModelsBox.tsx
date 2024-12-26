@@ -33,7 +33,7 @@ export const RunViewRegisteredModelsBox = ({
         >
           <RegisteredModelOkIcon /> {model.name}{' '}
           <Tag
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewregisteredmodelsbox.tsx_40"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewregisteredmodelsbox.tsx_40"
             css={{ cursor: 'pointer' }}
           >
             v{model.version}

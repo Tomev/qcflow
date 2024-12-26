@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from mlflow.entities import Span
+from qcflow.entities import Span
 
 
 @dataclass

@@ -1,7 +1,7 @@
-mlflow.diviner
+qcflow.diviner
 ==============
 
-.. automodule:: mlflow.diviner
+.. automodule:: qcflow.diviner
     :members:
     :undoc-members:
     :show-inheritance:

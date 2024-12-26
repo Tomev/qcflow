@@ -4,26 +4,26 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModelTag,
 )
-from mlflow.environment_variables import MLFLOW_TRACKING_URI
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.environment_variables import QCFLOW_TRACKING_URI
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_ALREADY_EXISTS,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.store.model_registry.dbmodels.models import (
+from qcflow.store.model_registry.dbmodels.models import (
     SqlModelVersion,
     SqlModelVersionTag,
     SqlRegisteredModel,
     SqlRegisteredModelTag,
 )
-from mlflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
+from qcflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
 
 from tests.helper_functions import random_str
 
@@ -32,7 +32,7 @@ pytestmark = pytest.mark.notrackingurimock
 
 @pytest.fixture
 def store(tmp_sqlite_uri):
-    db_uri_from_env_var = MLFLOW_TRACKING_URI.get()
+    db_uri_from_env_var = QCFLOW_TRACKING_URI.get()
     store = SqlAlchemyStore(db_uri_from_env_var if db_uri_from_env_var else tmp_sqlite_uri)
     yield store
 
@@ -1333,7 +1333,7 @@ def test_search_registered_model_order_by(store):
     # explicitly mock the creation_timestamps because timestamps seem to be unstable in Windows
     for i in range(50):
         with mock.patch(
-            "mlflow.store.model_registry.sqlalchemy_store.get_current_time_millis",
+            "qcflow.store.model_registry.sqlalchemy_store.get_current_time_millis",
             return_value=i,
         ):
             rms.append(_rm_maker(store, f"RM{i:03}").name)
@@ -1400,13 +1400,13 @@ def test_search_registered_model_order_by(store):
     )
     assert rms == result
     with mock.patch(
-        "mlflow.store.model_registry.sqlalchemy_store.get_current_time_millis",
+        "qcflow.store.model_registry.sqlalchemy_store.get_current_time_millis",
         return_value=1,
     ):
         rm1 = _rm_maker(store, "MR1").name
         rm2 = _rm_maker(store, "MR2").name
     with mock.patch(
-        "mlflow.store.model_registry.sqlalchemy_store.get_current_time_millis",
+        "qcflow.store.model_registry.sqlalchemy_store.get_current_time_millis",
         return_value=2,
     ):
         rm3 = _rm_maker(store, "MR3").name

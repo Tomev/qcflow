@@ -1,11 +1,11 @@
 from typing import Any, Optional
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.run_data import RunData
-from mlflow.entities.run_info import RunInfo
-from mlflow.entities.run_inputs import RunInputs
-from mlflow.exceptions import MlflowException
-from mlflow.protos.service_pb2 import Run as ProtoRun
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.run_data import RunData
+from qcflow.entities.run_info import RunInfo
+from qcflow.entities.run_inputs import RunInputs
+from qcflow.exceptions import MlflowException
+from qcflow.protos.service_pb2 import Run as ProtoRun
 
 
 class Run(_MlflowObject):
@@ -27,7 +27,7 @@ class Run(_MlflowObject):
         """
         The run metadata, such as the run id, start time, and status.
 
-        :rtype: :py:class:`mlflow.entities.RunInfo`
+        :rtype: :py:class:`qcflow.entities.RunInfo`
         """
         return self._info
 
@@ -36,7 +36,7 @@ class Run(_MlflowObject):
         """
         The run data, including metrics, parameters, and tags.
 
-        :rtype: :py:class:`mlflow.entities.RunData`
+        :rtype: :py:class:`qcflow.entities.RunData`
         """
         return self._data
 
@@ -45,7 +45,7 @@ class Run(_MlflowObject):
         """
         The run inputs, including dataset inputs
 
-        :rtype: :py:class:`mlflow.entities.RunInputs`
+        :rtype: :py:class:`qcflow.entities.RunInputs`
         """
         return self._inputs
 

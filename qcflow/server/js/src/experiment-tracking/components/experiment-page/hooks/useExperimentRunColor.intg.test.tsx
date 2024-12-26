@@ -124,7 +124,7 @@ describe('useExperimentRunColor - integration test', () => {
 
     // Assert that the color was saved in the API
     expect(MlflowService.setTag).toHaveBeenLastCalledWith({
-      key: 'mlflow.runColor',
+      key: 'qcflow.runColor',
       run_uuid: run_1_uuid,
       value: '#ff0000',
     });
@@ -141,7 +141,7 @@ describe('useExperimentRunColor - integration test', () => {
 
     // Assert that the color was saved in the API
     expect(MlflowService.setTag).toHaveBeenLastCalledWith({
-      key: 'mlflow.runColor',
+      key: 'qcflow.runColor',
       run_uuid: run_2_uuid,
       value: '#00ff00',
     });
@@ -167,7 +167,7 @@ describe('useExperimentRunColor - integration test', () => {
         runs: [
           {
             info: { runUuid: run_1_uuid },
-            data: { tags: [{ key: 'mlflow.runColor', value: '#ff00ff' }] },
+            data: { tags: [{ key: 'qcflow.runColor', value: '#ff00ff' }] },
           },
         ],
       } as any),

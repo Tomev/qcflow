@@ -1,26 +1,26 @@
 """
-Internal package providing a Python CRUD interface to MLflow models and versions.
-This is a lower level API than the :py:mod:`mlflow.tracking.fluent` module, and is
-exposed in the :py:mod:`mlflow.tracking` module.
+Internal package providing a Python CRUD interface to QCFlow models and versions.
+This is a lower level API than the :py:mod:`qcflow.tracking.fluent` module, and is
+exposed in the :py:mod:`qcflow.tracking` module.
 """
 
 import logging
 
-from mlflow.entities.model_registry import ModelVersionTag, RegisteredModelTag
-from mlflow.exceptions import MlflowException
-from mlflow.store.model_registry import (
+from qcflow.entities.model_registry import ModelVersionTag, RegisteredModelTag
+from qcflow.exceptions import MlflowException
+from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_DEFAULT,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
 )
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS, utils
-from mlflow.utils.arguments_utils import _get_arg_names
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS, utils
+from qcflow.utils.arguments_utils import _get_arg_names
 
 _logger = logging.getLogger(__name__)
 
 
 class ModelRegistryClient:
     """
-    Client of an MLflow Model Registry Server that creates and manages registered
+    Client of an QCFlow Model Registry Server that creates and manages registered
     models and model versions.
     """
 
@@ -49,11 +49,11 @@ class ModelRegistryClient:
         Args:
             name: Name of the new model. This is expected to be unique in the backend store.
             tags: A dictionary of key-value pairs that are converted into
-                :py:class:`mlflow.entities.model_registry.RegisteredModelTag` objects.
+                :py:class:`qcflow.entities.model_registry.RegisteredModelTag` objects.
             description: Description of the model.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.RegisteredModel`
+            A single object of :py:class:`qcflow.entities.model_registry.RegisteredModel`
             created by backend.
 
         """
@@ -73,7 +73,7 @@ class ModelRegistryClient:
             description: New description.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         """
         return self.store.update_registered_model(name=name, description=description)
@@ -86,7 +86,7 @@ class ModelRegistryClient:
             new_name: New proposed name for the registered model.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         """
         if new_name.strip() == "":
@@ -120,7 +120,7 @@ class ModelRegistryClient:
                 a ``search_registered_models`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.RegisteredModel` objects
+            A PagedList of :py:class:`qcflow.entities.model_registry.RegisteredModel` objects
             that satisfy the search expressions. The pagination token for the next page can be
             obtained via the ``token`` attribute of the object.
 
@@ -133,7 +133,7 @@ class ModelRegistryClient:
             name: Name of the registered model to get.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
         """
         return self.store.get_registered_model(name)
 
@@ -147,7 +147,7 @@ class ModelRegistryClient:
                 'Staging' and 'Production' stages.
 
         Returns:
-            List of :py:class:`mlflow.entities.model_registry.ModelVersion` objects.
+            List of :py:class:`qcflow.entities.model_registry.ModelVersion` objects.
 
         """
         return self.store.get_latest_versions(name, stages)
@@ -195,22 +195,22 @@ class ModelRegistryClient:
         Args:
             name: Name of the containing registered model.
             source: URI indicating the location of the model artifacts.
-            run_id: Run ID from MLflow tracking server that generated the model.
+            run_id: Run ID from QCFlow tracking server that generated the model.
             tags: A dictionary of key-value pairs that are converted into
-                :py:class:`mlflow.entities.model_registry.ModelVersionTag` objects.
-            run_link: Link to the run from an MLflow tracking server that generated this model.
+                :py:class:`qcflow.entities.model_registry.ModelVersionTag` objects.
+            run_link: Link to the run from an QCFlow tracking server that generated this model.
             description: Description of the version.
             await_creation_for: Number of seconds to wait for the model version to finish being
                 created and is in ``READY`` status. By default, the function
                 waits for five minutes. Specify 0 or None to skip waiting.
-            local_model_path: Local path to the MLflow model, if it's already accessible on the
+            local_model_path: Local path to the QCFlow model, if it's already accessible on the
                 local filesystem. Can be used by AbstractStores that upload model version files
                 to the model registry to avoid a redundant download from the source location when
                 logging and registering a model via a single
-                mlflow.<flavor>.log_model(..., registered_model_name) call.
+                qcflow.<flavor>.log_model(..., registered_model_name) call.
 
         Returns:
-            Single :py:class:`mlflow.entities.model_registry.ModelVersion` object created by
+            Single :py:class:`qcflow.entities.model_registry.ModelVersion` object created by
             backend.
 
         """
@@ -240,13 +240,13 @@ class ModelRegistryClient:
         """Copy a model version from one registered model to another as a new model version.
 
         Args:
-            src_mv: A :py:class:`mlflow.entities.model_registry.ModelVersion` object representing
+            src_mv: A :py:class:`qcflow.entities.model_registry.ModelVersion` object representing
                 the source model version.
             dst_name: The name of the registered model to copy the model version to. If a
                 registered model with this name does not exist, it will be created.
 
         Returns:
-            Single :py:class:`mlflow.entities.model_registry.ModelVersion` object representing
+            Single :py:class:`qcflow.entities.model_registry.ModelVersion` object representing
             the cloned model version.
 
         """
@@ -275,7 +275,7 @@ class ModelRegistryClient:
                 raised.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         """
         if stage.strip() == "":
@@ -294,7 +294,7 @@ class ModelRegistryClient:
             version: Version number of the model version.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
         """
         return self.store.get_model_version(name, version)
 
@@ -345,7 +345,7 @@ class ModelRegistryClient:
                 a ``search_model_versions`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A PagedList of :py:class:`qcflow.entities.model_registry.ModelVersion`
             objects that satisfy the search expressions. The pagination token for the next
             page can be obtained via the ``token`` attribute of the object.
 
@@ -419,7 +419,7 @@ class ModelRegistryClient:
             alias: Name of the alias.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         """
         return self.store.get_model_version_by_alias(name, alias)

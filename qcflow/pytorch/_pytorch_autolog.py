@@ -1,9 +1,9 @@
 import time
 
-import mlflow
-from mlflow.entities import Metric, Param
-from mlflow.tracking import MlflowClient
-from mlflow.utils.autologging_utils.metrics_queue import (
+import qcflow
+from qcflow.entities import Metric, Param
+from qcflow.tracking import MlflowClient
+from qcflow.utils.autologging_utils.metrics_queue import (
     add_to_metrics_queue,
     flush_metrics_queue,
 )
@@ -12,11 +12,11 @@ from mlflow.utils.autologging_utils.metrics_queue import (
 def patched_add_hparams(original, self, hparam_dict, metric_dict, *args, **kwargs):
     """use a synchronous call here since this is going to get called very infrequently."""
 
-    run = mlflow.active_run()
+    run = qcflow.active_run()
 
     if run is not None and hparam_dict:
         run_id = run.info.run_id
-        # str() is required by mlflow :(
+        # str() is required by qcflow :(
         params_arr = [Param(key, str(value)) for key, value in hparam_dict.items()]
         metrics_arr = [
             Metric(key, value, int(time.time() * 1000), 0) for key, value in metric_dict.items()
@@ -26,14 +26,14 @@ def patched_add_hparams(original, self, hparam_dict, metric_dict, *args, **kwarg
     return original(self, hparam_dict, metric_dict, *args, **kwargs)
 
 
-def patched_add_event(original, self, event, *args, mlflow_log_every_n_step, **kwargs):
-    run = mlflow.active_run()
-    if run is not None and event.WhichOneof("what") == "summary" and mlflow_log_every_n_step:
+def patched_add_event(original, self, event, *args, qcflow_log_every_n_step, **kwargs):
+    run = qcflow.active_run()
+    if run is not None and event.WhichOneof("what") == "summary" and qcflow_log_every_n_step:
         summary = event.summary
         global_step = args[0] if len(args) > 0 else kwargs.get("global_step")
         global_step = global_step or 0
         for v in summary.value:
-            if v.HasField("simple_value") and global_step % mlflow_log_every_n_step == 0:
+            if v.HasField("simple_value") and global_step % qcflow_log_every_n_step == 0:
                 add_to_metrics_queue(
                     key=v.tag,
                     value=v.simple_value,

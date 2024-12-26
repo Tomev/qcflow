@@ -1,10 +1,10 @@
 """
-The ``mlflow.xgboost`` module provides an API for logging and loading XGBoost models.
+The ``qcflow.xgboost`` module provides an API for logging and loading XGBoost models.
 This module exports XGBoost models with the following flavors:
 
 XGBoost (native) format
     This is the main flavor that can be loaded back into XGBoost.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
 
 .. _xgboost.Booster:
@@ -30,24 +30,24 @@ from typing import Any, Optional
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.numpy_dataset import from_numpy
-from mlflow.data.pandas_dataset import from_pandas
-from mlflow.entities.dataset_input import DatasetInput
-from mlflow.entities.input_tag import InputTag
-from mlflow.models import Model, ModelInputExample, ModelSignature, infer_signature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.sklearn import _SklearnTrainingSession
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.tracking.context import registry as context_registry
-from mlflow.utils import _get_fully_qualified_class_name
-from mlflow.utils.arguments_utils import _get_arg_names
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.numpy_dataset import from_numpy
+from qcflow.data.pandas_dataset import from_pandas
+from qcflow.entities.dataset_input import DatasetInput
+from qcflow.entities.input_tag import InputTag
+from qcflow.models import Model, ModelInputExample, ModelSignature, infer_signature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.sklearn import _SklearnTrainingSession
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.tracking.context import registry as context_registry
+from qcflow.utils import _get_fully_qualified_class_name
+from qcflow.utils.arguments_utils import _get_arg_names
+from qcflow.utils.autologging_utils import (
     ENSURE_AUTOLOGGING_ENABLED_TEXT,
     INPUT_EXAMPLE_SAMPLE_ROWS,
     InputExampleInfo,
@@ -55,35 +55,35 @@ from mlflow.utils.autologging_utils import (
     autologging_integration,
     batch_metrics_logger,
     get_autologging_config,
-    get_mlflow_run_params_for_fn_args,
+    get_qcflow_run_params_for_fn_args,
     picklable_exception_safe_function,
     resolve_input_example_and_signature,
     safe_patch,
 )
-from mlflow.utils.class_utils import _get_class_from_string
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.utils.class_utils import _get_class_from_string
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATASET_CONTEXT,
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATASET_CONTEXT,
 )
-from mlflow.utils.model_utils import (
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "xgboost"
 
@@ -93,7 +93,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor. Calls to
+        A list of default pip requirements for QCFlow Models produced by this flavor. Calls to
         :func:`save_model()` and :func:`log_model()` produce a pip environment that, at minimum,
         contains these requirements.
     """
@@ -103,10 +103,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
@@ -115,7 +115,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -131,7 +131,7 @@ def save_model(
         path: Local path where the model is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
         signature: {{ signature }}
         input_example: {{ input_example }}
         pip_requirements: {{ pip_requirements }}
@@ -147,9 +147,9 @@ def save_model(
     _validate_and_prepare_target_save_path(path)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _XGBModelWrapper(xgb_model)
@@ -158,9 +158,9 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
     model_data_subpath = f"model.{model_format}"
     model_data_path = os.path.join(path, model_data_subpath)
 
@@ -168,14 +168,14 @@ def save_model(
     xgb_model.save_model(model_data_path)
     xgb_model_class = _get_fully_qualified_class_name(xgb_model)
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.xgboost",
+        qcflow_model,
+        loader_module="qcflow.xgboost",
         data=model_data_subpath,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
     )
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         xgb_version=xgb.__version__,
         data=model_data_subpath,
@@ -184,15 +184,15 @@ def save_model(
         code=code_dir_subpath,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -237,7 +237,7 @@ def log_model(
     metadata=None,
     **kwargs,
 ):
-    """Log an XGBoost model as an MLflow artifact for the current run.
+    """Log an XGBoost model as an QCFlow artifact for the current run.
 
     Args:
         xgb_model: XGBoost model (an instance of `xgboost.Booster`_ or models that implement the
@@ -260,12 +260,12 @@ def log_model(
         kwargs: kwargs to pass to `xgboost.Booster.save_model`_ method.
 
     Returns
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.xgboost,
+        flavor=qcflow.xgboost,
         registered_model_name=registered_model_name,
         xgb_model=xgb_model,
         model_format=model_format,
@@ -285,13 +285,13 @@ def _load_model(path):
     """Load Model Implementation.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``xgboost`` flavor
-        (MLflow < 1.22.0) or the top-level MLflow Model directory (MLflow >= 1.22.0).
+        path: Local filesystem path to the QCFlow Model with the ``xgboost`` flavor
+        (QCFlow < 1.22.0) or the top-level QCFlow Model directory (QCFlow >= 1.22.0).
     """
     model_dir = os.path.dirname(path) if os.path.isfile(path) else path
     flavor_conf = _get_flavor_configuration(model_path=model_dir, flavor_name=FLAVOR_NAME)
 
-    # XGBoost models saved in MLflow >=1.22.0 have `model_class`
+    # XGBoost models saved in QCFlow >=1.22.0 have `model_class`
     # in the XGBoost flavor configuration to specify its XGBoost model class.
     # When loading models, we first get the XGBoost model from
     # its flavor configuration and then create an instance based on its class.
@@ -307,7 +307,7 @@ def _load_pyfunc(path):
     """Load PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``xgboost`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``xgboost`` flavor.
     """
     return _XGBModelWrapper(_load_model(path))
 
@@ -316,15 +316,15 @@ def load_model(model_uri, dst_path=None):
     """Load an XGBoost model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
@@ -442,7 +442,7 @@ def autolog(
     extra_tags=None,
 ):
     """
-    Enables (or disables) and configures autologging from XGBoost to MLflow. Logs the following:
+    Enables (or disables) and configures autologging from XGBoost to QCFlow. Logs the following:
 
         - parameters specified in `xgboost.train`_.
         - metrics on each iteration (if ``evals`` specified).
@@ -458,20 +458,20 @@ def autolog(
         importance_types: Importance types to log. If unspecified, defaults to ``["weight"]``.
         log_input_examples: If ``True``, input examples from training datasets are collected and
             logged along with XGBoost model artifacts during training. If
-            ``False``, input examples are not logged. Note: Input examples are MLflow model
+            ``False``, input examples are not logged. Note: Input examples are QCFlow model
             attributes and are only collected if ``log_models`` is also ``True``.
         log_model_signatures: If ``True``,
-            :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
+            :py:class:`ModelSignatures <qcflow.models.ModelSignature>`
             describing model inputs and outputs are collected and logged along
             with XGBoost model artifacts during training. If ``False``,
             signatures are not logged.
-            Note: Model signatures are MLflow model attributes
+            Note: Model signatures are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
-        log_models: If ``True``, trained models are logged as MLflow model artifacts.
+        log_models: If ``True``, trained models are logged as QCFlow model artifacts.
             If ``False``, trained models are not logged.
-            Input examples and model signatures, which are attributes of MLflow models,
+            Input examples and model signatures, which are attributes of QCFlow models,
             are also omitted when ``log_models`` is ``False``.
-        log_datasets: If ``True``, train and validation dataset information is logged to MLflow
+        log_datasets: If ``True``, train and validation dataset information is logged to QCFlow
             Tracking if applicable. If ``False``, dataset information is not logged.
         disable: If ``True``, disables the XGBoost autologging integration. If ``False``,
             enables the XGBoost autologging integration.
@@ -479,9 +479,9 @@ def autolog(
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
-            xgboost that have not been tested against this version of the MLflow client
+            xgboost that have not been tested against this version of the QCFlow client
             or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during XGBoost
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during XGBoost
             autologging. If ``False``, show all events and warnings during XGBoost
             autologging.
         registered_model_name: If given, each time a model is trained, it is registered as a
@@ -527,17 +527,17 @@ def autolog(
             """
             # TODO: Remove `replace("SNAPSHOT", "dev")` once the following issue is addressed:
             #       https://github.com/dmlc/xgboost/issues/6984
-            from mlflow.xgboost._autolog import IS_TRAINING_CALLBACK_SUPPORTED
+            from qcflow.xgboost._autolog import IS_TRAINING_CALLBACK_SUPPORTED
 
             if IS_TRAINING_CALLBACK_SUPPORTED:
-                from mlflow.xgboost._autolog import AutologCallback
+                from qcflow.xgboost._autolog import AutologCallback
 
                 # In xgboost >= 1.3.0, user-defined callbacks should inherit
                 # `xgboost.callback.TrainingCallback`:
                 # https://xgboost.readthedocs.io/en/latest/python/callbacks.html#defining-your-own-callback
                 return AutologCallback(metrics_logger, eval_results)
             else:
-                from mlflow.xgboost._autolog import autolog_callback
+                from qcflow.xgboost._autolog import autolog_callback
 
                 return picklable_exception_safe_function(
                     functools.partial(
@@ -634,7 +634,7 @@ def autolog(
                 try:
                     filepath = os.path.join(tmpdir, f"feature_importance_{imp_type}.png")
                     fig.savefig(filepath)
-                    mlflow.log_artifact(filepath)
+                    qcflow.log_artifact(filepath)
                 finally:
                     plt.close(fig)
 
@@ -642,7 +642,7 @@ def autolog(
         # logging booster params separately to extract key/value pairs and make it easier to
         # compare them across runs.
         booster_params = args[0] if len(args) > 0 else kwargs["params"]
-        autologging_client.log_params(run_id=mlflow.active_run().info.run_id, params=booster_params)
+        autologging_client.log_params(run_id=qcflow.active_run().info.run_id, params=booster_params)
 
         unlogged_params = [
             "params",
@@ -655,11 +655,11 @@ def autolog(
             "callbacks",
             "learning_rates",
         ]
-        params_to_log_for_fn = get_mlflow_run_params_for_fn_args(
+        params_to_log_for_fn = get_qcflow_run_params_for_fn_args(
             original, args, kwargs, unlogged_params
         )
         autologging_client.log_params(
-            run_id=mlflow.active_run().info.run_id, params=params_to_log_for_fn
+            run_id=qcflow.active_run().info.run_id, params=params_to_log_for_fn
         )
 
         param_logging_operations = autologging_client.flush(synchronous=False)
@@ -671,7 +671,7 @@ def autolog(
         eval_results = []
         callbacks_index = all_arg_names.index("callbacks")
 
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
 
         dtrain = args[1] if len(args) > 1 else kwargs.get("dtrain")
 
@@ -690,7 +690,7 @@ def autolog(
                 dataset_logging_operations.await_completion()
             except Exception as e:
                 _logger.warning(
-                    "Failed to log dataset information to MLflow Tracking. Reason: %s", e
+                    "Failed to log dataset information to QCFlow Tracking. Reason: %s", e
                 )
 
         with batch_metrics_logger(run_id) as metrics_logger:
@@ -716,14 +716,14 @@ def autolog(
             if early_stopping:
                 extra_step = len(eval_results)
                 autologging_client.log_metrics(
-                    run_id=mlflow.active_run().info.run_id,
+                    run_id=qcflow.active_run().info.run_id,
                     metrics={
                         "stopped_iteration": extra_step - 1,
                         "best_iteration": model.best_iteration,
                     },
                 )
                 autologging_client.log_metrics(
-                    run_id=mlflow.active_run().info.run_id,
+                    run_id=qcflow.active_run().info.run_id,
                     metrics=eval_results[model.best_iteration],
                     step=extra_step,
                 )
@@ -747,7 +747,7 @@ def autolog(
                     filepath = os.path.join(tmpdir, f"feature_importance_{imp_type}.json")
                     with open(filepath, "w") as f:
                         json.dump(imp, f)
-                    mlflow.log_artifact(filepath)
+                    qcflow.log_artifact(filepath)
 
         # dtrain must exist as the original train function already ran successfully
         # it is possible that the dataset was constructed before the patched
@@ -812,7 +812,7 @@ def autolog(
     # The `train()` method logs XGBoost models as Booster objects. When using XGBoost
     # scikit-learn models, we want to save / log models as their model classes. So we turn
     # off the log_models functionality in the `train()` method patched to `xgboost.sklearn`.
-    # Instead the model logging is handled in `fit_mlflow_sklearn()` in `mlflow.sklearn._autolog()`,
+    # Instead the model logging is handled in `fit_qcflow_sklearn()` in `qcflow.sklearn._autolog()`,
     # where models are logged as XGBoost scikit-learn models after the `fit()` method returns.
     safe_patch(
         FLAVOR_NAME,
@@ -825,9 +825,9 @@ def autolog(
     safe_patch(FLAVOR_NAME, xgboost.DMatrix, "__init__", __init__)
 
     # enable xgboost scikit-learn estimators autologging
-    import mlflow.sklearn
+    import qcflow.sklearn
 
-    mlflow.sklearn._autolog(
+    qcflow.sklearn._autolog(
         flavor_name=FLAVOR_NAME,
         log_input_examples=log_input_examples,
         log_model_signatures=log_model_signatures,
@@ -863,14 +863,14 @@ def _log_xgboost_dataset(xgb_dataset, source, context, autologging_client, name=
             _logger.warning("Unrecognized dataset type %s. Dataset logging skipped.", type(data))
             return
 
-        tags = [InputTag(key=MLFLOW_DATASET_CONTEXT, value=context)]
-        dataset_input = DatasetInput(dataset=dataset._to_mlflow_entity(), tags=tags)
+        tags = [InputTag(key=QCFLOW_DATASET_CONTEXT, value=context)]
+        dataset_input = DatasetInput(dataset=dataset._to_qcflow_entity(), tags=tags)
 
         autologging_client.log_inputs(
-            run_id=mlflow.active_run().info.run_id, datasets=[dataset_input]
+            run_id=qcflow.active_run().info.run_id, datasets=[dataset_input]
         )
     else:
         _logger.warning(
-            "Unable to log dataset information to MLflow Tracking."
+            "Unable to log dataset information to QCFlow Tracking."
             "XGBoost version must be >= 1.7.0"
         )

@@ -1,4 +1,4 @@
-package org.mlflow.spark.autologging
+package org.qcflow.spark.autologging
 
 /**
   * Trait defining subscriber interface for receiving information about Spark datasource reads.

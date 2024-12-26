@@ -187,7 +187,7 @@ export const RunViewMetricsTable = ({
       <>
         <div css={{ marginBottom: theme.spacing.sm }}>
           <Input
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewmetricstable.tsx_186"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewmetricstable.tsx_186"
             prefix={<SearchIcon />}
             placeholder={intl.formatMessage({
               defaultMessage: 'Search metrics',
@@ -219,7 +219,7 @@ export const RunViewMetricsTable = ({
           <TableRow isHeader>
             {table.getLeafHeaders().map((header) => (
               <TableHeader
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewmetricstable.tsx_312"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewmetricstable.tsx_312"
                 key={header.id}
                 resizable={header.column.getCanResize()}
                 resizeHandler={header.getResizeHandler()}

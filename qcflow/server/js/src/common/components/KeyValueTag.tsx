@@ -58,7 +58,7 @@ export const KeyValueTag = ({
   return (
     <div>
       <Tag
-        componentId="codegen_mlflow_app_src_common_components_keyvaluetag.tsx_60"
+        componentId="codegen_qcflow_app_src_common_components_keyvaluetag.tsx_60"
         closable={isClosable}
         onClose={onClose}
         title={tag.key}

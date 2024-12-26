@@ -5,7 +5,7 @@ const ModelListPageWrapperImpl = () => {
   return <ModelListPage />;
 };
 export const ModelListPageWrapper = withErrorBoundary(
-  ErrorUtils.mlflowServices.MODEL_REGISTRY,
+  ErrorUtils.qcflowServices.MODEL_REGISTRY,
   ModelListPageWrapperImpl,
 );
 

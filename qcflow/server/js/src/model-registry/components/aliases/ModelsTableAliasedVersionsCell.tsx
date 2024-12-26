@@ -45,7 +45,7 @@ export const ModelsTableAliasedVersionsCell = ({ model }: ModelsTableAliasedVers
         <DropdownMenu.Root modal={false}>
           <DropdownMenu.Trigger asChild>
             <Button
-              componentId="codegen_mlflow_app_src_model-registry_components_aliases_modelstablealiasedversionscell.tsx_47"
+              componentId="codegen_qcflow_app_src_model-registry_components_aliases_modelstablealiasedversionscell.tsx_47"
               size="small"
               css={{ borderRadius: 12, marginLeft: theme.spacing.xs }}
             >
@@ -55,7 +55,7 @@ export const ModelsTableAliasedVersionsCell = ({ model }: ModelsTableAliasedVers
           <DropdownMenu.Content align="start">
             {otherAliases.map(({ alias, version }) => (
               <DropdownMenu.Item
-                componentId="codegen_mlflow_app_src_model-registry_components_aliases_modelstablealiasedversionscell.tsx_57"
+                componentId="codegen_qcflow_app_src_model-registry_components_aliases_modelstablealiasedversionscell.tsx_57"
                 key={alias}
               >
                 <Link to={ModelRegistryRoutes.getModelVersionPageRoute(model.name, version)}>

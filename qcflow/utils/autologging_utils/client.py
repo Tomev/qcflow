@@ -1,6 +1,6 @@
 """
 Defines an MlflowAutologgingQueueingClient developer API that provides batching, queueing, and
-asynchronous execution capabilities for a subset of MLflow Tracking logging operations used most
+asynchronous execution capabilities for a subset of QCFlow Tracking logging operations used most
 frequently by autologging operations.
 
 TODO(dbczumar): Migrate request batching, queueing, and async execution support from
@@ -15,13 +15,13 @@ from concurrent.futures import ThreadPoolExecutor
 from itertools import zip_longest
 from typing import Any, Optional, Union
 
-from mlflow.entities import Metric, Param, RunTag
-from mlflow.entities.dataset_input import DatasetInput
-from mlflow.exceptions import MlflowException
-from mlflow.tracking.client import MlflowClient
-from mlflow.utils import _truncate_dict, chunk_list
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.validation import (
+from qcflow.entities import Metric, Param, RunTag
+from qcflow.entities.dataset_input import DatasetInput
+from qcflow.exceptions import MlflowException
+from qcflow.tracking.client import MlflowClient
+from qcflow.utils import _truncate_dict, chunk_list
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.validation import (
     MAX_DATASETS_PER_BATCH,
     MAX_ENTITIES_PER_BATCH,
     MAX_ENTITY_KEY_LENGTH,
@@ -48,7 +48,7 @@ class PendingRunId:
 
 class RunOperations:
     """
-    Represents a collection of operations on one or more MLflow Runs, such as run creation
+    Represents a collection of operations on one or more QCFlow Runs, such as run creation
     or metric logging.
     """
 
@@ -57,7 +57,7 @@ class RunOperations:
 
     def await_completion(self):
         """
-        Blocks on completion of the MLflow Run operations.
+        Blocks on completion of the QCFlow Run operations.
         """
         failed_operations = []
         for future in self._operation_futures:
@@ -91,10 +91,10 @@ _AUTOLOGGING_QUEUEING_CLIENT_THREAD_POOL = ThreadPoolExecutor(
 
 class MlflowAutologgingQueueingClient:
     """
-    Efficiently implements a subset of MLflow Tracking's  `MlflowClient` and fluent APIs to provide
+    Efficiently implements a subset of QCFlow Tracking's  `MlflowClient` and fluent APIs to provide
     automatic batching and async execution of run operations by way of queueing, as well as
     parameter / tag truncation for autologging use cases. Run operations defined by this client,
-    such as `create_run` and `log_metrics`, enqueue data for future persistence to MLflow
+    such as `create_run` and `log_metrics`, enqueue data for future persistence to QCFlow
     Tracking. Data is not persisted until the queue is flushed via the `flush()` method, which
     supports synchronous and asynchronous execution.
 
@@ -286,7 +286,7 @@ class MlflowAutologgingQueueingClient:
         """
         Synchronously and sequentially flushes the specified list of pending run operations.
 
-        NB: Operations are not parallelized on a per-run basis because MLflow's File Store, which
+        NB: Operations are not parallelized on a per-run basis because QCFlow's File Store, which
         is frequently used for local ML development, does not support threadsafe metadata logging
         within a given run.
         """
@@ -380,7 +380,7 @@ class MlflowAutologgingQueueingClient:
 
 class _PendingRunOperations:
     """
-    Represents a collection of queued / pending MLflow Run operations.
+    Represents a collection of queued / pending QCFlow Run operations.
     """
 
     def __init__(self, run_id):
@@ -402,7 +402,7 @@ class _PendingRunOperations:
         set_terminated=None,
     ):
         """
-        Enqueues a new pending logging operation for the associated MLflow Run.
+        Enqueues a new pending logging operation for the associated QCFlow Run.
         """
         if create_run:
             assert not self.create_run, "Attempted to create the same run multiple times"

@@ -1,8 +1,8 @@
 from typing import Any, Optional
 
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
 class SparkDatasetSource(DatasetSource):

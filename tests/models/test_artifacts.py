@@ -6,8 +6,8 @@ import pandas as pd
 import pytest
 from matplotlib.figure import Figure
 
-from mlflow.exceptions import MlflowException
-from mlflow.models.evaluation.artifacts import (
+from qcflow.exceptions import MlflowException
+from qcflow.models.evaluation.artifacts import (
     CsvEvaluationArtifact,
     ImageEvaluationArtifact,
     JsonEvaluationArtifact,
@@ -17,7 +17,7 @@ from mlflow.models.evaluation.artifacts import (
     TextEvaluationArtifact,
     _infer_artifact_type_and_ext,
 )
-from mlflow.models.evaluation.default_evaluator import _CustomArtifact
+from qcflow.models.evaluation.default_evaluator import _CustomArtifact
 
 
 @pytest.fixture

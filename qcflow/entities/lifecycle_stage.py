@@ -1,5 +1,5 @@
-from mlflow.entities.view_type import ViewType
-from mlflow.exceptions import MlflowException
+from qcflow.entities.view_type import ViewType
+from qcflow.exceptions import MlflowException
 
 
 class LifecycleStage:

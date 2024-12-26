@@ -14,7 +14,7 @@ import { ExperimentViewRunsControls } from './ExperimentViewRunsControls';
 import { ExperimentViewRunsTable } from './ExperimentViewRunsTable';
 import { ExperimentPageViewState } from '../../models/ExperimentPageViewState';
 import Utils from '../../../../../common/utils/Utils';
-import { ATTRIBUTE_COLUMN_SORT_KEY, MLFLOW_LOGGED_IMAGE_ARTIFACTS_PATH } from '../../../../constants';
+import { ATTRIBUTE_COLUMN_SORT_KEY, QCFLOW_LOGGED_IMAGE_ARTIFACTS_PATH } from '../../../../constants';
 import { RunRowType } from '../../utils/experimentPage.row-types';
 import { useExperimentRunRows } from '../../utils/experimentPage.row-utils';
 import { useFetchedRunsNotification } from '../../hooks/useFetchedRunsNotification';

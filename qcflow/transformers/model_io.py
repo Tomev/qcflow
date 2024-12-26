@@ -1,13 +1,13 @@
 import logging
 import shutil
 
-from mlflow.environment_variables import (
-    MLFLOW_HUGGINGFACE_DISABLE_ACCELERATE_FEATURES,
-    MLFLOW_HUGGINGFACE_MODEL_MAX_SHARD_SIZE,
+from qcflow.environment_variables import (
+    QCFLOW_HUGGINGFACE_DISABLE_ACCELERATE_FEATURES,
+    QCFLOW_HUGGINGFACE_MODEL_MAX_SHARD_SIZE,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_STATE
-from mlflow.transformers.flavor_config import FlavorKey, get_peft_base_model, is_peft_model
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_STATE
+from qcflow.transformers.flavor_config import FlavorKey, get_peft_base_model, is_peft_model
 
 _logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def save_pipeline_pretrained_weights(path, pipeline, flavor_conf, processor=None
 
     model.save_pretrained(
         save_directory=path.joinpath(_MODEL_BINARY_FILE_NAME),
-        max_shard_size=MLFLOW_HUGGINGFACE_MODEL_MAX_SHARD_SIZE.get(),
+        max_shard_size=QCFLOW_HUGGINGFACE_MODEL_MAX_SHARD_SIZE.get(),
     )
 
     component_dir = path.joinpath(_COMPONENTS_BINARY_DIR_NAME)
@@ -64,7 +64,7 @@ def save_local_checkpoint(path, checkpoint_dir, flavor_conf, processor=None):
         except Exception:
             repo_id = flavor_conf[FlavorKey.MODEL_NAME]
             _logger.info(
-                f"The {name} state file is not found ins the local checkpoint directory. MLflow "
+                f"The {name} state file is not found ins the local checkpoint directory. QCFlow "
                 f"will use the default component state from the base HF repository {repo_id}."
             )
             component = _load_component(flavor_conf, name, repo_id=repo_id)
@@ -82,7 +82,7 @@ def load_model_and_components_from_local(path, flavor_conf, accelerate_conf, dev
     Load the model and components of a Transformer pipeline from the specified local path.
 
     Args:
-        path: The local path contains MLflow model artifacts
+        path: The local path contains QCFlow model artifacts
         flavor_conf: The flavor configuration
         accelerate_conf: The configuration for the accelerate library
         device: The device to load the model onto
@@ -273,7 +273,7 @@ def _load_model(model_name_or_path, flavor_conf, accelerate_conf, device, revisi
 
 
 def _try_load_model_with_accelerate(model_class, model_name_or_path, load_kwargs):
-    if MLFLOW_HUGGINGFACE_DISABLE_ACCELERATE_FEATURES.get():
+    if QCFLOW_HUGGINGFACE_DISABLE_ACCELERATE_FEATURES.get():
         return None
 
     try:

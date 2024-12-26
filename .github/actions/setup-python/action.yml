@@ -2,7 +2,7 @@ name: "setup-python"
 description: "Ensures to install a python version that's available on Anaconda"
 inputs:
   python-version:
-    description: "The python version to install. If unspecified, install the minimum python version mlflow supports."
+    description: "The python version to install. If unspecified, install the minimum python version qcflow supports."
     required: false
 outputs:
   python-version:

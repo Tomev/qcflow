@@ -1,7 +1,7 @@
-mlflow.fastai
+qcflow.fastai
 ===============
 
-.. automodule:: mlflow.fastai
+.. automodule:: qcflow.fastai
     :members:
     :undoc-members:
     :show-inheritance:

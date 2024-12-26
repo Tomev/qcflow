@@ -1,4 +1,4 @@
-package org.mlflow.spark.autologging
+package org.qcflow.spark.autologging
 
 import java.io.{PrintWriter, StringWriter}
 
@@ -16,7 +16,7 @@ private[autologging] object ExceptionUtils {
 
   def getUnexpectedExceptionMessage(exc: Throwable, msg: String): String = {
     s"Unexpected exception $msg. Please report this error, along with the " +
-      s"following stacktrace, on https://github.com/mlflow/mlflow/issues:\n" +
+      s"following stacktrace, on https://github.com/qcflow/qcflow/issues:\n" +
       s"${ExceptionUtils.serializeException(exc)}"
   }
 

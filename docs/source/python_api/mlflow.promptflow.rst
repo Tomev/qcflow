@@ -1,7 +1,7 @@
-mlflow.promptflow
+qcflow.promptflow
 ==================
 
-.. automodule:: mlflow.promptflow
+.. automodule:: qcflow.promptflow
     :members:
     :undoc-members:
     :show-inheritance:

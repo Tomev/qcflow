@@ -1,7 +1,7 @@
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.experiment_tag import ExperimentTag
-from mlflow.protos.service_pb2 import Experiment as ProtoExperiment
-from mlflow.protos.service_pb2 import ExperimentTag as ProtoExperimentTag
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.experiment_tag import ExperimentTag
+from qcflow.protos.service_pb2 import Experiment as ProtoExperiment
+from qcflow.protos.service_pb2 import ExperimentTag as ProtoExperimentTag
 
 
 class Experiment(_MlflowObject):
@@ -82,7 +82,7 @@ class Experiment(_MlflowObject):
             proto.name,
             proto.artifact_location,
             proto.lifecycle_stage,
-            # `creation_time` and `last_update_time` were added in MLflow 1.29.0. Experiments
+            # `creation_time` and `last_update_time` were added in QCFlow 1.29.0. Experiments
             # created before this version don't have these fields and `proto.creation_time` and
             # `proto.last_update_time` default to 0. We should only set `creation_time` and
             # `last_update_time` if they are non-zero.

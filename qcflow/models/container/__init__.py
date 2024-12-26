@@ -14,19 +14,19 @@ import sys
 from pathlib import Path
 from subprocess import Popen, check_call
 
-import mlflow
-import mlflow.version
-from mlflow import mleap, pyfunc
-from mlflow.environment_variables import MLFLOW_DEPLOYMENT_FLAVOR_NAME, MLFLOW_DISABLE_ENV_CREATION
-from mlflow.models import Model
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.pyfunc import _extract_conda_env, mlserver, scoring_server
-from mlflow.store.artifact.models_artifact_repo import REGISTERED_MODEL_META_FILE_NAME
-from mlflow.utils import env_manager as em
-from mlflow.utils.environment import _PythonEnv
-from mlflow.utils.file_utils import read_yaml
-from mlflow.utils.virtualenv import _get_or_create_virtualenv
-from mlflow.version import VERSION as MLFLOW_VERSION
+import qcflow
+import qcflow.version
+from qcflow import mleap, pyfunc
+from qcflow.environment_variables import QCFLOW_DEPLOYMENT_FLAVOR_NAME, QCFLOW_DISABLE_ENV_CREATION
+from qcflow.models import Model
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.pyfunc import _extract_conda_env, mlserver, scoring_server
+from qcflow.store.artifact.models_artifact_repo import REGISTERED_MODEL_META_FILE_NAME
+from qcflow.utils import env_manager as em
+from qcflow.utils.environment import _PythonEnv
+from qcflow.utils.file_utils import read_yaml
+from qcflow.utils.virtualenv import _get_or_create_virtualenv
+from qcflow.version import VERSION as QCFLOW_VERSION
 
 MODEL_PATH = "/opt/ml/model"
 
@@ -71,8 +71,8 @@ def _serve(env_manager):
     model_config_path = os.path.join(MODEL_PATH, MLMODEL_FILE_NAME)
     m = Model.load(model_config_path)
 
-    # Older versions of mlflow may not specify a deployment configuration
-    serving_flavor = MLFLOW_DEPLOYMENT_FLAVOR_NAME.get() or pyfunc.FLAVOR_NAME
+    # Older versions of qcflow may not specify a deployment configuration
+    serving_flavor = QCFLOW_DEPLOYMENT_FLAVOR_NAME.get() or pyfunc.FLAVOR_NAME
 
     if serving_flavor == mleap.FLAVOR_NAME:
         _serve_mleap()
@@ -83,43 +83,43 @@ def _serve(env_manager):
 
 
 def _install_pyfunc_deps(
-    model_path=None, install_mlflow=False, enable_mlserver=False, env_manager=em.VIRTUALENV
+    model_path=None, install_qcflow=False, enable_mlserver=False, env_manager=em.VIRTUALENV
 ):
     """
     Creates a conda env for serving the model at the specified path and installs almost all serving
-    dependencies into the environment - MLflow is not installed as it's not available via conda.
+    dependencies into the environment - QCFlow is not installed as it's not available via conda.
     """
     activate_cmd = _install_model_dependencies_to_env(model_path, env_manager) if model_path else []
 
     # NB: install gunicorn[gevent] from pip rather than from conda because gunicorn is already
-    # dependency of mlflow on pip and we expect mlflow to be part of the environment.
+    # dependency of qcflow on pip and we expect qcflow to be part of the environment.
     server_deps = ["gunicorn[gevent]"]
     if enable_mlserver:
         server_deps = [
             "'mlserver>=1.2.0,!=1.3.1,<1.4.0'",
-            "'mlserver-mlflow>=1.2.0,!=1.3.1,<1.4.0'",
+            "'mlserver-qcflow>=1.2.0,!=1.3.1,<1.4.0'",
         ]
 
     install_server_deps = [f"pip install {' '.join(server_deps)}"]
     if Popen(["bash", "-c", " && ".join(activate_cmd + install_server_deps)]).wait() != 0:
         raise Exception("Failed to install serving dependencies into the model environment.")
 
-    # NB: If we don't use virtualenv or conda env, we don't need to install mlflow here as
+    # NB: If we don't use virtualenv or conda env, we don't need to install qcflow here as
     # it's already installed in the container.
     if len(activate_cmd):
-        if _container_includes_mlflow_source():
-            # If the MLflow source code is copied to the container,
-            # we always need to run `pip install /opt/mlflow` otherwise
-            # the MLflow dependencies are not installed.
-            install_mlflow_cmd = ["pip install /opt/mlflow/."]
-        elif install_mlflow:
-            install_mlflow_cmd = [f"pip install mlflow=={MLFLOW_VERSION}"]
+        if _container_includes_qcflow_source():
+            # If the QCFlow source code is copied to the container,
+            # we always need to run `pip install /opt/qcflow` otherwise
+            # the QCFlow dependencies are not installed.
+            install_qcflow_cmd = ["pip install /opt/qcflow/."]
+        elif install_qcflow:
+            install_qcflow_cmd = [f"pip install qcflow=={QCFLOW_VERSION}"]
         else:
-            install_mlflow_cmd = []
+            install_qcflow_cmd = []
 
-        if install_mlflow_cmd:
-            if Popen(["bash", "-c", " && ".join(activate_cmd + install_mlflow_cmd)]).wait() != 0:
-                raise Exception("Failed to install mlflow into the model environment.")
+        if install_qcflow_cmd:
+            if Popen(["bash", "-c", " && ".join(activate_cmd + install_qcflow_cmd)]).wait() != 0:
+                raise Exception("Failed to install qcflow into the model environment.")
     return activate_cmd
 
 
@@ -138,7 +138,7 @@ def _install_model_dependencies_to_env(model_path, env_manager) -> list[str]:
     conf = model.flavors.get(pyfunc.FLAVOR_NAME, {})
     if pyfunc.ENV not in conf:
         return []
-    env_conf = conf[mlflow.pyfunc.ENV]
+    env_conf = conf[qcflow.pyfunc.ENV]
 
     if env_manager == em.LOCAL:
         # Install pip dependencies directly into the local environment
@@ -153,7 +153,7 @@ def _install_model_dependencies_to_env(model_path, env_manager) -> list[str]:
     _logger.info("creating and activating custom environment")
 
     env = _extract_conda_env(env_conf)
-    env_path_dst = os.path.join("/opt/mlflow/", env)
+    env_path_dst = os.path.join("/opt/qcflow/", env)
     env_path_dst_dir = os.path.dirname(env_path_dst)
     if not os.path.exists(env_path_dst_dir):
         os.makedirs(env_path_dst_dir)
@@ -178,19 +178,19 @@ def _serve_pyfunc(model, env_manager):
     # option to disable manually nginx. The default behavior is to enable nginx.
     disable_nginx = os.getenv(DISABLE_NGINX, "false").lower() == "true"
     enable_mlserver = os.getenv(ENABLE_MLSERVER, "false").lower() == "true"
-    disable_env_creation = MLFLOW_DISABLE_ENV_CREATION.get()
+    disable_env_creation = QCFLOW_DISABLE_ENV_CREATION.get()
 
     conf = model.flavors[pyfunc.FLAVOR_NAME]
     bash_cmds = []
     if pyfunc.ENV in conf:
-        # NB: MLFLOW_DISABLE_ENV_CREATION is False only for SageMaker deployment, where the model
+        # NB: QCFLOW_DISABLE_ENV_CREATION is False only for SageMaker deployment, where the model
         # files are loaded into the container at runtime rather than build time. In this case,
         # we need to create a virtual environment and install the model dependencies into it when
         # starting the container.
         if not disable_env_creation:
             _install_pyfunc_deps(
                 MODEL_PATH,
-                install_mlflow=True,
+                install_qcflow=True,
                 enable_mlserver=enable_mlserver,
                 env_manager=env_manager,
             )
@@ -205,7 +205,7 @@ def _serve_pyfunc(model, env_manager):
         start_nginx = False
 
     if start_nginx:
-        nginx_conf = Path(mlflow.models.__file__).parent.joinpath(
+        nginx_conf = Path(qcflow.models.__file__).parent.joinpath(
             "container", "scoring_server", "nginx.conf"
         )
 
@@ -271,12 +271,12 @@ def _serve_mleap():
         "java",
         "-cp",
         '"/opt/java/jars/*"',
-        "org.mlflow.sagemaker.ScoringServer",
+        "org.qcflow.sagemaker.ScoringServer",
         MODEL_PATH,
         str(DEFAULT_SAGEMAKER_SERVER_PORT),
     ]
     # Invoke `Popen` with a single string command in the shell to support wildcard usage
-    # with the mlflow jar version.
+    # with the qcflow jar version.
     serve_cmd = " ".join(serve_cmd)
     mleap = Popen(serve_cmd, shell=True)
     signal.signal(signal.SIGTERM, lambda a, b: _sigterm_handler(pids=[mleap.pid]))
@@ -284,8 +284,8 @@ def _serve_mleap():
     _sigterm_handler(awaited_pids)
 
 
-def _container_includes_mlflow_source():
-    return os.path.exists("/opt/mlflow/pyproject.toml")
+def _container_includes_qcflow_source():
+    return os.path.exists("/opt/qcflow/pyproject.toml")
 
 
 def _train():

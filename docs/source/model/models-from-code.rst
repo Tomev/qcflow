@@ -2,7 +2,7 @@ Models From Code Guide
 ======================
 
 .. attention::
-    Models from Code is available in MLflow 2.12.2 and above. If you are using a version earlier than what supports this feature, 
+    Models from Code is available in QCFlow 2.12.2 and above. If you are using a version earlier than what supports this feature, 
     you are required to use the legacy serialization methods outlined in the `Custom Python Model <../models.html#custom-python-models>`_ documentation.
 
 .. note::
@@ -33,8 +33,8 @@ that can occur when working on an implementation. The workflow shown below illus
 Differences with Legacy serialization
 -------------------------------------
 
-In the legacy mode for custom models, an instance of your subclassed :py:class:`mlflow.pyfunc.PythonModel` is submitted in the call to ``log_model``. When called via an object
-reference, MLflow will utilize ``cloudpickle`` to attempt to serialize your object.
+In the legacy mode for custom models, an instance of your subclassed :py:class:`qcflow.pyfunc.PythonModel` is submitted in the call to ``log_model``. When called via an object
+reference, QCFlow will utilize ``cloudpickle`` to attempt to serialize your object.
 
 In the native flavor serialization for ``LangChain``, ``cloudpickle`` is used to store object references. However, only a subset of all object types that can be
 used within ``LangChain`` are available for serializing due to external state references or the use of lambda functions within the APIs. ``LlamaIndex``, on the 
@@ -42,8 +42,8 @@ other hand, utilizes a custom serializer in the native implementation of the fla
 excessively complex implementations to support edge case features within the library.
 
 In models from code, instead of passing an object reference to an instance of your custom model, you will simply pass a path reference to a script that 
-contains your model definition. When this mode is employed, MLflow will simply execute this script (along with any ``code_paths`` dependencies prior to running 
-the main script) in the execution environment and instantiating whichever object you define in the call to :py:func:`mlflow.models.set_model`, assigning that 
+contains your model definition. When this mode is employed, QCFlow will simply execute this script (along with any ``code_paths`` dependencies prior to running 
+the main script) in the execution environment and instantiating whichever object you define in the call to :py:func:`qcflow.models.set_model`, assigning that 
 object as the inference target. 
 
 At no point in this process are there dependencies on serialization libraries such as `pickle <https://docs.python.org/3/library/pickle.html>`_ or 
@@ -70,7 +70,7 @@ via a script that may not be immediately apparent.
 
 .. warning::
 
-    When logging models from code, make sure that your code does not contain any sensitive information, such as API keys, passwords, or other confidential data. The code will be stored in plain text in the MLflow model artifact, and anyone with access to the artifact will be able to view the code.
+    When logging models from code, make sure that your code does not contain any sensitive information, such as API keys, passwords, or other confidential data. The code will be stored in plain text in the QCFlow model artifact, and anyone with access to the artifact will be able to view the code.
 
 Using Models From Code in a Jupyter Notebook
 --------------------------------------------
@@ -127,7 +127,7 @@ script.
 
         In this example, we will define a very basic  model that, when called via ``predict()``, will utilize the input float value as an exponent to the number ``2``.
         The first code block, repesenting a discrete notebook cell, will create a file named ``basic.py`` in the same directory as the notebook. The contents of this 
-        file will be the model definition ``BasicModel``, as well as the import statements and the MLflow function ``set_model`` that will instantiate an instance of 
+        file will be the model definition ``BasicModel``, as well as the import statements and the QCFlow function ``set_model`` that will instantiate an instance of 
         this model to be used for inference.
 
         .. code-block:: python
@@ -137,8 +137,8 @@ script.
 
             import pandas as pd
             from typing import List, Dict
-            from mlflow.pyfunc import PythonModel
-            from mlflow.models import set_model
+            from qcflow.pyfunc import PythonModel
+            from qcflow.models import set_model
 
 
             class BasicModel(PythonModel):
@@ -158,33 +158,33 @@ script.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.set_experiment("Basic Model From Code")
+            qcflow.set_experiment("Basic Model From Code")
 
             model_path = "basic.py"
 
-            with mlflow.start_run():
-                model_info = mlflow.pyfunc.log_model(
+            with qcflow.start_run():
+                model_info = qcflow.pyfunc.log_model(
                     python_model=model_path,  # Define the model as the path to the script that was just saved
                     artifact_path="arithemtic_model",
                     input_example=[42.0, 24.0],
                 )
 
 
-        Looking at this stored model within the MLflow UI, we can see that the script in the first cell was recorded as an artifact to the run. 
+        Looking at this stored model within the QCFlow UI, we can see that the script in the first cell was recorded as an artifact to the run. 
         
         .. figure:: ../_static/images/models/basic_model_from_code_ui.png
-            :alt: The MLflow UI showing the stored model code as a serialized python script
+            :alt: The QCFlow UI showing the stored model code as a serialized python script
             :width: 80%
             :align: center
 
-        When we load this model via ``mlflow.pyfunc.load_model()``, this script will be executed and an instance of ``BasicModel`` will be constructed, exposing the ``predict`` 
+        When we load this model via ``qcflow.pyfunc.load_model()``, this script will be executed and an instance of ``BasicModel`` will be constructed, exposing the ``predict`` 
         method as our entry point for inference, just as with the alternative legacy mode of logging a custom model.
 
         .. code-block:: python
             
-            my_model = mlflow.pyfunc.load_model(model_info.model_uri)
+            my_model = qcflow.pyfunc.load_model(model_info.model_uri)
             my_model.predict([2.2, 3.1, 4.7])
 
             # or, with a Pandas DataFrame input
@@ -199,16 +199,16 @@ script.
         |
 
         In this example, we will explore a more complex scenario that demonstrates how to work with multiple Python scripts and leverage the ``code_paths`` 
-        feature in MLflow for model management. Specifically, we will define a simple script that contains a function that performs basic arithmetic 
+        feature in QCFlow for model management. Specifically, we will define a simple script that contains a function that performs basic arithmetic 
         operations, and then use this function within an ``AddModel`` custom ``PythonModel`` that we will define in a separate script. 
-        This model will be logged with MLflow, allowing us to perform predictions using the stored model.
+        This model will be logged with QCFlow, allowing us to perform predictions using the stored model.
 
-         To learn more about the ``code_paths`` feature in MLflow, see the `guidelines on usage here <../model/dependencies.html#caveats-of-code-paths-option>`_.
+         To learn more about the ``code_paths`` feature in QCFlow, see the `guidelines on usage here <../model/dependencies.html#caveats-of-code-paths-option>`_.
 
         This tutorial will show you how to:
 
         - Create multiple Python files from within a Jupyter notebook.
-        - Log a custom model with MLflow that relies on external code defined in another file.
+        - Log a custom model with QCFlow that relies on external code defined in another file.
         - Use the ``code_paths`` feature to include additional scripts when logging the model, ensuring that all dependencies are available when the model is loaded for inference.
 
         .. raw:: html
@@ -245,8 +245,8 @@ script.
             # If running in a Jupyter or Databricks notebook cell, uncomment the following line:
             # %%writefile "./math_model.py"
 
-            from mlflow.pyfunc import PythonModel
-            from mlflow.models import set_model
+            from qcflow.pyfunc import PythonModel
+            from qcflow.models import set_model
 
             from calculator import add
 
@@ -260,7 +260,7 @@ script.
 
 
         This model introduces error handling by checking the existence and types of the inputs, ensuring robustness. It serves as a practical example of 
-        how custom logic can be encapsulated within an MLflow model while leveraging external dependencies.
+        how custom logic can be encapsulated within an QCFlow model while leveraging external dependencies.
 
         .. raw:: html
             
@@ -268,22 +268,22 @@ script.
         
         |
 
-        Once the ``AddModel`` custom Python model is defined, we can proceed to log it with MLflow. This process involves specifying the path to the ``math_model.py`` 
+        Once the ``AddModel`` custom Python model is defined, we can proceed to log it with QCFlow. This process involves specifying the path to the ``math_model.py`` 
         script and using the ``code_paths`` parameter to include ``calculator.py`` as a dependency. This ensures that when the model is loaded in 
         a different environment or on another machine, all necessary code files are available for proper execution.
 
-        The following code block demonstrates how to log the model using MLflow:
+        The following code block demonstrates how to log the model using QCFlow:
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.set_experiment("Arithemtic Model From Code")
+            qcflow.set_experiment("Arithemtic Model From Code")
 
             model_path = "math_model.py"
 
-            with mlflow.start_run():
-                model_info = mlflow.pyfunc.log_model(
+            with qcflow.start_run():
+                model_info = qcflow.pyfunc.log_model(
                     python_model=model_path,  # The model is defined as the path to the script containing the model definition
                     artifact_path="arithemtic_model",
                     code_paths=[
@@ -291,7 +291,7 @@ script.
                     ],  # dependency definition included for the model to successfully import the implementation
                 )
 
-        This step registers the ``AddModel`` model with MLflow, ensuring that both the primary model script and its dependencies are stored as 
+        This step registers the ``AddModel`` model with QCFlow, ensuring that both the primary model script and its dependencies are stored as 
         artifacts. By including ``calculator.py`` in the ``code_paths`` argument, we ensure that the model can be reliably reloaded and used for 
         predictions, regardless of the environment in which it is deployed.
 
@@ -301,7 +301,7 @@ script.
         
         |
 
-        After logging the model, it can be loaded back into the notebook or any other environment that has access to the MLflow tracking server. 
+        After logging the model, it can be loaded back into the notebook or any other environment that has access to the QCFlow tracking server. 
         When the model is loaded, the ``calculator.py`` script will be executed along with the ``math_model.py`` script, ensuring that the 
         ``add`` function is available for use by the ``ArithmeticModel``'s script's import statement.
 
@@ -309,19 +309,19 @@ script.
 
         .. code-block:: python
 
-            my_model_from_code = mlflow.pyfunc.load_model(model_info.model_uri)
+            my_model_from_code = qcflow.pyfunc.load_model(model_info.model_uri)
             my_model_from_code.predict({"x": 42, "y": 9001})
 
         This example showcases the model's ability to handle different numerical inputs, perform addition, and maintain a history of calculations. 
         The output of these predictions includes both the result of the arithmetic operation and the history log, which can be useful for auditing and 
         tracing the computations performed by the model.
 
-        Looking at the stored model within the MLflow UI, you can see that both the ``math_model.py`` and ``calculator.py`` scripts are recorded as 
+        Looking at the stored model within the QCFlow UI, you can see that both the ``math_model.py`` and ``calculator.py`` scripts are recorded as 
         artifacts in the run. This comprehensive logging allows you to track not just the model's parameters and metrics but also the code that 
         defines its behavior, making it visible and debuggable directly from within the UI.
 
         .. figure:: ../_static/images/models/model_from_code_code_paths.png
-            :alt: The MLflow UI showing models from code usage along with dependent code_paths script stored in the model artifacts
+            :alt: The QCFlow UI showing models from code usage along with dependent code_paths script stored in the model artifacts
             :width: 80%
             :align: center
 
@@ -330,19 +330,19 @@ script.
 
         .. raw:: html
     
-            <h3>MLflow's native LangChain Models from Code support</h3>
+            <h3>QCFlow's native LangChain Models from Code support</h3>
         
         |
 
-        In this slightly more advanced example, we will explore how to use the `MLflow LangChain integration <../llms/langchain/index.html>`_ to define 
+        In this slightly more advanced example, we will explore how to use the `QCFlow LangChain integration <../llms/langchain/index.html>`_ to define 
         and manage a chain of operations for an AI model. This chain will help generate landscape design recommendations based on specific regional 
         and area-based inputs. The example showcases how to define a custom prompt, use a large language model (LLM) for generating responses, and 
-        log the entire setup as a model using MLflow's tracking features.
+        log the entire setup as a model using QCFlow's tracking features.
 
         This tutorial will guide you through:
 
         - Writing a script to define a custom LangChain model that processes input data to generate landscape design recommendations.
-        - Logging the model with MLflow using the langchain integration, ensuring the entire chain of operations is captured.
+        - Logging the model with QCFlow using the langchain integration, ensuring the entire chain of operations is captured.
         - Loading and using the logged model for making predictions in different contexts.
 
         .. raw:: html
@@ -352,7 +352,7 @@ script.
         |
 
         First, we will create a Python script named ``mfc.py``, which defines the chain of operations for generating landscape design recommendations. 
-        This script utilizes the LangChain library along with MLflow's ``autolog`` feature for enabling the `capture of traces <../llms/tracing/index.html>`_.
+        This script utilizes the LangChain library along with QCFlow's ``autolog`` feature for enabling the `capture of traces <../llms/tracing/index.html>`_.
 
         In this script:
 
@@ -376,7 +376,7 @@ script.
             from langchain_core.runnables import RunnableLambda
             from langchain_openai import ChatOpenAI
 
-            import mlflow
+            import qcflow
 
 
             def get_region(input_data):
@@ -414,7 +414,7 @@ script.
                 | StrOutputParser()
             )
 
-            mlflow.models.set_model(chain)
+            qcflow.models.set_model(chain)
 
         This script encapsulates the logic required to construct the full chain using the 
         `LangChain Expression Language (LCEL) <https://python.langchain.com/v0.1/docs/expression_language/>`_, as well as the custom default logic 
@@ -426,19 +426,19 @@ script.
         
         |
 
-        Once the chain is defined in ``mfc.py``, we log it using MLflow. This step involves specifying the path to the script that contains the chain 
-        definition and using MLflow's ``langchain`` integration to ensure that all aspects of the chain are captured.
+        Once the chain is defined in ``mfc.py``, we log it using QCFlow. This step involves specifying the path to the script that contains the chain 
+        definition and using QCFlow's ``langchain`` integration to ensure that all aspects of the chain are captured.
 
         The ``input_example`` provided to the logging function serves as a template to demonstrate how the model should be invoked. This example is 
         also stored as part of the logged model, making it easier to understand and replicate the model's use case.
 
-        The following code block demonstrates how to log the LangChain model using MLflow:
+        The following code block demonstrates how to log the LangChain model using QCFlow:
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.set_experiment("Landscaping")
+            qcflow.set_experiment("Landscaping")
 
             chain_path = "./mfc.py"
 
@@ -454,8 +454,8 @@ script.
                 ]
             }
 
-            with mlflow.start_run():
-                info = mlflow.langchain.log_model(
+            with qcflow.start_run():
+                info = qcflow.langchain.log_model(
                     lc_model=chain_path,  # Defining the model as the script containing the chain definition and the set_model call
                     artifact_path="chain",
                     input_example=input_example,
@@ -480,7 +480,7 @@ script.
         .. code-block:: python
 
             # Load the model and run inference
-            landscape_chain = mlflow.langchain.load_model(model_uri=info.model_uri)
+            landscape_chain = qcflow.langchain.load_model(model_uri=info.model_uri)
 
             question = {
                 "messages": [
@@ -499,16 +499,16 @@ script.
         This code block demonstrates how to invoke the loaded chain with new data, generating a response that provides landscape design suggestions 
         tailored to the specified region and area. 
 
-        Once the model is logged, you can explore its details in the MLflow UI. The interface will show the script ``mfc.py`` as an artifact of the 
+        Once the model is logged, you can explore its details in the QCFlow UI. The interface will show the script ``mfc.py`` as an artifact of the 
         logged model, along with the chain definition and associated metadata. This allows you to easily review the model's components, 
         input examples, and other key information.
 
         .. figure:: ../_static/images/models/langchain_model_from_code.png
-            :alt: The MLflow UI showing models from code usage and the mfc.py script that defines the LangChain LCEL chain definition
+            :alt: The QCFlow UI showing models from code usage and the mfc.py script that defines the LangChain LCEL chain definition
             :width: 80%
             :align: center
 
-        When you load this model using :py:func:`mlflow.langchain.load_model`, the entire chain defined in ``mfc.py`` is executed, and the model
+        When you load this model using :py:func:`qcflow.langchain.load_model`, the entire chain defined in ``mfc.py`` is executed, and the model
         behaves as expected, generating AI-driven recommendations for landscape design. 
 
 
@@ -540,7 +540,7 @@ If you have external dependencies to your model definition script that are not a
 Why is my requirements.txt file filled with packages that my model isn't using?
 ###############################################################################
 
-MLflow will build the list of requirements from a models from code script based on the module-level import statements. There isn't an inspection 
+QCFlow will build the list of requirements from a models from code script based on the module-level import statements. There isn't an inspection 
 process that runs to validate whether your model's logic requires everything that is stated as an import. It is highly recommended to prune your 
 imports within these scripts to only include the minimal required import statements that your model requires to function. Having excessive imports 
 of large packages will introduce installation delays when loading or deploying your model as well as increased memory pressure in your deployed 
@@ -555,19 +555,19 @@ supplying an object reference.
 I accidentally included an API Key in my script. What do I do?
 ##############################################################
 
-Due to the fact that the models from code feature stores your script definition in plain text, completely visible within the MLflow UI's artifact viewer, 
+Due to the fact that the models from code feature stores your script definition in plain text, completely visible within the QCFlow UI's artifact viewer, 
 including sensitive data such as access keys or other authorization-based secrets is a security risk. If you have accidentally left a sensitive 
 key defined directly in your script when logging your model, it is advisable to:
 
-1. Delete the MLflow run that contains the leaked key. You can do this via the UI or through `the delete_run API <../python_api/mlflow.client.html#mlflow.client.MlflowClient.delete_run>`_.
-2. Delete the artifacts associated with the run. You can do this via the `mlflow gc <../cli.html#mlflow-gc>`_ cli command.
+1. Delete the QCFlow run that contains the leaked key. You can do this via the UI or through `the delete_run API <../python_api/qcflow.client.html#qcflow.client.MlflowClient.delete_run>`_.
+2. Delete the artifacts associated with the run. You can do this via the `qcflow gc <../cli.html#qcflow-gc>`_ cli command.
 3. Rotate your sensitive keys by generating a new key and deleting the leaked secret from the source system administration interface.
 4. Re-log the model to a new run, making sure to not set sensitive keys in your model definition script.
 
 Why is my model getting executed when I log it?
 ###############################################
 
-In order to validate that the code is executable within the python file that defines a model, MLflow will instantiate the object that is defined as a model within 
+In order to validate that the code is executable within the python file that defines a model, QCFlow will instantiate the object that is defined as a model within 
 the ``set_model`` API. If you have external calls that are made during the initialization of your model, these will be made to ensure that your code is executable
 prior to logging. If such calls require authenticated access to services, please ensure that the environment that you are logging your model from has the 
 appropriate authentication configured so that your code can run.
@@ -575,7 +575,7 @@ appropriate authentication configured so that your code can run.
 
 Additional Resources
 --------------------
-For additional related context topics that can enhance your understanding of MLflow's "Models From Code" feature, consider exploring the following sections in the MLflow documentation:
+For additional related context topics that can enhance your understanding of QCFlow's "Models From Code" feature, consider exploring the following sections in the QCFlow documentation:
 
 - `Model API Documentation <../models.html#model-api>`_
-- `Managing Dependencies in MLflow Models <../model/dependencies.html>`_
+- `Managing Dependencies in QCFlow Models <../model/dependencies.html>`_

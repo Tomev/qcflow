@@ -1,6 +1,6 @@
 from langchain_core.documents import Document as LangchainDocument
 
-from mlflow.entities import Document
+from qcflow.entities import Document
 
 
 def test_from_langchain_document():

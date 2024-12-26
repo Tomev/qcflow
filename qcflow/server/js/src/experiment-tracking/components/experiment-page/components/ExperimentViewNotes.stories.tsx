@@ -22,14 +22,14 @@ const mockStore = {
   entities: {
     experimentTagsByExperimentId: {
       789: {
-        'mlflow.note.content': (ExperimentTag as any).fromJs({
-          key: 'mlflow.note.content',
+        'qcflow.note.content': (ExperimentTag as any).fromJs({
+          key: 'qcflow.note.content',
           value: '',
         }),
       },
       1234: {
-        'mlflow.note.content': (ExperimentTag as any).fromJs({
-          key: 'mlflow.note.content',
+        'qcflow.note.content': (ExperimentTag as any).fromJs({
+          key: 'qcflow.note.content',
           value: 'This is a note!',
         }),
       },

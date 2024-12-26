@@ -1,8 +1,8 @@
 import textwrap
 import warnings
 
-from mlflow.ml_package_versions import _ML_PACKAGE_VERSIONS
-from mlflow.utils.autologging_utils.versioning import (
+from qcflow.ml_package_versions import _ML_PACKAGE_VERSIONS
+from qcflow.utils.autologging_utils.versioning import (
     get_min_max_version_and_pip_release,
 )
 
@@ -168,14 +168,14 @@ LOG_MODEL_PARAM_DOCS = ParamDocs(
 environment yaml file. If provided, this describes the environment this model should be run in.
 At a minimum, it should specify the dependencies contained in :func:`get_default_conda_env()`.
 If ``None``, a conda environment with pip requirements inferred by
-:func:`mlflow.models.infer_pip_requirements` is added
+:func:`qcflow.models.infer_pip_requirements` is added
 to the model. If the requirement inference fails, it falls back to using
 :func:`get_default_pip_requirements`. pip requirements from ``conda_env`` are written to a pip
 ``requirements.txt`` file and the full conda environment is written to ``conda.yaml``.
 The following is an *example* dictionary representation of a conda environment::
 
     {
-        "name": "mlflow-env",
+        "name": "qcflow-env",
         "channels": ["conda-forge"],
         "dependencies": [
             "python=3.8.15",
@@ -192,7 +192,7 @@ The following is an *example* dictionary representation of a conda environment::
 (e.g. ``["{{ package_name }}", "-r requirements.txt", "-c constraints.txt"]``) or the string path to
 a pip requirements file on the local filesystem (e.g. ``"requirements.txt"``). If provided, this
 describes the environment this model should be run in. If ``None``, a default list of requirements
-is inferred by :func:`mlflow.models.infer_pip_requirements` from the current software environment.
+is inferred by :func:`qcflow.models.infer_pip_requirements` from the current software environment.
 If the requirement inference fails, it falls back to using :func:`get_default_pip_requirements`.
 Both requirements and constraints are automatically parsed and written to ``requirements.txt`` and
 ``constraints.txt`` files, respectively, and stored as part of the model. Requirements are also
@@ -216,24 +216,24 @@ section of the model's conda environment (``conda.yaml``) file.
     - ``pip_requirements``
     - ``extra_pip_requirements``
 
-`This example <https://github.com/mlflow/mlflow/blob/master/examples/pip_requirements/pip_requirements.py>`_ demonstrates how to specify pip requirements using
+`This example <https://github.com/qcflow/qcflow/blob/master/examples/pip_requirements/pip_requirements.py>`_ demonstrates how to specify pip requirements using
 ``pip_requirements`` and ``extra_pip_requirements``."""  # noqa: E501
         ),
         "signature": (
-            """an instance of the :py:class:`ModelSignature <mlflow.models.ModelSignature>`
+            """an instance of the :py:class:`ModelSignature <qcflow.models.ModelSignature>`
 class that describes the model's inputs and outputs. If not specified but an
 ``input_example`` is supplied, a signature will be automatically inferred
 based on the supplied input example and model. To disable automatic signature
 inference when providing an input example, set ``signature`` to ``False``.
 To manually infer a model signature, call
-:py:func:`infer_signature() <mlflow.models.infer_signature>` on datasets
+:py:func:`infer_signature() <qcflow.models.infer_signature>` on datasets
 with valid model inputs, such as a training dataset with the target column
 omitted, and valid model outputs, like model predictions made on the training
 dataset, for example:
 
 .. code-block:: python
 
-    from mlflow.models import infer_signature
+    from qcflow.models import infer_signature
 
     train = df.drop_column("target_label")
     predictions = ...  # compute model predictions
@@ -280,7 +280,7 @@ between them to avoid import errors when loading the model.
 
 For a detailed explanation of ``code_paths`` functionality, recommended usage patterns and
 limitations, see the
-`code_paths usage guide <https://mlflow.org/docs/latest/model/dependencies.html?highlight=code_paths#saving-extra-code-with-an-mlflow-model>`_.
+`code_paths usage guide <https://qcflow.org/docs/latest/model/dependencies.html?highlight=code_paths#saving-extra-code-with-an-qcflow-model>`_.
 """
         ),
         # Only pyfunc flavor supports `infer_code_paths`.
@@ -291,16 +291,16 @@ is loaded. Files declared as dependencies for a given model should have relative
 imports declared from a common root path if multiple files are defined with import dependencies
 between them to avoid import errors when loading the model.
 
-You can leave ``code_paths`` argument unset but set ``infer_code_paths`` to ``True`` to let MLflow
+You can leave ``code_paths`` argument unset but set ``infer_code_paths`` to ``True`` to let QCFlow
 infer the model code paths. See ``infer_code_paths`` argument doc for details.
 
 For a detailed explanation of ``code_paths`` functionality, recommended usage patterns and
 limitations, see the
-`code_paths usage guide <https://mlflow.org/docs/latest/model/dependencies.html?highlight=code_paths#saving-extra-code-with-an-mlflow-model>`_.
+`code_paths usage guide <https://qcflow.org/docs/latest/model/dependencies.html?highlight=code_paths#saving-extra-code-with-an-qcflow-model>`_.
 """
         ),
         "infer_code_paths": (
-            """If set to ``True``, MLflow automatically infers model code paths. The inferred
+            """If set to ``True``, QCFlow automatically infers model code paths. The inferred
             code path files only include necessary python module files. Only python code files
             under current working directory are automatically inferable. Default value is
             ``False``.
@@ -308,7 +308,7 @@ limitations, see the
 .. warning::
     Please ensure that the custom python module code does not contain sensitive data such as
     credential token strings, otherwise they might be included in the automatic inferred code
-    path files and be logged to MLflow artifact repository.
+    path files and be logged to QCFlow artifact repository.
 
     If your custom python module depends on non-python files (e.g. a JSON file) with a relative
     path to the module code file path, the non-python files can't be automatically inferred as the
@@ -324,10 +324,10 @@ limitations, see the
 """
         ),
         "save_pretrained": (
-            """If set to ``False``, MLflow will not save the Transformer model weight files,
+            """If set to ``False``, QCFlow will not save the Transformer model weight files,
 instead only saving the reference to the HuggingFace Hub model repository and its commit hash.
 This is useful when you load the pretrained model from HuggingFace Hub and want to log or save
-it to MLflow without modifying the model weights. In such case, specifying this flag to
+it to QCFlow without modifying the model weights. In such case, specifying this flag to
 ``False`` will save the storage space and reduce time to save the model. Please refer to the
 :ref:`Storage-Efficient Model Logging <transformers-save-pretrained-guide>` for more detailed usage.
 
@@ -335,23 +335,23 @@ it to MLflow without modifying the model weights. In such case, specifying this 
 .. warning::
 
     If the model is saved with ``save_pretrained`` set to ``False``, the model cannot be
-    registered to the MLflow Model Registry. In order to convert the model to the one that
-    can be registered, you can use :py:func:`mlflow.transformers.persist_pretrained_model()`
+    registered to the QCFlow Model Registry. In order to convert the model to the one that
+    can be registered, you can use :py:func:`qcflow.transformers.persist_pretrained_model()`
     to download the model weights from the HuggingFace Hub and save it in the existing model
     artifacts. Please refer to :ref:`Transformers flavor documentation <persist-pretrained-guide>`
     for more detailed usage.
 
     .. code-block:: python
 
-        import mlflow.transformers
+        import qcflow.transformers
 
         model_uri = "YOUR_MODEL_URI_LOGGED_WITH_SAVE_PRETRAINED_FALSE"
-        model = mlflow.transformers.persist_pretrained_model(model_uri)
-        mlflow.register_model(model_uri, "model_name")
+        model = qcflow.transformers.persist_pretrained_model(model_uri)
+        qcflow.register_model(model_uri, "model_name")
 
 .. important::
 
-    When you save the `PEFT <https://huggingface.co/docs/peft/en/index>`_ model, MLflow will
+    When you save the `PEFT <https://huggingface.co/docs/peft/en/index>`_ model, QCFlow will
     override the `save_pretrained` flag to `False` and only store the PEFT adapter weights. The
     base model weights are not saved but the reference to the HuggingFace repository and
     its commit hash are logged instead.
@@ -366,7 +366,7 @@ def get_module_min_and_max_supported_ranges(flavor_name):
     Extracts the minimum and maximum supported package versions from the provided module name.
     The version information is provided via the yaml-to-python-script generation script in
     dev/update_ml_package_versions.py which writes a python file to the importable namespace of
-    mlflow.ml_package_versions
+    qcflow.ml_package_versions
 
     Args:
         flavor_name: The flavor name registered in ml_package_versions.py
@@ -413,9 +413,9 @@ def docstring_version_compatibility_warning(integration_name):
             integration_name, "models"
         )
         notice = (
-            f"The '{integration_name}' MLflow Models integration is known to be compatible with "
+            f"The '{integration_name}' QCFlow Models integration is known to be compatible with "
             f"``{min_ver}`` <= ``{pip_release}`` <= ``{max_ver}``. "
-            f"MLflow Models integrations with {integration_name} may not succeed when used with "
+            f"QCFlow Models integrations with {integration_name} may not succeed when used with "
             "package versions outside of this range."
         )
 

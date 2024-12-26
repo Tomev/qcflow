@@ -1,9 +1,9 @@
 import threading
 from typing import Optional
 
-from mlflow.entities.metric import Metric
-from mlflow.entities.param import Param
-from mlflow.entities.run_tag import RunTag
+from qcflow.entities.metric import Metric
+from qcflow.entities.param import Param
+from qcflow.entities.run_tag import RunTag
 
 
 class RunBatch:

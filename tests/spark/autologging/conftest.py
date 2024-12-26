@@ -5,7 +5,7 @@ import pytest
 from pyspark.sql import Row
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from mlflow.spark.autologging import clear_table_infos
+from qcflow.spark.autologging import clear_table_infos
 
 from tests.spark.autologging.utils import _get_or_create_spark_session
 
@@ -74,7 +74,7 @@ def tear_down():
     yield
 
     # Clear cached table infos. When the datasource event from Spark arrives but there is no
-    # active run (e.g. the even comes with some delay), MLflow keep them in memory and logs them to
+    # active run (e.g. the even comes with some delay), QCFlow keep them in memory and logs them to
     # the next **and any successive active run** (ref: PR #4086).
     # However, this behavior is not desirable during tests, as we don't want any tests to be
     # affected by the previous test. Hence, this fixture is executed on every test function

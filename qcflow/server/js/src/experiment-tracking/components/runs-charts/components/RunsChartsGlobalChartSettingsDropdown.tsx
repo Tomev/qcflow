@@ -42,12 +42,12 @@ export const RunsChartsGlobalChartSettingsDropdown = ({
   return (
     <DropdownMenu.Root modal={false}>
       <Tooltip
-        componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_44"
+        componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_44"
         content={label}
       >
         <DropdownMenu.Trigger asChild>
           <Button
-            componentId="mlflow.charts.controls.global_chart_setup_dropdown"
+            componentId="qcflow.charts.controls.global_chart_setup_dropdown"
             icon={<GearIcon />}
             aria-label={label}
           />
@@ -69,7 +69,7 @@ export const RunsChartsGlobalChartSettingsDropdown = ({
             />
           </DropdownMenu.Label>
           <DropdownMenu.CheckboxItem
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_68"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_68"
             checked={xAxisKey === RunsChartsLineChartXAxisType.STEP}
             onClick={() => updateGlobalLineChartSettings({ xAxisKey: RunsChartsLineChartXAxisType.STEP })}
           >
@@ -80,7 +80,7 @@ export const RunsChartsGlobalChartSettingsDropdown = ({
             />
           </DropdownMenu.CheckboxItem>
           <DropdownMenu.CheckboxItem
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_78"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_78"
             checked={xAxisKey === RunsChartsLineChartXAxisType.TIME}
             onClick={() => updateGlobalLineChartSettings({ xAxisKey: RunsChartsLineChartXAxisType.TIME })}
           >
@@ -91,7 +91,7 @@ export const RunsChartsGlobalChartSettingsDropdown = ({
             />
           </DropdownMenu.CheckboxItem>
           <DropdownMenu.CheckboxItem
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_88"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_88"
             checked={xAxisKey === RunsChartsLineChartXAxisType.TIME_RELATIVE}
             onClick={() => updateGlobalLineChartSettings({ xAxisKey: RunsChartsLineChartXAxisType.TIME_RELATIVE })}
           >
@@ -122,7 +122,7 @@ export const RunsChartsGlobalChartSettingsDropdown = ({
             <DropdownMenu.SubContent css={{ maxHeight: 300, overflow: 'auto' }}>
               {metricKeyList.map((metricKey) => (
                 <DropdownMenu.CheckboxItem
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_118"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsglobalchartsettingsdropdown.tsx_118"
                   key={metricKey}
                   checked={selectedXAxisMetricKey === metricKey && isUsingGlobalMetricXaxis}
                   onClick={() =>

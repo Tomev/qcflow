@@ -1,11 +1,11 @@
 """
-To run a tracking server with this app, use `mlflow server --app-name custom_app`.
+To run a tracking server with this app, use `qcflow server --app-name custom_app`.
 """
 
 import logging
 
 # This would be all that plugin author is required to import
-from mlflow.server import app as custom_app
+from qcflow.server import app as custom_app
 
 # Can do custom logging on either the app or logging itself
 # but you'll possibly have to clear the existing handlers or there will be duplicate output

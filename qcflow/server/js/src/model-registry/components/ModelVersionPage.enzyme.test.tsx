@@ -20,7 +20,7 @@ import Utils from '../../common/utils/Utils';
 import { ErrorWrapper } from '../../common/utils/ErrorWrapper';
 import { ErrorCodes } from '../../common/constants';
 import { ModelRegistryRoutes } from '../routes';
-import { mountWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 import { getUUID } from '../../common/utils/ActionUtils';
 
 jest.mock('../../common/utils/ActionUtils', () => ({
@@ -90,7 +90,7 @@ describe('ModelVersionPage', () => {
   });
   test('should fetch new data when props are updated after mount', () => {
     // eslint-disable-next-line no-unused-vars
-    const endpoint = 'ajax-api/2.0/mlflow/model-versions/get';
+    const endpoint = 'ajax-api/2.0/qcflow/model-versions/get';
     const TestComponent = ({ params = minimalProps.params }) => (
       <Provider store={minimalStore}>
         <MemoryRouter>

@@ -1,7 +1,7 @@
 import pydantic
 import pytest
 
-from mlflow.gateway.schemas import chat
+from qcflow.gateway.schemas import chat
 
 
 def test_chat_request():

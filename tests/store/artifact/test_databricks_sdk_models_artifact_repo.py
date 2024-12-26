@@ -7,15 +7,15 @@ from databricks.sdk import WorkspaceClient
 from databricks.sdk.errors.platform import NotFound
 from databricks.sdk.service.files import DirectoryEntry, DownloadResponse
 
-from mlflow.entities.file_info import FileInfo
-from mlflow.entities.model_registry import ModelVersion
-from mlflow.store._unity_catalog.registry.rest_store import (
+from qcflow.entities.file_info import FileInfo
+from qcflow.entities.model_registry import ModelVersion
+from qcflow.store._unity_catalog.registry.rest_store import (
     UcModelRegistryStore,
 )
-from mlflow.store.artifact.databricks_sdk_models_artifact_repo import (
+from qcflow.store.artifact.databricks_sdk_models_artifact_repo import (
     DatabricksSDKModelsArtifactRepository,
 )
-from mlflow.store.artifact.unity_catalog_models_artifact_repo import (
+from qcflow.store.artifact.unity_catalog_models_artifact_repo import (
     UnityCatalogModelsArtifactRepository,
 )
 
@@ -31,7 +31,7 @@ TEST_MODEL_BASE_PATH = f"/Models/{TEST_CATALOG}/{TEST_SCHEMA}/{TEST_MODEL}/{TEST
 def mock_databricks_workspace_client():
     mock_databricks_workspace_client = mock.MagicMock(autospec=WorkspaceClient)
     with mock.patch(
-        "mlflow.store.artifact.databricks_sdk_models_artifact_repo._get_databricks_workspace_client",
+        "qcflow.store.artifact.databricks_sdk_models_artifact_repo._get_databricks_workspace_client",
         return_value=mock_databricks_workspace_client,
     ):
         yield mock_databricks_workspace_client
@@ -173,8 +173,8 @@ def test_log_artifact(mock_databricks_workspace_client, tmp_path):
     )
 
 
-def test_mlflow_use_databricks_sdk_model_artifacts_repo_for_uc(tmp_path, monkeypatch):
-    monkeypatch.setenv("MLFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "true")
+def test_qcflow_use_databricks_sdk_model_artifacts_repo_for_uc(tmp_path, monkeypatch):
+    monkeypatch.setenv("QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "true")
     monkeypatch.setenvs(
         {
             "DATABRICKS_HOST": "my-host",
@@ -182,7 +182,7 @@ def test_mlflow_use_databricks_sdk_model_artifacts_repo_for_uc(tmp_path, monkeyp
         }
     )
     with mock.patch(
-        "mlflow.utils._unity_catalog_utils.call_endpoint",
+        "qcflow.utils._unity_catalog_utils.call_endpoint",
         side_effect=[
             Exception("lineage emission fails"),
         ],
@@ -205,7 +205,7 @@ def test_mlflow_use_databricks_sdk_model_artifacts_repo_for_uc(tmp_path, monkeyp
         )
 
 
-def test_mlflow_use_databricks_sdk_model_artifacts_repo_for_uc_seg(tmp_path, monkeypatch):
+def test_qcflow_use_databricks_sdk_model_artifacts_repo_for_uc_seg(tmp_path, monkeypatch):
     monkeypatch.setenvs(
         {
             "DATABRICKS_HOST": "my-host",
@@ -213,7 +213,7 @@ def test_mlflow_use_databricks_sdk_model_artifacts_repo_for_uc_seg(tmp_path, mon
         }
     )
     with mock.patch(
-        "mlflow.utils._unity_catalog_utils.call_endpoint",
+        "qcflow.utils._unity_catalog_utils.call_endpoint",
         side_effect=[
             SimpleNamespace(is_databricks_sdk_models_artifact_repository_enabled=True),
             Exception("lineage emission fails"),

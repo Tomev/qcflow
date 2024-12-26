@@ -8,13 +8,13 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-import mlflow
+import qcflow
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--test",
     action="store_true",
-    help="If specified, check this script is running in a virtual environment created by mlflow "
+    help="If specified, check this script is running in a virtual environment created by qcflow "
     "and python and sickit-learn versions are correct.",
 )
 args = parser.parse_args()
@@ -29,5 +29,5 @@ y = np.array([1, 1, 2, 2])
 clf = make_pipeline(StandardScaler(), SVC(gamma="auto"))
 clf.fit(X, y)
 
-with mlflow.start_run():
-    mlflow.sklearn.log_model(clf, "model")
+with qcflow.start_run():
+    qcflow.sklearn.log_model(clf, "model")

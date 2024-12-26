@@ -1,10 +1,10 @@
 """
-The ``mlflow.pmdarima`` module provides an API for logging and loading ``pmdarima`` models.
+The ``qcflow.pmdarima`` module provides an API for logging and loading ``pmdarima`` models.
 This module exports univariate ``pmdarima`` models in the following formats:
 
 Pmdarima format
     Serialized instance of a ``pmdarima`` model using pickle.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and for batch auditing
     of historical forecasts.
 
@@ -12,14 +12,14 @@ Pmdarima format
     :caption: Example
 
     import pandas as pd
-    import mlflow
-    import mlflow.pyfunc
+    import qcflow
+    import qcflow.pyfunc
     import pmdarima
     from pmdarima import auto_arima
 
 
     # Define a custom model class
-    class PmdarimaWrapper(mlflow.pyfunc.PythonModel):
+    class PmdarimaWrapper(qcflow.pyfunc.PythonModel):
         def load_context(self, context):
             self.model = context.artifacts["model"]
 
@@ -43,12 +43,12 @@ Pmdarima format
     model = pmdarima.auto_arima(train["sales"], seasonal=True, m=12)
 
     # Log the model
-    with mlflow.start_run():
+    with qcflow.start_run():
         wrapper = PmdarimaWrapper()
-        mlflow.pyfunc.log_model(
+        qcflow.pyfunc.log_model(
             artifact_path="model",
             python_model=wrapper,
-            artifacts={"model": mlflow.pyfunc.model_to_dict(model)},
+            artifacts={"model": qcflow.pyfunc.model_to_dict(model)},
         )
 
 
@@ -66,36 +66,36 @@ import pandas as pd
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "pmdarima"
 _MODEL_BINARY_KEY = "data"
@@ -109,7 +109,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor. Calls to
+        A list of default pip requirements for QCFlow Models produced by this flavor. Calls to
         :func:`save_model()` and :func:`log_model()` produce a pip environment that, at a minimum,
         contains these requirements.
     """
@@ -120,11 +120,11 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
 
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
@@ -133,7 +133,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -149,21 +149,21 @@ def save_model(
         path: Local path destination for the serialized model (in pickle format) is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
-        signature: an instance of the :py:class:`ModelSignature <mlflow.models.ModelSignature>`
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
+        signature: an instance of the :py:class:`ModelSignature <qcflow.models.ModelSignature>`
             class that describes the model's inputs and outputs. If not specified but an
             ``input_example`` is supplied, a signature will be automatically inferred
             based on the supplied input example and model. To disable automatic signature
             inference when providing an input example, set ``signature`` to ``False``.
             To manually infer a model signature, call
-            :py:func:`infer_signature() <mlflow.models.infer_signature>` on datasets
+            :py:func:`infer_signature() <qcflow.models.infer_signature>` on datasets
             with valid model inputs, such as a training dataset with the target column
             omitted, and valid model outputs, like model predictions made on the training
             dataset, for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 model = pmdarima.auto_arima(data)
                 predictions = model.predict(n_periods=30, return_conf_int=False)
@@ -183,7 +183,7 @@ def save_model(
         :caption: Example
 
         import pandas as pd
-        import mlflow
+        import qcflow
         import pmdarima
 
         # Specify locations of source data and the model artifact
@@ -198,12 +198,12 @@ def save_model(
         train_size = int(0.8 * len(sales_data))
         train, test = sales_data[:train_size], sales_data[train_size:]
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Create the model
             model = pmdarima.auto_arima(train["sales"], seasonal=True, m=12)
 
             # Save the model to the specified path
-            mlflow.pmdarima.save_model(model, "model")
+            qcflow.pmdarima.save_model(model, "model")
     """
 
     import pmdarima
@@ -214,9 +214,9 @@ def save_model(
     _validate_and_prepare_target_save_path(path)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _PmdarimaModelWrapper(pmdarima_model)
@@ -225,17 +225,17 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     model_data_path = os.path.join(path, _MODEL_BINARY_FILE_NAME)
     _save_model(pmdarima_model, model_data_path)
 
     model_bin_kwargs = {_MODEL_BINARY_KEY: _MODEL_BINARY_FILE_NAME}
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.pmdarima",
+        qcflow_model,
+        loader_module="qcflow.pmdarima",
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
@@ -245,17 +245,17 @@ def save_model(
         _MODEL_TYPE_KEY: pmdarima_model.__class__.__name__,
         **model_bin_kwargs,
     }
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME, pmdarima_version=pmdarima.__version__, code=code_dir_subpath, **flavor_conf
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path, FLAVOR_NAME, fallback=default_reqs
             )
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
@@ -294,7 +294,7 @@ def log_model(
     **kwargs,
 ):
     """
-    Logs a ``pmdarima`` ``ARIMA`` or ``Pipeline`` object as an MLflow artifact for the current run.
+    Logs a ``pmdarima`` ``ARIMA`` or ``Pipeline`` object as an QCFlow artifact for the current run.
 
     Args:
         pmdarima_model: pmdarima ``ARIMA`` or ``Pipeline`` model that has been ``fit`` on a
@@ -306,20 +306,20 @@ def log_model(
             future release without warning. If given, create a model
             version under ``registered_model_name``, also creating a
             registered model if one with the given name does not exist.
-        signature: an instance of the :py:class:`ModelSignature <mlflow.models.ModelSignature>`
+        signature: an instance of the :py:class:`ModelSignature <qcflow.models.ModelSignature>`
             class that describes the model's inputs and outputs. If not specified but an
             ``input_example`` is supplied, a signature will be automatically inferred
             based on the supplied input example and model. To disable automatic signature
             inference when providing an input example, set ``signature`` to ``False``.
             To manually infer a model signature, call
-            :py:func:`infer_signature() <mlflow.models.infer_signature>` on datasets
+            :py:func:`infer_signature() <qcflow.models.infer_signature>` on datasets
             with valid model inputs, such as a training dataset with the target column
             omitted, and valid model outputs, like model predictions made on the training
             dataset, for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 model = pmdarima.auto_arima(data)
                 predictions = model.predict(n_periods=30, return_conf_int=False)
@@ -339,18 +339,18 @@ def log_model(
         pip_requirements: {{ pip_requirements }}
         extra_pip_requirements: {{ extra_pip_requirements }}
         metadata: {{ metadata }}
-        kwargs: Additional arguments for :py:class:`mlflow.models.model.Model`
+        kwargs: Additional arguments for :py:class:`qcflow.models.model.Model`
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
         :caption: Example
 
         import pandas as pd
-        import mlflow
-        from mlflow.models import infer_signature
+        import qcflow
+        from qcflow.models import infer_signature
         import pmdarima
         from pmdarima.metrics import smape
 
@@ -366,7 +366,7 @@ def log_model(
         train_size = int(0.8 * len(sales_data))
         train, test = sales_data[:train_size], sales_data[train_size:]
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Create the model
             model = pmdarima.auto_arima(train["sales"], seasonal=True, m=12)
 
@@ -380,12 +380,12 @@ def log_model(
             signature = infer_signature(input_sample, output_sample)
 
             # Log model
-            mlflow.pmdarima.log_model(model, ARTIFACT_PATH, signature=signature)
+            qcflow.pmdarima.log_model(model, ARTIFACT_PATH, signature=signature)
     """
 
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.pmdarima,
+        flavor=qcflow.pmdarima,
         registered_model_name=registered_model_name,
         pmdarima_model=pmdarima_model,
         conda_env=conda_env,
@@ -405,16 +405,16 @@ def load_model(model_uri, dst_path=None):
     Load a ``pmdarima`` ``ARIMA`` model or ``Pipeline`` object from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
@@ -427,8 +427,8 @@ def load_model(model_uri, dst_path=None):
         :caption: Example
 
         import pandas as pd
-        import mlflow
-        from mlflow.models import infer_signature
+        import qcflow
+        from qcflow.models import infer_signature
         import pmdarima
         from pmdarima.metrics import smape
 
@@ -444,7 +444,7 @@ def load_model(model_uri, dst_path=None):
         train_size = int(0.8 * len(sales_data))
         train, test = sales_data[:train_size], sales_data[train_size:]
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Create the model
             model = pmdarima.auto_arima(train["sales"], seasonal=True, m=12)
 
@@ -459,15 +459,15 @@ def load_model(model_uri, dst_path=None):
 
             # Log model
             input_example = input_sample.head()
-            mlflow.pmdarima.log_model(
+            qcflow.pmdarima.log_model(
                 model, ARTIFACT_PATH, signature=signature, input_example=input_example
             )
 
             # Get the model URI for loading
-            model_uri = mlflow.get_artifact_uri(ARTIFACT_PATH)
+            model_uri = qcflow.get_artifact_uri(ARTIFACT_PATH)
 
         # Load the model
-        loaded_model = mlflow.pmdarima.load_model(model_uri)
+        loaded_model = qcflow.pmdarima.load_model(model_uri)
         # Forecast for the next 60 days
         forecast = loaded_model.predict(n_periods=60)
         print(f"forecast: {forecast}")

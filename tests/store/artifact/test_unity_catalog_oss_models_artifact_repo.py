@@ -4,14 +4,14 @@ from unittest.mock import ANY
 
 from requests import Response
 
-from mlflow import MlflowClient
-from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
-from mlflow.store.artifact.unity_catalog_oss_models_artifact_repo import (
+from qcflow import MlflowClient
+from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+from qcflow.store.artifact.unity_catalog_oss_models_artifact_repo import (
     UnityCatalogOSSModelsArtifactRepository,
 )
-from mlflow.utils.uri import _OSS_UNITY_CATALOG_SCHEME
+from qcflow.utils.uri import _OSS_UNITY_CATALOG_SCHEME
 
-MODELS_ARTIFACT_REPOSITORY_PACKAGE = "mlflow.store.artifact.unity_catalog_models_artifact_repo"
+MODELS_ARTIFACT_REPOSITORY_PACKAGE = "qcflow.store.artifact.unity_catalog_models_artifact_repo"
 MODELS_ARTIFACT_REPOSITORY = (
     MODELS_ARTIFACT_REPOSITORY_PACKAGE + ".UnityCatalogModelsArtifactRepository"
 )
@@ -53,13 +53,13 @@ def test_uc_models_artifact_repo_scoped_token_oss(monkeypatch):
     }
     fake_local_path = "/tmp/fake_path"
     with (
-        mock.patch("mlflow.utils.oss_registry_utils.get_oss_host_creds"),
+        mock.patch("qcflow.utils.oss_registry_utils.get_oss_host_creds"),
         mock.patch.object(
             MlflowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
-        mock.patch("mlflow.utils.rest_utils.http_request") as request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository"
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository"
         ) as optimized_s3_artifact_repo_class_mock,
     ):
         mock_s3_repo = mock.MagicMock(autospec=OptimizedS3ArtifactRepository)

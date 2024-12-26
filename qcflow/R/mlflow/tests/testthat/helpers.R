@@ -1,6 +1,6 @@
-mlflow_clear_test_dir <- function(path) {
-  purrr::safely(mlflow_end_run)()
-  mlflow:::mlflow_set_active_experiment_id(NULL)
+qcflow_clear_test_dir <- function(path) {
+  purrr::safely(qcflow_end_run)()
+  qcflow:::qcflow_set_active_experiment_id(NULL)
   if (dir.exists(path)) {
     unlink(path, recursive = TRUE)
   }
@@ -8,6 +8,6 @@ mlflow_clear_test_dir <- function(path) {
 }
 
 deregister_local_servers <- function() {
-  purrr::walk(as.list(mlflow:::.globals$url_mapping), ~ .x$handle$kill())
-  rlang::env_unbind(mlflow:::.globals, "url_mapping")
+  purrr::walk(as.list(qcflow:::.globals$url_mapping), ~ .x$handle$kill())
+  rlang::env_unbind(qcflow:::.globals, "url_mapping")
 }

@@ -4,11 +4,11 @@ import json
 import os
 from typing import TYPE_CHECKING, Any, Optional
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import ALREADY_EXISTS, INVALID_PARAMETER_VALUE
-from mlflow.transformers.hub_utils import get_latest_commit_for_repo
-from mlflow.transformers.peft import _PEFT_ADAPTOR_DIR_NAME, get_peft_base_model, is_peft_model
-from mlflow.transformers.torch_utils import _extract_torch_dtype_if_set
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import ALREADY_EXISTS, INVALID_PARAMETER_VALUE
+from qcflow.transformers.hub_utils import get_latest_commit_for_repo
+from qcflow.transformers.peft import _PEFT_ADAPTOR_DIR_NAME, get_peft_base_model, is_peft_model
+from qcflow.transformers.torch_utils import _extract_torch_dtype_if_set
 
 if TYPE_CHECKING:
     import transformers
@@ -111,7 +111,7 @@ def _get_model_config(model, save_pretrained=True):
 
     if save_pretrained:
         # log local path to model binary file
-        from mlflow.transformers.model_io import _MODEL_BINARY_FILE_NAME
+        from qcflow.transformers.model_io import _MODEL_BINARY_FILE_NAME
 
         conf[FlavorKey.MODEL_BINARY] = _MODEL_BINARY_FILE_NAME
     else:
@@ -179,7 +179,7 @@ def build_flavor_config_from_local_checkpoint(
     from transformers import AutoTokenizer, pipelines
     from transformers.utils import is_torch_available
 
-    from mlflow.transformers.model_io import _MODEL_BINARY_FILE_NAME
+    from qcflow.transformers.model_io import _MODEL_BINARY_FILE_NAME
 
     config_path = os.path.join(local_checkpoint_dir, "config.json")
     if not os.path.exists(config_path):
@@ -241,7 +241,7 @@ def update_flavor_conf_to_persist_pretrained_model(
             error_code=ALREADY_EXISTS,
         )
 
-    from mlflow.transformers.model_io import _MODEL_BINARY_FILE_NAME
+    from qcflow.transformers.model_io import _MODEL_BINARY_FILE_NAME
 
     flavor_conf[FlavorKey.MODEL_BINARY] = _MODEL_BINARY_FILE_NAME
     flavor_conf.pop(FlavorKey.MODEL_REVISION, None)

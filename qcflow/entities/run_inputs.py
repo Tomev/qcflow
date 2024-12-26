@@ -1,8 +1,8 @@
 from typing import Any
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.dataset_input import DatasetInput
-from mlflow.protos.service_pb2 import RunInputs as ProtoRunInputs
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.dataset_input import DatasetInput
+from qcflow.protos.service_pb2 import RunInputs as ProtoRunInputs
 
 
 class RunInputs(_MlflowObject):

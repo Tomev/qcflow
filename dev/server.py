@@ -1,5 +1,5 @@
 """
-Runs MLflow server, gateway, and UI in development mode.
+Runs QCFlow server, gateway, and UI in development mode.
 """
 
 import os
@@ -23,7 +23,7 @@ def main():
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "deployments",
                 "start-server",
                 "--config-path",
@@ -38,13 +38,13 @@ def main():
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "server",
                 "--dev",
             ],
             env={
                 **os.environ,
-                "MLFLOW_DEPLOYMENTS_TARGET": f"http://{gateway_host}:{gateway_port}",
+                "QCFLOW_DEPLOYMENTS_TARGET": f"http://{gateway_host}:{gateway_port}",
             },
         ) as server,
         subprocess.Popen(
@@ -52,7 +52,7 @@ def main():
                 "yarn",
                 "start",
             ],
-            cwd="mlflow/server/js",
+            cwd="qcflow/server/js",
         ) as ui,
     ):
         while True:

@@ -22,7 +22,7 @@ export enum ModelIconType {
 
 /**
  * Represents a single model trace span.
- * Based on https://github.com/mlflow/mlflow/blob/tracing/mlflow/entities/span.py
+ * Based on https://github.com/qcflow/qcflow/blob/tracing/qcflow/entities/span.py
  */
 export type ModelTraceSpan = {
   context: {
@@ -33,7 +33,7 @@ export type ModelTraceSpan = {
   /* deprecated, renamed to `parent_id` */
   parent_span_id?: string | null;
   parent_id?: string | null;
-  /* deprecated, contained in attributes['mlflow.spanType'] */
+  /* deprecated, contained in attributes['qcflow.spanType'] */
   span_type?: ModelSpanType | string;
   /* deprecated, migrated to `status_code` and `status_message` */
   status?: ModelTraceStatus;
@@ -41,9 +41,9 @@ export type ModelTraceSpan = {
   status_message?: string | null;
   start_time: number;
   end_time: number;
-  /* deprecated, contained in attributes['mlflow.spanInputs'] */
+  /* deprecated, contained in attributes['qcflow.spanInputs'] */
   inputs?: any;
-  /* deprecated, contained in attributes['mlflow.spanOutputs'] */
+  /* deprecated, contained in attributes['qcflow.spanOutputs'] */
   outputs?: any;
   attributes?: Record<string, any>;
   /* metadata for ui usage logging */
@@ -62,7 +62,7 @@ export type ModelTraceData = {
 
 /**
  * Represents a single model trace object.
- * Based on https://github.com/mlflow/mlflow/blob/8e44d102e9568d09d9dc376136d13a5a5d1ab46f/mlflow/tracing/types/model.py#L11
+ * Based on https://github.com/qcflow/qcflow/blob/8e44d102e9568d09d9dc376136d13a5a5d1ab46f/qcflow/tracing/types/model.py#L11
  */
 export type ModelTrace = {
   /* deprecated, renamed to `data` */

@@ -10,11 +10,11 @@ build_context_tags_from_databricks_job_info(job_info)
 \item{job_info}{The job-related metadata from a running Databricks job}
 }
 \value{
-A list of tags to be set by the run context when creating MLflow runs in the
+A list of tags to be set by the run context when creating QCFlow runs in the
 current Databricks Job environment
 }
 \description{
 Parses the data from a job execution context when running on Databricks in a non-interactive
-mode. This function extracts relevant data that MLflow needs in order to properly utilize the
-MLflow APIs from this context.
+mode. This function extracts relevant data that QCFlow needs in order to properly utilize the
+QCFlow APIs from this context.
 }

@@ -3,19 +3,19 @@ import posixpath
 import warnings
 from typing import Any, Iterator, Optional
 
-from mlflow.deployments import BaseDeploymentClient
-from mlflow.deployments.constants import (
-    MLFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
+from qcflow.deployments import BaseDeploymentClient
+from qcflow.deployments.constants import (
+    QCFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
 )
-from mlflow.environment_variables import (
-    MLFLOW_DEPLOYMENT_PREDICT_TIMEOUT,
-    MLFLOW_HTTP_REQUEST_TIMEOUT,
+from qcflow.environment_variables import (
+    QCFLOW_DEPLOYMENT_PREDICT_TIMEOUT,
+    QCFLOW_HTTP_REQUEST_TIMEOUT,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.utils import AttrDict
-from mlflow.utils.annotations import deprecated, experimental
-from mlflow.utils.databricks_utils import get_databricks_host_creds
-from mlflow.utils.rest_utils import augmented_raise_for_status, http_request
+from qcflow.exceptions import MlflowException
+from qcflow.utils import AttrDict
+from qcflow.utils.annotations import deprecated, experimental
+from qcflow.utils.databricks_utils import get_databricks_host_creds
+from qcflow.utils.rest_utils import augmented_raise_for_status, http_request
 
 
 class DatabricksEndpoint(AttrDict):
@@ -62,7 +62,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
     .. code-block:: python
 
-        from mlflow.deployments import get_deploy_client
+        from qcflow.deployments import get_deploy_client
 
         client = get_deploy_client("databricks")
         endpoints = client.list_endpoints()
@@ -139,9 +139,9 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
             host_creds=get_databricks_host_creds(self.target_uri),
             endpoint=posixpath.join(prefix, "serving-endpoints", route or ""),
             method=method,
-            timeout=MLFLOW_HTTP_REQUEST_TIMEOUT.get() if timeout is None else timeout,
+            timeout=QCFLOW_HTTP_REQUEST_TIMEOUT.get() if timeout is None else timeout,
             raise_on_status=False,
-            retry_codes=MLFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
+            retry_codes=QCFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
             extra_headers={"X-Databricks-Endpoints-API-Client": "Databricks Deployment Client"},
             **call_kwargs,
         )
@@ -167,9 +167,9 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
             host_creds=get_databricks_host_creds(self.target_uri),
             endpoint=posixpath.join(prefix, "serving-endpoints", route or ""),
             method=method,
-            timeout=MLFLOW_HTTP_REQUEST_TIMEOUT.get() if timeout is None else timeout,
+            timeout=QCFLOW_HTTP_REQUEST_TIMEOUT.get() if timeout is None else timeout,
             raise_on_status=False,
-            retry_codes=MLFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
+            retry_codes=QCFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
             extra_headers={"X-Databricks-Endpoints-API-Client": "Databricks Deployment Client"},
             stream=True,  # Receive response content in streaming way.
             **call_kwargs,
@@ -203,7 +203,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             response = client.predict(
@@ -241,7 +241,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
             prefix="/",
             route=posixpath.join(endpoint, "invocations"),
             json_body=inputs,
-            timeout=MLFLOW_DEPLOYMENT_PREDICT_TIMEOUT.get(),
+            timeout=QCFLOW_DEPLOYMENT_PREDICT_TIMEOUT.get(),
         )
 
     @experimental
@@ -263,7 +263,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             chunk_iter = client.predict_stream(
@@ -301,7 +301,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
             prefix="/",
             route=posixpath.join(endpoint, "invocations"),
             json_body={**inputs, "stream": True},
-            timeout=MLFLOW_DEPLOYMENT_PREDICT_TIMEOUT.get(),
+            timeout=QCFLOW_DEPLOYMENT_PREDICT_TIMEOUT.get(),
         )
 
         for line in chunk_line_iter:
@@ -355,7 +355,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             endpoint = client.create_endpoint(
@@ -490,7 +490,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             endpoint = client.update_endpoint(
@@ -578,7 +578,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             updated_endpoint = client.update_endpoint_config(
@@ -638,7 +638,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             updated_tags = client.update_endpoint_tags(
@@ -668,7 +668,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             name = "databricks-dbrx-instruct"
@@ -702,7 +702,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             name = "test"
@@ -750,7 +750,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             client.delete_endpoint(endpoint="chat")
@@ -772,7 +772,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             endpoints = client.list_endpoints()
@@ -809,7 +809,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("databricks")
             endpoint = client.get_endpoint(endpoint="chat")

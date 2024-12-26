@@ -7,10 +7,10 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow import MlflowClient, flush_async_logging
-from mlflow.config import enable_async_logging
-from mlflow.entities import (
+import qcflow
+from qcflow import MlflowClient, flush_async_logging
+from qcflow.config import enable_async_logging
+from qcflow.entities import (
     ExperimentTag,
     Run,
     RunInfo,
@@ -23,37 +23,37 @@ from mlflow.entities import (
     TraceInfo,
     ViewType,
 )
-from mlflow.entities.metric import Metric
-from mlflow.entities.model_registry import ModelVersion, ModelVersionTag
-from mlflow.entities.model_registry.model_version_status import ModelVersionStatus
-from mlflow.entities.param import Param
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.environment_variables import MLFLOW_TRACKING_USERNAME
-from mlflow.exceptions import MlflowException, MlflowTraceDataCorrupted, MlflowTraceDataNotFound
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.store.model_registry.sqlalchemy_store import (
+from qcflow.entities.metric import Metric
+from qcflow.entities.model_registry import ModelVersion, ModelVersionTag
+from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
+from qcflow.entities.param import Param
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.environment_variables import QCFLOW_TRACKING_USERNAME
+from qcflow.exceptions import MlflowException, MlflowTraceDataCorrupted, MlflowTraceDataNotFound
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.store.model_registry.sqlalchemy_store import (
     SqlAlchemyStore as SqlAlchemyModelRegistryStore,
 )
-from mlflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
-from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore as SqlAlchemyTrackingStore
-from mlflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, TraceMetadataKey
-from mlflow.tracing.fluent import TRACE_BUFFER
-from mlflow.tracing.provider import _get_tracer, trace_disabled
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracking import set_registry_uri
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking._model_registry.utils import (
+from qcflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
+from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore as SqlAlchemyTrackingStore
+from qcflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, TraceMetadataKey
+from qcflow.tracing.fluent import TRACE_BUFFER
+from qcflow.tracing.provider import _get_tracer, trace_disabled
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracking import set_registry_uri
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking._model_registry.utils import (
     _get_store_registry as _get_model_registry_store_registry,
 )
-from mlflow.tracking._tracking_service.utils import _register, _use_tracking_uri
-from mlflow.utils.databricks_utils import _construct_databricks_run_url
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_GIT_COMMIT,
-    MLFLOW_PARENT_RUN_ID,
-    MLFLOW_PROJECT_ENTRY_POINT,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
-    MLFLOW_USER,
+from qcflow.tracking._tracking_service.utils import _register, _use_tracking_uri
+from qcflow.utils.databricks_utils import _construct_databricks_run_url
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_GIT_COMMIT,
+    QCFLOW_PARENT_RUN_ID,
+    QCFLOW_PROJECT_ENTRY_POINT,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
+    QCFLOW_USER,
 )
 
 from tests.tracing.conftest import async_logging_enabled  # noqa: F401
@@ -69,14 +69,14 @@ def reset_registry_uri():
 
 @pytest.fixture
 def mock_store():
-    with mock.patch("mlflow.tracking._tracking_service.utils._get_store") as mock_get_store:
+    with mock.patch("qcflow.tracking._tracking_service.utils._get_store") as mock_get_store:
         yield mock_get_store.return_value
 
 
 @pytest.fixture
 def mock_artifact_repo():
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.get_artifact_repository"
+        "qcflow.tracking._tracking_service.client.get_artifact_repository"
     ) as mock_get_repo:
         yield mock_get_repo.return_value
 
@@ -87,7 +87,7 @@ def mock_registry_store():
     mock_store.create_model_version = mock.create_autospec(
         SqlAlchemyModelRegistryStore.create_model_version
     )
-    with mock.patch("mlflow.tracking._model_registry.utils._get_store", return_value=mock_store):
+    with mock.patch("qcflow.tracking._model_registry.utils._get_store", return_value=mock_store):
         yield mock_store
 
 
@@ -109,7 +109,7 @@ def mock_databricks_tracking_store():
     mock_tracking_store = MockDatabricksTrackingStore(run_id, experiment_id)
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils._tracking_store_registry.get_store",
+        "qcflow.tracking._tracking_service.utils._tracking_store_registry.get_store",
         return_value=mock_tracking_store,
     ):
         yield mock_tracking_store
@@ -118,7 +118,7 @@ def mock_databricks_tracking_store():
 @pytest.fixture
 def mock_spark_session():
     with mock.patch(
-        "mlflow.utils.databricks_utils._get_active_spark_session"
+        "qcflow.utils.databricks_utils._get_active_spark_session"
     ) as mock_spark_session:
         yield mock_spark_session.return_value
 
@@ -173,7 +173,7 @@ def test_client_get_trace(mock_store, mock_artifact_repo):
         timestamp_ms=123,
         execution_time_ms=456,
         status=TraceStatus.OK,
-        tags={"mlflow.artifactLocation": "dbfs:/path/to/artifacts"},
+        tags={"qcflow.artifactLocation": "dbfs:/path/to/artifacts"},
     )
     mock_artifact_repo.download_trace_data.return_value = {
         "request": '{"prompt": "What is the meaning of life?"}',
@@ -191,11 +191,11 @@ def test_client_get_trace(mock_store, mock_artifact_repo):
                 "status_code": "OK",
                 "status_message": "",
                 "attributes": {
-                    "mlflow.traceRequestId": '"tr-1234567"',
-                    "mlflow.spanType": '"LLM"',
-                    "mlflow.spanFunctionName": '"predict"',
-                    "mlflow.spanInputs": '{"prompt": "What is the meaning of life?"}',
-                    "mlflow.spanOutputs": '{"answer": 42}',
+                    "qcflow.traceRequestId": '"tr-1234567"',
+                    "qcflow.spanType": '"LLM"',
+                    "qcflow.spanFunctionName": '"predict"',
+                    "qcflow.spanInputs": '{"prompt": "What is the meaning of life?"}',
+                    "qcflow.spanOutputs": '{"answer": 42}',
                 },
                 "events": [],
             }
@@ -210,7 +210,7 @@ def test_client_get_trace(mock_store, mock_artifact_repo):
     assert trace.info.timestamp_ms == 123
     assert trace.info.execution_time_ms == 456
     assert trace.info.status == TraceStatus.OK
-    assert trace.info.tags == {"mlflow.artifactLocation": "dbfs:/path/to/artifacts"}
+    assert trace.info.tags == {"qcflow.artifactLocation": "dbfs:/path/to/artifacts"}
     assert trace.data.request == '{"prompt": "What is the meaning of life?"}'
     assert trace.data.response == '{"answer": 42}'
     assert len(trace.data.spans) == 1
@@ -230,7 +230,7 @@ def test_client_get_trace_throws_for_missing_or_corrupted_data(mock_store, mock_
         timestamp_ms=123,
         execution_time_ms=456,
         status=TraceStatus.OK,
-        tags={"mlflow.artifactLocation": "dbfs:/path/to/artifacts"},
+        tags={"qcflow.artifactLocation": "dbfs:/path/to/artifacts"},
     )
     mock_artifact_repo.download_trace_data.side_effect = MlflowTraceDataNotFound("1234567")
 
@@ -256,7 +256,7 @@ def test_client_search_traces(mock_store, mock_artifact_repo):
             timestamp_ms=123,
             execution_time_ms=456,
             status=TraceStatus.OK,
-            tags={"mlflow.artifactLocation": "dbfs:/path/to/artifacts/1"},
+            tags={"qcflow.artifactLocation": "dbfs:/path/to/artifacts/1"},
         ),
         TraceInfo(
             request_id="8910",
@@ -264,7 +264,7 @@ def test_client_search_traces(mock_store, mock_artifact_repo):
             timestamp_ms=456,
             execution_time_ms=789,
             status=TraceStatus.OK,
-            tags={"mlflow.artifactLocation": "dbfs:/path/to/artifacts/2"},
+            tags={"qcflow.artifactLocation": "dbfs:/path/to/artifacts/2"},
         ),
     ]
     mock_store.search_traces.return_value = (mock_traces, None)
@@ -299,7 +299,7 @@ def test_client_search_traces_trace_data_download_error(mock_store):
             raise Exception("Failed to download trace data")
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.get_artifact_repository",
+        "qcflow.tracking._tracking_service.client.get_artifact_repository",
         return_value=CustomArtifactRepository("test"),
     ) as mock_get_artifact_repository:
         mock_traces = [
@@ -309,7 +309,7 @@ def test_client_search_traces_trace_data_download_error(mock_store):
                 timestamp_ms=123,
                 execution_time_ms=456,
                 status=TraceStatus.OK,
-                tags={"mlflow.artifactLocation": "test"},
+                tags={"qcflow.artifactLocation": "test"},
             ),
         ]
         mock_store.search_traces.return_value = (mock_traces, None)
@@ -334,11 +334,11 @@ def test_client_delete_traces(mock_store):
 
 @pytest.fixture(params=["file", "sqlalchemy"])
 def tracking_uri(request, tmp_path):
-    """Set an MLflow Tracking URI with different type of backend."""
-    if "MLFLOW_SKINNY" in os.environ and request.param == "sqlalchemy":
+    """Set an QCFlow Tracking URI with different type of backend."""
+    if "QCFLOW_SKINNY" in os.environ and request.param == "sqlalchemy":
         pytest.skip("SQLAlchemy store is not available in skinny.")
 
-    original_tracking_uri = mlflow.get_tracking_uri()
+    original_tracking_uri = qcflow.get_tracking_uri()
 
     if request.param == "file":
         tracking_uri = tmp_path.joinpath("file").as_uri()
@@ -348,16 +348,16 @@ def tracking_uri(request, tmp_path):
             len("file://") :
         ]
 
-    # NB: MLflow tracer does not handle the change of tracking URI well,
+    # NB: QCFlow tracer does not handle the change of tracking URI well,
     # so we need to reset the tracer to switch the tracking URI during testing.
-    mlflow.tracing.disable()
-    mlflow.set_tracking_uri(tracking_uri)
-    mlflow.tracing.enable()
+    qcflow.tracing.disable()
+    qcflow.set_tracking_uri(tracking_uri)
+    qcflow.tracing.enable()
 
     yield tracking_uri
 
     # Reset tracking URI
-    mlflow.set_tracking_uri(original_tracking_uri)
+    qcflow.set_tracking_uri(original_tracking_uri)
 
 
 @pytest.mark.parametrize("with_active_run", [True, False])
@@ -419,16 +419,16 @@ def test_start_and_end_trace(tracking_uri, with_active_run, async_logging_enable
 
     model = TestModel()
     if with_active_run:
-        with mlflow.start_run(experiment_id=experiment_id) as run:
+        with qcflow.start_run(experiment_id=experiment_id) as run:
             model.predict(1, 2)
             run_id = run.info.run_id
     else:
         model.predict(1, 2)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
-    request_id = mlflow.get_last_active_trace().info.request_id
+    request_id = qcflow.get_last_active_trace().info.request_id
 
     # Validate that trace is logged to the backend
     trace = client.get_trace(request_id)
@@ -456,30 +456,30 @@ def test_start_and_end_trace(tracking_uri, with_active_run, async_logging_enable
     # assert root_span.start_time_ns // 1e6 == trace.info.timestamp_ms
     assert root_span.parent_id is None
     assert root_span.attributes == {
-        "mlflow.experimentId": experiment_id,
-        "mlflow.traceRequestId": trace.info.request_id,
-        "mlflow.spanType": "UNKNOWN",
-        "mlflow.spanInputs": {"x": 1, "y": 2},
-        "mlflow.spanOutputs": {"output": 25},
+        "qcflow.experimentId": experiment_id,
+        "qcflow.traceRequestId": trace.info.request_id,
+        "qcflow.spanType": "UNKNOWN",
+        "qcflow.spanInputs": {"x": 1, "y": 2},
+        "qcflow.spanOutputs": {"output": 25},
     }
 
     child_span_1 = span_name_to_span["child_span_1"]
     assert child_span_1.parent_id == root_span.span_id
     assert child_span_1.attributes == {
-        "mlflow.traceRequestId": trace.info.request_id,
-        "mlflow.spanType": "LLM",
-        "mlflow.spanInputs": {"z": 3},
-        "mlflow.spanOutputs": {"output": 5},
+        "qcflow.traceRequestId": trace.info.request_id,
+        "qcflow.spanType": "LLM",
+        "qcflow.spanInputs": {"z": 3},
+        "qcflow.spanOutputs": {"output": 5},
         "delta": 2,
     }
 
     child_span_2 = span_name_to_span["child_span_2"]
     assert child_span_2.parent_id == root_span.span_id
     assert child_span_2.attributes == {
-        "mlflow.traceRequestId": trace.info.request_id,
-        "mlflow.spanType": "UNKNOWN",
-        "mlflow.spanInputs": {"t": 5},
-        "mlflow.spanOutputs": {"output": 25},
+        "qcflow.traceRequestId": trace.info.request_id,
+        "qcflow.spanType": "UNKNOWN",
+        "qcflow.spanInputs": {"t": 5},
+        "qcflow.spanOutputs": {"output": 25},
     }
     assert child_span_2.start_time_ns <= child_span_2.end_time_ns - 0.1 * 1e6
 
@@ -506,7 +506,7 @@ def test_start_and_end_trace_capture_falsy_input_and_output(tracking_uri):
 @pytest.mark.usefixtures("reset_active_experiment")
 def test_start_and_end_trace_before_all_span_end(async_logging_enabled):
     # This test is to verify that the trace is still exported even if some spans are not ended
-    exp_id = mlflow.set_experiment("test_experiment_1").experiment_id
+    exp_id = qcflow.set_experiment("test_experiment_1").experiment_id
 
     class TestModel:
         def __init__(self):
@@ -537,7 +537,7 @@ def test_start_and_end_trace_before_all_span_end(async_logging_enabled):
     model.predict(1)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = MlflowClient().search_traces(experiment_ids=[exp_id])
     assert len(traces) == 1
@@ -572,13 +572,13 @@ def test_start_and_end_trace_before_all_span_end(async_logging_enabled):
     assert non_ended_span.status.status_code == SpanStatusCode.UNSET
 
 
-@mock.patch("mlflow.tracking._tracking_service.utils.get_tracking_uri", return_value="databricks")
+@mock.patch("qcflow.tracking._tracking_service.utils.get_tracking_uri", return_value="databricks")
 def test_log_trace_with_databricks_tracking_uri(
     databricks_tracking_uri, mock_store_for_tracing, monkeypatch, async_logging_enabled
 ):
-    monkeypatch.setenv("MLFLOW_EXPERIMENT_NAME", "test")
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv("QCFLOW_EXPERIMENT_NAME", "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
 
     mock_experiment = mock.MagicMock()
     mock_experiment.experiment_id = "test_experiment_id"
@@ -596,8 +596,8 @@ def test_log_trace_with_databricks_tracking_uri(
             root_span = self._client.start_trace(
                 name="predict",
                 inputs={"x": x, "y": y},
-                # Trying to override mlflow.user tag, which will be ignored
-                tags={"tag": "tag_value", "mlflow.user": "unknown"},
+                # Trying to override qcflow.user tag, which will be ignored
+                tags={"tag": "tag_value", "qcflow.user": "unknown"},
             )
             request_id = root_span.request_id
 
@@ -631,28 +631,28 @@ def test_log_trace_with_databricks_tracking_uri(
 
     with (
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient._upload_trace_data"
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient._upload_trace_data"
         ) as mock_upload_trace_data,
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tags",
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tags",
         ),
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
         ),
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.get_trace_info",
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.get_trace_info",
         ),
         mock.patch(
-            "mlflow.tracing.trace_manager.InMemoryTraceManager.update_trace_info",
+            "qcflow.tracing.trace_manager.InMemoryTraceManager.update_trace_info",
             side_effect=_mock_update_trace_info,
         ),
     ):
         model.predict(1, 2)
 
         if async_logging_enabled:
-            mlflow.flush_trace_async_logging(terminate=True)
+            qcflow.flush_trace_async_logging(terminate=True)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.request_id == "tr-0"
     assert trace.info.experiment_id == "test_experiment_id"
     assert trace.info.status == TraceStatus.OK
@@ -662,11 +662,11 @@ def test_log_trace_with_databricks_tracking_uri(
         TRACE_SCHEMA_VERSION_KEY: str(TRACE_SCHEMA_VERSION),
     }
     assert trace.info.tags == {
-        "mlflow.traceName": "predict",
-        "mlflow.artifactLocation": "test",
-        "mlflow.user": "bob",
-        "mlflow.source.name": "test",
-        "mlflow.source.type": "LOCAL",
+        "qcflow.traceName": "predict",
+        "qcflow.artifactLocation": "test",
+        "qcflow.user": "bob",
+        "qcflow.source.name": "test",
+        "qcflow.source.type": "LOCAL",
         "tag": "tag_value",
     }
 
@@ -708,7 +708,7 @@ def test_start_and_end_trace_does_not_log_trace_when_disabled(
         return "done"
 
     mock_logger = mock.MagicMock()
-    monkeypatch.setattr(mlflow.tracking.client, "_logger", mock_logger)
+    monkeypatch.setattr(qcflow.tracking.client, "_logger", mock_logger)
 
     res = func()
 
@@ -719,10 +719,10 @@ def test_start_and_end_trace_does_not_log_trace_when_disabled(
 
 
 def test_start_trace_within_active_run(async_logging_enabled):
-    exp_id = mlflow.create_experiment("test")
+    exp_id = qcflow.create_experiment("test")
 
-    client = mlflow.MlflowClient()
-    with mlflow.start_run():
+    client = qcflow.MlflowClient()
+    with qcflow.start_run():
         root_span = client.start_trace(
             name="test",
             experiment_id=exp_id,
@@ -730,7 +730,7 @@ def test_start_trace_within_active_run(async_logging_enabled):
         client.end_trace(root_span.request_id)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = client.search_traces(experiment_ids=[exp_id])
     assert len(traces) == 1
@@ -738,13 +738,13 @@ def test_start_trace_within_active_run(async_logging_enabled):
 
 
 def test_start_trace_raise_error_when_active_trace_exists():
-    with mlflow.start_span("fluent_span"):
+    with qcflow.start_span("fluent_span"):
         with pytest.raises(MlflowException, match=r"Another trace is already set in the global"):
-            mlflow.tracking.MlflowClient().start_trace("test")
+            qcflow.tracking.MlflowClient().start_trace("test")
 
 
 def test_end_trace_raise_error_when_trace_not_exist():
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.MlflowClient()
     mock_tracking_client = mock.MagicMock()
     mock_tracking_client.get_trace.return_value = None
     client._tracking_client = mock_tracking_client
@@ -755,7 +755,7 @@ def test_end_trace_raise_error_when_trace_not_exist():
 
 @pytest.mark.parametrize("status", TraceStatus.pending_statuses())
 def test_end_trace_works_for_trace_in_pending_status(status):
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.MlflowClient()
     mock_tracking_client = mock.MagicMock()
     mock_tracking_client.get_trace.return_value = Trace(
         info=create_test_trace_info("test", status=status), data=None
@@ -768,7 +768,7 @@ def test_end_trace_works_for_trace_in_pending_status(status):
 
 @pytest.mark.parametrize("status", TraceStatus.end_statuses())
 def test_end_trace_raise_error_for_trace_in_end_status(status):
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.MlflowClient()
     mock_tracking_client = mock.MagicMock()
     mock_tracking_client.get_trace.return_value = Trace(
         info=create_test_trace_info("test", status=status), data=None
@@ -791,7 +791,7 @@ def test_trace_status_either_pending_or_end():
 
 def test_start_span_raise_error_when_parent_id_is_not_provided():
     with pytest.raises(MlflowException, match=r"start_span\(\) must be called with"):
-        mlflow.tracking.MlflowClient().start_span("span_name", request_id="test", parent_id=None)
+        qcflow.tracking.MlflowClient().start_span("span_name", request_id="test", parent_id=None)
 
 
 def test_log_trace(tracking_uri):
@@ -806,7 +806,7 @@ def test_log_trace(tracking_uri):
     )
     client.end_trace(span.request_id, status="OK")
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
 
     # Purge all traces in the backend once
     client.delete_traces(experiment_id=experiment_id, request_ids=[trace.info.request_id])
@@ -829,7 +829,7 @@ def test_log_trace(tracking_uri):
 
 
 def test_ignore_exception_from_tracing_logic(monkeypatch, async_logging_enabled):
-    exp_id = mlflow.set_experiment("test_experiment_1").experiment_id
+    exp_id = qcflow.set_experiment("test_experiment_1").experiment_id
     client = MlflowClient()
     TRACE_BUFFER.clear()
 
@@ -866,42 +866,42 @@ def test_ignore_exception_from_tracing_logic(monkeypatch, async_logging_enabled)
 
 
 def test_set_and_delete_trace_tag_on_active_trace(monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
 
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.MlflowClient()
 
     root_span = client.start_trace(name="test")
     request_id = root_span.request_id
     client.set_trace_tag(request_id, "foo", "bar")
     client.end_trace(request_id)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.tags["foo"] == "bar"
 
 
 def test_set_trace_tag_on_logged_trace(mock_store):
-    mlflow.tracking.MlflowClient().set_trace_tag("test", "foo", "bar")
+    qcflow.tracking.MlflowClient().set_trace_tag("test", "foo", "bar")
     mock_store.set_trace_tag.assert_called_once_with("test", "foo", "bar")
 
 
 def test_delete_trace_tag_on_active_trace(monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
 
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.MlflowClient()
     root_span = client.start_trace(name="test", tags={"foo": "bar", "baz": "qux"})
     request_id = root_span.request_id
     client.delete_trace_tag(request_id, "foo")
     client.end_trace(request_id)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert "baz" in trace.info.tags
     assert "foo" not in trace.info.tags
 
 
 def test_delete_trace_tag_on_logged_trace(mock_store):
-    mlflow.tracking.MlflowClient().delete_trace_tag("test", "foo")
+    qcflow.tracking.MlflowClient().delete_trace_tag("test", "foo")
     mock_store.delete_trace_tag.assert_called_once_with("test", "foo")
 
 
@@ -921,12 +921,12 @@ def test_client_create_run_overrides(mock_store):
     start_time = mock.Mock()
     run_name = mock.Mock()
     tags = {
-        MLFLOW_USER: user,
-        MLFLOW_PARENT_RUN_ID: mock.Mock(),
-        MLFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.JOB),
-        MLFLOW_SOURCE_NAME: mock.Mock(),
-        MLFLOW_PROJECT_ENTRY_POINT: mock.Mock(),
-        MLFLOW_GIT_COMMIT: mock.Mock(),
+        QCFLOW_USER: user,
+        QCFLOW_PARENT_RUN_ID: mock.Mock(),
+        QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.JOB),
+        QCFLOW_SOURCE_NAME: mock.Mock(),
+        QCFLOW_PROJECT_ENTRY_POINT: mock.Mock(),
+        QCFLOW_GIT_COMMIT: mock.Mock(),
         "other-key": "other-value",
     }
 
@@ -1139,7 +1139,7 @@ def test_registry_uri_from_set_registry_uri():
 def test_registry_uri_from_tracking_uri_param():
     tracking_uri = "databricks://tracking_vhawoierj"
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils.get_tracking_uri",
+        "qcflow.tracking._tracking_service.utils.get_tracking_uri",
         return_value=tracking_uri,
     ):
         client = MlflowClient(tracking_uri=tracking_uri)
@@ -1149,7 +1149,7 @@ def test_registry_uri_from_tracking_uri_param():
 def test_registry_uri_from_implicit_tracking_uri():
     tracking_uri = "databricks://tracking_wierojasdf"
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils.get_tracking_uri",
+        "qcflow.tracking._tracking_service.utils.get_tracking_uri",
         return_value=tracking_uri,
     ):
         client = MlflowClient()
@@ -1210,9 +1210,9 @@ def test_create_model_version_explicitly_set_run_link(
 
     # mocks to make sure that even if you're in a notebook, this setting is respected.
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_in_databricks_notebook", return_value=True),
+        mock.patch("qcflow.utils.databricks_utils.is_in_databricks_notebook", return_value=True),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_workspace_info_from_dbutils",
+            "qcflow.utils.databricks_utils.get_workspace_info_from_dbutils",
             return_value=(hostname, workspace_id),
         ),
     ):
@@ -1238,9 +1238,9 @@ def test_create_model_version_run_link_in_notebook_with_default_profile(
     )
 
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_in_databricks_notebook", return_value=True),
+        mock.patch("qcflow.utils.databricks_utils.is_in_databricks_notebook", return_value=True),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_workspace_info_from_dbutils",
+            "qcflow.utils.databricks_utils.get_workspace_info_from_dbutils",
             return_value=(hostname, workspace_id),
         ),
     ):
@@ -1312,9 +1312,9 @@ def test_create_model_version_run_link_with_configured_profile(
     )
 
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_in_databricks_notebook", return_value=False),
+        mock.patch("qcflow.utils.databricks_utils.is_in_databricks_notebook", return_value=False),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_workspace_info_from_databricks_secrets",
+            "qcflow.utils.databricks_utils.get_workspace_info_from_databricks_secrets",
             return_value=(hostname, workspace_id),
         ),
     ):
@@ -1342,7 +1342,7 @@ def test_create_model_version_copy_called_db_to_db(mock_registry_store):
         registry_uri="databricks://registry:workspace",
     )
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    with mock.patch("mlflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
+    with mock.patch("qcflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
         client.create_model_version(
             "model name",
             "dbfs:/source",
@@ -1362,7 +1362,7 @@ def test_create_model_version_copy_called_nondb_to_db(mock_registry_store):
         tracking_uri="https://tracking", registry_uri="databricks://registry:workspace"
     )
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    with mock.patch("mlflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
+    with mock.patch("qcflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
         client.create_model_version(
             "model name", "s3:/source", "run_12345", run_link="not:/important/for/test"
         )
@@ -1380,7 +1380,7 @@ def test_create_model_version_copy_not_called_to_db(mock_registry_store):
         registry_uri="databricks://registry:workspace",
     )
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    with mock.patch("mlflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
+    with mock.patch("qcflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
         client.create_model_version(
             "model name",
             "dbfs:/source",
@@ -1393,7 +1393,7 @@ def test_create_model_version_copy_not_called_to_db(mock_registry_store):
 def test_create_model_version_copy_not_called_to_nondb(mock_registry_store):
     client = MlflowClient(tracking_uri="databricks://tracking", registry_uri="https://registry")
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    with mock.patch("mlflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
+    with mock.patch("qcflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
         client.create_model_version(
             "model name",
             "dbfs:/source",
@@ -1604,7 +1604,7 @@ def test_file_store_download_upload_trace_data(tmp_path):
         client = MlflowClient()
         span = client.start_trace("test", inputs={"test": 1})
         client.end_trace(span.request_id, outputs={"result": 2})
-        trace = mlflow.get_trace(span.request_id)
+        trace = qcflow.get_trace(span.request_id)
         trace_data = client.get_trace(span.request_id).data
         assert trace_data.request == trace.data.request
         assert trace_data.response == trace.data.response
@@ -1621,13 +1621,13 @@ def test_store_trace_spans_tag():
     }
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+        "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
     ) as mock_set_trace_tag:
         span = client.start_trace("test", inputs={"test": 1})
         client.end_trace(span.request_id, outputs={"result": 2})
         mock_set_trace_tag.assert_called_once()
         assert mock_set_trace_tag.call_args[0][0] == span.request_id
-        assert mock_set_trace_tag.call_args[0][1] == "mlflow.traceSpans"
+        assert mock_set_trace_tag.call_args[0][1] == "qcflow.traceSpans"
         result = json.loads(mock_set_trace_tag.call_args[0][2])
         for key in trace_spans_tag_value:
             assert result[0][key] == trace_spans_tag_value[key]
@@ -1637,13 +1637,13 @@ def test_store_trace_span_tag_when_not_dict_input_outputs():
     client = MlflowClient()
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+        "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
     ) as mock_set_trace_tag:
         span = client.start_trace("trace_name", inputs="test")
         client.end_trace(span.request_id, outputs={"result": 2})
         mock_set_trace_tag.assert_called_once()
         assert mock_set_trace_tag.call_args[0][0] == span.request_id
-        assert mock_set_trace_tag.call_args[0][1] == "mlflow.traceSpans"
+        assert mock_set_trace_tag.call_args[0][1] == "qcflow.traceSpans"
         result = json.loads(mock_set_trace_tag.call_args[0][2])
         assert result[0]["name"] == "trace_name"
         assert result[0]["type"] == "UNKNOWN"
@@ -1651,13 +1651,13 @@ def test_store_trace_span_tag_when_not_dict_input_outputs():
         assert "inputs" not in result[0]
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+        "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
     ) as mock_set_trace_tag:
         span = client.start_trace("trace_name", inputs="{'input': 2}")
         client.end_trace(span.request_id, outputs="result")
         mock_set_trace_tag.assert_called_once()
         assert mock_set_trace_tag.call_args[0][0] == span.request_id
-        assert mock_set_trace_tag.call_args[0][1] == "mlflow.traceSpans"
+        assert mock_set_trace_tag.call_args[0][1] == "qcflow.traceSpans"
         result = json.loads(mock_set_trace_tag.call_args[0][2])
         assert result[0]["name"] == "trace_name"
         assert result[0]["type"] == "UNKNOWN"
@@ -1671,10 +1671,10 @@ def test_store_trace_span_tag_when_exception_raised():
 
     with (
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient._upload_trace_data"
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient._upload_trace_data"
         ) as mock_upload_trace_data,
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
             side_effect=MlflowException("Failed to log parameters"),
         ) as mock_set_trace_tag,
     ):

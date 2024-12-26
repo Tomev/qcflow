@@ -8,7 +8,7 @@ import { IntlProvider } from 'react-intl';
 import userEvent from '@testing-library/user-event-14';
 import { getArtifactContent, getArtifactBytesContent } from '../../common/utils/ArtifactUtils';
 import { TestRouter, testRoute } from '../../common/utils/RoutingTestUtils';
-import { MLFLOW_LOGGED_ARTIFACTS_TAG } from '../constants';
+import { QCFLOW_LOGGED_ARTIFACTS_TAG } from '../constants';
 import Utils from '../../common/utils/Utils';
 import { Services } from '../../model-registry/services';
 import type { ReduxState } from '../../redux-types';
@@ -100,8 +100,8 @@ const mockArtifactRetrieval = <T extends BlobPart>(artifactData: T) => {
 const createRunTagsForFile = (baseFileName: string): Record<string, KeyValueEntity> => {
   if (baseFileName.endsWith('.json')) {
     return {
-      [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-        key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+      [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+        key: QCFLOW_LOGGED_ARTIFACTS_TAG,
         value: `[{"path": "${baseFileName}", "type": "table"}]`,
       },
     };
@@ -181,7 +181,7 @@ describe('Artifact page, artifact files rendering integration test', () => {
     const runTags = {
       [Utils.loggedModelsTag]: {
         key: Utils.loggedModelsTag,
-        value: `[{"artifact_path":"logged_model","signature":{"inputs":"","outputs":"","params":null},"flavors":{"python_function":{"cloudpickle_version":"2.2.1","loader_module":"mlflow.pyfunc.model","python_model":"python_model.pkl","env":{"conda":"conda.yaml","virtualenv":"python_env.yaml"},"python_version":"3.10.12"}},"run_id":"test-run-uuid","model_uuid":"test-model-uuid","utc_time_created":"2023-01-01 10:57:14.780880"}]`,
+        value: `[{"artifact_path":"logged_model","signature":{"inputs":"","outputs":"","params":null},"flavors":{"python_function":{"cloudpickle_version":"2.2.1","loader_module":"qcflow.pyfunc.model","python_model":"python_model.pkl","env":{"conda":"conda.yaml","virtualenv":"python_env.yaml"},"python_version":"3.10.12"}},"run_id":"test-run-uuid","model_uuid":"test-model-uuid","utc_time_created":"2023-01-01 10:57:14.780880"}]`,
       },
     };
 

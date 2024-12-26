@@ -12,21 +12,21 @@ from packaging.version import Version
 from pydantic import ConfigDict, Field, ValidationError, root_validator, validator
 from pydantic.json import pydantic_encoder
 
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.base_models import ConfigModel, LimitModel, ResponseModel
-from mlflow.gateway.constants import (
-    MLFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES,
-    MLFLOW_GATEWAY_ROUTE_BASE,
-    MLFLOW_QUERY_SUFFIX,
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.base_models import ConfigModel, LimitModel, ResponseModel
+from qcflow.gateway.constants import (
+    QCFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES,
+    QCFLOW_GATEWAY_ROUTE_BASE,
+    QCFLOW_QUERY_SUFFIX,
 )
-from mlflow.gateway.utils import (
+from qcflow.gateway.utils import (
     check_configuration_deprecated_fields,
     check_configuration_route_name_collisions,
     is_valid_ai21labs_model,
     is_valid_endpoint_name,
     is_valid_mosiacml_chat_model,
 )
-from mlflow.utils import IS_PYDANTIC_V2_OR_NEWER
+from qcflow.utils import IS_PYDANTIC_V2_OR_NEWER
 
 _logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class Provider(str, Enum):
     ANTHROPIC = "anthropic"
     COHERE = "cohere"
     AI21LABS = "ai21labs"
-    MLFLOW_MODEL_SERVING = "mlflow-model-serving"
+    QCFLOW_MODEL_SERVING = "qcflow-model-serving"
     MOSAICML = "mosaicml"
     HUGGINGFACE_TEXT_GENERATION_INFERENCE = "huggingface-text-generation-inference"
     PALM = "palm"
@@ -194,7 +194,7 @@ class MlflowModelServingConfig(ConfigModel):
     model_server_url: str
 
     # Workaround to suppress warning that Pydantic raises when a field name starts with "model_".
-    # https://github.com/mlflow/mlflow/issues/10335
+    # https://github.com/qcflow/qcflow/issues/10335
     model_config = pydantic.ConfigDict(protected_namespaces=())
 
 
@@ -281,7 +281,7 @@ class Model(ConfigModel):
 
     @validator("provider", pre=True)
     def validate_provider(cls, value):
-        from mlflow.gateway.provider_registry import provider_registry
+        from qcflow.gateway.provider_registry import provider_registry
 
         if isinstance(value, Provider):
             return value
@@ -294,7 +294,7 @@ class Model(ConfigModel):
 
     @classmethod
     def _validate_config(cls, info, values):
-        from mlflow.gateway.provider_registry import provider_registry
+        from qcflow.gateway.provider_registry import provider_registry
 
         if provider := values.get("provider"):
             config_type = provider_registry.get(provider).CONFIG_TYPE
@@ -380,7 +380,7 @@ class RouteConfig(AliasedConfigModel):
             raise MlflowException.invalid_parameter_value(
                 f"An invalid model has been specified for the chat route. '{model.name}'. "
                 f"Ensure the model selected starts with one of: "
-                f"{MLFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES}"
+                f"{QCFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES}"
             )
         if model and model.provider == "ai21labs" and not is_valid_ai21labs_model(model.name):
             raise MlflowException.invalid_parameter_value(
@@ -420,7 +420,7 @@ class RouteConfig(AliasedConfigModel):
                 name=self.model.name,
                 provider=self.model.provider,
             ),
-            route_url=f"{MLFLOW_GATEWAY_ROUTE_BASE}{self.name}{MLFLOW_QUERY_SUFFIX}",
+            route_url=f"{QCFLOW_GATEWAY_ROUTE_BASE}{self.name}{QCFLOW_QUERY_SUFFIX}",
             limit=self.limit,
         )
 
@@ -459,7 +459,7 @@ class Route(ConfigModel):
             schema_extra = _ROUTE_EXTRA_SCHEMA
 
     def to_endpoint(self):
-        from mlflow.deployments.server.config import Endpoint
+        from qcflow.deployments.server.config import Endpoint
 
         return Endpoint(
             name=self.name,

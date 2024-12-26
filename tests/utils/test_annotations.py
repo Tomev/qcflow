@@ -3,7 +3,7 @@ from dataclasses import dataclass, fields
 
 import pytest
 
-from mlflow.utils.annotations import _get_min_indent_of_docstring, deprecated, keyword_only
+from qcflow.utils.annotations import _get_min_indent_of_docstring, deprecated, keyword_only
 
 
 class MyClass:

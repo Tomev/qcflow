@@ -1,10 +1,10 @@
 import time
 
-from mlflow.gateway.config import AI21LabsConfig, RouteConfig
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.base import BaseProvider
-from mlflow.gateway.providers.utils import rename_payload_keys, send_request
-from mlflow.gateway.schemas import completions
+from qcflow.gateway.config import AI21LabsConfig, RouteConfig
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.base import BaseProvider
+from qcflow.gateway.providers.utils import rename_payload_keys, send_request
+from qcflow.gateway.schemas import completions
 
 
 class AI21LabsProvider(BaseProvider):
@@ -37,7 +37,7 @@ class AI21LabsProvider(BaseProvider):
         if payload.get("stream", False):
             raise AIGatewayException(
                 status_code=422,
-                detail="Setting the 'stream' parameter to 'true' is not supported with the MLflow "
+                detail="Setting the 'stream' parameter to 'true' is not supported with the QCFlow "
                 "Gateway.",
             )
         payload = rename_payload_keys(payload, key_mapping)

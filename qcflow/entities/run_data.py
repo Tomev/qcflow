@@ -1,10 +1,10 @@
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.metric import Metric
-from mlflow.entities.param import Param
-from mlflow.entities.run_tag import RunTag
-from mlflow.protos.service_pb2 import Param as ProtoParam
-from mlflow.protos.service_pb2 import RunData as ProtoRunData
-from mlflow.protos.service_pb2 import RunTag as ProtoRunTag
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.metric import Metric
+from qcflow.entities.param import Param
+from qcflow.entities.run_tag import RunTag
+from qcflow.protos.service_pb2 import Param as ProtoParam
+from qcflow.protos.service_pb2 import RunData as ProtoRunData
+from qcflow.protos.service_pb2 import RunTag as ProtoRunTag
 
 
 class RunData(_MlflowObject):
@@ -13,12 +13,12 @@ class RunData(_MlflowObject):
     """
 
     def __init__(self, metrics=None, params=None, tags=None):
-        """Construct a new mlflow.entities.RunData instance.
+        """Construct a new qcflow.entities.RunData instance.
 
         Args:
-            metrics: List of mlflow.entities.Metric.
-            params: List of mlflow.entities.Param.
-            tags: List of mlflow.entities.RunTag.
+            metrics: List of qcflow.entities.Metric.
+            params: List of qcflow.entities.Param.
+            tags: List of qcflow.entities.RunTag.
 
         """
         # Maintain the original list of metrics so that we can easily convert it back to

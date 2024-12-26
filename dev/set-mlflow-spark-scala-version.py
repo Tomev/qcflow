@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument(
         "--scala-version",
         required=True,
-        help="Update scala version in mlflow/java/spark 'pom.xml' file.",
+        help="Update scala version in qcflow/java/spark 'pom.xml' file.",
         type=str,
     )
     return parser.parse_args()
@@ -50,7 +50,7 @@ def parse_args():
 
 def main():
     scala_version = parse_args().scala_version
-    create_pom_with_pinned_scala_version("mlflow/java/spark/pom.xml", scala_version)
+    create_pom_with_pinned_scala_version("qcflow/java/spark/pom.xml", scala_version)
 
 
 if __name__ == "__main__":

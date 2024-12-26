@@ -3,7 +3,7 @@ import time
 from enum import Enum
 from typing import NamedTuple, Optional
 
-import mlflow
+import qcflow
 
 REQUEST_URL_CHAT = "https://api.openai.com/v1/chat/completions"
 REQUEST_URL_COMPLETIONS = "https://api.openai.com/v1/completions"
@@ -57,13 +57,13 @@ def _validate_model_params(task, model, params):
         return
 
     if any(key in model for key in params):
-        raise mlflow.MlflowException.invalid_parameter_value(
+        raise qcflow.MlflowException.invalid_parameter_value(
             f"Providing any of {list(model.keys())} as parameters in the signature is not "
             "allowed because they were indicated as part of the OpenAI model. Either remove "
             "the argument when logging the model or remove the parameter from the signature.",
         )
     if "batch_size" in params and task == "chat.completions":
-        raise mlflow.MlflowException.invalid_parameter_value(
+        raise qcflow.MlflowException.invalid_parameter_value(
             "Parameter `batch_size` is not supported for task `chat.completions`"
         )
 
@@ -80,7 +80,7 @@ class _OAITokenHolder:
             try:
                 from azure.identity import DefaultAzureCredential
             except ImportError:
-                raise mlflow.MlflowException(
+                raise qcflow.MlflowException(
                     "Using API type `azure_ad` or `azuread` requires the package"
                     " `azure-identity` to be installed."
                 )
@@ -110,7 +110,7 @@ class _OAITokenHolder:
                         "https://cognitiveservices.azure.com/.default"
                     )
                 except ClientAuthenticationError as err:
-                    raise mlflow.MlflowException(
+                    raise qcflow.MlflowException(
                         "Unable to acquire a valid Azure AD token for the resource due to "
                         f"the following error: {err.message}"
                     ) from err
@@ -118,7 +118,7 @@ class _OAITokenHolder:
             if logger:
                 logger.debug("Token refreshed successfully")
         else:
-            raise mlflow.MlflowException(
+            raise qcflow.MlflowException(
                 "OpenAI API key must be set in the ``OPENAI_API_KEY`` environment variable."
             )
 

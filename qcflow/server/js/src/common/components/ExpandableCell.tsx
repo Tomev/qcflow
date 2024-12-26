@@ -47,7 +47,7 @@ export const ExpandableCell = ({
     >
       {!hideCollapseButton && (
         <Button
-          componentId="mlflow.common.expandable_cell"
+          componentId="qcflow.common.expandable_cell"
           size="small"
           icon={isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
           onClick={() => toggleExpanded()}

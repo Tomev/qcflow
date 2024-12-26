@@ -5,8 +5,8 @@ import urllib.parse
 from contextlib import contextmanager
 from queue import Queue
 
-from mlflow.entities import FileInfo
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.entities import FileInfo
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
 
 
 # Based on: https://stackoverflow.com/a/58466685

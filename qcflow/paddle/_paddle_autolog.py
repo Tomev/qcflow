@@ -1,7 +1,7 @@
 import paddle
 
-import mlflow
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow.utils.autologging_utils import (
     BatchMetricsLogger,
     ExceptionSafeAbstractClass,
     MlflowAutologgingQueueingClient,
@@ -55,12 +55,12 @@ class __MlflowPaddleCallback(paddle.callbacks.Callback, metaclass=ExceptionSafeA
 
 def _log_early_stop_params(early_stop_callback, client, run_id):
     """
-    Logs early stopping configuration parameters to MLflow.
+    Logs early stopping configuration parameters to QCFlow.
 
     Args:
         early_stop_callback: The early stopping callback instance used during training.
-        client: An `MlflowAutologgingQueueingClient` instance used for MLflow logging.
-        run_id: The ID of the MLflow Run to which to log configuration parameters.
+        client: An `MlflowAutologgingQueueingClient` instance used for QCFlow logging.
+        run_id: The ID of the QCFlow Run to which to log configuration parameters.
     """
     client.log_params(
         run_id,
@@ -74,12 +74,12 @@ def _log_early_stop_params(early_stop_callback, client, run_id):
 
 def _log_early_stop_metrics(early_stop_callback, client, run_id):
     """
-    Logs early stopping behavior results (e.g. stopped epoch) as metrics to MLflow.
+    Logs early stopping behavior results (e.g. stopped epoch) as metrics to QCFlow.
 
     Args:
         early_stop_callback: The early stopping callback instance used during training.
-        client: An `MlflowAutologgingQueueingClient` instance used for MLflow logging.
-        run_id: The ID of the MLflow Run to which to log configuration parameters.
+        client: An `MlflowAutologgingQueueingClient` instance used for QCFlow logging.
+        run_id: The ID of the QCFlow Run to which to log configuration parameters.
     """
     if early_stop_callback.stopped_epoch == 0:
         return
@@ -92,16 +92,16 @@ def _log_early_stop_metrics(early_stop_callback, client, run_id):
 
 
 def patched_fit(original, self, *args, **kwargs):
-    run_id = mlflow.active_run().info.run_id
-    tracking_uri = mlflow.get_tracking_uri()
+    run_id = qcflow.active_run().info.run_id
+    tracking_uri = qcflow.get_tracking_uri()
     client = MlflowAutologgingQueueingClient(tracking_uri)
     metrics_logger = BatchMetricsLogger(run_id, tracking_uri)
 
-    log_models = get_autologging_config(mlflow.paddle.FLAVOR_NAME, "log_models", True)
-    log_every_n_epoch = get_autologging_config(mlflow.paddle.FLAVOR_NAME, "log_every_n_epoch", 1)
+    log_models = get_autologging_config(qcflow.paddle.FLAVOR_NAME, "log_models", True)
+    log_every_n_epoch = get_autologging_config(qcflow.paddle.FLAVOR_NAME, "log_every_n_epoch", 1)
 
     early_stop_callback = None
-    mlflow_callback = __MlflowPaddleCallback(
+    qcflow_callback = __MlflowPaddleCallback(
         client, metrics_logger, run_id, log_models, log_every_n_epoch
     )
     if "callbacks" in kwargs:
@@ -111,9 +111,9 @@ def patched_fit(original, self, *args, **kwargs):
                 early_stop_callback = callback
                 _log_early_stop_params(early_stop_callback, client, run_id)
                 break
-        kwargs["callbacks"].append(mlflow_callback)
+        kwargs["callbacks"].append(qcflow_callback)
     else:
-        kwargs["callbacks"] = [mlflow_callback]
+        kwargs["callbacks"] = [qcflow_callback]
     client.flush(synchronous=False)
 
     result = original(self, *args, **kwargs)
@@ -121,13 +121,13 @@ def patched_fit(original, self, *args, **kwargs):
     if early_stop_callback is not None:
         _log_early_stop_metrics(early_stop_callback, client, run_id)
 
-    mlflow.log_text(str(self.summary()), "model_summary.txt")
+    qcflow.log_text(str(self.summary()), "model_summary.txt")
 
     if log_models:
         registered_model_name = get_autologging_config(
-            mlflow.paddle.FLAVOR_NAME, "registered_model_name", None
+            qcflow.paddle.FLAVOR_NAME, "registered_model_name", None
         )
-        mlflow.paddle.log_model(self, "model", registered_model_name=registered_model_name)
+        qcflow.paddle.log_model(self, "model", registered_model_name=registered_model_name)
 
     client.flush(synchronous=True)
 

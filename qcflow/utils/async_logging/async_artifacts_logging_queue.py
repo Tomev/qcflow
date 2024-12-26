@@ -10,8 +10,8 @@ from concurrent.futures import ThreadPoolExecutor
 from queue import Empty, Queue
 from typing import TYPE_CHECKING, Callable, Union
 
-from mlflow.utils.async_logging.run_artifact import RunArtifact
-from mlflow.utils.async_logging.run_operations import RunOperations
+from qcflow.utils.async_logging.run_artifact import RunArtifact
+from qcflow.utils.async_logging.run_operations import RunOperations
 
 if TYPE_CHECKING:
     import PIL.Image
@@ -85,7 +85,7 @@ class AsyncArtifactsLoggingQueue:
             while not self._queue.empty():
                 self._log_artifact()
         except Exception as e:
-            from mlflow.exceptions import MlflowException
+            from qcflow.exceptions import MlflowException
 
             raise MlflowException(f"Exception inside the run data logging thread: {e}")
 
@@ -191,13 +191,13 @@ class AsyncArtifactsLoggingQueue:
             artifact: The artifact to be logged.
 
         Returns:
-            mlflow.utils.async_utils.RunOperations: An object that encapsulates the
+            qcflow.utils.async_utils.RunOperations: An object that encapsulates the
                 asynchronous operation of logging the artifact of run data.
                 The object contains a list of `concurrent.futures.Future` objects that can be used
                 to check the status of the operation and retrieve any exceptions
                 that occurred during the operation.
         """
-        from mlflow import MlflowException
+        from qcflow import MlflowException
 
         if not self._is_activated:
             raise MlflowException("AsyncArtifactsLoggingQueue is not activated.")
@@ -224,17 +224,17 @@ class AsyncArtifactsLoggingQueue:
         with self._lock:
             self._artifact_logging_thread = threading.Thread(
                 target=self._logging_loop,
-                name="MLflowAsyncArtifactsLoggingLoop",
+                name="QCFlowAsyncArtifactsLoggingLoop",
                 daemon=True,
             )
             self._artifact_logging_worker_threadpool = ThreadPoolExecutor(
                 max_workers=5,
-                thread_name_prefix="MLflowArtifactsLoggingWorkerPool",
+                thread_name_prefix="QCFlowArtifactsLoggingWorkerPool",
             )
 
             self._artifact_status_check_threadpool = ThreadPoolExecutor(
                 max_workers=5,
-                thread_name_prefix="MLflowAsyncArtifactsLoggingStatusCheck",
+                thread_name_prefix="QCFlowAsyncArtifactsLoggingStatusCheck",
             )
             self._artifact_logging_thread.start()
 

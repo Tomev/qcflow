@@ -1,8 +1,8 @@
-package org.mlflow.tracking;
+package org.qcflow.tracking;
 
-import org.mlflow.api.proto.Service.*;
-import org.mlflow.tracking.utils.DatabricksContext;
-import org.mlflow.tracking.utils.MlflowTagConstants;
+import org.qcflow.api.proto.Service.*;
+import org.qcflow.tracking.utils.DatabricksContext;
+import org.qcflow.tracking.utils.MlflowTagConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * Main entrypoint used to start MLflow runs to log to. This is a higher level interface than
+ * Main entrypoint used to start QCFlow runs to log to. This is a higher level interface than
  * {@code MlflowClient} and provides convenience methods to keep track of active runs and to set
  * default tags on runs which are created through {@code MlflowContext}
  *
@@ -22,10 +22,10 @@ import java.util.function.Consumer;
  * <p>
  * For example:
  *   <pre>
- *   // Uses the URI set in the MLFLOW_TRACKING_URI environment variable.
+ *   // Uses the URI set in the QCFLOW_TRACKING_URI environment variable.
  *   // To use your own tracking uri set it in the call to "new MlflowContext("tracking-uri")"
- *   MlflowContext mlflow = new MlflowContext();
- *   ActiveRun run = mlflow.startRun("run-name");
+ *   MlflowContext qcflow = new MlflowContext();
+ *   ActiveRun run = qcflow.startRun("run-name");
  *   run.logParam("alpha", "0.5");
  *   run.logMetric("MSE", 0.0);
  *   run.endRun();
@@ -41,7 +41,7 @@ public class MlflowContext {
 
 
   /**
-   * Constructs a {@code MlflowContext} with a MlflowClient based on the MLFLOW_TRACKING_URI
+   * Constructs a {@code MlflowContext} with a MlflowClient based on the QCFLOW_TRACKING_URI
    * environment variable.
    */
   public MlflowContext() {
@@ -110,8 +110,8 @@ public class MlflowContext {
   }
 
   /**
-   * Starts a MLflow run without a name. To log data to newly created MLflow run see the methods on
-   * {@link ActiveRun}. MLflow runs should be ended using {@link ActiveRun#endRun()}
+   * Starts a QCFlow run without a name. To log data to newly created QCFlow run see the methods on
+   * {@link ActiveRun}. QCFlow runs should be ended using {@link ActiveRun#endRun()}
    *
    * @return An {@code ActiveRun} object to log data to.
    */
@@ -120,11 +120,11 @@ public class MlflowContext {
   }
 
   /**
-   * Starts a MLflow run. To log data to newly created MLflow run see the methods on
-   * {@link ActiveRun}. MLflow runs should be ended using {@link ActiveRun#endRun()}
+   * Starts a QCFlow run. To log data to newly created QCFlow run see the methods on
+   * {@link ActiveRun}. QCFlow runs should be ended using {@link ActiveRun#endRun()}
    *
    * @param runName The name of this run. For display purposes only and is stored in the
-   *                mlflow.runName tag.
+   *                qcflow.runName tag.
    * @return An {@code ActiveRun} object to log data to.
    */
   public ActiveRun startRun(String runName) {
@@ -132,11 +132,11 @@ public class MlflowContext {
   }
 
   /**
-   * Like {@link #startRun(String)} but sets the {@code mlflow.parentRunId} tag in order to create
+   * Like {@link #startRun(String)} but sets the {@code qcflow.parentRunId} tag in order to create
    * nested runs.
    *
    * @param runName The name of this run. For display purposes only and is stored in the
-   *                mlflow.runName tag.
+   *                qcflow.runName tag.
    * @param parentRunId The ID of this run's parent
    * @return An {@code ActiveRun} object to log data to.
    */
@@ -176,7 +176,7 @@ public class MlflowContext {
    *
    * For example
    *   <pre>
-   *   mlflowContext.withActiveRun((activeRun -&gt; {
+   *   qcflowContext.withActiveRun((activeRun -&gt; {
    *     activeRun.logParam("layers", "4");
    *   }));
    *   </pre>
@@ -198,7 +198,7 @@ public class MlflowContext {
    * Like {@link #withActiveRun(Consumer)} with an explicity run name.
    *
    * @param runName The name of this run. For display purposes only and is stored in the
-   *                mlflow.runName tag.
+   *                qcflow.runName tag.
    * @param activeRunFunction A function which takes an {@code ActiveRun} and logs data to it.
    */
   public void withActiveRun(String runName, Consumer<ActiveRun> activeRunFunction) {
@@ -219,11 +219,11 @@ public class MlflowContext {
       CreateExperiment.Builder request = CreateExperiment.newBuilder();
       request.setName(notebookPath);
       request.addTags(ExperimentTag.newBuilder()
-              .setKey(MlflowTagConstants.MLFLOW_EXPERIMENT_SOURCE_TYPE)
+              .setKey(MlflowTagConstants.QCFLOW_EXPERIMENT_SOURCE_TYPE)
               .setValue("REPO_NOTEBOOK")
       );
       request.addTags(ExperimentTag.newBuilder()
-              .setKey(MlflowTagConstants.MLFLOW_EXPERIMENT_SOURCE_ID)
+              .setKey(MlflowTagConstants.QCFLOW_EXPERIMENT_SOURCE_ID)
               .setValue(notebookId)
       );
       String experimentId = (new MlflowClient()).createExperiment(request.build());

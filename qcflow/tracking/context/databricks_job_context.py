@@ -1,15 +1,15 @@
-from mlflow.entities import SourceType
-from mlflow.tracking.context.abstract_context import RunContextProvider
-from mlflow.utils import databricks_utils
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATABRICKS_JOB_ID,
-    MLFLOW_DATABRICKS_JOB_RUN_ID,
-    MLFLOW_DATABRICKS_JOB_TYPE,
-    MLFLOW_DATABRICKS_WEBAPP_URL,
-    MLFLOW_DATABRICKS_WORKSPACE_ID,
-    MLFLOW_DATABRICKS_WORKSPACE_URL,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
+from qcflow.entities import SourceType
+from qcflow.tracking.context.abstract_context import RunContextProvider
+from qcflow.utils import databricks_utils
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATABRICKS_JOB_ID,
+    QCFLOW_DATABRICKS_JOB_RUN_ID,
+    QCFLOW_DATABRICKS_JOB_TYPE,
+    QCFLOW_DATABRICKS_WEBAPP_URL,
+    QCFLOW_DATABRICKS_WORKSPACE_ID,
+    QCFLOW_DATABRICKS_WORKSPACE_URL,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
 )
 
 
@@ -25,25 +25,25 @@ class DatabricksJobRunContext(RunContextProvider):
         workspace_url = databricks_utils.get_workspace_url()
         workspace_url_fallback, workspace_id = databricks_utils.get_workspace_info_from_dbutils()
         tags = {
-            MLFLOW_SOURCE_NAME: (
+            QCFLOW_SOURCE_NAME: (
                 f"jobs/{job_id}/run/{job_run_id}"
                 if job_id is not None and job_run_id is not None
                 else None
             ),
-            MLFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.JOB),
+            QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.JOB),
         }
         if job_id is not None:
-            tags[MLFLOW_DATABRICKS_JOB_ID] = job_id
+            tags[QCFLOW_DATABRICKS_JOB_ID] = job_id
         if job_run_id is not None:
-            tags[MLFLOW_DATABRICKS_JOB_RUN_ID] = job_run_id
+            tags[QCFLOW_DATABRICKS_JOB_RUN_ID] = job_run_id
         if job_type is not None:
-            tags[MLFLOW_DATABRICKS_JOB_TYPE] = job_type
+            tags[QCFLOW_DATABRICKS_JOB_TYPE] = job_type
         if webapp_url is not None:
-            tags[MLFLOW_DATABRICKS_WEBAPP_URL] = webapp_url
+            tags[QCFLOW_DATABRICKS_WEBAPP_URL] = webapp_url
         if workspace_url is not None:
-            tags[MLFLOW_DATABRICKS_WORKSPACE_URL] = workspace_url
+            tags[QCFLOW_DATABRICKS_WORKSPACE_URL] = workspace_url
         elif workspace_url_fallback is not None:
-            tags[MLFLOW_DATABRICKS_WORKSPACE_URL] = workspace_url_fallback
+            tags[QCFLOW_DATABRICKS_WORKSPACE_URL] = workspace_url_fallback
         if workspace_id is not None:
-            tags[MLFLOW_DATABRICKS_WORKSPACE_ID] = workspace_id
+            tags[QCFLOW_DATABRICKS_WORKSPACE_ID] = workspace_id
         return tags

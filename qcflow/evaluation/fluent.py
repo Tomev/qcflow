@@ -1,22 +1,22 @@
 import uuid
 from typing import Optional
 
-from mlflow.entities.evaluation import Evaluation as EvaluationEntity
-from mlflow.evaluation.evaluation import Evaluation
-from mlflow.evaluation.utils import evaluations_to_dataframes
-from mlflow.tracking.client import MlflowClient
-from mlflow.tracking.fluent import _get_or_start_run
+from qcflow.entities.evaluation import Evaluation as EvaluationEntity
+from qcflow.evaluation.evaluation import Evaluation
+from qcflow.evaluation.utils import evaluations_to_dataframes
+from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.fluent import _get_or_start_run
 
 
 def log_evaluations(
     *, evaluations: list[Evaluation], run_id: Optional[str] = None
 ) -> list[EvaluationEntity]:
     """
-    Logs one or more evaluations to an MLflow Run.
+    Logs one or more evaluations to an QCFlow Run.
 
     Args:
-      evaluations (List[Evaluation]): List of one or more MLflow Evaluation objects.
-      run_id (Optional[str]): ID of the MLflow Run to log the evaluation. If unspecified, the
+      evaluations (List[Evaluation]): List of one or more QCFlow Evaluation objects.
+      run_id (Optional[str]): ID of the QCFlow Run to log the evaluation. If unspecified, the
           current active run is used, or a new run is started.
 
     Returns:

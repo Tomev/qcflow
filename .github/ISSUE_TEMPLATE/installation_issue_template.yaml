@@ -1,5 +1,5 @@
 name: Installation Issues
-description: Use this template for reporting bugs encountered while installing MLflow.
+description: Use this template for reporting bugs encountered while installing QCFlow.
 labels: "bug"
 title: "[SETUP-BUG]"
 
@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for submitting an issue. Please refer to our [issue policy](https://www.github.com/mlflow/mlflow/blob/master/ISSUE_POLICY.md) for information on what types of issues we address.
+        Thank you for submitting an issue. Please refer to our [issue policy](https://www.github.com/qcflow/qcflow/blob/master/ISSUE_POLICY.md) for information on what types of issues we address.
         **Please fill in this installation issue template to ensure a timely and thorough response.**
   - type: textarea
     attributes:
@@ -16,8 +16,8 @@ body:
         Describe the system where you encountered the installation issue.
       value: |
         - **OS Platform and Distribution (e.g., Linux Ubuntu 16.04)**:
-        - **MLflow installed from (source or binary)**:
-        - **MLflow version (run ``mlflow --version``)**:
+        - **QCFlow installed from (source or binary)**:
+        - **QCFlow version (run ``qcflow --version``)**:
         - **Python version**:
     validations:
       required: true
@@ -28,7 +28,7 @@ body:
         Provide a reproducible test case that is the bare minimum necessary to generate the problem.
       placeholder: |
         ```bash
-        pip install mlflow=x.y.z
+        pip install qcflow=x.y.z
         ```
     validations:
       required: true
@@ -46,7 +46,7 @@ body:
         Include any logs or source code that would be helpful to diagnose the problem. If including tracebacks, please include the full traceback. Large logs and files should be attached.
       placeholder: |
         ```
-        ERROR: Could not find a version that satisfies the requirement mlflow==x.y.z
+        ERROR: Could not find a version that satisfies the requirement qcflow==x.y.z
         ```
     validations:
       required: false

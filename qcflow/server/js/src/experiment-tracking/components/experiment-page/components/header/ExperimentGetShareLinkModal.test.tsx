@@ -5,7 +5,7 @@ import {
 import { ExperimentPageUIState, createExperimentPageUIState } from '../../models/ExperimentPageUIState';
 import { ExperimentGetShareLinkModal } from './ExperimentGetShareLinkModal';
 import { MockedReduxStoreProvider } from '../../../../../common/utils/TestUtils';
-import { renderWithIntl, act, screen, waitFor } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, act, screen, waitFor } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import userEvent from '@testing-library/user-event-14';
 import { useState } from 'react';
 import { setExperimentTagApi } from '../../../../actions';
@@ -115,7 +115,7 @@ describe('ExperimentGetShareLinkModal', () => {
       // Assert that the tag was created with the correct name and serialized state
       expect(setExperimentTagApi).toHaveBeenCalledWith(
         'experiment-1',
-        expect.stringMatching(/mlflow\.sharedViewState\.([0-9a-f]+)/),
+        expect.stringMatching(/qcflow\.sharedViewState\.([0-9a-f]+)/),
         // Assert serialized state in the next step
         expect.anything(),
       );

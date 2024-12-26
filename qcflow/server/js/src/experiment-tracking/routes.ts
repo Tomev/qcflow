@@ -1,44 +1,44 @@
-import { createMLflowRoutePath, generatePath } from '../common/utils/RoutingUtils';
+import { createQCFlowRoutePath, generatePath } from '../common/utils/RoutingUtils';
 
 // Route path definitions (used in defining route elements)
 export class RoutePaths {
   static get rootRoute() {
-    return createMLflowRoutePath('/');
+    return createQCFlowRoutePath('/');
   }
   static get experimentObservatory() {
-    return createMLflowRoutePath('/experiments');
+    return createQCFlowRoutePath('/experiments');
   }
   static get experimentPage() {
-    return createMLflowRoutePath('/experiments/:experimentId');
+    return createQCFlowRoutePath('/experiments/:experimentId');
   }
   static get experimentPageSearch() {
-    return createMLflowRoutePath('/experiments/:experimentId/:searchString');
+    return createQCFlowRoutePath('/experiments/:experimentId/:searchString');
   }
   static get runPage() {
-    return createMLflowRoutePath('/experiments/:experimentId/runs/:runUuid');
+    return createQCFlowRoutePath('/experiments/:experimentId/runs/:runUuid');
   }
   // More flexible route path, supporting subpages (tabs) and multi-slash artifact paths.
   // Will eventually replace "runPage" above.
   static get runPageWithTab() {
-    return createMLflowRoutePath('/experiments/:experimentId/runs/:runUuid/*');
+    return createQCFlowRoutePath('/experiments/:experimentId/runs/:runUuid/*');
   }
   static get runPageWithArtifact() {
-    return createMLflowRoutePath('/experiments/:experimentId/runs/:runUuid/artifactPath/*');
+    return createQCFlowRoutePath('/experiments/:experimentId/runs/:runUuid/artifactPath/*');
   }
   static get runPageDirect() {
-    return createMLflowRoutePath('/runs/:runUuid');
+    return createQCFlowRoutePath('/runs/:runUuid');
   }
   static get metricPage() {
-    return createMLflowRoutePath('/metric/*');
+    return createQCFlowRoutePath('/metric/*');
   }
   static get compareRuns() {
-    return createMLflowRoutePath('/compare-runs');
+    return createQCFlowRoutePath('/compare-runs');
   }
   static get compareExperiments() {
-    return createMLflowRoutePath('/compare-experiments');
+    return createQCFlowRoutePath('/compare-experiments');
   }
   static get compareExperimentsSearch() {
-    return createMLflowRoutePath('/compare-experiments/:searchString');
+    return createQCFlowRoutePath('/compare-experiments/:searchString');
   }
 }
 

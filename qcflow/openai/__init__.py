@@ -1,17 +1,17 @@
 """
-The ``mlflow.openai`` module provides an API for logging and loading OpenAI models.
+The ``qcflow.openai`` module provides an API for logging and loading OpenAI models.
 
 Credential management for OpenAI on Databricks
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. warning::
 
-    Specifying secrets for model serving with ``MLFLOW_OPENAI_SECRET_SCOPE`` is deprecated.
+    Specifying secrets for model serving with ``QCFLOW_OPENAI_SECRET_SCOPE`` is deprecated.
     Use `secrets-based environment variables <https://docs.databricks.com/en/machine-learning/model-serving/store-env-variable-model-serving.html>`_
     instead.
 
 When this flavor logs a model on Databricks, it saves a YAML file with the following contents as
-``openai.yaml`` if the ``MLFLOW_OPENAI_SECRET_SCOPE`` environment variable is set.
+``openai.yaml`` if the ``QCFLOW_OPENAI_SECRET_SCOPE`` environment variable is set.
 
 .. code-block:: yaml
 
@@ -21,7 +21,7 @@ When this flavor logs a model on Databricks, it saves a YAML file with the follo
     OPENAI_API_TYPE: {scope}:openai_api_type
     OPENAI_ORGANIZATION: {scope}:openai_organization
 
-- ``{scope}`` is the value of the ``MLFLOW_OPENAI_SECRET_SCOPE`` environment variable.
+- ``{scope}`` is the value of the ``QCFLOW_OPENAI_SECRET_SCOPE`` environment variable.
 - The keys are the environment variables that the ``openai-python`` package uses to
   configure the API client.
 - The values are the references to the secrets that store the values of the environment
@@ -44,55 +44,55 @@ from typing import Any, Optional
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.environment_variables import MLFLOW_OPENAI_SECRET_SCOPE
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.openai._openai_autolog import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.environment_variables import QCFLOW_OPENAI_SECRET_SCOPE
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.openai._openai_autolog import (
     patched_agent_get_chat_completion,
     patched_call,
     patched_swarm_run,
 )
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types import ColSpec, Schema, TensorSpec
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import autologging_integration, safe_patch
-from mlflow.utils.databricks_utils import (
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types import ColSpec, Schema, TensorSpec
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import autologging_integration, safe_patch
+from qcflow.utils.databricks_utils import (
     check_databricks_secret_scope_access,
     is_in_databricks_runtime,
 )
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.openai_utils import (
+from qcflow.utils.openai_utils import (
     _OAITokenHolder,
     _OpenAIApiConfig,
     _OpenAIEnvVar,
     _validate_model_params,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "openai"
 MODEL_FILENAME = "model.yaml"
@@ -105,7 +105,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -116,10 +116,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 def _get_obj_to_task_mapping():
@@ -148,7 +148,7 @@ def _get_model_name(model):
     if Version(_get_openai_package_version()).major < 1 and isinstance(model, openai.Model):
         return model.id
 
-    raise mlflow.MlflowException(
+    raise qcflow.MlflowException(
         f"Unsupported model type: {type(model)}", error_code=INVALID_PARAMETER_VALUE
     )
 
@@ -157,7 +157,7 @@ def _get_task_name(task):
     mapping = _get_obj_to_task_mapping()
     if isinstance(task, str):
         if task not in mapping.values():
-            raise mlflow.MlflowException(
+            raise qcflow.MlflowException(
                 f"Unsupported task: {task}", error_code=INVALID_PARAMETER_VALUE
             )
         return task
@@ -168,7 +168,7 @@ def _get_task_name(task):
             or mapping.get(getattr(task, "__func__"))  # if task is a method
         )
         if task_name is None:
-            raise mlflow.MlflowException(
+            raise qcflow.MlflowException(
                 f"Unsupported task object: {task}", error_code=INVALID_PARAMETER_VALUE
             )
         return task_name
@@ -242,7 +242,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -261,17 +261,17 @@ def save_model(
         path: Local path where the model is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -282,16 +282,16 @@ def save_model(
         metadata: {{ metadata }}
         example_no_conversion: {{ example_no_conversion }}
         kwargs: Keyword arguments specific to the OpenAI task, such as the ``messages`` (see
-            :ref:`mlflow.openai.messages` for more details on this parameter)
+            :ref:`qcflow.openai.messages` for more details on this parameter)
             or ``top_p`` value to use for chat completion.
 
     .. code-block:: python
 
-        import mlflow
+        import qcflow
         import openai
 
         # Chat
-        mlflow.openai.save_model(
+        qcflow.openai.save_model(
             model="gpt-4o-mini",
             task=openai.chat.completions,
             messages=[{"role": "user", "content": "Tell me a joke."}],
@@ -299,7 +299,7 @@ def save_model(
         )
 
         # Completions
-        mlflow.openai.save_model(
+        qcflow.openai.save_model(
             model="text-davinci-002",
             task=openai.completions,
             prompt="{text}. The general sentiment of the text is",
@@ -307,7 +307,7 @@ def save_model(
         )
 
         # Embeddings
-        mlflow.openai.save_model(
+        qcflow.openai.save_model(
             model="text-embedding-ada-002",
             task=openai.embeddings,
             path="model",
@@ -324,8 +324,8 @@ def save_model(
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
     task = _get_task_name(task)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
 
     if signature is not None:
         if signature.params:
@@ -337,7 +337,7 @@ def save_model(
         if messages and not (
             all(isinstance(m, dict) for m in messages) and all(map(_is_valid_message, messages))
         ):
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 "If `messages` is provided, it must be a list of dictionaries with keys "
                 "'role' and 'content'."
             )
@@ -358,16 +358,16 @@ def save_model(
             outputs=Schema([TensorSpec(type=np.dtype("float64"), shape=(-1,))]),
         )
 
-    saved_example = _save_example(mlflow_model, input_example, path, example_no_conversion)
+    saved_example = _save_example(qcflow_model, input_example, path, example_no_conversion)
     if signature is None and saved_example is not None:
         wrapped_model = _OpenAIWrapper(model)
         signature = _infer_signature_from_input_example(saved_example, wrapped_model)
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
 
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
     model_data_path = os.path.join(path, MODEL_FILENAME)
     model_dict = {
         "model": _get_model_name(model),
@@ -379,26 +379,26 @@ def save_model(
 
     if task in _PYFUNC_SUPPORTED_TASKS:
         pyfunc.add_to_model(
-            mlflow_model,
-            loader_module="mlflow.openai",
+            qcflow_model,
+            loader_module="qcflow.openai",
             data=MODEL_FILENAME,
             conda_env=_CONDA_ENV_FILE_NAME,
             python_env=_PYTHON_ENV_FILE_NAME,
             code=code_dir_subpath,
         )
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         openai_version=_get_openai_package_version(),
         data=MODEL_FILENAME,
         code=code_dir_subpath,
     )
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if is_in_databricks_runtime():
-        if scope := MLFLOW_OPENAI_SECRET_SCOPE.get():
+        if scope := QCFLOW_OPENAI_SECRET_SCOPE.get():
             url = "https://docs.databricks.com/en/machine-learning/model-serving/store-env-variable-model-serving.html"
             warnings.warn(
-                "Specifying secrets for model serving with `MLFLOW_OPENAI_SECRET_SCOPE` is "
+                "Specifying secrets for model serving with `QCFLOW_OPENAI_SECRET_SCOPE` is "
                 f"deprecated. Use secrets-based environment variables ({url}) instead.",
                 FutureWarning,
             )
@@ -408,7 +408,7 @@ def save_model(
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path, FLAVOR_NAME, fallback=default_reqs
             )
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
@@ -454,7 +454,7 @@ def log_model(
     **kwargs,
 ):
     """
-    Log an OpenAI model as an MLflow artifact for the current run.
+    Log an OpenAI model as an QCFlow artifact for the current run.
 
     Args:
         model: The OpenAI model name or reference instance, e.g.,
@@ -467,16 +467,16 @@ def log_model(
         registered_model_name: If given, create a model version under
             ``registered_model_name``, also creating a registered model if one
             with the given name does not exist.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -491,44 +491,44 @@ def log_model(
         metadata: {{ metadata }}
         example_no_conversion: {{ example_no_conversion }}
         kwargs: Keyword arguments specific to the OpenAI task, such as the ``messages`` (see
-            :ref:`mlflow.openai.messages` for more details on this parameter)
+            :ref:`qcflow.openai.messages` for more details on this parameter)
             or ``top_p`` value to use for chat completion.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
 
-        import mlflow
+        import qcflow
         import openai
 
         # Chat
-        with mlflow.start_run():
-            info = mlflow.openai.log_model(
+        with qcflow.start_run():
+            info = qcflow.openai.log_model(
                 model="gpt-4o-mini",
                 task=openai.chat.completions,
                 messages=[{"role": "user", "content": "Tell me a joke about {animal}."}],
                 artifact_path="model",
             )
-            model = mlflow.pyfunc.load_model(info.model_uri)
+            model = qcflow.pyfunc.load_model(info.model_uri)
             df = pd.DataFrame({"animal": ["cats", "dogs"]})
             print(model.predict(df))
 
         # Embeddings
-        with mlflow.start_run():
-            info = mlflow.openai.log_model(
+        with qcflow.start_run():
+            info = qcflow.openai.log_model(
                 model="text-embedding-ada-002",
                 task=openai.embeddings,
                 artifact_path="embeddings",
             )
-            model = mlflow.pyfunc.load_model(info.model_uri)
+            model = qcflow.pyfunc.load_model(info.model_uri)
             print(model.predict(["hello", "world"]))
     """
 
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.openai,
+        flavor=qcflow.openai,
         registered_model_name=registered_model_name,
         model=model,
         task=task,
@@ -559,7 +559,7 @@ class _ContentFormatter:
         if task == "completions":
             template = template or "{prompt}"
             if not isinstance(template, str):
-                raise mlflow.MlflowException.invalid_parameter_value(
+                raise qcflow.MlflowException.invalid_parameter_value(
                     f"Template for task {task} expects type `str`, but got {type(template)}."
                 )
 
@@ -570,7 +570,7 @@ class _ContentFormatter:
             if not template:
                 template = [{"role": "user", "content": "{content}"}]
             if not all(map(_is_valid_message, template)):
-                raise mlflow.MlflowException.invalid_parameter_value(
+                raise qcflow.MlflowException.invalid_parameter_value(
                     f"Template for task {task} expects type `dict` with keys 'content' "
                     f"and 'role', but got {type(template)}."
                 )
@@ -590,13 +590,13 @@ class _ContentFormatter:
                 self.template.append({"role": "user", "content": "{content}"})
                 self.variables.append("content")
         else:
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 f"Task type ``{task}`` is not supported for formatting."
             )
 
     def format(self, **params):
         if missing_params := set(self.variables) - set(params):
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 f"Expected parameters {self.variables} to be provided, "
                 f"only got {list(params)}, {list(missing_params)} are missing."
             )
@@ -620,7 +620,7 @@ def _first_string_column(pdf):
     iter_str_cols = (c for c, v in pdf.iloc[0].items() if isinstance(v, str))
     col = next(iter_str_cols, None)
     if col is None:
-        raise mlflow.MlflowException.invalid_parameter_value(
+        raise qcflow.MlflowException.invalid_parameter_value(
             f"Could not find a string column in the input data: {pdf.dtypes.to_dict()}"
         )
     return col
@@ -630,7 +630,7 @@ class _OpenAIWrapper:
     def __init__(self, model):
         task = model.pop("task")
         if task not in _PYFUNC_SUPPORTED_TASKS:
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 f"Unsupported task: {task}. Supported tasks: {_PYFUNC_SUPPORTED_TASKS}."
             )
         self.model = model
@@ -692,7 +692,7 @@ class _OpenAIWrapper:
             )
 
     def _predict_chat(self, data, params):
-        from mlflow.openai.api_request_parallel_processor import process_api_requests
+        from qcflow.openai.api_request_parallel_processor import process_api_requests
 
         _validate_model_params(self.task, self.model, params)
         max_retries = params.pop("max_retries", self.api_config.max_retries)
@@ -716,7 +716,7 @@ class _OpenAIWrapper:
         return [r.choices[0].message.content for r in results]
 
     def _predict_completions(self, data, params):
-        from mlflow.openai.api_request_parallel_processor import process_api_requests
+        from qcflow.openai.api_request_parallel_processor import process_api_requests
 
         _validate_model_params(self.task, self.model, params)
         prompts_list = self.format_completions(self.get_params_list(data))
@@ -742,7 +742,7 @@ class _OpenAIWrapper:
         return [row.text for batch in results for row in batch.choices]
 
     def _predict_embeddings(self, data, params):
-        from mlflow.openai.api_request_parallel_processor import process_api_requests
+        from qcflow.openai.api_request_parallel_processor import process_api_requests
 
         _validate_model_params(self.task, self.model, params)
         max_retries = params.pop("max_retries", self.api_config.max_retries)
@@ -791,7 +791,7 @@ def _load_pyfunc(path):
     """Loads PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``openai`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``openai`` flavor.
     """
     return _OpenAIWrapper(_load_model(path))
 
@@ -802,15 +802,15 @@ def load_model(model_uri, dst_path=None):
     Load an OpenAI model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
@@ -842,28 +842,28 @@ def autolog(
     log_traces=True,
 ):
     """
-    Enables (or disables) and configures autologging from OpenAI to MLflow.
-    Raises :py:class:`MlflowException <mlflow.exceptions.MlflowException>`
+    Enables (or disables) and configures autologging from OpenAI to QCFlow.
+    Raises :py:class:`MlflowException <qcflow.exceptions.MlflowException>`
     if the OpenAI version < 1.0.
 
     Args:
         log_input_examples: If ``True``, input examples from inference data are collected and
             logged along with Langchain model artifacts during inference. If
             ``False``, input examples are not logged.
-            Note: Input examples are MLflow model attributes
+            Note: Input examples are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
         log_model_signatures: If ``True``,
-            :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
+            :py:class:`ModelSignatures <qcflow.models.ModelSignature>`
             describing model inputs and outputs are collected and logged along
             with OpenAI model artifacts during inference. If ``False``,
             signatures are not logged.
-            Note: Model signatures are MLflow model attributes
+            Note: Model signatures are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
-        log_models: If ``True``, OpenAI models are logged as MLflow model artifacts.
+        log_models: If ``True``, OpenAI models are logged as QCFlow model artifacts.
             If ``False``, OpenAI models are not logged.
-            Input examples and model signatures, which are attributes of MLflow models,
+            Input examples and model signatures, which are attributes of QCFlow models,
             are also omitted when ``log_models`` is ``False``.
-        log_datasets: If ``True``, dataset information is logged to MLflow Tracking
+        log_datasets: If ``True``, dataset information is logged to QCFlow Tracking
             if applicable. If ``False``, dataset information is not logged.
         disable: If ``True``, disables the OpenAI autologging integration. If ``False``,
             enables the OpenAI autologging integration.
@@ -871,9 +871,9 @@ def autolog(
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
-            OpenAI that have not been tested against this version of the MLflow
+            OpenAI that have not been tested against this version of the QCFlow
             client or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during OpenAI
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during OpenAI
             autologging. If ``False``, show all events and warnings during OpenAI
             autologging.
         registered_model_name: If given, each time a model is trained, it is registered as a

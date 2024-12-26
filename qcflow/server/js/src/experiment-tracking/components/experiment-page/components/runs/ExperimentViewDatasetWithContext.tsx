@@ -1,7 +1,7 @@
 import { TableIcon, Tag, Typography, useDesignSystemTheme } from '@databricks/design-system';
 import type { RunDatasetWithTags } from '../../../../types';
 import React from 'react';
-import { MLFLOW_RUN_DATASET_CONTEXT_TAG } from '../../../../constants';
+import { QCFLOW_RUN_DATASET_CONTEXT_TAG } from '../../../../constants';
 
 export interface DatasetWithContextProps {
   datasetWithTags: RunDatasetWithTags;
@@ -39,14 +39,14 @@ export const ExperimentViewDatasetWithContext = ({
         </Typography.Text>
       )}
       <Tag
-        componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewdatasetwithcontext.tsx_41"
+        componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewdatasetwithcontext.tsx_41"
         css={{
           textTransform: 'capitalize',
           marginLeft: theme.spacing.xs,
           marginRight: theme.spacing.xs,
         }}
       >
-        {tags && tags.find(({ key }) => key === MLFLOW_RUN_DATASET_CONTEXT_TAG)?.value}
+        {tags && tags.find(({ key }) => key === QCFLOW_RUN_DATASET_CONTEXT_TAG)?.value}
       </Tag>
     </div>
   );

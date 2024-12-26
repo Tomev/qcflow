@@ -16,9 +16,9 @@ from langchain_core.messages import (
 from langchain_core.outputs.chat_generation import ChatGeneration
 from langchain_core.outputs.generation import Generation
 
-from mlflow.environment_variables import MLFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN
-from mlflow.exceptions import MlflowException
-from mlflow.types.chat import (
+from qcflow.environment_variables import QCFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN
+from qcflow.exceptions import MlflowException
+from qcflow.types.chat import (
     ChatChoice,
     ChatChoiceDelta,
     ChatChunkChoice,
@@ -28,14 +28,14 @@ from mlflow.types.chat import (
     ChatMessage,
     ChatUsage,
 )
-from mlflow.utils import IS_PYDANTIC_V2_OR_NEWER
+from qcflow.utils import IS_PYDANTIC_V2_OR_NEWER
 
 _logger = logging.getLogger(__name__)
 
 
 def convert_lc_message_to_chat_message(lc_message: Union[BaseMessage]) -> ChatMessage:
     """
-    Convert LangChain's message format to the MLflow's standard chat message format.
+    Convert LangChain's message format to the QCFlow's standard chat message format.
     """
     if isinstance(lc_message, AIMessage):
         if tool_calls := _get_tool_calls_from_ai_message(lc_message):
@@ -70,7 +70,7 @@ def convert_lc_message_to_chat_message(lc_message: Union[BaseMessage]) -> ChatMe
 
 def _chat_model_to_langchain_message(message: ChatMessage) -> BaseMessage:
     """
-    Convert the MLflow's standard chat message format to LangChain's message format.
+    Convert the QCFlow's standard chat message format to LangChain's message format.
     """
     if message.role == "system":
         return SystemMessage(content=message.content)
@@ -133,7 +133,7 @@ def _get_tool_calls_from_ai_message(message: AIMessage) -> list[dict]:
 
 def convert_lc_generation_to_chat_message(lc_gen: Generation) -> ChatMessage:
     """
-    Convert LangChain's generation format to the MLflow's standard chat message format.
+    Convert LangChain's generation format to the QCFlow's standard chat message format.
     """
     if isinstance(lc_gen, ChatGeneration):
         try:
@@ -320,7 +320,7 @@ def transform_request_json_for_chat_if_necessary(request_json, lc_model):
             json_dict_might_be_chat_request(message) for message in json_message
         )
 
-    should_convert = MLFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN.get()
+    should_convert = QCFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN.get()
     if should_convert is None:
         should_convert = _should_transform_request_json_for_chat(lc_model) and (
             json_dict_might_be_chat_request(request_json) or is_list_of_chat_messages(request_json)
@@ -329,7 +329,7 @@ def transform_request_json_for_chat_if_necessary(request_json, lc_model):
             _logger.debug(
                 "Converting the request JSON to LangChain's Message format. "
                 "To disable this conversion, set the environment variable "
-                f"`{MLFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN}` to 'false'."
+                f"`{QCFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN}` to 'false'."
             )
 
     if should_convert:

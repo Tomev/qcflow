@@ -1,6 +1,6 @@
 """
-MLflow Recipes is a framework that enables you to quickly develop high-quality models and deploy
-them to production. Compared to ad-hoc ML workflows, MLflow Recipes offers several major benefits:
+QCFlow Recipes is a framework that enables you to quickly develop high-quality models and deploy
+them to production. Compared to ad-hoc ML workflows, QCFlow Recipes offers several major benefits:
 
 - **Recipe templates**: :ref:`Predefined templates <recipe-templates>` for common ML tasks,
   such as :ref:`regression modeling <regression-template>`, enable you to get started quickly and
@@ -17,9 +17,9 @@ them to production. Compared to ad-hoc ML workflows, MLflow Recipes offers sever
   production by ensuring that all model code, data, and configurations are easily reviewable and
   deployable by ML engineers.
 
-For more information, see the :ref:`MLflow Recipes overview <recipes>`.
+For more information, see the :ref:`QCFlow Recipes overview <recipes>`.
 """
 
-from mlflow.recipes.recipe import Recipe
+from qcflow.recipes.recipe import Recipe
 
 __all__ = ["Recipe"]

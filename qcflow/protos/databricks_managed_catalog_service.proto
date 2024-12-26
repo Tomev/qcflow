@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package mlflow.managedcatalog;
+package qcflow.managedcatalog;
 
 import "databricks.proto";
 import "databricks_managed_catalog_messages.proto";

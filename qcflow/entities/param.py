@@ -1,7 +1,7 @@
 import sys
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.protos.service_pb2 import Param as ProtoParam
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.protos.service_pb2 import Param as ProtoParam
 
 
 class Param(_MlflowObject):

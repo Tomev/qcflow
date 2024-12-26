@@ -34,12 +34,12 @@ teardown({
   }
 })
 
-test_that("mlflow can serve a model function", {
-  mlflow_clear_test_dir("model")
+test_that("qcflow can serve a model function", {
+  qcflow_clear_test_dir("model")
 
   model <- lm(Sepal.Width ~ Sepal.Length + Petal.Width, iris)
   fn <- crate(~ stats::predict(model, .x), model = model)
-  mlflow_save_model(fn, path = "model")
+  qcflow_save_model(fn, path = "model")
   expect_true(dir.exists("model"))
   port <- httpuv::randomPort()
   testthat_model_server <<- processx::process$new(
@@ -47,7 +47,7 @@ test_that("mlflow can serve a model function", {
     c(
       "-e",
       sprintf(
-        "mlflow::mlflow_rfunc_serve('model', port = %d, browse = FALSE)",
+        "qcflow::qcflow_rfunc_serve('model', port = %d, browse = FALSE)",
         port
       )
     ),
@@ -75,13 +75,13 @@ test_that("mlflow can serve a model function", {
   )
 })
 
-test_that("mlflow models server api works with R model function", {
+test_that("qcflow models server api works with R model function", {
   model <- lm(Sepal.Width ~ Sepal.Length + Petal.Width, iris)
   fn <- crate(~ stats::predict(model, .x), model = model)
-  mlflow_save_model(fn, path = "model")
+  qcflow_save_model(fn, path = "model")
   expect_true(dir.exists("model"))
   port <- httpuv::randomPort()
-  testthat_model_server <<- mlflow:::mlflow_cli("models", "serve", "-m", "model", "-p", as.character(port),
+  testthat_model_server <<- qcflow:::qcflow_cli("models", "serve", "-m", "model", "-p", as.character(port),
     background = TRUE
   )
   wait_for_server_to_start(testthat_model_server, port)

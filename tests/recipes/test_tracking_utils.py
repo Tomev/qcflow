@@ -5,10 +5,10 @@ from unittest import mock
 import pytest
 import yaml
 
-import mlflow
-from mlflow.recipes.utils import get_recipe_config
-from mlflow.recipes.utils.tracking import get_recipe_tracking_config, log_code_snapshot
-from mlflow.utils.file_utils import path_to_local_file_uri, path_to_local_sqlite_uri
+import qcflow
+from qcflow.recipes.utils import get_recipe_config
+from qcflow.recipes.utils.tracking import get_recipe_tracking_config, log_code_snapshot
+from qcflow.utils.file_utils import path_to_local_file_uri, path_to_local_sqlite_uri
 
 from tests.recipes.helper_functions import list_all_artifacts
 
@@ -36,10 +36,10 @@ def test_get_recipe_tracking_config_returns_expected_config(
     tracking_uri, artifact_location, experiment_name, experiment_id, run_name_prefix
 ):
     default_tracking_uri = path_to_local_sqlite_uri(
-        path=str((pathlib.Path.cwd() / "metadata" / "mlflow" / "mlruns.db").resolve())
+        path=str((pathlib.Path.cwd() / "metadata" / "qcflow" / "mlruns.db").resolve())
     )
     default_artifact_location = path_to_local_file_uri(
-        path=str((pathlib.Path.cwd() / "metadata" / "mlflow" / "mlartifacts").resolve())
+        path=str((pathlib.Path.cwd() / "metadata" / "qcflow" / "mlartifacts").resolve())
     )
     default_experiment_name = "sklearn_regression"  # equivalent to recipe name
 
@@ -106,7 +106,7 @@ def test_get_recipe_tracking_config_returns_expected_config(
 def test_get_recipe_tracking_config_returns_expected_config_on_databricks(
     tracking_uri, artifact_location, experiment_name, experiment_id, run_name_prefix
 ):
-    with mock.patch("mlflow.recipes.utils.tracking.is_in_databricks_runtime", return_value=True):
+    with mock.patch("qcflow.recipes.utils.tracking.is_in_databricks_runtime", return_value=True):
         default_tracking_uri = "databricks"
         default_experiment_name = "sklearn_regression"  # equivalent to recipe name
 
@@ -162,11 +162,11 @@ def test_log_code_snapshot(tmp_path: pathlib.Path):
         path.parent.mkdir(exist_ok=True, parents=True)
         path.write_text("")
 
-    mlflow.set_experiment(experiment_id="0")
+    qcflow.set_experiment(experiment_id="0")
     recipe_config = {"name": "fake_config", "dict": {"key": 123}}
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         log_code_snapshot(tmp_path, run.info.run_id, recipe_config=recipe_config)
-        tracking_uri = mlflow.get_tracking_uri()
+        tracking_uri = qcflow.get_tracking_uri()
 
     artifacts = set(list_all_artifacts(tracking_uri, run.info.run_id))
     assert artifacts.issuperset(f"recipe_snapshot/{f}" for f in files)

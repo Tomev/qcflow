@@ -1,7 +1,7 @@
-mlflow.prophet
+qcflow.prophet
 ==================
 
-.. automodule:: mlflow.prophet
+.. automodule:: qcflow.prophet
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,12 +1,12 @@
-mlflow.deployments
+qcflow.deployments
 ==================
 
-.. automodule:: mlflow.deployments
+.. automodule:: qcflow.deployments
     :members:
     :undoc-members:
     :exclude-members: PredictionsResponse
 
-.. autoclass:: mlflow.deployments.PredictionsResponse
+.. autoclass:: qcflow.deployments.PredictionsResponse
     :members:
     :undoc-members:
     :exclude-members: from_json

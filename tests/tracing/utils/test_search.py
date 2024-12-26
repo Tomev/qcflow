@@ -1,7 +1,7 @@
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.tracing.utils.search import _FieldParser, _parse_fields, _ParsedField
+from qcflow.exceptions import MlflowException
+from qcflow.tracing.utils.search import _FieldParser, _parse_fields, _ParsedField
 
 
 @pytest.mark.parametrize(

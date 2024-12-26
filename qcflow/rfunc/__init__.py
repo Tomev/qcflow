@@ -10,7 +10,7 @@ signature::
 
     predict(data: DataFrame) -> DataFrame
 
-This convention is relied on by other MLflow components.
+This convention is relied on by other QCFlow components.
 
 Rfunc model format is defined as a directory structure containing all required data, code, and
 configuration:
@@ -26,11 +26,11 @@ Example:
 
 .. code:: shell
 
-  >tree R/mlflow/R/inst/examples/R/lm/model
+  >tree R/qcflow/R/inst/examples/R/lm/model
   ├── MLmodel
   └── r_model.bin
 
-  >cat R/mlflow/R/inst/examples/R/lm/model/MLmodel
+  >cat R/qcflow/R/inst/examples/R/lm/model/MLmodel
   time_created: 1.5337659e+09
   flavors:
     r_function:

@@ -29,7 +29,7 @@ export class EditableTagsTableViewImpl extends Component<Props> {
     {
       title: this.props.intl.formatMessage({
         defaultMessage: 'Name',
-        description: 'Column title for name column in editable tags table view in MLflow',
+        description: 'Column title for name column in editable tags table view in QCFlow',
       }),
       dataIndex: 'name',
       width: 200,
@@ -37,7 +37,7 @@ export class EditableTagsTableViewImpl extends Component<Props> {
     {
       title: this.props.intl.formatMessage({
         defaultMessage: 'Value',
-        description: 'Column title for value column in editable tags table view in MLflow',
+        description: 'Column title for value column in editable tags table view in QCFlow',
       }),
       dataIndex: 'value',
       width: 200,
@@ -64,7 +64,7 @@ export class EditableTagsTableViewImpl extends Component<Props> {
         ? this.props.intl.formatMessage(
             {
               defaultMessage: 'Tag "{value}" already exists.',
-              description: 'Validation message for tags that already exist in tags table in MLflow',
+              description: 'Validation message for tags that already exist in tags table in QCFlow',
             },
             {
               value: value,
@@ -96,7 +96,7 @@ export class EditableTagsTableViewImpl extends Component<Props> {
                   required: true,
                   message: this.props.intl.formatMessage({
                     defaultMessage: 'Name is required.',
-                    description: 'Error message for name requirement in editable tags table view in MLflow',
+                    description: 'Error message for name requirement in editable tags table view in QCFlow',
                   }),
                 },
                 {
@@ -105,36 +105,36 @@ export class EditableTagsTableViewImpl extends Component<Props> {
               ]}
             >
               <Input
-                componentId="codegen_mlflow_app_src_common_components_editabletagstableview.tsx_107"
+                componentId="codegen_qcflow_app_src_common_components_editabletagstableview.tsx_107"
                 aria-label="tag name"
                 data-testid="tags-form-input-name"
                 placeholder={this.props.intl.formatMessage({
                   defaultMessage: 'Name',
-                  description: 'Default text for name placeholder in editable tags table form in MLflow',
+                  description: 'Default text for name placeholder in editable tags table form in QCFlow',
                 })}
               />
             </LegacyForm.Item>
             <LegacyForm.Item name="value" rules={[]}>
               <Input
-                componentId="codegen_mlflow_app_src_common_components_editabletagstableview.tsx_117"
+                componentId="codegen_qcflow_app_src_common_components_editabletagstableview.tsx_117"
                 aria-label="tag value"
                 data-testid="tags-form-input-value"
                 placeholder={this.props.intl.formatMessage({
                   defaultMessage: 'Value',
-                  description: 'Default text for value placeholder in editable tags table form in MLflow',
+                  description: 'Default text for value placeholder in editable tags table form in QCFlow',
                 })}
               />
             </LegacyForm.Item>
             <LegacyForm.Item>
               <Button
-                componentId="codegen_mlflow_app_src_common_components_editabletagstableview.tsx_127"
+                componentId="codegen_qcflow_app_src_common_components_editabletagstableview.tsx_127"
                 loading={isRequestPending}
                 htmlType="submit"
                 data-testid="add-tag-button"
               >
                 <FormattedMessage
                   defaultMessage="Add"
-                  description="Add button text in editable tags table view in MLflow"
+                  description="Add button text in editable tags table view in QCFlow"
                 />
               </Button>
             </LegacyForm.Item>

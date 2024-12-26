@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-import mlflow.tensorflow
-from mlflow.models import Model, infer_signature
+import qcflow.tensorflow
+from qcflow.models import Model, infer_signature
 
 
 class ToyModel(tf.Module):
@@ -50,9 +50,9 @@ def tf2_toy_model():
 
 def test_save_and_load_tf2_module(tmp_path, tf2_toy_model):
     model_path = os.path.join(tmp_path, "model")
-    mlflow.tensorflow.save_model(tf2_toy_model.model, model_path)
+    qcflow.tensorflow.save_model(tf2_toy_model.model, model_path)
 
-    loaded_model = mlflow.tensorflow.load_model(model_path)
+    loaded_model = qcflow.tensorflow.load_model(model_path)
 
     predictions = loaded_model(tf2_toy_model.inference_data).numpy()
     np.testing.assert_allclose(
@@ -62,18 +62,18 @@ def test_save_and_load_tf2_module(tmp_path, tf2_toy_model):
 
 
 def test_log_and_load_tf2_module(tf2_toy_model):
-    with mlflow.start_run():
-        model_info = mlflow.tensorflow.log_model(tf2_toy_model.model, "model")
+    with qcflow.start_run():
+        model_info = qcflow.tensorflow.log_model(tf2_toy_model.model, "model")
 
     model_uri = model_info.model_uri
-    loaded_model = mlflow.tensorflow.load_model(model_uri)
+    loaded_model = qcflow.tensorflow.load_model(model_uri)
     predictions = loaded_model(tf2_toy_model.inference_data).numpy()
     np.testing.assert_allclose(
         predictions,
         tf2_toy_model.expected_results,
     )
 
-    loaded_model2 = mlflow.pyfunc.load_model(model_uri)
+    loaded_model2 = qcflow.pyfunc.load_model(model_uri)
     predictions2 = loaded_model2.predict(tf2_toy_model.inference_data)
     assert isinstance(predictions2, np.ndarray)
     np.testing.assert_allclose(
@@ -86,12 +86,12 @@ def test_model_log_with_signature_inference(tf2_toy_model):
     artifact_path = "model"
     example = tf2_toy_model.inference_data
 
-    with mlflow.start_run():
-        mlflow.tensorflow.log_model(tf2_toy_model.model, artifact_path, input_example=example)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.tensorflow.log_model(tf2_toy_model.model, artifact_path, input_example=example)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    mlflow_model = Model.load(model_uri)
-    assert mlflow_model.signature == infer_signature(
+    qcflow_model = Model.load(model_uri)
+    assert qcflow_model.signature == infer_signature(
         tf2_toy_model.inference_data, tf2_toy_model.expected_results.numpy()
     )
 
@@ -105,15 +105,15 @@ def test_save_with_options(tmp_path, tf2_toy_model):
     }
 
     with mock.patch("tensorflow.saved_model.save") as mock_save:
-        mlflow.tensorflow.save_model(
+        qcflow.tensorflow.save_model(
             tf2_toy_model.model, model_path, saved_model_kwargs=saved_model_kwargs
         )
         mock_save.assert_called_once_with(mock.ANY, mock.ANY, **saved_model_kwargs)
 
         mock_save.reset_mock()
 
-        with mlflow.start_run():
-            mlflow.tensorflow.log_model(
+        with qcflow.start_run():
+            qcflow.tensorflow.log_model(
                 tf2_toy_model.model, "model", saved_model_kwargs=saved_model_kwargs
             )
 
@@ -122,11 +122,11 @@ def test_save_with_options(tmp_path, tf2_toy_model):
 
 def test_load_with_options(tmp_path, tf2_toy_model):
     model_path = os.path.join(tmp_path, "model")
-    mlflow.tensorflow.save_model(tf2_toy_model.model, model_path)
+    qcflow.tensorflow.save_model(tf2_toy_model.model, model_path)
 
     saved_model_kwargs = {
         "options": tf.saved_model.LoadOptions(),
     }
     with mock.patch("tensorflow.saved_model.load") as mock_load:
-        mlflow.tensorflow.load_model(model_path, saved_model_kwargs=saved_model_kwargs)
+        qcflow.tensorflow.load_model(model_path, saved_model_kwargs=saved_model_kwargs)
         mock_load.assert_called_once_with(mock.ANY, **saved_model_kwargs)

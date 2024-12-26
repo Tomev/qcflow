@@ -9,25 +9,25 @@ from typing import Any, Optional, Union
 
 import pandas as pd
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.metrics.base import MetricValue
-from mlflow.metrics.genai import model_utils
-from mlflow.metrics.genai.base import EvaluationExample
-from mlflow.metrics.genai.prompt_template import PromptTemplate
-from mlflow.metrics.genai.utils import _get_default_model, _get_latest_metric_version
-from mlflow.models import EvaluationMetric, make_metric
-from mlflow.models.evaluation.base import _make_metric
-from mlflow.protos.databricks_pb2 import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.metrics.base import MetricValue
+from qcflow.metrics.genai import model_utils
+from qcflow.metrics.genai.base import EvaluationExample
+from qcflow.metrics.genai.prompt_template import PromptTemplate
+from qcflow.metrics.genai.utils import _get_default_model, _get_latest_metric_version
+from qcflow.models import EvaluationMetric, make_metric
+from qcflow.models.evaluation.base import _make_metric
+from qcflow.protos.databricks_pb2 import (
     BAD_REQUEST,
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
     UNAUTHENTICATED,
     ErrorCode,
 )
-from mlflow.utils.annotations import experimental
-from mlflow.utils.class_utils import _get_class_from_string
-from mlflow.version import VERSION
+from qcflow.utils.annotations import experimental
+from qcflow.utils.class_utils import _get_class_from_string
+from qcflow.version import VERSION
 
 _logger = logging.getLogger(__name__)
 
@@ -207,7 +207,7 @@ def make_genai_metric_from_prompt(
     proxy_url: Optional[str] = None,
 ) -> EvaluationMetric:
     """
-    Create a genai metric used to evaluate LLM using LLM as a judge in MLflow. This produces
+    Create a genai metric used to evaluate LLM using LLM as a judge in QCFlow. This produces
     a metric using only the supplied judge prompt without any pre-written system prompt.
     This can be useful for use cases that are not covered by the full grading prompt in any
     ``EvaluationModel`` version.
@@ -220,7 +220,7 @@ def make_genai_metric_from_prompt(
             Corresponding variables must be passed as keyword arguments into the
             resulting metric's eval function.
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
-            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
+            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
             documentation for the supported model types and their URI format.
         parameters: (Optional) Parameters for the LLM used to compute the metric. By default, we
             set the temperature to 0.0, max_tokens to 200, and top_p to 1.0. We recommend
@@ -246,7 +246,7 @@ def make_genai_metric_from_prompt(
         :test:
         :caption: Example for creating a genai metric
 
-        from mlflow.metrics.genai import make_genai_metric_from_prompt
+        from qcflow.metrics.genai import make_genai_metric_from_prompt
 
         metric = make_genai_metric_from_prompt(
             name="ease_of_understanding",
@@ -280,8 +280,8 @@ def make_genai_metric_from_prompt(
         "greater_is_better": greater_is_better,
         "max_workers": max_workers,
         "metric_metadata": metric_metadata,
-        # Record the mlflow version for serialization in case the function signature changes later
-        "mlflow_version": VERSION,
+        # Record the qcflow version for serialization in case the function signature changes later
+        "qcflow_version": VERSION,
         "fn_name": make_genai_metric_from_prompt.__name__,
     }
 
@@ -345,7 +345,7 @@ def make_genai_metric(
     proxy_url: Optional[str] = None,
 ) -> EvaluationMetric:
     """
-    Create a genai metric used to evaluate LLM using LLM as a judge in MLflow. The full grading
+    Create a genai metric used to evaluate LLM using LLM as a judge in QCFlow. The full grading
     prompt is stored in the metric_details field of the ``EvaluationMetric`` object.
 
     Args:
@@ -355,14 +355,14 @@ def make_genai_metric(
         examples: (Optional) Examples of the metric.
         version: (Optional) Version of the metric. Currently supported versions are: v1.
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
-            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
+            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
             documentation for the supported model types and their URI format.
         grading_context_columns: (Optional) The name of the grading context column, or a list of
             grading context column names, required to compute the metric. The
             ``grading_context_columns`` are used by the LLM as a judge as additional information to
             compute the metric. The columns are extracted from the input dataset or output
             predictions based on ``col_mapping`` in the ``evaluator_config`` passed to
-            :py:func:`mlflow.evaluate()`. They can also be the name of other evaluated metrics.
+            :py:func:`qcflow.evaluate()`. They can also be the name of other evaluated metrics.
         include_input: (Optional) Whether to include the input
             when computing the metric.
         parameters: (Optional) Parameters for the LLM used to compute the metric. By default, we
@@ -390,26 +390,26 @@ def make_genai_metric(
         :test:
         :caption: Example for creating a genai metric
 
-        from mlflow.metrics.genai import EvaluationExample, make_genai_metric
+        from qcflow.metrics.genai import EvaluationExample, make_genai_metric
 
         example = EvaluationExample(
-            input="What is MLflow?",
+            input="What is QCFlow?",
             output=(
-                "MLflow is an open-source platform for managing machine "
+                "QCFlow is an open-source platform for managing machine "
                 "learning workflows, including experiment tracking, model packaging, "
                 "versioning, and deployment, simplifying the ML lifecycle."
             ),
             score=4,
             justification=(
-                "The definition effectively explains what MLflow is "
+                "The definition effectively explains what QCFlow is "
                 "its purpose, and its developer. It could be more concise for a 5-score.",
             ),
             grading_context={
                 "targets": (
-                    "MLflow is an open-source platform for managing "
+                    "QCFlow is an open-source platform for managing "
                     "the end-to-end machine learning (ML) lifecycle. It was developed by "
                     "Databricks, a company that specializes in big data and machine learning "
-                    "solutions. MLflow is designed to address the challenges that data "
+                    "solutions. QCFlow is designed to address the challenges that data "
                     "scientists and machine learning engineers face when developing, training, "
                     "and deploying machine learning models."
                 )
@@ -464,8 +464,8 @@ def make_genai_metric(
         "greater_is_better": greater_is_better,
         "max_workers": max_workers,
         "metric_metadata": metric_metadata,
-        # Record the mlflow version for serialization in case the function signature changes later
-        "mlflow_version": VERSION,
+        # Record the qcflow version for serialization in case the function signature changes later
+        "qcflow_version": VERSION,
         "fn_name": make_genai_metric.__name__,
     }
 
@@ -506,7 +506,7 @@ def make_genai_metric(
     if examples is not None:
         examples = [process_example(example) for example in examples]
 
-    class_name = f"mlflow.metrics.genai.prompts.{version}.EvaluationModel"
+    class_name = f"qcflow.metrics.genai.prompts.{version}.EvaluationModel"
     try:
         evaluation_model_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
@@ -551,7 +551,7 @@ def make_genai_metric(
         if not isinstance(eval_model, str):
             raise MlflowException(
                 message="The model argument must be a string URI referring to an openai model "
-                "(openai:/gpt-4o-mini) or an MLflow Deployments endpoint "
+                "(openai:/gpt-4o-mini) or an QCFlow Deployments endpoint "
                 f"(endpoints:/my-endpoint), passed {eval_model} instead",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -646,9 +646,9 @@ def _filter_by_field(df, field_name, value):
 
 
 def _deserialize_genai_metric_args(args_dict):
-    mlflow_version_at_ser = args_dict.pop("mlflow_version", None)
+    qcflow_version_at_ser = args_dict.pop("qcflow_version", None)
     fn_name = args_dict.pop("fn_name", None)
-    if fn_name is None or mlflow_version_at_ser is None:
+    if fn_name is None or qcflow_version_at_ser is None:
         raise MlflowException(
             message="The artifact JSON file appears to be corrupted and cannot be deserialized. "
             "Please regenerate the custom metrics and rerun the evaluation. "
@@ -656,9 +656,9 @@ def _deserialize_genai_metric_args(args_dict):
             error_code=INTERNAL_ERROR,
         )
 
-    if mlflow_version_at_ser != VERSION:
+    if qcflow_version_at_ser != VERSION:
         warnings.warn(
-            f"The custom metric definitions were serialized using MLflow {mlflow_version_at_ser}. "
+            f"The custom metric definitions were serialized using QCFlow {qcflow_version_at_ser}. "
             f"Deserializing them with the current version {VERSION} might cause mismatches. "
             "Please ensure compatibility or consider regenerating the metrics "
             "using the current version.",
@@ -700,8 +700,8 @@ def retrieve_custom_metrics(
 
         import pandas as pd
 
-        import mlflow
-        from mlflow.metrics.genai.genai_metric import (
+        import qcflow
+        from qcflow.metrics.genai.genai_metric import (
             make_genai_metric_from_prompt,
             retrieve_custom_metrics,
         )
@@ -712,9 +712,9 @@ def retrieve_custom_metrics(
                 "ground_truth": ["bar"],
             }
         )
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             system_prompt = "Answer the following question in two sentences"
-            basic_qa_model = mlflow.openai.log_model(
+            basic_qa_model = qcflow.openai.log_model(
                 model="gpt-4o-mini",
                 task="chat.completions",
                 artifact_path="model",
@@ -729,7 +729,7 @@ def retrieve_custom_metrics(
                 greater_is_better=False,
                 parameters={"temperature": 0.0},
             )
-            results = mlflow.evaluate(
+            results = qcflow.evaluate(
                 basic_qa_model.model_uri,
                 eval_df,
                 targets="ground_truth",
@@ -742,14 +742,14 @@ def retrieve_custom_metrics(
             name="custom llm judge",
         )
     """
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     artifacts = [a.path for a in client.list_artifacts(run_id)]
     if _GENAI_CUSTOM_METRICS_FILE_NAME not in artifacts:
         _logger.warning("No custom metric definitions were found for this evaluation run.")
         return []
 
     with TemporaryDirectory() as tmpdir:
-        downloaded_artifact_path = mlflow.artifacts.download_artifacts(
+        downloaded_artifact_path = qcflow.artifacts.download_artifacts(
             run_id=run_id,
             artifact_path=_GENAI_CUSTOM_METRICS_FILE_NAME,
             dst_path=tmpdir,

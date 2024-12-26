@@ -1,5 +1,5 @@
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.models.evaluation.base import (
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.models.evaluation.base import (
     EvaluationArtifact,
     EvaluationMetric,
     EvaluationResult,
@@ -8,7 +8,7 @@ from mlflow.models.evaluation.base import (
     list_evaluators,
     make_metric,
 )
-from mlflow.models.evaluation.validation import MetricThreshold
+from qcflow.models.evaluation.validation import MetricThreshold
 
 __all__ = [
     "ModelEvaluator",

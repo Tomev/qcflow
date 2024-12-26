@@ -6,10 +6,10 @@ from typing import Generator
 
 from watchfiles import watch
 
-from mlflow.environment_variables import MLFLOW_GATEWAY_CONFIG
-from mlflow.gateway import app
-from mlflow.gateway.config import _load_route_config
-from mlflow.gateway.utils import kill_child_processes
+from qcflow.environment_variables import QCFLOW_GATEWAY_CONFIG
+from qcflow.gateway import app
+from qcflow.gateway.config import _load_route_config
+from qcflow.gateway.utils import kill_child_processes
 
 _logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ class Runner:
             ],
             env={
                 **os.environ,
-                MLFLOW_GATEWAY_CONFIG.name: self.config_path,
+                QCFLOW_GATEWAY_CONFIG.name: self.config_path,
             },
         )
 

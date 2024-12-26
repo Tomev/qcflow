@@ -1,7 +1,7 @@
 from langchain_core.messages.base import BaseMessage
 from langchain_core.runnables.config import RunnableConfig
 
-from mlflow.langchain.output_parsers import (
+from qcflow.langchain.output_parsers import (
     ChatCompletionOutputParser,
     ChatCompletionsOutputParser,
     StringResponseOutputParser,

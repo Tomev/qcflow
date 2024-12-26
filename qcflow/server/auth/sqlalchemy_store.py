@@ -4,23 +4,23 @@ from sqlalchemy.exc import IntegrityError, MultipleResultsFound, NoResultFound
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_STATE,
     RESOURCE_ALREADY_EXISTS,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.server.auth.db import utils as dbutils
-from mlflow.server.auth.db.models import (
+from qcflow.server.auth.db import utils as dbutils
+from qcflow.server.auth.db.models import (
     SqlExperimentPermission,
     SqlRegisteredModelPermission,
     SqlUser,
 )
-from mlflow.server.auth.entities import ExperimentPermission, RegisteredModelPermission, User
-from mlflow.server.auth.permissions import _validate_permission
-from mlflow.store.db.utils import _get_managed_session_maker, create_sqlalchemy_engine_with_retry
-from mlflow.utils.uri import extract_db_type_from_uri
-from mlflow.utils.validation import _validate_username
+from qcflow.server.auth.entities import ExperimentPermission, RegisteredModelPermission, User
+from qcflow.server.auth.permissions import _validate_permission
+from qcflow.store.db.utils import _get_managed_session_maker, create_sqlalchemy_engine_with_retry
+from qcflow.utils.uri import extract_db_type_from_uri
+from qcflow.utils.validation import _validate_username
 
 
 class SqlAlchemyStore:
@@ -48,7 +48,7 @@ class SqlAlchemyStore:
                 user = SqlUser(username=username, password_hash=pwhash, is_admin=is_admin)
                 session.add(user)
                 session.flush()
-                return user.to_mlflow_entity()
+                return user.to_qcflow_entity()
             except IntegrityError as e:
                 raise MlflowException(
                     f"User (username={username}) already exists. Error: {e}",
@@ -76,12 +76,12 @@ class SqlAlchemyStore:
 
     def get_user(self, username: str) -> User:
         with self.ManagedSessionMaker() as session:
-            return self._get_user(session, username).to_mlflow_entity()
+            return self._get_user(session, username).to_qcflow_entity()
 
     def list_users(self) -> list[User]:
         with self.ManagedSessionMaker() as session:
             users = session.query(SqlUser).all()
-            return [u.to_mlflow_entity() for u in users]
+            return [u.to_qcflow_entity() for u in users]
 
     def update_user(
         self, username: str, password: Optional[str] = None, is_admin: Optional[bool] = None
@@ -93,7 +93,7 @@ class SqlAlchemyStore:
                 user.password_hash = pwhash
             if is_admin is not None:
                 user.is_admin = is_admin
-            return user.to_mlflow_entity()
+            return user.to_qcflow_entity()
 
     def delete_user(self, username: str):
         with self.ManagedSessionMaker() as session:
@@ -112,7 +112,7 @@ class SqlAlchemyStore:
                 )
                 session.add(perm)
                 session.flush()
-                return perm.to_mlflow_entity()
+                return perm.to_qcflow_entity()
             except IntegrityError as e:
                 raise MlflowException(
                     f"Experiment permission (experiment_id={experiment_id}, username={username}) "
@@ -150,7 +150,7 @@ class SqlAlchemyStore:
         with self.ManagedSessionMaker() as session:
             return self._get_experiment_permission(
                 session, experiment_id, username
-            ).to_mlflow_entity()
+            ).to_qcflow_entity()
 
     def list_experiment_permissions(self, username: str) -> list[ExperimentPermission]:
         with self.ManagedSessionMaker() as session:
@@ -160,7 +160,7 @@ class SqlAlchemyStore:
                 .filter(SqlExperimentPermission.user_id == user.id)
                 .all()
             )
-            return [p.to_mlflow_entity() for p in perms]
+            return [p.to_qcflow_entity() for p in perms]
 
     def update_experiment_permission(
         self, experiment_id: str, username: str, permission: str
@@ -169,7 +169,7 @@ class SqlAlchemyStore:
         with self.ManagedSessionMaker() as session:
             perm = self._get_experiment_permission(session, experiment_id, username)
             perm.permission = permission
-            return perm.to_mlflow_entity()
+            return perm.to_qcflow_entity()
 
     def delete_experiment_permission(self, experiment_id: str, username: str):
         with self.ManagedSessionMaker() as session:
@@ -188,7 +188,7 @@ class SqlAlchemyStore:
                 )
                 session.add(perm)
                 session.flush()
-                return perm.to_mlflow_entity()
+                return perm.to_qcflow_entity()
             except IntegrityError as e:
                 raise MlflowException(
                     f"Registered model permission (name={name}, username={username}) "
@@ -225,7 +225,7 @@ class SqlAlchemyStore:
         self, name: str, username: str
     ) -> RegisteredModelPermission:
         with self.ManagedSessionMaker() as session:
-            return self._get_registered_model_permission(session, name, username).to_mlflow_entity()
+            return self._get_registered_model_permission(session, name, username).to_qcflow_entity()
 
     def list_registered_model_permissions(self, username: str) -> list[RegisteredModelPermission]:
         with self.ManagedSessionMaker() as session:
@@ -235,7 +235,7 @@ class SqlAlchemyStore:
                 .filter(SqlRegisteredModelPermission.user_id == user.id)
                 .all()
             )
-            return [p.to_mlflow_entity() for p in perms]
+            return [p.to_qcflow_entity() for p in perms]
 
     def update_registered_model_permission(
         self, name: str, username: str, permission: str
@@ -244,7 +244,7 @@ class SqlAlchemyStore:
         with self.ManagedSessionMaker() as session:
             perm = self._get_registered_model_permission(session, name, username)
             perm.permission = permission
-            return perm.to_mlflow_entity()
+            return perm.to_qcflow_entity()
 
     def delete_registered_model_permission(self, name: str, username: str):
         with self.ManagedSessionMaker() as session:

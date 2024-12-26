@@ -8,11 +8,11 @@ import requests
 from packaging.version import Version
 
 import docker
-import mlflow
+import qcflow
 
 TEST_IMAGE_NAME = "test_image"
-MLFLOW_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-RESOURCE_DIR = os.path.join(MLFLOW_ROOT, "tests", "resources", "dockerfile")
+QCFLOW_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+RESOURCE_DIR = os.path.join(QCFLOW_ROOT, "tests", "resources", "dockerfile")
 
 docker_client = docker.from_env()
 
@@ -42,8 +42,8 @@ def clean_up_docker():
 
 
 @lru_cache(maxsize=1)
-def get_released_mlflow_version():
-    url = "https://pypi.org/pypi/mlflow/json"
+def get_released_qcflow_version():
+    url = "https://pypi.org/pypi/qcflow/json"
     response = requests.get(url)
     response.raise_for_status()
     data = response.json()
@@ -53,17 +53,17 @@ def get_released_mlflow_version():
     return str(sorted(versions, reverse=True)[0])
 
 
-def save_model_with_latest_mlflow_version(flavor, extra_pip_requirements=None, **kwargs):
+def save_model_with_latest_qcflow_version(flavor, extra_pip_requirements=None, **kwargs):
     """
-    Save a model with overriding MLflow version from dev version to the latest released version.
-    By default a model is saved with the dev version of MLflow, which is not available on PyPI.
+    Save a model with overriding QCFlow version from dev version to the latest released version.
+    By default a model is saved with the dev version of QCFlow, which is not available on PyPI.
     Usually we can be workaround this by adding --serve-wheel flag that starts local PyPI server,
     however, this doesn't work when installing dependencies inside Docker container. Hence, this
-    function uses `extra_pip_requirements` to save the model with the latest released MLflow.
+    function uses `extra_pip_requirements` to save the model with the latest released QCFlow.
     """
-    latest_mlflow_version = get_released_mlflow_version()
+    latest_qcflow_version = get_released_qcflow_version()
     if flavor == "langchain":
-        kwargs["pip_requirements"] = [f"mlflow[gateway]=={latest_mlflow_version}", "langchain"]
+        kwargs["pip_requirements"] = [f"qcflow[gateway]=={latest_qcflow_version}", "langchain"]
     elif flavor == "fastai":
         import fastai
 
@@ -72,15 +72,15 @@ def save_model_with_latest_mlflow_version(flavor, extra_pip_requirements=None, *
         # runs out of disk space.
         # So set `pip_requirements` explicitly as a workaround.
         kwargs["pip_requirements"] = [
-            f"mlflow=={latest_mlflow_version}",
+            f"qcflow=={latest_qcflow_version}",
             f"fastai=={fastai.__version__}",
         ]
     else:
         extra_pip_requirements = extra_pip_requirements or []
-        extra_pip_requirements.append(f"mlflow=={latest_mlflow_version}")
+        extra_pip_requirements.append(f"qcflow=={latest_qcflow_version}")
         if flavor == "lightgbm":
             # Adding pyarrow < 18 to prevent pip installation resolution conflicts.
             extra_pip_requirements.append("pyarrow<18")
         kwargs["extra_pip_requirements"] = extra_pip_requirements
-    flavor_module = getattr(mlflow, flavor)
+    flavor_module = getattr(qcflow, flavor)
     flavor_module.save_model(**kwargs)

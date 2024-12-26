@@ -1,5 +1,5 @@
 # Based ons: https://github.com/openai/openai-cookbook/blob/6df6ceff470eeba26a56de131254e775292eac22/examples/api_request_parallel_processor.py
-# Several changes were made to make it work with MLflow.
+# Several changes were made to make it work with QCFlow.
 # Currently, only chat completion is supported.
 
 """
@@ -29,15 +29,15 @@ from typing import Any, Optional, Union
 import langchain.chains
 from langchain.callbacks.base import BaseCallbackHandler
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.langchain.utils.chat import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.langchain.utils.chat import (
     transform_request_json_for_chat_if_necessary,
     try_transform_response_iter_to_chat_format,
     try_transform_response_to_chat_format,
 )
-from mlflow.langchain.utils.serialization import convert_to_serializable
-from mlflow.pyfunc.context import (
+from qcflow.langchain.utils.serialization import convert_to_serializable
+from qcflow.pyfunc.context import (
     Context,
     get_prediction_context,
     maybe_set_prediction_context,
@@ -129,7 +129,7 @@ class APIRequest:
     def single_call_api(self, callback_handlers: Optional[list[BaseCallbackHandler]]):
         from langchain.schema import BaseRetriever
 
-        from mlflow.langchain.utils import langgraph_types, lc_runnables_types
+        from qcflow.langchain.utils import langgraph_types, lc_runnables_types
 
         if isinstance(self.lc_model, BaseRetriever):
             # Retrievers are invoked differently than Chains
@@ -285,7 +285,7 @@ def process_api_requests(
 
         # after finishing, log final status
         if status_tracker.num_tasks_failed > 0:
-            raise mlflow.MlflowException(
+            raise qcflow.MlflowException(
                 f"{status_tracker.num_tasks_failed} tasks failed. Errors: {errors}"
             )
 

@@ -18,7 +18,7 @@ type Props = {
 export const IconButton = ({ icon, className, style, ...restProps }: Props) => {
   return (
     <Button
-      componentId="codegen_mlflow_app_src_common_components_iconbutton.tsx_20"
+      componentId="codegen_qcflow_app_src_common_components_iconbutton.tsx_20"
       type="link"
       className={className}
       style={{ padding: 0, ...style }}

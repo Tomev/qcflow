@@ -8,36 +8,36 @@ from typing import Any, Optional
 import numpy as np
 import yaml
 
-import mlflow
-import mlflow.utils.autologging_utils
-from mlflow import pyfunc
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.utils import _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+import qcflow.utils.autologging_utils
+from qcflow import pyfunc
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.utils import _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
     _get_pip_deps,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_package_name
-from mlflow.utils.uri import append_to_uri_path
+from qcflow.utils.requirements_utils import _get_package_name
+from qcflow.utils.uri import append_to_uri_path
 
 FLAVOR_NAME = "shap"
 
@@ -72,7 +72,7 @@ def get_underlying_model_flavor(model):
                 import sklearn
 
                 if issubclass(type(model_object), sklearn.base.BaseEstimator):
-                    return mlflow.sklearn.FLAVOR_NAME
+                    return qcflow.sklearn.FLAVOR_NAME
             except ImportError:
                 pass
 
@@ -81,7 +81,7 @@ def get_underlying_model_flavor(model):
             import torch
 
             if issubclass(type(unwrapped_model), torch.nn.Module):
-                return mlflow.pytorch.FLAVOR_NAME
+                return qcflow.pytorch.FLAVOR_NAME
         except ImportError:
             pass
 
@@ -90,7 +90,7 @@ def get_underlying_model_flavor(model):
 
 def get_default_pip_requirements():
     """
-    A list of default pip requirements for MLflow Models produced by this flavor. Calls to
+    A list of default pip requirements for QCFlow Models produced by this flavor. Calls to
     :func:`save_explainer()` and :func:`log_explainer()` produce a pip environment that, at
     minimum, contains these requirements.
     """
@@ -102,10 +102,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_explainer()` and :func:`log_explainer()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 def _load_pyfunc(path):
@@ -123,7 +123,7 @@ def _log_artifact_contextmanager(out_file, artifact_path=None):
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = os.path.join(tmp_dir, out_file)
         yield tmp_path
-        mlflow.log_artifact(tmp_path, artifact_path)
+        qcflow.log_artifact(tmp_path, artifact_path)
 
 
 def _log_numpy(numpy_obj, out_file, artifact_path=None):
@@ -214,8 +214,8 @@ def log_explanation(predict_function, features, artifact_path=None):
         from sklearn.datasets import load_diabetes
         from sklearn.linear_model import LinearRegression
 
-        import mlflow
-        from mlflow import MlflowClient
+        import qcflow
+        from qcflow import MlflowClient
 
         # prepare training data
         X, y = dataset = load_diabetes(return_X_y=True, as_frame=True)
@@ -227,8 +227,8 @@ def log_explanation(predict_function, features, artifact_path=None):
         model.fit(X, y)
 
         # log an explanation
-        with mlflow.start_run() as run:
-            mlflow.shap.log_explanation(model.predict, X)
+        with qcflow.start_run() as run:
+            qcflow.shap.log_explanation(model.predict, X)
 
         # list artifacts
         client = MlflowClient()
@@ -271,7 +271,7 @@ def log_explanation(predict_function, features, artifact_path=None):
     import shap
 
     artifact_path = _DEFAULT_ARTIFACT_PATH if artifact_path is None else artifact_path
-    with mlflow.utils.autologging_utils.disable_autologging():
+    with qcflow.utils.autologging_utils.disable_autologging():
         background_data = shap.kmeans(features, min(_MAXIMUM_BACKGROUND_DATA_SIZE, len(features)))
         explainer = shap.KernelExplainer(predict_function, background_data)
         shap_values = explainer.shap_values(features)
@@ -285,14 +285,14 @@ def log_explanation(predict_function, features, artifact_path=None):
         _log_matplotlib_figure(fig, _SUMMARY_BAR_PLOT_FILE_NAME, artifact_path)
         plt.close(fig)
 
-    return append_to_uri_path(mlflow.active_run().info.artifact_uri, artifact_path)
+    return append_to_uri_path(qcflow.active_run().info.artifact_uri, artifact_path)
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
 def log_explainer(
     explainer,
     artifact_path,
-    serialize_model_using_mlflow=True,
+    serialize_model_using_qcflow=True,
     conda_env=None,
     code_paths=None,
     registered_model_name=None,
@@ -304,28 +304,28 @@ def log_explainer(
     metadata=None,
 ):
     """
-    Log an SHAP explainer as an MLflow artifact for the current run.
+    Log an SHAP explainer as an QCFlow artifact for the current run.
 
     Args:
         explainer: SHAP explainer to be saved.
         artifact_path: Run-relative artifact path.
-        serialize_model_using_mlflow: When set to True, MLflow will extract the underlying
+        serialize_model_using_qcflow: When set to True, QCFlow will extract the underlying
             model and serialize it as an MLmodel, otherwise it uses SHAP's internal serialization.
-            Defaults to True. Currently MLflow serialization is only supported for models of
+            Defaults to True. Currently QCFlow serialization is only supported for models of
             'sklearn' or 'pytorch' flavors.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
         registered_model_name: If given, create a model version under ``registered_model_name``,
             also creating a registered model if one with the given name does not exist.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>` describes model input
-            and output :py:class:`Schema <mlflow.types.Schema>`. The model signature can be
-            :py:func:`inferred <mlflow.models.infer_signature>` from datasets with valid model input
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>` describes model input
+            and output :py:class:`Schema <qcflow.types.Schema>`. The model signature can be
+            :py:func:`inferred <qcflow.models.infer_signature>` from datasets with valid model input
             (e.g. the training dataset with target column omitted) and valid model output
             (e.g. model predictions generated on the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -341,11 +341,11 @@ def log_explainer(
 
     Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.shap,
+        flavor=qcflow.shap,
         explainer=explainer,
         conda_env=conda_env,
         code_paths=code_paths,
-        serialize_model_using_mlflow=serialize_model_using_mlflow,
+        serialize_model_using_qcflow=serialize_model_using_qcflow,
         registered_model_name=registered_model_name,
         signature=signature,
         input_example=input_example,
@@ -360,10 +360,10 @@ def log_explainer(
 def save_explainer(
     explainer,
     path,
-    serialize_model_using_mlflow=True,
+    serialize_model_using_qcflow=True,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -371,31 +371,31 @@ def save_explainer(
     metadata=None,
 ):
     """
-    Save a SHAP explainer to a path on the local file system. Produces an MLflow Model
+    Save a SHAP explainer to a path on the local file system. Produces an QCFlow Model
     containing the following flavors:
 
-        - :py:mod:`mlflow.shap`
-        - :py:mod:`mlflow.pyfunc`
+        - :py:mod:`qcflow.shap`
+        - :py:mod:`qcflow.pyfunc`
 
     Args:
         explainer: SHAP explainer to be saved.
         path: Local path where the explainer is to be saved.
-        serialize_model_using_mlflow: When set to True, MLflow will extract the underlying
+        serialize_model_using_qcflow: When set to True, QCFlow will extract the underlying
             model and serialize it as an MLmodel, otherwise it uses SHAP's internal serialization.
-            Defaults to True. Currently MLflow serialization is only supported for models of
+            Defaults to True. Currently QCFlow serialization is only supported for models of
             'sklearn' or 'pytorch' flavors.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>` describes model input
-            and output :py:class:`Schema <mlflow.types.Schema>`. The model signature can be
-            :py:func:`inferred <mlflow.models.infer_signature>` from datasets with valid model input
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>` describes model input
+            and output :py:class:`Schema <qcflow.types.Schema>`. The model signature can be
+            :py:func:`inferred <qcflow.models.infer_signature>` from datasets with valid model input
             (e.g. the training dataset with target column omitted) and valid model output (e.g.
             model predictions generated on the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -412,48 +412,48 @@ def save_explainer(
     _validate_and_prepare_target_save_path(path)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if input_example is not None:
-        _save_example(mlflow_model, input_example, path)
+        _save_example(qcflow_model, input_example, path)
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     underlying_model_flavor = None
     underlying_model_path = None
-    serializable_by_mlflow = False
+    serializable_by_qcflow = False
 
     # saving the underlying model if required
-    if serialize_model_using_mlflow:
+    if serialize_model_using_qcflow:
         underlying_model_flavor = get_underlying_model_flavor(explainer.model)
 
         if underlying_model_flavor != _UNKNOWN_MODEL_FLAVOR:
-            serializable_by_mlflow = True  # prevents SHAP from serializing the underlying model
+            serializable_by_qcflow = True  # prevents SHAP from serializing the underlying model
             underlying_model_path = os.path.join(path, _UNDERLYING_MODEL_SUBPATH)
         else:
             warnings.warn(
-                "Unable to serialize underlying model using MLflow, will use SHAP serialization"
+                "Unable to serialize underlying model using QCFlow, will use SHAP serialization"
             )
 
-        if underlying_model_flavor == mlflow.sklearn.FLAVOR_NAME:
-            mlflow.sklearn.save_model(explainer.model.inner_model.__self__, underlying_model_path)
-        elif underlying_model_flavor == mlflow.pytorch.FLAVOR_NAME:
-            mlflow.pytorch.save_model(explainer.model.inner_model, underlying_model_path)
+        if underlying_model_flavor == qcflow.sklearn.FLAVOR_NAME:
+            qcflow.sklearn.save_model(explainer.model.inner_model.__self__, underlying_model_path)
+        elif underlying_model_flavor == qcflow.pytorch.FLAVOR_NAME:
+            qcflow.pytorch.save_model(explainer.model.inner_model, underlying_model_path)
 
     # saving the explainer object
     explainer_data_subpath = "explainer.shap"
     explainer_output_path = os.path.join(path, explainer_data_subpath)
     with open(explainer_output_path, "wb") as explainer_output_file_handle:
-        if serialize_model_using_mlflow and serializable_by_mlflow:
+        if serialize_model_using_qcflow and serializable_by_qcflow:
             explainer.save(explainer_output_file_handle, model_saver=False)
         else:
             explainer.save(explainer_output_file_handle)
 
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.shap",
+        qcflow_model,
+        loader_module="qcflow.shap",
         model_path=explainer_data_subpath,
         underlying_model_flavor=underlying_model_flavor,
         conda_env=_CONDA_ENV_FILE_NAME,
@@ -461,7 +461,7 @@ def save_explainer(
         code=code_dir_subpath,
     )
 
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         shap_version=shap.__version__,
         serialized_explainer=explainer_data_subpath,
@@ -469,14 +469,14 @@ def save_explainer(
         code=code_dir_subpath,
     )
 
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -523,7 +523,7 @@ def _get_conda_and_pip_dependencies(conda_env):
     """
 
     conda_deps = []
-    # NB: Set operations are required in case there are multiple references of MLflow as a
+    # NB: Set operations are required in case there are multiple references of QCFlow as a
     # dependency to ensure that duplicate entries are not present in the final consolidated
     # dependency list.
     pip_deps_set = set()
@@ -531,7 +531,7 @@ def _get_conda_and_pip_dependencies(conda_env):
     for dependency in conda_env["dependencies"]:
         if isinstance(dependency, dict) and dependency["pip"]:
             for pip_dependency in dependency["pip"]:
-                if pip_dependency != "mlflow":
+                if pip_dependency != "qcflow":
                     pip_deps_set.add(pip_dependency)
         else:
             package_name = _get_package_name(dependency)
@@ -557,7 +557,7 @@ def _merge_environments(shap_environment, model_environment):
         model_environment: Underlying model conda environment.
     """
     # merge the channels from the two environments and remove the default conda
-    # channels if present since its added later in `_mlflow_conda_env`
+    # channels if present since its added later in `_qcflow_conda_env`
     merged_conda_channels = _union_lists(
         shap_environment["channels"], model_environment["channels"]
     )
@@ -568,7 +568,7 @@ def _merge_environments(shap_environment, model_environment):
 
     merged_conda_deps = _union_lists(shap_conda_deps, model_conda_deps)
     merged_pip_deps = _union_lists(shap_pip_deps, model_pip_deps)
-    return _mlflow_conda_env(
+    return _qcflow_conda_env(
         additional_conda_deps=merged_conda_deps,
         additional_pip_deps=merged_pip_deps,
         additional_conda_channels=merged_conda_channels,
@@ -580,17 +580,17 @@ def load_explainer(model_uri):
     Load a SHAP explainer from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
     Returns:
@@ -606,20 +606,20 @@ def load_explainer(model_uri):
 
     if underlying_model_flavor != _UNKNOWN_MODEL_FLAVOR:
         underlying_model_path = os.path.join(explainer_path, _UNDERLYING_MODEL_SUBPATH)
-        if underlying_model_flavor == mlflow.sklearn.FLAVOR_NAME:
-            model = mlflow.sklearn._load_pyfunc(underlying_model_path).predict
-        elif underlying_model_flavor == mlflow.pytorch.FLAVOR_NAME:
-            model = mlflow.pytorch._load_model(os.path.join(underlying_model_path, "data"))
+        if underlying_model_flavor == qcflow.sklearn.FLAVOR_NAME:
+            model = qcflow.sklearn._load_pyfunc(underlying_model_path).predict
+        elif underlying_model_flavor == qcflow.pytorch.FLAVOR_NAME:
+            model = qcflow.pytorch._load_model(os.path.join(underlying_model_path, "data"))
 
     return _load_explainer(explainer_file=explainer_artifacts_path, model=model)
 
 
 def _load_explainer(explainer_file, model=None):
     """
-    Load a SHAP explainer saved as an MLflow artifact on the local file system.
+    Load a SHAP explainer saved as an QCFlow artifact on the local file system.
 
     Args:
-        explainer_file: Local filesystem path to the MLflow Model saved with the ``shap`` flavor.
+        explainer_file: Local filesystem path to the QCFlow Model saved with the ``shap`` flavor.
         model: Model to override underlying explainer model.
 
     """
@@ -644,10 +644,10 @@ class _SHAPWrapper:
         model = None
         if underlying_model_flavor != _UNKNOWN_MODEL_FLAVOR:
             underlying_model_path = os.path.join(path, _UNDERLYING_MODEL_SUBPATH)
-            if underlying_model_flavor == mlflow.sklearn.FLAVOR_NAME:
-                model = mlflow.sklearn._load_pyfunc(underlying_model_path).predict
-            elif underlying_model_flavor == mlflow.pytorch.FLAVOR_NAME:
-                model = mlflow.pytorch._load_model(os.path.join(underlying_model_path, "data"))
+            if underlying_model_flavor == qcflow.sklearn.FLAVOR_NAME:
+                model = qcflow.sklearn._load_pyfunc(underlying_model_path).predict
+            elif underlying_model_flavor == qcflow.pytorch.FLAVOR_NAME:
+                model = qcflow.pytorch._load_model(os.path.join(underlying_model_path, "data"))
 
         self.explainer = _load_explainer(explainer_file=shap_explainer_artifacts_path, model=model)
 

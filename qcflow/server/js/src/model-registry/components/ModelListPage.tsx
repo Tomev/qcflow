@@ -21,7 +21,7 @@ import LocalStorageUtils from '../../common/utils/LocalStorageUtils';
 import { withRouterNext } from '../../common/utils/withRouterNext';
 import type { WithRouterNextProps } from '../../common/utils/withRouterNext';
 import { ScrollablePageWrapper } from '../../common/components/ScrollablePageWrapper';
-import { createMLflowRoutePath } from '../../common/utils/RoutingUtils';
+import { createQCFlowRoutePath } from '../../common/utils/RoutingUtils';
 
 type ModelListPageImplProps = WithRouterNextProps & {
   models?: any[];
@@ -219,7 +219,7 @@ export class ModelListPageImpl extends React.Component<ModelListPageImplProps, M
       // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       urlParams['page'] = page;
     }
-    const newUrl = createMLflowRoutePath(`/models?${Utils.getSearchUrlFromState(urlParams)}`);
+    const newUrl = createQCFlowRoutePath(`/models?${Utils.getSearchUrlFromState(urlParams)}`);
     if (newUrl !== this.props.location.pathname + this.props.location.search) {
       this.props.navigate(newUrl);
     }

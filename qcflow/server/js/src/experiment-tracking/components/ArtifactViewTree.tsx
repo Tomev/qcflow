@@ -2,7 +2,7 @@
 import { decorators, Treebeard, TreebeardData } from 'react-treebeard';
 import { DATA_EXTENSIONS, getExtension, IMAGE_EXTENSIONS, TEXT_EXTENSIONS } from '../../common/utils/FileUtils';
 
-import spinner from '../../common/static/mlflow-spinner.png';
+import spinner from '../../common/static/qcflow-spinner.png';
 import { useDesignSystemTheme } from '@databricks/design-system';
 import { useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';

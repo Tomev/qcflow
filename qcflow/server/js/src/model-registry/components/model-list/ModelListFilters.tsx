@@ -29,7 +29,7 @@ const ModelSearchInputHelpTooltip = () => {
   const labelText = formatMessage(tooltipIntroMessage, { newline: ' ', whereBold: 'WHERE' });
 
   return (
-    <Popover.Root componentId="codegen_mlflow_app_src_model-registry_components_model-list_modellistfilters.tsx_46">
+    <Popover.Root componentId="codegen_qcflow_app_src_model-registry_components_model-list_modellistfilters.tsx_46">
       <Popover.Trigger
         aria-label={labelText}
         css={{ border: 0, background: 'none', padding: 0, lineHeight: 0, cursor: 'pointer' }}
@@ -45,7 +45,7 @@ const ModelSearchInputHelpTooltip = () => {
             values={{
               link: (chunks) => (
                 <Typography.Link
-                  componentId="codegen_mlflow_app_src_model-registry_components_model-list_modellistfilters.tsx_61"
+                  componentId="codegen_qcflow_app_src_model-registry_components_model-list_modellistfilters.tsx_61"
                   href={ExperimentSearchSyntaxDocUrl + '#syntax'}
                   openInNewTab
                 >
@@ -56,7 +56,7 @@ const ModelSearchInputHelpTooltip = () => {
           />
           <br />
           <br />
-          <FormattedMessage defaultMessage="Examples:" description="Text header for examples of mlflow search syntax" />
+          <FormattedMessage defaultMessage="Examples:" description="Text header for examples of qcflow search syntax" />
           <br />
           • tags.my_key = "my_value"
           <br />• name ilike "%my_model_name%" and tags.my_key = "my_value"
@@ -91,7 +91,7 @@ export const ModelListFilters = ({
   return (
     <TableFilterLayout>
       <TableFilterInput
-        componentId="codegen_mlflow_app_src_model-registry_components_model-list_modellistfilters.tsx_118"
+        componentId="codegen_qcflow_app_src_model-registry_components_model-list_modellistfilters.tsx_118"
         placeholder={intl.formatMessage({
           defaultMessage: 'Filter registered models by name or tags',
           description: 'Placeholder text inside model search bar',
@@ -109,7 +109,7 @@ export const ModelListFilters = ({
       />
       {isFiltered && (
         <Button
-          componentId="codegen_mlflow_app_src_model-registry_components_model-list_modellistfilters.tsx_152"
+          componentId="codegen_qcflow_app_src_model-registry_components_model-list_modellistfilters.tsx_152"
           type="tertiary"
           onClick={reset}
           data-testid="models-list-filters-reset"

@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from mlflow.exceptions import MlflowException
-from mlflow.models.evaluation.base import EvaluationArtifact
-from mlflow.utils.annotations import developer_stable
-from mlflow.utils.proto_json_utils import NumpyEncoder
+from qcflow.exceptions import MlflowException
+from qcflow.models.evaluation.base import EvaluationArtifact
+from qcflow.utils.annotations import developer_stable
+from qcflow.utils.proto_json_utils import NumpyEncoder
 
 
 @developer_stable
@@ -129,7 +129,7 @@ def _infer_artifact_type_and_ext(artifact_name, raw_artifact, custom_metric_tupl
         artifact_name: The name of the provided artifact
         raw_artifact: The artifact object
         custom_metric_tuple: Containing a user provided function and its index in the
-            ``custom_metrics`` parameter of ``mlflow.evaluate``
+            ``custom_metrics`` parameter of ``qcflow.evaluate``
 
     Returns:
         InferredArtifactProperties namedtuple

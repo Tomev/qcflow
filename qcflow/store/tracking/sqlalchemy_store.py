@@ -13,8 +13,8 @@ import sqlalchemy.sql.expression as sql
 from sqlalchemy import and_, func, sql, text
 from sqlalchemy.future import select
 
-import mlflow.store.db.utils
-from mlflow.entities import (
+import qcflow.store.db.utils
+from qcflow.entities import (
     DatasetInput,
     Experiment,
     Run,
@@ -26,26 +26,26 @@ from mlflow.entities import (
     ViewType,
     _DatasetSummary,
 )
-from mlflow.entities.lifecycle_stage import LifecycleStage
-from mlflow.entities.metric import MetricWithRunId
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.entities.lifecycle_stage import LifecycleStage
+from qcflow.entities.metric import MetricWithRunId
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
     INVALID_STATE,
     RESOURCE_ALREADY_EXISTS,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.store.db.db_types import MSSQL, MYSQL
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.tracking import (
+from qcflow.store.db.db_types import MSSQL, MYSQL
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.tracking import (
     SEARCH_MAX_RESULTS_DEFAULT,
     SEARCH_MAX_RESULTS_THRESHOLD,
     SEARCH_TRACES_DEFAULT_MAX_RESULTS,
 )
-from mlflow.store.tracking.abstract_store import AbstractStore
-from mlflow.store.tracking.dbmodels.models import (
+from qcflow.store.tracking.abstract_store import AbstractStore
+from qcflow.store.tracking.dbmodels.models import (
     SqlDataset,
     SqlExperiment,
     SqlExperimentTag,
@@ -60,30 +60,30 @@ from mlflow.store.tracking.dbmodels.models import (
     SqlTraceRequestMetadata,
     SqlTraceTag,
 )
-from mlflow.tracing.utils import generate_request_id
-from mlflow.utils.file_utils import local_file_uri_to_path, mkdir
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_ARTIFACT_LOCATION,
-    MLFLOW_DATASET_CONTEXT,
-    MLFLOW_LOGGED_MODELS,
-    MLFLOW_RUN_NAME,
+from qcflow.tracing.utils import generate_request_id
+from qcflow.utils.file_utils import local_file_uri_to_path, mkdir
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_ARTIFACT_LOCATION,
+    QCFLOW_DATASET_CONTEXT,
+    QCFLOW_LOGGED_MODELS,
+    QCFLOW_RUN_NAME,
     _get_run_name_from_tags,
 )
-from mlflow.utils.name_utils import _generate_random_name
-from mlflow.utils.search_utils import (
+from qcflow.utils.name_utils import _generate_random_name
+from qcflow.utils.search_utils import (
     SearchExperimentsUtils,
     SearchTraceUtils,
     SearchUtils,
 )
-from mlflow.utils.string_utils import is_string_type
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.uri import (
+from qcflow.utils.string_utils import is_string_type
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.uri import (
     append_to_uri_path,
     extract_db_type_from_uri,
     is_local_uri,
     resolve_uri_if_local,
 )
-from mlflow.utils.validation import (
+from qcflow.utils.validation import (
     _validate_batch_log_data,
     _validate_batch_log_limits,
     _validate_dataset_inputs,
@@ -111,7 +111,7 @@ sqlalchemy.orm.configure_mappers()
 
 class SqlAlchemyStore(AbstractStore):
     """
-    SQLAlchemy compliant backend store for tracking meta data for MLflow entities. MLflow
+    SQLAlchemy compliant backend store for tracking meta data for QCFlow entities. QCFlow
     supports the database dialects ``mysql``, ``mssql``, ``sqlite``, and ``postgresql``.
     As specified in the
     `SQLAlchemy docs <https://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls>`_ ,
@@ -119,17 +119,17 @@ class SqlAlchemyStore(AbstractStore):
     ``<dialect>+<driver>://<username>:<password>@<host>:<port>/<database>``. If you do not
     specify a driver, SQLAlchemy uses a dialect's default driver.
 
-    This store interacts with SQL store using SQLAlchemy abstractions defined for MLflow entities.
-    :py:class:`mlflow.store.dbmodels.models.SqlExperiment`,
-    :py:class:`mlflow.store.dbmodels.models.SqlRun`,
-    :py:class:`mlflow.store.dbmodels.models.SqlTag`,
-    :py:class:`mlflow.store.dbmodels.models.SqlMetric`, and
-    :py:class:`mlflow.store.dbmodels.models.SqlParam`.
+    This store interacts with SQL store using SQLAlchemy abstractions defined for QCFlow entities.
+    :py:class:`qcflow.store.dbmodels.models.SqlExperiment`,
+    :py:class:`qcflow.store.dbmodels.models.SqlRun`,
+    :py:class:`qcflow.store.dbmodels.models.SqlTag`,
+    :py:class:`qcflow.store.dbmodels.models.SqlMetric`, and
+    :py:class:`qcflow.store.dbmodels.models.SqlParam`.
 
     Run artifacts are stored in a separate location using artifact stores conforming to
-    :py:class:`mlflow.store.artifact_repo.ArtifactRepository`. Default artifact locations for
+    :py:class:`qcflow.store.artifact_repo.ArtifactRepository`. Default artifact locations for
     user experiments are stored in the database along with metadata. Each run artifact location
-    is recorded in :py:class:`mlflow.store.dbmodels.models.SqlRun` and stored in the backend DB.
+    is recorded in :py:class:`qcflow.store.dbmodels.models.SqlRun` and stored in the backend DB.
     """
 
     ARTIFACTS_FOLDER_NAME = "artifacts"
@@ -146,7 +146,7 @@ class SqlAlchemyStore(AbstractStore):
             db_uri: The SQLAlchemy database URI string to connect to the database. See
                 the `SQLAlchemy docs
                 <https://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls>`_
-                for format specifications. MLflow supports the dialects ``mysql``,
+                for format specifications. QCFlow supports the dialects ``mysql``,
                 ``mssql``, ``sqlite``, and ``postgresql``.
             default_artifact_root: Path/URI to location suitable for large data (such as a blob
                 store object, DBFS path, or shared NFS file system).
@@ -165,19 +165,19 @@ class SqlAlchemyStore(AbstractStore):
                 # existence if it has already been created.
                 if db_uri not in SqlAlchemyStore._db_uri_sql_alchemy_engine_map:
                     SqlAlchemyStore._db_uri_sql_alchemy_engine_map[db_uri] = (
-                        mlflow.store.db.utils.create_sqlalchemy_engine_with_retry(db_uri)
+                        qcflow.store.db.utils.create_sqlalchemy_engine_with_retry(db_uri)
                     )
         self.engine = SqlAlchemyStore._db_uri_sql_alchemy_engine_map[db_uri]
-        # On a completely fresh MLflow installation against an empty database (verify database
+        # On a completely fresh QCFlow installation against an empty database (verify database
         # emptiness by checking that 'experiments' etc aren't in the list of table names), run all
         # DB migrations
-        if not mlflow.store.db.utils._all_tables_exist(self.engine):
-            mlflow.store.db.utils._initialize_tables(self.engine)
+        if not qcflow.store.db.utils._all_tables_exist(self.engine):
+            qcflow.store.db.utils._initialize_tables(self.engine)
         SessionMaker = sqlalchemy.orm.sessionmaker(bind=self.engine)
-        self.ManagedSessionMaker = mlflow.store.db.utils._get_managed_session_maker(
+        self.ManagedSessionMaker = qcflow.store.db.utils._get_managed_session_maker(
             SessionMaker, self.db_type
         )
-        mlflow.store.db.utils._verify_schema(self.engine)
+        qcflow.store.db.utils._verify_schema(self.engine)
 
         if is_local_uri(default_artifact_root):
             mkdir(local_file_uri_to_path(default_artifact_root))
@@ -211,7 +211,7 @@ class SqlAlchemyStore(AbstractStore):
 
     def _create_default_experiment(self, session):
         """
-        MLflow UI and client code expects a default experiment with ID 0.
+        QCFlow UI and client code expects a default experiment with ID 0.
         This method uses SQL insert statement to create the default experiment as a hack, since
         experiment table uses 'experiment_id' column is a PK and is also set to auto increment.
         MySQL and other implementation do not allow value '0' for such cases.
@@ -333,7 +333,7 @@ class SqlAlchemyStore(AbstractStore):
                 .limit(max_results + 1)
             )
             queried_experiments = session.execute(stmt).scalars(SqlExperiment).all()
-            experiments = [e.to_mlflow_entity() for e in queried_experiments]
+            experiments = [e.to_qcflow_entity() for e in queried_experiments]
             next_page_token = compute_next_token(len(experiments))
 
         return experiments[:max_results], next_page_token
@@ -397,7 +397,7 @@ class SqlAlchemyStore(AbstractStore):
         with self.ManagedSessionMaker() as session:
             return self._get_experiment(
                 session, experiment_id, ViewType.ALL, eager=True
-            ).to_mlflow_entity()
+            ).to_qcflow_entity()
 
     def get_experiment_by_name(self, experiment_name):
         """
@@ -414,7 +414,7 @@ class SqlAlchemyStore(AbstractStore):
                 )
                 .one_or_none()
             )
-            return experiment.to_mlflow_entity() if experiment is not None else None
+            return experiment.to_qcflow_entity() if experiment is not None else None
 
     def delete_experiment(self, experiment_id):
         with self.ManagedSessionMaker() as session:
@@ -429,7 +429,7 @@ class SqlAlchemyStore(AbstractStore):
     def _hard_delete_experiment(self, experiment_id):
         """
         Permanently delete a experiment (metadata and metrics, tags, parameters).
-        This is used by the ``mlflow gc`` command line and is not intended to be used elsewhere.
+        This is used by the ``qcflow gc`` command line and is not intended to be used elsewhere.
         """
         with self.ManagedSessionMaker() as session:
             experiment = self._get_experiment(
@@ -491,13 +491,13 @@ class SqlAlchemyStore(AbstractStore):
             run_name_tag = _get_run_name_from_tags(tags)
             if run_name and run_name_tag and (run_name != run_name_tag):
                 raise MlflowException(
-                    "Both 'run_name' argument and 'mlflow.runName' tag are specified, but with "
-                    f"different values (run_name='{run_name}', mlflow.runName='{run_name_tag}').",
+                    "Both 'run_name' argument and 'qcflow.runName' tag are specified, but with "
+                    f"different values (run_name='{run_name}', qcflow.runName='{run_name_tag}').",
                     INVALID_PARAMETER_VALUE,
                 )
             run_name = run_name or run_name_tag or _generate_random_name()
             if not run_name_tag:
-                tags.append(RunTag(key=MLFLOW_RUN_NAME, value=run_name))
+                tags.append(RunTag(key=QCFLOW_RUN_NAME, value=run_name))
             run = SqlRun(
                 name=run_name,
                 artifact_uri=artifact_location,
@@ -518,7 +518,7 @@ class SqlAlchemyStore(AbstractStore):
             run.tags = [SqlTag(key=tag.key, value=tag.value) for tag in tags]
             session.add(run)
 
-            return run.to_mlflow_entity()
+            return run.to_qcflow_entity()
 
     def _get_run(self, session, run_uuid, eager=False):  # noqa: D417
         """
@@ -575,11 +575,11 @@ class SqlAlchemyStore(AbstractStore):
             dataset_inputs = []
             for input_uuid, dataset_run_uuid, dataset_sql in datasets:
                 if run_uuid == dataset_run_uuid:
-                    dataset_entity = dataset_sql.to_mlflow_entity()
+                    dataset_entity = dataset_sql.to_qcflow_entity()
                     tags = []
                     for tag_input_uuid, tag_run_uuid, tag_sql in input_tags:
                         if input_uuid == tag_input_uuid and run_uuid == tag_run_uuid:
-                            tags.append(tag_sql.to_mlflow_entity())
+                            tags.append(tag_sql.to_qcflow_entity())
                     dataset_input_entity = DatasetInput(dataset=dataset_entity, tags=tags)
                     dataset_inputs.append(dataset_input_entity)
             all_dataset_inputs.append(dataset_inputs)
@@ -631,14 +631,14 @@ class SqlAlchemyStore(AbstractStore):
                 run.end_time = end_time
             if run_name:
                 run.name = run_name
-                run_name_tag = self._try_get_run_tag(session, run_id, MLFLOW_RUN_NAME)
+                run_name_tag = self._try_get_run_tag(session, run_id, QCFLOW_RUN_NAME)
                 if run_name_tag is None:
-                    run.tags.append(SqlTag(key=MLFLOW_RUN_NAME, value=run_name))
+                    run.tags.append(SqlTag(key=QCFLOW_RUN_NAME, value=run_name))
                 else:
                     run_name_tag.value = run_name
 
             session.add(run)
-            run = run.to_mlflow_entity()
+            run = run.to_qcflow_entity()
 
             return run.info
 
@@ -655,13 +655,13 @@ class SqlAlchemyStore(AbstractStore):
         with self.ManagedSessionMaker() as session:
             # Load the run with the specified id and eagerly load its summary metrics, params, and
             # tags. These attributes are referenced during the invocation of
-            # ``run.to_mlflow_entity()``, so eager loading helps avoid additional database queries
+            # ``run.to_qcflow_entity()``, so eager loading helps avoid additional database queries
             # that are otherwise executed at attribute access time under a lazy loading model.
             run = self._get_run(run_uuid=run_id, session=session, eager=True)
-            mlflow_run = run.to_mlflow_entity()
+            qcflow_run = run.to_qcflow_entity()
             # Get the run inputs and add to the run
             inputs = self._get_run_inputs(run_uuids=[run_id], session=session)[0]
-            return Run(mlflow_run.info, mlflow_run.data, RunInputs(dataset_inputs=inputs))
+            return Run(qcflow_run.info, qcflow_run.data, RunInputs(dataset_inputs=inputs))
 
     def restore_run(self, run_id):
         with self.ManagedSessionMaker() as session:
@@ -680,7 +680,7 @@ class SqlAlchemyStore(AbstractStore):
     def _hard_delete_run(self, run_id):
         """
         Permanently delete a run (metadata and metrics, tags, parameters).
-        This is used by the ``mlflow gc`` command line and is not intended to be used elsewhere.
+        This is used by the ``qcflow gc`` command line and is not intended to be used elsewhere.
         """
         with self.ManagedSessionMaker() as session:
             run = self._get_run(run_uuid=run_id, session=session)
@@ -784,9 +784,9 @@ class SqlAlchemyStore(AbstractStore):
                     # convert to a set of Metric instance to take advantage of its hashable
                     # and then obtain the metrics that were not logged earlier within this
                     # run_id
-                    metric_history = {m.to_mlflow_entity() for m in metric_history}
+                    metric_history = {m.to_qcflow_entity() for m in metric_history}
                     non_existing_metrics = [
-                        m for m in metric_instances if m.to_mlflow_entity() not in metric_history
+                        m for m in metric_instances if m.to_qcflow_entity() not in metric_history
                     ]
                     # if there exist metrics that were tried to be logged & rolled back even
                     # though they were not violating the PK, log them
@@ -923,7 +923,7 @@ class SqlAlchemyStore(AbstractStore):
                 than ``None``, an MlflowException will be thrown.
 
         Returns:
-            A List of :py:class:`mlflow.entities.Metric` entities if ``metric_key`` values
+            A List of :py:class:`qcflow.entities.Metric` entities if ``metric_key`` values
             have been logged to the ``run_id``, else an empty list.
 
         """
@@ -939,7 +939,7 @@ class SqlAlchemyStore(AbstractStore):
 
         with self.ManagedSessionMaker() as session:
             metrics = session.query(SqlMetric).filter_by(run_uuid=run_id, key=metric_key).all()
-            return PagedList([metric.to_mlflow_entity() for metric in metrics], None)
+            return PagedList([metric.to_qcflow_entity() for metric in metrics], None)
 
     def get_metric_history_bulk(self, run_ids, metric_key, max_results):
         """
@@ -979,7 +979,7 @@ class SqlAlchemyStore(AbstractStore):
             return [
                 MetricWithRunId(
                     run_id=metric.run_uuid,
-                    metric=metric.to_mlflow_entity(),
+                    metric=metric.to_qcflow_entity(),
                 )
                 for metric in metrics
             ]
@@ -1014,7 +1014,7 @@ class SqlAlchemyStore(AbstractStore):
             return [
                 MetricWithRunId(
                     run_id=metric.run_uuid,
-                    metric=metric.to_mlflow_entity(),
+                    metric=metric.to_qcflow_entity(),
                 )
                 for metric in metrics
             ]
@@ -1033,7 +1033,7 @@ class SqlAlchemyStore(AbstractStore):
         MAX_DATASET_SUMMARIES_RESULTS = 1000
         with self.ManagedSessionMaker() as session:
             # Note that the join with the input tag table is a left join. This is required so if an
-            # input does not have the MLFLOW_DATASET_CONTEXT tag, we still return that entry as part
+            # input does not have the QCFLOW_DATASET_CONTEXT tag, we still return that entry as part
             # of the final result with the context set to None.
             summaries = (
                 session.query(
@@ -1049,7 +1049,7 @@ class SqlAlchemyStore(AbstractStore):
                     SqlInputTag,
                     and_(
                         SqlInput.input_uuid == SqlInputTag.input_uuid,
-                        SqlInputTag.name == MLFLOW_DATASET_CONTEXT,
+                        SqlInputTag.name == QCFLOW_DATASET_CONTEXT,
                     ),
                     isouter=True,
                 )
@@ -1163,7 +1163,7 @@ class SqlAlchemyStore(AbstractStore):
         with self.ManagedSessionMaker() as session:
             experiment = self._get_experiment(
                 session, experiment_id, ViewType.ALL
-            ).to_mlflow_entity()
+            ).to_qcflow_entity()
             self._check_experiment_is_active(experiment)
             session.merge(
                 SqlExperimentTag(experiment_id=experiment_id, key=tag.key, value=tag.value)
@@ -1181,7 +1181,7 @@ class SqlAlchemyStore(AbstractStore):
             tag = _validate_tag(tag.key, tag.value)
             run = self._get_run(run_uuid=run_id, session=session)
             self._check_run_is_active(run)
-            if tag.key == MLFLOW_RUN_NAME:
+            if tag.key == QCFLOW_RUN_NAME:
                 run_status = RunStatus.from_string(run.status)
                 self.update_run_info(run_id, run_status, run.end_time, tag.value)
             else:
@@ -1226,7 +1226,7 @@ class SqlAlchemyStore(AbstractStore):
                         # NB: If the run name tag is explicitly set, update the run info attribute
                         # and do not resubmit the tag for overwrite as the tag will be set within
                         # `set_tag()` with a call to `update_run_info()`
-                        if tag.key == MLFLOW_RUN_NAME:
+                        if tag.key == QCFLOW_RUN_NAME:
                             self.set_tag(run_id, tag)
                         else:
                             current_tag = current_tags.get(tag.key)
@@ -1291,7 +1291,7 @@ class SqlAlchemyStore(AbstractStore):
                 raise MlflowException(
                     "Bad data in database - tags for a specific run must have "
                     "a single unique value. "
-                    "See https://mlflow.org/docs/latest/tracking.html#adding-tags-to-runs",
+                    "See https://qcflow.org/docs/latest/tracking.html#adding-tags-to-runs",
                     error_code=INVALID_STATE,
                 )
             session.delete(filtered_tags[0])
@@ -1320,7 +1320,7 @@ class SqlAlchemyStore(AbstractStore):
         with self.ManagedSessionMaker() as session:
             # Fetch the appropriate runs and eagerly load their summary metrics, params, and
             # tags. These run attributes are referenced during the invocation of
-            # ``run.to_mlflow_entity()``, so eager loading helps avoid additional database queries
+            # ``run.to_qcflow_entity()``, so eager loading helps avoid additional database queries
             # that are otherwise executed at attribute access time under a lazy loading model.
             parsed_filters = SearchUtils.parse_search_filter(filter_string)
             cases_orderby, parsed_orderby, sorting_joins = _get_orderby_clauses(order_by, session)
@@ -1361,7 +1361,7 @@ class SqlAlchemyStore(AbstractStore):
             )
             queried_runs = session.execute(stmt).scalars(SqlRun).all()
 
-            runs = [run.to_mlflow_entity() for run in queried_runs]
+            runs = [run.to_qcflow_entity() for run in queried_runs]
             run_ids = [run.info.run_id for run in runs]
 
             # add inputs to runs
@@ -1394,24 +1394,24 @@ class SqlAlchemyStore(AbstractStore):
             except Exception as e:
                 raise MlflowException(e, INTERNAL_ERROR)
 
-    def record_logged_model(self, run_id, mlflow_model):
-        from mlflow.models import Model
+    def record_logged_model(self, run_id, qcflow_model):
+        from qcflow.models import Model
 
-        if not isinstance(mlflow_model, Model):
+        if not isinstance(qcflow_model, Model):
             raise TypeError(
-                f"Argument 'mlflow_model' should be mlflow.models.Model, got '{type(mlflow_model)}'"
+                f"Argument 'qcflow_model' should be qcflow.models.Model, got '{type(qcflow_model)}'"
             )
-        model_dict = mlflow_model.get_tags_dict()
+        model_dict = qcflow_model.get_tags_dict()
         with self.ManagedSessionMaker() as session:
             run = self._get_run(run_uuid=run_id, session=session)
             self._check_run_is_active(run)
-            previous_tag = [t for t in run.tags if t.key == MLFLOW_LOGGED_MODELS]
+            previous_tag = [t for t in run.tags if t.key == QCFLOW_LOGGED_MODELS]
             if previous_tag:
                 value = json.dumps(json.loads(previous_tag[0].value) + [model_dict])
             else:
                 value = json.dumps([model_dict])
-            _validate_tag(MLFLOW_LOGGED_MODELS, value)
-            session.merge(SqlTag(key=MLFLOW_LOGGED_MODELS, value=value, run_uuid=run_id))
+            _validate_tag(QCFLOW_LOGGED_MODELS, value)
+            session.merge(SqlTag(key=QCFLOW_LOGGED_MODELS, value=value, run_uuid=run_id))
 
     def log_inputs(self, run_id: str, datasets: Optional[list[DatasetInput]] = None):
         """
@@ -1419,7 +1419,7 @@ class SqlAlchemyStore(AbstractStore):
 
         Args:
             run_id: String id for the run
-            datasets: List of :py:class:`mlflow.entities.DatasetInput` instances to log
+            datasets: List of :py:class:`qcflow.entities.DatasetInput` instances to log
                 as inputs to the run.
 
         Returns:
@@ -1605,7 +1605,7 @@ class SqlAlchemyStore(AbstractStore):
             ]
             session.add(trace_info)
 
-            return trace_info.to_mlflow_entity()
+            return trace_info.to_qcflow_entity()
 
     def _get_trace_artifact_location_tag(self, experiment, request_id: str) -> SqlTraceTag:
         # Trace data is stored as file artifacts regardless of the tracking backend choice.
@@ -1617,7 +1617,7 @@ class SqlAlchemyStore(AbstractStore):
             request_id,
             SqlAlchemyStore.ARTIFACTS_FOLDER_NAME,
         )
-        return SqlTraceTag(key=MLFLOW_ARTIFACT_LOCATION, value=artifact_uri)
+        return SqlTraceTag(key=QCFLOW_ARTIFACT_LOCATION, value=artifact_uri)
 
     def end_trace(
         self,
@@ -1654,7 +1654,7 @@ class SqlAlchemyStore(AbstractStore):
                 session.merge(SqlTraceRequestMetadata(request_id=request_id, key=k, value=v))
             for k, v in tags.items():
                 session.merge(SqlTraceTag(request_id=request_id, key=k, value=v))
-            return sql_trace_info.to_mlflow_entity()
+            return sql_trace_info.to_qcflow_entity()
 
     def get_trace_info(self, request_id) -> TraceInfo:
         """
@@ -1668,7 +1668,7 @@ class SqlAlchemyStore(AbstractStore):
         """
         with self.ManagedSessionMaker() as session:
             sql_trace_info = self._get_sql_trace_info(session, request_id)
-            return sql_trace_info.to_mlflow_entity()
+            return sql_trace_info.to_qcflow_entity()
 
     def _get_sql_trace_info(self, session, request_id) -> SqlTraceInfo:
         sql_trace_info = (
@@ -1701,7 +1701,7 @@ class SqlAlchemyStore(AbstractStore):
                 a ``search_traces`` call.
 
         Returns:
-            A tuple of a list of :py:class:`TraceInfo <mlflow.entities.TraceInfo>` objects that
+            A tuple of a list of :py:class:`TraceInfo <qcflow.entities.TraceInfo>` objects that
             satisfy the search expressions and a pagination token for the next page of results.
         """
         self._validate_max_results_param(max_results)
@@ -1742,7 +1742,7 @@ class SqlAlchemyStore(AbstractStore):
                 .limit(max_results)
             )
             queried_traces = session.execute(stmt).scalars(SqlTraceInfo).all()
-            trace_infos = [t.to_mlflow_entity() for t in queried_traces]
+            trace_infos = [t.to_qcflow_entity() for t in queried_traces]
 
             # Compute next search token
             if max_results == len(trace_infos):
@@ -1864,10 +1864,10 @@ def _get_sqlalchemy_filter_clauses(parsed, session, dialect):
             key_type, key_name, comparator
         ) or SearchUtils.is_numeric_attribute(key_type, key_name, comparator):
             if key_name == "run_name":
-                # Treat "attributes.run_name == <value>" as "tags.`mlflow.runName` == <value>".
-                # The name column in the runs table is empty for runs logged in MLflow <= 1.29.0.
+                # Treat "attributes.run_name == <value>" as "tags.`qcflow.runName` == <value>".
+                # The name column in the runs table is empty for runs logged in QCFlow <= 1.29.0.
                 key_filter = SearchUtils.get_sql_comparison_func("=", dialect)(
-                    SqlTag.key, MLFLOW_RUN_NAME
+                    SqlTag.key, QCFLOW_RUN_NAME
                 )
                 val_filter = SearchUtils.get_sql_comparison_func(comparator, dialect)(
                     SqlTag.value, value
@@ -1906,7 +1906,7 @@ def _get_sqlalchemy_filter_clauses(parsed, session, dialect):
                             SqlInputTag,
                             and_(
                                 SqlInputTag.input_uuid == SqlInput.input_uuid,
-                                SqlInputTag.name == MLFLOW_DATASET_CONTEXT,
+                                SqlInputTag.name == QCFLOW_DATASET_CONTEXT,
                                 SearchUtils.get_sql_comparison_func(comparator, dialect)(
                                     getattr(SqlInputTag, "value"), value
                                 ),

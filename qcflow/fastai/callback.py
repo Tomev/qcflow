@@ -7,9 +7,9 @@ import numpy as np
 from fastai.callback.core import Callback
 from matplotlib.figure import Figure
 
-import mlflow.tracking
-from mlflow.fastai import log_model
-from mlflow.utils.autologging_utils import ExceptionSafeClass, get_autologging_config
+import qcflow.tracking
+from qcflow.fastai import log_model
+from qcflow.utils.autologging_utils import ExceptionSafeClass, get_autologging_config
 
 _logger = logging.getLogger(__name__)
 
@@ -68,18 +68,18 @@ class __MlflowFastaiCallback(Callback, metaclass=ExceptionSafeClass):
         frozen = self.opt.frozen_idx != 0
         if frozen and self.is_fine_tune:
             self.freeze_prefix = "freeze_"
-            mlflow.log_param("frozen_idx", self.opt.frozen_idx)
+            qcflow.log_param("frozen_idx", self.opt.frozen_idx)
         else:
             self.freeze_prefix = ""
 
         # Extract function name when `opt_func` is partial function
         if isinstance(self.opt_func, partial):
-            mlflow.log_param(
+            qcflow.log_param(
                 self.freeze_prefix + "opt_func",
                 self.opt_func.keywords["opt"].__name__,
             )
         else:
-            mlflow.log_param(self.freeze_prefix + "opt_func", self.opt_func.__name__)
+            qcflow.log_param(self.freeze_prefix + "opt_func", self.opt_func.__name__)
 
         params_not_to_log = []
         for cb in self.cbs:
@@ -92,10 +92,10 @@ class __MlflowFastaiCallback(Callback, metaclass=ExceptionSafeClass):
                     values = np.array(values)
 
                     # Log params main values from scheduling
-                    mlflow.log_param(self.freeze_prefix + param + "_min", np.min(values, 0))
-                    mlflow.log_param(self.freeze_prefix + param + "_max", np.max(values, 0))
-                    mlflow.log_param(self.freeze_prefix + param + "_init", values[0])
-                    mlflow.log_param(self.freeze_prefix + param + "_final", values[-1])
+                    qcflow.log_param(self.freeze_prefix + param + "_min", np.min(values, 0))
+                    qcflow.log_param(self.freeze_prefix + param + "_max", np.max(values, 0))
+                    qcflow.log_param(self.freeze_prefix + param + "_init", values[0])
+                    qcflow.log_param(self.freeze_prefix + param + "_final", values[-1])
 
                     # Plot and save image of scheduling
                     fig = Figure()
@@ -106,21 +106,21 @@ class __MlflowFastaiCallback(Callback, metaclass=ExceptionSafeClass):
                     with tempfile.TemporaryDirectory() as tempdir:
                         scheds_file = os.path.join(tempdir, self.freeze_prefix + param + ".png")
                         fig.savefig(scheds_file)
-                        mlflow.log_artifact(local_path=scheds_file)
+                        qcflow.log_artifact(local_path=scheds_file)
                 break
 
         for param in self.opt.hypers[0]:
             if param not in params_not_to_log:
-                mlflow.log_param(self.freeze_prefix + param, [h[param] for h in self.opt.hypers])
+                qcflow.log_param(self.freeze_prefix + param, [h[param] for h in self.opt.hypers])
 
         if hasattr(self.opt, "true_wd"):
-            mlflow.log_param(self.freeze_prefix + "true_wd", self.opt.true_wd)
+            qcflow.log_param(self.freeze_prefix + "true_wd", self.opt.true_wd)
 
         if hasattr(self.opt, "bn_wd"):
-            mlflow.log_param(self.freeze_prefix + "bn_wd", self.opt.bn_wd)
+            qcflow.log_param(self.freeze_prefix + "bn_wd", self.opt.bn_wd)
 
         if hasattr(self.opt, "train_bn"):
-            mlflow.log_param(self.freeze_prefix + "train_bn", self.opt.train_bn)
+            qcflow.log_param(self.freeze_prefix + "train_bn", self.opt.train_bn)
 
     def after_fit(self):
         from fastai.callback.all import SaveModelCallback
@@ -137,6 +137,6 @@ class __MlflowFastaiCallback(Callback, metaclass=ExceptionSafeClass):
 
         if self.log_models:
             registered_model_name = get_autologging_config(
-                mlflow.fastai.FLAVOR_NAME, "registered_model_name", None
+                qcflow.fastai.FLAVOR_NAME, "registered_model_name", None
             )
             log_model(self.learn, "model", registered_model_name=registered_model_name)

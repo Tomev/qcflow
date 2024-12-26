@@ -6,12 +6,12 @@ import re
 from dataclasses import dataclass
 from typing import Any, Optional, Union
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.span import Span, SpanType
-from mlflow.entities.trace_data import TraceData
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.span import Span, SpanType
+from qcflow.entities.trace_data import TraceData
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 _logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class Trace(_MlflowObject):
         return {"info": self.info.to_dict(), "data": self.data.to_dict()}
 
     def to_json(self, pretty=False) -> str:
-        from mlflow.tracing.utils import TraceJSONEncoder
+        from qcflow.tracing.utils import TraceJSONEncoder
 
         return json.dumps(self.to_dict(), cls=TraceJSONEncoder, indent=2 if pretty else None)
 
@@ -78,22 +78,22 @@ class Trace(_MlflowObject):
         See https://ipython.readthedocs.io/en/stable/config/integrating.html#MyObject
         for more details.
 
-        At the moment, the only supported MIME type is "application/databricks.mlflow.trace",
+        At the moment, the only supported MIME type is "application/databricks.qcflow.trace",
         which contains a JSON representation of the Trace object. This object is deserialized
         in Databricks notebooks to display the Trace object in a nicer UI.
         """
-        from mlflow.tracing.display import (
+        from qcflow.tracing.display import (
             get_display_handler,
             get_notebook_iframe_html,
             is_using_tracking_server,
         )
-        from mlflow.utils.databricks_utils import is_in_databricks_runtime
+        from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
         bundle = {"text/plain": repr(self)}
 
         if not get_display_handler().disabled:
             if is_in_databricks_runtime():
-                bundle["application/databricks.mlflow.trace"] = self._serialize_for_mimebundle()
+                bundle["application/databricks.qcflow.trace"] = self._serialize_for_mimebundle()
             elif is_using_tracking_server():
                 bundle["text/html"] = get_notebook_iframe_html([self])
 
@@ -136,12 +136,12 @@ class Trace(_MlflowObject):
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             import re
-            from mlflow.entities import SpanType
+            from qcflow.entities import SpanType
 
 
-            @mlflow.trace(span_type=SpanType.CHAIN)
+            @qcflow.trace(span_type=SpanType.CHAIN)
             def run(x: int) -> int:
                 x = add_one(x)
                 x = add_two(x)
@@ -149,24 +149,24 @@ class Trace(_MlflowObject):
                 return x
 
 
-            @mlflow.trace(span_type=SpanType.TOOL)
+            @qcflow.trace(span_type=SpanType.TOOL)
             def add_one(x: int) -> int:
                 return x + 1
 
 
-            @mlflow.trace(span_type=SpanType.TOOL)
+            @qcflow.trace(span_type=SpanType.TOOL)
             def add_two(x: int) -> int:
                 return x + 2
 
 
-            @mlflow.trace(span_type=SpanType.TOOL)
+            @qcflow.trace(span_type=SpanType.TOOL)
             def multiply_by_two(x: int) -> int:
                 return x * 2
 
 
             # Run the function and get the trace
             y = run(2)
-            trace = mlflow.get_last_active_trace()
+            trace = qcflow.get_last_active_trace()
 
             # 1. Search spans by name (exact match)
             spans = trace.search_spans(name="add_one")
@@ -210,7 +210,7 @@ class Trace(_MlflowObject):
                 return True
             else:
                 raise MlflowException(
-                    "Invalid type for 'span_type'. Expected str or mlflow.entities.SpanType. "
+                    "Invalid type for 'span_type'. Expected str or qcflow.entities.SpanType. "
                     f"Got: {type(span_type)}",
                     error_code=INVALID_PARAMETER_VALUE,
                 )

@@ -96,7 +96,7 @@ export const ExperimentGetShareLinkModal = ({
 
   return (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_header_experimentgetsharelinkmodal.tsx_101"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_header_experimentgetsharelinkmodal.tsx_101"
       title={
         <FormattedMessage
           defaultMessage="Get shareable link"
@@ -111,7 +111,7 @@ export const ExperimentGetShareLinkModal = ({
           <GenericSkeleton css={{ flex: 1 }} />
         ) : (
           <Input
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_header_experimentgetsharelinkmodal.tsx_115"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_header_experimentgetsharelinkmodal.tsx_115"
             placeholder="Click button on the right to create shareable state"
             value={sharedStateUrl}
             readOnly

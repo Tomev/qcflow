@@ -5,7 +5,7 @@ import { SearchMlflowDeploymentsModelRoutesAction } from '../actions/ModelGatewa
 import { ModelGatewayRouteTask } from '../sdk/MlflowEnums';
 import { modelGatewayReducer } from './ModelGatewayReducer';
 
-describe('modelGatewayReducer - MLflow deployments endpoints', () => {
+describe('modelGatewayReducer - QCFlow deployments endpoints', () => {
   const emptyState: ReturnType<typeof modelGatewayReducer> = {
     modelGatewayRoutes: {},
     modelGatewayRoutesLoading: {
@@ -16,10 +16,10 @@ describe('modelGatewayReducer - MLflow deployments endpoints', () => {
     },
   };
 
-  const MOCK_MLFLOW_DEPLOYMENTS_RESPONSE: Partial<MlflowDeploymentsEndpoint>[] = [
+  const MOCK_QCFLOW_DEPLOYMENTS_RESPONSE: Partial<MlflowDeploymentsEndpoint>[] = [
     {
       endpoint_type: ModelGatewayRouteTask.LLM_V1_CHAT,
-      name: 'test-mlflow-deployment-endpoint-chat',
+      name: 'test-qcflow-deployment-endpoint-chat',
       endpoint_url: 'http://deployment.server/endpoint-url',
       model: {
         name: 'mpt-3.5',
@@ -28,7 +28,7 @@ describe('modelGatewayReducer - MLflow deployments endpoints', () => {
     },
     {
       endpoint_type: ModelGatewayRouteTask.LLM_V1_EMBEDDINGS,
-      name: 'test-mlflow-deployment-endpoint-embeddingss',
+      name: 'test-qcflow-deployment-endpoint-embeddingss',
       endpoint_url: 'http://deployment.server/endpoint-url',
       model: {
         name: 'mpt-3.5',
@@ -40,12 +40,12 @@ describe('modelGatewayReducer - MLflow deployments endpoints', () => {
   const mockFulfilledSearchDeploymentsAction = (
     endpoints: any,
   ): AsyncFulfilledAction<SearchMlflowDeploymentsModelRoutesAction> => ({
-    type: fulfilled('SEARCH_MLFLOW_DEPLOYMENTS_MODEL_ROUTES'),
+    type: fulfilled('SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES'),
     payload: { endpoints },
   });
 
   const mockPendingSearchDeploymentsAction = (): AsyncAction => ({
-    type: pending('SEARCH_MLFLOW_DEPLOYMENTS_MODEL_ROUTES'),
+    type: pending('SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES'),
     payload: Promise.resolve(),
   });
 
@@ -57,23 +57,23 @@ describe('modelGatewayReducer - MLflow deployments endpoints', () => {
     expect(state.modelGatewayRoutesLoading.loading).toEqual(true);
 
     // Search and retrieve 2 model routes
-    state = modelGatewayReducer(state, mockFulfilledSearchDeploymentsAction(MOCK_MLFLOW_DEPLOYMENTS_RESPONSE));
+    state = modelGatewayReducer(state, mockFulfilledSearchDeploymentsAction(MOCK_QCFLOW_DEPLOYMENTS_RESPONSE));
 
     expect(state.modelGatewayRoutesLoading.deploymentRoutesLoading).toEqual(false);
     expect(state.modelGatewayRoutesLoading.loading).toEqual(false);
-    expect(state.modelGatewayRoutes['mlflow_deployment_endpoint:test-mlflow-deployment-endpoint-chat'].type).toEqual(
-      'mlflow_deployment_endpoint',
+    expect(state.modelGatewayRoutes['qcflow_deployment_endpoint:test-qcflow-deployment-endpoint-chat'].type).toEqual(
+      'qcflow_deployment_endpoint',
     );
-    expect(state.modelGatewayRoutes['mlflow_deployment_endpoint:test-mlflow-deployment-endpoint-chat'].name).toEqual(
-      'test-mlflow-deployment-endpoint-chat',
+    expect(state.modelGatewayRoutes['qcflow_deployment_endpoint:test-qcflow-deployment-endpoint-chat'].name).toEqual(
+      'test-qcflow-deployment-endpoint-chat',
     );
     expect(
-      state.modelGatewayRoutes['mlflow_deployment_endpoint:test-mlflow-deployment-endpoint-chat'].mlflowDeployment,
-    ).toEqual(MOCK_MLFLOW_DEPLOYMENTS_RESPONSE[0]);
+      state.modelGatewayRoutes['qcflow_deployment_endpoint:test-qcflow-deployment-endpoint-chat'].qcflowDeployment,
+    ).toEqual(MOCK_QCFLOW_DEPLOYMENTS_RESPONSE[0]);
 
     // We ignore embeddings endpoints for now
     expect(
-      state.modelGatewayRoutes['mlflow_deployment_endpoint:test-mlflow-deployment-endpoint-embeddings'],
+      state.modelGatewayRoutes['qcflow_deployment_endpoint:test-qcflow-deployment-endpoint-embeddings'],
     ).toBeUndefined();
   });
 });

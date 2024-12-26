@@ -1,4 +1,4 @@
-mlflow_relative_paths <- function(paths) {
+qcflow_relative_paths <- function(paths) {
   gsub(paste0("^", file.path(getwd(), "")), "", paths)
 }
 
@@ -25,42 +25,42 @@ get_source_version <- function() {
   )
 }
 
-mlflow_get_active_run_id_or_start_run <- function() {
-  mlflow_get_active_run_id() %||% mlflow_id(mlflow_start_run())
+qcflow_get_active_run_id_or_start_run <- function() {
+  qcflow_get_active_run_id() %||% qcflow_id(qcflow_start_run())
 }
 
 
-mlflow_get_experiment_id_from_env <- function(client = mlflow_client()) {
-  name <- Sys.getenv("MLFLOW_EXPERIMENT_NAME", unset = NA)
+qcflow_get_experiment_id_from_env <- function(client = qcflow_client()) {
+  name <- Sys.getenv("QCFLOW_EXPERIMENT_NAME", unset = NA)
   if (!is.na(name)) {
-    mlflow_get_experiment(client = client, name = name)$experiment_id
+    qcflow_get_experiment(client = client, name = name)$experiment_id
   } else {
-    id <- Sys.getenv("MLFLOW_EXPERIMENT_ID", unset = NA)
+    id <- Sys.getenv("QCFLOW_EXPERIMENT_ID", unset = NA)
     if (is.na(id)) NULL else id
   }
 }
 
-mlflow_infer_experiment_id <- function(experiment_id = NULL) {
-  experiment_id %||% mlflow_get_active_experiment_id() %||% mlflow_get_experiment_id_from_env()
+qcflow_infer_experiment_id <- function(experiment_id = NULL) {
+  experiment_id %||% qcflow_get_active_experiment_id() %||% qcflow_get_experiment_id_from_env()
 }
 
 #' @export
-with.mlflow_run <- function(data, expr, ...) {
-  run_id <- mlflow_id(data)
-  if (!identical(run_id, mlflow_get_active_run_id())) {
-    stop("`with()` should only be used with `mlflow_start_run()`.", call. = FALSE)
+with.qcflow_run <- function(data, expr, ...) {
+  run_id <- qcflow_id(data)
+  if (!identical(run_id, qcflow_get_active_run_id())) {
+    stop("`with()` should only be used with `qcflow_start_run()`.", call. = FALSE)
   }
 
   tryCatch(
     {
       force(expr)
-      mlflow_end_run()
+      qcflow_end_run()
     },
     error = function(cnd) {
       message(cnd)
-      mlflow_end_run(status = "FAILED")
+      qcflow_end_run(status = "FAILED")
     },
-    interrupt = function(cnd) mlflow_end_run(status = "KILLED")
+    interrupt = function(cnd) qcflow_end_run(status = "KILLED")
   )
 
   invisible(NULL)
@@ -101,14 +101,14 @@ wait_for <- function(f, wait, sleep) {
   }
 }
 
-mlflow_user <- function() {
+qcflow_user <- function() {
   if ("user" %in% names(Sys.info()))
     Sys.info()[["user"]]
   else
     "unknown"
 }
 
-MLFLOW_SOURCE_TYPE <- list(
+QCFLOW_SOURCE_TYPE <- list(
   NOTEBOOK = "NOTEBOOK",
   JOB = "JOB",
   PROJECT = "PROJECT",
@@ -120,9 +120,9 @@ resolve_client_and_run_id <- function(client, run_id) {
   run_id <- cast_nullable_string(run_id)
   if (is.null(client)) {
     if (is.null(run_id)) {
-      run_id <- mlflow_get_active_run_id_or_start_run()
+      run_id <- qcflow_get_active_run_id_or_start_run()
     }
-    client <- mlflow_client()
+    client <- qcflow_client()
   } else {
     client <- resolve_client(client)
     if (is.null(run_id)) stop("`run_id` must be specified when `client` is specified.", call. = FALSE)
@@ -137,7 +137,7 @@ parse_run <- function(r) {
   info$params <- parse_run_data(r$data$params)
   info$tags <- parse_run_data(r$data$tags)
 
-  new_mlflow_run(info)
+  new_qcflow_run(info)
 }
 
 fill_missing_run_cols <- function(r) {
@@ -179,22 +179,22 @@ parse_run_data <- function(d) {
 }
 
 resolve_experiment_id <- function(experiment_id) {
-  mlflow_infer_experiment_id(experiment_id) %||%
+  qcflow_infer_experiment_id(experiment_id) %||%
     stop("`experiment_id` must be specified when there is no active experiment.", call. = FALSE)
 }
 
 resolve_run_id <- function(run_id) {
   cast_nullable_string(run_id) %||%
-    mlflow_get_active_run_id() %||%
+    qcflow_get_active_run_id() %||%
     stop("`run_id` must be specified when there is no active run.", call. = FALSE)
 }
 
-new_mlflow_experiment <- function(x) {
-  tibble::new_tibble(x, nrow = 1, class = "mlflow_experiment")
+new_qcflow_experiment <- function(x) {
+  tibble::new_tibble(x, nrow = 1, class = "qcflow_experiment")
 }
 
-new_mlflow_run <- function(x) {
-  tibble::new_tibble(x, nrow = 1, class = "mlflow_run")
+new_qcflow_run <- function(x) {
+  tibble::new_tibble(x, nrow = 1, class = "qcflow_run")
 }
 
 
@@ -202,29 +202,29 @@ new_mlflow_run <- function(x) {
 #'
 #' Extracts the ID of the run or experiment.
 #'
-#' @param object An `mlflow_run` or `mlflow_experiment` object.
+#' @param object An `qcflow_run` or `qcflow_experiment` object.
 #' @export
-mlflow_id <- function(object) {
-  UseMethod("mlflow_id")
+qcflow_id <- function(object) {
+  UseMethod("qcflow_id")
 }
 
-#' @rdname mlflow_id
+#' @rdname qcflow_id
 #' @export
-mlflow_id.mlflow_run <- function(object) {
+qcflow_id.qcflow_run <- function(object) {
   object$run_uuid %||% stop("Cannot extract Run ID.", call. = FALSE)
 }
 
-#' @rdname mlflow_id
+#' @rdname qcflow_id
 #' @export
-mlflow_id.mlflow_experiment <- function(object) {
+qcflow_id.qcflow_experiment <- function(object) {
   object$experiment_id %||% stop("Cannot extract Experiment ID.", call. = FALSE)
 }
 
 resolve_client <- function(client) {
   if (is.null(client)) {
-    mlflow_client()
+    qcflow_client()
   } else {
-    if (!inherits(client, "mlflow_client")) stop("`client` must be an `mlflow_client` object.", call. = FALSE)
+    if (!inherits(client, "qcflow_client")) stop("`client` must be an `qcflow_client` object.", call. = FALSE)
     client
   }
 }

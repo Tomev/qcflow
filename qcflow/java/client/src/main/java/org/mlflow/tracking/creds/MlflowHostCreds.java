@@ -1,10 +1,10 @@
-package org.mlflow.tracking.creds;
+package org.qcflow.tracking.creds;
 
 /**
- * Provides a hostname and optional authentication for talking to an MLflow server.
+ * Provides a hostname and optional authentication for talking to an QCFlow server.
  */
 public interface MlflowHostCreds {
-  /** Hostname (e.g., http://localhost:5000) to MLflow server. */
+  /** Hostname (e.g., http://localhost:5000) to QCFlow server. */
   String getHost();
 
   /**

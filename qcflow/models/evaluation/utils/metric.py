@@ -4,8 +4,8 @@ from typing import Any, Callable, Optional
 
 import numpy as np
 
-from mlflow.metrics.base import MetricValue
-from mlflow.models.evaluation.base import EvaluationMetric
+from qcflow.metrics.base import MetricValue
+from qcflow.models.evaluation.base import EvaluationMetric
 
 _logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class MetricDefinition:
 
     function : the metric function
     name : the name of the metric function
-    index : the index of the function in the ``extra_metrics`` argument of mlflow.evaluate
+    index : the index of the function in the ``extra_metrics`` argument of qcflow.evaluate
     """
 
     function: Callable[..., Any]

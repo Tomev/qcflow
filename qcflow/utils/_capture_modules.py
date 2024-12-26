@@ -10,15 +10,15 @@ import json
 import os
 import sys
 
-import mlflow
-from mlflow.models.model import MLMODEL_FILE_NAME, Model
-from mlflow.pyfunc import MAIN
-from mlflow.utils._spark_utils import _prepare_subprocess_environ_for_creating_local_spark_session
-from mlflow.utils.exception_utils import get_stacktrace
-from mlflow.utils.file_utils import write_to
-from mlflow.utils.requirements_utils import (
+import qcflow
+from qcflow.models.model import MLMODEL_FILE_NAME, Model
+from qcflow.pyfunc import MAIN
+from qcflow.utils._spark_utils import _prepare_subprocess_environ_for_creating_local_spark_session
+from qcflow.utils.exception_utils import get_stacktrace
+from qcflow.utils.file_utils import write_to
+from qcflow.utils.requirements_utils import (
     DATABRICKS_MODULES_TO_PACKAGES,
-    MLFLOW_MODULES_TO_PACKAGES,
+    QCFLOW_MODULES_TO_PACKAGES,
 )
 
 
@@ -114,9 +114,9 @@ class _CaptureImportedModules:
                     self.imported_modules.add(databricks_module)
                     return
 
-        # special casing for mlflow extras since they may not be required by default
-        if top_level_module == "mlflow":
-            if second_level_module in MLFLOW_MODULES_TO_PACKAGES:
+        # special casing for qcflow extras since they may not be required by default
+        if top_level_module == "qcflow":
+            if second_level_module in QCFLOW_MODULES_TO_PACKAGES:
                 self.imported_modules.add(second_level_module)
                 return
 
@@ -151,13 +151,13 @@ def parse_args():
 def store_imported_modules(
     cap_cm, model_path, flavor, output_file, error_file=None, record_full_module=False
 ):
-    # If `model_path` refers to an MLflow model directory, load the model using
-    # `mlflow.pyfunc.load_model`
+    # If `model_path` refers to an QCFlow model directory, load the model using
+    # `qcflow.pyfunc.load_model`
     if os.path.isdir(model_path) and MLMODEL_FILE_NAME in os.listdir(model_path):
-        mlflow_model = Model.load(model_path)
-        pyfunc_conf = mlflow_model.flavors.get(mlflow.pyfunc.FLAVOR_NAME)
-        input_example = mlflow_model.load_input_example(model_path)
-        params = mlflow_model.load_input_example_params(model_path)
+        qcflow_model = Model.load(model_path)
+        pyfunc_conf = qcflow_model.flavors.get(qcflow.pyfunc.FLAVOR_NAME)
+        input_example = qcflow_model.load_input_example(model_path)
+        params = qcflow_model.load_input_example_params(model_path)
 
         def load_model_and_predict(original_load_fn, *args, **kwargs):
             model = original_load_fn(*args, **kwargs)
@@ -184,9 +184,9 @@ def store_imported_modules(
             # because `pyfunc_conf[MAIN]` might also be a module loaded from
             # code_paths.
             with cap_cm:
-                # `mlflow.pyfunc.load_model` internally invokes
+                # `qcflow.pyfunc.load_model` internally invokes
                 # `importlib.import_module(pyfunc_conf[MAIN])`
-                mlflow.pyfunc.load_model(model_path)
+                qcflow.pyfunc.load_model(model_path)
         else:
             loader_module = importlib.import_module(pyfunc_conf[MAIN])
             original = loader_module._load_pyfunc
@@ -198,16 +198,16 @@ def store_imported_modules(
 
             loader_module._load_pyfunc = _load_pyfunc_patch
             try:
-                mlflow.pyfunc.load_model(model_path)
+                qcflow.pyfunc.load_model(model_path)
             finally:
                 loader_module._load_pyfunc = original
-    # Otherwise, load the model using `mlflow.<flavor>._load_pyfunc`.
+    # Otherwise, load the model using `qcflow.<flavor>._load_pyfunc`.
     # For models that don't contain pyfunc flavor (e.g. scikit-learn estimator
     # that doesn't implement a `predict` method),
     # we need to directly pass a model data path to this script.
     else:
         with cap_cm:
-            importlib.import_module(f"mlflow.{flavor}")._load_pyfunc(model_path)
+            importlib.import_module(f"qcflow.{flavor}")._load_pyfunc(model_path)
 
     # Store the imported modules in `output_file`
     write_to(output_file, "\n".join(cap_cm.imported_modules))
@@ -222,9 +222,9 @@ def main():
     # Mirror `sys.path` of the parent process
     sys.path = json.loads(args.sys_path)
 
-    if flavor == mlflow.spark.FLAVOR_NAME:
+    if flavor == qcflow.spark.FLAVOR_NAME:
         # Create a local spark environment within the subprocess
-        from mlflow.utils._spark_utils import _create_local_spark_session_for_loading_spark_model
+        from qcflow.utils._spark_utils import _create_local_spark_session_for_loading_spark_model
 
         _prepare_subprocess_environ_for_creating_local_spark_session()
         _create_local_spark_session_for_loading_spark_model()
@@ -239,9 +239,9 @@ def main():
         record_full_module=args.record_full_module,
     )
 
-    # Clean up a spark session created by `mlflow.spark._load_pyfunc`
-    if flavor == mlflow.spark.FLAVOR_NAME:
-        from mlflow.utils._spark_utils import _get_active_spark_session
+    # Clean up a spark session created by `qcflow.spark._load_pyfunc`
+    if flavor == qcflow.spark.FLAVOR_NAME:
+        from qcflow.utils._spark_utils import _get_active_spark_session
 
         spark = _get_active_spark_session()
         if spark:

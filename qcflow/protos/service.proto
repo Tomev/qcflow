@@ -1,11 +1,11 @@
 syntax = "proto2";
 
-package mlflow;
+package qcflow;
 
 import "scalapb/scalapb.proto";
 import "databricks.proto";
 
-option java_package = "org.mlflow.api.proto";
+option java_package = "org.qcflow.api.proto";
 option py_generic_services = true;
 option (scalapb.options) = {
   flat_package: true,
@@ -26,7 +26,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/experiments/get-by-name",
+        path: "/qcflow/experiments/get-by-name",
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -45,7 +45,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/experiments/create"
+        path: "/qcflow/experiments/create"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -57,11 +57,11 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/experiments/search"
+        path: "/qcflow/experiments/search"
         since { major: 2, minor: 0 },
       }, {
         method: "GET",
-        path: "/mlflow/experiments/search"
+        path: "/qcflow/experiments/search"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -74,7 +74,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/experiments/get"
+        path: "/qcflow/experiments/get"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -90,7 +90,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/experiments/delete"
+        path: "/qcflow/experiments/delete"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -108,7 +108,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/experiments/restore"
+        path: "/qcflow/experiments/restore"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -122,7 +122,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/experiments/update"
+        path: "/qcflow/experiments/update"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -131,14 +131,14 @@ service MlflowService {
   }
 
   // Create a new run within an experiment. A run is usually a single execution of a
-  // machine learning or data ETL pipeline. MLflow uses runs to track :ref:`mlflowParam`,
-  // :ref:`mlflowMetric`, and :ref:`mlflowRunTag` associated with a single execution.
+  // machine learning or data ETL pipeline. QCFlow uses runs to track :ref:`qcflowParam`,
+  // :ref:`qcflowMetric`, and :ref:`qcflowRunTag` associated with a single execution.
   //
   rpc createRun(CreateRun) returns (CreateRun.Response) {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/create"
+        path: "/qcflow/runs/create"
         since { major: 2, minor: 0 },
       }],
 
@@ -153,7 +153,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/update"
+        path: "/qcflow/runs/update"
         since { major: 2, minor: 0 },
       }],
 
@@ -167,7 +167,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/delete"
+        path: "/qcflow/runs/delete"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -180,7 +180,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/restore"
+        path: "/qcflow/runs/restore"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -196,7 +196,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/log-metric"
+        path: "/qcflow/runs/log-metric"
         since { major: 2, minor: 0 },
       }],
 
@@ -213,7 +213,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/log-parameter"
+        path: "/qcflow/runs/log-parameter"
         since { major: 2, minor: 0 },
       }],
 
@@ -228,7 +228,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/experiments/set-experiment-tag"
+        path: "/qcflow/experiments/set-experiment-tag"
         since { major: 2, minor: 0 },
       }],
 
@@ -244,7 +244,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/set-tag"
+        path: "/qcflow/runs/set-tag"
         since { major: 2, minor: 0 },
       }],
 
@@ -258,7 +258,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "PATCH",
-        path: "/mlflow/traces/{request_id}/tags"
+        path: "/qcflow/traces/{request_id}/tags"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -271,7 +271,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/traces/{request_id}/tags"
+        path: "/qcflow/traces/{request_id}/tags"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -286,7 +286,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/delete-tag"
+        path: "/qcflow/runs/delete-tag"
         since { major: 2, minor: 0 },
       }],
 
@@ -302,7 +302,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/runs/get"
+        path: "/qcflow/runs/get"
         since { major: 2, minor: 0 },
       }],
 
@@ -312,14 +312,14 @@ service MlflowService {
     option (graphql) = {};
   }
 
-  // Search for runs that satisfy expressions. Search expressions can use :ref:`mlflowMetric` and
-  // :ref:`mlflowParam` keys.
+  // Search for runs that satisfy expressions. Search expressions can use :ref:`qcflowMetric` and
+  // :ref:`qcflowParam` keys.
   //
   rpc searchRuns (SearchRuns) returns (SearchRuns.Response) {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/search"
+        path: "/qcflow/runs/search"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -335,7 +335,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/artifacts/list"
+        path: "/qcflow/artifacts/list"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -350,7 +350,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/metrics/get-history"
+        path: "/qcflow/metrics/get-history"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -363,7 +363,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/metrics/get-history-bulk-interval"
+        path: "/qcflow/metrics/get-history-bulk-interval"
         since { major: 2, minor: 11 },
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -424,7 +424,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/log-batch"
+        path: "/qcflow/runs/log-batch"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -438,7 +438,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/log-model"
+        path: "/qcflow/runs/log-model"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -450,7 +450,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/runs/log-inputs"
+        path: "/qcflow/runs/log-inputs"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -462,7 +462,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "mlflow/experiments/search-datasets"
+        path: "qcflow/experiments/search-datasets"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -475,7 +475,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/traces"
+        path: "/qcflow/traces"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -488,7 +488,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "PATCH",
-        path: "/mlflow/traces/{request_id}"
+        path: "/qcflow/traces/{request_id}"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -501,7 +501,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/traces/{request_id}/info"
+        path: "/qcflow/traces/{request_id}/info"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -516,7 +516,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/traces"
+        path: "/qcflow/traces"
         since { major: 2, minor: 0 }
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -528,7 +528,7 @@ service MlflowService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/traces/delete-traces"
+        path: "/qcflow/traces/delete-traces"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -660,7 +660,7 @@ message RunInfo {
   optional string run_id = 15;
 
   // [Deprecated, use run_id instead] Unique identifier for the run. This field will
-  // be removed in a future MLflow version.
+  // be removed in a future QCFlow version.
   optional string run_uuid = 1;
 
   // The name of the run.
@@ -670,8 +670,8 @@ message RunInfo {
   optional string experiment_id = 2;
 
   // User who initiated the run.
-  // This field is deprecated as of MLflow 1.0, and will be removed in a future
-  // MLflow release. Use 'mlflow.user' tag instead.
+  // This field is deprecated as of QCFlow 1.0, and will be removed in a future
+  // QCFlow release. Use 'qcflow.user' tag instead.
   optional string user_id = 6;
 
   // Current status of the run.
@@ -746,13 +746,13 @@ message Dataset {
   optional string digest = 2 [(validate_required) = true];
 
   // Source information for the dataset. Note that the source may not exactly reproduce the
-  // dataset if it was transformed / modified before use with MLflow.
+  // dataset if it was transformed / modified before use with QCFlow.
   optional string source_type = 3 [(validate_required) = true];
 
   // The type of the dataset source, e.g. ‘databricks-uc-table’, ‘DBFS’, ‘S3’, ...
   optional string source = 4 [(validate_required) = true];
 
-  // The schema of the dataset. E.g., MLflow ColSpec JSON for a dataframe, MLflow TensorSpec JSON
+  // The schema of the dataset. E.g., QCFlow ColSpec JSON for a dataframe, QCFlow TensorSpec JSON
   // for an ndarray, or another schema format.
   optional string schema = 5;
 
@@ -840,7 +840,7 @@ message GetExperiment {
     // Experiment details.
     optional Experiment experiment = 1;
 
-    // Reserved for runs field, which was removed in MLflow 2.0
+    // Reserved for runs field, which was removed in QCFlow 2.0
     //
     // NB: We cannot use the reserved keyword for compatibility with
     // documentation generation tooling, so we comment out the line
@@ -890,8 +890,8 @@ message CreateRun {
   optional string experiment_id = 1;
 
   // ID of the user executing the run.
-  // This field is deprecated as of MLflow 1.0, and will be removed in a future
-  // MLflow release. Use 'mlflow.user' tag instead.
+  // This field is deprecated as of QCFlow 1.0, and will be removed in a future
+  // QCFlow release. Use 'qcflow.user' tag instead.
   optional string user_id = 2;
 
   // Name of the run.
@@ -916,7 +916,7 @@ message UpdateRun {
   optional string run_id = 4;
 
   // [Deprecated, use run_id instead] ID of the run to update.. This field will
-  // be removed in a future MLflow version.
+  // be removed in a future QCFlow version.
   optional string run_uuid = 1;
 
   // Updated status of the run.
@@ -960,7 +960,7 @@ message LogMetric {
   optional string run_id = 6;
 
   // [Deprecated, use run_id instead] ID of the run under which to log the metric. This field will
-  // be removed in a future MLflow version.
+  // be removed in a future QCFlow version.
   optional string run_uuid = 1;
 
   // Name of the metric.
@@ -985,7 +985,7 @@ message LogParam {
   optional string run_id = 4;
 
   // [Deprecated, use run_id instead] ID of the run under which to log the param. This field will
-  // be removed in a future MLflow version.
+  // be removed in a future QCFlow version.
   optional string run_uuid = 1;
 
   // Name of the param. Maximum size is 255 bytes.
@@ -1023,7 +1023,7 @@ message SetTag {
   optional string run_id = 4;
 
   // [Deprecated, use run_id instead] ID of the run under which to log the tag. This field will
-  // be removed in a future MLflow version.
+  // be removed in a future QCFlow version.
   optional string run_uuid = 1;
 
   // Name of the tag. Maximum size depends on storage backend.
@@ -1058,7 +1058,7 @@ message GetRun {
   optional string run_id = 2;
 
   // [Deprecated, use run_id instead] ID of the run to fetch. This field will
-  // be removed in a future MLflow version.
+  // be removed in a future QCFlow version.
   optional string run_uuid = 1;
 
   message Response {
@@ -1118,7 +1118,7 @@ message ListArtifacts {
   optional string run_id = 3;
 
   // [Deprecated, use run_id instead] ID of the run whose artifacts to list. This field will
-  // be removed in a future MLflow version.
+  // be removed in a future QCFlow version.
   optional string run_uuid = 1;
 
   // Filter artifacts matching this path (a relative path from the root artifact directory).
@@ -1158,7 +1158,7 @@ message GetMetricHistory {
   optional string run_id = 3;
 
   // [Deprecated, use run_id instead] ID of the run from which to fetch metric values. This field
-  // will be removed in a future MLflow version.
+  // will be removed in a future QCFlow version.
   optional string run_uuid = 1;
 
   // Name of the metric.

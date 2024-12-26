@@ -1,15 +1,15 @@
 """
-The ``python_function`` model flavor serves as a default model interface for MLflow Python models.
-Any MLflow Python model is expected to be loadable as a ``python_function`` model.
+The ``python_function`` model flavor serves as a default model interface for QCFlow Python models.
+Any QCFlow Python model is expected to be loadable as a ``python_function`` model.
 
-In addition, the ``mlflow.pyfunc`` module defines a generic :ref:`filesystem format
+In addition, the ``qcflow.pyfunc`` module defines a generic :ref:`filesystem format
 <pyfunc-filesystem-format>` for Python models and provides utilities for saving to and loading from
 this format. The format is self contained in the sense that it includes all necessary information
 for anyone to load it and use it. Dependencies are either stored directly with the model or
 referenced via a Conda environment.
 
-The ``mlflow.pyfunc`` module also defines utilities for creating custom ``pyfunc`` models
-using frameworks and inference logic that may not be natively included in MLflow. See
+The ``qcflow.pyfunc`` module also defines utilities for creating custom ``pyfunc`` models
+using frameworks and inference logic that may not be natively included in QCFlow. See
 :ref:`pyfunc-create-custom`.
 
 .. _pyfunc-inference-api:
@@ -19,9 +19,9 @@ Inference API
 *************
 
 Python function models are loaded as an instance of :py:class:`PyFuncModel
-<mlflow.pyfunc.PyFuncModel>`, which is an MLflow wrapper around the model implementation and model
+<qcflow.pyfunc.PyFuncModel>`, which is an QCFlow wrapper around the model implementation and model
 metadata (MLmodel file). You can score the model by calling the :py:func:`predict()
-<mlflow.pyfunc.PyFuncModel.predict>` method, which has the following signature::
+<qcflow.pyfunc.PyFuncModel.predict>` method, which has the following signature::
 
   predict(
     model_input: [pandas.DataFrame, numpy.ndarray, scipy.sparse.(csc_matrix | csr_matrix),
@@ -126,7 +126,7 @@ following parameters:
 
 - loader_module [required]:
          Python module that can load the model. Expected as module identifier
-         e.g. ``mlflow.sklearn``, it will be imported using ``importlib.import_module``.
+         e.g. ``qcflow.sklearn``, it will be imported using ``importlib.import_module``.
          The imported module must contain a function with the following signature::
 
           _load_pyfunc(path: string) -> <pyfunc model implementation>
@@ -171,7 +171,7 @@ following parameters:
   │
   ├── data
   │   └── model.pkl
-  └── mlflow_env.yml
+  └── qcflow_env.yml
 
 ::
 
@@ -182,8 +182,8 @@ following parameters:
   python_function:
     code: code
     data: data/model.pkl
-    loader_module: mlflow.sklearn
-    env: mlflow_env.yml
+    loader_module: qcflow.sklearn
+    env: qcflow_env.yml
     main: sklearn_iris
 
 .. _pyfunc-create-custom:
@@ -194,7 +194,7 @@ Models From Code for Custom Models
 
 .. tip::
 
-    MLflow 2.12.2 introduced the feature "models from code", which greatly simplifies the process
+    QCFlow 2.12.2 introduced the feature "models from code", which greatly simplifies the process
     of serializing and deploying custom models through the use of script serialization. It is
     strongly recommended to migrate custom model implementations to this new paradigm to avoid the
     limitations and complexity of serializing with cloudpickle.
@@ -208,12 +208,12 @@ Models from code will provide a far simpler experience for logging of your model
 Creating custom Pyfunc models
 ******************************
 
-MLflow's persistence modules provide convenience functions for creating models with the
+QCFlow's persistence modules provide convenience functions for creating models with the
 ``pyfunc`` flavor in a variety of machine learning frameworks (scikit-learn, Keras, Pytorch, and
-more); however, they do not cover every use case. For example, you may want to create an MLflow
-model with the ``pyfunc`` flavor using a framework that MLflow does not natively support.
-Alternatively, you may want to build an MLflow model that executes custom logic when evaluating
-queries, such as preprocessing and postprocessing routines. Therefore, ``mlflow.pyfunc``
+more); however, they do not cover every use case. For example, you may want to create an QCFlow
+model with the ``pyfunc`` flavor using a framework that QCFlow does not natively support.
+Alternatively, you may want to build an QCFlow model that executes custom logic when evaluating
+queries, such as preprocessing and postprocessing routines. Therefore, ``qcflow.pyfunc``
 provides utilities for creating ``pyfunc`` models from arbitrary code and model data.
 
 The :meth:`save_model()` and :meth:`log_model()` methods are designed to support multiple workflows
@@ -221,7 +221,7 @@ for creating custom ``pyfunc`` models that incorporate custom inference logic an
 that the logic may require.
 
 An `artifact` is a file or directory, such as a serialized model or a CSV. For example, a
-serialized TensorFlow graph is an artifact. An MLflow model directory is also an artifact.
+serialized TensorFlow graph is an artifact. An QCFlow model directory is also an artifact.
 
 .. _pyfunc-create-custom-workflows:
 
@@ -230,20 +230,20 @@ Workflows
 
 :meth:`save_model()` and :meth:`log_model()` support the following workflows:
 
-1. Programmatically defining a new MLflow model, including its attributes and artifacts.
+1. Programmatically defining a new QCFlow model, including its attributes and artifacts.
 
    Given a set of artifact URIs, :meth:`save_model()` and :meth:`log_model()` can
-   automatically download artifacts from their URIs and create an MLflow model directory.
+   automatically download artifacts from their URIs and create an QCFlow model directory.
 
    In this case, you must define a Python class which inherits from :class:`~PythonModel`,
    defining ``predict()`` and, optionally, ``load_context()``. An instance of this class is
    specified via the ``python_model`` parameter; it is automatically serialized and deserialized
    as a Python class, including all of its attributes.
 
-2. Interpreting pre-existing data as an MLflow model.
+2. Interpreting pre-existing data as an QCFlow model.
 
    If you already have a directory containing model data, :meth:`save_model()` and
-   :meth:`log_model()` can import the data as an MLflow model. The ``data_path`` parameter
+   :meth:`log_model()` can import the data as an QCFlow model. The ``data_path`` parameter
    specifies the local filesystem path to the directory containing model data.
 
    In this case, you must provide a Python module, called a `loader module`. The
@@ -259,8 +259,8 @@ Workflows
    The ``loader_module`` parameter specifies the name of your loader module.
 
    For an example loader module implementation, refer to the `loader module
-   implementation in mlflow.sklearn <https://github.com/mlflow/mlflow/blob/
-   74d75109aaf2975f5026104d6125bb30f4e3f744/mlflow/sklearn.py#L200-L205>`_.
+   implementation in qcflow.sklearn <https://github.com/qcflow/qcflow/blob/
+   74d75109aaf2975f5026104d6125bb30f4e3f744/qcflow/sklearn.py#L200-L205>`_.
 
 .. _pyfunc-create-custom-selecting-workflow:
 
@@ -285,7 +285,7 @@ You may prefer the second, lower-level workflow for the following reasons:
   easier to inspect and modify later.
 
 - If you have already collected all of your model data in a single location, the second
-  workflow allows it to be saved in MLflow format directly, without enumerating constituent
+  workflow allows it to be saved in QCFlow format directly, without enumerating constituent
   artifacts.
 
 ******************************************
@@ -305,14 +305,14 @@ Before looking at code examples, it's important to note that both methods are se
 functions, lambda functions, and locally defined classes and functions inside other functions. This
 makes cloudpickle especially useful for parallel and distributed computing where code objects need
 to be sent over network to execute on remote workers, which is a common deployment paradigm for
-MLflow.
+QCFlow.
 
 That said, cloudpickle has some limitations.
 
 - **Environment Dependency**: cloudpickle does not capture the full execution environment, so in
-  MLflow we must pass ``pip_requirements``, ``extra_pip_requirements``, or an ``input_example``,
+  QCFlow we must pass ``pip_requirements``, ``extra_pip_requirements``, or an ``input_example``,
   the latter of which is used to infer environment dependencies. For more, refer to
-  `the model dependency docs <https://mlflow.org/docs/latest/model/dependencies.html>`_.
+  `the model dependency docs <https://qcflow.org/docs/latest/model/dependencies.html>`_.
 
 - **Object Support**: cloudpickle does not serialize objects outside of the Python data model.
   Some relevant examples include raw files and database connections. If your program depends on
@@ -331,7 +331,7 @@ can simply log a predict method via the keyword argument ``python_model``.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import pandas as pd
 
 
@@ -341,12 +341,12 @@ can simply log a predict method via the keyword argument ``python_model``.
 
 
     # Save the function as a model
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model("model", python_model=predict, pip_requirements=["pandas"])
-        run_id = mlflow.active_run().info.run_id
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model("model", python_model=predict, pip_requirements=["pandas"])
+        run_id = qcflow.active_run().info.run_id
 
     # Load the model from the tracking server and perform inference
-    model = mlflow.pyfunc.load_model(f"runs:/{run_id}/model")
+    model = qcflow.pyfunc.load_model(f"runs:/{run_id}/model")
     x_new = pd.Series([1, 2, 3])
 
     prediction = model.predict(x_new)
@@ -357,32 +357,32 @@ Class-based Model
 #################
 If you're looking to serialize a more complex object, for instance a class that handles
 preprocessing, complex prediction logic, or custom serialization, you should subclass the
-``PythonModel`` class. MLflow has tutorials on building custom PyFunc models, as shown
-`here <https://mlflow.org/docs/latest/traditional-ml/creating-custom-pyfunc/index.html>`_,
+``PythonModel`` class. QCFlow has tutorials on building custom PyFunc models, as shown
+`here <https://qcflow.org/docs/latest/traditional-ml/creating-custom-pyfunc/index.html>`_,
 so instead of duplicating that information, in this example we'll recreate the above functionality
 to highlight the differences. Note that this PythonModel implementation is overly complex and
 we would recommend using the functional-based Model instead for this simple case.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import pandas as pd
 
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return [x * 2 for x in model_input]
 
 
     # Save the function as a model
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model(
             "model", python_model=MyModel(), pip_requirements=["pandas"]
         )
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
 
     # Load the model from the tracking server and perform inference
-    model = mlflow.pyfunc.load_model(f"runs:/{run_id}/model")
+    model = qcflow.pyfunc.load_model(f"runs:/{run_id}/model")
     x_new = pd.Series([1, 2, 3])
 
     print(f"Prediction:\n\t{model.predict(x_new)}")
@@ -423,36 +423,36 @@ import pandas
 import yaml
 from packaging.version import Version
 
-import mlflow
-import mlflow.pyfunc.loaders
-import mlflow.pyfunc.model
-from mlflow.environment_variables import (
-    _MLFLOW_IN_CAPTURE_MODULE_PROCESS,
-    _MLFLOW_TESTING,
-    MLFLOW_MODEL_ENV_DOWNLOADING_TEMP_DIR,
-    MLFLOW_SCORING_SERVER_REQUEST_TIMEOUT,
+import qcflow
+import qcflow.pyfunc.loaders
+import qcflow.pyfunc.model
+from qcflow.environment_variables import (
+    _QCFLOW_IN_CAPTURE_MODULE_PROCESS,
+    _QCFLOW_TESTING,
+    QCFLOW_MODEL_ENV_DOWNLOADING_TEMP_DIR,
+    QCFLOW_SCORING_SERVER_REQUEST_TIMEOUT,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.dependencies_schemas import (
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.dependencies_schemas import (
     _clear_dependencies_schemas,
     _get_dependencies_schema_from_model,
     _get_dependencies_schemas,
 )
-from mlflow.models.flavor_backend_registry import get_flavor_backend
-from mlflow.models.model import (
+from qcflow.models.flavor_backend_registry import get_flavor_backend
+from qcflow.models.model import (
     _DATABRICKS_FS_LOADER_MODULE,
     MLMODEL_FILE_NAME,
     MODEL_CODE_PATH,
     MODEL_CONFIG,
 )
-from mlflow.models.resources import Resource, _ResourceBuilder
-from mlflow.models.signature import (
+from qcflow.models.resources import Resource, _ResourceBuilder
+from qcflow.models.signature import (
     _extract_type_hints,
     _infer_signature_from_input_example,
     _infer_signature_from_type_hints,
 )
-from mlflow.models.utils import (
+from qcflow.models.utils import (
     PyFuncInput,
     PyFuncLLMOutputChunk,
     PyFuncLLMSingleInput,
@@ -465,24 +465,24 @@ from mlflow.models.utils import (
     _split_input_data_and_params,
     _validate_and_get_model_code_path,
 )
-from mlflow.protos.databricks_pb2 import (
+from qcflow.protos.databricks_pb2 import (
     BAD_REQUEST,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     Entity,
     Job,
     LineageHeaderInfo,
     Notebook,
 )
-from mlflow.pyfunc.context import Context, set_prediction_context
-from mlflow.pyfunc.dbconnect_artifact_cache import (
+from qcflow.pyfunc.context import Context, set_prediction_context
+from qcflow.pyfunc.dbconnect_artifact_cache import (
     DBConnectArtifactCache,
     archive_directory,
     extract_archive_to_dir,
 )
-from mlflow.pyfunc.model import (
+from qcflow.pyfunc.model import (
     _DEFAULT_CHAT_MODEL_METADATA_TASK,
     ChatModel,
     PythonModel,
@@ -492,11 +492,11 @@ from mlflow.pyfunc.model import (
     get_default_conda_env,  # noqa: F401
     get_default_pip_requirements,
 )
-from mlflow.tracing.provider import trace_disabled
-from mlflow.tracing.utils import _try_get_prediction_context
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types.llm import (
+from qcflow.tracing.provider import trace_disabled
+from qcflow.tracing.utils import _try_get_prediction_context
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types.llm import (
     CHAT_MODEL_INPUT_EXAMPLE,
     CHAT_MODEL_INPUT_SCHEMA,
     CHAT_MODEL_OUTPUT_SCHEMA,
@@ -504,7 +504,7 @@ from mlflow.types.llm import (
     ChatMessage,
     ChatParams,
 )
-from mlflow.utils import (
+from qcflow.utils import (
     PYTHON_VERSION,
     _is_in_ipython_notebook,
     check_port_connectivity,
@@ -512,17 +512,17 @@ from mlflow.utils import (
     find_free_port,
     get_major_minor_py_version,
 )
-from mlflow.utils import env_manager as _EnvManager
-from mlflow.utils._spark_utils import modified_environ
-from mlflow.utils.annotations import deprecated, developer_stable, experimental
-from mlflow.utils.databricks_utils import (
+from qcflow.utils import env_manager as _EnvManager
+from qcflow.utils._spark_utils import modified_environ
+from qcflow.utils.annotations import deprecated, developer_stable, experimental
+from qcflow.utils.databricks_utils import (
     get_dbconnect_udf_sandbox_info,
     is_databricks_connect,
     is_in_databricks_runtime,
     is_in_databricks_shared_cluster_runtime,
 )
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
@@ -532,14 +532,14 @@ from mlflow.utils.environment import (
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import (
+from qcflow.utils.file_utils import (
     _copy_file_or_tree,
     get_or_create_nfs_tmp_dir,
     get_or_create_tmp_dir,
     get_total_file_size,
     write_to,
 )
-from mlflow.utils.model_utils import (
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _get_flavor_configuration_from_ml_model_file,
@@ -550,13 +550,13 @@ from mlflow.utils.model_utils import (
     _validate_infer_and_copy_code_paths,
     _validate_pyfunc_model_config,
 )
-from mlflow.utils.nfs_on_spark import get_nfs_cache_root_dir
-from mlflow.utils.requirements_utils import (
+from qcflow.utils.nfs_on_spark import get_nfs_cache_root_dir
+from qcflow.utils.requirements_utils import (
     _parse_requirements,
     warn_dependency_requirement_mismatches,
 )
-from mlflow.utils.spark_utils import is_spark_connect_mode
-from mlflow.utils.virtualenv import _get_python_env, _get_virtualenv_name
+from qcflow.utils.spark_utils import is_spark_connect_mode
+from qcflow.utils.virtualenv import _get_python_env, _get_virtualenv_name
 
 try:
     from pyspark.sql import DataFrame as SparkDataFrame
@@ -655,7 +655,7 @@ def add_to_model(
 
 
 def _extract_conda_env(env):
-    # In MLflow < 2.0.0, the 'env' field in a pyfunc configuration is a string containing the path
+    # In QCFlow < 2.0.0, the 'env' field in a pyfunc configuration is a string containing the path
     # to a conda.yaml file.
     return env if isinstance(env, str) else env[EnvType.CONDA]
 
@@ -677,7 +677,7 @@ def _validate_params(params, model_metadata):
         raise MlflowException.invalid_parameter_value(
             "This model was not logged with a params schema and does not support "
             "providing the params argument."
-            "Please log the model with mlflow >= 2.6.0 and specify a params schema.",
+            "Please log the model with qcflow >= 2.6.0 and specify a params schema.",
         )
     return
 
@@ -708,14 +708,14 @@ def _validate_prediction_input(data: PyFuncInput, params, input_schema, params_s
 
 class PyFuncModel:
     """
-    MLflow 'python function' model.
+    QCFlow 'python function' model.
 
     Wrapper around model implementation and metadata. This class is not meant to be constructed
     directly. Instead, instances of this class are constructed and returned from
-    :py:func:`load_model() <mlflow.pyfunc.load_model>`.
+    :py:func:`load_model() <qcflow.pyfunc.load_model>`.
 
     ``model_impl`` can be any Python object that implements the `Pyfunc interface
-    <https://mlflow.org/docs/latest/python_api/mlflow.pyfunc.html#pyfunc-inference-api>`_, and is
+    <https://qcflow.org/docs/latest/python_api/qcflow.pyfunc.html#pyfunc-inference-api>`_, and is
     returned by invoking the model's ``loader_module``.
 
     ``model_meta`` contains model metadata loaded from the MLmodel file.
@@ -776,7 +776,7 @@ class PyFuncModel:
         If the model contains signature, enforce the input schema first before calling the model
         implementation with the sanitized input. If the pyfunc model does not include model schema,
         the input is passed to the model implementation as is. See `Model Signature Enforcement
-        <https://www.mlflow.org/docs/latest/models.html#signature-enforcement>`_ for more details.
+        <https://www.qcflow.org/docs/latest/models.html#signature-enforcement>`_ for more details.
 
         Args:
             data: LLM Model single input as one of pandas.DataFrame, numpy.ndarray,
@@ -790,7 +790,7 @@ class PyFuncModel:
                 in the pandas DataFrame will be reshaped to the required shape with 'C' order
                 (i.e. read / write the elements using C-like index order), and DataFrame
                 column values will be cast as the required tensor spec type. For Pyspark
-                DataFrame inputs, MLflow will only enforce the schema on a subset
+                DataFrame inputs, QCFlow will only enforce the schema on a subset
                 of the data rows.
             params: Additional parameters to pass to the model for inference.
 
@@ -802,7 +802,7 @@ class PyFuncModel:
         self.params_schema = self.metadata.get_params_schema()
         # signature can only be inferred from type hints if the model is PythonModel
         if self.metadata._is_signature_from_type_hint():
-            from mlflow.types.type_hints import (
+            from qcflow.types.type_hints import (
                 _convert_data_to_type_hint,
                 _validate_example_against_type_hint,
             )
@@ -840,7 +840,7 @@ class PyFuncModel:
         If the model contains signature, enforce the input schema first before calling the model
         implementation with the sanitized input. If the pyfunc model does not include model schema,
         the input is passed to the model implementation as is. See `Model Signature Enforcement
-        <https://www.mlflow.org/docs/latest/models.html#signature-enforcement>`_ for more details.
+        <https://www.qcflow.org/docs/latest/models.html#signature-enforcement>`_ for more details.
 
         Args:
             data: LLM Model single input as one of dict, str, bool, bytes, float, int, str type.
@@ -882,7 +882,7 @@ class PyFuncModel:
         Unwrap the underlying Python model object.
 
         This method is useful for accessing custom model functions, while still being able to
-        leverage the MLflow designed workflow through the `predict()` method.
+        leverage the QCFlow designed workflow through the `predict()` method.
 
         Returns:
             The underlying wrapped model object
@@ -891,11 +891,11 @@ class PyFuncModel:
             :test:
             :caption: Example
 
-            import mlflow
+            import qcflow
 
 
             # define a custom model
-            class MyModel(mlflow.pyfunc.PythonModel):
+            class MyModel(qcflow.pyfunc.PythonModel):
                 def predict(self, context, model_input, params=None):
                     return self.my_custom_function(model_input, params)
 
@@ -906,12 +906,12 @@ class PyFuncModel:
 
             some_input = 1
             # save the model
-            with mlflow.start_run():
-                model_info = mlflow.pyfunc.log_model(artifact_path="model", python_model=MyModel())
+            with qcflow.start_run():
+                model_info = qcflow.pyfunc.log_model(artifact_path="model", python_model=MyModel())
 
             # load the model
-            loaded_model = mlflow.pyfunc.load_model(model_uri=model_info.model_uri)
-            print(type(loaded_model))  # <class 'mlflow.pyfunc.model.PyFuncModel'>
+            loaded_model = qcflow.pyfunc.load_model(model_uri=model_info.model_uri)
+            print(type(loaded_model))  # <class 'qcflow.pyfunc.model.PyFuncModel'>
             unwrapped_model = loaded_model.unwrap_python_model()
             print(type(unwrapped_model))  # <class '__main__.MyModel'>
 
@@ -968,7 +968,7 @@ class PyFuncModel:
             ):
                 info["artifact_path"] = self._model_meta.artifact_path
             info["flavor"] = self._model_meta.flavors[FLAVOR_NAME]["loader_module"]
-        return yaml.safe_dump({"mlflow.pyfunc.loaded_model": info}, default_flow_style=False)
+        return yaml.safe_dump({"qcflow.pyfunc.loaded_model": info}, default_flow_style=False)
 
     @experimental
     def get_raw_model(self):
@@ -999,18 +999,18 @@ def load_model(
     Load a model stored in Python function format.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
         suppress_warnings: If ``True``, non-fatal warning messages associated with the model
             loading process will be suppressed. If ``False``, these warning messages will be
@@ -1020,8 +1020,8 @@ def load_model(
             path will be created.
         model_config: The model configuration to apply to the model. The configuration will
             be available as the ``model_config`` property of the ``context`` parameter
-            in :func:`PythonModel.load_context() <mlflow.pyfunc.PythonModel.load_context>`
-            and :func:`PythonModel.predict() <mlflow.pyfunc.PythonModel.predict>`.
+            in :func:`PythonModel.load_context() <qcflow.pyfunc.PythonModel.load_context>`
+            and :func:`PythonModel.predict() <qcflow.pyfunc.PythonModel.predict>`.
             The configuration can be passed as a file path, or a dict with string keys.
 
             .. Note:: Experimental: This parameter may change or be removed in a future
@@ -1030,7 +1030,7 @@ def load_model(
 
     lineage_header_info = None
     if (
-        not _MLFLOW_IN_CAPTURE_MODULE_PROCESS.get()
+        not _QCFLOW_IN_CAPTURE_MODULE_PROCESS.get()
     ) and databricks_utils.is_in_databricks_runtime():
         entity_list = []
         # Get notebook id and job id, pack them into lineage_header_info
@@ -1083,14 +1083,14 @@ def load_model(
             model_impl = importlib.import_module(conf[MAIN])._load_pyfunc(data_path)
     except ModuleNotFoundError as e:
         # This error message is particularly for the case when the error is caused by module
-        # "databricks.feature_store.mlflow_model". But depending on the environment, the offending
+        # "databricks.feature_store.qcflow_model". But depending on the environment, the offending
         # module might be "databricks", "databricks.feature_store" or full package. So we will
         # raise the error with the following note if "databricks" presents in the error. All non-
         # databricks module errors will just be re-raised.
         if conf[MAIN] == _DATABRICKS_FS_LOADER_MODULE and e.name.startswith("databricks"):
             raise MlflowException(
                 f"{e.msg}; "
-                "Note: mlflow.pyfunc.load_model is not supported for Feature Store models. "
+                "Note: qcflow.pyfunc.load_model is not supported for Feature Store models. "
                 "spark_udf() and predict() will not work as expected. Use "
                 "score_batch for offline predictions.",
                 BAD_REQUEST,
@@ -1160,9 +1160,9 @@ def _load_model_or_server(
     """
     Load a model with env restoration. If a non-local ``env_manager`` is specified, prepare an
     independent Python environment with the training time dependencies of the specified model
-    installed and start a MLflow Model Scoring Server process with that model in that environment.
+    installed and start a QCFlow Model Scoring Server process with that model in that environment.
     Return a _ServedPyFuncModel that invokes the scoring server for prediction. Otherwise, load and
-    return the model locally as a PyFuncModel using :py:func:`mlflow.pyfunc.load_model`.
+    return the model locally as a PyFuncModel using :py:func:`qcflow.pyfunc.load_model`.
 
     Args:
         model_uri: The uri of the model.
@@ -1173,7 +1173,7 @@ def _load_model_or_server(
     Returns:
         A _ServedPyFuncModel for non-local ``env_manager``s or a PyFuncModel otherwise.
     """
-    from mlflow.pyfunc.scoring_server.client import (
+    from qcflow.pyfunc.scoring_server.client import (
         ScoringServerClient,
         StdinScoringServerClient,
     )
@@ -1190,7 +1190,7 @@ def _load_model_or_server(
     pyfunc_backend = get_flavor_backend(
         local_path,
         env_manager=env_manager,
-        install_mlflow=os.environ.get("MLFLOW_HOME") is not None,
+        install_qcflow=os.environ.get("QCFLOW_HOME") is not None,
         create_env_root_dir=not is_port_connectable,
     )
     _logger.info("Restoring model environment. This can take a few minutes.")
@@ -1204,7 +1204,7 @@ def _load_model_or_server(
             model_uri=local_path,
             port=server_port,
             host="127.0.0.1",
-            timeout=MLFLOW_SCORING_SERVER_REQUEST_TIMEOUT.get(),
+            timeout=QCFLOW_SCORING_SERVER_REQUEST_TIMEOUT.get(),
             enable_mlserver=False,
             synchronous=False,
             stdout=subprocess.PIPE,
@@ -1228,7 +1228,7 @@ def _load_model_or_server(
         if isinstance(server_output, bytes):
             server_output = server_output.decode("UTF-8")
         raise MlflowException(
-            "MLflow model server failed to launch, server process stdout and stderr are:\n"
+            "QCFlow model server failed to launch, server process stdout and stderr are:\n"
             + server_output
         ) from e
 
@@ -1303,8 +1303,8 @@ def get_model_dependencies(model_uri, format="pip"):
     .. warning::
         This API downloads all the model artifacts to the local filesystem. This may take
         a long time for large models. To avoid this overhead, use
-        ``mlflow.artifacts.download_artifacts("<model_uri>/requirements.txt")`` or
-        ``mlflow.artifacts.download_artifacts("<model_uri>/conda.yaml")`` instead.
+        ``qcflow.artifacts.download_artifacts("<model_uri>/requirements.txt")`` or
+        ``qcflow.artifacts.download_artifacts("<model_uri>/conda.yaml")`` instead.
 
     Args:
         model_uri: The uri of the model to get dependencies from.
@@ -1332,24 +1332,24 @@ def get_model_dependencies(model_uri, format="pip"):
     return dep_file
 
 
-@deprecated("mlflow.pyfunc.load_model", 1.0)
+@deprecated("qcflow.pyfunc.load_model", 1.0)
 def load_pyfunc(model_uri, suppress_warnings=False):
     """
     Load a model stored in Python function format.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
         suppress_warnings: If ``True``, non-fatal warning messages associated with the model
@@ -1394,13 +1394,13 @@ def _create_model_downloading_tmp_dir(should_use_nfs):
     return tmp_model_dir
 
 
-_MLFLOW_SERVER_OUTPUT_TAIL_LINES_TO_KEEP = 200
+_QCFLOW_SERVER_OUTPUT_TAIL_LINES_TO_KEEP = 200
 
 
 def _convert_spec_type_to_spark_type(spec_type):
     from pyspark.sql.types import ArrayType, StructField, StructType
 
-    from mlflow.types.schema import Array, DataType, Object
+    from qcflow.types.schema import Array, DataType, Object
 
     if isinstance(spec_type, DataType):
         return spec_type.to_spark()
@@ -1426,7 +1426,7 @@ def _convert_spec_type_to_spark_type(spec_type):
 def _cast_output_spec_to_spark_type(spec):
     from pyspark.sql.types import ArrayType
 
-    from mlflow.types.schema import ColSpec, DataType, TensorSpec
+    from qcflow.types.schema import ColSpec, DataType, TensorSpec
 
     # TODO: handle optional output columns.
     if isinstance(spec, ColSpec):
@@ -1513,7 +1513,7 @@ def _convert_array_values(values, result_type):
     if type(result_type.elementType) in spark_primitive_type_to_np_type:
         np_type = spark_primitive_type_to_np_type[type(result_type.elementType)]
         # For array type result values, if provided value is None or NaN, regard it as a null array.
-        # see https://github.com/mlflow/mlflow/issues/8986
+        # see https://github.com/qcflow/qcflow/issues/8986
         return None if _is_none_or_nan(values) else np.array(values, dtype=np_type)
     if isinstance(result_type.elementType, ArrayType):
         return [_convert_array_values(v, result_type.elementType) for v in values]
@@ -1691,7 +1691,7 @@ def _gen_prebuilt_env_archive_name(spark, local_model_path):
     """
     Generate prebuilt env archive file name.
     The format is:
-    'mlflow-{sha of python env config and dependencies}-{runtime version}-{platform machine}'
+    'qcflow-{sha of python env config and dependencies}-{runtime version}-{platform machine}'
     Note: The runtime version and platform machine information are included in the
      archive name because the prebuilt env might not be compatible across different
      runtime versions or platform machines.
@@ -1746,7 +1746,7 @@ def _prebuild_env_internal(local_model_path, archive_name, save_path):
         pyfunc_backend = get_flavor_backend(
             local_model_path,
             env_manager="virtualenv",
-            install_mlflow=False,
+            install_qcflow=False,
             create_env_root_dir=False,
             env_root_dir=env_root_dir,
         )
@@ -1761,14 +1761,14 @@ def _prebuild_env_internal(local_model_path, archive_name, save_path):
 
 
 def _download_prebuilt_env_if_needed(prebuilt_env_uri):
-    from mlflow.utils.file_utils import get_or_create_tmp_dir
+    from qcflow.utils.file_utils import get_or_create_tmp_dir
 
     parsed_url = urlparse(prebuilt_env_uri)
     if parsed_url.scheme == "" or parsed_url.scheme == "file":
         # local path
         return parsed_url.path
     if parsed_url.scheme == "dbfs":
-        tmp_dir = MLFLOW_MODEL_ENV_DOWNLOADING_TEMP_DIR.get() or get_or_create_tmp_dir()
+        tmp_dir = QCFLOW_MODEL_ENV_DOWNLOADING_TEMP_DIR.get() or get_or_create_tmp_dir()
         model_env_uc_path = parsed_url.path
 
         # download file from DBFS.
@@ -1809,14 +1809,14 @@ def build_model_env(model_uri, save_path):
     Typical usages:
      - Pre-build a model's environment in Databricks Runtime and then download the prebuilt
        python environment archive file. This pre-built environment archive can then be used
-       in `mlflow.pyfunc.spark_udf` for remote inference execution when using Databricks Connect
+       in `qcflow.pyfunc.spark_udf` for remote inference execution when using Databricks Connect
        to remotely connect to a Databricks environment for code execution.
 
     .. note::
         The `build_model_env` API is intended to only work when executed within Databricks runtime,
         serving the purpose of capturing the required execution environment that is needed for
         remote code execution when using DBConnect. The environment archive is designed to be used
-        when performing remote execution using `mlflow.pyfunc.spark_udf` in
+        when performing remote execution using `qcflow.pyfunc.spark_udf` in
         Databricks runtime or Databricks Connect client and has no other purpose.
         The prebuilt env archive file cannot be used across different Databricks runtime
         versions or different platform machines. As such, if you connect to a different cluster
@@ -1824,7 +1824,7 @@ def build_model_env(model_uri, save_path):
         API in a notebook and retrieve the generated archive to your local machine. Each
         environment snapshot is unique to the the model, the runtime version of your remote
         Databricks cluster, and the specification of the udf execution environment.
-        When using the prebuilt env in `mlflow.pyfunc.spark_udf`, MLflow will verify
+        When using the prebuilt env in `qcflow.pyfunc.spark_udf`, QCFlow will verify
         whether the spark UDF sandbox environment matches the prebuilt env requirements and will
         raise Exceptions if there are compatibility issues. If these occur, simply re-run this API
         in the cluster that you are attempting to attach to.
@@ -1832,7 +1832,7 @@ def build_model_env(model_uri, save_path):
     .. code-block:: python
         :caption: Example
 
-        from mlflow.pyfunc import build_model_env
+        from qcflow.pyfunc import build_model_env
 
         # Create a python environment archive file at the path `prebuilt_env_uri`
         prebuilt_env_uri = build_model_env(f"runs:/{run_id}/model", "/path/to/save_directory")
@@ -1848,7 +1848,7 @@ def build_model_env(model_uri, save_path):
     Returns:
         Return the path of an archive file containing the python environment data.
     """
-    from mlflow.utils._spark_utils import _get_active_spark_session
+    from qcflow.utils._spark_utils import _get_active_spark_session
 
     if not is_in_databricks_runtime():
         raise RuntimeError("'build_model_env' only support running in Databricks runtime.")
@@ -1948,24 +1948,24 @@ def spark_udf(
 
         from pyspark.sql.functions import struct
 
-        predict = mlflow.pyfunc.spark_udf(spark, "/my/local/model")
+        predict = qcflow.pyfunc.spark_udf(spark, "/my/local/model")
         df.withColumn("prediction", predict(struct("name", "age"))).show()
 
     Args:
         spark: A SparkSession object.
-        model_uri: The location, in URI format, of the MLflow model with the
-            :py:mod:`mlflow.pyfunc` flavor. For example:
+        model_uri: The location, in URI format, of the QCFlow model with the
+            :py:mod:`qcflow.pyfunc` flavor. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
         result_type: the return type of the user-defined function. The value can be either a
@@ -2029,20 +2029,20 @@ def spark_udf(
         extra_env: Extra environment variables to pass to the UDF executors.
 
         prebuilt_env_uri: The path of the prebuilt env archive file created by
-            `mlflow.pyfunc.build_model_env` API.
+            `qcflow.pyfunc.build_model_env` API.
             This parameter can only be used in Databricks Serverless notebook REPL,
             Databricks Shared cluster notebook REPL, and Databricks Connect client
             environment.
             The path can be either local file path or DBFS path such as
-            'dbfs:/Volumes/...', in this case, MLflow automatically downloads it
-            to local temporary directory, "MLFLOW_MODEL_ENV_DOWNLOADING_TEMP_DIR"
+            'dbfs:/Volumes/...', in this case, QCFlow automatically downloads it
+            to local temporary directory, "QCFLOW_MODEL_ENV_DOWNLOADING_TEMP_DIR"
             environmental variable can be set to specify the temporary directory
             to use.
 
             If this parameter is set, `env_manger` parameter must not be set.
 
         model_config: The model configuration to set when loading the model.
-            See 'model_config' argument in `mlflow.pyfunc.load_model` API for details.
+            See 'model_config' argument in `qcflow.pyfunc.load_model` API for details.
 
     Returns:
         Spark UDF that applies the model's ``predict`` method to the data and returns a
@@ -2063,14 +2063,14 @@ def spark_udf(
     )
     from pyspark.sql.types import StructType as SparkStructType
 
-    from mlflow.pyfunc.spark_model_cache import SparkModelCache
-    from mlflow.utils._spark_utils import _SparkDirectoryDistributor
+    from qcflow.pyfunc.spark_model_cache import SparkModelCache
+    from qcflow.utils._spark_utils import _SparkDirectoryDistributor
 
     is_spark_connect = is_spark_connect_mode()
-    # Used in test to force install local version of mlflow when starting a model server
-    mlflow_home = os.environ.get("MLFLOW_HOME")
-    openai_env_vars = mlflow.openai._OpenAIEnvVar.read_environ()
-    mlflow_testing = _MLFLOW_TESTING.get_raw()
+    # Used in test to force install local version of qcflow when starting a model server
+    qcflow_home = os.environ.get("QCFLOW_HOME")
+    openai_env_vars = qcflow.openai._OpenAIEnvVar.read_environ()
+    qcflow_testing = _QCFLOW_TESTING.get_raw()
 
     if prebuilt_env_uri:
         if env_manager is not None:
@@ -2112,17 +2112,17 @@ def spark_udf(
 
     if use_dbconnect_artifact:
         udf_sandbox_info = get_dbconnect_udf_sandbox_info(spark)
-        if Version(udf_sandbox_info.mlflow_version) < Version("2.18.0"):
+        if Version(udf_sandbox_info.qcflow_version) < Version("2.18.0"):
             raise MlflowException(
-                "Using 'mlflow.pyfunc.spark_udf' in Databricks Serverless or in remote "
-                "Databricks Connect requires UDF sandbox image installed with MLflow "
+                "Using 'qcflow.pyfunc.spark_udf' in Databricks Serverless or in remote "
+                "Databricks Connect requires UDF sandbox image installed with QCFlow "
                 "of version >= 2.18.0"
             )
         # `udf_sandbox_info.runtime_version` format is like '<major_version>.<minor_version>'.
         # It's safe to apply `Version`.
         if Version(udf_sandbox_info.runtime_version).major < 16:
             raise MlflowException(
-                "Using 'mlflow.pyfunc.spark_udf' in Databricks Serverless or in remote "
+                "Using 'qcflow.pyfunc.spark_udf' in Databricks Serverless or in remote "
                 "Databricks Connect requires Databricks runtime version >= 16.0."
             )
 
@@ -2180,13 +2180,13 @@ def spark_udf(
             "inference. This may take extra time during execution."
         )
         if not sys.platform.startswith("linux"):
-            # TODO: support killing mlflow server launched in UDF task when spark job canceled
+            # TODO: support killing qcflow server launched in UDF task when spark job canceled
             #  for non-linux system.
             #  https://stackoverflow.com/questions/53208/how-do-i-automatically-destroy-child-processes-in-windows
             _logger.warning(
                 "In order to run inference code in restored python environment, PySpark UDF "
-                "processes spawn MLflow Model servers as child processes. Due to system "
-                "limitations with handling SIGKILL signals, these MLflow Model server child "
+                "processes spawn QCFlow Model servers as child processes. Due to system "
+                "limitations with handling SIGKILL signals, these QCFlow Model server child "
                 "processes cannot be cleaned up if the Spark Job is canceled."
             )
 
@@ -2208,7 +2208,7 @@ def spark_udf(
     pyfunc_backend = get_flavor_backend(
         local_model_path,
         env_manager=env_manager,
-        install_mlflow=os.environ.get("MLFLOW_HOME") is not None,
+        install_qcflow=os.environ.get("QCFLOW_HOME") is not None,
         **pyfunc_backend_env_root_config,
     )
     dbconnect_artifact_cache = DBConnectArtifactCache.get_or_create(spark)
@@ -2385,14 +2385,14 @@ Compound types:
         pandas.DataFrame if isinstance(result_type, SparkStructType) else pandas.Series
     )
 
-    tracking_uri = mlflow.get_tracking_uri()
+    tracking_uri = qcflow.get_tracking_uri()
 
     @pandas_udf(result_type)
     def udf(
         iterator: Iterator[Tuple[Union[pandas.Series, pandas.DataFrame], ...]],  # noqa: UP006
     ) -> Iterator[result_type_hint]:
         # importing here to prevent circular import
-        from mlflow.pyfunc.scoring_server.client import (
+        from qcflow.pyfunc.scoring_server.client import (
             ScoringServerClient,
             StdinScoringServerClient,
         )
@@ -2400,12 +2400,12 @@ Compound types:
         # Note: this is a pandas udf function in iteration style, which takes an iterator of
         # tuple of pandas.Series and outputs an iterator of pandas.Series.
         update_envs = {}
-        if mlflow_home is not None:
-            update_envs["MLFLOW_HOME"] = mlflow_home
+        if qcflow_home is not None:
+            update_envs["QCFLOW_HOME"] = qcflow_home
         if openai_env_vars:
             update_envs.update(openai_env_vars)
-        if mlflow_testing:
-            update_envs[_MLFLOW_TESTING.name] = mlflow_testing
+        if qcflow_testing:
+            update_envs[_QCFLOW_TESTING.name] = qcflow_testing
         if extra_env:
             update_envs.update(extra_env)
 
@@ -2414,7 +2414,7 @@ Compound types:
             scoring_server_proc = None
             # set tracking_uri inside udf so that with spark_connect
             # we can load the model from correct path
-            mlflow.set_tracking_uri(tracking_uri)
+            qcflow.set_tracking_uri(tracking_uri)
 
             if env_manager != _EnvManager.LOCAL:
                 if use_dbconnect_artifact:
@@ -2461,7 +2461,7 @@ Compound types:
                         model_uri=local_model_path_on_executor or local_model_path,
                         port=server_port,
                         host=host,
-                        timeout=MLFLOW_SCORING_SERVER_REQUEST_TIMEOUT.get(),
+                        timeout=QCFLOW_SCORING_SERVER_REQUEST_TIMEOUT.get(),
                         enable_mlserver=False,
                         synchronous=False,
                         stdout=subprocess.PIPE,
@@ -2482,7 +2482,7 @@ Compound types:
                 _logger.info("Using %s", client.__class__.__name__)
 
                 server_tail_logs = collections.deque(
-                    maxlen=_MLFLOW_SERVER_OUTPUT_TAIL_LINES_TO_KEEP
+                    maxlen=_QCFLOW_SERVER_OUTPUT_TAIL_LINES_TO_KEEP
                 )
 
                 def server_redirect_log_thread_func(child_stdout):
@@ -2502,15 +2502,15 @@ Compound types:
                     client.wait_server_ready(timeout=90, scoring_server_proc=scoring_server_proc)
                 except Exception as e:
                     err_msg = (
-                        "During spark UDF task execution, mlflow model server failed to launch. "
+                        "During spark UDF task execution, qcflow model server failed to launch. "
                     )
-                    if len(server_tail_logs) == _MLFLOW_SERVER_OUTPUT_TAIL_LINES_TO_KEEP:
+                    if len(server_tail_logs) == _QCFLOW_SERVER_OUTPUT_TAIL_LINES_TO_KEEP:
                         err_msg += (
-                            f"Last {_MLFLOW_SERVER_OUTPUT_TAIL_LINES_TO_KEEP} "
-                            "lines of MLflow model server output:\n"
+                            f"Last {_QCFLOW_SERVER_OUTPUT_TAIL_LINES_TO_KEEP} "
+                            "lines of QCFlow model server output:\n"
                         )
                     else:
-                        err_msg += "MLflow model server output:\n"
+                        err_msg += "QCFlow model server output:\n"
                     err_msg += "".join(server_tail_logs)
                     raise MlflowException(err_msg) from e
 
@@ -2523,28 +2523,28 @@ Compound types:
             elif env_manager == _EnvManager.LOCAL:
                 if use_dbconnect_artifact:
                     model_path = dbconnect_artifact_cache.get_unpacked_artifact_dir(model_uri)
-                    loaded_model = mlflow.pyfunc.load_model(model_path, model_config=model_config)
+                    loaded_model = qcflow.pyfunc.load_model(model_path, model_config=model_config)
                 elif is_spark_connect and not should_spark_connect_use_nfs:
                     model_path = os.path.join(
                         tempfile.gettempdir(),
-                        "mlflow",
+                        "qcflow",
                         hashlib.sha1(model_uri.encode(), usedforsecurity=False).hexdigest(),
                         # Use pid to avoid conflict when multiple spark UDF tasks
                         str(os.getpid()),
                     )
                     try:
-                        loaded_model = mlflow.pyfunc.load_model(
+                        loaded_model = qcflow.pyfunc.load_model(
                             model_path, model_config=model_config
                         )
                     except Exception:
                         os.makedirs(model_path, exist_ok=True)
-                        loaded_model = mlflow.pyfunc.load_model(
+                        loaded_model = qcflow.pyfunc.load_model(
                             model_uri, dst_path=model_path, model_config=model_config
                         )
                 elif should_use_spark_to_broadcast_file:
                     loaded_model, _ = SparkModelCache.get_or_load(archive_path)
                 else:
-                    loaded_model = mlflow.pyfunc.load_model(
+                    loaded_model = qcflow.pyfunc.load_model(
                         local_model_path, model_config=model_config
                     )
 
@@ -2637,7 +2637,7 @@ def save_model(
     code_paths=None,
     infer_code_paths=False,
     conda_env=None,
-    mlflow_model=None,
+    qcflow_model=None,
     python_model=None,
     artifacts=None,
     signature: ModelSignature = None,
@@ -2669,18 +2669,18 @@ def save_model(
             ``_load_pyfunc(data_path)``. If not ``None``, this module and its
             dependencies must be included in one of the following locations:
 
-            - The MLflow library.
+            - The QCFlow library.
             - Package(s) listed in the model's Conda environment, specified by
               the ``conda_env`` parameter.
             - One or more of the files specified by the ``code_path`` parameter.
 
         data_path: Path to a file or directory containing model data.
         code_path: **Deprecated** The legacy argument for defining dependent code. This argument is
-            replaced by ``code_paths`` and will be removed in a future version of MLflow.
+            replaced by ``code_paths`` and will be removed in a future version of QCFlow.
         code_paths: {{ code_paths_pyfunc }}
         infer_code_paths: {{ infer_code_paths }}
         conda_env: {{ conda_env }}
-        mlflow_model: :py:mod:`mlflow.models.Model` configuration to which to add the
+        qcflow_model: :py:mod:`qcflow.models.Model` configuration to which to add the
             **python_function** flavor.
         python_model:
             An instance of a subclass of :class:`~PythonModel` or a callable object with a single
@@ -2690,7 +2690,7 @@ def save_model(
             Any dependencies of the class should be included in one of the
             following locations:
 
-            - The MLflow library.
+            - The QCFlow library.
             - Package(s) listed in the model's Conda environment, specified by the ``conda_env``
               parameter.
             - One or more of the files specified by the ``code_path`` parameter.
@@ -2706,16 +2706,16 @@ def save_model(
             .. code-block:: python
 
                 from typing import List, Dict
-                import mlflow
+                import qcflow
 
 
-                class MyModel(mlflow.pyfunc.PythonModel):
+                class MyModel(qcflow.pyfunc.PythonModel):
                     def predict(self, context, model_input: List[str], params=None) -> List[str]:
                         return [i.upper() for i in model_input]
 
 
-                mlflow.pyfunc.save_model("model", python_model=MyModel(), input_example=["a"])
-                model = mlflow.pyfunc.load_model("model")
+                qcflow.pyfunc.save_model("model", python_model=MyModel(), input_example=["a"])
+                model = qcflow.pyfunc.load_model("model")
                 print(model.predict(["a", "b", "c"]))  # -> ["A", "B", "C"]
 
             Functional model
@@ -2727,15 +2727,15 @@ def save_model(
             .. code-block:: python
 
                 from typing import List
-                import mlflow
+                import qcflow
 
 
                 def predict(model_input: List[str]) -> List[str]:
                     return [i.upper() for i in model_input]
 
 
-                mlflow.pyfunc.save_model("model", python_model=predict, input_example=["a"])
-                model = mlflow.pyfunc.load_model("model")
+                qcflow.pyfunc.save_model("model", python_model=predict, input_example=["a"])
+                model = qcflow.pyfunc.load_model("model")
                 print(model.predict(["a", "b", "c"]))  # -> ["A", "B", "C"]
 
             Model from code
@@ -2748,26 +2748,26 @@ def save_model(
 
                 # code.py
                 from typing import List
-                import mlflow
+                import qcflow
 
 
-                class MyModel(mlflow.pyfunc.PythonModel):
+                class MyModel(qcflow.pyfunc.PythonModel):
                     def predict(self, context, model_input: List[str], params=None) -> List[str]:
                         return [i.upper() for i in model_input]
 
 
-                mlflow.models.set_model(MyModel())
+                qcflow.models.set_model(MyModel())
 
                 # log_model.py
-                import mlflow
+                import qcflow
 
-                with mlflow.start_run():
-                    model_info = mlflow.pyfunc.log_model(
+                with qcflow.start_run():
+                    model_info = qcflow.pyfunc.log_model(
                         artifact_path="model",
                         python_model="code.py",
                     )
 
-            If the `predict` method or function has type annotations, MLflow automatically
+            If the `predict` method or function has type annotations, QCFlow automatically
             constructs a model signature based on the type annotations (unless the ``signature``
             argument is explicitly specified), and converts the input value to the specified type
             before passing it to the function. Currently, the following type annotations are
@@ -2780,8 +2780,8 @@ def save_model(
             are resolved to absolute filesystem paths, producing a dictionary of
             ``<name, absolute_path>`` entries. ``python_model`` can reference these
             resolved entries as the ``artifacts`` property of the ``context`` parameter
-            in :func:`PythonModel.load_context() <mlflow.pyfunc.PythonModel.load_context>`
-            and :func:`PythonModel.predict() <mlflow.pyfunc.PythonModel.predict>`.
+            in :func:`PythonModel.load_context() <qcflow.pyfunc.PythonModel.load_context>`
+            and :func:`PythonModel.predict() <qcflow.pyfunc.PythonModel.predict>`.
             For example, consider the following ``artifacts`` dictionary::
 
                 {"my_file": "s3://my-bucket/path/to/my/file"}
@@ -2792,16 +2792,16 @@ def save_model(
 
             If ``None``, no artifacts are added to the model.
 
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -2812,15 +2812,15 @@ def save_model(
         metadata: {{ metadata }}
         model_config: The model configuration to apply to the model. The configuration will
             be available as the ``model_config`` property of the ``context`` parameter
-            in :func:`PythonModel.load_context() <mlflow.pyfunc.PythonModel.load_context>`
-            and :func:`PythonModel.predict() <mlflow.pyfunc.PythonModel.predict>`.
+            in :func:`PythonModel.load_context() <qcflow.pyfunc.PythonModel.load_context>`
+            and :func:`PythonModel.predict() <qcflow.pyfunc.PythonModel.predict>`.
             The configuration can be passed as a file path, or a dict with string keys.
 
             .. Note:: Experimental: This parameter may change or be removed in a future
                                     release without warning.
         example_no_conversion: {{ example_no_conversion }}
         streamable: A boolean value indicating if the model supports streaming prediction,
-                    If None, MLflow will try to inspect if the model supports streaming
+                    If None, QCFlow will try to inspect if the model supports streaming
                     by checking if `predict_stream` method exists. Default None.
         resources: A list of model resources or a resources.yaml file containing a list of
                     resources required to serve the model.
@@ -2859,7 +2859,7 @@ def save_model(
                     "`pip_requirements`, or `extra_pip_requirements` must be specified."
                 )
 
-    mlflow_model = kwargs.pop("model", mlflow_model)
+    qcflow_model = kwargs.pop("model", qcflow_model)
     if len(kwargs) > 0:
         raise TypeError(f"save_model() got unexpected keyword arguments: {kwargs}")
 
@@ -2872,8 +2872,8 @@ def save_model(
         code_paths = code_path
         warnings.warn(
             "The `code_path` argument is replaced by `code_paths` and is deprecated "
-            "as of MLflow version 2.12.0. This argument will be removed in a future "
-            "release of MLflow."
+            "as of QCFlow version 2.12.0. This argument will be removed in a future "
+            "release of QCFlow."
         )
 
     if code_paths is not None:
@@ -2907,8 +2907,8 @@ def save_model(
         )
         raise MlflowException(message=msg, error_code=INVALID_PARAMETER_VALUE)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     saved_example = None
     signature_from_type_hints = None
     if isinstance(python_model, ChatModel):
@@ -2919,13 +2919,13 @@ def save_model(
                 "the call to log_model() or save_model().",
                 error_code=INVALID_PARAMETER_VALUE,
             )
-        mlflow_model.signature = ModelSignature(
+        qcflow_model.signature = ModelSignature(
             CHAT_MODEL_INPUT_SCHEMA,
             CHAT_MODEL_OUTPUT_SCHEMA,
         )
         # For ChatModel we set default metadata to indicate its task
         default_metadata = {TASK: _DEFAULT_CHAT_MODEL_METADATA_TASK}
-        mlflow_model.metadata = default_metadata | (mlflow_model.metadata or {})
+        qcflow_model.metadata = default_metadata | (qcflow_model.metadata or {})
 
         if input_example:
             input_example, input_params = _split_input_data_and_params(input_example)
@@ -2959,7 +2959,7 @@ def save_model(
             messages = [ChatMessage.from_dict(m) for m in input_example["messages"]]
         # extra params introduced by ChatParams will not be included in the
         # logged input example file to avoid confusion
-        _save_example(mlflow_model, input_example, path, example_no_conversion)
+        _save_example(qcflow_model, input_example, path, example_no_conversion)
         params = ChatParams.from_dict(input_example)
 
         # call load_context() first, as predict may depend on it
@@ -2985,7 +2985,7 @@ def save_model(
                 func=python_model, type_hints=type_hints, input_example=input_example
             )
         elif isinstance(python_model, PythonModel):
-            saved_example = _save_example(mlflow_model, input_example, path, example_no_conversion)
+            saved_example = _save_example(qcflow_model, input_example, path, example_no_conversion)
             signature_from_type_hints = _infer_signature_from_type_hints(
                 func=python_model.predict,
                 type_hints=python_model._get_type_hints(),
@@ -3001,7 +3001,7 @@ def save_model(
                 try:
                     context = PythonModelContext(artifacts, model_config)
                     python_model.load_context(context)
-                    mlflow_model.signature = _infer_signature_from_input_example(
+                    qcflow_model.signature = _infer_signature_from_input_example(
                         saved_example,
                         _PythonModelPyfuncWrapper(python_model, None, None),
                     )
@@ -3020,22 +3020,22 @@ def save_model(
                 "exception, and the signature must align with the type hint.",
                 extra={"color": "red"},
             )
-        mlflow_model.signature = signature_from_type_hints
+        qcflow_model.signature = signature_from_type_hints
     # TODO: if signature is provided, we should validate input_example against it
     elif signature:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
 
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
     if saved_example is None:
-        saved_example = _save_example(mlflow_model, input_example, path, example_no_conversion)
+        saved_example = _save_example(qcflow_model, input_example, path, example_no_conversion)
 
     with _get_dependencies_schemas() as dependencies_schemas:
         schema = dependencies_schemas.to_dict()
         if schema is not None:
-            if mlflow_model.metadata is None:
-                mlflow_model.metadata = {}
-            mlflow_model.metadata.update(schema)
+            if qcflow_model.metadata is None:
+                qcflow_model.metadata = {}
+            qcflow_model.metadata.update(schema)
 
     if resources is not None:
         if isinstance(resources, (Path, str)):
@@ -3043,7 +3043,7 @@ def save_model(
         else:
             serialized_resource = _ResourceBuilder.from_resources(resources)
 
-        mlflow_model.resources = serialized_resource
+        qcflow_model.resources = serialized_resource
 
     if first_argument_set_specified:
         return _save_model_with_loader_module_and_data_path(
@@ -3052,7 +3052,7 @@ def save_model(
             data_path=data_path,
             code_paths=code_paths,
             conda_env=conda_env,
-            mlflow_model=mlflow_model,
+            qcflow_model=qcflow_model,
             pip_requirements=pip_requirements,
             extra_pip_requirements=extra_pip_requirements,
             model_config=model_config,
@@ -3060,14 +3060,14 @@ def save_model(
             infer_code_paths=infer_code_paths,
         )
     elif second_argument_set_specified:
-        return mlflow.pyfunc.model._save_model_with_class_artifacts_params(
+        return qcflow.pyfunc.model._save_model_with_class_artifacts_params(
             path=path,
             signature=signature,
             python_model=python_model,
             artifacts=artifacts,
             conda_env=conda_env,
             code_paths=code_paths,
-            mlflow_model=mlflow_model,
+            qcflow_model=qcflow_model,
             pip_requirements=pip_requirements,
             extra_pip_requirements=extra_pip_requirements,
             model_config=model_config,
@@ -3102,7 +3102,7 @@ def log_model(
     resources: Optional[Union[str, list[Resource]]] = None,
 ):
     """
-    Log a Pyfunc model with custom inference logic and optional data dependencies as an MLflow
+    Log a Pyfunc model with custom inference logic and optional data dependencies as an QCFlow
     artifact for the current run.
 
     For information about the workflows that this method supports, see :ref:`Workflows for
@@ -3118,14 +3118,14 @@ def log_model(
             ``_load_pyfunc(data_path)``. If not ``None``, this module and its
             dependencies must be included in one of the following locations:
 
-            - The MLflow library.
+            - The QCFlow library.
             - Package(s) listed in the model's Conda environment, specified by
               the ``conda_env`` parameter.
             - One or more of the files specified by the ``code_path`` parameter.
 
         data_path: Path to a file or directory containing model data.
         code_path: **Deprecated** The legacy argument for defining dependent code. This argument is
-            replaced by ``code_paths`` and will be removed in a future version of MLflow.
+            replaced by ``code_paths`` and will be removed in a future version of QCFlow.
         code_paths: {{ code_paths_pyfunc }}
         infer_code_paths: {{ infer_code_paths }}
         conda_env: {{ conda_env }}
@@ -3137,7 +3137,7 @@ def log_model(
             Any dependencies of the class should be included in one of the
             following locations:
 
-            - The MLflow library.
+            - The QCFlow library.
             - Package(s) listed in the model's Conda environment, specified by the ``conda_env``
               parameter.
             - One or more of the files specified by the ``code_path`` parameter.
@@ -3153,22 +3153,22 @@ def log_model(
             .. code-block:: python
 
                 from typing import List
-                import mlflow
+                import qcflow
 
 
-                class MyModel(mlflow.pyfunc.PythonModel):
+                class MyModel(qcflow.pyfunc.PythonModel):
                     def predict(self, context, model_input: List[str], params=None) -> List[str]:
                         return [i.upper() for i in model_input]
 
 
-                with mlflow.start_run():
-                    model_info = mlflow.pyfunc.log_model(
+                with qcflow.start_run():
+                    model_info = qcflow.pyfunc.log_model(
                         artifact_path="model",
                         python_model=MyModel(),
                     )
 
 
-                loaded_model = mlflow.pyfunc.load_model(model_uri=model_info.model_uri)
+                loaded_model = qcflow.pyfunc.load_model(model_uri=model_info.model_uri)
                 print(loaded_model.predict(["a", "b", "c"]))  # -> ["A", "B", "C"]
 
             Functional model
@@ -3180,20 +3180,20 @@ def log_model(
             .. code-block:: python
 
                 from typing import List
-                import mlflow
+                import qcflow
 
 
                 def predict(model_input: List[str]) -> List[str]:
                     return [i.upper() for i in model_input]
 
 
-                with mlflow.start_run():
-                    model_info = mlflow.pyfunc.log_model(
+                with qcflow.start_run():
+                    model_info = qcflow.pyfunc.log_model(
                         artifact_path="model", python_model=predict, input_example=["a"]
                     )
 
 
-                loaded_model = mlflow.pyfunc.load_model(model_uri=model_info.model_uri)
+                loaded_model = qcflow.pyfunc.load_model(model_uri=model_info.model_uri)
                 print(loaded_model.predict(["a", "b", "c"]))  # -> ["A", "B", "C"]
 
             Model from code
@@ -3206,26 +3206,26 @@ def log_model(
 
                 # code.py
                 from typing import List
-                import mlflow
+                import qcflow
 
 
-                class MyModel(mlflow.pyfunc.PythonModel):
+                class MyModel(qcflow.pyfunc.PythonModel):
                     def predict(self, context, model_input: List[str], params=None) -> List[str]:
                         return [i.upper() for i in model_input]
 
 
-                mlflow.models.set_model(MyModel())
+                qcflow.models.set_model(MyModel())
 
                 # log_model.py
-                import mlflow
+                import qcflow
 
-                with mlflow.start_run():
-                    model_info = mlflow.pyfunc.log_model(
+                with qcflow.start_run():
+                    model_info = qcflow.pyfunc.log_model(
                         artifact_path="model",
                         python_model="code.py",
                     )
 
-            If the `predict` method or function has type annotations, MLflow automatically
+            If the `predict` method or function has type annotations, QCFlow automatically
             constructs a model signature based on the type annotations (unless the ``signature``
             argument is explicitly specified), and converts the input value to the specified type
             before passing it to the function. Currently, the following type annotations are
@@ -3238,8 +3238,8 @@ def log_model(
             are resolved to absolute filesystem paths, producing a dictionary of
             ``<name, absolute_path>`` entries. ``python_model`` can reference these
             resolved entries as the ``artifacts`` property of the ``context`` parameter
-            in :func:`PythonModel.load_context() <mlflow.pyfunc.PythonModel.load_context>`
-            and :func:`PythonModel.predict() <mlflow.pyfunc.PythonModel.predict>`.
+            in :func:`PythonModel.load_context() <qcflow.pyfunc.PythonModel.load_context>`
+            and :func:`PythonModel.predict() <qcflow.pyfunc.PythonModel.predict>`.
             For example, consider the following ``artifacts`` dictionary::
 
                 {"my_file": "s3://my-bucket/path/to/my/file"}
@@ -3254,16 +3254,16 @@ def log_model(
             version under ``registered_model_name``, also creating a
             registered model if one with the given name does not exist.
 
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -3279,15 +3279,15 @@ def log_model(
 
         model_config: The model configuration to apply to the model. The configuration will
             be available as the ``model_config`` property of the ``context`` parameter
-            in :func:`PythonModel.load_context() <mlflow.pyfunc.PythonModel.load_context>`
-            and :func:`PythonModel.predict() <mlflow.pyfunc.PythonModel.predict>`.
+            in :func:`PythonModel.load_context() <qcflow.pyfunc.PythonModel.load_context>`
+            and :func:`PythonModel.predict() <qcflow.pyfunc.PythonModel.predict>`.
             The configuration can be passed as a file path, or a dict with string keys.
 
             .. Note:: Experimental: This parameter may change or be removed in a future
                                     release without warning.
         example_no_conversion: {{ example_no_conversion }}
         streamable: A boolean value indicating if the model supports streaming prediction,
-                    If None, MLflow will try to inspect if the model supports streaming
+                    If None, QCFlow will try to inspect if the model supports streaming
                     by checking if `predict_stream` method exists. Default None.
         resources: A list of model resources or a resources.yaml file containing a list of
                     resources required to serve the model.
@@ -3296,12 +3296,12 @@ def log_model(
                                     release without warning.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.pyfunc,
+        flavor=qcflow.pyfunc,
         loader_module=loader_module,
         data_path=data_path,
         code_path=code_path,  # deprecated
@@ -3330,7 +3330,7 @@ def _save_model_with_loader_module_and_data_path(  # noqa: D417
     data_path=None,
     code_paths=None,
     conda_env=None,
-    mlflow_model=None,
+    qcflow_model=None,
     pip_requirements=None,
     extra_pip_requirements=None,
     model_config=None,
@@ -3365,12 +3365,12 @@ def _save_model_with_loader_module_and_data_path(  # noqa: D417
         model_file = _copy_file_or_tree(src=data_path, dst=path, dst_dir="data")
         data = model_file
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
 
     streamable = streamable or False
-    mlflow.pyfunc.add_to_model(
-        mlflow_model,
+    qcflow.pyfunc.add_to_model(
+        qcflow_model,
         loader_module=loader_module,
         code=None,
         data=data,
@@ -3380,23 +3380,23 @@ def _save_model_with_loader_module_and_data_path(  # noqa: D417
         streamable=streamable,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     code_dir_subpath = _validate_infer_and_copy_code_paths(
         code_paths, path, infer_code_paths, FLAVOR_NAME
     )
-    mlflow_model.flavors[FLAVOR_NAME][CODE] = code_dir_subpath
+    qcflow_model.flavors[FLAVOR_NAME][CODE] = code_dir_subpath
 
-    # `mlflow_model.code` is updated, re-generate `MLmodel` file.
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    # `qcflow_model.code` is updated, re-generate `MLmodel` file.
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -3423,4 +3423,4 @@ def _save_model_with_loader_module_and_data_path(  # noqa: D417
     write_to(os.path.join(path, _REQUIREMENTS_FILE_NAME), "\n".join(pip_requirements))
 
     _PythonEnv.current().to_yaml(os.path.join(path, _PYTHON_ENV_FILE_NAME))
-    return mlflow_model
+    return qcflow_model

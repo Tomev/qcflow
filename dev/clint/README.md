@@ -1,6 +1,6 @@
 # Clint
 
-A custom linter for mlflow to enforce rules that ruff doesn't cover.
+A custom linter for qcflow to enforce rules that ruff doesn't cover.
 
 ## Installation
 

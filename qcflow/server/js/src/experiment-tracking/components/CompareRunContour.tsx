@@ -129,7 +129,7 @@ export class CompareRunContour extends Component<CompareRunContourProps, Compare
               with three or more unique metrics or params. Log more metrics or params to your
               runs to visualize them using the contour plot."
             description="Text explanation when contour plot is disabled in comparison pages
-              in MLflow"
+              in QCFlow"
           />
         </div>
       );
@@ -247,7 +247,7 @@ export class CompareRunContour extends Component<CompareRunContourProps, Compare
               <FormUI.Label htmlFor="xaxis-selector">
                 <FormattedMessage
                   defaultMessage="X-axis:"
-                  description="Label text for x-axis in contour plot comparison in MLflow"
+                  description="Label text for x-axis in contour plot comparison in QCFlow"
                 />
               </FormUI.Label>
               {this.renderSelect('xaxis')}
@@ -257,7 +257,7 @@ export class CompareRunContour extends Component<CompareRunContourProps, Compare
               <FormUI.Label htmlFor="yaxis-selector">
                 <FormattedMessage
                   defaultMessage="Y-axis:"
-                  description="Label text for y-axis in contour plot comparison in MLflow"
+                  description="Label text for y-axis in contour plot comparison in QCFlow"
                 />
               </FormUI.Label>
               {this.renderSelect('yaxis')}
@@ -267,7 +267,7 @@ export class CompareRunContour extends Component<CompareRunContourProps, Compare
               <FormUI.Label htmlFor="zaxis-selector">
                 <FormattedMessage
                   defaultMessage="Z-axis:"
-                  description="Label text for z-axis in contour plot comparison in MLflow"
+                  description="Label text for z-axis in contour plot comparison in QCFlow"
                 />
               </FormUI.Label>
               {this.renderSelect('zaxis')}
@@ -277,10 +277,10 @@ export class CompareRunContour extends Component<CompareRunContourProps, Compare
               <FormattedMessage
                 defaultMessage="Reverse color:"
                 description="Label text for reverse color toggle in contour plot comparison
-                      in MLflow"
+                      in QCFlow"
               />{' '}
               <Switch
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_compareruncontour.tsx_282"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_compareruncontour.tsx_282"
                 className="show-point-toggle"
                 // @ts-expect-error TS(4111): Property 'reverseColor' comes from an index signat... Remove this comment to see the full error message
                 checked={this.state.reverseColor}
@@ -298,7 +298,7 @@ export class CompareRunContour extends Component<CompareRunContourProps, Compare
   renderSelect(axis: string) {
     return (
       <SimpleSelect
-        componentId="codegen_mlflow_app_src_experiment-tracking_components_compareruncontour.tsx_299"
+        componentId="codegen_qcflow_app_src_experiment-tracking_components_compareruncontour.tsx_299"
         css={{ width: '100%' }}
         id={axis + '-selector'}
         onChange={({ target }) => {

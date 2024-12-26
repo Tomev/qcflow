@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package mlflow.ucmodelregistry;
+package qcflow.ucmodelregistry;
 
 import "databricks.proto";
 import "databricks_uc_registry_messages.proto";
@@ -18,7 +18,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/unity-catalog/registered-models/create"
+        path: "/qcflow/unity-catalog/registered-models/create"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -30,7 +30,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "PATCH",
-        path: "/mlflow/unity-catalog/registered-models/update"
+        path: "/qcflow/unity-catalog/registered-models/update"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -42,7 +42,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/unity-catalog/registered-models/delete"
+        path: "/qcflow/unity-catalog/registered-models/delete"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -54,7 +54,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/unity-catalog/registered-models/get"
+        path: "/qcflow/unity-catalog/registered-models/get"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -66,7 +66,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/unity-catalog/registered-models/search"
+        path: "/qcflow/unity-catalog/registered-models/search"
         since {major: 2, minor: 0},
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -78,7 +78,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/unity-catalog/model-versions/create"
+        path: "/qcflow/unity-catalog/model-versions/create"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -90,7 +90,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "PATCH",
-        path: "/mlflow/unity-catalog/model-versions/update"
+        path: "/qcflow/unity-catalog/model-versions/update"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -102,7 +102,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/unity-catalog/model-versions/delete"
+        path: "/qcflow/unity-catalog/model-versions/delete"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -114,7 +114,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/unity-catalog/model-versions/get"
+        path: "/qcflow/unity-catalog/model-versions/get"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -126,7 +126,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/unity-catalog/model-versions/search"
+        path: "/qcflow/unity-catalog/model-versions/search"
         since {major: 2, minor: 0},
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -138,7 +138,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/unity-catalog/model-versions/generate-temporary-credentials"
+        path: "/qcflow/unity-catalog/model-versions/generate-temporary-credentials"
         since {major: 2, minor: 0},
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -150,7 +150,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/unity-catalog/model-versions/get-download-uri"
+        path: "/qcflow/unity-catalog/model-versions/get-download-uri"
         since {major: 2, minor: 0},
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -159,10 +159,10 @@ service UcModelRegistryService {
   }
 
   rpc FinalizeModelVersion (FinalizeModelVersionRequest) returns (FinalizeModelVersionResponse) {
-    option (mlflow.rpc) = {
+    option (qcflow.rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/unity-catalog/model-versions/finalize"
+        path: "/qcflow/unity-catalog/model-versions/finalize"
         since {major: 2, minor: 0},
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -174,7 +174,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/unity-catalog/registered-models/alias"
+        path: "/qcflow/unity-catalog/registered-models/alias"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -186,7 +186,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/unity-catalog/registered-models/alias"
+        path: "/qcflow/unity-catalog/registered-models/alias"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -198,7 +198,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/unity-catalog/registered-models/alias"
+        path: "/qcflow/unity-catalog/registered-models/alias"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -210,7 +210,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/unity-catalog/registered-models/set-tag"
+        path: "/qcflow/unity-catalog/registered-models/set-tag"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -222,7 +222,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/unity-catalog/registered-models/delete-tag"
+        path: "/qcflow/unity-catalog/registered-models/delete-tag"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -234,7 +234,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/unity-catalog/model-versions/set-tag"
+        path: "/qcflow/unity-catalog/model-versions/set-tag"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -246,7 +246,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/unity-catalog/model-versions/delete-tag"
+        path: "/qcflow/unity-catalog/model-versions/delete-tag"
         since {major: 2, minor: 0},
       }],
       visibility:PUBLIC_UNDOCUMENTED,
@@ -258,7 +258,7 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/unity-catalog/model-versions/emit-lineage"
+        path: "/qcflow/unity-catalog/model-versions/emit-lineage"
         since {major: 2, minor: 0},
       }],
       visibility: PUBLIC_UNDOCUMENTED,
@@ -270,11 +270,11 @@ service UcModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/unity-catalog/registered-models:is-databricks-sdk-models-artifact-repository-enabled"
+        path: "/qcflow/unity-catalog/registered-models:is-databricks-sdk-models-artifact-repository-enabled"
         since {major: 2, minor: 0},
       }],
       visibility: PUBLIC_UNDOCUMENTED,
-      rpc_doc_title: "(Unity Catalog) Use DatabricksSdkModelsArtifactRepository in mlflow client for model registry",
+      rpc_doc_title: "(Unity Catalog) Use DatabricksSdkModelsArtifactRepository in qcflow client for model registry",
     };
   }
 }

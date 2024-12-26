@@ -29,7 +29,7 @@ from urllib.request import pathname2url
 
 import yaml
 
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 try:
     from yaml import CSafeDumper as YamlSafeDumper
@@ -38,24 +38,24 @@ except ImportError:
     from yaml import SafeDumper as YamlSafeDumper
     from yaml import SafeLoader as YamlSafeLoader
 
-from mlflow.entities import FileInfo
-from mlflow.environment_variables import (
-    _MLFLOW_MPD_NUM_RETRIES,
-    _MLFLOW_MPD_RETRY_INTERVAL_SECONDS,
-    MLFLOW_DOWNLOAD_CHUNK_TIMEOUT,
-    MLFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR,
+from qcflow.entities import FileInfo
+from qcflow.environment_variables import (
+    _QCFLOW_MPD_NUM_RETRIES,
+    _QCFLOW_MPD_RETRY_INTERVAL_SECONDS,
+    QCFLOW_DOWNLOAD_CHUNK_TIMEOUT,
+    QCFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR,
 )
-from mlflow.exceptions import MissingConfigException, MlflowException
-from mlflow.protos.databricks_artifacts_pb2 import ArtifactCredentialType
-from mlflow.utils import download_cloud_file_chunk, merge_dicts
-from mlflow.utils.databricks_utils import (
+from qcflow.exceptions import MissingConfigException, MlflowException
+from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialType
+from qcflow.utils import download_cloud_file_chunk, merge_dicts
+from qcflow.utils.databricks_utils import (
     get_databricks_local_temp_dir,
     get_databricks_nfs_temp_dir,
 )
-from mlflow.utils.os import is_windows
-from mlflow.utils.process import cache_return_value_per_process
-from mlflow.utils.request_utils import cloud_storage_http_request, download_chunk
-from mlflow.utils.rest_utils import augmented_raise_for_status
+from qcflow.utils.os import is_windows
+from qcflow.utils.process import cache_return_value_per_process
+from qcflow.utils.request_utils import cloud_storage_http_request, download_chunk
+from qcflow.utils.rest_utils import augmented_raise_for_status
 
 ENCODING = "utf-8"
 _PROGRESS_BAR_DISPLAY_THRESHOLD = 500_000_000  # 500 MB
@@ -73,7 +73,7 @@ class ArtifactProgressBar:
         self.kwargs = kwargs
 
     def set_pbar(self):
-        if MLFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR.get():
+        if QCFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR.get():
             try:
                 from tqdm.auto import tqdm
 
@@ -530,21 +530,21 @@ def make_tarfile(output_filename, source_dir, archive_name, custom_filter=None):
 
 
 def _copy_project(src_path, dst_path=""):
-    """Internal function used to copy MLflow project during development.
+    """Internal function used to copy QCFlow project during development.
 
     Copies the content of the whole directory tree except patterns defined in .dockerignore.
-    The MLflow is assumed to be accessible as a local directory in this case.
+    The QCFlow is assumed to be accessible as a local directory in this case.
 
     Args:
-        src_path: Path to the original MLflow project
-        dst_path: MLflow will be copied here
+        src_path: Path to the original QCFlow project
+        dst_path: QCFlow will be copied here
 
     Returns:
-        Name of the MLflow project directory.
+        Name of the QCFlow project directory.
     """
 
-    def _docker_ignore(mlflow_root):
-        docker_ignore = os.path.join(mlflow_root, ".dockerignore")
+    def _docker_ignore(qcflow_root):
+        docker_ignore = os.path.join(qcflow_root, ".dockerignore")
         patterns = []
         if os.path.exists(docker_ignore):
             with open(docker_ignore) as f:
@@ -558,13 +558,13 @@ def _copy_project(src_path, dst_path=""):
 
         return ignore if patterns else None
 
-    mlflow_dir = "mlflow-project"
+    qcflow_dir = "qcflow-project"
     # check if we have project root
     assert os.path.isfile(os.path.join(src_path, "pyproject.toml")), "file not found " + str(
         os.path.abspath(os.path.join(src_path, "pyproject.toml"))
     )
-    shutil.copytree(src_path, os.path.join(dst_path, mlflow_dir), ignore=_docker_ignore(src_path))
-    return mlflow_dir
+    shutil.copytree(src_path, os.path.join(dst_path, qcflow_dir), ignore=_docker_ignore(src_path))
+    return qcflow_dir
 
 
 def _copy_file_or_tree(src, dst, dst_dir=None):
@@ -756,7 +756,7 @@ def parallelized_download_file_using_http_uri(
                 text=True,
                 check=True,
                 capture_output=True,
-                timeout=MLFLOW_DOWNLOAD_CHUNK_TIMEOUT.get(),
+                timeout=QCFLOW_DOWNLOAD_CHUNK_TIMEOUT.get(),
                 env=env,
             )
         except (TimeoutExpired, CalledProcessError) as e:
@@ -814,8 +814,8 @@ def parallelized_download_file_using_http_uri(
 
 
 def download_chunk_retries(*, chunks, http_uri, headers, download_path):
-    num_retries = _MLFLOW_MPD_NUM_RETRIES.get()
-    interval = _MLFLOW_MPD_RETRY_INTERVAL_SECONDS.get()
+    num_retries = _QCFLOW_MPD_NUM_RETRIES.get()
+    interval = _QCFLOW_MPD_RETRY_INTERVAL_SECONDS.get()
     for chunk in chunks:
         _logger.info(f"Retrying download of chunk {chunk.index} for {chunk.path}")
         for retry in range(num_retries):
@@ -859,7 +859,7 @@ def _handle_readonly_on_windows(func, path, exc_info):
 
 
 def _get_tmp_dir():
-    from mlflow.utils.databricks_utils import get_repl_id, is_in_databricks_runtime
+    from qcflow.utils.databricks_utils import get_repl_id, is_in_databricks_runtime
 
     if is_in_databricks_runtime():
         try:
@@ -886,20 +886,20 @@ def get_or_create_tmp_dir():
     """
     Get or create a temporary directory which will be removed once python process exit.
     """
-    from mlflow.utils.databricks_utils import get_repl_id, is_in_databricks_runtime
+    from qcflow.utils.databricks_utils import get_repl_id, is_in_databricks_runtime
 
     if is_in_databricks_runtime() and get_repl_id() is not None:
         # Note: For python process attached to databricks notebook, atexit does not work.
         # The directory returned by `get_databricks_local_tmp_dir`
         # will be removed once databricks notebook detaches.
         # The temp directory is designed to be used by all kinds of applications,
-        # so create a child directory "mlflow" for storing mlflow temp data.
+        # so create a child directory "qcflow" for storing qcflow temp data.
         try:
             repl_local_tmp_dir = get_databricks_local_temp_dir()
         except Exception:
             repl_local_tmp_dir = os.path.join("/tmp", "repl_tmp_data", get_repl_id())
 
-        tmp_dir = os.path.join(repl_local_tmp_dir, "mlflow")
+        tmp_dir = os.path.join(repl_local_tmp_dir, "qcflow")
         os.makedirs(tmp_dir, exist_ok=True)
     else:
         tmp_dir = tempfile.mkdtemp()
@@ -916,8 +916,8 @@ def get_or_create_nfs_tmp_dir():
     """
     Get or create a temporary NFS directory which will be removed once python process exit.
     """
-    from mlflow.utils.databricks_utils import get_repl_id, is_in_databricks_runtime
-    from mlflow.utils.nfs_on_spark import get_nfs_cache_root_dir
+    from qcflow.utils.databricks_utils import get_repl_id, is_in_databricks_runtime
+    from qcflow.utils.nfs_on_spark import get_nfs_cache_root_dir
 
     nfs_root_dir = get_nfs_cache_root_dir()
 
@@ -926,13 +926,13 @@ def get_or_create_nfs_tmp_dir():
         # The directory returned by `get_databricks_nfs_tmp_dir`
         # will be removed once databricks notebook detaches.
         # The temp directory is designed to be used by all kinds of applications,
-        # so create a child directory "mlflow" for storing mlflow temp data.
+        # so create a child directory "qcflow" for storing qcflow temp data.
         try:
             repl_nfs_tmp_dir = get_databricks_nfs_temp_dir()
         except Exception:
             repl_nfs_tmp_dir = os.path.join(nfs_root_dir, "repl_tmp_data", get_repl_id())
 
-        tmp_nfs_dir = os.path.join(repl_nfs_tmp_dir, "mlflow")
+        tmp_nfs_dir = os.path.join(repl_nfs_tmp_dir, "qcflow")
         os.makedirs(tmp_nfs_dir, exist_ok=True)
     else:
         tmp_nfs_dir = tempfile.mkdtemp(dir=nfs_root_dir)
@@ -952,10 +952,10 @@ def write_spark_dataframe_to_parquet_on_local_disk(spark_df, output_path):
         output_path: Path to write the data to.
 
     """
-    from mlflow.utils.databricks_utils import is_in_databricks_runtime
+    from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
     if is_in_databricks_runtime():
-        dbfs_path = os.path.join(".mlflow", "cache", str(uuid.uuid4()))
+        dbfs_path = os.path.join(".qcflow", "cache", str(uuid.uuid4()))
         spark_df.coalesce(1).write.format("parquet").save(dbfs_path)
         shutil.copytree("/dbfs/" + dbfs_path, output_path)
         shutil.rmtree("/dbfs/" + dbfs_path)

@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from mlflow.entities._mlflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _MlflowObject
 
 
 class _ModelRegistryEntity(_MlflowObject):

@@ -6,12 +6,12 @@ from typing import Generator, Optional
 
 from cachetools import TTLCache
 
-from mlflow.entities import LiveSpan, Trace, TraceData, TraceInfo
-from mlflow.environment_variables import (
-    MLFLOW_TRACE_BUFFER_MAX_SIZE,
-    MLFLOW_TRACE_BUFFER_TTL_SECONDS,
+from qcflow.entities import LiveSpan, Trace, TraceData, TraceInfo
+from qcflow.environment_variables import (
+    QCFLOW_TRACE_BUFFER_MAX_SIZE,
+    QCFLOW_TRACE_BUFFER_TTL_SECONDS,
 )
-from mlflow.tracing.constant import SpanAttributeKey
+from qcflow.tracing.constant import SpanAttributeKey
 
 _logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class _Trace:
     info: TraceInfo
     span_dict: dict[str, LiveSpan] = field(default_factory=dict)
 
-    def to_mlflow_trace(self) -> Trace:
+    def to_qcflow_trace(self) -> Trace:
         trace_data = TraceData()
         for span in self.span_dict.values():
             # Convert LiveSpan, mutable objects, into immutable Span objects before persisting.
@@ -54,10 +54,10 @@ class InMemoryTraceManager:
     def __init__(self):
         # Storing request_id -> _Trace mapping
         self._traces: dict[str, _Trace] = TTLCache(
-            maxsize=MLFLOW_TRACE_BUFFER_MAX_SIZE.get(),
-            ttl=MLFLOW_TRACE_BUFFER_TTL_SECONDS.get(),
+            maxsize=QCFLOW_TRACE_BUFFER_MAX_SIZE.get(),
+            ttl=QCFLOW_TRACE_BUFFER_TTL_SECONDS.get(),
         )
-        # Store mapping between OpenTelemetry trace ID and MLflow request ID
+        # Store mapping between OpenTelemetry trace ID and QCFlow request ID
         self._trace_id_to_request_id: dict[int, str] = {}
         self._lock = threading.Lock()  # Lock for _traces
 
@@ -155,7 +155,7 @@ class InMemoryTraceManager:
         with self._lock:
             request_id = self._trace_id_to_request_id.pop(trace_id, None)
             trace = self._traces.pop(request_id, None)
-        return trace.to_mlflow_trace() if trace else None
+        return trace.to_qcflow_trace() if trace else None
 
     def flush(self):
         """Clear all the aggregated trace data. This should only be used for testing."""

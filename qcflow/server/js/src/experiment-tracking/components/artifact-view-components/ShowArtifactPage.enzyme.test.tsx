@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { mountWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 import ShowArtifactPage from './ShowArtifactPage';
 import ShowArtifactImageView from './ShowArtifactImageView';
 import ShowArtifactTextView from './ShowArtifactTextView';
@@ -69,8 +69,8 @@ describe('ShowArtifactPage', () => {
       path: 'somePath',
       isDirectory: true,
       runTags: {
-        'mlflow.log-model.history': (RunTag as any).fromJs({
-          key: 'mlflow.log-model.history',
+        'qcflow.log-model.history': (RunTag as any).fromJs({
+          key: 'qcflow.log-model.history',
           value: JSON.stringify([
             {
               run_id: 'run-uuid',
@@ -88,8 +88,8 @@ describe('ShowArtifactPage', () => {
       path: 'dir/somePath',
       isDirectory: true,
       runTags: {
-        'mlflow.log-model.history': (RunTag as any).fromJs({
-          key: 'mlflow.log-model.history',
+        'qcflow.log-model.history': (RunTag as any).fromJs({
+          key: 'qcflow.log-model.history',
           value: JSON.stringify([
             {
               run_id: 'run-uuid',

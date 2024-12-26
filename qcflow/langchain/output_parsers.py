@@ -4,15 +4,15 @@ from typing import Any, Iterator
 from langchain_core.messages.base import BaseMessage
 from langchain_core.output_parsers.transform import BaseTransformOutputParser
 
-from mlflow.models.rag_signatures import (
+from qcflow.models.rag_signatures import (
     ChainCompletionChoice,
     Message,
     StringResponse,
 )
-from mlflow.models.rag_signatures import (
+from qcflow.models.rag_signatures import (
     ChatCompletionResponse as RagChatCompletionResponse,
 )
-from mlflow.types.llm import (
+from qcflow.types.llm import (
     ChatChoice,
     ChatChoiceDelta,
     ChatChunkChoice,
@@ -20,10 +20,10 @@ from mlflow.types.llm import (
     ChatCompletionResponse,
     ChatMessage,
 )
-from mlflow.utils.annotations import deprecated
+from qcflow.utils.annotations import deprecated
 
 
-@deprecated("mlflow.langchain.output_parser.ChatCompletionOutputParser")
+@deprecated("qcflow.langchain.output_parser.ChatCompletionOutputParser")
 class ChatCompletionsOutputParser(BaseTransformOutputParser[dict[str, Any]]):
     """
     OutputParser that wraps the string output into a dictionary representation of a
@@ -38,7 +38,7 @@ class ChatCompletionsOutputParser(BaseTransformOutputParser[dict[str, Any]]):
     @property
     def _type(self) -> str:
         """Return the output parser type for serialization."""
-        return "mlflow_simplified_chat_completions"
+        return "qcflow_simplified_chat_completions"
 
     def parse(self, text: str) -> dict[str, Any]:
         return asdict(
@@ -64,7 +64,7 @@ class ChatCompletionOutputParser(BaseTransformOutputParser[str]):
     @property
     def _type(self) -> str:
         """Return the output parser type for serialization."""
-        return "mlflow_chat_completion"
+        return "qcflow_chat_completion"
 
     def parse(self, text: str) -> dict[str, Any]:
         """Returns the input text as a ChatCompletionResponse with no changes."""
@@ -80,7 +80,7 @@ class ChatCompletionOutputParser(BaseTransformOutputParser[str]):
             ).to_dict()
 
 
-@deprecated("mlflow.langchain.output_parser.ChatCompletionOutputParser")
+@deprecated("qcflow.langchain.output_parser.ChatCompletionOutputParser")
 class StringResponseOutputParser(BaseTransformOutputParser[dict[str, Any]]):
     """
     OutputParser that wraps the string output into an dictionary representation of a
@@ -95,7 +95,7 @@ class StringResponseOutputParser(BaseTransformOutputParser[dict[str, Any]]):
     @property
     def _type(self) -> str:
         """Return the output parser type for serialization."""
-        return "mlflow_simplified_str_object"
+        return "qcflow_simplified_str_object"
 
     def parse(self, text: str) -> dict[str, Any]:
         return asdict(StringResponse(content=text))

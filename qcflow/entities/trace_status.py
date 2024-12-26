@@ -2,11 +2,11 @@ from enum import Enum
 
 from opentelemetry import trace as trace_api
 
-from mlflow.protos.service_pb2 import TraceStatus as ProtoTraceStatus
+from qcflow.protos.service_pb2 import TraceStatus as ProtoTraceStatus
 
 
 class TraceStatus(str, Enum):
-    """Enum for status of an :py:class:`mlflow.entities.TraceInfo`."""
+    """Enum for status of an :py:class:`qcflow.entities.TraceInfo`."""
 
     UNSPECIFIED = "TRACE_STATUS_UNSPECIFIED"
     OK = "OK"
@@ -22,7 +22,7 @@ class TraceStatus(str, Enum):
 
     @staticmethod
     def from_otel_status(otel_status: trace_api.Status):
-        return _OTEL_STATUS_CODE_TO_MLFLOW[otel_status.status_code]
+        return _OTEL_STATUS_CODE_TO_QCFLOW[otel_status.status_code]
 
     @classmethod
     def pending_statuses(cls):
@@ -35,7 +35,7 @@ class TraceStatus(str, Enum):
         return {cls.UNSPECIFIED, cls.OK, cls.ERROR}
 
 
-_OTEL_STATUS_CODE_TO_MLFLOW = {
+_OTEL_STATUS_CODE_TO_QCFLOW = {
     trace_api.StatusCode.OK: TraceStatus.OK,
     trace_api.StatusCode.ERROR: TraceStatus.ERROR,
     trace_api.StatusCode.UNSET: TraceStatus.UNSPECIFIED,

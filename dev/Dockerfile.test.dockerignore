@@ -2,7 +2,7 @@
 mlruns
 docs
 apidocs
-mlflow.Rcheck
+qcflow.Rcheck
 outputs
 
 dev

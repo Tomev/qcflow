@@ -130,7 +130,7 @@ export const PromoteModelButton = (props: PromoteModelButtonImplProps) => {
       <>
         <Typography.Paragraph css={{ marginTop: '-12px' }}>
           <FormattedMessage
-            defaultMessage="Copy your MLflow models to another registered model for
+            defaultMessage="Copy your QCFlow models to another registered model for
             simple model promotion across environments. For more mature production-grade setups, we
             recommend setting up automated model training workflows to produce models in controlled
             environments. <link>Learn more</link>"
@@ -138,10 +138,10 @@ export const PromoteModelButton = (props: PromoteModelButtonImplProps) => {
             values={{
               link: (chunks) => (
                 <Typography.Link
-                  componentId="codegen_mlflow_app_src_model-registry_components_promotemodelbutton.tsx_140"
+                  componentId="codegen_qcflow_app_src_model-registry_components_promotemodelbutton.tsx_140"
                   href={
-                    'https://mlflow.org/docs/latest/model-registry.html' +
-                    '#promoting-an-mlflow-model-across-environments'
+                    'https://qcflow.org/docs/latest/model-registry.html' +
+                    '#promoting-an-qcflow-model-across-environments'
                   }
                   openInNewTab
                 >
@@ -164,7 +164,7 @@ export const PromoteModelButton = (props: PromoteModelButtonImplProps) => {
   return (
     <div className="promote-model-btn-wrapper">
       <Button
-        componentId="codegen_mlflow_app_src_model-registry_components_promotemodelbutton.tsx_165"
+        componentId="codegen_qcflow_app_src_model-registry_components_promotemodelbutton.tsx_165"
         className="promote-model-btn"
         type="primary"
         onClick={showRegisterModal}

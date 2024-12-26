@@ -1,7 +1,7 @@
 """
 A script to update the index of known PyPI packages, which is used during dependency inference to
 print warnings when unrecognized packages are inferred as dependencies. The index is located
-at 'mlflow/pypi_package_index.json'.
+at 'qcflow/pypi_package_index.json'.
 
 # How to run (make sure you're in the repository root):
 $ python dev/update_pypi_package_index.py
@@ -22,8 +22,8 @@ def parse_args(args):
     parser.add_argument(
         "-p",
         "--path",
-        help="Path to the PyPI package index (default: mlflow/pypi_package_index.json)",
-        default="mlflow/pypi_package_index.json",
+        help="Path to the PyPI package index (default: qcflow/pypi_package_index.json)",
+        default="qcflow/pypi_package_index.json",
         required=False,
     )
     return parser.parse_args(args)

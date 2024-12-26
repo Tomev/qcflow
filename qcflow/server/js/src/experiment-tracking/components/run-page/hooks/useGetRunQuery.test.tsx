@@ -17,7 +17,7 @@ describe('useGetRunQuery', () => {
       graphql.query('GetRun', (req, res, ctx) =>
         res(
           ctx.data({
-            mlflowGetRun: {
+            qcflowGetRun: {
               apiError: null,
               run: {
                 info: {

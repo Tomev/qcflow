@@ -1,4 +1,4 @@
-"""Utility functions for mlflow.langchain."""
+"""Utility functions for qcflow.langchain."""
 
 import contextlib
 import functools
@@ -19,11 +19,11 @@ import yaml
 from packaging import version
 from packaging.version import Version
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.models.utils import _validate_and_get_model_code_path
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR
-from mlflow.utils.class_utils import _get_class_from_string
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.models.utils import _validate_and_get_model_code_path
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR
+from qcflow.utils.class_utils import _get_class_from_string
 
 _AGENT_PRIMITIVES_FILE_NAME = "agent_primitive_args.json"
 _AGENT_PRIMITIVES_DATA_KEY = "agent_primitive_data"
@@ -47,10 +47,10 @@ _CONFIG_LOAD_KEY = "config_load"
 _PICKLE_LOAD_KEY = "pickle_load"
 _MODEL_LOAD_KEY = "model_load"
 _UNSUPPORTED_MODEL_WARNING_MESSAGE = (
-    "MLflow does not guarantee support for Chains outside of the subclasses of LLMChain, found %s"
+    "QCFlow does not guarantee support for Chains outside of the subclasses of LLMChain, found %s"
 )
 _UNSUPPORTED_LLM_WARNING_MESSAGE = (
-    "MLflow does not guarantee support for LLMs outside of HuggingFacePipeline and OpenAI, found %s"
+    "QCFlow does not guarantee support for LLMs outside of HuggingFacePipeline and OpenAI, found %s"
 )
 
 
@@ -152,7 +152,7 @@ def supported_lc_types():
 # Wrapping as a function to avoid callign supported_lc_types() at import time
 def get_unsupported_model_message(model_type):
     return (
-        "MLflow langchain flavor only supports subclasses of "
+        "QCFlow langchain flavor only supports subclasses of "
         f"{supported_lc_types()}, found {model_type}."
     )
 
@@ -190,7 +190,7 @@ def _get_special_chain_info_or_none(chain):
 def _get_map_of_special_chain_class_to_loader_arg():
     import langchain
 
-    from mlflow.langchain.retriever_chain import _RetrieverChain
+    from qcflow.langchain.retriever_chain import _RetrieverChain
 
     class_name_to_loader_arg = {
         "langchain.chains.RetrievalQA": "retriever",
@@ -215,7 +215,7 @@ def _get_map_of_special_chain_class_to_loader_arg():
         except Exception:
             logger.warning(
                 "Unexpected import failure for class '%s'. Please file an issue at"
-                " https://github.com/mlflow/mlflow/issues/.",
+                " https://github.com/qcflow/qcflow/issues/.",
                 class_name,
                 exc_info=True,
             )
@@ -288,7 +288,7 @@ def _validate_and_prepare_lc_model_or_path(lc_model, loader_fn, temp_dir=None):
         return _validate_and_get_model_code_path(lc_model, temp_dir)
 
     if not isinstance(lc_model, supported_lc_types()):
-        raise mlflow.MlflowException.invalid_parameter_value(
+        raise qcflow.MlflowException.invalid_parameter_value(
             get_unsupported_model_message(type(lc_model).__name__)
         )
 
@@ -309,11 +309,11 @@ def _validate_and_prepare_lc_model_or_path(lc_model, loader_fn, temp_dir=None):
 
     if special_chain_info := _get_special_chain_info_or_none(lc_model):
         if loader_fn is None:
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 f"For {type(lc_model).__name__} models, a `loader_fn` must be provided."
             )
         if not isinstance(loader_fn, types.FunctionType):
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 "The `loader_fn` must be a function that returns a {loader_arg}.".format(
                     loader_arg=special_chain_info.loader_arg
                 )
@@ -321,14 +321,14 @@ def _validate_and_prepare_lc_model_or_path(lc_model, loader_fn, temp_dir=None):
 
     # If lc_model is a retriever, wrap it in a _RetrieverChain
     if isinstance(lc_model, langchain.schema.BaseRetriever):
-        from mlflow.langchain.retriever_chain import _RetrieverChain
+        from qcflow.langchain.retriever_chain import _RetrieverChain
 
         if loader_fn is None:
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 f"For {type(lc_model).__name__} models, a `loader_fn` must be provided."
             )
         if not isinstance(loader_fn, types.FunctionType):
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 "The `loader_fn` must be a function that returns a retriever."
             )
         lc_model = _RetrieverChain(retriever=lc_model)
@@ -365,13 +365,13 @@ def _save_base_lcs(model, path, loader_fn=None, persist_dir=None):
                 with open(tools_data_path, "wb") as f:
                     cloudpickle.dump(model.tools, f)
             except Exception as e:
-                raise mlflow.MlflowException(
+                raise qcflow.MlflowException(
                     "Error when attempting to pickle the AgentExecutor tools. "
                     "This model likely does not support serialization."
                 ) from e
             model_data_kwargs[_TOOLS_DATA_KEY] = _TOOLS_DATA_FILE_NAME
         else:
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 "For initializing the AgentExecutor, tools must be provided."
             )
 
@@ -399,7 +399,7 @@ def _save_base_lcs(model, path, loader_fn=None, persist_dir=None):
                 shutil.copytree(persist_dir, persist_dir_data_path)
                 model_data_kwargs[_PERSIST_DIR_KEY] = _PERSIST_DIR_NAME
             else:
-                raise mlflow.MlflowException.invalid_parameter_value(
+                raise qcflow.MlflowException.invalid_parameter_value(
                     "The directory provided for persist_dir does not exist."
                 )
 
@@ -409,7 +409,7 @@ def _save_base_lcs(model, path, loader_fn=None, persist_dir=None):
         logger.warning(get_unsupported_model_message(type(model).__name__))
         model.save(model_data_path)
     else:
-        raise mlflow.MlflowException.invalid_parameter_value(
+        raise qcflow.MlflowException.invalid_parameter_value(
             get_unsupported_model_message(type(model).__name__)
         )
 
@@ -444,7 +444,7 @@ def _patch_loader(loader_func: Callable) -> Callable:
     Since langchain-community 0.0.27, loading a module that relies on the pickle deserialization
     requires the `allow_dangerous_deserialization` flag to be set to True, for security reasons.
     However, this flag could not be specified via the LangChain's loading API like load_chain(),
-    load_llm(), until LangChain 0.1.14. As a result, such module cannot be loaded with MLflow
+    load_llm(), until LangChain 0.1.14. As a result, such module cannot be loaded with QCFlow
     with earlier version of LangChain and we have to tell the user to upgrade LangChain to 0.0.14
     or above.
 
@@ -505,11 +505,11 @@ def _load_base_lcs(
 
     from langchain.chains.loading import load_chain
 
-    from mlflow.langchain.retriever_chain import _RetrieverChain
+    from qcflow.langchain.retriever_chain import _RetrieverChain
 
     if loader_arg is not None:
         if loader_fn_path is None:
-            raise mlflow.MlflowException.invalid_parameter_value(
+            raise qcflow.MlflowException.invalid_parameter_value(
                 "Missing file for loader_fn which is required to build the model."
             )
         loader_fn = _load_from_pickle(loader_fn_path)
@@ -530,7 +530,7 @@ def _load_base_lcs(
         if os.path.exists(tools_path):
             tools = _load_from_pickle(tools_path)
         else:
-            raise mlflow.MlflowException(
+            raise qcflow.MlflowException(
                 "Missing file for tools which is required to build the AgentExecutor object."
             )
 
@@ -585,8 +585,8 @@ def patch_langchain_type_to_cls_dict(func):
         except ValueError as e:
             if m := _CHAT_MODELS_ERROR_MSG.search(str(e)):
                 model_name = "ChatOpenAI" if m.group(1) == "openai-chat" else "AzureChatOpenAI"
-                raise mlflow.MlflowException(
-                    f"Loading {model_name} chat model is not supported in MLflow with the "
+                raise qcflow.MlflowException(
+                    f"Loading {model_name} chat model is not supported in QCFlow with the "
                     "current version of LangChain. Please upgrade LangChain to 0.0.307 or above "
                     "by running `pip install langchain>=0.0.307`."
                 ) from e

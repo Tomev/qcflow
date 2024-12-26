@@ -1,23 +1,23 @@
 import pandas as pd
 
-from mlflow.entities.evaluation import Evaluation as EvaluationEntity
-from mlflow.evaluation.utils import (
+from qcflow.entities.evaluation import Evaluation as EvaluationEntity
+from qcflow.evaluation.utils import (
     _get_assessments_dataframe_schema,
     _get_evaluations_dataframe_schema,
     _get_metrics_dataframe_schema,
     _get_tags_dataframe_schema,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
-from mlflow.tracking.client import MlflowClient
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
+from qcflow.tracking.client import MlflowClient
 
 
 def get_evaluation(*, run_id: str, evaluation_id: str) -> EvaluationEntity:
     """
-    Retrieves an Evaluation object from an MLflow Run.
+    Retrieves an Evaluation object from an QCFlow Run.
 
     Args:
-        run_id (str): ID of the MLflow Run containing the evaluation.
+        run_id (str): ID of the QCFlow Run containing the evaluation.
         evaluation_id (str): The ID of the evaluation.
 
     Returns:
@@ -192,13 +192,13 @@ def _dataframes_to_evaluations(
                 "key": metric["key"],
                 "value": metric["value"],
                 "timestamp": metric["timestamp"],
-                # Evaluation metrics don't have steps, but we're reusing the MLflow Metric
+                # Evaluation metrics don't have steps, but we're reusing the QCFlow Metric
                 # class to represent Evaluation metrics as entities in Python for now. Accordingly,
-                # we set the step to 0 in order to parse the evaluation metric as an MLflow Metric
+                # we set the step to 0 in order to parse the evaluation metric as an QCFlow Metric
                 # Python entity
                 "step": 0,
                 # Also discard the evaluation_id field from the evaluation metric, since this
-                # field is not part of the MLflow Metric Python entity
+                # field is not part of the QCFlow Metric Python entity
             }
             for metric in metrics_by_eval.get(evaluation_id, [])
         ]

@@ -13,19 +13,19 @@ from botocore.client import BaseClient
 from google.cloud.storage import Client
 from requests import Response
 
-from mlflow.data.dataset import Dataset
-from mlflow.data.delta_dataset_source import DeltaDatasetSource
-from mlflow.data.pandas_dataset import PandasDataset
-from mlflow.entities.model_registry import ModelVersionTag, RegisteredModelTag
-from mlflow.entities.run import Run
-from mlflow.entities.run_data import RunData
-from mlflow.entities.run_info import RunInfo
-from mlflow.entities.run_inputs import RunInputs
-from mlflow.entities.run_tag import RunTag
-from mlflow.exceptions import MlflowException
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import ModelSignature, Schema
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.data.dataset import Dataset
+from qcflow.data.delta_dataset_source import DeltaDatasetSource
+from qcflow.data.pandas_dataset import PandasDataset
+from qcflow.entities.model_registry import ModelVersionTag, RegisteredModelTag
+from qcflow.entities.run import Run
+from qcflow.entities.run_data import RunData
+from qcflow.entities.run_info import RunInfo
+from qcflow.entities.run_inputs import RunInputs
+from qcflow.entities.run_tag import RunTag
+from qcflow.exceptions import MlflowException
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import ModelSignature, Schema
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     MODEL_VERSION_OPERATION_READ_WRITE,
     AwsCredentials,
     AzureUserDelegationSAS,
@@ -64,31 +64,31 @@ from mlflow.protos.databricks_uc_registry_messages_pb2 import (
     UpdateModelVersionRequest,
     UpdateRegisteredModelRequest,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import ModelVersion as ProtoModelVersion
-from mlflow.protos.service_pb2 import GetRun
-from mlflow.store._unity_catalog.registry.rest_store import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import ModelVersion as ProtoModelVersion
+from qcflow.protos.service_pb2 import GetRun
+from qcflow.store._unity_catalog.registry.rest_store import (
     _DATABRICKS_LINEAGE_ID_HEADER,
     _DATABRICKS_ORG_ID_HEADER,
     UcModelRegistryStore,
 )
-from mlflow.store.artifact.azure_data_lake_artifact_repo import AzureDataLakeArtifactRepository
-from mlflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
-from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
-from mlflow.store.artifact.presigned_url_artifact_repo import PresignedUrlArtifactRepository
-from mlflow.types.schema import ColSpec, DataType
-from mlflow.utils._unity_catalog_utils import (
+from qcflow.store.artifact.azure_data_lake_artifact_repo import AzureDataLakeArtifactRepository
+from qcflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
+from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+from qcflow.store.artifact.presigned_url_artifact_repo import PresignedUrlArtifactRepository
+from qcflow.types.schema import ColSpec, DataType
+from qcflow.utils._unity_catalog_utils import (
     _ACTIVE_CATALOG_QUERY,
     _ACTIVE_SCHEMA_QUERY,
     get_artifact_repo_from_storage_info,
-    uc_model_version_tag_from_mlflow_tags,
-    uc_registered_model_tag_from_mlflow_tags,
+    uc_model_version_tag_from_qcflow_tags,
+    uc_registered_model_tag_from_qcflow_tags,
 )
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATABRICKS_JOB_ID,
-    MLFLOW_DATABRICKS_JOB_RUN_ID,
-    MLFLOW_DATABRICKS_NOTEBOOK_ID,
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATABRICKS_JOB_ID,
+    QCFLOW_DATABRICKS_JOB_RUN_ID,
+    QCFLOW_DATABRICKS_NOTEBOOK_ID,
 )
-from mlflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.proto_json_utils import message_to_json
 
 from tests.helper_functions import mock_http_200
 from tests.resources.data.dataset_source import SampleDatasetSource
@@ -100,14 +100,14 @@ from tests.store._unity_catalog.conftest import (
 
 @pytest.fixture
 def store(mock_databricks_uc_host_creds):
-    with mock.patch("mlflow.utils.databricks_utils.get_databricks_host_creds"):
+    with mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"):
         yield UcModelRegistryStore(store_uri="databricks-uc", tracking_uri="databricks")
 
 
 @pytest.fixture
 def spark_session(request):
     with mock.patch(
-        "mlflow.store._unity_catalog.registry.rest_store._get_active_spark_session"
+        "qcflow.store._unity_catalog.registry.rest_store._get_active_spark_session"
     ) as spark_session_getter:
         spark = mock.MagicMock()
         spark_session_getter.return_value = spark
@@ -132,7 +132,7 @@ def spark_session(request):
 def _args(endpoint, method, json_body, host_creds, extra_headers):
     res = {
         "host_creds": host_creds,
-        "endpoint": f"/api/2.0/mlflow/unity-catalog/{endpoint}",
+        "endpoint": f"/api/2.0/qcflow/unity-catalog/{endpoint}",
         "method": method,
         "extra_headers": extra_headers,
     }
@@ -181,7 +181,7 @@ def test_create_registered_model(mock_http, store):
         CreateRegisteredModelRequest(
             name="model_1",
             description=description,
-            tags=uc_registered_model_tag_from_mlflow_tags(tags),
+            tags=uc_registered_model_tag_from_qcflow_tags(tags),
         ),
     )
 
@@ -306,7 +306,7 @@ def test_create_model_version_with_langchain_dependencies(store, langchain_local
     mock_artifact_repo = mock.MagicMock(autospec=OptimizedS3ArtifactRepository)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -318,7 +318,7 @@ def test_create_model_version_with_langchain_dependencies(store, langchain_local
             ),
         ) as request_mock,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
             return_value=mock_artifact_repo,
         ) as optimized_s3_artifact_repo_class_mock,
         mock.patch.dict("sys.modules", {"boto3": {}}),
@@ -379,7 +379,7 @@ def test_create_model_version_with_resources(store, langchain_local_model_dir_wi
     mock_artifact_repo = mock.MagicMock(autospec=OptimizedS3ArtifactRepository)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -391,7 +391,7 @@ def test_create_model_version_with_resources(store, langchain_local_model_dir_wi
             ),
         ) as request_mock,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
             return_value=mock_artifact_repo,
         ) as optimized_s3_artifact_repo_class_mock,
         mock.patch.dict("sys.modules", {"boto3": {}}),
@@ -441,7 +441,7 @@ def test_create_model_version_with_langchain_no_dependencies(
     mock_artifact_repo = mock.MagicMock(autospec=OptimizedS3ArtifactRepository)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -453,7 +453,7 @@ def test_create_model_version_with_langchain_no_dependencies(
             ),
         ) as request_mock,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
             return_value=mock_artifact_repo,
         ) as optimized_s3_artifact_repo_class_mock,
         mock.patch.dict("sys.modules", {"boto3": {}}),
@@ -505,7 +505,7 @@ def test_create_model_version_missing_python_deps(store, local_model_dir):
     version = "1"
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -534,7 +534,7 @@ def feature_store_local_model_dir(tmp_path):
         "artifact_path": "some-artifact-path",
         "run_id": "abc123",
         "signature": _TEST_SIGNATURE.to_dict(),
-        "flavors": {"python_function": {"loader_module": "databricks.feature_store.mlflow_model"}},
+        "flavors": {"python_function": {"loader_module": "databricks.feature_store.qcflow_model"}},
     }
     with open(tmp_path.joinpath(MLMODEL_FILE_NAME), "w") as handle:
         yaml.dump(fake_mlmodel_contents, handle)
@@ -554,7 +554,7 @@ def test_create_model_version_missing_mlmodel(store, tmp_path):
     with pytest.raises(
         MlflowException,
         match="Unable to load model metadata. Ensure the source path of the model "
-        "being registered points to a valid MLflow model directory ",
+        "being registered points to a valid QCFlow model directory ",
     ):
         store.create_model_version(name="mymodel", source=str(tmp_path))
 
@@ -613,11 +613,11 @@ def test_create_model_version_with_sse_kms_client(store, langchain_local_model_d
         {"type": "DATABRICKS_MODEL_ENDPOINT", "name": "chat_endpoint"},
     ]
 
-    optimized_s3_repo_package = "mlflow.store.artifact.optimized_s3_artifact_repo"
+    optimized_s3_repo_package = "qcflow.store.artifact.optimized_s3_artifact_repo"
     mock_s3_client = mock.MagicMock(autospec=BaseClient)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -687,7 +687,7 @@ def test_create_model_version_with_sse_kms_store(store, langchain_local_model_di
     mock_artifact_repo = mock.MagicMock(autospec=OptimizedS3ArtifactRepository)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -699,7 +699,7 @@ def test_create_model_version_with_sse_kms_store(store, langchain_local_model_di
             ),
         ),
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
             return_value=mock_artifact_repo,
         ) as optimized_s3_artifact_repo_class_mock,
         mock.patch.dict("sys.modules", {"boto3": {}}),
@@ -767,7 +767,7 @@ def test_download_model_weights_if_not_saved(
     if model_binary_path := flavor_config.get("transformers", {}).get("model_binary"):
         tmp_path.joinpath(model_binary_path).mkdir()
 
-    with mock.patch("mlflow.transformers") as transformers_mock:
+    with mock.patch("qcflow.transformers") as transformers_mock:
         store._download_model_weights_if_not_saved(str(tmp_path))
 
         if should_persist_api_called:
@@ -903,7 +903,7 @@ def test_get_notebook_id_returns_none_if_empty_run(store):
 
 
 def test_get_notebook_id_returns_expected_id(store):
-    test_tag = RunTag(key=MLFLOW_DATABRICKS_NOTEBOOK_ID, value="123")
+    test_tag = RunTag(key=QCFLOW_DATABRICKS_NOTEBOOK_ID, value="123")
     test_run_data = RunData(tags=[test_tag])
     test_run_info = RunInfo(
         "run_uuid",
@@ -923,7 +923,7 @@ def test_get_job_id_returns_none_if_empty_run(store):
 
 
 def test_get_job_id_returns_expected_id(store):
-    test_tag = RunTag(key=MLFLOW_DATABRICKS_JOB_ID, value="123")
+    test_tag = RunTag(key=QCFLOW_DATABRICKS_JOB_ID, value="123")
     test_run_data = RunData(tags=[test_tag])
     test_run_info = RunInfo(
         "run_uuid",
@@ -943,7 +943,7 @@ def test_get_job_run_id_returns_none_if_empty_run(store):
 
 
 def test_get_job_run_id_returns_expected_id(store):
-    test_tag = RunTag(key=MLFLOW_DATABRICKS_JOB_RUN_ID, value="123")
+    test_tag = RunTag(key=QCFLOW_DATABRICKS_JOB_RUN_ID, value="123")
     test_run_data = RunData(tags=[test_tag])
     test_run_info = RunInfo(
         "run_uuid",
@@ -982,7 +982,7 @@ def test_get_run_and_headers_returns_none_if_request_fails(store, status_code, r
     mock_response.headers = {_DATABRICKS_ORG_ID_HEADER: 123}
     mock_response.text = response_text
     with mock.patch(
-        "mlflow.store._unity_catalog.registry.rest_store.http_request", return_value=mock_response
+        "qcflow.store._unity_catalog.registry.rest_store.http_request", return_value=mock_response
     ):
         assert store._get_run_and_headers(run_id="some_run_id") == (None, None)
 
@@ -990,14 +990,14 @@ def test_get_run_and_headers_returns_none_if_request_fails(store, status_code, r
 def test_get_run_and_headers_returns_none_if_tracking_uri_not_databricks(
     mock_databricks_uc_host_creds, tmp_path
 ):
-    with mock.patch("mlflow.utils.databricks_utils.get_databricks_host_creds"):
+    with mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"):
         store = UcModelRegistryStore(store_uri="databricks-uc", tracking_uri=str(tmp_path))
         mock_response = mock.MagicMock(autospec=Response)
         mock_response.status_code = 200
         mock_response.headers = {_DATABRICKS_ORG_ID_HEADER: 123}
         mock_response.text = "{}"
         with mock.patch(
-            "mlflow.store._unity_catalog.registry.rest_store.http_request",
+            "qcflow.store._unity_catalog.registry.rest_store.http_request",
             return_value=mock_response,
         ):
             assert store._get_run_and_headers(run_id="some_run_id") == (None, None)
@@ -1032,11 +1032,11 @@ def get_request_mock(
         model_version_temp_credentials_response = GenerateTemporaryModelVersionCredentialsResponse(
             credentials=temp_credentials
         )
-        uc_tags = uc_model_version_tag_from_mlflow_tags(tags) if tags is not None else []
+        uc_tags = uc_model_version_tag_from_qcflow_tags(tags) if tags is not None else []
         req_info_to_response = {
             (
                 _REGISTRY_HOST_CREDS.host,
-                "/api/2.0/mlflow/unity-catalog/model-versions/create",
+                "/api/2.0/qcflow/unity-catalog/model-versions/create",
                 "POST",
                 message_to_json(
                     CreateModelVersionRequest(
@@ -1057,7 +1057,7 @@ def get_request_mock(
             ),
             (
                 _REGISTRY_HOST_CREDS.host,
-                "/api/2.0/mlflow/unity-catalog/model-versions/generate-temporary-credentials",
+                "/api/2.0/qcflow/unity-catalog/model-versions/generate-temporary-credentials",
                 "POST",
                 message_to_json(
                     GenerateTemporaryModelVersionCredentialsRequest(
@@ -1067,7 +1067,7 @@ def get_request_mock(
             ): model_version_temp_credentials_response,
             (
                 _REGISTRY_HOST_CREDS.host,
-                "/api/2.0/mlflow/unity-catalog/model-versions/finalize",
+                "/api/2.0/qcflow/unity-catalog/model-versions/finalize",
                 "POST",
                 message_to_json(FinalizeModelVersionRequest(name=name, version=version)),
             ): FinalizeModelVersionResponse(),
@@ -1076,7 +1076,7 @@ def get_request_mock(
             req_info_to_response[
                 (
                     _TRACKING_HOST_CREDS.host,
-                    "/api/2.0/mlflow/runs/get",
+                    "/api/2.0/qcflow/runs/get",
                     "GET",
                     message_to_json(GetRun(run_id=run_id)),
                 )
@@ -1110,7 +1110,7 @@ def _assert_create_model_version_endpoints_called(
     Asserts that endpoints related to the model version creation flow were called on the provided
     `request_mock`
     """
-    uc_tags = uc_model_version_tag_from_mlflow_tags(tags) if tags is not None else []
+    uc_tags = uc_model_version_tag_from_qcflow_tags(tags) if tags is not None else []
     for endpoint, proto_message in [
         (
             "model-versions/create",
@@ -1175,7 +1175,7 @@ def test_create_model_version_aws(store, local_model_dir):
     mock_artifact_repo = mock.MagicMock(autospec=OptimizedS3ArtifactRepository)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -1186,7 +1186,7 @@ def test_create_model_version_aws(store, local_model_dir):
             ),
         ) as request_mock,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
             return_value=mock_artifact_repo,
         ) as optimized_s3_artifact_repo_class_mock,
         mock.patch.dict("sys.modules", {"boto3": {}}),
@@ -1229,7 +1229,7 @@ def test_create_model_version_local_model_path(store, local_model_dir):
     mock_artifact_repo = mock.MagicMock(autospec=OptimizedS3ArtifactRepository)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -1239,9 +1239,9 @@ def test_create_model_version_local_model_path(store, local_model_dir):
                 tags=tags,
             ),
         ) as request_mock,
-        mock.patch("mlflow.artifacts.download_artifacts") as mock_download_artifacts,
+        mock.patch("qcflow.artifacts.download_artifacts") as mock_download_artifacts,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
             return_value=mock_artifact_repo,
         ),
     ):
@@ -1277,7 +1277,7 @@ def test_create_model_version_doesnt_redownload_model_from_local_dir(store, loca
     model_dir = str(local_model_dir)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -1287,7 +1287,7 @@ def test_create_model_version_doesnt_redownload_model_from_local_dir(store, loca
             ),
         ),
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
             return_value=mock_artifact_repo,
         ),
     ):
@@ -1319,7 +1319,7 @@ def test_create_model_version_remote_source(store, local_model_dir, tmp_path):
     shutil.copytree(local_model_dir, local_tmpdir)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -1329,11 +1329,11 @@ def test_create_model_version_remote_source(store, local_model_dir, tmp_path):
             ),
         ) as request_mock,
         mock.patch(
-            "mlflow.artifacts.download_artifacts",
+            "qcflow.artifacts.download_artifacts",
             return_value=local_tmpdir,
         ) as mock_download_artifacts,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository",
             return_value=mock_artifact_repo,
         ),
     ):
@@ -1371,7 +1371,7 @@ def test_create_model_version_azure(store, local_model_dir):
     mock_adls_repo = mock.MagicMock(autospec=AzureDataLakeArtifactRepository)
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -1382,7 +1382,7 @@ def test_create_model_version_azure(store, local_model_dir):
             ),
         ) as request_mock,
         mock.patch(
-            "mlflow.store.artifact.azure_data_lake_artifact_repo.AzureDataLakeArtifactRepository",
+            "qcflow.store.artifact.azure_data_lake_artifact_repo.AzureDataLakeArtifactRepository",
             return_value=mock_adls_repo,
         ) as adls_artifact_repo_class_mock,
     ):
@@ -1413,7 +1413,7 @@ def test_create_model_version_unknown_storage_creds(store, local_model_dir):
     version = "1"
     with (
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=get_request_mock(
                 name=model_name,
                 version=version,
@@ -1468,9 +1468,9 @@ def test_create_model_version_gcp(store, local_model_dir, create_args):
     )
     get_run_and_headers_retval = None, None
     if "run_id" in create_kwargs:
-        test_notebook_tag = RunTag(key=MLFLOW_DATABRICKS_NOTEBOOK_ID, value="321")
-        test_job_tag = RunTag(key=MLFLOW_DATABRICKS_JOB_ID, value="456")
-        test_job_run_tag = RunTag(key=MLFLOW_DATABRICKS_JOB_RUN_ID, value="789")
+        test_notebook_tag = RunTag(key=QCFLOW_DATABRICKS_NOTEBOOK_ID, value="321")
+        test_job_tag = RunTag(key=QCFLOW_DATABRICKS_JOB_ID, value="456")
+        test_job_run_tag = RunTag(key=QCFLOW_DATABRICKS_JOB_RUN_ID, value="789")
         test_run_data = RunData(tags=[test_notebook_tag, test_job_tag, test_job_run_tag])
         test_run_info = RunInfo(
             "run_uuid",
@@ -1485,23 +1485,23 @@ def test_create_model_version_gcp(store, local_model_dir, create_args):
         get_run_and_headers_retval = ({_DATABRICKS_ORG_ID_HEADER: "123"}, test_run)
     with (
         mock.patch(
-            "mlflow.store._unity_catalog.registry.rest_store.http_request",
+            "qcflow.store._unity_catalog.registry.rest_store.http_request",
             side_effect=mock_request_fn,
         ),
         mock.patch(
-            "mlflow.store._unity_catalog.registry.rest_store.UcModelRegistryStore._get_run_and_headers",
+            "qcflow.store._unity_catalog.registry.rest_store.UcModelRegistryStore._get_run_and_headers",
             # Set the headers and Run retvals when the run_id is set
             return_value=get_run_and_headers_retval,
         ),
         mock.patch(
-            "mlflow.utils.rest_utils.http_request",
+            "qcflow.utils.rest_utils.http_request",
             side_effect=mock_request_fn,
         ) as request_mock,
         mock.patch(
             "google.cloud.storage.Client", return_value=mock.MagicMock(autospec=Client)
         ) as gcs_client_class_mock,
         mock.patch(
-            "mlflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository",
+            "qcflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository",
             return_value=mock_gcs_repo,
         ) as gcs_artifact_repo_class_mock,
     ):
@@ -1539,11 +1539,11 @@ def test_local_model_dir_preserves_uc_volumes_path(tmp_path):
     store = UcModelRegistryStore(store_uri="databricks-uc", tracking_uri="databricks-uc")
     with (
         mock.patch(
-            "mlflow.artifacts.download_artifacts", return_value=str(tmp_path)
+            "qcflow.artifacts.download_artifacts", return_value=str(tmp_path)
         ) as mock_download_artifacts,
         mock.patch(
             # Pretend that `tmp_path` is a UC Volumes path
-            "mlflow.store._unity_catalog.registry.rest_store.is_fuse_or_uc_volumes_uri",
+            "qcflow.store._unity_catalog.registry.rest_store.is_fuse_or_uc_volumes_uri",
             return_value=True,
         ) as mock_is_fuse_or_uc_volumes_uri,
     ):
@@ -1563,9 +1563,9 @@ def test_local_model_dir_preserves_uc_volumes_path(tmp_path):
     ],
 )
 def test_input_source_truncation(num_inputs, expected_truncation_size, store):
-    test_notebook_tag = RunTag(key=MLFLOW_DATABRICKS_NOTEBOOK_ID, value="321")
-    test_job_tag = RunTag(key=MLFLOW_DATABRICKS_JOB_ID, value="456")
-    test_job_run_tag = RunTag(key=MLFLOW_DATABRICKS_JOB_RUN_ID, value="789")
+    test_notebook_tag = RunTag(key=QCFLOW_DATABRICKS_NOTEBOOK_ID, value="321")
+    test_job_tag = RunTag(key=QCFLOW_DATABRICKS_JOB_ID, value="456")
+    test_job_run_tag = RunTag(key=QCFLOW_DATABRICKS_JOB_RUN_ID, value="789")
     test_run_data = RunData(tags=[test_notebook_tag, test_job_tag, test_job_run_tag])
     test_run_info = RunInfo(
         "run_uuid",
@@ -1825,8 +1825,8 @@ def test_store_ignores_hive_metastore_default_from_spark_session(mock_http, spar
 
 
 def test_store_use_presigned_url_store_when_disabled(monkeypatch):
-    store_package = "mlflow.store._unity_catalog.registry.rest_store"
-    monkeypatch.setenv("MLFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "false")
+    store_package = "qcflow.store._unity_catalog.registry.rest_store"
+    monkeypatch.setenv("QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "false")
     monkeypatch.setenvs(
         {
             "DATABRICKS_HOST": "my-host",
@@ -1873,8 +1873,8 @@ def test_store_use_presigned_url_store_when_enabled(monkeypatch):
             "DATABRICKS_TOKEN": "my-token",
         }
     )
-    monkeypatch.setenv("MLFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "false")
-    store_package = "mlflow.store._unity_catalog.registry.rest_store"
+    monkeypatch.setenv("QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC", "false")
+    store_package = "qcflow.store._unity_catalog.registry.rest_store"
     creds = TemporaryCredentials(storage_mode=StorageMode.DEFAULT_STORAGE)
     with mock.patch(
         f"{store_package}.UcModelRegistryStore._get_temporary_model_version_write_credentials",

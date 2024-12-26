@@ -13,25 +13,25 @@ import pytest
 import sklearn.linear_model
 from packaging.version import Version
 
-import mlflow
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow.exceptions import MlflowException
-from mlflow.models import (
+import qcflow
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow.exceptions import MlflowException
+from qcflow.models import (
     Model,
     ModelSignature,
     convert_input_example_to_serving_input,
     infer_signature,
 )
-from mlflow.models.utils import (
+from qcflow.models.utils import (
     _enforce_params_schema,
     _enforce_schema,
 )
-from mlflow.pyfunc import PyFuncModel
-from mlflow.pyfunc.scoring_server import is_unified_llm_input
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types import ColSpec, DataType, ParamSchema, ParamSpec, Schema, TensorSpec
-from mlflow.types.schema import AnyType, Array, Map, Object, Property
-from mlflow.utils.proto_json_utils import dump_input_data
+from qcflow.pyfunc import PyFuncModel
+from qcflow.pyfunc.scoring_server import is_unified_llm_input
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types import ColSpec, DataType, ParamSchema, ParamSpec, Schema, TensorSpec
+from qcflow.types.schema import AnyType, Array, Map, Object, Property
+from qcflow.utils.proto_json_utils import dump_input_data
 
 from tests.helper_functions import pyfunc_scoring_endpoint, pyfunc_serve_and_score_model
 from tests.tracing.helper import get_traces
@@ -79,7 +79,7 @@ def param_schema_basic():
     )
 
 
-class PythonModelWithBasicParams(mlflow.pyfunc.PythonModel):
+class PythonModelWithBasicParams(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input, params=None):
         assert isinstance(params, dict)
         assert isinstance(params["str_param"], str)
@@ -111,7 +111,7 @@ def sample_params_with_arrays():
     }
 
 
-class PythonModelWithArrayParams(mlflow.pyfunc.PythonModel):
+class PythonModelWithArrayParams(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input, params=None):
         assert isinstance(params, dict)
         assert all(isinstance(x, int) for x in params["int_array"])
@@ -131,10 +131,10 @@ def test_schema_enforcement_single_column_2d_array():
     assert signature.inputs.inputs[0].shape == (-1, 1)
     assert signature.outputs.inputs[0].shape == (-1,)
 
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(model, "model", signature=signature)
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(model, "model", signature=signature)
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     pdf = pd.DataFrame(X)
     np.testing.assert_almost_equal(loaded_model.predict(pdf), model.predict(pdf))
 
@@ -178,7 +178,7 @@ def test_column_schema_enforcement():
     assert all((res == pdf[input_schema.input_names()]).all())
 
     expected_types = dict(zip(input_schema.input_names(), input_schema.pandas_types()))
-    # MLflow datetime type in input_schema does not encode precision, so add it for assertions
+    # QCFlow datetime type in input_schema does not encode precision, so add it for assertions
     expected_types["h"] = np.dtype("datetime64[ns]")
     # object cannot be converted to pandas Strings at the moment
     expected_types["f"] = object
@@ -819,7 +819,7 @@ def test_schema_enforcement_for_inputs_style_orientation_of_dataframe(orient):
     pd_check = _enforce_schema(pd_data.to_dict(orient=orient), signature.inputs)
     pd.testing.assert_frame_equal(pd_check, pd_data)
 
-    # Test Dict[str, <scalar>] (support added in MLflow 2.3.0)
+    # Test Dict[str, <scalar>] (support added in QCFlow 2.3.0)
     test_signature = {
         "inputs": '[{"name": "a", "type": "long"}, {"name": "b", "type": "string"}]',
         "outputs": '[{"name": "response", "type": "string"}]',
@@ -1132,7 +1132,7 @@ def test_schema_enforcement_for_list_inputs():
 
 def test_enforce_schema_warns_with_extra_fields():
     schema = Schema([ColSpec("string", "a")])
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         _enforce_schema({"a": "hi", "b": "bye"}, schema)
         mock_warning.assert_called_once_with(
             "Found extra inputs in the model input that are not defined in the model "
@@ -1292,7 +1292,7 @@ def test_enforce_params_schema_with_success():
     # Ignore values not specified in ParamSchema and log warning
     test_parameters = {"a": "str_a", "invalid_param": "value"}
     test_schema = ParamSchema([ParamSpec("a", DataType.string, "")])
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         assert _enforce_params_schema(test_parameters, test_schema) == {"a": "str_a"}
         mock_warning.assert_called_once_with(
             "Unrecognized params ['invalid_param'] are ignored for inference. "
@@ -1307,19 +1307,19 @@ def test_enforce_params_schema_with_success():
 
 
 def test_enforce_params_schema_add_default_values():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params):
             return list(params.values())
 
     params = {"str_param": "string", "int_array": [1, 2, 3]}
     signature = infer_signature(["input"], params=params)
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "my_model", python_model=MyModel(), signature=signature
         )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     # Not passing params -- predict with default values
     loaded_predict = loaded_model.predict(["input"])
@@ -1336,7 +1336,7 @@ def test_enforce_params_schema_add_default_values():
     assert loaded_predict == ["new_string", [4, 5, 6]]
 
     # Raise warning for unrecognized params
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         loaded_predict = loaded_model.predict(["input"], params={"new_param": "new_string"})
     mock_warning.assert_called_once()
     assert (
@@ -1438,19 +1438,19 @@ def test_enforce_params_schema_errors():
 
 
 def test_enforce_params_schema_warns_with_model_without_params():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return list(params.values()) if isinstance(params, dict) else None
 
     params = {"str_param": "string", "int_array": [1, 2, 3], "123": 123}
     signature = infer_signature(["input"])
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model("model1", python_model=MyModel(), signature=signature)
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model("model1", python_model=MyModel(), signature=signature)
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         loaded_model.predict(["input"], params=params)
     mock_warning.assert_called_with(
         "`params` can only be specified at inference time if the model signature defines a params "
@@ -1460,23 +1460,23 @@ def test_enforce_params_schema_warns_with_model_without_params():
 
 
 def test_enforce_params_schema_errors_with_model_with_params():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return list(params.values()) if isinstance(params, dict) else None
 
     params = {"str_param": "string", "int_array": [1, 2, 3], "123": 123}
     signature = infer_signature(["input"], params=params)
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model", python_model=MyModel(), signature=signature
         )
 
-    loaded_model_with_params = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model_with_params = qcflow.pyfunc.load_model(model_info.model_uri)
     with pytest.raises(MlflowException, match=r"Parameters must be a dictionary. Got type 'list'"):
         loaded_model_with_params.predict(["input"], params=[1, 2, 3])
 
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         loaded_model_with_params.predict(["input"], params={123: 456})
     mock_warning.assert_called_with(
         "Keys in parameters should be of type `str`, but received non-string keys."
@@ -1579,15 +1579,15 @@ def test_enforce_schema_in_python_model_predict(sample_params_basic, param_schem
     test_params = sample_params_basic
     test_schema = param_schema_basic
     signature = infer_signature(["input1"], params=test_params)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=PythonModelWithBasicParams(),
             signature=signature,
         )
     assert signature.params == test_schema
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     loaded_predict = loaded_model.predict(["a", "b"], params=test_params)
     for param, value in test_params.items():
         if param == "double_array":
@@ -1671,8 +1671,8 @@ def test_schema_enforcement_all_feature_types_pandas():
 
 def test_enforce_schema_in_python_model_serving(sample_params_basic):
     signature = infer_signature(["input1"], params=sample_params_basic)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=PythonModelWithBasicParams(),
             signature=signature,
@@ -1735,16 +1735,16 @@ def test_enforce_schema_in_python_model_serving(sample_params_basic):
 
 def test_python_model_serving_compatible(tmp_path):
     """
-    # Code for logging the model in mlflow 2.4.0
-    import mlflow
-    from mlflow.models import infer_signature
+    # Code for logging the model in qcflow 2.4.0
+    import qcflow
+    from qcflow.models import infer_signature
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
                     python_model = MyModel(),
                     artifact_path = "test_model",
                     signature = infer_signature(["input"]),
@@ -1759,10 +1759,10 @@ flavors:
     env:
       conda: conda.yaml
       virtualenv: python_env.yaml
-    loader_module: mlflow.pyfunc.model
+    loader_module: qcflow.pyfunc.model
     python_model: python_model.pkl
     python_version: 3.8.16
-mlflow_version: 2.4.0
+qcflow_version: 2.4.0
 model_uuid: 3cbde93be0114644a6ec900c64cab39d
 run_id: 3f87fdff03524c19908c3a47fb99f9cd
 signature:
@@ -1784,12 +1784,12 @@ dependencies:
     )
     tmp_path.joinpath("requirements.txt").write_text(
         """
-mlflow==2.4.0
+qcflow==2.4.0
 cloudpickle==2.2.1
         """
     )
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return model_input
 
@@ -1798,9 +1798,9 @@ cloudpickle==2.2.1
     with open(tmp_path / "python_model.pkl", "wb") as out:
         cloudpickle.dump(python_model, out)
 
-    assert Version(mlflow.__version__) > Version("2.4.0")
+    assert Version(qcflow.__version__) > Version("2.4.0")
     model_uri = str(tmp_path)
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_uri)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_uri)
 
     assert pyfunc_loaded.metadata.signature == ModelSignature(Schema([ColSpec("string")]))
 
@@ -1822,15 +1822,15 @@ cloudpickle==2.2.1
 
 def test_function_python_model_serving_compatible(tmp_path):
     """
-    # Code for logging the model in mlflow 2.4.0
-    import mlflow
-    from mlflow.models import infer_signature
+    # Code for logging the model in qcflow 2.4.0
+    import qcflow
+    from qcflow.models import infer_signature
 
     def my_model(model_input):
         return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
                     python_model = my_model,
                     artifact_path = "test_model",
                     signature = infer_signature(["input"]),
@@ -1846,10 +1846,10 @@ flavors:
     env:
       conda: conda.yaml
       virtualenv: python_env.yaml
-    loader_module: mlflow.pyfunc.model
+    loader_module: qcflow.pyfunc.model
     python_model: python_model.pkl
     python_version: 3.8.16
-mlflow_version: 2.4.0
+qcflow_version: 2.4.0
 model_uuid: f19b9a51a34a453282e53ca41d384964
 run_id: 9fd7b6e125a547fdbb4505f15e8259ed
 saved_input_example_info:
@@ -1875,7 +1875,7 @@ dependencies:
     )
     tmp_path.joinpath("requirements.txt").write_text(
         """
-mlflow==2.4.0
+qcflow==2.4.0
 cloudpickle==2.2.1
 pandas==2.0.3
         """
@@ -1889,16 +1889,16 @@ pandas==2.0.3
     def my_model(model_input):
         return model_input
 
-    from mlflow.pyfunc.model import _FunctionPythonModel
+    from qcflow.pyfunc.model import _FunctionPythonModel
 
     python_model = _FunctionPythonModel(my_model, signature=infer_signature(["input"]))
 
     with open(tmp_path / "python_model.pkl", "wb") as out:
         cloudpickle.dump(python_model, out)
 
-    assert Version(mlflow.__version__) > Version("2.4.0")
+    assert Version(qcflow.__version__) > Version("2.4.0")
     model_uri = str(tmp_path)
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_uri)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_uri)
 
     assert pyfunc_loaded.metadata.signature == ModelSignature(Schema([ColSpec("string")]))
 
@@ -1921,14 +1921,14 @@ pandas==2.0.3
 def test_enforce_schema_with_arrays_in_python_model_predict(sample_params_with_arrays):
     params = sample_params_with_arrays
     signature = infer_signature(["input1"], params=params)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=PythonModelWithArrayParams(),
             signature=signature,
         )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     loaded_predict = loaded_model.predict(["a", "b"], params=params)
     for param, value in params.items():
         assert (loaded_predict[param] == value).all()
@@ -1977,8 +1977,8 @@ def test_enforce_schema_with_arrays_in_python_model_predict(sample_params_with_a
 def test_enforce_schema_with_arrays_in_python_model_serving(sample_params_with_arrays):
     params = sample_params_with_arrays
     signature = infer_signature(["input1"], params=params)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=PythonModelWithArrayParams(),
             signature=signature,
@@ -2069,12 +2069,12 @@ def test_enforce_schema_with_arrays_in_python_model_serving(sample_params_with_a
 def test_pyfunc_model_input_example_with_params(
     sample_params_basic, param_schema_basic, tmp_path, example, input_schema, output_schema
 ):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=(example, sample_params_basic),
@@ -2086,15 +2086,15 @@ def test_pyfunc_model_input_example_with_params(
     assert model_info.signature.params == param_schema_basic
 
     # Test predict
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(example)
     expected_df = pd.DataFrame([example] if isinstance(example, dict) else example)
     pd.testing.assert_frame_equal(prediction, expected_df)
 
     # Test saved example
     local_path = _download_artifact_from_uri(model_info.model_uri, output_path=tmp_path)
-    mlflow_model = Model.load(os.path.join(local_path, "MLmodel"))
-    loaded_example = mlflow_model.load_input_example(local_path)
+    qcflow_model = Model.load(os.path.join(local_path, "MLmodel"))
+    loaded_example = qcflow_model.load_input_example(local_path)
     if isinstance(example, list) and all(np.isscalar(x) for x in example):
         np.testing.assert_equal(loaded_example, example)
     else:
@@ -2105,7 +2105,7 @@ def test_pyfunc_model_input_example_with_params(
 
     for test_example in ["saved_example", "manual_example"]:
         if test_example == "saved_example":
-            payload = mlflow_model.get_serving_input(local_path)
+            payload = qcflow_model.get_serving_input(local_path)
         else:
             if isinstance(example, pd.DataFrame):
                 payload = json.dumps({"dataframe_split": example.to_dict(orient="split")})
@@ -2125,16 +2125,16 @@ def test_pyfunc_model_input_example_with_params(
 
 
 def test_invalid_input_example_warn_when_model_logging():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             # List[str] is converted to pandas DataFrame
             # after schema enforcement, so this is invalid
             assert isinstance(model_input, list)
             return "string"
 
-    with mock.patch("mlflow.models.model._logger.warning") as mock_warning:
-        with mlflow.start_run():
-            mlflow.pyfunc.log_model(
+    with mock.patch("qcflow.models.model._logger.warning") as mock_warning:
+        with qcflow.start_run():
+            qcflow.pyfunc.log_model(
                 "test_model",
                 python_model=MyModel(),
                 input_example=["some string"],
@@ -2241,24 +2241,24 @@ def assert_equal(a, b):
 def test_input_example_validation_during_logging(
     tmp_path, example, signature, expected_input, expected_output
 ):
-    from mlflow.models import validate_serving_input
+    from qcflow.models import validate_serving_input
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             assert_equal(model_input, expected_input)
             return expected_output
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=example,
         )
         assert model_info.signature == signature
 
-    mlflow_model = Model.load(model_info.model_uri)
+    qcflow_model = Model.load(model_info.model_uri)
     local_path = _download_artifact_from_uri(model_info.model_uri, output_path=tmp_path)
-    serving_input_example = mlflow_model.get_serving_input(local_path)
+    serving_input_example = qcflow_model.get_serving_input(local_path)
     response = pyfunc_serve_and_score_model(
         model_info.model_uri,
         data=serving_input_example,
@@ -2282,13 +2282,13 @@ def test_pyfunc_schema_inference_not_generate_trace():
     # Test that the model logging call does not generate a trace.
     # When input example is provided, we run prediction to infer
     # the model signature, but it should not generate a trace.
-    class MyModel(mlflow.pyfunc.PythonModel):
-        @mlflow.trace()
+    class MyModel(qcflow.pyfunc.PythonModel):
+        @qcflow.trace()
         def predict(self, context, model_input):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=["input"],
@@ -2299,7 +2299,7 @@ def test_pyfunc_schema_inference_not_generate_trace():
     assert len(traces) == 0
 
     # Normal prediction should emit a trace
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     loaded_model.predict("input")
     traces = get_traces()
     assert len(traces) == 1
@@ -2342,18 +2342,18 @@ def test_pyfunc_schema_inference_not_generate_trace():
     ],
 )
 def test_pyfunc_model_schema_enforcement_with_dicts_and_lists(data, schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
     signature = ModelSignature(schema)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(data)
     if isinstance(data, dict) and all(
         isinstance(x, str) or (isinstance(x, list) and all(isinstance(y, str) for y in x))
@@ -2388,16 +2388,16 @@ def test_pyfunc_model_schema_enforcement_with_dicts_and_lists(data, schema):
         ),
     ],
 )
-# `instances` is an invalid key for schema with MLflow < 2.9.0
+# `instances` is an invalid key for schema with QCFlow < 2.9.0
 @pytest.mark.parametrize("format_key", ["inputs", "dataframe_split", "dataframe_records"])
 def test_pyfunc_model_serving_with_dicts(data, schema, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
     signature = ModelSignature(schema)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
@@ -2446,16 +2446,16 @@ def test_pyfunc_model_serving_with_dicts(data, schema, format_key):
         ),
     ],
 )
-# `inputs`` is an invalid key for schema with MLflow < 2.9.0
+# `inputs`` is an invalid key for schema with QCFlow < 2.9.0
 @pytest.mark.parametrize("format_key", ["instances", "dataframe_split", "dataframe_records"])
 def test_pyfunc_model_serving_with_lists_of_dicts(data, schema, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
     signature = ModelSignature(schema)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
@@ -2544,7 +2544,7 @@ def test_pyfunc_model_serving_with_lists_of_dicts(data, schema, format_key):
     ],
 )
 def test_pyfunc_model_schema_enforcement_with_objects_and_arrays(data, schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def load_context(self, context):
             self.pipeline = "pipeline"
 
@@ -2557,13 +2557,13 @@ def test_pyfunc_model_schema_enforcement_with_objects_and_arrays(data, schema):
     pdf = pd.DataFrame(data if isinstance(data, list) else [data])
     assert infer_signature(pdf).inputs == schema
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(data)
     df = pd.DataFrame(data) if isinstance(data, list) else pd.DataFrame([data])
     pd.testing.assert_frame_equal(prediction, df)
@@ -2593,12 +2593,12 @@ def test_pyfunc_model_schema_enforcement_with_objects_and_arrays(data, schema):
 )
 @pytest.mark.parametrize("format_key", ["inputs", "dataframe_split", "dataframe_records"])
 def test_pyfunc_model_scoring_with_objects_and_arrays(data, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=infer_signature(data),
@@ -2636,12 +2636,12 @@ def test_pyfunc_model_scoring_with_objects_and_arrays(data, format_key):
     ],
 )
 def test_pyfunc_model_scoring_with_objects_and_arrays_instances(data):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=infer_signature(data),
@@ -2675,12 +2675,12 @@ def test_pyfunc_model_scoring_with_objects_and_arrays_instances(data):
     ],
 )
 def test_pyfunc_model_scoring_with_objects_and_arrays_instances_errors(data):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=infer_signature(data),
@@ -2717,12 +2717,12 @@ def test_pyfunc_model_scoring_with_objects_and_arrays_instances_errors(data):
     ],
 )
 def test_pyfunc_model_scoring_instances_backwards_compatibility(data, schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=ModelSignature(schema),
@@ -2766,7 +2766,7 @@ def test_pyfunc_model_scoring_instances_backwards_compatibility(data, schema):
     ],
 )
 def test_pyfunc_model_schema_enforcement_nested_array(data, schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
@@ -2774,13 +2774,13 @@ def test_pyfunc_model_schema_enforcement_nested_array(data, schema):
     signature = infer_signature(df)
     assert signature.inputs == schema
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(df)
     pd.testing.assert_frame_equal(prediction, df)
 
@@ -2887,19 +2887,19 @@ def test_pyfunc_model_schema_enforcement_nested_array(data, schema):
 )
 @pytest.mark.parametrize("format_key", ["dataframe_split", "dataframe_records"])
 def test_pyfunc_model_schema_enforcement_map_type(data, schema, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
     df = pd.DataFrame.from_records(data)
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=ModelSignature(inputs=schema, outputs=schema),
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(df)
     pd.testing.assert_frame_equal(prediction, df)
 
@@ -2968,7 +2968,7 @@ def test_pyfunc_model_schema_enforcement_map_type(data, schema, format_key):
 )
 @pytest.mark.parametrize("format_key", ["inputs", "dataframe_split", "dataframe_records"])
 def test_pyfunc_model_schema_enforcement_complex(data, schema, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
@@ -2976,13 +2976,13 @@ def test_pyfunc_model_schema_enforcement_complex(data, schema, format_key):
     signature = infer_signature(df)
     assert signature.inputs == schema
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(df)
     pd.testing.assert_frame_equal(prediction, df)
 
@@ -3063,7 +3063,7 @@ def test_zero_or_one_longs_convert_to_floats():
                             "usage_metadata": None,
                         },
                         {
-                            "content": "Who owns MLflow?",
+                            "content": "Who owns QCFlow?",
                             "additional_kwargs": {},
                             "response_metadata": {},
                             "type": "human",
@@ -3120,18 +3120,18 @@ def test_zero_or_one_longs_convert_to_floats():
     ],
 )
 def test_schema_enforcement_for_anytype(input_example, expected_schema, payload_example):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=input_example,
         )
     assert model_info.signature.inputs == expected_schema
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(payload_example)
     df = (
         pd.DataFrame(payload_example)

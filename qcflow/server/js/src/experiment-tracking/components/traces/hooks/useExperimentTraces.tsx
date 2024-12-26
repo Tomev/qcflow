@@ -8,8 +8,8 @@ import { RunEntity } from '../../../types';
 import { isExperimentLoggedModelsUIEnabled } from '../../../../common/utils/FeatureUtils';
 
 // A filter expression used to filter traces by run ID
-const RUN_ID_FILTER_EXPRESSION = 'request_metadata.`mlflow.sourceRun`';
-const LOGGED_MODEL_ID_FILTER_EXPRESSION = 'request_metadata.`mlflow.modelId`';
+const RUN_ID_FILTER_EXPRESSION = 'request_metadata.`qcflow.sourceRun`';
+const LOGGED_MODEL_ID_FILTER_EXPRESSION = 'request_metadata.`qcflow.modelId`';
 
 const createRunIdsFilterExpression = (runUuids: string[]) => {
   const runIdsInQuotes = runUuids.map((runId: any) => `'${runId}'`);

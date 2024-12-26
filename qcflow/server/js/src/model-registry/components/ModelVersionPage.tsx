@@ -326,6 +326,6 @@ const ModelVersionPageWithRouter = withRouterNext(
   connect(mapStateToProps, mapDispatchToProps)(injectIntl(ModelVersionPageImpl)),
 );
 
-export const ModelVersionPage = withErrorBoundary(ErrorUtils.mlflowServices.MODEL_REGISTRY, ModelVersionPageWithRouter);
+export const ModelVersionPage = withErrorBoundary(ErrorUtils.qcflowServices.MODEL_REGISTRY, ModelVersionPageWithRouter);
 
 export default ModelVersionPage;

@@ -1,4 +1,4 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -8,16 +8,16 @@ import java.util.Map;
 import ml.combust.mleap.runtime.frame.Transformer;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mlflow.MLflowRootResourceProvider;
-import org.mlflow.mleap.MLeapLoader;
-import org.mlflow.utils.SerializationUtils;
+import org.qcflow.QCFlowRootResourceProvider;
+import org.qcflow.mleap.MLeapLoader;
+import org.qcflow.utils.SerializationUtils;
 
 /** Unit tests for the {@link MLeapPredictor} */
 public class MLeapPredictorTest {
   @Test
   public void testMLeapPredictorGetPipelineYieldsValidMLeapTransformer()
       throws PredictorLoadingException {
-    String modelPath = MLflowRootResourceProvider.getResourcePath("mleap_model");
+    String modelPath = QCFlowRootResourceProvider.getResourcePath("mleap_model");
     MLeapPredictor predictor = (MLeapPredictor) (new MLeapLoader()).load(modelPath);
     Transformer pipelineTransformer = predictor.getPipeline();
   }
@@ -25,11 +25,11 @@ public class MLeapPredictorTest {
   @Test
   public void testMLeapPredictorEvaluatesCompatibleInputCorrectly()
       throws IOException, PredictorEvaluationException {
-    String modelPath = MLflowRootResourceProvider.getResourcePath("mleap_model");
+    String modelPath = QCFlowRootResourceProvider.getResourcePath("mleap_model");
     MLeapPredictor predictor = (MLeapPredictor) new MLeapLoader().load(modelPath);
 
     String sampleInputPath =
-        MLflowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
+        QCFlowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
     String sampleInputJson = new String(Files.readAllBytes(Paths.get(sampleInputPath)));
     PredictorDataWrapper inputData =
         new PredictorDataWrapper(sampleInputJson, PredictorDataWrapper.ContentType.Json);
@@ -39,11 +39,11 @@ public class MLeapPredictorTest {
   @Test
   public void testMLeapPredictorEvaluatesMinimalInputCorrectly()
           throws IOException, PredictorEvaluationException {
-    String modelPath = MLflowRootResourceProvider.getResourcePath("regression_model");
+    String modelPath = QCFlowRootResourceProvider.getResourcePath("regression_model");
     MLeapPredictor predictor = (MLeapPredictor) new MLeapLoader().load(modelPath);
 
     String sampleInputPath =
-            MLflowRootResourceProvider.getResourcePath("regression_model/sample_input.json");
+            QCFlowRootResourceProvider.getResourcePath("regression_model/sample_input.json");
     String sampleInputJson = new String(Files.readAllBytes(Paths.get(sampleInputPath)));
     PredictorDataWrapper inputData =
             new PredictorDataWrapper(sampleInputJson, PredictorDataWrapper.ContentType.Json);
@@ -53,11 +53,11 @@ public class MLeapPredictorTest {
   @Test
   public void testMLeapPredictorThrowsPredictorEvaluationExceptionWhenInputIsMissingField()
       throws IOException {
-    String modelPath = MLflowRootResourceProvider.getResourcePath("mleap_model");
+    String modelPath = QCFlowRootResourceProvider.getResourcePath("mleap_model");
     MLeapPredictor predictor = (MLeapPredictor) (new MLeapLoader()).load(modelPath);
 
     String sampleInputPath =
-        MLflowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
+        QCFlowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
     String sampleInputJson = new String(Files.readAllBytes(Paths.get(sampleInputPath)));
     Map<String, List<?>> sampleInput = (Map<String, List<?>>)SerializationUtils.fromJson(sampleInputJson, Map.class)
         .get("dataframe_split");
@@ -86,7 +86,7 @@ public class MLeapPredictorTest {
    * need to be updated to ensure that bad JSON is still being passed to the {@link MLeapPredictor}
    */
   public void testMLeapPredictorThrowsPredictorEvaluationExceptionWhenEvaluatingBadJson() {
-    String modelPath = MLflowRootResourceProvider.getResourcePath("mleap_model");
+    String modelPath = QCFlowRootResourceProvider.getResourcePath("mleap_model");
     MLeapPredictor predictor = (MLeapPredictor) (new MLeapLoader()).load(modelPath);
 
     String badInputJson = "This is not a valid json string";

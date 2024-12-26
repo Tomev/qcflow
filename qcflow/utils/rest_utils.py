@@ -3,18 +3,18 @@ import json
 
 import requests
 
-from mlflow.environment_variables import (
-    _MLFLOW_HTTP_REQUEST_MAX_BACKOFF_FACTOR_LIMIT,
-    _MLFLOW_HTTP_REQUEST_MAX_RETRIES_LIMIT,
-    MLFLOW_DATABRICKS_ENDPOINT_HTTP_RETRY_TIMEOUT,
-    MLFLOW_ENABLE_DB_SDK,
-    MLFLOW_HTTP_REQUEST_BACKOFF_FACTOR,
-    MLFLOW_HTTP_REQUEST_BACKOFF_JITTER,
-    MLFLOW_HTTP_REQUEST_MAX_RETRIES,
-    MLFLOW_HTTP_REQUEST_TIMEOUT,
-    MLFLOW_HTTP_RESPECT_RETRY_AFTER_HEADER,
+from qcflow.environment_variables import (
+    _QCFLOW_HTTP_REQUEST_MAX_BACKOFF_FACTOR_LIMIT,
+    _QCFLOW_HTTP_REQUEST_MAX_RETRIES_LIMIT,
+    QCFLOW_DATABRICKS_ENDPOINT_HTTP_RETRY_TIMEOUT,
+    QCFLOW_ENABLE_DB_SDK,
+    QCFLOW_HTTP_REQUEST_BACKOFF_FACTOR,
+    QCFLOW_HTTP_REQUEST_BACKOFF_JITTER,
+    QCFLOW_HTTP_REQUEST_MAX_RETRIES,
+    QCFLOW_HTTP_REQUEST_TIMEOUT,
+    QCFLOW_HTTP_RESPECT_RETRY_AFTER_HEADER,
 )
-from mlflow.exceptions import (
+from qcflow.exceptions import (
     CUSTOMER_UNAUTHORIZED,
     ERROR_CODE_TO_HTTP_STATUS,
     INVALID_PARAMETER_VALUE,
@@ -23,21 +23,21 @@ from mlflow.exceptions import (
     RestException,
     get_error_code,
 )
-from mlflow.protos import databricks_pb2
-from mlflow.protos.databricks_pb2 import ENDPOINT_NOT_FOUND, ErrorCode
-from mlflow.utils.proto_json_utils import parse_dict
-from mlflow.utils.request_utils import (
+from qcflow.protos import databricks_pb2
+from qcflow.protos.databricks_pb2 import ENDPOINT_NOT_FOUND, ErrorCode
+from qcflow.utils.proto_json_utils import parse_dict
+from qcflow.utils.request_utils import (
     _TRANSIENT_FAILURE_RESPONSE_CODES,
     _get_http_response_with_retries,
     augmented_raise_for_status,  # noqa: F401
     cloud_storage_http_request,  # noqa: F401
 )
-from mlflow.utils.string_utils import strip_suffix
+from qcflow.utils.string_utils import strip_suffix
 
 RESOURCE_NON_EXISTENT = "RESOURCE_DOES_NOT_EXIST"
 _REST_API_PATH_PREFIX = "/api/2.0"
 _UC_OSS_REST_API_PATH_PREFIX = "/api/2.1"
-_TRACE_REST_API_PATH_PREFIX = f"{_REST_API_PATH_PREFIX}/mlflow/traces"
+_TRACE_REST_API_PATH_PREFIX = f"{_REST_API_PATH_PREFIX}/qcflow/traces"
 _ARMERIA_OK = "200 OK"
 
 
@@ -61,7 +61,7 @@ def http_request(
     The function parses the API response (assumed to be JSON) into a Python object and returns it.
 
     Args:
-        host_creds: A :py:class:`mlflow.rest_utils.MlflowHostCreds` object containing
+        host_creds: A :py:class:`qcflow.rest_utils.MlflowHostCreds` object containing
             hostname and optional authentication.
         endpoint: A string for service endpoint, e.g. "/path/to/object".
         method: A string indicating the method to use, e.g. "GET", "POST", "PUT".
@@ -95,12 +95,12 @@ def http_request(
             config = Config(
                 host=host_creds.host,
                 token=host_creds.token,
-                retry_timeout_seconds=MLFLOW_DATABRICKS_ENDPOINT_HTTP_RETRY_TIMEOUT.get(),
+                retry_timeout_seconds=QCFLOW_DATABRICKS_ENDPOINT_HTTP_RETRY_TIMEOUT.get(),
             )
         else:
             config = Config(
                 profile=host_creds.databricks_auth_profile,
-                retry_timeout_seconds=MLFLOW_DATABRICKS_ENDPOINT_HTTP_RETRY_TIMEOUT.get(),
+                retry_timeout_seconds=QCFLOW_DATABRICKS_ENDPOINT_HTTP_RETRY_TIMEOUT.get(),
             )
         # Note: If we use `config` param, all SDK configurations must be set in `config` object.
         ws_client = WorkspaceClient(config=config)
@@ -134,22 +134,22 @@ def http_request(
 
             return response
 
-    max_retries = MLFLOW_HTTP_REQUEST_MAX_RETRIES.get() if max_retries is None else max_retries
+    max_retries = QCFLOW_HTTP_REQUEST_MAX_RETRIES.get() if max_retries is None else max_retries
     backoff_factor = (
-        MLFLOW_HTTP_REQUEST_BACKOFF_FACTOR.get() if backoff_factor is None else backoff_factor
+        QCFLOW_HTTP_REQUEST_BACKOFF_FACTOR.get() if backoff_factor is None else backoff_factor
     )
     _validate_max_retries(max_retries)
     _validate_backoff_factor(backoff_factor)
     respect_retry_after_header = (
-        MLFLOW_HTTP_RESPECT_RETRY_AFTER_HEADER.get()
+        QCFLOW_HTTP_RESPECT_RETRY_AFTER_HEADER.get()
         if respect_retry_after_header is None
         else respect_retry_after_header
     )
     backoff_jitter = (
-        MLFLOW_HTTP_REQUEST_BACKOFF_JITTER.get() if backoff_jitter is None else backoff_jitter
+        QCFLOW_HTTP_REQUEST_BACKOFF_JITTER.get() if backoff_jitter is None else backoff_jitter
     )
 
-    timeout = MLFLOW_HTTP_REQUEST_TIMEOUT.get() if timeout is None else timeout
+    timeout = QCFLOW_HTTP_REQUEST_TIMEOUT.get() if timeout is None else timeout
     auth_str = None
     if host_creds.username and host_creds.password:
         basic_auth_str = f"{host_creds.username}:{host_creds.password}".encode()
@@ -159,11 +159,11 @@ def http_request(
     elif host_creds.client_secret:
         raise MlflowException(
             "To use OAuth authentication, set environmental variable "
-            f"'{MLFLOW_ENABLE_DB_SDK.name}' to true",
+            f"'{QCFLOW_ENABLE_DB_SDK.name}' to true",
             error_code=CUSTOMER_UNAUTHORIZED,
         )
 
-    from mlflow.tracking.request_header.registry import resolve_request_headers
+    from qcflow.tracking.request_header.registry import resolve_request_headers
 
     headers = dict(**resolve_request_headers())
     if extra_headers:
@@ -181,7 +181,7 @@ def http_request(
 
         kwargs["auth"] = AWSSigV4("execute-api")
     elif host_creds.auth:
-        from mlflow.tracking.request_auth.registry import fetch_auth
+        from qcflow.tracking.request_auth.registry import fetch_auth
 
         kwargs["auth"] = fetch_auth(host_creds.auth)
 
@@ -204,7 +204,7 @@ def http_request(
         raise MlflowException(
             f"API request to {url} failed with timeout exception {to}."
             " To increase the timeout, set the environment variable "
-            f"{MLFLOW_HTTP_REQUEST_TIMEOUT!s} to a larger value."
+            f"{QCFLOW_HTTP_REQUEST_TIMEOUT!s} to a larger value."
         ) from to
     except requests.exceptions.InvalidURL as iu:
         raise InvalidUrlException(f"Invalid url: {url}") from iu
@@ -261,7 +261,7 @@ def verify_rest_response(response, endpoint):
 
 
 def _validate_max_retries(max_retries):
-    max_retry_limit = _MLFLOW_HTTP_REQUEST_MAX_RETRIES_LIMIT.get()
+    max_retry_limit = _QCFLOW_HTTP_REQUEST_MAX_RETRIES_LIMIT.get()
 
     if max_retry_limit < 0:
         raise MlflowException(
@@ -284,7 +284,7 @@ def _validate_max_retries(max_retries):
 
 
 def _validate_backoff_factor(backoff_factor):
-    max_backoff_factor_limit = _MLFLOW_HTTP_REQUEST_MAX_BACKOFF_FACTOR_LIMIT.get()
+    max_backoff_factor_limit = _QCFLOW_HTTP_REQUEST_MAX_BACKOFF_FACTOR_LIMIT.get()
 
     if max_backoff_factor_limit < 0:
         raise MlflowException(
@@ -389,10 +389,10 @@ def call_endpoints(host_creds, endpoints, json_body, response_proto, extra_heade
 
 class MlflowHostCreds:
     """
-    Provides a hostname and optional authentication for talking to an MLflow tracking server.
+    Provides a hostname and optional authentication for talking to an QCFlow tracking server.
 
     Args:
-        host: Hostname (e.g., http://localhost:5000) to MLflow server. Required.
+        host: Hostname (e.g., http://localhost:5000) to QCFlow server. Required.
         username: Username to use with Basic authentication when talking to server.
             If this is specified, password must also be specified.
         password: Password to use with Basic authentication when talking to server.
@@ -450,7 +450,7 @@ class MlflowHostCreds:
                 message=(
                     "When 'ignore_tls_verification' is true then 'server_cert_path' "
                     "must not be set! This error may have occurred because the "
-                    "'MLFLOW_TRACKING_INSECURE_TLS' and 'MLFLOW_TRACKING_SERVER_CERT_PATH' "
+                    "'QCFLOW_TRACKING_INSECURE_TLS' and 'QCFLOW_TRACKING_SERVER_CERT_PATH' "
                     "environment variables are both set - only one of these environment "
                     "variables may be set."
                 ),

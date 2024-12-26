@@ -4,13 +4,13 @@ import xgboost
 from packaging.version import Version
 
 # Suppress a false positive pylint error: https://github.com/PyCQA/pylint/issues/1630
-from mlflow.utils.autologging_utils import ExceptionSafeAbstractClass
+from qcflow.utils.autologging_utils import ExceptionSafeAbstractClass
 
 _logger = logging.getLogger(__name__)
 
 
 def _patch_metric_names(metric_dict):
-    # XGBoost provides some metrics with "@", e.g. "ndcg@3" that are not valid MLflow metric names
+    # XGBoost provides some metrics with "@", e.g. "ndcg@3" that are not valid QCFlow metric names
     patched_metrics = {
         metric_name.replace("@", "_at_"): value for metric_name, value in metric_dict.items()
     }

@@ -1,8 +1,8 @@
 import json
 import pickle
 
-from mlflow.exceptions import MlflowException, RestException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import MlflowException, RestException
+from qcflow.protos.databricks_pb2 import (
     ENDPOINT_NOT_FOUND,
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
@@ -24,8 +24,8 @@ def test_default_error_code():
 
 
 def test_serialize_to_json():
-    mlflow_exception = MlflowException("test")
-    deserialized = json.loads(mlflow_exception.serialize_as_json())
+    qcflow_exception = MlflowException("test")
+    deserialized = json.loads(qcflow_exception.serialize_as_json())
     assert deserialized["message"] == "test"
     assert deserialized["error_code"] == "INTERNAL_ERROR"
 
@@ -41,13 +41,13 @@ def test_get_http_status_code():
 
 
 def test_invalid_parameter_value():
-    mlflow_exception = MlflowException.invalid_parameter_value("test")
-    assert mlflow_exception.error_code == "INVALID_PARAMETER_VALUE"
+    qcflow_exception = MlflowException.invalid_parameter_value("test")
+    assert qcflow_exception.error_code == "INVALID_PARAMETER_VALUE"
 
 
 def test_rest_exception():
-    mlflow_exception = MlflowException("test", error_code=RESOURCE_ALREADY_EXISTS)
-    json_exception = mlflow_exception.serialize_as_json()
+    qcflow_exception = MlflowException("test", error_code=RESOURCE_ALREADY_EXISTS)
+    json_exception = qcflow_exception.serialize_as_json()
     deserialized_rest_exception = RestException(json.loads(json_exception))
     assert deserialized_rest_exception.error_code == "RESOURCE_ALREADY_EXISTS"
     assert "test" in deserialized_rest_exception.message

@@ -2,8 +2,8 @@ import pytest
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter as GrpcExporter
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter as HttpExporter
 
-from mlflow.exceptions import MlflowException
-from mlflow.tracing.utils.otlp import get_otlp_exporter, should_use_otlp_exporter
+from qcflow.exceptions import MlflowException
+from qcflow.tracing.utils.otlp import get_otlp_exporter, should_use_otlp_exporter
 
 _TEST_HTTP_OTLP_ENDPOINT = "http://127.0.0.1:4317/v1/traces"
 _TEST_HTTPS_OTLP_ENDPOINT = "https://127.0.0.1:4317/v1/traces"

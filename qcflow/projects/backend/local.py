@@ -6,20 +6,20 @@ import subprocess
 import sys
 from pathlib import Path
 
-import mlflow
-from mlflow import tracking
-from mlflow.environment_variables import (
-    MLFLOW_KERBEROS_TICKET_CACHE,
-    MLFLOW_KERBEROS_USER,
-    MLFLOW_PYARROW_EXTRA_CONF,
+import qcflow
+from qcflow import tracking
+from qcflow.environment_variables import (
+    QCFLOW_KERBEROS_TICKET_CACHE,
+    QCFLOW_KERBEROS_USER,
+    QCFLOW_PYARROW_EXTRA_CONF,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.projects import env_type
-from mlflow.projects.backend.abstract_backend import AbstractBackend
-from mlflow.projects.submitted_run import LocalSubmittedRun
-from mlflow.projects.utils import (
-    MLFLOW_DOCKER_WORKDIR_PATH,
-    MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG,
+from qcflow.exceptions import MlflowException
+from qcflow.projects import env_type
+from qcflow.projects.backend.abstract_backend import AbstractBackend
+from qcflow.projects.submitted_run import LocalSubmittedRun
+from qcflow.projects.utils import (
+    QCFLOW_DOCKER_WORKDIR_PATH,
+    QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG,
     PROJECT_BUILD_IMAGE,
     PROJECT_DOCKER_ARGS,
     PROJECT_DOCKER_AUTH,
@@ -32,24 +32,24 @@ from mlflow.projects.utils import (
     get_run_env_vars,
     load_project,
 )
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
-from mlflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
-from mlflow.store.artifact.hdfs_artifact_repo import HdfsArtifactRepository
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.utils import env_manager as _EnvManager
-from mlflow.utils.conda import get_or_create_conda_env
-from mlflow.utils.databricks_utils import get_databricks_env_vars, is_in_databricks_runtime
-from mlflow.utils.environment import _PythonEnv
-from mlflow.utils.file_utils import get_or_create_nfs_tmp_dir
-from mlflow.utils.mlflow_tags import MLFLOW_PROJECT_ENV
-from mlflow.utils.os import is_windows
-from mlflow.utils.virtualenv import (
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
+from qcflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
+from qcflow.store.artifact.hdfs_artifact_repo import HdfsArtifactRepository
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.utils import env_manager as _EnvManager
+from qcflow.utils.conda import get_or_create_conda_env
+from qcflow.utils.databricks_utils import get_databricks_env_vars, is_in_databricks_runtime
+from qcflow.utils.environment import _PythonEnv
+from qcflow.utils.file_utils import get_or_create_nfs_tmp_dir
+from qcflow.utils.qcflow_tags import QCFLOW_PROJECT_ENV
+from qcflow.utils.os import is_windows
+from qcflow.utils.virtualenv import (
     _PYENV_ROOT_DIR,
     _VIRTUALENV_ENVS_DIR,
     _create_virtualenv,
-    _get_mlflow_virtualenv_root,
+    _get_qcflow_virtualenv_root,
     _get_virtualenv_extra_env_vars,
     _get_virtualenv_name,
 )
@@ -79,8 +79,8 @@ class LocalBackend(AbstractBackend):
     ):
         work_dir = fetch_and_validate_project(project_uri, version, entry_point, params)
         project = load_project(work_dir)
-        if MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG in backend_config:
-            run_id = backend_config[MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG]
+        if QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG in backend_config:
+            run_id = backend_config[QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG]
         else:
             run_id = None
         active_run = get_or_create_run(
@@ -107,13 +107,13 @@ class LocalBackend(AbstractBackend):
         # If a docker_env attribute is defined in MLproject then it takes precedence over conda yaml
         # environments, so the project will be executed inside a docker container.
         if project.docker_env:
-            from mlflow.projects.docker import (
+            from qcflow.projects.docker import (
                 build_docker_image,
                 validate_docker_env,
                 validate_docker_installation,
             )
 
-            tracking.MlflowClient().set_tag(active_run.info.run_id, MLFLOW_PROJECT_ENV, "docker")
+            tracking.MlflowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "docker")
             validate_docker_env(project)
             validate_docker_installation()
             image = build_docker_image(
@@ -135,7 +135,7 @@ class LocalBackend(AbstractBackend):
         # to avoid failures due to multiple concurrent attempts to create the same conda env.
         elif env_manager == _EnvManager.VIRTUALENV:
             tracking.MlflowClient().set_tag(
-                active_run.info.run_id, MLFLOW_PROJECT_ENV, "virtualenv"
+                active_run.info.run_id, QCFLOW_PROJECT_ENV, "virtualenv"
             )
             command_separator = " && "
             if project.env_type == env_type.CONDA:
@@ -155,7 +155,7 @@ class LocalBackend(AbstractBackend):
                 env_vars = _get_virtualenv_extra_env_vars(str(env_root))
             else:
                 pyenv_root_dir = None
-                virtualenv_root = Path(_get_mlflow_virtualenv_root())
+                virtualenv_root = Path(_get_qcflow_virtualenv_root())
                 env_vars = None
             work_dir_path = Path(work_dir)
             env_name = _get_virtualenv_name(python_env, work_dir_path)
@@ -170,7 +170,7 @@ class LocalBackend(AbstractBackend):
             )
             command_args += [activate_cmd]
         elif env_manager == _EnvManager.CONDA:
-            tracking.MlflowClient().set_tag(active_run.info.run_id, MLFLOW_PROJECT_ENV, "conda")
+            tracking.MlflowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "conda")
             command_separator = " && "
             conda_env = get_or_create_conda_env(project.env_config_path)
             command_args += conda_env.get_activate_command()
@@ -184,8 +184,8 @@ class LocalBackend(AbstractBackend):
             return _run_entry_point(
                 command_str, work_dir, experiment_id, run_id=active_run.info.run_id
             )
-        # Otherwise, invoke `mlflow run` in a subprocess
-        return _invoke_mlflow_run_subprocess(
+        # Otherwise, invoke `qcflow run` in a subprocess
+        return _invoke_qcflow_run_subprocess(
             work_dir=work_dir,
             entry_point=entry_point,
             parameters=params,
@@ -197,15 +197,15 @@ class LocalBackend(AbstractBackend):
         )
 
 
-def _invoke_mlflow_run_subprocess(
+def _invoke_qcflow_run_subprocess(
     work_dir, entry_point, parameters, experiment_id, env_manager, docker_args, storage_dir, run_id
 ):
     """
-    Run an MLflow project asynchronously by invoking ``mlflow run`` in a subprocess, returning
+    Run an QCFlow project asynchronously by invoking ``qcflow run`` in a subprocess, returning
     a SubmittedRun that can be used to query run status.
     """
-    _logger.info("=== Asynchronously launching MLflow run with ID %s ===", run_id)
-    mlflow_run_arr = _build_mlflow_run_cmd(
+    _logger.info("=== Asynchronously launching QCFlow run with ID %s ===", run_id)
+    qcflow_run_arr = _build_qcflow_run_cmd(
         uri=work_dir,
         entry_point=entry_point,
         docker_args=docker_args,
@@ -215,49 +215,49 @@ def _invoke_mlflow_run_subprocess(
         parameters=parameters,
     )
     env_vars = get_run_env_vars(run_id, experiment_id)
-    env_vars.update(get_databricks_env_vars(mlflow.get_tracking_uri()))
-    mlflow_run_subprocess = _run_mlflow_run_cmd(mlflow_run_arr, env_vars)
-    return LocalSubmittedRun(run_id, mlflow_run_subprocess)
+    env_vars.update(get_databricks_env_vars(qcflow.get_tracking_uri()))
+    qcflow_run_subprocess = _run_qcflow_run_cmd(qcflow_run_arr, env_vars)
+    return LocalSubmittedRun(run_id, qcflow_run_subprocess)
 
 
-def _build_mlflow_run_cmd(
+def _build_qcflow_run_cmd(
     uri, entry_point, docker_args, storage_dir, env_manager, run_id, parameters
 ):
     """
-    Build and return an array containing an ``mlflow run`` command that can be invoked to locally
+    Build and return an array containing an ``qcflow run`` command that can be invoked to locally
     run the project at the specified URI.
     """
-    mlflow_run_arr = ["mlflow", "run", uri, "-e", entry_point, "--run-id", run_id]
+    qcflow_run_arr = ["qcflow", "run", uri, "-e", entry_point, "--run-id", run_id]
     if docker_args is not None:
         for key, value in docker_args.items():
             args = key if isinstance(value, bool) else f"{key}={value}"
-            mlflow_run_arr.extend(["--docker-args", args])
+            qcflow_run_arr.extend(["--docker-args", args])
     if storage_dir is not None:
-        mlflow_run_arr.extend(["--storage-dir", storage_dir])
-    mlflow_run_arr.extend(["--env-manager", env_manager])
+        qcflow_run_arr.extend(["--storage-dir", storage_dir])
+    qcflow_run_arr.extend(["--env-manager", env_manager])
     for key, value in parameters.items():
-        mlflow_run_arr.extend(["-P", f"{key}={value}"])
-    return mlflow_run_arr
+        qcflow_run_arr.extend(["-P", f"{key}={value}"])
+    return qcflow_run_arr
 
 
-def _run_mlflow_run_cmd(mlflow_run_arr, env_map):
+def _run_qcflow_run_cmd(qcflow_run_arr, env_map):
     """
-    Invoke ``mlflow run`` in a subprocess, which in turn runs the entry point in a child process.
-    Returns a handle to the subprocess. Popen launched to invoke ``mlflow run``.
+    Invoke ``qcflow run`` in a subprocess, which in turn runs the entry point in a child process.
+    Returns a handle to the subprocess. Popen launched to invoke ``qcflow run``.
     """
     final_env = os.environ.copy()
     final_env.update(env_map)
-    # Launch `mlflow run` command as the leader of its own process group so that we can do a
+    # Launch `qcflow run` command as the leader of its own process group so that we can do a
     # best-effort cleanup of all its descendant processes if needed
     if sys.platform == "win32":
         return subprocess.Popen(
-            mlflow_run_arr,
+            qcflow_run_arr,
             env=final_env,
             text=True,
             creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
         )
     else:
-        return subprocess.Popen(mlflow_run_arr, env=final_env, text=True, preexec_fn=os.setsid)
+        return subprocess.Popen(qcflow_run_arr, env=final_env, text=True, preexec_fn=os.setsid)
 
 
 def _run_entry_point(command, work_dir, experiment_id, run_id):  # noqa: D417
@@ -268,11 +268,11 @@ def _run_entry_point(command, work_dir, experiment_id, run_id):  # noqa: D417
     Args:
         command: Entry point command to run
         work_dir: Working directory in which to run the command
-        run_id: MLflow run ID associated with the entry point execution.
+        run_id: QCFlow run ID associated with the entry point execution.
     """
     env = os.environ.copy()
     env.update(get_run_env_vars(run_id, experiment_id))
-    env.update(get_databricks_env_vars(tracking_uri=mlflow.get_tracking_uri()))
+    env.update(get_databricks_env_vars(tracking_uri=qcflow.get_tracking_uri()))
     _logger.info("=== Running command '%s' in run with ID '%s' === ", command, run_id)
     # in case os name is not 'nt', we are not running on windows. It introduces
     # bash command otherwise.
@@ -285,7 +285,7 @@ def _run_entry_point(command, work_dir, experiment_id, run_id):  # noqa: D417
 
 
 def _get_docker_command(image, active_run, docker_args=None, volumes=None, user_env_vars=None):
-    from mlflow.projects.docker import get_docker_tracking_cmd_and_envs
+    from qcflow.projects.docker import get_docker_tracking_cmd_and_envs
 
     docker_path = "docker"
     cmd = [docker_path, "run", "--rm"]
@@ -348,7 +348,7 @@ def _get_local_artifact_cmd_and_envs(artifact_repo):
     artifact_dir = artifact_repo.artifact_dir
     container_path = artifact_dir
     if not os.path.isabs(container_path):
-        container_path = os.path.join(MLFLOW_DOCKER_WORKDIR_PATH, container_path)
+        container_path = os.path.join(QCFLOW_DOCKER_WORKDIR_PATH, container_path)
         container_path = os.path.normpath(container_path)
     abs_artifact_dir = os.path.abspath(artifact_dir)
     return ["-v", f"{abs_artifact_dir}:{container_path}"], {}
@@ -367,8 +367,8 @@ def _get_s3_artifact_cmd_and_envs(artifact_repo):
     envs = {
         "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY"),
         "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID"),
-        "MLFLOW_S3_ENDPOINT_URL": os.environ.get("MLFLOW_S3_ENDPOINT_URL"),
-        "MLFLOW_S3_IGNORE_TLS": os.environ.get("MLFLOW_S3_IGNORE_TLS"),
+        "QCFLOW_S3_ENDPOINT_URL": os.environ.get("QCFLOW_S3_ENDPOINT_URL"),
+        "QCFLOW_S3_IGNORE_TLS": os.environ.get("QCFLOW_S3_IGNORE_TLS"),
     }
     envs = {k: v for k, v in envs.items() if v is not None}
     return volumes, envs
@@ -397,14 +397,14 @@ def _get_gcs_artifact_cmd_and_envs(artifact_repo):
 def _get_hdfs_artifact_cmd_and_envs(artifact_repo):
     cmds = []
     envs = {
-        "MLFLOW_KERBEROS_TICKET_CACHE": MLFLOW_KERBEROS_TICKET_CACHE.get(),
-        "MLFLOW_KERBEROS_USER": MLFLOW_KERBEROS_USER.get(),
-        "MLFLOW_PYARROW_EXTRA_CONF": MLFLOW_PYARROW_EXTRA_CONF.get(),
+        "QCFLOW_KERBEROS_TICKET_CACHE": QCFLOW_KERBEROS_TICKET_CACHE.get(),
+        "QCFLOW_KERBEROS_USER": QCFLOW_KERBEROS_USER.get(),
+        "QCFLOW_PYARROW_EXTRA_CONF": QCFLOW_PYARROW_EXTRA_CONF.get(),
     }
     envs = {k: v for k, v in envs.items() if v is not None}
 
-    if "MLFLOW_KERBEROS_TICKET_CACHE" in envs:
-        ticket_cache = envs["MLFLOW_KERBEROS_TICKET_CACHE"]
+    if "QCFLOW_KERBEROS_TICKET_CACHE" in envs:
+        ticket_cache = envs["QCFLOW_KERBEROS_TICKET_CACHE"]
         cmds = ["-v", f"{ticket_cache}:{ticket_cache}"]
     return cmds, envs
 

@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import backref, relationship
 
-from mlflow.entities import (
+from qcflow.entities import (
     Dataset,
     Experiment,
     ExperimentTag,
@@ -29,12 +29,12 @@ from mlflow.entities import (
     TraceInfo,
     ViewType,
 )
-from mlflow.entities.lifecycle_stage import LifecycleStage
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.store.db.base_sql_model import Base
-from mlflow.utils.mlflow_tags import _get_run_name_from_tags
-from mlflow.utils.time import get_current_time_millis
+from qcflow.entities.lifecycle_stage import LifecycleStage
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.store.db.base_sql_model import Base
+from qcflow.utils.qcflow_tags import _get_run_name_from_tags
+from qcflow.utils.time import get_current_time_millis
 
 SourceTypes = [
     SourceType.to_string(SourceType.NOTEBOOK),
@@ -55,7 +55,7 @@ RunStatusTypes = [
 
 class SqlExperiment(Base):
     """
-    DB model for :py:class:`mlflow.entities.Experiment`. These are recorded in ``experiment`` table.
+    DB model for :py:class:`qcflow.entities.Experiment`. These are recorded in ``experiment`` table.
     """
 
     __tablename__ = "experiments"
@@ -99,19 +99,19 @@ class SqlExperiment(Base):
     def __repr__(self):
         return f"<SqlExperiment ({self.experiment_id}, {self.name})>"
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            :py:class:`mlflow.entities.Experiment`.
+            :py:class:`qcflow.entities.Experiment`.
         """
         return Experiment(
             experiment_id=str(self.experiment_id),
             name=self.name,
             artifact_location=self.artifact_location,
             lifecycle_stage=self.lifecycle_stage,
-            tags=[t.to_mlflow_entity() for t in self.tags],
+            tags=[t.to_qcflow_entity() for t in self.tags],
             creation_time=self.creation_time,
             last_update_time=self.last_update_time,
         )
@@ -119,7 +119,7 @@ class SqlExperiment(Base):
 
 class SqlRun(Base):
     """
-    DB model for :py:class:`mlflow.entities.Run`. These are recorded in ``runs`` table.
+    DB model for :py:class:`qcflow.entities.Run`. These are recorded in ``runs`` table.
     """
 
     __tablename__ = "runs"
@@ -185,7 +185,7 @@ class SqlRun(Base):
     """
     experiment = relationship("SqlExperiment", backref=backref("runs", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlExperiment`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlExperiment`.
     """
 
     __table_args__ = (
@@ -199,23 +199,23 @@ class SqlRun(Base):
     )
 
     @staticmethod
-    def get_attribute_name(mlflow_attribute_name):
+    def get_attribute_name(qcflow_attribute_name):
         """
-        Resolves an MLflow attribute name to a `SqlRun` attribute name.
+        Resolves an QCFlow attribute name to a `SqlRun` attribute name.
         """
-        # Currently, MLflow Search attributes defined in `SearchUtils.VALID_SEARCH_ATTRIBUTE_KEYS`
+        # Currently, QCFlow Search attributes defined in `SearchUtils.VALID_SEARCH_ATTRIBUTE_KEYS`
         # share the same names as their corresponding `SqlRun` attributes. Therefore, this function
         # returns the same attribute name
         return {"run_name": "name", "run_id": "run_uuid"}.get(
-            mlflow_attribute_name, mlflow_attribute_name
+            qcflow_attribute_name, qcflow_attribute_name
         )
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            mlflow.entities.Run: Description of the return value.
+            qcflow.entities.Run: Description of the return value.
         """
         run_info = RunInfo(
             run_uuid=self.run_uuid,
@@ -230,10 +230,10 @@ class SqlRun(Base):
             artifact_uri=self.artifact_uri,
         )
 
-        tags = [t.to_mlflow_entity() for t in self.tags]
+        tags = [t.to_qcflow_entity() for t in self.tags]
         run_data = RunData(
-            metrics=[m.to_mlflow_entity() for m in self.latest_metrics],
-            params=[p.to_mlflow_entity() for p in self.params],
+            metrics=[m.to_qcflow_entity() for m in self.latest_metrics],
+            params=[p.to_qcflow_entity() for p in self.params],
             tags=tags,
         )
         if not run_info.run_name:
@@ -246,7 +246,7 @@ class SqlRun(Base):
 
 class SqlExperimentTag(Base):
     """
-    DB model for :py:class:`mlflow.entities.RunTag`.
+    DB model for :py:class:`qcflow.entities.RunTag`.
     These are recorded in ``experiment_tags`` table.
     """
 
@@ -266,7 +266,7 @@ class SqlExperimentTag(Base):
     """
     experiment = relationship("SqlExperiment", backref=backref("tags", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlExperiment`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlExperiment`.
     """
 
     __table_args__ = (PrimaryKeyConstraint("key", "experiment_id", name="experiment_tag_pk"),)
@@ -274,19 +274,19 @@ class SqlExperimentTag(Base):
     def __repr__(self):
         return f"<SqlExperimentTag({self.key}, {self.value})>"
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            mlflow.entities.RunTag: Description of the return value.
+            qcflow.entities.RunTag: Description of the return value.
         """
         return ExperimentTag(key=self.key, value=self.value)
 
 
 class SqlTag(Base):
     """
-    DB model for :py:class:`mlflow.entities.RunTag`. These are recorded in ``tags`` table.
+    DB model for :py:class:`qcflow.entities.RunTag`. These are recorded in ``tags`` table.
     """
 
     __tablename__ = "tags"
@@ -309,18 +309,18 @@ class SqlTag(Base):
     """
     run = relationship("SqlRun", backref=backref("tags", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlRun`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlRun`.
     """
 
     def __repr__(self):
         return f"<SqlRunTag({self.key}, {self.value})>"
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            :py:class:`mlflow.entities.RunTag`.
+            :py:class:`qcflow.entities.RunTag`.
         """
         return RunTag(key=self.key, value=self.value)
 
@@ -362,18 +362,18 @@ class SqlMetric(Base):
     """
     run = relationship("SqlRun", backref=backref("metrics", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlRun`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlRun`.
     """
 
     def __repr__(self):
         return f"<SqlMetric({self.key}, {self.value}, {self.timestamp}, {self.step})>"
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            mlflow.entities.Metric: Description of the return value.
+            qcflow.entities.Metric: Description of the return value.
         """
         return Metric(
             key=self.key,
@@ -418,18 +418,18 @@ class SqlLatestMetric(Base):
     """
     run = relationship("SqlRun", backref=backref("latest_metrics", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlRun`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlRun`.
     """
 
     def __repr__(self):
         return f"<SqlLatestMetric({self.key}, {self.value}, {self.timestamp}, {self.step})>"
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            mlflow.entities.Metric: Description of the return value.
+            qcflow.entities.Metric: Description of the return value.
         """
         return Metric(
             key=self.key,
@@ -461,18 +461,18 @@ class SqlParam(Base):
     """
     run = relationship("SqlRun", backref=backref("params", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlRun`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlRun`.
     """
 
     def __repr__(self):
         return f"<SqlParam({self.key}, {self.value})>"
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            mlflow.entities.Param: Description of the return value.
+            qcflow.entities.Param: Description of the return value.
         """
         return Param(key=self.key, value=self.value)
 
@@ -537,12 +537,12 @@ class SqlDataset(Base):
             self.dataset_profile,
         )
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            mlflow.entities.Dataset.
+            qcflow.entities.Dataset.
         """
         return Dataset(
             name=self.name,
@@ -627,12 +627,12 @@ class SqlInputTag(Base):
     def __repr__(self):
         return f"<SqlInputTag ({self.input_uuid}, {self.name}, {self.value})>"
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            mlflow.entities.InputTag: Description of the return value.
+            qcflow.entities.InputTag: Description of the return value.
         """
         return InputTag(key=self.name, value=self.value)
 
@@ -665,7 +665,7 @@ class SqlTraceInfo(Base):
     status = Column(String(50), nullable=False)
     """
     Status of the trace. The values are defined in
-    :py:class:`mlflow.entities.trace_status.TraceStatus` enum but we don't enforce
+    :py:class:`qcflow.entities.trace_status.TraceStatus` enum but we don't enforce
     constraint at DB level.
     """
 
@@ -677,12 +677,12 @@ class SqlTraceInfo(Base):
         Index(f"index_{__tablename__}_experiment_id_timestamp_ms", "experiment_id", "timestamp_ms"),
     )
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         """
-        Convert DB model to corresponding MLflow entity.
+        Convert DB model to corresponding QCFlow entity.
 
         Returns:
-            :py:class:`mlflow.entities.TraceInfo` object.
+            :py:class:`qcflow.entities.TraceInfo` object.
         """
         return TraceInfo(
             request_id=self.request_id,
@@ -715,7 +715,7 @@ class SqlTraceTag(Base):
     trace_info = relationship("SqlTraceInfo", backref=backref("tags", cascade="all"))
     """
     SQLAlchemy relationship (many:one) with
-    :py:class:`mlflow.store.dbmodels.models.SqlTraceInfo`.
+    :py:class:`qcflow.store.dbmodels.models.SqlTraceInfo`.
     """
 
     # Key is unique within a request_id
@@ -745,7 +745,7 @@ class SqlTraceRequestMetadata(Base):
     trace_info = relationship("SqlTraceInfo", backref=backref("request_metadata", cascade="all"))
     """
     SQLAlchemy relationship (many:one) with
-    :py:class:`mlflow.store.dbmodels.models.SqlTraceInfo`.
+    :py:class:`qcflow.store.dbmodels.models.SqlTraceInfo`.
     """
 
     # Key is unique within a request_id

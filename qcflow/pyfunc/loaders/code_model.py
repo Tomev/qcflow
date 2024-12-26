@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
-from mlflow.pyfunc.loaders.chat_model import _ChatModelPyfuncWrapper
-from mlflow.pyfunc.model import (
+from qcflow.pyfunc.loaders.chat_model import _ChatModelPyfuncWrapper
+from qcflow.pyfunc.model import (
     ChatModel,
     _load_context_model_and_signature,
     _PythonModelPyfuncWrapper,

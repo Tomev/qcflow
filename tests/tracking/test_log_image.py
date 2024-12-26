@@ -4,9 +4,9 @@ import posixpath
 
 import pytest
 
-import mlflow
-from mlflow.utils.file_utils import local_file_uri_to_path
-from mlflow.utils.time import get_current_time_millis
+import qcflow
+from qcflow.utils.file_utils import local_file_uri_to_path
+from qcflow.utils.time import get_current_time_millis
 
 
 @pytest.mark.parametrize("subdir", [None, ".", "dir", "dir1/dir2", "dir/.."])
@@ -19,11 +19,11 @@ def test_log_image_numpy(subdir):
 
     image = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
 
-    with mlflow.start_run():
-        mlflow.log_image(image, artifact_file)
+    with qcflow.start_run():
+        qcflow.log_image(image, artifact_file)
 
         artifact_path = None if subdir is None else posixpath.normpath(subdir)
-        artifact_uri = mlflow.get_artifact_uri(artifact_path)
+        artifact_uri = qcflow.get_artifact_uri(artifact_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         assert os.listdir(run_artifact_dir) == [filename]
 
@@ -41,11 +41,11 @@ def test_log_image_pillow(subdir):
 
     image = Image.new("RGB", (100, 100))
 
-    with mlflow.start_run():
-        mlflow.log_image(image, artifact_file)
+    with qcflow.start_run():
+        qcflow.log_image(image, artifact_file)
 
         artifact_path = None if subdir is None else posixpath.normpath(subdir)
-        artifact_uri = mlflow.get_artifact_uri(artifact_path)
+        artifact_uri = qcflow.get_artifact_uri(artifact_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         assert os.listdir(run_artifact_dir) == [filename]
 
@@ -56,9 +56,9 @@ def test_log_image_pillow(subdir):
 
 
 def test_log_image_raises_for_unsupported_objects():
-    with mlflow.start_run():
+    with qcflow.start_run():
         with pytest.raises(TypeError, match="Unsupported image object type"):
-            mlflow.log_image("not_image", "image.png")
+            qcflow.log_image("not_image", "image.png")
 
 
 @pytest.mark.parametrize(
@@ -76,9 +76,9 @@ def test_log_image_numpy_shape(size):
     filename = "image.png"
     image = np.random.randint(0, 256, size=size, dtype=np.uint8)
 
-    with mlflow.start_run():
-        mlflow.log_image(image, filename)
-        artifact_uri = mlflow.get_artifact_uri()
+    with qcflow.start_run():
+        qcflow.log_image(image, filename)
+        artifact_uri = qcflow.get_artifact_uri()
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         assert os.listdir(run_artifact_dir) == [filename]
 
@@ -107,9 +107,9 @@ def test_log_image_numpy_dtype(dtype):
     filename = "image.png"
     image = np.random.randint(0, 2, size=(100, 100, 3)).astype(np.dtype(dtype))
 
-    with mlflow.start_run():
-        mlflow.log_image(image, filename)
-        artifact_uri = mlflow.get_artifact_uri()
+    with qcflow.start_run():
+        qcflow.log_image(image, filename)
+        artifact_uri = qcflow.get_artifact_uri()
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         assert os.listdir(run_artifact_dir) == [filename]
 
@@ -125,42 +125,42 @@ def test_log_image_numpy_emits_warning_for_out_of_range_values(array):
     image = np.array(array).astype(type(array[0][0]))
     if isinstance(array[0][0], int):
         with (
-            mlflow.start_run(),
+            qcflow.start_run(),
             pytest.raises(ValueError, match="Integer pixel values out of acceptable range"),
         ):
-            mlflow.log_image(image, "image.png")
+            qcflow.log_image(image, "image.png")
     else:
         with (
-            mlflow.start_run(),
+            qcflow.start_run(),
             pytest.warns(UserWarning, match="Float pixel values out of acceptable range"),
         ):
-            mlflow.log_image(image, "image.png")
+            qcflow.log_image(image, "image.png")
 
 
 def test_log_image_numpy_raises_exception_for_invalid_array_data_type():
     import numpy as np
 
-    with mlflow.start_run(), pytest.raises(TypeError, match="Invalid array data type"):
-        mlflow.log_image(np.tile("a", (1, 1, 3)), "image.png")
+    with qcflow.start_run(), pytest.raises(TypeError, match="Invalid array data type"):
+        qcflow.log_image(np.tile("a", (1, 1, 3)), "image.png")
 
 
 def test_log_image_numpy_raises_exception_for_invalid_array_shape():
     import numpy as np
 
-    with mlflow.start_run(), pytest.raises(ValueError, match="`image` must be a 2D or 3D array"):
-        mlflow.log_image(np.zeros((1,), dtype=np.uint8), "image.png")
+    with qcflow.start_run(), pytest.raises(ValueError, match="`image` must be a 2D or 3D array"):
+        qcflow.log_image(np.zeros((1,), dtype=np.uint8), "image.png")
 
 
 def test_log_image_numpy_raises_exception_for_invalid_channel_length():
     import numpy as np
 
-    with mlflow.start_run(), pytest.raises(ValueError, match="Invalid channel length"):
-        mlflow.log_image(np.zeros((1, 1, 5), dtype=np.uint8), "image.png")
+    with qcflow.start_run(), pytest.raises(ValueError, match="Invalid channel length"):
+        qcflow.log_image(np.zeros((1, 1, 5), dtype=np.uint8), "image.png")
 
 
 def test_log_image_raises_exception_for_unsupported_image_object_type():
-    with mlflow.start_run(), pytest.raises(TypeError, match="Unsupported image object type"):
-        mlflow.log_image("not_image", "image.png")
+    with qcflow.start_run(), pytest.raises(TypeError, match="Unsupported image object type"):
+        qcflow.log_image("not_image", "image.png")
 
 
 def test_log_image_with_steps():
@@ -169,11 +169,11 @@ def test_log_image_with_steps():
 
     image = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
 
-    with mlflow.start_run():
-        mlflow.log_image(image, key="dog", step=0, synchronous=True)
+    with qcflow.start_run():
+        qcflow.log_image(image, key="dog", step=0, synchronous=True)
 
         logged_path = "images/"
-        artifact_uri = mlflow.get_artifact_uri(logged_path)
+        artifact_uri = qcflow.get_artifact_uri(logged_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         files = os.listdir(run_artifact_dir)
 
@@ -200,11 +200,11 @@ def test_log_image_with_timestamp():
 
     image = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
 
-    with mlflow.start_run():
-        mlflow.log_image(image, key="dog", timestamp=100, synchronous=True)
+    with qcflow.start_run():
+        qcflow.log_image(image, key="dog", timestamp=100, synchronous=True)
 
         logged_path = "images/"
-        artifact_uri = mlflow.get_artifact_uri(logged_path)
+        artifact_uri = qcflow.get_artifact_uri(logged_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         files = os.listdir(run_artifact_dir)
 
@@ -227,7 +227,7 @@ def test_log_image_with_timestamp():
 
 def test_duplicated_log_image_with_step():
     """
-    MLflow will save both files if there are multiple calls to log_image
+    QCFlow will save both files if there are multiple calls to log_image
     with the same key and step.
     """
     import numpy as np
@@ -235,12 +235,12 @@ def test_duplicated_log_image_with_step():
     image1 = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
     image2 = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
 
-    with mlflow.start_run():
-        mlflow.log_image(image1, key="dog", step=100, synchronous=True)
-        mlflow.log_image(image2, key="dog", step=100, synchronous=True)
+    with qcflow.start_run():
+        qcflow.log_image(image1, key="dog", step=100, synchronous=True)
+        qcflow.log_image(image2, key="dog", step=100, synchronous=True)
 
         logged_path = "images/"
-        artifact_uri = mlflow.get_artifact_uri(logged_path)
+        artifact_uri = qcflow.get_artifact_uri(logged_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         files = os.listdir(run_artifact_dir)
         assert len(files) == 2 * 2  # 2 images and 2 files per image
@@ -248,7 +248,7 @@ def test_duplicated_log_image_with_step():
 
 def test_duplicated_log_image_with_timestamp():
     """
-    MLflow will save both files if there are multiple calls to log_image
+    QCFlow will save both files if there are multiple calls to log_image
     with the same key, step, and timestamp.
     """
     import numpy as np
@@ -256,12 +256,12 @@ def test_duplicated_log_image_with_timestamp():
     image1 = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
     image2 = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
 
-    with mlflow.start_run():
-        mlflow.log_image(image1, key="dog", step=100, timestamp=100, synchronous=True)
-        mlflow.log_image(image2, key="dog", step=100, timestamp=100, synchronous=True)
+    with qcflow.start_run():
+        qcflow.log_image(image1, key="dog", step=100, timestamp=100, synchronous=True)
+        qcflow.log_image(image2, key="dog", step=100, timestamp=100, synchronous=True)
 
         logged_path = "images/"
-        artifact_uri = mlflow.get_artifact_uri(logged_path)
+        artifact_uri = qcflow.get_artifact_uri(logged_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         files = os.listdir(run_artifact_dir)
         assert len(files) == 2 * 2
@@ -284,33 +284,33 @@ def test_log_image_raises_exception_for_unexpected_arguments_used(args):
 
     exception = "The `artifact_file` parameter cannot be used in conjunction"
     if isinstance(args, dict):
-        with mlflow.start_run(), pytest.raises(TypeError, match=exception):
-            mlflow.log_image(np.zeros((1,), dtype=np.uint8), "image.png", **args)
+        with qcflow.start_run(), pytest.raises(TypeError, match=exception):
+            qcflow.log_image(np.zeros((1,), dtype=np.uint8), "image.png", **args)
     elif isinstance(args, list):
-        with mlflow.start_run(), pytest.raises(TypeError, match=exception):
-            mlflow.log_image(np.zeros((1,), dtype=np.uint8), "image.png", *args)
+        with qcflow.start_run(), pytest.raises(TypeError, match=exception):
+            qcflow.log_image(np.zeros((1,), dtype=np.uint8), "image.png", *args)
 
 
 def test_log_image_raises_exception_for_missing_arguments():
     import numpy as np
 
     exception = "Invalid arguments: Please specify exactly one of `artifact_file` or `key`"
-    with mlflow.start_run(), pytest.raises(TypeError, match=exception):
-        mlflow.log_image(np.zeros((1,), dtype=np.uint8))
+    with qcflow.start_run(), pytest.raises(TypeError, match=exception):
+        qcflow.log_image(np.zeros((1,), dtype=np.uint8))
 
 
 def test_async_log_image_flush():
     import numpy as np
 
     image1 = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
-    with mlflow.start_run():
+    with qcflow.start_run():
         for i in range(100):
-            mlflow.log_image(image1, key="dog", step=i, timestamp=i, synchronous=False)
+            qcflow.log_image(image1, key="dog", step=i, timestamp=i, synchronous=False)
 
-        mlflow.flush_artifact_async_logging()
+        qcflow.flush_artifact_async_logging()
 
         logged_path = "images/"
-        artifact_uri = mlflow.get_artifact_uri(logged_path)
+        artifact_uri = qcflow.get_artifact_uri(logged_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         files = os.listdir(run_artifact_dir)
         assert len(files) == 100 * 2

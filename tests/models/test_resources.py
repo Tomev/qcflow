@@ -1,6 +1,6 @@
 import pytest
 
-from mlflow.models.resources import (
+from qcflow.models.resources import (
     DEFAULT_API_VERSION,
     DatabricksFunction,
     DatabricksGenieSpace,

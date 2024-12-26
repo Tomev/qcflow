@@ -5,11 +5,11 @@ from typing import Any, Callable, Union
 from botocore.client import BaseClient
 from botocore.response import StreamingBody
 
-import mlflow
-from mlflow.bedrock import FLAVOR_NAME
-from mlflow.entities import SpanType
-from mlflow.utils.autologging_utils import safe_patch
-from mlflow.utils.autologging_utils.config import AutoLoggingConfig
+import qcflow
+from qcflow.bedrock import FLAVOR_NAME
+from qcflow.entities import SpanType
+from qcflow.utils.autologging_utils import safe_patch
+from qcflow.utils.autologging_utils.config import AutoLoggingConfig
 
 _BEDROCK_RUNTIME_SERVICE_NAME = "bedrock-runtime"
 _BEDROCK_SPAN_PREFIX = "BedrockRuntime."
@@ -61,7 +61,7 @@ def _skip_if_trace_disabled(func: Callable[..., Any]) -> Callable[..., Any]:
 
 @_skip_if_trace_disabled
 def _patched_invoke_model(original, self, *args, **kwargs):
-    with mlflow.start_span(name=f"{_BEDROCK_SPAN_PREFIX}{original.__name__}") as span:
+    with qcflow.start_span(name=f"{_BEDROCK_SPAN_PREFIX}{original.__name__}") as span:
         # NB: Bedrock client doesn't accept any positional arguments
         span.set_inputs(kwargs)
 
@@ -113,7 +113,7 @@ def _parse_invoke_model_response_body(response_body: StreamingBody) -> Union[dic
 
 @_skip_if_trace_disabled
 def _patched_converse(original, self, *args, **kwargs):
-    with mlflow.start_span(
+    with qcflow.start_span(
         name=f"{_BEDROCK_SPAN_PREFIX}{original.__name__}",
         span_type=SpanType.CHAT_MODEL,
     ) as span:

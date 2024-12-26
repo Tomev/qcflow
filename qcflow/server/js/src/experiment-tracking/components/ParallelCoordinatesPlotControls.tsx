@@ -35,7 +35,7 @@ export class ParallelCoordinatesPlotControls extends React.Component<Props> {
         <div>
           <FormattedMessage
             defaultMessage="Parameters:"
-            description="Label text for parameters in parallel coordinates plot in MLflow"
+            description="Label text for parameters in parallel coordinates plot in QCFlow"
           />
         </div>
         <LegacySelect
@@ -44,7 +44,7 @@ export class ParallelCoordinatesPlotControls extends React.Component<Props> {
           placeholder={
             <FormattedMessage
               defaultMessage="Please select parameters"
-              description="Placeholder text for parameters in parallel coordinates plot in MLflow"
+              description="Placeholder text for parameters in parallel coordinates plot in QCFlow"
             />
           }
           value={selectedParamKeys}
@@ -59,7 +59,7 @@ export class ParallelCoordinatesPlotControls extends React.Component<Props> {
         <div style={{ marginTop: 20 }}>
           <FormattedMessage
             defaultMessage="Metrics:"
-            description="Label text for metrics in parallel coordinates plot in MLflow"
+            description="Label text for metrics in parallel coordinates plot in QCFlow"
           />
         </div>
         <LegacySelect
@@ -68,7 +68,7 @@ export class ParallelCoordinatesPlotControls extends React.Component<Props> {
           placeholder={
             <FormattedMessage
               defaultMessage="Please select metrics"
-              description="Placeholder text for metrics in parallel coordinates plot in MLflow"
+              description="Placeholder text for metrics in parallel coordinates plot in QCFlow"
             />
           }
           value={selectedMetricKeys}
@@ -82,7 +82,7 @@ export class ParallelCoordinatesPlotControls extends React.Component<Props> {
         </LegacySelect>
         <div style={{ marginTop: 20 }}>
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_parallelcoordinatesplotcontrols.tsx_84"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_parallelcoordinatesplotcontrols.tsx_84"
             data-test-id="clear-button"
             onClick={onClearAllSelect}
           >

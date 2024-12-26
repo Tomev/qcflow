@@ -3,8 +3,8 @@ import os
 import subprocess
 import sys
 
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
-from mlflow.utils.os import is_windows
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.utils.os import is_windows
 
 
 class ShellCommandException(Exception):

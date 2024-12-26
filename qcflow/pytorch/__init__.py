@@ -1,10 +1,10 @@
 """
-The ``mlflow.pytorch`` module provides an API for logging and loading PyTorch models. This module
+The ``qcflow.pytorch`` module provides an API for logging and loading PyTorch models. This module
 exports PyTorch models with the following flavors:
 
 PyTorch (native) format
     This is the main flavor that can be loaded back into PyTorch.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
 """
 
@@ -23,45 +23,45 @@ import pandas as pd
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.environment_variables import MLFLOW_DEFAULT_PREDICTION_DEVICE
-from mlflow.exceptions import MlflowException
-from mlflow.ml_package_versions import _ML_PACKAGE_VERSIONS
-from mlflow.models import Model, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import ModelInputExample, _save_example
-from mlflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
-from mlflow.pytorch import pickle_module as mlflow_pytorch_pickle_module
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.autologging_utils import autologging_integration, safe_patch
-from mlflow.utils.checkpoint_utils import download_checkpoint_artifact
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.environment_variables import QCFLOW_DEFAULT_PREDICTION_DEVICE
+from qcflow.exceptions import MlflowException
+from qcflow.ml_package_versions import _ML_PACKAGE_VERSIONS
+from qcflow.models import Model, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import ModelInputExample, _save_example
+from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
+from qcflow.pytorch import pickle_module as qcflow_pytorch_pickle_module
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.autologging_utils import autologging_integration, safe_patch
+from qcflow.utils.checkpoint_utils import download_checkpoint_artifact
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import (
+from qcflow.utils.file_utils import (
     TempDir,
     get_total_file_size,
     write_to,
 )
-from mlflow.utils.model_utils import (
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "pytorch"
 
@@ -85,7 +85,7 @@ _MODEL_DATA_SUBPATH = "data"
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor. Calls to
+        A list of default pip requirements for QCFlow Models produced by this flavor. Calls to
         :func:`save_model()` and :func:`log_model()` produce a pip environment that, at minimum,
         contains these requirements.
     """
@@ -96,7 +96,7 @@ def get_default_pip_requirements():
                 "torch",
                 # We include CloudPickle in the default environment because
                 # it's required by the default pickle module used by `save_model()`
-                # and `log_model()`: `mlflow.pytorch.pickle_module`.
+                # and `log_model()`: `qcflow.pytorch.pickle_module`.
                 "cloudpickle",
             ],
         )
@@ -106,33 +106,33 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment as a dictionary for MLflow Models produced by calls to
+        The default Conda environment as a dictionary for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
 
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Log PyTorch model
-        with mlflow.start_run() as run:
-            mlflow.pytorch.log_model(model, "model", signature=signature)
+        with qcflow.start_run() as run:
+            qcflow.pytorch.log_model(model, "model", signature=signature)
 
         # Fetch the associated conda environment
-        env = mlflow.pytorch.get_default_conda_env()
+        env = qcflow.pytorch.get_default_conda_env()
         print(f"conda env: {env}")
 
     .. code-block:: text
         :caption: Output
 
-        conda env {'name': 'mlflow-env',
+        conda env {'name': 'qcflow-env',
                    'channels': ['conda-forge'],
                    'dependencies': ['python=3.8.15',
                                     {'pip': ['torch==1.5.1',
-                                             'mlflow',
+                                             'qcflow',
                                              'cloudpickle==1.6.0']}]}
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name="torch"))
@@ -154,13 +154,13 @@ def log_model(
     **kwargs,
 ):
     """
-    Log a PyTorch model as an MLflow artifact for the current run.
+    Log a PyTorch model as an QCFlow artifact for the current run.
 
     .. warning:: Log the model with a signature to avoid inference errors.
-        If the model is logged without a signature, the MLflow Model Server relies on the
+        If the model is logged without a signature, the QCFlow Model Server relies on the
         default inferred data type from NumPy. However, PyTorch often expects different
         defaults, particularly when parsing floats. You must include the signature to ensure
-        that the model is logged with the correct data type so that the MLflow model server
+        that the model is logged with the correct data type so that the QCFlow model server
         can correctly provide valid input.
 
     Args:
@@ -225,7 +225,7 @@ def log_model(
         kwargs: kwargs to pass to ``torch.save`` method.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
@@ -233,9 +233,9 @@ def log_model(
 
         import numpy as np
         import torch
-        import mlflow
-        from mlflow import MlflowClient
-        from mlflow.models import infer_signature
+        import qcflow
+        from qcflow import MlflowClient
+        from qcflow.models import infer_signature
 
         # Define model, loss, and optimizer
         model = nn.Linear(1, 1)
@@ -264,12 +264,12 @@ def log_model(
         signature = infer_signature(X.numpy(), model(X).detach().numpy())
 
         # Log the model
-        with mlflow.start_run() as run:
-            mlflow.pytorch.log_model(model, "model")
+        with qcflow.start_run() as run:
+            qcflow.pytorch.log_model(model, "model")
 
             # convert to scripted model and log the model
             scripted_pytorch_model = torch.jit.script(model)
-            mlflow.pytorch.log_model(scripted_pytorch_model, "scripted_model")
+            qcflow.pytorch.log_model(scripted_pytorch_model, "scripted_model")
 
         # Fetch the logged model artifacts
         print(f"run_id: {run.info.run_id}")
@@ -292,10 +292,10 @@ def log_model(
 
         PyTorch logged models
     """
-    pickle_module = pickle_module or mlflow_pytorch_pickle_module
+    pickle_module = pickle_module or qcflow_pytorch_pickle_module
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.pytorch,
+        flavor=qcflow.pytorch,
         pytorch_model=pytorch_model,
         conda_env=conda_env,
         code_paths=code_paths,
@@ -318,7 +318,7 @@ def save_model(
     pytorch_model,
     path,
     conda_env=None,
-    mlflow_model=None,
+    qcflow_model=None,
     code_paths=None,
     pickle_module=None,
     signature: ModelSignature = None,
@@ -347,7 +347,7 @@ def save_model(
 
         path: Local path where the model is to be saved.
         conda_env: {{ conda_env }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
         code_paths: {{ code_paths }}
         pickle_module: The module that PyTorch should use to serialize ("pickle") the specified
             ``pytorch_model``. This is passed as the ``pickle_module`` parameter to
@@ -389,24 +389,24 @@ def save_model(
         :caption: Example
 
         import os
-        import mlflow
+        import qcflow
         import torch
 
 
         model = nn.Linear(1, 1)
 
         # Save PyTorch models to current working directory
-        with mlflow.start_run() as run:
-            mlflow.pytorch.save_model(model, "model")
+        with qcflow.start_run() as run:
+            qcflow.pytorch.save_model(model, "model")
 
             # Convert to a scripted model and save it
             scripted_pytorch_model = torch.jit.script(model)
-            mlflow.pytorch.save_model(scripted_pytorch_model, "scripted_model")
+            qcflow.pytorch.save_model(scripted_pytorch_model, "scripted_model")
 
         # Load each saved model for inference
         for model_path in ["model", "scripted_model"]:
             model_uri = f"{os.getcwd()}/{model_path}"
-            loaded_model = mlflow.pytorch.load_model(model_uri)
+            loaded_model = qcflow.pytorch.load_model(model_uri)
             print(f"Loaded {model_path}:")
             for x in [6.0, 8.0, 12.0, 30.0]:
                 X = torch.Tensor([[x]])
@@ -434,16 +434,16 @@ def save_model(
 
     _validate_env_arguments(conda_env, pip_requirements, extra_pip_requirements)
 
-    pickle_module = pickle_module or mlflow_pytorch_pickle_module
+    pickle_module = pickle_module or qcflow_pytorch_pickle_module
 
     if not isinstance(pytorch_model, torch.nn.Module):
         raise TypeError("Argument 'pytorch_model' should be a torch.nn.Module")
     path = os.path.abspath(path)
     _validate_and_prepare_target_save_path(path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _PyTorchWrapper(pytorch_model, device="cpu")
@@ -452,9 +452,9 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
@@ -468,7 +468,7 @@ def save_model(
     # the module name in the MLmodel
     #
     # TODO: Stop persisting this information to the filesystem once we have a mechanism for
-    # supplying the MLmodel configuration to `mlflow.pytorch._load_pyfunc`
+    # supplying the MLmodel configuration to `qcflow.pytorch._load_pyfunc`
     pickle_module_path = os.path.join(model_data_path, _PICKLE_MODULE_INFO_FILE_NAME)
     with open(pickle_module_path, "w") as f:
         f.write(pickle_module.__name__)
@@ -516,7 +516,7 @@ def save_model(
             torchserve_artifacts_config[_REQUIREMENTS_FILE_KEY] = {"path": rel_path}
             shutil.move(tmp_requirements_dir.path(rel_path), path)
 
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         model_data=model_data_subpath,
         pytorch_version=str(torch.__version__),
@@ -524,8 +524,8 @@ def save_model(
         **torchserve_artifacts_config,
     )
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.pytorch",
+        qcflow_model,
+        loader_module="qcflow.pytorch",
         data=model_data_subpath,
         pickle_module_name=pickle_module.__name__,
         code=code_dir_subpath,
@@ -534,15 +534,15 @@ def save_model(
         model_config={"device": None},
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 model_data_path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -633,17 +633,17 @@ def load_model(model_uri, dst_path=None, **kwargs):
     Load a PyTorch model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model, for example:
+        model_uri: The location, in URI format, of the QCFlow model, for example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see `Referencing Artifacts \
-            <https://www.mlflow.org/docs/latest/concepts.html#artifact-locations>`_.
+            <https://www.qcflow.org/docs/latest/concepts.html#artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output path will be created.
         kwargs: kwargs to pass to ``torch.load`` method.
@@ -655,18 +655,18 @@ def load_model(model_uri, dst_path=None, **kwargs):
         :caption: Example
 
         import torch
-        import mlflow.pytorch
+        import qcflow.pytorch
 
 
         model = nn.Linear(1, 1)
 
         # Log the model
-        with mlflow.start_run() as run:
-            mlflow.pytorch.log_model(model, "model")
+        with qcflow.start_run() as run:
+            qcflow.pytorch.log_model(model, "model")
 
         # Inference after loading the logged model
         model_uri = f"runs:/{run.info.run_id}/model"
-        loaded_model = mlflow.pytorch.load_model(model_uri)
+        loaded_model = qcflow.pytorch.load_model(model_uri)
         for x in [4.0, 6.0, 30.0]:
             X = torch.Tensor([[x]])
             y_pred = loaded_model(X)
@@ -700,18 +700,18 @@ def _load_pyfunc(path, model_config=None):  # noqa: D417
     Load PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``pytorch`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``pytorch`` flavor.
     """
     import torch
 
     device = model_config.get("device", None) if model_config else None
     # if CUDA is available, we use the default CUDA device.
     # To force inference to the CPU when the GPU is available, please set
-    # MLFLOW_DEFAULT_PREDICTION_DEVICE to "cpu"
+    # QCFLOW_DEFAULT_PREDICTION_DEVICE to "cpu"
     # If a specific non-default device is passed in, we continue to respect that.
     if device is None:
-        if MLFLOW_DEFAULT_PREDICTION_DEVICE.get():
-            device = MLFLOW_DEFAULT_PREDICTION_DEVICE.get()
+        if QCFLOW_DEFAULT_PREDICTION_DEVICE.get():
+            device = QCFLOW_DEFAULT_PREDICTION_DEVICE.get()
         elif torch.cuda.is_available():
             device = _TORCH_DEFAULT_GPU_DEVICE_NAME
         else:
@@ -752,7 +752,7 @@ class _PyTorchWrapper:
                 "device' can no longer be specified as an inference parameter. "
                 "It must be specified at load time. "
                 "Please specify the device at load time, for example: "
-                "`mlflow.pyfunc.load_model(model_uri, model_config={'device': 'cuda'})`."
+                "`qcflow.pyfunc.load_model(model_uri, model_config={'device': 'cuda'})`."
             )
 
         if isinstance(data, pd.DataFrame):
@@ -790,11 +790,11 @@ class _PyTorchWrapper:
 
 def log_state_dict(state_dict, artifact_path, **kwargs):
     """
-    Log a state_dict as an MLflow artifact for the current run.
+    Log a state_dict as an QCFlow artifact for the current run.
 
     .. warning::
         This function just logs a state_dict as an artifact and doesn't generate
-        an :ref:`MLflow Model <models>`.
+        an :ref:`QCFlow Model <models>`.
 
     Args:
         state_dict: state_dict to be saved.
@@ -805,25 +805,25 @@ def log_state_dict(state_dict, artifact_path, **kwargs):
         :caption: Example
 
         # Log a model as a state_dict
-        with mlflow.start_run():
+        with qcflow.start_run():
             state_dict = model.state_dict()
-            mlflow.pytorch.log_state_dict(state_dict, artifact_path="model")
+            qcflow.pytorch.log_state_dict(state_dict, artifact_path="model")
 
         # Log a checkpoint as a state_dict
-        with mlflow.start_run():
+        with qcflow.start_run():
             state_dict = {
                 "model": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
                 "epoch": epoch,
                 "loss": loss,
             }
-            mlflow.pytorch.log_state_dict(state_dict, artifact_path="checkpoint")
+            qcflow.pytorch.log_state_dict(state_dict, artifact_path="checkpoint")
     """
 
     with TempDir() as tmp:
         local_path = tmp.path()
         save_state_dict(state_dict=state_dict, path=local_path, **kwargs)
-        mlflow.log_artifacts(local_path, artifact_path)
+        qcflow.log_artifacts(local_path, artifact_path)
 
 
 def save_state_dict(state_dict, path, **kwargs):
@@ -862,10 +862,10 @@ def load_state_dict(state_dict_uri, **kwargs):
             - ``/Users/me/path/to/local/state_dict``
             - ``relative/path/to/local/state_dict``
             - ``s3://my_bucket/path/to/state_dict``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/state_dict``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/state_dict``
 
             For more information about supported URI schemes, see `Referencing Artifacts \
-            <https://www.mlflow.org/docs/latest/concepts.html#artifact-locations>`_.
+            <https://www.qcflow.org/docs/latest/concepts.html#artifact-locations>`_.
 
         kwargs: kwargs to pass to ``torch.load``.
 
@@ -875,12 +875,12 @@ def load_state_dict(state_dict_uri, **kwargs):
     .. code-block:: python
         :caption: Example
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             artifact_path = "model"
-            mlflow.pytorch.log_state_dict(model.state_dict(), artifact_path)
-            state_dict_uri = mlflow.get_artifact_uri(artifact_path)
+            qcflow.pytorch.log_state_dict(model.state_dict(), artifact_path)
+            state_dict_uri = qcflow.get_artifact_uri(artifact_path)
 
-        state_dict = mlflow.pytorch.load_state_dict(state_dict_uri)
+        state_dict = qcflow.pytorch.load_state_dict(state_dict_uri)
     """
     import torch
 
@@ -910,14 +910,14 @@ def autolog(
 ):
     """
     Enables (or disables) and configures autologging from `PyTorch Lightning
-    <https://pytorch-lightning.readthedocs.io/en/latest>`_ to MLflow.
+    <https://pytorch-lightning.readthedocs.io/en/latest>`_ to QCFlow.
 
     Autologging is performed when you call the `fit` method of
     `pytorch_lightning.Trainer() \
     <https://pytorch-lightning.readthedocs.io/en/latest/trainer.html#>`_.
 
     Explore the complete `PyTorch MNIST \
-    <https://github.com/mlflow/mlflow/tree/master/examples/pytorch/MNIST>`_ for
+    <https://github.com/qcflow/qcflow/tree/master/examples/pytorch/MNIST>`_ for
     an expansive example with implementation of additional lightening steps.
 
     **Note**: Full autologging is only supported for PyTorch Lightning models,
@@ -928,7 +928,7 @@ def autolog(
     `torch.nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_)
     only autologs calls to
     `torch.utils.tensorboard.SummaryWriter <https://pytorch.org/docs/stable/tensorboard.html>`_'s
-    ``add_scalar`` and ``add_hparams`` methods to mlflow. In this case, there's also
+    ``add_scalar`` and ``add_hparams`` methods to qcflow. In this case, there's also
     no notion of an "epoch".
 
     Args:
@@ -939,9 +939,9 @@ def autolog(
             performance issues and is not recommended. Metrics are logged against Lightning's global
             step number, and when multiple optimizers are used it is assumed that all optimizers
             are stepped in each training step.
-        log_models: If ``True``, trained models are logged as MLflow model artifacts.
+        log_models: If ``True``, trained models are logged as QCFlow model artifacts.
             If ``False``, trained models are not logged.
-        log_datasets: If ``True``, dataset information is logged to MLflow Tracking.
+        log_datasets: If ``True``, dataset information is logged to QCFlow Tracking.
             If ``False``, dataset information is not logged.
         disable: If ``True``, disables the PyTorch Lightning autologging integration.
             If ``False``, enables the PyTorch Lightning autologging integration.
@@ -950,8 +950,8 @@ def autolog(
             user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
             pytorch and pytorch-lightning that have not been tested against this version
-            of the MLflow client or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during PyTorch
+            of the QCFlow client or are incompatible.
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during PyTorch
             Lightning autologging. If ``False``, show all events and warnings during PyTorch
             Lightning autologging.
         registered_model_name: If given, each time a model is trained, it is registered as a
@@ -992,8 +992,8 @@ def autolog(
         from torchvision import transforms
         from torchvision.datasets import MNIST
 
-        import mlflow.pytorch
-        from mlflow import MlflowClient
+        import qcflow.pytorch
+        from qcflow import MlflowClient
 
 
         class MNISTModel(L.LightningModule):
@@ -1012,7 +1012,7 @@ def autolog(
                 pred = logits.argmax(dim=1)
                 acc = self.accuracy(pred, y)
 
-                # PyTorch `self.log` will be automatically captured by MLflow.
+                # PyTorch `self.log` will be automatically captured by QCFlow.
                 self.log("train_loss", loss, on_epoch=True)
                 self.log("acc", acc, on_epoch=True)
                 return loss
@@ -1022,7 +1022,7 @@ def autolog(
 
 
         def print_auto_logged_info(r):
-            tags = {k: v for k, v in r.data.tags.items() if not k.startswith("mlflow.")}
+            tags = {k: v for k, v in r.data.tags.items() if not k.startswith("qcflow.")}
             artifacts = [f.path for f in MlflowClient().list_artifacts(r.info.run_id, "model")]
             print(f"run_id: {r.info.run_id}")
             print(f"artifacts: {artifacts}")
@@ -1046,22 +1046,22 @@ def autolog(
         # Initialize a trainer.
         trainer = L.Trainer(max_epochs=3)
 
-        # Auto log all MLflow entities
-        mlflow.pytorch.autolog()
+        # Auto log all QCFlow entities
+        qcflow.pytorch.autolog()
 
         # Train the model.
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             trainer.fit(mnist_model, train_loader)
 
         # Fetch the auto logged parameters and metrics.
-        print_auto_logged_info(mlflow.get_run(run_id=run.info.run_id))
+        print_auto_logged_info(qcflow.get_run(run_id=run.info.run_id))
     """
     try:
         import pytorch_lightning as pl
     except ImportError:
         pass
     else:
-        from mlflow.pytorch._lightning_autolog import patched_fit
+        from qcflow.pytorch._lightning_autolog import patched_fit
 
         safe_patch(
             FLAVOR_NAME, pl.Trainer, "fit", patched_fit, manage_run=True, extra_tags=extra_tags
@@ -1072,7 +1072,7 @@ def autolog(
     except ImportError:
         pass
     else:
-        from mlflow.pytorch._lightning_autolog import patched_fit
+        from qcflow.pytorch._lightning_autolog import patched_fit
 
         safe_patch(
             FLAVOR_NAME, L.Trainer, "fit", patched_fit, manage_run=True, extra_tags=extra_tags
@@ -1083,7 +1083,7 @@ def autolog(
     except ImportError:
         pass
     else:
-        from mlflow.pytorch._pytorch_autolog import (
+        from qcflow.pytorch._pytorch_autolog import (
             flush_metrics_queue,
             patched_add_event,
             patched_add_hparams,
@@ -1094,7 +1094,7 @@ def autolog(
             FLAVOR_NAME,
             torch.utils.tensorboard.writer.FileWriter,
             "add_event",
-            partial(patched_add_event, mlflow_log_every_n_step=log_every_n_step),
+            partial(patched_add_event, qcflow_log_every_n_step=log_every_n_step),
             manage_run=True,
             extra_tags=extra_tags,
         )
@@ -1127,7 +1127,7 @@ if autolog.__doc__ is not None:
 def load_checkpoint(model_class, run_id=None, epoch=None, global_step=None, kwargs=None):
     """
     If you enable "checkpoint" in autologging, during pytorch-lightning model
-    training execution, checkpointed models are logged as MLflow artifacts.
+    training execution, checkpointed models are logged as QCFlow artifacts.
     Using this API, you can load the checkpointed model.
 
     If you want to load the latest checkpoint, set both `epoch` and `global_step` to None.
@@ -1155,24 +1155,24 @@ def load_checkpoint(model_class, run_id=None, epoch=None, global_step=None, kwar
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        mlflow.pytorch.autolog(checkpoint=True)
+        qcflow.pytorch.autolog(checkpoint=True)
 
         model = MyLightningModuleNet()  # A custom-pytorch lightning model
         train_loader = create_train_dataset_loader()
         trainer = Trainer()
 
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             trainer.fit(model, train_loader)
 
         run_id = run.info.run_id
 
         # load latest checkpoint model
-        latest_checkpoint_model = mlflow.pytorch.load_checkpoint(MyLightningModuleNet, run_id)
+        latest_checkpoint_model = qcflow.pytorch.load_checkpoint(MyLightningModuleNet, run_id)
 
         # load history checkpoint model logged in second epoch
-        checkpoint_model = mlflow.pytorch.load_checkpoint(MyLightningModuleNet, run_id, epoch=2)
+        checkpoint_model = qcflow.pytorch.load_checkpoint(MyLightningModuleNet, run_id, epoch=2)
     """
     with TempDir() as tmp_dir:
         downloaded_checkpoint_filepath = download_checkpoint_artifact(
@@ -1192,9 +1192,9 @@ __all__ = [
 ]
 
 try:
-    from mlflow.pytorch._lightning_autolog import MlflowModelCheckpointCallback  # noqa: F401
+    from qcflow.pytorch._lightning_autolog import MlflowModelCheckpointCallback  # noqa: F401
 
-    __all__.append("MLflowModelCheckpointCallback")
+    __all__.append("QCFlowModelCheckpointCallback")
 except ImportError:
     # Swallow exception if pytorch-lightning is not installed.
     pass

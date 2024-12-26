@@ -1,4 +1,4 @@
-from mlflow.recipes.classification.v1.recipe import (
+from qcflow.recipes.classification.v1.recipe import (
     ClassificationRecipe as RecipeImpl,
 )
 

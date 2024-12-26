@@ -1,5 +1,5 @@
 """
-This module contains the base interface implemented by MLflow model deployment plugins.
+This module contains the base interface implemented by QCFlow model deployment plugins.
 In particular, a valid deployment plugin module must implement:
 
 1. Exactly one client class subclassed from :py:class:`BaseDeploymentClient`, exposing the primary
@@ -11,8 +11,8 @@ In particular, a valid deployment plugin module must implement:
 
 import abc
 
-from mlflow.exceptions import MlflowException
-from mlflow.utils.annotations import developer_stable
+from qcflow.exceptions import MlflowException
+from qcflow.utils.annotations import developer_stable
 
 
 def run_local(target, name, model_uri, flavor=None, config=None):
@@ -30,7 +30,7 @@ def run_local(target, name, model_uri, flavor=None, config=None):
         target: Which target to use. This information is used to call the appropriate plugin.
         name: Unique name to use for deployment. If another deployment exists with the same
             name, create_deployment will raise a
-            :py:class:`mlflow.exceptions.MlflowException`.
+            :py:class:`qcflow.exceptions.MlflowException`.
         model_uri: URI of model to deploy.
         flavor: (optional) Model flavor to deploy. If unspecified, default flavor is chosen.
         config: (optional) Dict containing updated target-specific config for the deployment.
@@ -53,7 +53,7 @@ def target_help():
         be callable with ``plugin_module.target_help``
 
     Return a string containing detailed documentation on the current deployment target, to be
-    displayed when users invoke the ``mlflow deployments help -t <target-name>`` CLI. This
+    displayed when users invoke the ``qcflow deployments help -t <target-name>`` CLI. This
     method should be defined within the module specified by the plugin author.
     The string should contain:
 
@@ -82,7 +82,7 @@ class BaseDeploymentClient(abc.ABC):
     target-specific information.
 
     .. Note::
-        Subclasses should raise :py:class:`mlflow.exceptions.MlflowException` in error cases (e.g.
+        Subclasses should raise :py:class:`qcflow.exceptions.MlflowException` in error cases (e.g.
         on failure to deploy a model).
     """
 
@@ -96,13 +96,13 @@ class BaseDeploymentClient(abc.ABC):
         deployment completes (i.e. until it's possible to perform inference with the deployment).
         In the case of conflicts (e.g. if it's not possible to create the specified deployment
         without due to conflict with an existing deployment), raises a
-        :py:class:`mlflow.exceptions.MlflowException` or an `HTTPError` for remote
+        :py:class:`qcflow.exceptions.MlflowException` or an `HTTPError` for remote
         deployments. See target-specific plugin documentation
         for additional detail on support for asynchronous deployment and other configuration.
 
         Args:
             name: Unique name to use for deployment. If another deployment exists with the same
-                name, raises a :py:class:`mlflow.exceptions.MlflowException`
+                name, raises a :py:class:`qcflow.exceptions.MlflowException`
             model_uri: URI of model to deploy
             flavor: (optional) Model flavor to deploy. If unspecified, a default flavor
                 will be chosen.
@@ -185,7 +185,7 @@ class BaseDeploymentClient(abc.ABC):
     def get_deployment(self, name, endpoint=None):
         """
         Returns a dictionary describing the specified deployment, throwing either a
-        :py:class:`mlflow.exceptions.MlflowException` or an `HTTPError` for remote
+        :py:class:`qcflow.exceptions.MlflowException` or an `HTTPError` for remote
         deployments if no deployment exists with the provided ID.
         The dict is guaranteed to contain an 'name' key containing the deployment name.
         The other fields of the returned dictionary and their types may vary across
@@ -206,7 +206,7 @@ class BaseDeploymentClient(abc.ABC):
     def predict(self, deployment_name=None, inputs=None, endpoint=None):
         """Compute predictions on inputs using the specified deployment or model endpoint.
 
-        Note that the input/output types of this method match those of `mlflow pyfunc predict`.
+        Note that the input/output types of this method match those of `qcflow pyfunc predict`.
 
         Args:
             deployment_name: Name of deployment to predict against.
@@ -215,7 +215,7 @@ class BaseDeploymentClient(abc.ABC):
             endpoint: Endpoint to predict against. May not be supported by all targets.
 
         Returns:
-            A :py:class:`mlflow.deployments.PredictionsResponse` instance representing the
+            A :py:class:`qcflow.deployments.PredictionsResponse` instance representing the
             predictions and associated Model Server response metadata.
 
         """
@@ -259,13 +259,13 @@ class BaseDeploymentClient(abc.ABC):
         creation completes (i.e. until it's possible to create a deployment within the endpoint).
         In the case of conflicts (e.g. if it's not possible to create the specified endpoint
         due to conflict with an existing endpoint), raises a
-        :py:class:`mlflow.exceptions.MlflowException` or an `HTTPError` for remote
+        :py:class:`qcflow.exceptions.MlflowException` or an `HTTPError` for remote
         deployments. See target-specific plugin documentation
         for additional detail on support for asynchronous creation and other configuration.
 
         Args:
             name: Unique name to use for endpoint. If another endpoint exists with the same
-                name, raises a :py:class:`mlflow.exceptions.MlflowException`.
+                name, raises a :py:class:`qcflow.exceptions.MlflowException`.
             config: (optional) Dict containing target-specific configuration for the
                 endpoint.
 
@@ -338,7 +338,7 @@ class BaseDeploymentClient(abc.ABC):
     def get_endpoint(self, endpoint):
         """
         Returns a dictionary describing the specified endpoint, throwing a
-        py:class:`mlflow.exception.MlflowException` or an `HTTPError` for remote
+        py:class:`qcflow.exception.MlflowException` or an `HTTPError` for remote
         deployments if no endpoint exists with the provided
         name.
         The dict is guaranteed to contain an 'name' key containing the endpoint name.

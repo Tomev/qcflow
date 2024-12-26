@@ -3,10 +3,10 @@ import { RunsChartsLineChartXAxisType } from './components/RunsCharts.common';
 import { getUUID } from '../../../common/utils/ActionUtils';
 import { MetricEntitiesByName, ChartSectionConfig } from '../../types';
 import {
-  MLFLOW_MODEL_METRIC_PREFIX,
-  MLFLOW_SYSTEM_METRIC_PREFIX,
-  MLFLOW_MODEL_METRIC_NAME,
-  MLFLOW_SYSTEM_METRIC_NAME,
+  QCFLOW_MODEL_METRIC_PREFIX,
+  QCFLOW_SYSTEM_METRIC_PREFIX,
+  QCFLOW_MODEL_METRIC_NAME,
+  QCFLOW_SYSTEM_METRIC_NAME,
   DEFAULT_IMAGE_GRID_CHART_NAME,
 } from '../../constants';
 import { isNil, uniq } from 'lodash';
@@ -141,10 +141,10 @@ export abstract class RunsChartsCardConfig {
 
     const parts = displayMetricName.split(delimiter);
     const section = parts.slice(0, -1).join(delimiter);
-    if (section === MLFLOW_MODEL_METRIC_PREFIX) {
-      return MLFLOW_MODEL_METRIC_NAME;
-    } else if (section + delimiter === MLFLOW_SYSTEM_METRIC_PREFIX) {
-      return MLFLOW_SYSTEM_METRIC_NAME;
+    if (section === QCFLOW_MODEL_METRIC_PREFIX) {
+      return QCFLOW_MODEL_METRIC_NAME;
+    } else if (section + delimiter === QCFLOW_SYSTEM_METRIC_PREFIX) {
+      return QCFLOW_SYSTEM_METRIC_NAME;
     }
     return section;
   };
@@ -153,7 +153,7 @@ export abstract class RunsChartsCardConfig {
     primaryMetricKey,
     runsData,
     useParallelCoordinatesChart = false,
-    enabledSectionNames = [MLFLOW_MODEL_METRIC_NAME, MLFLOW_SYSTEM_METRIC_NAME],
+    enabledSectionNames = [QCFLOW_MODEL_METRIC_NAME, QCFLOW_SYSTEM_METRIC_NAME],
     filterMetricNames,
   }: {
     primaryMetricKey?: string;
@@ -228,18 +228,18 @@ export abstract class RunsChartsCardConfig {
 
     // If no other charts exist, show empty parallel coordinates plot
     if (resultChartSet.length === 0 && useParallelCoordinatesChart) {
-      const sectionId = sectionName2Uuid[MLFLOW_MODEL_METRIC_NAME];
+      const sectionId = sectionName2Uuid[QCFLOW_MODEL_METRIC_NAME];
       resultChartSet.push(
         RunsChartsCardConfig.getEmptyChartCardByType(RunsChartType.PARALLEL, false, getUUID(), sectionId),
       );
     }
     const rest = Object.keys(sectionName2Uuid)
-      .filter((sectionName) => sectionName !== MLFLOW_MODEL_METRIC_NAME && sectionName !== MLFLOW_SYSTEM_METRIC_NAME)
+      .filter((sectionName) => sectionName !== QCFLOW_MODEL_METRIC_NAME && sectionName !== QCFLOW_SYSTEM_METRIC_NAME)
       .sort();
 
     const sortedSectionNames = [
       ...rest,
-      ...[MLFLOW_MODEL_METRIC_NAME, MLFLOW_SYSTEM_METRIC_NAME].filter((name) => enabledSectionNames.includes(name)),
+      ...[QCFLOW_MODEL_METRIC_NAME, QCFLOW_SYSTEM_METRIC_NAME].filter((name) => enabledSectionNames.includes(name)),
     ];
 
     // Create section configs
@@ -428,7 +428,7 @@ export abstract class RunsChartsCardConfig {
     if (!isAccordionReordered) {
       // If sections are in order (not been reordered), then sort alphabetically
       const rest = resultSectionSet.filter(
-        (section) => section.name !== MLFLOW_MODEL_METRIC_NAME && section.name !== MLFLOW_SYSTEM_METRIC_NAME,
+        (section) => section.name !== QCFLOW_MODEL_METRIC_NAME && section.name !== QCFLOW_SYSTEM_METRIC_NAME,
       );
       rest.sort((a, b) => a.name.localeCompare(b.name));
       resultSectionSet = [

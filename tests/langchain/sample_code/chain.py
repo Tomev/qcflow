@@ -13,8 +13,8 @@ from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings.fake import FakeEmbeddings
 from langchain_community.vectorstores import FAISS
 
-import mlflow
-from mlflow.models import ModelConfig, set_model, set_retriever_schema
+import qcflow
+from qcflow.models import ModelConfig, set_model, set_retriever_schema
 
 base_config = ModelConfig(development_config="tests/langchain/config.yml")
 
@@ -58,7 +58,7 @@ def get_fake_chat_model(endpoint="fake-endpoint"):
 
 
 # No need to define the model, but simulating common practice in dev notebooks
-mlflow.langchain.autolog()
+qcflow.langchain.autolog()
 
 text_path = "tests/langchain/state_of_the_union.txt"
 loader = TextLoader(text_path)

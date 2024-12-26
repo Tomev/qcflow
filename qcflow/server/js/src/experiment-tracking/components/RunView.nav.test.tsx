@@ -1,11 +1,11 @@
-import { renderWithIntl, screen, waitFor } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen, waitFor } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import { RunPage } from './run-page/RunPage';
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import promiseMiddleware from 'redux-promise-middleware';
 import { Provider } from 'react-redux';
 import { EXPERIMENT_RUNS_MOCK_STORE } from './experiment-page/fixtures/experiment-runs.fixtures';
-import { createMLflowRoutePath } from '../../common/utils/RoutingUtils';
+import { createQCFlowRoutePath } from '../../common/utils/RoutingUtils';
 import { testRoute, TestRouter } from '../../common/utils/RoutingTestUtils';
 import userEvent from '@testing-library/user-event-14';
 import { RoutePaths } from '../routes';
@@ -41,7 +41,7 @@ describe('RunView navigation integration test', () => {
     const renderResult = renderWithIntl(
       <Provider store={mockStore(mockState)}>
         <TestRouter
-          initialEntries={[createMLflowRoutePath(initialRoute)]}
+          initialEntries={[createQCFlowRoutePath(initialRoute)]}
           routes={[testRoute(<RunPage />, RoutePaths.runPageWithTab)]}
         />
       </Provider>,

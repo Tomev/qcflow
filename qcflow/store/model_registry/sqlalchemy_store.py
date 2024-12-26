@@ -4,41 +4,41 @@ import urllib
 import sqlalchemy
 from sqlalchemy.future import select
 
-import mlflow.store.db.utils
-from mlflow.entities.model_registry.model_version_stages import (
+import qcflow.store.db.utils
+from qcflow.entities.model_registry.model_version_stages import (
     ALL_STAGES,
     DEFAULT_STAGES_FOR_GET_LATEST_VERSIONS,
     STAGE_ARCHIVED,
     STAGE_DELETED_INTERNAL,
     get_canonical_stage,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     INVALID_STATE,
     RESOURCE_ALREADY_EXISTS,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.store.artifact.utils.models import _parse_model_uri
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry import (
+from qcflow.store.artifact.utils.models import _parse_model_uri
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_DEFAULT,
     SEARCH_MODEL_VERSION_MAX_RESULTS_THRESHOLD,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_THRESHOLD,
 )
-from mlflow.store.model_registry.abstract_store import AbstractStore
-from mlflow.store.model_registry.dbmodels.models import (
+from qcflow.store.model_registry.abstract_store import AbstractStore
+from qcflow.store.model_registry.dbmodels.models import (
     SqlModelVersion,
     SqlModelVersionTag,
     SqlRegisteredModel,
     SqlRegisteredModelAlias,
     SqlRegisteredModelTag,
 )
-from mlflow.utils.search_utils import SearchModelUtils, SearchModelVersionUtils, SearchUtils
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.uri import extract_db_type_from_uri
-from mlflow.utils.validation import (
+from qcflow.utils.search_utils import SearchModelUtils, SearchModelVersionUtils, SearchUtils
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.uri import extract_db_type_from_uri
+from qcflow.utils.validation import (
     _validate_model_alias_name,
     _validate_model_name,
     _validate_model_version,
@@ -61,7 +61,7 @@ sqlalchemy.orm.configure_mappers()
 class SqlAlchemyStore(AbstractStore):
     """
     This entity may change or be removed in a future release without warning.
-    SQLAlchemy compliant backend store for tracking meta data for MLflow entities. MLflow
+    SQLAlchemy compliant backend store for tracking meta data for QCFlow entities. QCFlow
     supports the database dialects ``mysql``, ``mssql``, ``sqlite``, and ``postgresql``.
     As specified in the
     `SQLAlchemy docs <https://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls>`_ ,
@@ -69,9 +69,9 @@ class SqlAlchemyStore(AbstractStore):
     ``<dialect>+<driver>://<username>:<password>@<host>:<port>/<database>``. If you do not
     specify a driver, SQLAlchemy uses a dialect's default driver.
 
-    This store interacts with SQL store using SQLAlchemy abstractions defined for MLflow entities.
-    :py:class:`mlflow.store.model_registry.models.RegisteredModel` and
-    :py:class:`mlflow.store.model_registry.models.ModelVersion`
+    This store interacts with SQL store using SQLAlchemy abstractions defined for QCFlow entities.
+    :py:class:`qcflow.store.model_registry.models.RegisteredModel` and
+    :py:class:`qcflow.store.model_registry.models.ModelVersion`
     """
 
     CREATE_MODEL_VERSION_RETRIES = 3
@@ -84,7 +84,7 @@ class SqlAlchemyStore(AbstractStore):
             db_uri: The SQLAlchemy database URI string to connect to the database. See
                 the `SQLAlchemy docs
                 <https://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls>`_
-                for format specifications. MLflow supports the dialects ``mysql``,
+                for format specifications. QCFlow supports the dialects ``mysql``,
                 ``mssql``, ``sqlite``, and ``postgresql``.
             default_artifact_root: Path/URI to location suitable for large data (such as a blob
                 store object, DBFS path, or shared NFS file system).
@@ -92,18 +92,18 @@ class SqlAlchemyStore(AbstractStore):
         super().__init__()
         self.db_uri = db_uri
         self.db_type = extract_db_type_from_uri(db_uri)
-        self.engine = mlflow.store.db.utils.create_sqlalchemy_engine_with_retry(db_uri)
-        if not mlflow.store.db.utils._all_tables_exist(self.engine):
-            mlflow.store.db.utils._initialize_tables(self.engine)
+        self.engine = qcflow.store.db.utils.create_sqlalchemy_engine_with_retry(db_uri)
+        if not qcflow.store.db.utils._all_tables_exist(self.engine):
+            qcflow.store.db.utils._initialize_tables(self.engine)
         # Verify that all model registry tables exist.
         SqlAlchemyStore._verify_registry_tables_exist(self.engine)
         SessionMaker = sqlalchemy.orm.sessionmaker(bind=self.engine)
-        self.ManagedSessionMaker = mlflow.store.db.utils._get_managed_session_maker(
+        self.ManagedSessionMaker = qcflow.store.db.utils._get_managed_session_maker(
             SessionMaker, self.db_type
         )
         # TODO: verify schema here once we add logic to initialize the registry tables if they
         # don't exist (schema verification will fail in tests otherwise)
-        # mlflow.store.db.utils._verify_schema(self.engine)
+        # qcflow.store.db.utils._verify_schema(self.engine)
 
     def _get_dialect(self):
         return self.engine.dialect.name
@@ -122,7 +122,7 @@ class SqlAlchemyStore(AbstractStore):
         if any(table not in inspected_tables for table in expected_tables):
             # TODO: Replace the MlflowException with the following line once it's possible to run
             # the registry against a different DB than the tracking server:
-            # mlflow.store.db.utils._initialize_tables(self.engine)
+            # qcflow.store.db.utils._initialize_tables(self.engine)
             raise MlflowException("Database migration in unexpected state. Run manual upgrade.")
 
     @staticmethod
@@ -157,12 +157,12 @@ class SqlAlchemyStore(AbstractStore):
 
         Args:
             name: Name of the new model. This is expected to be unique in the backend store.
-            tags: A list of :py:class:`mlflow.entities.model_registry.RegisteredModelTag`
+            tags: A list of :py:class:`qcflow.entities.model_registry.RegisteredModelTag`
                 instances associated with this registered model.
             description: Description of the version.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.RegisteredModel`
+            A single object of :py:class:`qcflow.entities.model_registry.RegisteredModel`
             created in the backend.
         """
         _validate_model_name(name)
@@ -185,7 +185,7 @@ class SqlAlchemyStore(AbstractStore):
                 ]
                 session.add(registered_model)
                 session.flush()
-                return registered_model.to_mlflow_entity()
+                return registered_model.to_qcflow_entity()
             except sqlalchemy.exc.IntegrityError as e:
                 raise MlflowException(
                     f"Registered Model (name={name}) already exists. Error: {e}",
@@ -229,7 +229,7 @@ class SqlAlchemyStore(AbstractStore):
             description: New description.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         """
         with self.ManagedSessionMaker() as session:
@@ -239,7 +239,7 @@ class SqlAlchemyStore(AbstractStore):
             sql_registered_model.last_updated_time = updated_time
             session.add(sql_registered_model)
             session.flush()
-            return sql_registered_model.to_mlflow_entity()
+            return sql_registered_model.to_qcflow_entity()
 
     def rename_registered_model(self, name, new_name):
         """
@@ -250,7 +250,7 @@ class SqlAlchemyStore(AbstractStore):
             new_name: New proposed name.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         """
         _validate_model_name(new_name)
@@ -265,7 +265,7 @@ class SqlAlchemyStore(AbstractStore):
                 sql_registered_model.last_updated_time = updated_time
                 session.add_all([sql_registered_model] + sql_registered_model.model_versions)
                 session.flush()
-                return sql_registered_model.to_mlflow_entity()
+                return sql_registered_model.to_qcflow_entity()
             except sqlalchemy.exc.IntegrityError as e:
                 raise MlflowException(
                     f"Registered Model (name={new_name}) already exists. Error: {e}",
@@ -313,7 +313,7 @@ class SqlAlchemyStore(AbstractStore):
                 a ``search_registered_models`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.RegisteredModel` objects
+            A PagedList of :py:class:`qcflow.entities.model_registry.RegisteredModel` objects
             that satisfy the search expressions. The pagination token for the next page can be
             obtained via the ``token`` attribute of the object.
         """
@@ -348,7 +348,7 @@ class SqlAlchemyStore(AbstractStore):
             next_page_token = self._compute_next_token(
                 max_results_for_query, len(sql_registered_models), offset, max_results
             )
-            rm_entities = [rm.to_mlflow_entity() for rm in sql_registered_models][:max_results]
+            rm_entities = [rm.to_qcflow_entity() for rm in sql_registered_models][:max_results]
             return PagedList(rm_entities, next_page_token)
 
     @classmethod
@@ -543,10 +543,10 @@ class SqlAlchemyStore(AbstractStore):
             name: Registered model name.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
         """
         with self.ManagedSessionMaker() as session:
-            return self._get_registered_model(session, name, eager=True).to_mlflow_entity()
+            return self._get_registered_model(session, name, eager=True).to_qcflow_entity()
 
     def get_latest_versions(self, name, stages=None):
         """
@@ -559,13 +559,13 @@ class SqlAlchemyStore(AbstractStore):
                 each stage.
 
         Returns:
-            List of :py:class:`mlflow.entities.model_registry.ModelVersion` objects.
+            List of :py:class:`qcflow.entities.model_registry.ModelVersion` objects.
 
         """
         with self.ManagedSessionMaker() as session:
             sql_registered_model = self._get_registered_model(session, name)
             # Convert to RegisteredModel entity first and then extract latest_versions
-            latest_versions = sql_registered_model.to_mlflow_entity().latest_versions
+            latest_versions = sql_registered_model.to_qcflow_entity().latest_versions
             if stages is None or len(stages) == 0:
                 expected_stages = {get_canonical_stage(stage) for stage in ALL_STAGES}
             else:
@@ -595,7 +595,7 @@ class SqlAlchemyStore(AbstractStore):
 
         Args:
             name: Registered model name.
-            tag: :py:class:`mlflow.entities.model_registry.RegisteredModelTag` instance to log.
+            tag: :py:class:`qcflow.entities.model_registry.RegisteredModelTag` instance to log.
 
         Returns:
             None
@@ -645,15 +645,15 @@ class SqlAlchemyStore(AbstractStore):
         Args:
             name: Registered model name.
             source: URI indicating the location of the model artifacts.
-            run_id: Run ID from MLflow tracking server that generated the model.
-            tags: A list of :py:class:`mlflow.entities.model_registry.ModelVersionTag`
+            run_id: Run ID from QCFlow tracking server that generated the model.
+            tags: A list of :py:class:`qcflow.entities.model_registry.ModelVersionTag`
                 instances associated with this model version.
-            run_link: Link to the run from an MLflow tracking server that generated this model.
+            run_link: Link to the run from an QCFlow tracking server that generated this model.
             description: Description of the version.
             local_model_path: Unused.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A single object of :py:class:`qcflow.entities.model_registry.ModelVersion`
             created in the backend.
 
         """
@@ -706,7 +706,7 @@ class SqlAlchemyStore(AbstractStore):
                     session.add_all([sql_registered_model, model_version])
                     session.flush()
                     return self._populate_model_version_aliases(
-                        session, name, model_version.to_mlflow_entity()
+                        session, name, model_version.to_qcflow_entity()
                     )
                 except sqlalchemy.exc.IntegrityError:
                     more_retries = self.CREATE_MODEL_VERSION_RETRIES - attempt - 1
@@ -777,7 +777,7 @@ class SqlAlchemyStore(AbstractStore):
             version: Registered model version.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
         """
         with self.ManagedSessionMaker() as session:
             conditions = [
@@ -786,7 +786,7 @@ class SqlAlchemyStore(AbstractStore):
             ]
             sql_model_version = self._get_model_version_from_db(session, name, version, conditions)
             return self._populate_model_version_aliases(
-                session, name, sql_model_version.to_mlflow_entity()
+                session, name, sql_model_version.to_qcflow_entity()
             )
 
     def update_model_version(self, name, version, description=None):
@@ -799,7 +799,7 @@ class SqlAlchemyStore(AbstractStore):
             description: New model description.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         """
         with self.ManagedSessionMaker() as session:
@@ -809,7 +809,7 @@ class SqlAlchemyStore(AbstractStore):
             sql_model_version.last_updated_time = updated_time
             session.add(sql_model_version)
             return self._populate_model_version_aliases(
-                session, name, sql_model_version.to_mlflow_entity()
+                session, name, sql_model_version.to_qcflow_entity()
             )
 
     def transition_model_version_stage(self, name, version, stage, archive_existing_versions):
@@ -826,7 +826,7 @@ class SqlAlchemyStore(AbstractStore):
                 be raised.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         """
         is_active_stage = get_canonical_stage(stage) in DEFAULT_STAGES_FOR_GET_LATEST_VERSIONS
@@ -861,7 +861,7 @@ class SqlAlchemyStore(AbstractStore):
             sql_registered_model.last_updated_time = last_updated_time
             session.add_all([*model_versions, sql_model_version, sql_registered_model])
             return self._populate_model_version_aliases(
-                session, name, sql_model_version.to_mlflow_entity()
+                session, name, sql_model_version.to_qcflow_entity()
             )
 
     def delete_model_version(self, name, version):
@@ -904,12 +904,12 @@ class SqlAlchemyStore(AbstractStore):
             version: Registered model version.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
         """
         with self.ManagedSessionMaker() as session:
             sql_model_version = self._get_sql_model_version(session, name, version, eager=True)
             return self._populate_model_version_aliases(
-                session, name, sql_model_version.to_mlflow_entity()
+                session, name, sql_model_version.to_qcflow_entity()
             )
 
     def get_model_version_download_uri(self, name, version):
@@ -950,7 +950,7 @@ class SqlAlchemyStore(AbstractStore):
                 a ``search_model_versions`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A PagedList of :py:class:`qcflow.entities.model_registry.ModelVersion`
             objects that satisfy the search expressions. The pagination token for the next
             page can be obtained via the ``token`` attribute of the object.
 
@@ -996,7 +996,7 @@ class SqlAlchemyStore(AbstractStore):
             next_page_token = self._compute_next_token(
                 max_results_for_query, len(sql_model_versions), offset, max_results
             )
-            model_versions = [mv.to_mlflow_entity() for mv in sql_model_versions][:max_results]
+            model_versions = [mv.to_qcflow_entity() for mv in sql_model_versions][:max_results]
             return PagedList(model_versions, next_page_token)
 
     @classmethod
@@ -1074,7 +1074,7 @@ class SqlAlchemyStore(AbstractStore):
         Args:
             name: Registered model name.
             version: Registered model version.
-            tag: :py:class:`mlflow.entities.model_registry.ModelVersionTag` instance to log.
+            tag: :py:class:`qcflow.entities.model_registry.ModelVersionTag` instance to log.
 
         Returns:
             None
@@ -1171,7 +1171,7 @@ class SqlAlchemyStore(AbstractStore):
             alias: Name of the alias.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
         """
         _validate_model_name(name)
         _validate_model_alias_name(alias)
@@ -1182,7 +1182,7 @@ class SqlAlchemyStore(AbstractStore):
                     session, existing_alias.name, existing_alias.version
                 )
                 return self._populate_model_version_aliases(
-                    session, name, sql_model_version.to_mlflow_entity()
+                    session, name, sql_model_version.to_qcflow_entity()
                 )
             else:
                 raise MlflowException(

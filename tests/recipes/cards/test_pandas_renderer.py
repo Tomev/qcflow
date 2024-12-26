@@ -7,9 +7,9 @@ import pandas as pd
 import pytest
 from google.protobuf import text_format
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos import facet_feature_statistics_pb2
-from mlflow.recipes.cards import pandas_renderer
+from qcflow.exceptions import MlflowException
+from qcflow.protos import facet_feature_statistics_pb2
+from qcflow.recipes.cards import pandas_renderer
 
 
 def test_convert_to_html():

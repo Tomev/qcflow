@@ -1,6 +1,6 @@
 Type: Package
-Package: mlflow
-Title: Interface to 'MLflow'
+Package: qcflow
+Title: Interface to 'QCFlow'
 Version: 2.19.1
 Authors@R: 
     c(person(given = "Matei",
@@ -19,13 +19,13 @@ Authors@R:
       person(family = "RStudio",
              role = "cph"))
 Maintainer: Matei Zaharia <matei@databricks.com>
-Description: R interface to 'MLflow', open source platform for
-    the complete machine learning life cycle, see <https://mlflow.org/>.
-    This package supports installing 'MLflow', tracking experiments,
+Description: R interface to 'QCFlow', open source platform for
+    the complete machine learning life cycle, see <https://qcflow.org/>.
+    This package supports installing 'QCFlow', tracking experiments,
     creating and running projects, and saving and serving models.
 License: Apache License 2.0
-URL: https://github.com/mlflow/mlflow
-BugReports: https://github.com/mlflow/mlflow/issues
+URL: https://github.com/qcflow/qcflow
+BugReports: https://github.com/qcflow/qcflow/issues
 Depends:
     R (>= 3.3.0)
 Imports:
@@ -66,7 +66,7 @@ Collate:
     'globals.R'
     'imports.R'
     'logging.R'
-    'mlflow-package.R'
+    'qcflow-package.R'
     'model-crate.R'
     'model-python.R'
     'model.R'

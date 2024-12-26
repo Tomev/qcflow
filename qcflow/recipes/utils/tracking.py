@@ -6,25 +6,25 @@ import tempfile
 import uuid
 from typing import Any, Optional
 
-import mlflow
-from mlflow.environment_variables import MLFLOW_RUN_CONTEXT
-from mlflow.exceptions import MlflowException, RestException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.recipes.utils import get_recipe_name
-from mlflow.tracking.client import MlflowClient
-from mlflow.tracking.context.registry import resolve_tags
-from mlflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
-from mlflow.tracking.fluent import _get_experiment_id
-from mlflow.tracking.fluent import set_experiment as fluent_set_experiment
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
-from mlflow.utils.file_utils import path_to_local_file_uri, path_to_local_sqlite_uri
-from mlflow.utils.git_utils import get_git_branch, get_git_commit, get_git_repo_url
-from mlflow.utils.mlflow_tags import (
-    LEGACY_MLFLOW_GIT_REPO_URL,
-    MLFLOW_GIT_BRANCH,
-    MLFLOW_GIT_COMMIT,
-    MLFLOW_GIT_REPO_URL,
-    MLFLOW_SOURCE_NAME,
+import qcflow
+from qcflow.environment_variables import QCFLOW_RUN_CONTEXT
+from qcflow.exceptions import MlflowException, RestException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.recipes.utils import get_recipe_name
+from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.context.registry import resolve_tags
+from qcflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
+from qcflow.tracking.fluent import _get_experiment_id
+from qcflow.tracking.fluent import set_experiment as fluent_set_experiment
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.utils.file_utils import path_to_local_file_uri, path_to_local_sqlite_uri
+from qcflow.utils.git_utils import get_git_branch, get_git_commit, get_git_repo_url
+from qcflow.utils.qcflow_tags import (
+    LEGACY_QCFLOW_GIT_REPO_URL,
+    QCFLOW_GIT_BRANCH,
+    QCFLOW_GIT_COMMIT,
+    QCFLOW_GIT_REPO_URL,
+    QCFLOW_SOURCE_NAME,
 )
 
 _logger = logging.getLogger(__name__)
@@ -41,15 +41,15 @@ def _get_run_name(run_name_prefix):
 
 class TrackingConfig:
     """
-    The MLflow Tracking configuration associated with an MLflow Recipe, including the
+    The QCFlow Tracking configuration associated with an QCFlow Recipe, including the
     Tracking URI and information about the destination Experiment for writing results.
     """
 
-    _KEY_TRACKING_URI = "mlflow_tracking_uri"
-    _KEY_EXPERIMENT_NAME = "mlflow_experiment_name"
-    _KEY_EXPERIMENT_ID = "mlflow_experiment_id"
-    _KEY_RUN_NAME = "mlflow_run_name"
-    _KEY_ARTIFACT_LOCATION = "mlflow_experiment_artifact_location"
+    _KEY_TRACKING_URI = "qcflow_tracking_uri"
+    _KEY_EXPERIMENT_NAME = "qcflow_experiment_name"
+    _KEY_EXPERIMENT_ID = "qcflow_experiment_id"
+    _KEY_RUN_NAME = "qcflow_run_name"
+    _KEY_ARTIFACT_LOCATION = "qcflow_experiment_artifact_location"
 
     def __init__(
         self,
@@ -61,16 +61,16 @@ class TrackingConfig:
     ):
         """
         Args:
-            tracking_uri: The MLflow Tracking URI.
-            experiment_name: The MLflow Experiment name. At least one of ``experiment_name`` or
+            tracking_uri: The QCFlow Tracking URI.
+            experiment_name: The QCFlow Experiment name. At least one of ``experiment_name`` or
                 ``experiment_id`` must be specified. If both are specified, they must be consistent
                 with Tracking server state. Note that this Experiment may not exist prior to recipe
                 execution.
-            experiment_id: The MLflow Experiment ID. At least one of ``experiment_name`` or
+            experiment_id: The QCFlow Experiment ID. At least one of ``experiment_name`` or
                 ``experiment_id`` must be specified. If both are specified, they must be consistent
                 with Tracking server state. Note that this Experiment may not exist prior to recipe
                 execution.
-            run_name: The MLflow Run Name. If the run name is not specified, then a random name is
+            run_name: The QCFlow Run Name. If the run name is not specified, then a random name is
                 set for the run.
             artifact_location: The artifact location to use for the Experiment, if the Experiment
                 does not already exist. If the Experiment already exists, this location is ignored.
@@ -94,10 +94,10 @@ class TrackingConfig:
 
     def to_dict(self) -> dict[str, str]:
         """
-        Obtains a dictionary representation of the MLflow Tracking configuration.
+        Obtains a dictionary representation of the QCFlow Tracking configuration.
 
         Returns:
-            A dictionary representation of the MLflow Tracking configuration.
+            A dictionary representation of the QCFlow Tracking configuration.
         """
         config_dict = {
             TrackingConfig._KEY_TRACKING_URI: self.tracking_uri,
@@ -123,7 +123,7 @@ class TrackingConfig:
         Creates a ``TrackingConfig`` instance from a dictionary representation.
 
         Args:
-            config_dict: A dictionary representation of the MLflow Tracking configuration.
+            config_dict: A dictionary representation of the QCFlow Tracking configuration.
 
         Returns:
             A ``TrackingConfig`` instance.
@@ -141,7 +141,7 @@ def get_recipe_tracking_config(
     recipe_root_path: str, recipe_config: dict[str, Any]
 ) -> TrackingConfig:
     """
-    Obtains the MLflow Tracking configuration for the specified recipe.
+    Obtains the QCFlow Tracking configuration for the specified recipe.
 
     Args:
         recipe_root_path: The absolute path of the recipe root directory on the local
@@ -149,20 +149,20 @@ def get_recipe_tracking_config(
         recipe_config: The configuration of the specified recipe.
 
     Returns:
-        A ``TrackingConfig`` instance containing MLflow Tracking information for the
+        A ``TrackingConfig`` instance containing QCFlow Tracking information for the
         specified recipe, including Tracking URI, Experiment name, and more.
     """
     if is_in_databricks_runtime():
         default_tracking_uri = "databricks"
         default_artifact_location = None
     else:
-        mlflow_metadata_base_path = pathlib.Path(recipe_root_path) / "metadata" / "mlflow"
-        mlflow_metadata_base_path.mkdir(exist_ok=True, parents=True)
+        qcflow_metadata_base_path = pathlib.Path(recipe_root_path) / "metadata" / "qcflow"
+        qcflow_metadata_base_path.mkdir(exist_ok=True, parents=True)
         default_tracking_uri = path_to_local_sqlite_uri(
-            path=str((mlflow_metadata_base_path / "mlruns.db").resolve())
+            path=str((qcflow_metadata_base_path / "mlruns.db").resolve())
         )
         default_artifact_location = path_to_local_file_uri(
-            path=str((mlflow_metadata_base_path / "mlartifacts").resolve())
+            path=str((qcflow_metadata_base_path / "mlartifacts").resolve())
         )
 
     tracking_config = recipe_config.get("experiment", {})
@@ -203,13 +203,13 @@ def get_recipe_tracking_config(
 def apply_recipe_tracking_config(tracking_config: TrackingConfig):
     """
     Applies the specified ``TrackingConfig`` in the current context by setting the associated
-    MLflow Tracking URI (via ``mlflow.set_tracking_uri()``) and setting the associated MLflow
-    Experiment (via ``mlflow.set_experiment()``), creating it if necessary.
+    QCFlow Tracking URI (via ``qcflow.set_tracking_uri()``) and setting the associated QCFlow
+    Experiment (via ``qcflow.set_experiment()``), creating it if necessary.
 
     Args:
-        tracking_config: The MLflow Recipe ``TrackingConfig`` to apply.
+        tracking_config: The QCFlow Recipe ``TrackingConfig`` to apply.
     """
-    mlflow.set_tracking_uri(uri=tracking_config.tracking_uri)
+    qcflow.set_tracking_uri(uri=tracking_config.tracking_uri)
 
     client = MlflowClient()
     if tracking_config.experiment_name is not None:
@@ -228,9 +228,9 @@ def apply_recipe_tracking_config(tracking_config: TrackingConfig):
                 # Inform user they should create an experiment and specify it in the recipe
                 # config if an experiment with the recipe name can't be created.
                 raise MlflowException(
-                    f"Could not create an MLflow Experiment with "
+                    f"Could not create an QCFlow Experiment with "
                     f"name {tracking_config.experiment_name}. Please create an "
-                    f"MLflow Experiment for this recipe and specify its name in the "
+                    f"QCFlow Experiment for this recipe and specify its name in the "
                     f'"name" field of the "experiment" section in your profile configuration.'
                 )
 
@@ -241,8 +241,8 @@ def apply_recipe_tracking_config(tracking_config: TrackingConfig):
 
 def get_run_tags_env_vars(recipe_root_path: str) -> dict[str, str]:
     """
-    Returns environment variables that should be set during step execution to ensure that MLflow
-    Run Tags from the current context are applied to any MLflow Runs that are created during
+    Returns environment variables that should be set during step execution to ensure that QCFlow
+    Run Tags from the current context are applied to any QCFlow Runs that are created during
     recipe execution.
 
     Args:
@@ -257,17 +257,17 @@ def get_run_tags_env_vars(recipe_root_path: str) -> dict[str, str]:
     git_tags = {}
     git_repo_url = get_git_repo_url(path=recipe_root_path)
     if git_repo_url:
-        git_tags[MLFLOW_SOURCE_NAME] = git_repo_url
-        git_tags[MLFLOW_GIT_REPO_URL] = git_repo_url
-        git_tags[LEGACY_MLFLOW_GIT_REPO_URL] = git_repo_url
+        git_tags[QCFLOW_SOURCE_NAME] = git_repo_url
+        git_tags[QCFLOW_GIT_REPO_URL] = git_repo_url
+        git_tags[LEGACY_QCFLOW_GIT_REPO_URL] = git_repo_url
     git_commit = get_git_commit(path=recipe_root_path)
     if git_commit:
-        git_tags[MLFLOW_GIT_COMMIT] = git_commit
+        git_tags[QCFLOW_GIT_COMMIT] = git_commit
     git_branch = get_git_branch(path=recipe_root_path)
     if git_branch:
-        git_tags[MLFLOW_GIT_BRANCH] = git_branch
+        git_tags[QCFLOW_GIT_BRANCH] = git_branch
 
-    return {MLFLOW_RUN_CONTEXT.name: json.dumps({**run_context_tags, **git_tags})}
+    return {QCFLOW_RUN_CONTEXT.name: json.dumps({**run_context_tags, **git_tags})}
 
 
 def log_code_snapshot(
@@ -277,7 +277,7 @@ def log_code_snapshot(
     recipe_config: Optional[dict[str, Any]] = None,
 ) -> None:
     """
-    Logs a recipe code snapshot as mlflow artifacts.
+    Logs a recipe code snapshot as qcflow artifacts.
 
     Args:
         recipe_root: String file path to the directory where the recipe is defined.

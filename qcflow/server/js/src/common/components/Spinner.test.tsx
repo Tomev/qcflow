@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import { Spinner } from './Spinner';
 
 describe('Spinner', () => {

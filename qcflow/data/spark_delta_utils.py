@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-from mlflow.utils.string_utils import _backtick_quote
+from qcflow.utils.string_utils import _backtick_quote
 
 _logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def _is_delta_table_path(path: str) -> bool:
     """
     if os.path.exists(path) and os.path.isdir(path) and "_delta_log" in os.listdir(path):
         return True
-    from mlflow.utils.uri import dbfs_hdfs_uri_to_fuse_path
+    from qcflow.utils.uri import dbfs_hdfs_uri_to_fuse_path
 
     try:
         dbfs_path = dbfs_hdfs_uri_to_fuse_path(path)
@@ -67,7 +67,7 @@ def _try_get_delta_table_latest_version_from_path(path: str) -> Optional[int]:
     except Exception as e:
         _logger.warning(
             "Failed to obtain version information for Delta table at path '%s'. Version information"
-            " may not be included in the dataset source for MLflow Tracking. Exception: %s",
+            " may not be included in the dataset source for QCFlow Tracking. Exception: %s",
             path,
             e,
         )
@@ -95,7 +95,7 @@ def _try_get_delta_table_latest_version_from_table_name(table_name: str) -> Opti
     except Exception as e:
         _logger.warning(
             "Failed to obtain version information for Delta table with name '%s'. Version"
-            " information may not be included in the dataset source for MLflow Tracking."
+            " information may not be included in the dataset source for QCFlow Tracking."
             " Exception: %s",
             table_name,
             e,

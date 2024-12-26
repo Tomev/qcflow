@@ -10,40 +10,40 @@ from typing import Union
 from langchain_core.callbacks.base import BaseCallbackHandler, BaseCallbackManager
 from packaging.version import Version
 
-import mlflow
-from mlflow.entities import RunTag
-from mlflow.entities.run_status import RunStatus
-from mlflow.exceptions import MlflowException
-from mlflow.langchain.langchain_tracer import MlflowLangchainTracer, should_attach_span_to_context
-from mlflow.langchain.runnables import get_runnable_steps
-from mlflow.tracking.context import registry as context_registry
-from mlflow.utils import name_utils
-from mlflow.utils.autologging_utils import get_autologging_config
-from mlflow.utils.autologging_utils.config import AutoLoggingConfig
-from mlflow.utils.autologging_utils.safety import _resolve_extra_tags
+import qcflow
+from qcflow.entities import RunTag
+from qcflow.entities.run_status import RunStatus
+from qcflow.exceptions import MlflowException
+from qcflow.langchain.langchain_tracer import MlflowLangchainTracer, should_attach_span_to_context
+from qcflow.langchain.runnables import get_runnable_steps
+from qcflow.tracking.context import registry as context_registry
+from qcflow.utils import name_utils
+from qcflow.utils.autologging_utils import get_autologging_config
+from qcflow.utils.autologging_utils.config import AutoLoggingConfig
+from qcflow.utils.autologging_utils.safety import _resolve_extra_tags
 
 _logger = logging.getLogger(__name__)
 
 UNSUPPORTED_LOG_MODEL_MESSAGE = (
-    "MLflow autologging does not support logging models containing BaseRetriever because "
+    "QCFlow autologging does not support logging models containing BaseRetriever because "
     "logging the model requires `loader_fn` and `persist_dir`. Please log the model manually "
-    "using `mlflow.langchain.log_model(model, artifact_path, loader_fn=..., persist_dir=...)`"
+    "using `qcflow.langchain.log_model(model, artifact_path, loader_fn=..., persist_dir=...)`"
 )
 INFERENCE_FILE_NAME = "inference_inputs_outputs.json"
 
 
-# A *global* state that indicates whether MLflow should patch the inference method
+# A *global* state that indicates whether QCFlow should patch the inference method
 # for artifact auto-logging (model, signature input example). This disablement
 # is global across threads, as single model inference can trigger multiple threads,
 # for example, LangChain's batch()/abatch() API processes each request in a child thread.
 IS_PATCHING_DISABLED_FOR_ARTIFACTS = False
 
-# A *thread-local* state that indicates whether MLflow should patch the inference
-# method to inject tracing callbacks. This must be thread-local because MLflow can
-# run multiple model predictions across multiple threads (e.g. mlflow.evaluate)
+# A *thread-local* state that indicates whether QCFlow should patch the inference
+# method to inject tracing callbacks. This must be thread-local because QCFlow can
+# run multiple model predictions across multiple threads (e.g. qcflow.evaluate)
 # and globally disabling tracing would cause issues for concurrent predictions.
-# In normal cases, we do not need this flag because MLflow checks if the call args
-# already contains the MLflow callback before injecting it, and LangChain propagates
+# In normal cases, we do not need this flag because QCFlow checks if the call args
+# already contains the QCFlow callback before injecting it, and LangChain propagates
 # callbacks from parent to child, preventing double patching. However, an exception
 # is LangGraph, where users might define their custom python function and invoke
 # some LangChain classes manually without propagating the callbacks.
@@ -84,16 +84,16 @@ def patched_inference(func_name, original, self, *args, **kwargs):
         with disable_patching():
             return original(self, *args, **kwargs)
 
-    config = AutoLoggingConfig.init(mlflow.langchain.FLAVOR_NAME)
+    config = AutoLoggingConfig.init(qcflow.langchain.FLAVOR_NAME)
     should_trace = not IS_PATCHING_DISABLED_FOR_TRACING.get() and config.log_traces
 
     if should_trace:
         tracer = MlflowLangchainTracer(
             set_span_in_context=should_attach_span_to_context(func_name, self)
         )
-        args, kwargs = _get_args_with_mlflow_tracer(tracer, func_name, args, kwargs)
+        args, kwargs = _get_args_with_qcflow_tracer(tracer, func_name, args, kwargs)
 
-    # Traces does not require an MLflow run, only the other optional artifacts require it.
+    # Traces does not require an QCFlow run, only the other optional artifacts require it.
     try:
         if not IS_PATCHING_DISABLED_FOR_ARTIFACTS and config.should_log_optional_artifacts():
             with _setup_autolog_run(config, self) as run_id:
@@ -112,9 +112,9 @@ def patched_inference(func_name, original, self, *args, **kwargs):
     return result
 
 
-def _get_args_with_mlflow_tracer(mlflow_tracer, func_name, args, kwargs):
+def _get_args_with_qcflow_tracer(qcflow_tracer, func_name, args, kwargs):
     """
-    Get the patched arguments with MLflow tracer injected.
+    Get the patched arguments with QCFlow tracer injected.
     """
     if func_name in ["invoke", "batch", "stream", "ainvoke", "abatch", "astream"]:
         # `config` is the second positional argument of runnable APIs such as
@@ -122,11 +122,11 @@ def _get_args_with_mlflow_tracer(mlflow_tracer, func_name, args, kwargs):
         # https://github.com/langchain-ai/langchain/blob/7d444724d7582386de347fb928619c2243bd0e55/libs/core/langchain_core/runnables/base.py
         if len(args) >= 2:
             config = args[1]
-            config = _get_runnable_config_with_callback(config, mlflow_tracer)
+            config = _get_runnable_config_with_callback(config, qcflow_tracer)
             return (args[0], config, *args[2:]), kwargs
         else:
             config = kwargs.get("config")
-            kwargs["config"] = _get_runnable_config_with_callback(config, mlflow_tracer)
+            kwargs["config"] = _get_runnable_config_with_callback(config, qcflow_tracer)
         return args, kwargs
 
     elif func_name == "__call__":
@@ -134,22 +134,22 @@ def _get_args_with_mlflow_tracer(mlflow_tracer, func_name, args, kwargs):
         # https://github.com/langchain-ai/langchain/blob/7d444724d7582386de347fb928619c2243bd0e55/libs/langchain/langchain/chains/base.py#L320
         if len(args) >= 3:
             callbacks = args[2] or []
-            callbacks = _inject_callback(callbacks, mlflow_tracer)
+            callbacks = _inject_callback(callbacks, qcflow_tracer)
             return (*args[:2], callbacks, *args[3:]), kwargs
         else:
             callbacks = kwargs.get("callbacks") or []
-            kwargs["callbacks"] = _inject_callback(callbacks, mlflow_tracer)
+            kwargs["callbacks"] = _inject_callback(callbacks, qcflow_tracer)
             return args, kwargs
 
     elif func_name == "get_relevant_documents":
         # callbacks is only available as kwargs in get_relevant_documents function
         # https://github.com/langchain-ai/langchain/blob/7d444724d7582386de347fb928619c2243bd0e55/libs/core/langchain_core/retrievers.py#L173
         callbacks = kwargs.get("callbacks") or []
-        kwargs["callbacks"] = _inject_callback(callbacks, mlflow_tracer)
+        kwargs["callbacks"] = _inject_callback(callbacks, qcflow_tracer)
         return args, kwargs
 
     else:
-        _logger.warning(f"Unsupported function `{func_name}`. Skipping injecting MLflow callbacks.")
+        _logger.warning(f"Unsupported function `{func_name}`. Skipping injecting QCFlow callbacks.")
         return args, kwargs
 
 
@@ -171,7 +171,7 @@ def _get_runnable_config_with_callback(
     from langchain_core.runnables.config import RunnableConfig
 
     if original_config is None:
-        _logger.debug("Injected MLflow callbacks into the model call args.")
+        _logger.debug("Injected QCFlow callbacks into the model call args.")
         return RunnableConfig(callbacks=[new_callback])
     elif isinstance(original_config, list):
         return [_get_runnable_config_with_callback(c, new_callback) for c in original_config]
@@ -185,7 +185,7 @@ def _get_runnable_config_with_callback(
     else:
         _logger.warning(
             f"Unsupported config type `{original_config}` for autologging with tracing."
-            "Skipping injecting MLflow callbacks."
+            "Skipping injecting QCFlow callbacks."
         )
         return original_config
 
@@ -212,20 +212,20 @@ def _inject_callback(
             # while the callback instance itself is shallow copied.
             handlers = [*callback_manager_copy.handlers, new_callback]
             callback_manager_copy.handlers = handlers
-            _logger.debug("Injected MLflow callbacks into the model call args.")
+            _logger.debug("Injected QCFlow callbacks into the model call args.")
         return callback_manager_copy
 
     elif _is_list_of_base_callback_handlers(original_callbacks):
         callback_list_copy = list(original_callbacks)
         if not any(isinstance(cb, type(new_callback)) for cb in callback_list_copy):
             callback_list_copy.append(new_callback)
-            _logger.debug("Injected MLflow callbacks into the model call args.")
+            _logger.debug("Injected QCFlow callbacks into the model call args.")
         return callback_list_copy
 
     else:
         _logger.warning(
             f"Unsupported callbacks type `{original_callbacks}` for autologging with tracing."
-            "Skipping injecting MLflow callbacks."
+            "Skipping injecting QCFlow callbacks."
         )
         return original_callbacks
 
@@ -241,7 +241,7 @@ def _setup_autolog_run(config, model):
     """Set up autologging run and return the run ID.
 
     This function only creates a run when there is no active run and the model does not have
-    a run ID attribute propagated from the previous call. Iff it creates a new run, MLflow should
+    a run ID attribute propagated from the previous call. Iff it creates a new run, QCFlow should
     terminate the run at the end of the inference.
 
     Args:
@@ -257,15 +257,15 @@ def _setup_autolog_run(config, model):
         # The run should be already terminated at the end of the previous call.
         should_terminate_run = False
 
-    elif active_run := mlflow.active_run():
+    elif active_run := qcflow.active_run():
         run_id = active_run.info.run_id
         tags = _resolve_tags(config.extra_tags, active_run)
-        mlflow.MlflowClient().log_batch(run_id, tags=[RunTag(k, str(v)) for k, v in tags.items()])
+        qcflow.MlflowClient().log_batch(run_id, tags=[RunTag(k, str(v)) for k, v in tags.items()])
         should_terminate_run = False
     else:
-        from mlflow.tracking.fluent import _get_experiment_id
+        from qcflow.tracking.fluent import _get_experiment_id
 
-        run = mlflow.MlflowClient().create_run(
+        run = qcflow.MlflowClient().create_run(
             experiment_id=_get_experiment_id(),
             run_name="langchain-" + name_utils._generate_random_name(),
             tags=_resolve_tags(config.extra_tags),
@@ -281,16 +281,16 @@ def _setup_autolog_run(config, model):
         raise
     finally:
         if should_terminate_run:
-            mlflow.MlflowClient().set_terminated(run_id, status=run_status)
+            qcflow.MlflowClient().set_terminated(run_id, status=run_status)
 
 
 def _resolve_tags(extra_tags, active_run=None):
     resolved_tags = context_registry.resolve_tags(extra_tags)
-    tags = _resolve_extra_tags(mlflow.langchain.FLAVOR_NAME, resolved_tags)
+    tags = _resolve_extra_tags(qcflow.langchain.FLAVOR_NAME, resolved_tags)
     if active_run:
-        # Some context tags like mlflow.runName are immutable once logged, but they might be already
+        # Some context tags like qcflow.runName are immutable once logged, but they might be already
         # set when the run is created, then we should avoid updating them.
-        excluded_tags = {tag for tag in active_run.data.tags.keys() if tag.startswith("mlflow.")}
+        excluded_tags = {tag for tag in active_run.data.tags.keys() if tag.startswith("qcflow.")}
         tags = {k: v for k, v in tags.items() if k not in excluded_tags}
     return tags
 
@@ -309,7 +309,7 @@ def _get_input_data_from_function(func_name, model, args, kwargs):
         # A guard to make sure `param_name` is the first argument of inference function
         if next(iter(inspect.signature(inference_func).parameters.keys())) != param_name:
             input_example_exc = MlflowException(
-                "Inference function signature changes, please contact MLflow team to "
+                "Inference function signature changes, please contact QCFlow team to "
                 "fix langchain autologging.",
             )
         else:
@@ -372,7 +372,7 @@ def _update_langchain_model_config(model):
     except Exception as e:
         warnings.warn(
             "Failed to set extra attribute on the model for keeping track of logging status. "
-            f"MLflow langchain autologging might log model several times. Error: {e}"
+            f"QCFlow langchain autologging might log model several times. Error: {e}"
         )
         return False
 
@@ -412,7 +412,7 @@ def _chain_with_retriever(model):
 
 def _log_optional_artifacts(autolog_config, run_id, result, self, func_name, *args, **kwargs):
     input_example = None
-    if autolog_config.log_models and not hasattr(self, "_mlflow_model_logged"):
+    if autolog_config.log_models and not hasattr(self, "_qcflow_model_logged"):
         if (
             (func_name == "get_relevant_documents")
             or _runnable_with_retriever(self)
@@ -434,11 +434,11 @@ def _log_optional_artifacts(autolog_config, run_id, result, self, func_name, *ar
                     )
 
             registered_model_name = get_autologging_config(
-                mlflow.langchain.FLAVOR_NAME, "registered_model_name", None
+                qcflow.langchain.FLAVOR_NAME, "registered_model_name", None
             )
             try:
                 with disable_patching():
-                    mlflow.langchain.log_model(
+                    qcflow.langchain.log_model(
                         self,
                         "model",
                         input_example=input_example,
@@ -450,7 +450,7 @@ def _log_optional_artifacts(autolog_config, run_id, result, self, func_name, *ar
         # only try logging model once, even if it can't be logged
         # we don't want to spam the user with warnings/infos
         if _update_langchain_model_config(self):
-            self._mlflow_model_logged = True
+            self._qcflow_model_logged = True
 
     # Even if the model is not logged, we keep a single run per model
     if _update_langchain_model_config(self):

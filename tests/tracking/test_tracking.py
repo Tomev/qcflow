@@ -12,32 +12,32 @@ from unittest import mock
 import pytest
 import yaml
 
-import mlflow
-from mlflow import MlflowClient, tracking
-from mlflow.entities import LifecycleStage, Metric, Param, RunStatus, RunTag, ViewType
-from mlflow.environment_variables import (
-    MLFLOW_ASYNC_LOGGING_THREADPOOL_SIZE,
-    MLFLOW_RUN_ID,
+import qcflow
+from qcflow import MlflowClient, tracking
+from qcflow.entities import LifecycleStage, Metric, Param, RunStatus, RunTag, ViewType
+from qcflow.environment_variables import (
+    QCFLOW_ASYNC_LOGGING_THREADPOOL_SIZE,
+    QCFLOW_RUN_ID,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.store.tracking.file_store import FileStore
-from mlflow.tracking.fluent import start_run
-from mlflow.utils.file_utils import local_file_uri_to_path
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_PARENT_RUN_ID,
-    MLFLOW_RUN_NAME,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
-    MLFLOW_USER,
+from qcflow.store.tracking.file_store import FileStore
+from qcflow.tracking.fluent import start_run
+from qcflow.utils.file_utils import local_file_uri_to_path
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_PARENT_RUN_ID,
+    QCFLOW_RUN_NAME,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
+    QCFLOW_USER,
 )
-from mlflow.utils.os import is_windows
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.validation import (
+from qcflow.utils.os import is_windows
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.validation import (
     MAX_METRICS_PER_BATCH,
     MAX_PARAMS_TAGS_PER_BATCH,
 )
@@ -47,35 +47,35 @@ MockExperiment = namedtuple("MockExperiment", ["experiment_id", "lifecycle_stage
 
 def test_create_experiment():
     with pytest.raises(MlflowException, match="Invalid experiment name"):
-        mlflow.create_experiment(None)
+        qcflow.create_experiment(None)
 
     with pytest.raises(MlflowException, match="Invalid experiment name"):
-        mlflow.create_experiment("")
+        qcflow.create_experiment("")
 
-    exp_id = mlflow.create_experiment(f"Some random experiment name {random.randint(1, 1e6)}")
+    exp_id = qcflow.create_experiment(f"Some random experiment name {random.randint(1, 1e6)}")
     assert exp_id is not None
 
 
 def test_create_experiment_with_duplicate_name():
     name = "popular_name"
-    exp_id = mlflow.create_experiment(name)
+    exp_id = qcflow.create_experiment(name)
 
     with pytest.raises(MlflowException, match=re.escape(f"Experiment(name={name}) already exists")):
-        mlflow.create_experiment(name)
+        qcflow.create_experiment(name)
 
     tracking.MlflowClient().delete_experiment(exp_id)
     with pytest.raises(MlflowException, match=re.escape(f"Experiment(name={name}) already exists")):
-        mlflow.create_experiment(name)
+        qcflow.create_experiment(name)
 
 
 def test_create_experiments_with_bad_names():
     # None for name
     with pytest.raises(MlflowException, match="Invalid experiment name: 'None'"):
-        mlflow.create_experiment(None)
+        qcflow.create_experiment(None)
 
     # empty string name
     with pytest.raises(MlflowException, match="Invalid experiment name: ''"):
-        mlflow.create_experiment("")
+        qcflow.create_experiment("")
 
 
 @pytest.mark.parametrize("name", [123, 0, -1.2, [], ["A"], {1: 2}])
@@ -84,20 +84,20 @@ def test_create_experiments_with_bad_name_types(name):
         MlflowException,
         match=re.escape(f"Invalid experiment name: {name}. Expects a string."),
     ):
-        mlflow.create_experiment(name)
+        qcflow.create_experiment(name)
 
 
 @pytest.mark.usefixtures("reset_active_experiment")
 def test_set_experiment_by_name():
     name = "random_exp"
-    exp_id = mlflow.create_experiment(name)
-    exp1 = mlflow.set_experiment(name)
+    exp_id = qcflow.create_experiment(name)
+    exp1 = qcflow.set_experiment(name)
     assert exp1.experiment_id == exp_id
     with start_run() as run:
         assert run.info.experiment_id == exp_id
 
     another_name = "another_experiment"
-    exp2 = mlflow.set_experiment(another_name)
+    exp2 = qcflow.set_experiment(another_name)
     with start_run() as another_run:
         assert another_run.info.experiment_id == exp2.experiment_id
 
@@ -105,15 +105,15 @@ def test_set_experiment_by_name():
 @pytest.mark.usefixtures("reset_active_experiment")
 def test_set_experiment_by_id():
     name = "random_exp"
-    exp_id = mlflow.create_experiment(name)
-    active_exp = mlflow.set_experiment(experiment_id=exp_id)
+    exp_id = qcflow.create_experiment(name)
+    active_exp = qcflow.set_experiment(experiment_id=exp_id)
     assert active_exp.experiment_id == exp_id
     with start_run() as run:
         assert run.info.experiment_id == exp_id
 
     nonexistent_id = "-1337"
     with pytest.raises(MlflowException, match="No Experiment with id=-1337 exists") as exc:
-        mlflow.set_experiment(experiment_id=nonexistent_id)
+        qcflow.set_experiment(experiment_id=nonexistent_id)
     assert exc.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
     with start_run() as run:
         assert run.info.experiment_id == exp_id
@@ -121,36 +121,36 @@ def test_set_experiment_by_id():
 
 def test_set_experiment_parameter_validation():
     with pytest.raises(MlflowException, match="Must specify exactly one") as exc:
-        mlflow.set_experiment()
+        qcflow.set_experiment()
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     with pytest.raises(MlflowException, match="Must specify exactly one") as exc:
-        mlflow.set_experiment(None)
+        qcflow.set_experiment(None)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     with pytest.raises(MlflowException, match="Must specify exactly one") as exc:
-        mlflow.set_experiment(None, None)
+        qcflow.set_experiment(None, None)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     with pytest.raises(MlflowException, match="Must specify exactly one") as exc:
-        mlflow.set_experiment("name", "id")
+        qcflow.set_experiment("name", "id")
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
 
 def test_set_experiment_with_deleted_experiment():
     name = "dead_exp"
-    mlflow.set_experiment(name)
+    qcflow.set_experiment(name)
     with start_run() as run:
         exp_id = run.info.experiment_id
 
     tracking.MlflowClient().delete_experiment(exp_id)
 
     with pytest.raises(MlflowException, match="Cannot set a deleted experiment") as exc:
-        mlflow.set_experiment(name)
+        qcflow.set_experiment(name)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     with pytest.raises(MlflowException, match="Cannot set a deleted experiment") as exc:
-        mlflow.set_experiment(experiment_id=exp_id)
+        qcflow.set_experiment(experiment_id=exp_id)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
 
@@ -165,7 +165,7 @@ def test_set_experiment_with_zero_id():
         ) as get_experiment_by_name_mock,
         mock.patch.object(MlflowClient, "create_experiment") as create_experiment_mock,
     ):
-        mlflow.set_experiment("my_exp")
+        qcflow.set_experiment("my_exp")
         get_experiment_by_name_mock.assert_called_once()
         create_experiment_mock.assert_not_called()
 
@@ -194,7 +194,7 @@ def test_start_and_end_run():
     # Use the start_run() and end_run() APIs without a `with` block, verify they work.
 
     with start_run() as active_run:
-        mlflow.log_metric("name_1", 25)
+        qcflow.log_metric("name_1", 25)
     finished_run = tracking.MlflowClient().get_run(active_run.info.run_id)
     # Validate metrics
     assert len(finished_run.data.metrics) == 1
@@ -202,9 +202,9 @@ def test_start_and_end_run():
 
 
 def test_metric_timestamp():
-    with mlflow.start_run() as active_run:
-        mlflow.log_metric("name_1", 25)
-        mlflow.log_metric("name_1", 30)
+    with qcflow.start_run() as active_run:
+        qcflow.log_metric("name_1", 25)
+        qcflow.log_metric("name_1", 30)
         run_id = active_run.info.run_uuid
     # Check that metric timestamps are between run start and finish
     client = MlflowClient()
@@ -226,10 +226,10 @@ def test_log_batch():
     }
     exact_expected_tags = {"tag-key0": "tag-val0", "tag-key1": "tag-val1"}
     approx_expected_tags = {
-        MLFLOW_USER,
-        MLFLOW_SOURCE_NAME,
-        MLFLOW_SOURCE_TYPE,
-        MLFLOW_RUN_NAME,
+        QCFLOW_USER,
+        QCFLOW_SOURCE_NAME,
+        QCFLOW_SOURCE_TYPE,
+        QCFLOW_RUN_NAME,
     }
 
     t = get_current_time_millis()
@@ -294,7 +294,7 @@ def test_log_batch_with_many_elements():
 
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        mlflow.tracking.MlflowClient().log_batch(
+        qcflow.tracking.MlflowClient().log_batch(
             run_id=run_id, metrics=metrics, params=params, tags=tags
         )
     client = tracking.MlflowClient()
@@ -318,11 +318,11 @@ def test_log_metric():
     with start_run() as active_run, mock.patch("time.time") as time_mock:
         time_mock.side_effect = [123 for _ in range(100)]
         run_id = active_run.info.run_id
-        mlflow.log_metric("name_1", 25)
-        mlflow.log_metric("name_2", -3)
-        mlflow.log_metric("name_1", 30, 5)
-        mlflow.log_metric("name_1", 40, -2)
-        mlflow.log_metric("nested/nested/name", 40)
+        qcflow.log_metric("name_1", 25)
+        qcflow.log_metric("name_2", -3)
+        qcflow.log_metric("name_1", 30, 5)
+        qcflow.log_metric("name_1", 40, -2)
+        qcflow.log_metric("nested/nested/name", 40)
     finished_run = tracking.MlflowClient().get_run(run_id)
     # Validate metrics
     assert len(finished_run.data.metrics) == 3
@@ -343,9 +343,9 @@ def test_log_metric():
 def test_log_metrics_uses_millisecond_timestamp_resolution_fluent():
     with start_run() as active_run, mock.patch("time.time") as time_mock:
         time_mock.side_effect = lambda: 123
-        mlflow.log_metrics({"name_1": 25, "name_2": -3})
-        mlflow.log_metrics({"name_1": 30})
-        mlflow.log_metrics({"name_1": 40})
+        qcflow.log_metrics({"name_1": 25, "name_2": -3})
+        qcflow.log_metrics({"name_1": 30})
+        qcflow.log_metrics({"name_1": 40})
         run_id = active_run.info.run_id
 
     client = tracking.MlflowClient()
@@ -362,22 +362,22 @@ def test_log_metrics_uses_millisecond_timestamp_resolution_fluent():
 def test_log_metrics_uses_millisecond_timestamp_resolution_client():
     with start_run() as active_run, mock.patch("time.time") as time_mock:
         time_mock.side_effect = lambda: 123
-        mlflow_client = tracking.MlflowClient()
+        qcflow_client = tracking.MlflowClient()
         run_id = active_run.info.run_id
 
-        mlflow_client.log_metric(run_id=run_id, key="name_1", value=25)
-        mlflow_client.log_metric(run_id=run_id, key="name_2", value=-3)
-        mlflow_client.log_metric(run_id=run_id, key="name_1", value=30)
-        mlflow_client.log_metric(run_id=run_id, key="name_1", value=40)
+        qcflow_client.log_metric(run_id=run_id, key="name_1", value=25)
+        qcflow_client.log_metric(run_id=run_id, key="name_2", value=-3)
+        qcflow_client.log_metric(run_id=run_id, key="name_1", value=30)
+        qcflow_client.log_metric(run_id=run_id, key="name_1", value=40)
 
-    metric_history_name1 = mlflow_client.get_metric_history(run_id, "name_1")
+    metric_history_name1 = qcflow_client.get_metric_history(run_id, "name_1")
     assert {(m.value, m.timestamp) for m in metric_history_name1} == {
         (25, 123 * 1000),
         (30, 123 * 1000),
         (40, 123 * 1000),
     }
 
-    metric_history_name2 = mlflow_client.get_metric_history(run_id, "name_2")
+    metric_history_name2 = qcflow_client.get_metric_history(run_id, "name_2")
     assert {(m.value, m.timestamp) for m in metric_history_name2} == {(-3, 123 * 1000)}
 
 
@@ -386,7 +386,7 @@ def test_log_metrics_uses_common_timestamp_and_step_per_invocation(step_kwarg):
     expected_metrics = {"name_1": 30, "name_2": -3, "nested/nested/name": 40}
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        mlflow.log_metrics(expected_metrics, step=step_kwarg)
+        qcflow.log_metrics(expected_metrics, step=step_kwarg)
     finished_run = tracking.MlflowClient().get_run(run_id)
     # Validate metric key/values match what we expect, and that all metrics have the same timestamp
     assert len(finished_run.data.metrics) == len(expected_metrics)
@@ -401,21 +401,21 @@ def test_log_metrics_uses_common_timestamp_and_step_per_invocation(step_kwarg):
 
 @pytest.fixture
 def get_store_mock():
-    with mock.patch("mlflow.store.file_store.FileStore.log_batch") as _get_store_mock:
+    with mock.patch("qcflow.store.file_store.FileStore.log_batch") as _get_store_mock:
         yield _get_store_mock
 
 
 def test_set_tags():
     exact_expected_tags = {"name_1": "c", "name_2": "b", "nested/nested/name": 5}
     approx_expected_tags = {
-        MLFLOW_USER,
-        MLFLOW_SOURCE_NAME,
-        MLFLOW_SOURCE_TYPE,
-        MLFLOW_RUN_NAME,
+        QCFLOW_USER,
+        QCFLOW_SOURCE_NAME,
+        QCFLOW_SOURCE_TYPE,
+        QCFLOW_RUN_NAME,
     }
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        mlflow.set_tags(exact_expected_tags)
+        qcflow.set_tags(exact_expected_tags)
     finished_run = tracking.MlflowClient().get_run(run_id)
     # Validate tags
     assert len(finished_run.data.tags) == len(exact_expected_tags) + len(approx_expected_tags)
@@ -433,7 +433,7 @@ def test_log_metric_validation():
             MlflowException,
             match="Invalid value \"apple\" for parameter 'value' supplied",
         ) as e:
-            mlflow.log_metric("name_1", "apple")
+            qcflow.log_metric("name_1", "apple")
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     finished_run = tracking.MlflowClient().get_run(run_id)
     assert len(finished_run.data.metrics) == 0
@@ -442,9 +442,9 @@ def test_log_metric_validation():
 def test_log_param():
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        assert mlflow.log_param("name_1", "a") == "a"
-        assert mlflow.log_param("name_2", "b") == "b"
-        assert mlflow.log_param("nested/nested/name", 5) == 5
+        assert qcflow.log_param("name_1", "a") == "a"
+        assert qcflow.log_param("name_2", "b") == "b"
+        assert qcflow.log_param("nested/nested/name", 5) == 5
     finished_run = tracking.MlflowClient().get_run(run_id)
     # Validate params
     assert finished_run.data.params == {
@@ -458,7 +458,7 @@ def test_log_params():
     expected_params = {"name_1": "c", "name_2": "b", "nested/nested/name": 5}
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        mlflow.log_params(expected_params)
+        qcflow.log_params(expected_params)
     finished_run = tracking.MlflowClient().get_run(run_id)
     # Validate params
     assert finished_run.data.params == {
@@ -472,12 +472,12 @@ def test_log_params_duplicate_keys_raises():
     params = {"a": "1", "b": "2"}
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        mlflow.log_params(params)
+        qcflow.log_params(params)
         with pytest.raises(
             expected_exception=MlflowException,
             match=r"Changing param values is not allowed. Param with key=",
         ) as e:
-            mlflow.log_param("a", "3")
+            qcflow.log_param("a", "3")
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     finished_run = tracking.MlflowClient().get_run(run_id)
     assert finished_run.data.params == params
@@ -487,8 +487,8 @@ def test_log_params_duplicate_keys_raises():
 def test_param_metric_with_colon():
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        mlflow.log_param("a:b", 3)
-        mlflow.log_metric("c:d", 4)
+        qcflow.log_param("a:b", 3)
+        qcflow.log_metric("c:d", 4)
     finished_run = tracking.MlflowClient().get_run(run_id)
 
     # Validate param
@@ -578,9 +578,9 @@ def test_log_artifact_with_dirs(tmp_path):
     sub_dir = art_dir / "child"
     sub_dir.mkdir()
     with start_run():
-        artifact_uri = mlflow.get_artifact_uri()
+        artifact_uri = qcflow.get_artifact_uri()
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
-        mlflow.log_artifact(str(art_dir))
+        qcflow.log_artifact(str(art_dir))
         base = os.path.basename(str(art_dir))
         assert os.listdir(run_artifact_dir) == [base]
         assert set(os.listdir(os.path.join(run_artifact_dir, base))) == {
@@ -595,9 +595,9 @@ def test_log_artifact_with_dirs(tmp_path):
     art_dir = tmp_path / "dir"
     art_dir.mkdir()
     with start_run():
-        artifact_uri = mlflow.get_artifact_uri()
+        artifact_uri = qcflow.get_artifact_uri()
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
-        mlflow.log_artifact(str(art_dir), "some_parent")
+        qcflow.log_artifact(str(art_dir), "some_parent")
         assert os.listdir(run_artifact_dir) == [os.path.basename("some_parent")]
         assert os.listdir(os.path.join(run_artifact_dir, "some_parent")) == [
             os.path.basename(str(art_dir))
@@ -605,9 +605,9 @@ def test_log_artifact_with_dirs(tmp_path):
     sub_dir = art_dir.joinpath("another_dir")
     sub_dir.mkdir()
     with start_run():
-        artifact_uri = mlflow.get_artifact_uri()
+        artifact_uri = qcflow.get_artifact_uri()
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
-        mlflow.log_artifact(str(art_dir), "parent/and_child")
+        qcflow.log_artifact(str(art_dir), "parent/and_child")
         assert os.listdir(os.path.join(run_artifact_dir, "parent", "and_child")) == [
             os.path.basename(str(art_dir))
         ]
@@ -636,9 +636,9 @@ def test_log_artifact(tmp_path):
     artifact_parent_dirs = ["some_parent_dir", None]
     for parent_dir in artifact_parent_dirs:
         with start_run():
-            artifact_uri = mlflow.get_artifact_uri()
+            artifact_uri = qcflow.get_artifact_uri()
             run_artifact_dir = local_file_uri_to_path(artifact_uri)
-            mlflow.log_artifact(path0, parent_dir)
+            qcflow.log_artifact(path0, parent_dir)
         expected_dir = (
             os.path.join(run_artifact_dir, parent_dir)
             if parent_dir is not None
@@ -650,10 +650,10 @@ def test_log_artifact(tmp_path):
     # Log multiple artifacts, verify they exist in the directory returned by get_artifact_uri
     for parent_dir in artifact_parent_dirs:
         with start_run():
-            artifact_uri = mlflow.get_artifact_uri()
+            artifact_uri = qcflow.get_artifact_uri()
             run_artifact_dir = local_file_uri_to_path(artifact_uri)
 
-            mlflow.log_artifacts(artifact_dir, parent_dir)
+            qcflow.log_artifacts(artifact_dir, parent_dir)
         # Check that the logged artifacts match
         expected_artifact_output_dir = (
             os.path.join(run_artifact_dir, parent_dir)
@@ -673,11 +673,11 @@ def test_log_text(subdir):
     text = "a"
     artifact_file = filename if subdir is None else posixpath.join(subdir, filename)
 
-    with mlflow.start_run():
-        mlflow.log_text(text, artifact_file)
+    with qcflow.start_run():
+        qcflow.log_text(text, artifact_file)
 
         artifact_path = None if subdir is None else posixpath.normpath(subdir)
-        artifact_uri = mlflow.get_artifact_uri(artifact_path)
+        artifact_uri = qcflow.get_artifact_uri(artifact_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         assert os.listdir(run_artifact_dir) == [filename]
 
@@ -693,11 +693,11 @@ def test_log_dict(subdir, extension):
     filename = "data" + extension
     artifact_file = filename if subdir is None else posixpath.join(subdir, filename)
 
-    with mlflow.start_run():
-        mlflow.log_dict(dictionary, artifact_file)
+    with qcflow.start_run():
+        qcflow.log_dict(dictionary, artifact_file)
 
         artifact_path = None if subdir is None else posixpath.normpath(subdir)
-        artifact_uri = mlflow.get_artifact_uri(artifact_path)
+        artifact_uri = qcflow.get_artifact_uri(artifact_path)
         run_artifact_dir = local_file_uri_to_path(artifact_uri)
         assert os.listdir(run_artifact_dir) == [filename]
 
@@ -717,72 +717,72 @@ def test_log_dict(subdir, extension):
 def test_with_startrun():
     run_id = None
     t0 = get_current_time_millis()
-    with mlflow.start_run() as active_run:
-        assert mlflow.active_run() == active_run
+    with qcflow.start_run() as active_run:
+        assert qcflow.active_run() == active_run
         run_id = active_run.info.run_id
     t1 = get_current_time_millis()
-    run_info = mlflow.tracking._get_store().get_run(run_id).info
+    run_info = qcflow.tracking._get_store().get_run(run_id).info
     assert run_info.status == "FINISHED"
     assert t0 <= run_info.end_time
     assert run_info.end_time <= t1
-    assert mlflow.active_run() is None
+    assert qcflow.active_run() is None
 
 
 def test_parent_create_run(monkeypatch):
-    with mlflow.start_run() as parent_run:
+    with qcflow.start_run() as parent_run:
         parent_run_id = parent_run.info.run_id
-    monkeypatch.setenv(MLFLOW_RUN_ID.name, parent_run_id)
-    with mlflow.start_run() as parent_run:
+    monkeypatch.setenv(QCFLOW_RUN_ID.name, parent_run_id)
+    with qcflow.start_run() as parent_run:
         assert parent_run.info.run_id == parent_run_id
         with pytest.raises(Exception, match="To start a nested run"):
-            mlflow.start_run()
-        with mlflow.start_run(nested=True) as child_run:
+            qcflow.start_run()
+        with qcflow.start_run(nested=True) as child_run:
             assert child_run.info.run_id != parent_run_id
-            with mlflow.start_run(nested=True) as grand_child_run:
+            with qcflow.start_run(nested=True) as grand_child_run:
                 pass
 
     def verify_has_parent_id_tag(child_id, expected_parent_id):
         tags = tracking.MlflowClient().get_run(child_id).data.tags
-        assert tags[MLFLOW_PARENT_RUN_ID] == expected_parent_id
+        assert tags[QCFLOW_PARENT_RUN_ID] == expected_parent_id
 
     verify_has_parent_id_tag(child_run.info.run_id, parent_run.info.run_id)
     verify_has_parent_id_tag(grand_child_run.info.run_id, child_run.info.run_id)
-    assert mlflow.active_run() is None
+    assert qcflow.active_run() is None
 
 
 def test_start_deleted_run():
     run_id = None
-    with mlflow.start_run() as active_run:
+    with qcflow.start_run() as active_run:
         run_id = active_run.info.run_id
     tracking.MlflowClient().delete_run(run_id)
     with pytest.raises(MlflowException, match="because it is in the deleted state."):
-        with mlflow.start_run(run_id=run_id):
+        with qcflow.start_run(run_id=run_id):
             pass
-    assert mlflow.active_run() is None
+    assert qcflow.active_run() is None
 
 
 @pytest.mark.usefixtures("reset_active_experiment")
 def test_start_run_exp_id_0():
-    mlflow.set_experiment("some-experiment")
+    qcflow.set_experiment("some-experiment")
     # Create a run and verify that the current active experiment is the one we just set
-    with mlflow.start_run() as active_run:
+    with qcflow.start_run() as active_run:
         exp_id = active_run.info.experiment_id
         assert exp_id != FileStore.DEFAULT_EXPERIMENT_ID
         assert MlflowClient().get_experiment(exp_id).name == "some-experiment"
     # Set experiment ID to 0 when creating a run, verify that the specified experiment ID is honored
-    with mlflow.start_run(experiment_id=0) as active_run:
+    with qcflow.start_run(experiment_id=0) as active_run:
         assert active_run.info.experiment_id == FileStore.DEFAULT_EXPERIMENT_ID
 
 
 def test_get_artifact_uri_with_artifact_path_unspecified_returns_artifact_root_dir():
-    with mlflow.start_run() as active_run:
-        assert mlflow.get_artifact_uri(artifact_path=None) == active_run.info.artifact_uri
+    with qcflow.start_run() as active_run:
+        assert qcflow.get_artifact_uri(artifact_path=None) == active_run.info.artifact_uri
 
 
 def test_get_artifact_uri_uses_currently_active_run_id():
     artifact_path = "artifact"
-    with mlflow.start_run() as active_run:
-        assert mlflow.get_artifact_uri(
+    with qcflow.start_run() as active_run:
+        assert qcflow.get_artifact_uri(
             artifact_path=artifact_path
         ) == tracking.artifact_utils.get_artifact_uri(
             run_id=active_run.info.run_id, artifact_path=artifact_path
@@ -794,11 +794,11 @@ def _assert_get_artifact_uri_appends_to_uri_path_component_correctly(
 ):
     client = MlflowClient()
     client.create_experiment("get-artifact-uri-test", artifact_location=artifact_location)
-    mlflow.set_experiment("get-artifact-uri-test")
-    with mlflow.start_run():
-        run_id = mlflow.active_run().info.run_id
+    qcflow.set_experiment("get-artifact-uri-test")
+    with qcflow.start_run():
+        run_id = qcflow.active_run().info.run_id
         for artifact_path in ["path/to/artifact", "/artifact/path", "arty.txt"]:
-            artifact_uri = mlflow.get_artifact_uri(artifact_path)
+            artifact_uri = qcflow.get_artifact_uri(artifact_path)
             assert artifact_uri == tracking.artifact_utils.get_artifact_uri(run_id, artifact_path)
             assert artifact_uri == expected_uri_format.format(
                 run_id=run_id,
@@ -849,21 +849,21 @@ def test_get_artifact_uri_appends_to_local_path_component_correctly():
 
 @pytest.mark.usefixtures("reset_active_experiment")
 def test_search_runs():
-    mlflow.set_experiment("exp-for-search")
+    qcflow.set_experiment("exp-for-search")
     # Create a run and verify that the current active experiment is the one we just set
     logged_runs = {}
-    with mlflow.start_run() as active_run:
+    with qcflow.start_run() as active_run:
         logged_runs["first"] = active_run.info.run_id
-        mlflow.log_metric("m1", 0.001)
-        mlflow.log_metric("m2", 0.002)
-        mlflow.log_metric("m1", 0.002)
-        mlflow.log_param("p1", "a")
-        mlflow.set_tag("t1", "first-tag-val")
-    with mlflow.start_run() as active_run:
+        qcflow.log_metric("m1", 0.001)
+        qcflow.log_metric("m2", 0.002)
+        qcflow.log_metric("m1", 0.002)
+        qcflow.log_param("p1", "a")
+        qcflow.set_tag("t1", "first-tag-val")
+    with qcflow.start_run() as active_run:
         logged_runs["second"] = active_run.info.run_id
-        mlflow.log_metric("m1", 0.008)
-        mlflow.log_param("p2", "aa")
-        mlflow.set_tag("t2", "second-tag-val")
+        qcflow.log_metric("m1", 0.008)
+        qcflow.log_param("p2", "aa")
+        qcflow.set_tag("t2", "second-tag-val")
 
     def verify_runs(runs, expected_set):
         assert {r.info.run_id for r in runs} == {logged_runs[r] for r in expected_set}
@@ -919,11 +919,11 @@ def test_search_runs():
 
 @pytest.mark.usefixtures("reset_active_experiment")
 def test_search_runs_multiple_experiments():
-    experiment_ids = [mlflow.create_experiment(f"exp__{exp_id}") for exp_id in range(1, 4)]
+    experiment_ids = [qcflow.create_experiment(f"exp__{exp_id}") for exp_id in range(1, 4)]
     for eid in experiment_ids:
-        with mlflow.start_run(experiment_id=eid):
-            mlflow.log_metric("m0", 1)
-            mlflow.log_metric(f"m_{eid}", 2)
+        with qcflow.start_run(experiment_id=eid):
+            qcflow.log_metric("m0", 1)
+            qcflow.log_metric(f"m_{eid}", 2)
 
     assert len(MlflowClient().search_runs(experiment_ids, "metrics.m0 > 0", ViewType.ALL)) == 3
 
@@ -943,7 +943,7 @@ def read_data(artifact_path):
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny client does not support the np or pandas dependencies",
 )
 @pytest.mark.parametrize("file_type", ["json", "parquet"])
@@ -951,29 +951,29 @@ def test_log_table(file_type):
     import pandas as pd
 
     table_dict = {
-        "inputs": ["What is MLflow?", "What is Databricks?"],
-        "outputs": ["MLflow is ...", "Databricks is ..."],
+        "inputs": ["What is QCFlow?", "What is Databricks?"],
+        "outputs": ["QCFlow is ...", "Databricks is ..."],
         "toxicity": [0.0, 0.0],
     }
     artifact_file = f"qabot_eval_results.{file_type}"
-    TAG_NAME = "mlflow.loggedArtifacts"
+    TAG_NAME = "qcflow.loggedArtifacts"
     run_id = None
 
     with pytest.raises(
         MlflowException, match="data must be a pandas.DataFrame or a dictionary"
     ) as e:
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             # Log the incorrect data format as a table
-            mlflow.log_table(data="incorrect-data-format", artifact_file=artifact_file)
+            qcflow.log_table(data="incorrect-data-format", artifact_file=artifact_file)
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
         run_id = run.info.run_id
 
-    run = mlflow.get_run(run_id)
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    run = qcflow.get_run(run_id)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     table_data = read_data(artifact_path)
     assert table_data.shape[0] == 2
     assert table_data.shape[1] == 3
@@ -984,12 +984,12 @@ def test_log_table(file_type):
     assert len(current_tag_value) == 1
 
     table_df = pd.DataFrame.from_dict(table_dict)
-    with mlflow.start_run(run_id=run_id):
+    with qcflow.start_run(run_id=run_id):
         # Log the dataframe as a table
-        mlflow.log_table(data=table_df, artifact_file=artifact_file)
+        qcflow.log_table(data=table_df, artifact_file=artifact_file)
 
-    run = mlflow.get_run(run_id)
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    run = qcflow.get_run(run_id)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     table_data = read_data(artifact_path)
     assert table_data.shape[0] == 4
     assert table_data.shape[1] == 3
@@ -999,12 +999,12 @@ def test_log_table(file_type):
     assert len(current_tag_value) == 1
 
     artifact_file_new = f"qabot_eval_results_new.{file_type}"
-    with mlflow.start_run(run_id=run_id):
+    with qcflow.start_run(run_id=run_id):
         # Log the dataframe as a table to new artifact file
-        mlflow.log_table(data=table_df, artifact_file=artifact_file_new)
+        qcflow.log_table(data=table_df, artifact_file=artifact_file_new)
 
-    run = mlflow.get_run(run_id)
-    artifact_path = mlflow.artifacts.download_artifacts(
+    run = qcflow.get_run(run_id)
+    artifact_path = qcflow.artifacts.download_artifacts(
         run_id=run_id, artifact_path=artifact_file_new
     )
     table_data = read_data(artifact_path)
@@ -1017,7 +1017,7 @@ def test_log_table(file_type):
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny client does not support the np or pandas dependencies",
 )
 @pytest.mark.parametrize("file_type", ["json", "parquet"])
@@ -1025,21 +1025,21 @@ def test_log_table_with_subdirectory(file_type):
     import pandas as pd
 
     table_dict = {
-        "inputs": ["What is MLflow?", "What is Databricks?"],
-        "outputs": ["MLflow is ...", "Databricks is ..."],
+        "inputs": ["What is QCFlow?", "What is Databricks?"],
+        "outputs": ["QCFlow is ...", "Databricks is ..."],
         "toxicity": [0.0, 0.0],
     }
     artifact_file = f"dir/foo.{file_type}"
-    TAG_NAME = "mlflow.loggedArtifacts"
+    TAG_NAME = "qcflow.loggedArtifacts"
     run_id = None
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
         run_id = run.info.run_id
 
-    run = mlflow.get_run(run_id)
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    run = qcflow.get_run(run_id)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     table_data = read_data(artifact_path)
     assert table_data.shape[0] == 2
     assert table_data.shape[1] == 3
@@ -1050,12 +1050,12 @@ def test_log_table_with_subdirectory(file_type):
     assert len(current_tag_value) == 1
 
     table_df = pd.DataFrame.from_dict(table_dict)
-    with mlflow.start_run(run_id=run_id):
+    with qcflow.start_run(run_id=run_id):
         # Log the dataframe as a table
-        mlflow.log_table(data=table_df, artifact_file=artifact_file)
+        qcflow.log_table(data=table_df, artifact_file=artifact_file)
 
-    run = mlflow.get_run(run_id)
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    run = qcflow.get_run(run_id)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     table_data = read_data(artifact_path)
     assert table_data.shape[0] == 4
     assert table_data.shape[1] == 3
@@ -1066,57 +1066,57 @@ def test_log_table_with_subdirectory(file_type):
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny client does not support the np or pandas dependencies",
 )
 @pytest.mark.parametrize("file_type", ["json", "parquet"])
 def test_load_table(file_type):
     table_dict = {
-        "inputs": ["What is MLflow?", "What is Databricks?"],
-        "outputs": ["MLflow is ...", "Databricks is ..."],
+        "inputs": ["What is QCFlow?", "What is Databricks?"],
+        "outputs": ["QCFlow is ...", "Databricks is ..."],
         "toxicity": [0.0, 0.0],
     }
     artifact_file = f"qabot_eval_results.{file_type}"
     artifact_file_2 = f"qabot_eval_results_2.{file_type}"
     run_id_2 = None
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file_2)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file_2)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
         run_id_2 = run.info.run_id
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
         run_id_3 = run.info.run_id
 
-    extra_columns = ["run_id", "tags.mlflow.loggedArtifacts"]
+    extra_columns = ["run_id", "tags.qcflow.loggedArtifacts"]
 
     # test 1: load table with extra columns
-    output_df = mlflow.load_table(artifact_file=artifact_file, extra_columns=extra_columns)
+    output_df = qcflow.load_table(artifact_file=artifact_file, extra_columns=extra_columns)
 
     assert output_df.shape[0] == 6
     assert output_df.shape[1] == 5
     assert output_df["run_id"].nunique() == 3
-    assert output_df["tags.mlflow.loggedArtifacts"].nunique() == 2
+    assert output_df["tags.qcflow.loggedArtifacts"].nunique() == 2
 
     # test 2: load table with extra columns and single run_id
-    output_df = mlflow.load_table(
+    output_df = qcflow.load_table(
         artifact_file=artifact_file, run_ids=[run_id_2], extra_columns=extra_columns
     )
 
     assert output_df.shape[0] == 2
     assert output_df.shape[1] == 5
     assert output_df["run_id"].nunique() == 1
-    assert output_df["tags.mlflow.loggedArtifacts"].nunique() == 1
+    assert output_df["tags.qcflow.loggedArtifacts"].nunique() == 1
 
     # test 3: load table with extra columns and multiple run_ids
-    output_df = mlflow.load_table(
+    output_df = qcflow.load_table(
         artifact_file=artifact_file,
         run_ids=[run_id_2, run_id_3],
         extra_columns=extra_columns,
@@ -1125,16 +1125,16 @@ def test_load_table(file_type):
     assert output_df.shape[0] == 4
     assert output_df.shape[1] == 5
     assert output_df["run_id"].nunique() == 2
-    assert output_df["tags.mlflow.loggedArtifacts"].nunique() == 1
+    assert output_df["tags.qcflow.loggedArtifacts"].nunique() == 1
 
     # test 4: load table with no extra columns and run_ids specified but different artifact file
-    output_df = mlflow.load_table(artifact_file=artifact_file_2)
+    output_df = qcflow.load_table(artifact_file=artifact_file_2)
     import pandas as pd
 
     pd.testing.assert_frame_equal(output_df, pd.DataFrame(table_dict), check_dtype=False)
 
     # test 5: load table with no extra columns and run_ids specified
-    output_df = mlflow.load_table(artifact_file=artifact_file)
+    output_df = qcflow.load_table(artifact_file=artifact_file)
 
     assert output_df.shape[0] == 6
     assert output_df.shape[1] == 3
@@ -1143,15 +1143,15 @@ def test_load_table(file_type):
     with pytest.raises(
         MlflowException, match="No runs found with the corresponding table artifact"
     ):
-        mlflow.load_table(artifact_file=f"error_case.{file_type}")
+        qcflow.load_table(artifact_file=f"error_case.{file_type}")
 
     # test 7: load table with no matching extra_column found. Error case
     with pytest.raises(KeyError, match="error_column"):
-        mlflow.load_table(artifact_file=artifact_file, extra_columns=["error_column"])
+        qcflow.load_table(artifact_file=artifact_file, extra_columns=["error_column"])
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny client does not support the np or pandas dependencies",
 )
 @pytest.mark.parametrize("file_type", ["json", "parquet"])
@@ -1160,18 +1160,18 @@ def test_log_table_with_datetime_columns(file_type):
 
     start_time = str(datetime.now(timezone.utc))
     table_dict = {
-        "inputs": ["What is MLflow?", "What is Databricks?"],
-        "outputs": ["MLflow is ...", "Databricks is ..."],
+        "inputs": ["What is QCFlow?", "What is Databricks?"],
+        "outputs": ["QCFlow is ...", "Databricks is ..."],
         "start_time": [start_time, start_time],
     }
     artifact_file = f"test_time.{file_type}"
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
         run_id = run.info.run_id
 
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     if file_type == "parquet":
         table_data = pd.read_parquet(artifact_path)
     else:
@@ -1179,8 +1179,8 @@ def test_log_table_with_datetime_columns(file_type):
     assert table_data["start_time"][0] == start_time
 
     # append the same table to the same artifact file
-    mlflow.log_table(data=table_dict, artifact_file=artifact_file, run_id=run_id)
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    qcflow.log_table(data=table_dict, artifact_file=artifact_file, run_id=run_id)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     if file_type == "parquet":
         df = pd.read_parquet(artifact_path)
     else:
@@ -1189,7 +1189,7 @@ def test_log_table_with_datetime_columns(file_type):
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny client does not support the np or pandas dependencies",
 )
 @pytest.mark.parametrize("file_type", ["json", "parquet"])
@@ -1197,37 +1197,37 @@ def test_log_table_with_image_columns(file_type):
     import numpy as np
     from PIL import Image
 
-    image = mlflow.Image([[1, 2, 3]])
+    image = qcflow.Image([[1, 2, 3]])
     table_dict = {
-        "inputs": ["What is MLflow?", "What is Databricks?"],
-        "outputs": ["MLflow is ...", "Databricks is ..."],
+        "inputs": ["What is QCFlow?", "What is Databricks?"],
+        "outputs": ["QCFlow is ...", "Databricks is ..."],
         "image": [image, image],
     }
     artifact_file = f"test_time.{file_type}"
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
         run_id = run.info.run_id
 
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     table_data = read_data(artifact_path)
     assert table_data["image"][0]["type"] == "image"
-    image_path = mlflow.artifacts.download_artifacts(
+    image_path = qcflow.artifacts.download_artifacts(
         run_id=run_id, artifact_path=table_data["image"][0]["filepath"]
     )
     image2 = Image.open(image_path)
     assert np.abs(image.to_array() - np.array(image2)).sum() == 0
 
     # append the same table to the same artifact file
-    mlflow.log_table(data=table_dict, artifact_file=artifact_file, run_id=run_id)
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    qcflow.log_table(data=table_dict, artifact_file=artifact_file, run_id=run_id)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     df = read_data(artifact_path)
     assert df["image"][2]["type"] == "image"
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny client does not support the np or pandas dependencies",
 )
 @pytest.mark.parametrize("file_type", ["json", "parquet"])
@@ -1239,54 +1239,54 @@ def test_log_table_with_pil_image_columns(file_type):
     image = image.convert("RGB")
 
     table_dict = {
-        "inputs": ["What is MLflow?", "What is Databricks?"],
-        "outputs": ["MLflow is ...", "Databricks is ..."],
+        "inputs": ["What is QCFlow?", "What is Databricks?"],
+        "outputs": ["QCFlow is ...", "Databricks is ..."],
         "image": [image, image],
     }
     artifact_file = f"test_time.{file_type}"
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
         run_id = run.info.run_id
 
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     table_data = read_data(artifact_path)
     assert table_data["image"][0]["type"] == "image"
-    image_path = mlflow.artifacts.download_artifacts(
+    image_path = qcflow.artifacts.download_artifacts(
         run_id=run_id, artifact_path=table_data["image"][0]["filepath"]
     )
     image2 = Image.open(image_path)
     assert np.abs(np.array(image) - np.array(image2)).sum() == 0
 
     # append the same table to the same artifact file
-    mlflow.log_table(data=table_dict, artifact_file=artifact_file, run_id=run_id)
-    artifact_path = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
+    qcflow.log_table(data=table_dict, artifact_file=artifact_file, run_id=run_id)
+    artifact_path = qcflow.artifacts.download_artifacts(run_id=run_id, artifact_path=artifact_file)
     df = read_data(artifact_path)
     assert df["image"][2]["type"] == "image"
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny client does not support the np or pandas dependencies",
 )
 @pytest.mark.parametrize("file_type", ["json", "parquet"])
 def test_log_table_with_invalid_image_columns(file_type):
-    image = mlflow.Image([[1, 2, 3]])
+    image = qcflow.Image([[1, 2, 3]])
     table_dict = {
-        "inputs": ["What is MLflow?", "What is Databricks?"],
-        "outputs": ["MLflow is ...", "Databricks is ..."],
+        "inputs": ["What is QCFlow?", "What is Databricks?"],
+        "outputs": ["QCFlow is ...", "Databricks is ..."],
         "image": [image, "text"],
     }
     artifact_file = f"test_time.{file_type}"
     with pytest.raises(ValueError, match="Column `image` contains a mix of images and non-images"):
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Log the dictionary as a table
-            mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+            qcflow.log_table(data=table_dict, artifact_file=artifact_file)
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny client does not support the np or pandas dependencies",
 )
 @pytest.mark.parametrize("file_type", ["json", "parquet"])
@@ -1303,29 +1303,29 @@ def test_log_table_with_valid_image_columns(file_type):
                 f.write("dummy data")
 
     image_obj = ImageObj()
-    image = mlflow.Image([[1, 2, 3]])
+    image = qcflow.Image([[1, 2, 3]])
 
     table_dict = {
-        "inputs": ["What is MLflow?", "What is Databricks?"],
-        "outputs": ["MLflow is ...", "Databricks is ..."],
+        "inputs": ["What is QCFlow?", "What is Databricks?"],
+        "outputs": ["QCFlow is ...", "Databricks is ..."],
         "image": [image, image_obj],
     }
     # No error should be raised
     artifact_file = f"test_time.{file_type}"
-    with mlflow.start_run():
+    with qcflow.start_run():
         # Log the dictionary as a table
-        mlflow.log_table(data=table_dict, artifact_file=artifact_file)
+        qcflow.log_table(data=table_dict, artifact_file=artifact_file)
 
 
 def test_set_async_logging_threadpool_size():
-    MLFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.set(6)
-    assert MLFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.get() == 6
+    QCFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.set(6)
+    assert QCFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.get() == 6
 
-    with mlflow.start_run():
-        mlflow.log_param("key", "val", synchronous=False)
+    with qcflow.start_run():
+        qcflow.log_param("key", "val", synchronous=False)
 
-    store = mlflow.tracking._get_store()
+    store = qcflow.tracking._get_store()
     async_queue = store._async_logging_queue
     assert async_queue._batch_logging_worker_threadpool._max_workers == 6
-    mlflow.flush_async_logging()
-    MLFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.unset()
+    qcflow.flush_async_logging()
+    QCFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.unset()

@@ -19,12 +19,12 @@ if Version(tf.__version__).release >= (2, 16):
 else:
     from tensorflow.keras.utils import register_keras_serializable
 
-import mlflow
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow.models import ModelSignature
-from mlflow.models.utils import load_serving_example
-from mlflow.pyfunc import spark_udf
-from mlflow.types.schema import Schema, TensorSpec
+import qcflow
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow.models import ModelSignature
+from qcflow.models.utils import load_serving_example
+from qcflow.pyfunc import spark_udf
+from qcflow.types.schema import Schema, TensorSpec
 
 from tests.helper_functions import (
     _is_available_on_pypi,
@@ -173,10 +173,10 @@ def test_model_single_tensor_input(use_signature, single_tensor_input_model, mod
     expected = model.predict(x)
 
     signature = signature if use_signature else None
-    mlflow.tensorflow.save_model(model, path=model_path, signature=signature)
+    qcflow.tensorflow.save_model(model, path=model_path, signature=signature)
 
     # Loading Keras model via PyFunc
-    model_loaded = mlflow.pyfunc.load_model(model_path)
+    model_loaded = qcflow.pyfunc.load_model(model_path)
 
     actual = model_loaded.predict(x)
     if signature is None:
@@ -204,10 +204,10 @@ def test_model_multi_tensor_input(use_signature, multi_tensor_input_model, model
     signature = signature if use_signature else None
     expected = model.predict(test_input)
 
-    mlflow.tensorflow.save_model(model, path=model_path, signature=signature)
+    qcflow.tensorflow.save_model(model, path=model_path, signature=signature)
 
     # Loading Keras model via PyFunc
-    model_loaded = mlflow.pyfunc.load_model(model_path)
+    model_loaded = qcflow.pyfunc.load_model(model_path)
 
     # Calling predict with a list should return a np.ndarray output
     actual = model_loaded.predict(test_input)
@@ -236,10 +236,10 @@ def test_model_single_multidim_tensor_input(
     signature = signature if use_signature else None
     expected = model.predict(test_input)
 
-    mlflow.tensorflow.save_model(model, path=model_path, signature=signature)
+    qcflow.tensorflow.save_model(model, path=model_path, signature=signature)
 
     # Loading Keras model via PyFunc
-    model_loaded = mlflow.pyfunc.load_model(model_path)
+    model_loaded = qcflow.pyfunc.load_model(model_path)
 
     actual = model_loaded.predict(test_input)
     assert type(actual) == np.ndarray
@@ -268,10 +268,10 @@ def test_model_multi_multidim_tensor_input(
 
     expected = model.predict(test_input)
 
-    mlflow.tensorflow.save_model(model, path=model_path, signature=signature)
+    qcflow.tensorflow.save_model(model, path=model_path, signature=signature)
 
     # Loading Keras model via PyFunc
-    model_loaded = mlflow.pyfunc.load_model(model_path)
+    model_loaded = qcflow.pyfunc.load_model(model_path)
 
     actual = model_loaded.predict(test_input)
     assert type(actual) == np.ndarray
@@ -308,8 +308,8 @@ def test_single_multidim_input_model_spark_udf(
     test_input_spark_df = spark_session.createDataFrame(
         pd.DataFrame({"x": test_input.reshape((-1, 4 * 3)).tolist()})
     )
-    with mlflow.start_run():
-        model_uri = mlflow.tensorflow.log_model(model, "model", signature=signature).model_uri
+    with qcflow.start_run():
+        model_uri = qcflow.tensorflow.log_model(model, "model", signature=signature).model_uri
 
     infer_udf = spark_udf(spark_session, model_uri, env_manager=env_manager)
     actual = (
@@ -351,8 +351,8 @@ def test_multi_multidim_input_model_spark_udf(
             }
         )
     )
-    with mlflow.start_run():
-        model_uri = mlflow.tensorflow.log_model(model, "model", signature=signature).model_uri
+    with qcflow.start_run():
+        model_uri = qcflow.tensorflow.log_model(model, "model", signature=signature).model_uri
 
     infer_udf = spark_udf(spark_session, model_uri, env_manager=env_manager)
     actual = (
@@ -376,8 +376,8 @@ def test_scoring_server_successfully_on_single_multidim_input_model(
     model, signature = single_multidim_tensor_input_model
     x, _ = data
     test_input = np.repeat(x.values[:, :, np.newaxis], 3, axis=2)
-    with mlflow.start_run():
-        model_info = mlflow.tensorflow.log_model(model, "model", input_example=test_input)
+    with qcflow.start_run():
+        model_info = qcflow.tensorflow.log_model(model, "model", input_example=test_input)
     assert model_info.signature.inputs == signature.inputs
 
     inp_dict = json.dumps({"instances": test_input.tolist()})
@@ -414,8 +414,8 @@ def test_scoring_server_successfully_on_multi_multidim_input_model(
             "b": input_b.reshape((-1, 2 * 5)).tolist(),
         }
     )
-    with mlflow.start_run():
-        model_info = mlflow.tensorflow.log_model(model, "model", input_example=input_example)
+    with qcflow.start_run():
+        model_info = qcflow.tensorflow.log_model(model, "model", input_example=input_example)
     assert model_info.signature.inputs == signature.inputs
 
     serving_input_example = load_serving_example(model_info.model_uri)

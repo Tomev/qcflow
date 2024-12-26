@@ -1,7 +1,7 @@
-mlflow.statsmodels
+qcflow.statsmodels
 ==================
 
-.. automodule:: mlflow.statsmodels
+.. automodule:: qcflow.statsmodels
     :members:
     :undoc-members:
     :show-inheritance:

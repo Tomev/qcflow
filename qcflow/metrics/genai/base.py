@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from mlflow.metrics.genai.prompt_template import PromptTemplate
-from mlflow.utils.annotations import experimental
+from qcflow.metrics.genai.prompt_template import PromptTemplate
+from qcflow.utils.annotations import experimental
 
 
 @experimental
@@ -23,20 +23,20 @@ class EvaluationExample:
     .. code-block:: python
         :caption: Example for creating an EvaluationExample
 
-        from mlflow.metrics.base import EvaluationExample
+        from qcflow.metrics.base import EvaluationExample
 
         example = EvaluationExample(
-            input="What is MLflow?",
-            output="MLflow is an open-source platform for managing machine "
+            input="What is QCFlow?",
+            output="QCFlow is an open-source platform for managing machine "
             "learning workflows, including experiment tracking, model packaging, "
             "versioning, and deployment, simplifying the ML lifecycle.",
             score=4,
-            justification="The definition effectively explains what MLflow is "
+            justification="The definition effectively explains what QCFlow is "
             "its purpose, and its developer. It could be more concise for a 5-score.",
             grading_context={
-                "ground_truth": "MLflow is an open-source platform for managing "
+                "ground_truth": "QCFlow is an open-source platform for managing "
                 "the end-to-end machine learning (ML) lifecycle. It was developed by Databricks, "
-                "a company that specializes in big data and machine learning solutions. MLflow is "
+                "a company that specializes in big data and machine learning solutions. QCFlow is "
                 "designed to address the challenges that data scientists and machine learning "
                 "engineers face when developing, training, and deploying machine learning models."
             },
@@ -46,17 +46,17 @@ class EvaluationExample:
     .. code-block:: text
         :caption: Output
 
-        Input: What is MLflow?
-        Provided output: "MLflow is an open-source platform for managing machine "
+        Input: What is QCFlow?
+        Provided output: "QCFlow is an open-source platform for managing machine "
             "learning workflows, including experiment tracking, model packaging, "
             "versioning, and deployment, simplifying the ML lifecycle."
-        Provided ground_truth: "MLflow is an open-source platform for managing "
+        Provided ground_truth: "QCFlow is an open-source platform for managing "
             "the end-to-end machine learning (ML) lifecycle. It was developed by Databricks, "
-            "a company that specializes in big data and machine learning solutions. MLflow is "
+            "a company that specializes in big data and machine learning solutions. QCFlow is "
             "designed to address the challenges that data scientists and machine learning "
             "engineers face when developing, training, and deploying machine learning models."
         Score: 4
-        Justification: "The definition effectively explains what MLflow is "
+        Justification: "The definition effectively explains what QCFlow is "
             "its purpose, and its developer. It could be more concise for a 5-score."
     """
 

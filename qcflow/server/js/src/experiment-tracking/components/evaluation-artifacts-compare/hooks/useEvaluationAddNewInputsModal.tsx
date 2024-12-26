@@ -55,7 +55,7 @@ export const useEvaluationAddNewInputsModal = () => {
 
   const AddNewInputsModal = (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_hooks_useevaluationaddnewinputsmodal.tsx_57"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_hooks_useevaluationaddnewinputsmodal.tsx_57"
       title={
         <FormattedMessage
           defaultMessage="Add row"
@@ -98,7 +98,7 @@ export const useEvaluationAddNewInputsModal = () => {
           </Typography.Hint>
           <div css={{ marginTop: theme.spacing.sm }}>
             <Input.TextArea
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_hooks_useevaluationaddnewinputsmodal.tsx_99"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_hooks_useevaluationaddnewinputsmodal.tsx_99"
               value={inputValues[inputName]}
               onChange={(e) => setInputValue(inputName, e.target.value)}
             />

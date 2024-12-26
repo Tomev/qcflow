@@ -14,7 +14,7 @@ import { createApolloClient } from './graphql/client';
 import { LegacySkeleton } from '@databricks/design-system';
 // eslint-disable-next-line no-useless-rename
 import { MlflowRouter as MlflowRouter } from './MlflowRouter';
-import { useMLflowDarkTheme } from './common/hooks/useMLflowDarkTheme';
+import { useQCFlowDarkTheme } from './common/hooks/useQCFlowDarkTheme';
 
 export function MLFlowRoot() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -23,7 +23,7 @@ export function MLFlowRoot() {
   const apolloClient = useMemo(() => createApolloClient(), []);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [isDarkTheme, setIsDarkTheme, MlflowThemeGlobalStyles] = useMLflowDarkTheme();
+  const [isDarkTheme, setIsDarkTheme, MlflowThemeGlobalStyles] = useQCFlowDarkTheme();
 
   if (!intl) {
     return (

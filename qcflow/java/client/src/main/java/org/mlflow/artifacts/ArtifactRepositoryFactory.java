@@ -1,8 +1,8 @@
-package org.mlflow.artifacts;
+package org.qcflow.artifacts;
 
 import java.net.URI;
 
-import org.mlflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.tracking.creds.MlflowHostCredsProvider;
 
 public class ArtifactRepositoryFactory {
   private final MlflowHostCredsProvider hostCredsProvider;

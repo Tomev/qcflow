@@ -20,14 +20,14 @@ if Version(google.protobuf.__version__).major >= 5:
   from . import databricks_pb2 as databricks__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rservice.proto\x12\x06mlflow\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"H\n\x06Metric\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0f\n\x04step\x18\x04 \x01(\x03:\x01\x30\"#\n\x05Param\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"f\n\x03Run\x12\x1d\n\x04info\x18\x01 \x01(\x0b\x32\x0f.mlflow.RunInfo\x12\x1d\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x0f.mlflow.RunData\x12!\n\x06inputs\x18\x03 \x01(\x0b\x32\x11.mlflow.RunInputs\"g\n\x07RunData\x12\x1f\n\x07metrics\x18\x01 \x03(\x0b\x32\x0e.mlflow.Metric\x12\x1d\n\x06params\x18\x02 \x03(\x0b\x32\r.mlflow.Param\x12\x1c\n\x04tags\x18\x03 \x03(\x0b\x32\x0e.mlflow.RunTag\"9\n\tRunInputs\x12,\n\x0e\x64\x61taset_inputs\x18\x01 \x03(\x0b\x32\x14.mlflow.DatasetInput\"$\n\x06RunTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"+\n\rExperimentTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xdd\x01\n\x07RunInfo\x12\x0e\n\x06run_id\x18\x0f \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x10\n\x08run_name\x18\x03 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x06 \x01(\t\x12!\n\x06status\x18\x07 \x01(\x0e\x32\x11.mlflow.RunStatus\x12\x12\n\nstart_time\x18\x08 \x01(\x03\x12\x10\n\x08\x65nd_time\x18\t \x01(\x03\x12\x14\n\x0c\x61rtifact_uri\x18\r \x01(\t\x12\x17\n\x0flifecycle_stage\x18\x0e \x01(\t\"\xbb\x01\n\nExperiment\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x61rtifact_location\x18\x03 \x01(\t\x12\x17\n\x0flifecycle_stage\x18\x04 \x01(\t\x12\x18\n\x10last_update_time\x18\x05 \x01(\x03\x12\x15\n\rcreation_time\x18\x06 \x01(\x03\x12#\n\x04tags\x18\x07 \x03(\x0b\x32\x15.mlflow.ExperimentTag\"V\n\x0c\x44\x61tasetInput\x12\x1e\n\x04tags\x18\x01 \x03(\x0b\x32\x10.mlflow.InputTag\x12&\n\x07\x64\x61taset\x18\x02 \x01(\x0b\x32\x0f.mlflow.DatasetB\x04\xf8\x86\x19\x01\"2\n\x08InputTag\x12\x11\n\x03key\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\"\x85\x01\n\x07\x44\x61taset\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06\x64igest\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x19\n\x0bsource_type\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06source\x18\x04 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06schema\x18\x05 \x01(\t\x12\x0f\n\x07profile\x18\x06 \x01(\t\"\xb6\x01\n\x10\x43reateExperiment\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x19\n\x11\x61rtifact_location\x18\x02 \x01(\t\x12#\n\x04tags\x18\x03 \x03(\x0b\x32\x15.mlflow.ExperimentTag\x1a!\n\x08Response\x12\x15\n\rexperiment_id\x18\x01 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xfe\x01\n\x11SearchExperiments\x12\x13\n\x0bmax_results\x18\x01 \x01(\x03\x12\x12\n\npage_token\x18\x02 \x01(\t\x12\x0e\n\x06\x66ilter\x18\x03 \x01(\t\x12\x10\n\x08order_by\x18\x04 \x03(\t\x12#\n\tview_type\x18\x05 \x01(\x0e\x32\x10.mlflow.ViewType\x1aL\n\x08Response\x12\'\n\x0b\x65xperiments\x18\x01 \x03(\x0b\x32\x12.mlflow.Experiment\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8d\x01\n\rGetExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x32\n\x08Response\x12&\n\nexperiment\x18\x01 \x01(\x0b\x32\x12.mlflow.Experiment:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"h\n\x10\x44\x65leteExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"i\n\x11RestoreExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"z\n\x10UpdateExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x10\n\x08new_name\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xca\x01\n\tCreateRun\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x10\n\x08run_name\x18\x03 \x01(\t\x12\x12\n\nstart_time\x18\x07 \x01(\x03\x12\x1c\n\x04tags\x18\t \x03(\x0b\x32\x0e.mlflow.RunTag\x1a$\n\x08Response\x12\x18\n\x03run\x18\x01 \x01(\x0b\x32\x0b.mlflow.Run:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xd0\x01\n\tUpdateRun\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12!\n\x06status\x18\x02 \x01(\x0e\x32\x11.mlflow.RunStatus\x12\x10\n\x08\x65nd_time\x18\x03 \x01(\x03\x12\x10\n\x08run_name\x18\x05 \x01(\t\x1a-\n\x08Response\x12!\n\x08run_info\x18\x01 \x01(\x0b\x32\x0f.mlflow.RunInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"Z\n\tDeleteRun\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"[\n\nRestoreRun\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xb8\x01\n\tLogMetric\x12\x0e\n\x06run_id\x18\x06 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\x01\x42\x04\xf8\x86\x19\x01\x12\x17\n\ttimestamp\x18\x04 \x01(\x03\x42\x04\xf8\x86\x19\x01\x12\x0f\n\x04step\x18\x05 \x01(\x03:\x01\x30\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8d\x01\n\x08LogParam\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x90\x01\n\x10SetExperimentTag\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8b\x01\n\x06SetTag\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"m\n\tDeleteTag\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"}\n\x06GetRun\x12\x0e\n\x06run_id\x18\x02 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x1a$\n\x08Response\x12\x18\n\x03run\x18\x01 \x01(\x0b\x32\x0b.mlflow.Run:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x98\x02\n\nSearchRuns\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x66ilter\x18\x04 \x01(\t\x12\x34\n\rrun_view_type\x18\x03 \x01(\x0e\x32\x10.mlflow.ViewType:\x0b\x41\x43TIVE_ONLY\x12\x19\n\x0bmax_results\x18\x05 \x01(\x05:\x04\x31\x30\x30\x30\x12\x10\n\x08order_by\x18\x06 \x03(\t\x12\x12\n\npage_token\x18\x07 \x01(\t\x1a>\n\x08Response\x12\x19\n\x04runs\x18\x01 \x03(\x0b\x32\x0b.mlflow.Run\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xd8\x01\n\rListArtifacts\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aV\n\x08Response\x12\x10\n\x08root_uri\x18\x01 \x01(\t\x12\x1f\n\x05\x66iles\x18\x02 \x03(\x0b\x32\x10.mlflow.FileInfo\x12\x17\n\x0fnext_page_token\x18\x03 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\";\n\x08\x46ileInfo\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0e\n\x06is_dir\x18\x02 \x01(\x08\x12\x11\n\tfile_size\x18\x03 \x01(\x03\"\xea\x01\n\x10GetMetricHistory\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x18\n\nmetric_key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\npage_token\x18\x04 \x01(\t\x12\x13\n\x0bmax_results\x18\x05 \x01(\x05\x1a\x44\n\x08Response\x12\x1f\n\x07metrics\x18\x01 \x03(\x0b\x32\x0e.mlflow.Metric\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"a\n\x0fMetricWithRunId\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0f\n\x04step\x18\x04 \x01(\x03:\x01\x30\x12\x0e\n\x06run_id\x18\x05 \x01(\t\"\xe7\x01\n\x1cGetMetricHistoryBulkInterval\x12\x0f\n\x07run_ids\x18\x01 \x03(\t\x12\x18\n\nmetric_key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\nstart_step\x18\x03 \x01(\x05\x12\x10\n\x08\x65nd_step\x18\x04 \x01(\x05\x12\x13\n\x0bmax_results\x18\x05 \x01(\x05\x1a\x34\n\x08Response\x12(\n\x07metrics\x18\x01 \x03(\x0b\x32\x17.mlflow.MetricWithRunId:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xb1\x01\n\x08LogBatch\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x1f\n\x07metrics\x18\x02 \x03(\x0b\x32\x0e.mlflow.Metric\x12\x1d\n\x06params\x18\x03 \x03(\x0b\x32\r.mlflow.Param\x12\x1c\n\x04tags\x18\x04 \x03(\x0b\x32\x0e.mlflow.RunTag\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"g\n\x08LogModel\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x12\n\nmodel_json\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x01\n\tLogInputs\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12&\n\x08\x64\x61tasets\x18\x02 \x03(\x0b\x32\x14.mlflow.DatasetInput\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x95\x01\n\x13GetExperimentByName\x12\x1d\n\x0f\x65xperiment_name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x32\n\x08Response\x12&\n\nexperiment\x18\x01 \x01(\x0b\x32\x12.mlflow.Experiment:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xe4\x01\n\tTraceInfo\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x03 \x01(\x03\x12\x19\n\x11\x65xecution_time_ms\x18\x04 \x01(\x03\x12#\n\x06status\x18\x05 \x01(\x0e\x32\x13.mlflow.TraceStatus\x12\x36\n\x10request_metadata\x18\x06 \x03(\x0b\x32\x1c.mlflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x07 \x03(\x0b\x32\x10.mlflow.TraceTag\"2\n\x14TraceRequestMetadata\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"&\n\x08TraceTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xf1\x01\n\nStartTrace\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x03\x12\x36\n\x10request_metadata\x18\x03 \x03(\x0b\x32\x1c.mlflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x04 \x03(\x0b\x32\x10.mlflow.TraceTag\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.mlflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x91\x02\n\x08\x45ndTrace\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x03\x12#\n\x06status\x18\x03 \x01(\x0e\x32\x13.mlflow.TraceStatus\x12\x36\n\x10request_metadata\x18\x04 \x03(\x0b\x32\x1c.mlflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x05 \x03(\x0b\x32\x10.mlflow.TraceTag\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.mlflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x01\n\x0cGetTraceInfo\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.mlflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xeb\x01\n\x0cSearchTraces\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x66ilter\x18\x02 \x01(\t\x12\x18\n\x0bmax_results\x18\x03 \x01(\x05:\x03\x31\x30\x30\x12\x10\n\x08order_by\x18\x04 \x03(\t\x12\x12\n\npage_token\x18\x05 \x01(\t\x1a\x46\n\x08Response\x12!\n\x06traces\x18\x01 \x03(\x0b\x32\x11.mlflow.TraceInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xc3\x01\n\x0c\x44\x65leteTraces\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x1c\n\x14max_timestamp_millis\x18\x02 \x01(\x03\x12\x12\n\nmax_traces\x18\x03 \x01(\x05\x12\x13\n\x0brequest_ids\x18\x04 \x03(\t\x1a\"\n\x08Response\x12\x16\n\x0etraces_deleted\x18\x01 \x01(\x05:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"v\n\x0bSetTraceTag\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"j\n\x0e\x44\x65leteTraceTag\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"h\n\x0e\x44\x61tasetSummary\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\x04name\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06\x64igest\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0f\n\x07\x63ontext\x18\x04 \x01(\t\"\x94\x01\n\x0eSearchDatasets\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x1a=\n\x08Response\x12\x31\n\x11\x64\x61taset_summaries\x18\x01 \x03(\x0b\x32\x16.mlflow.DatasetSummary:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]*6\n\x08ViewType\x12\x0f\n\x0b\x41\x43TIVE_ONLY\x10\x01\x12\x10\n\x0c\x44\x45LETED_ONLY\x10\x02\x12\x07\n\x03\x41LL\x10\x03*I\n\nSourceType\x12\x0c\n\x08NOTEBOOK\x10\x01\x12\x07\n\x03JOB\x10\x02\x12\x0b\n\x07PROJECT\x10\x03\x12\t\n\x05LOCAL\x10\x04\x12\x0c\n\x07UNKNOWN\x10\xe8\x07*M\n\tRunStatus\x12\x0b\n\x07RUNNING\x10\x01\x12\r\n\tSCHEDULED\x10\x02\x12\x0c\n\x08\x46INISHED\x10\x03\x12\n\n\x06\x46\x41ILED\x10\x04\x12\n\n\x06KILLED\x10\x05*O\n\x0bTraceStatus\x12\x1c\n\x18TRACE_STATUS_UNSPECIFIED\x10\x00\x12\x06\n\x02OK\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x0f\n\x0bIN_PROGRESS\x10\x03\x32\xe7!\n\rMlflowService\x12\xa6\x01\n\x13getExperimentByName\x12\x1b.mlflow.GetExperimentByName\x1a$.mlflow.GetExperimentByName.Response\"L\xf2\x86\x19H\n,\n\x03GET\x12\x1f/mlflow/experiments/get-by-name\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Get Experiment By Name\x12\x94\x01\n\x10\x63reateExperiment\x12\x18.mlflow.CreateExperiment\x1a!.mlflow.CreateExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/mlflow/experiments/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x11\x43reate Experiment\x12\xc1\x01\n\x11searchExperiments\x12\x19.mlflow.SearchExperiments\x1a\".mlflow.SearchExperiments.Response\"m\xf2\x86\x19i\n(\n\x04POST\x12\x1a/mlflow/experiments/search\x1a\x04\x08\x02\x10\x00\n\'\n\x03GET\x12\x1a/mlflow/experiments/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Search Experiments\x12\x88\x01\n\rgetExperiment\x12\x15.mlflow.GetExperiment\x1a\x1e.mlflow.GetExperiment.Response\"@\xf2\x86\x19\x38\n$\n\x03GET\x12\x17/mlflow/experiments/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x0eGet Experiment\xba\x8c\x19\x00\x12\x94\x01\n\x10\x64\x65leteExperiment\x12\x18.mlflow.DeleteExperiment\x1a!.mlflow.DeleteExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/mlflow/experiments/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x11\x44\x65lete Experiment\x12\x99\x01\n\x11restoreExperiment\x12\x19.mlflow.RestoreExperiment\x1a\".mlflow.RestoreExperiment.Response\"E\xf2\x86\x19\x41\n)\n\x04POST\x12\x1b/mlflow/experiments/restore\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Restore Experiment\x12\x94\x01\n\x10updateExperiment\x12\x18.mlflow.UpdateExperiment\x1a!.mlflow.UpdateExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/mlflow/experiments/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x11Update Experiment\x12q\n\tcreateRun\x12\x11.mlflow.CreateRun\x1a\x1a.mlflow.CreateRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/mlflow/runs/create\x1a\x04\x08\x02\x10\x00\x10\x01*\nCreate Run\x12q\n\tupdateRun\x12\x11.mlflow.UpdateRun\x1a\x1a.mlflow.UpdateRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/mlflow/runs/update\x1a\x04\x08\x02\x10\x00\x10\x01*\nUpdate Run\x12q\n\tdeleteRun\x12\x11.mlflow.DeleteRun\x1a\x1a.mlflow.DeleteRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/mlflow/runs/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\nDelete Run\x12v\n\nrestoreRun\x12\x12.mlflow.RestoreRun\x1a\x1b.mlflow.RestoreRun.Response\"7\xf2\x86\x19\x33\n\"\n\x04POST\x12\x14/mlflow/runs/restore\x1a\x04\x08\x02\x10\x00\x10\x01*\x0bRestore Run\x12u\n\tlogMetric\x12\x11.mlflow.LogMetric\x1a\x1a.mlflow.LogMetric.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/mlflow/runs/log-metric\x1a\x04\x08\x02\x10\x00\x10\x01*\nLog Metric\x12t\n\x08logParam\x12\x10.mlflow.LogParam\x1a\x19.mlflow.LogParam.Response\";\xf2\x86\x19\x37\n(\n\x04POST\x12\x1a/mlflow/runs/log-parameter\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Param\x12\xa1\x01\n\x10setExperimentTag\x12\x18.mlflow.SetExperimentTag\x1a!.mlflow.SetExperimentTag.Response\"P\xf2\x86\x19L\n4\n\x04POST\x12&/mlflow/experiments/set-experiment-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Set Experiment Tag\x12\x66\n\x06setTag\x12\x0e.mlflow.SetTag\x1a\x17.mlflow.SetTag.Response\"3\xf2\x86\x19/\n\"\n\x04POST\x12\x14/mlflow/runs/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x07Set Tag\x12\x88\x01\n\x0bsetTraceTag\x12\x13.mlflow.SetTraceTag\x1a\x1c.mlflow.SetTraceTag.Response\"F\xf2\x86\x19\x42\n/\n\x05PATCH\x12 /mlflow/traces/{request_id}/tags\x1a\x04\x08\x02\x10\x00\x10\x03*\rSet Trace Tag\x12\x95\x01\n\x0e\x64\x65leteTraceTag\x12\x16.mlflow.DeleteTraceTag\x1a\x1f.mlflow.DeleteTraceTag.Response\"J\xf2\x86\x19\x46\n0\n\x06\x44\x45LETE\x12 /mlflow/traces/{request_id}/tags\x1a\x04\x08\x02\x10\x00\x10\x03*\x10\x44\x65lete Trace Tag\x12u\n\tdeleteTag\x12\x11.mlflow.DeleteTag\x1a\x1a.mlflow.DeleteTag.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/mlflow/runs/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\nDelete Tag\x12\x65\n\x06getRun\x12\x0e.mlflow.GetRun\x1a\x17.mlflow.GetRun.Response\"2\xf2\x86\x19*\n\x1d\n\x03GET\x12\x10/mlflow/runs/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x07Get Run\xba\x8c\x19\x00\x12y\n\nsearchRuns\x12\x12.mlflow.SearchRuns\x1a\x1b.mlflow.SearchRuns.Response\":\xf2\x86\x19\x32\n!\n\x04POST\x12\x13/mlflow/runs/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x0bSearch Runs\xba\x8c\x19\x00\x12\x87\x01\n\rlistArtifacts\x12\x15.mlflow.ListArtifacts\x1a\x1e.mlflow.ListArtifacts.Response\"?\xf2\x86\x19\x37\n#\n\x03GET\x12\x16/mlflow/artifacts/list\x1a\x04\x08\x02\x10\x00\x10\x01*\x0eList Artifacts\xba\x8c\x19\x00\x12\x95\x01\n\x10getMetricHistory\x12\x18.mlflow.GetMetricHistory\x1a!.mlflow.GetMetricHistory.Response\"D\xf2\x86\x19@\n(\n\x03GET\x12\x1b/mlflow/metrics/get-history\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Get Metric History\x12\xb7\x01\n\x1cgetMetricHistoryBulkInterval\x12$.mlflow.GetMetricHistoryBulkInterval\x1a-.mlflow.GetMetricHistoryBulkInterval.Response\"B\xf2\x86\x19:\n6\n\x03GET\x12)/mlflow/metrics/get-history-bulk-interval\x1a\x04\x08\x02\x10\x0b\x10\x03\xba\x8c\x19\x00\x12p\n\x08logBatch\x12\x10.mlflow.LogBatch\x1a\x19.mlflow.LogBatch.Response\"7\xf2\x86\x19\x33\n$\n\x04POST\x12\x16/mlflow/runs/log-batch\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Batch\x12p\n\x08logModel\x12\x10.mlflow.LogModel\x1a\x19.mlflow.LogModel.Response\"7\xf2\x86\x19\x33\n$\n\x04POST\x12\x16/mlflow/runs/log-model\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Model\x12u\n\tlogInputs\x12\x11.mlflow.LogInputs\x1a\x1a.mlflow.LogInputs.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/mlflow/runs/log-inputs\x1a\x04\x08\x02\x10\x00\x10\x01*\nLog Inputs\x12\x87\x01\n\x0esearchDatasets\x12\x16.mlflow.SearchDatasets\x1a\x1f.mlflow.SearchDatasets.Response\"<\xf2\x86\x19\x34\n0\n\x04POST\x12\"mlflow/experiments/search-datasets\x1a\x04\x08\x02\x10\x00\x10\x03\xba\x8c\x19\x00\x12p\n\nstartTrace\x12\x12.mlflow.StartTrace\x1a\x1b.mlflow.StartTrace.Response\"1\xf2\x86\x19-\n\x1c\n\x04POST\x12\x0e/mlflow/traces\x1a\x04\x08\x02\x10\x00\x10\x03*\x0bStart Trace\x12v\n\x08\x65ndTrace\x12\x10.mlflow.EndTrace\x1a\x19.mlflow.EndTrace.Response\"=\xf2\x86\x19\x39\n*\n\x05PATCH\x12\x1b/mlflow/traces/{request_id}\x1a\x04\x08\x02\x10\x00\x10\x03*\tEnd Trace\x12\x89\x01\n\x0cgetTraceInfo\x12\x14.mlflow.GetTraceInfo\x1a\x1d.mlflow.GetTraceInfo.Response\"D\xf2\x86\x19@\n-\n\x03GET\x12 /mlflow/traces/{request_id}/info\x1a\x04\x08\x02\x10\x00\x10\x03*\rGet TraceInfo\x12w\n\x0csearchTraces\x12\x14.mlflow.SearchTraces\x1a\x1d.mlflow.SearchTraces.Response\"2\xf2\x86\x19.\n\x1b\n\x03GET\x12\x0e/mlflow/traces\x1a\x04\x08\x02\x10\x00\x10\x03*\rSearch Traces\x12\x86\x01\n\x0c\x64\x65leteTraces\x12\x14.mlflow.DeleteTraces\x1a\x1d.mlflow.DeleteTraces.Response\"A\xf2\x86\x19=\n*\n\x04POST\x12\x1c/mlflow/traces/delete-traces\x1a\x04\x08\x02\x10\x00\x10\x03*\rDelete TracesB\x1e\n\x14org.mlflow.api.proto\x90\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rservice.proto\x12\x06qcflow\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"H\n\x06Metric\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0f\n\x04step\x18\x04 \x01(\x03:\x01\x30\"#\n\x05Param\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"f\n\x03Run\x12\x1d\n\x04info\x18\x01 \x01(\x0b\x32\x0f.qcflow.RunInfo\x12\x1d\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x0f.qcflow.RunData\x12!\n\x06inputs\x18\x03 \x01(\x0b\x32\x11.qcflow.RunInputs\"g\n\x07RunData\x12\x1f\n\x07metrics\x18\x01 \x03(\x0b\x32\x0e.qcflow.Metric\x12\x1d\n\x06params\x18\x02 \x03(\x0b\x32\r.qcflow.Param\x12\x1c\n\x04tags\x18\x03 \x03(\x0b\x32\x0e.qcflow.RunTag\"9\n\tRunInputs\x12,\n\x0e\x64\x61taset_inputs\x18\x01 \x03(\x0b\x32\x14.qcflow.DatasetInput\"$\n\x06RunTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"+\n\rExperimentTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xdd\x01\n\x07RunInfo\x12\x0e\n\x06run_id\x18\x0f \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x10\n\x08run_name\x18\x03 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x06 \x01(\t\x12!\n\x06status\x18\x07 \x01(\x0e\x32\x11.qcflow.RunStatus\x12\x12\n\nstart_time\x18\x08 \x01(\x03\x12\x10\n\x08\x65nd_time\x18\t \x01(\x03\x12\x14\n\x0c\x61rtifact_uri\x18\r \x01(\t\x12\x17\n\x0flifecycle_stage\x18\x0e \x01(\t\"\xbb\x01\n\nExperiment\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x61rtifact_location\x18\x03 \x01(\t\x12\x17\n\x0flifecycle_stage\x18\x04 \x01(\t\x12\x18\n\x10last_update_time\x18\x05 \x01(\x03\x12\x15\n\rcreation_time\x18\x06 \x01(\x03\x12#\n\x04tags\x18\x07 \x03(\x0b\x32\x15.qcflow.ExperimentTag\"V\n\x0c\x44\x61tasetInput\x12\x1e\n\x04tags\x18\x01 \x03(\x0b\x32\x10.qcflow.InputTag\x12&\n\x07\x64\x61taset\x18\x02 \x01(\x0b\x32\x0f.qcflow.DatasetB\x04\xf8\x86\x19\x01\"2\n\x08InputTag\x12\x11\n\x03key\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\"\x85\x01\n\x07\x44\x61taset\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06\x64igest\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x19\n\x0bsource_type\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06source\x18\x04 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06schema\x18\x05 \x01(\t\x12\x0f\n\x07profile\x18\x06 \x01(\t\"\xb6\x01\n\x10\x43reateExperiment\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x19\n\x11\x61rtifact_location\x18\x02 \x01(\t\x12#\n\x04tags\x18\x03 \x03(\x0b\x32\x15.qcflow.ExperimentTag\x1a!\n\x08Response\x12\x15\n\rexperiment_id\x18\x01 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xfe\x01\n\x11SearchExperiments\x12\x13\n\x0bmax_results\x18\x01 \x01(\x03\x12\x12\n\npage_token\x18\x02 \x01(\t\x12\x0e\n\x06\x66ilter\x18\x03 \x01(\t\x12\x10\n\x08order_by\x18\x04 \x03(\t\x12#\n\tview_type\x18\x05 \x01(\x0e\x32\x10.qcflow.ViewType\x1aL\n\x08Response\x12\'\n\x0b\x65xperiments\x18\x01 \x03(\x0b\x32\x12.qcflow.Experiment\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8d\x01\n\rGetExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x32\n\x08Response\x12&\n\nexperiment\x18\x01 \x01(\x0b\x32\x12.qcflow.Experiment:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"h\n\x10\x44\x65leteExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"i\n\x11RestoreExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"z\n\x10UpdateExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x10\n\x08new_name\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xca\x01\n\tCreateRun\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x10\n\x08run_name\x18\x03 \x01(\t\x12\x12\n\nstart_time\x18\x07 \x01(\x03\x12\x1c\n\x04tags\x18\t \x03(\x0b\x32\x0e.qcflow.RunTag\x1a$\n\x08Response\x12\x18\n\x03run\x18\x01 \x01(\x0b\x32\x0b.qcflow.Run:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xd0\x01\n\tUpdateRun\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12!\n\x06status\x18\x02 \x01(\x0e\x32\x11.qcflow.RunStatus\x12\x10\n\x08\x65nd_time\x18\x03 \x01(\x03\x12\x10\n\x08run_name\x18\x05 \x01(\t\x1a-\n\x08Response\x12!\n\x08run_info\x18\x01 \x01(\x0b\x32\x0f.qcflow.RunInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"Z\n\tDeleteRun\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"[\n\nRestoreRun\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xb8\x01\n\tLogMetric\x12\x0e\n\x06run_id\x18\x06 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\x01\x42\x04\xf8\x86\x19\x01\x12\x17\n\ttimestamp\x18\x04 \x01(\x03\x42\x04\xf8\x86\x19\x01\x12\x0f\n\x04step\x18\x05 \x01(\x03:\x01\x30\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8d\x01\n\x08LogParam\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x90\x01\n\x10SetExperimentTag\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8b\x01\n\x06SetTag\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"m\n\tDeleteTag\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"}\n\x06GetRun\x12\x0e\n\x06run_id\x18\x02 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x1a$\n\x08Response\x12\x18\n\x03run\x18\x01 \x01(\x0b\x32\x0b.qcflow.Run:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x98\x02\n\nSearchRuns\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x66ilter\x18\x04 \x01(\t\x12\x34\n\rrun_view_type\x18\x03 \x01(\x0e\x32\x10.qcflow.ViewType:\x0b\x41\x43TIVE_ONLY\x12\x19\n\x0bmax_results\x18\x05 \x01(\x05:\x04\x31\x30\x30\x30\x12\x10\n\x08order_by\x18\x06 \x03(\t\x12\x12\n\npage_token\x18\x07 \x01(\t\x1a>\n\x08Response\x12\x19\n\x04runs\x18\x01 \x03(\x0b\x32\x0b.qcflow.Run\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xd8\x01\n\rListArtifacts\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aV\n\x08Response\x12\x10\n\x08root_uri\x18\x01 \x01(\t\x12\x1f\n\x05\x66iles\x18\x02 \x03(\x0b\x32\x10.qcflow.FileInfo\x12\x17\n\x0fnext_page_token\x18\x03 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\";\n\x08\x46ileInfo\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0e\n\x06is_dir\x18\x02 \x01(\x08\x12\x11\n\tfile_size\x18\x03 \x01(\x03\"\xea\x01\n\x10GetMetricHistory\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x18\n\nmetric_key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\npage_token\x18\x04 \x01(\t\x12\x13\n\x0bmax_results\x18\x05 \x01(\x05\x1a\x44\n\x08Response\x12\x1f\n\x07metrics\x18\x01 \x03(\x0b\x32\x0e.qcflow.Metric\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"a\n\x0fMetricWithRunId\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0f\n\x04step\x18\x04 \x01(\x03:\x01\x30\x12\x0e\n\x06run_id\x18\x05 \x01(\t\"\xe7\x01\n\x1cGetMetricHistoryBulkInterval\x12\x0f\n\x07run_ids\x18\x01 \x03(\t\x12\x18\n\nmetric_key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\nstart_step\x18\x03 \x01(\x05\x12\x10\n\x08\x65nd_step\x18\x04 \x01(\x05\x12\x13\n\x0bmax_results\x18\x05 \x01(\x05\x1a\x34\n\x08Response\x12(\n\x07metrics\x18\x01 \x03(\x0b\x32\x17.qcflow.MetricWithRunId:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xb1\x01\n\x08LogBatch\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x1f\n\x07metrics\x18\x02 \x03(\x0b\x32\x0e.qcflow.Metric\x12\x1d\n\x06params\x18\x03 \x03(\x0b\x32\r.qcflow.Param\x12\x1c\n\x04tags\x18\x04 \x03(\x0b\x32\x0e.qcflow.RunTag\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"g\n\x08LogModel\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x12\n\nmodel_json\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x01\n\tLogInputs\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12&\n\x08\x64\x61tasets\x18\x02 \x03(\x0b\x32\x14.qcflow.DatasetInput\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x95\x01\n\x13GetExperimentByName\x12\x1d\n\x0f\x65xperiment_name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x32\n\x08Response\x12&\n\nexperiment\x18\x01 \x01(\x0b\x32\x12.qcflow.Experiment:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xe4\x01\n\tTraceInfo\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x03 \x01(\x03\x12\x19\n\x11\x65xecution_time_ms\x18\x04 \x01(\x03\x12#\n\x06status\x18\x05 \x01(\x0e\x32\x13.qcflow.TraceStatus\x12\x36\n\x10request_metadata\x18\x06 \x03(\x0b\x32\x1c.qcflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x07 \x03(\x0b\x32\x10.qcflow.TraceTag\"2\n\x14TraceRequestMetadata\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"&\n\x08TraceTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xf1\x01\n\nStartTrace\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x03\x12\x36\n\x10request_metadata\x18\x03 \x03(\x0b\x32\x1c.qcflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x04 \x03(\x0b\x32\x10.qcflow.TraceTag\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.qcflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x91\x02\n\x08\x45ndTrace\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x03\x12#\n\x06status\x18\x03 \x01(\x0e\x32\x13.qcflow.TraceStatus\x12\x36\n\x10request_metadata\x18\x04 \x03(\x0b\x32\x1c.qcflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x05 \x03(\x0b\x32\x10.qcflow.TraceTag\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.qcflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x01\n\x0cGetTraceInfo\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.qcflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xeb\x01\n\x0cSearchTraces\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x66ilter\x18\x02 \x01(\t\x12\x18\n\x0bmax_results\x18\x03 \x01(\x05:\x03\x31\x30\x30\x12\x10\n\x08order_by\x18\x04 \x03(\t\x12\x12\n\npage_token\x18\x05 \x01(\t\x1a\x46\n\x08Response\x12!\n\x06traces\x18\x01 \x03(\x0b\x32\x11.qcflow.TraceInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xc3\x01\n\x0c\x44\x65leteTraces\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x1c\n\x14max_timestamp_millis\x18\x02 \x01(\x03\x12\x12\n\nmax_traces\x18\x03 \x01(\x05\x12\x13\n\x0brequest_ids\x18\x04 \x03(\t\x1a\"\n\x08Response\x12\x16\n\x0etraces_deleted\x18\x01 \x01(\x05:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"v\n\x0bSetTraceTag\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"j\n\x0e\x44\x65leteTraceTag\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"h\n\x0e\x44\x61tasetSummary\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\x04name\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06\x64igest\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0f\n\x07\x63ontext\x18\x04 \x01(\t\"\x94\x01\n\x0eSearchDatasets\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x1a=\n\x08Response\x12\x31\n\x11\x64\x61taset_summaries\x18\x01 \x03(\x0b\x32\x16.qcflow.DatasetSummary:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]*6\n\x08ViewType\x12\x0f\n\x0b\x41\x43TIVE_ONLY\x10\x01\x12\x10\n\x0c\x44\x45LETED_ONLY\x10\x02\x12\x07\n\x03\x41LL\x10\x03*I\n\nSourceType\x12\x0c\n\x08NOTEBOOK\x10\x01\x12\x07\n\x03JOB\x10\x02\x12\x0b\n\x07PROJECT\x10\x03\x12\t\n\x05LOCAL\x10\x04\x12\x0c\n\x07UNKNOWN\x10\xe8\x07*M\n\tRunStatus\x12\x0b\n\x07RUNNING\x10\x01\x12\r\n\tSCHEDULED\x10\x02\x12\x0c\n\x08\x46INISHED\x10\x03\x12\n\n\x06\x46\x41ILED\x10\x04\x12\n\n\x06KILLED\x10\x05*O\n\x0bTraceStatus\x12\x1c\n\x18TRACE_STATUS_UNSPECIFIED\x10\x00\x12\x06\n\x02OK\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x0f\n\x0bIN_PROGRESS\x10\x03\x32\xe7!\n\rMlflowService\x12\xa6\x01\n\x13getExperimentByName\x12\x1b.qcflow.GetExperimentByName\x1a$.qcflow.GetExperimentByName.Response\"L\xf2\x86\x19H\n,\n\x03GET\x12\x1f/qcflow/experiments/get-by-name\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Get Experiment By Name\x12\x94\x01\n\x10\x63reateExperiment\x12\x18.qcflow.CreateExperiment\x1a!.qcflow.CreateExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/qcflow/experiments/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x11\x43reate Experiment\x12\xc1\x01\n\x11searchExperiments\x12\x19.qcflow.SearchExperiments\x1a\".qcflow.SearchExperiments.Response\"m\xf2\x86\x19i\n(\n\x04POST\x12\x1a/qcflow/experiments/search\x1a\x04\x08\x02\x10\x00\n\'\n\x03GET\x12\x1a/qcflow/experiments/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Search Experiments\x12\x88\x01\n\rgetExperiment\x12\x15.qcflow.GetExperiment\x1a\x1e.qcflow.GetExperiment.Response\"@\xf2\x86\x19\x38\n$\n\x03GET\x12\x17/qcflow/experiments/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x0eGet Experiment\xba\x8c\x19\x00\x12\x94\x01\n\x10\x64\x65leteExperiment\x12\x18.qcflow.DeleteExperiment\x1a!.qcflow.DeleteExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/qcflow/experiments/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x11\x44\x65lete Experiment\x12\x99\x01\n\x11restoreExperiment\x12\x19.qcflow.RestoreExperiment\x1a\".qcflow.RestoreExperiment.Response\"E\xf2\x86\x19\x41\n)\n\x04POST\x12\x1b/qcflow/experiments/restore\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Restore Experiment\x12\x94\x01\n\x10updateExperiment\x12\x18.qcflow.UpdateExperiment\x1a!.qcflow.UpdateExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/qcflow/experiments/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x11Update Experiment\x12q\n\tcreateRun\x12\x11.qcflow.CreateRun\x1a\x1a.qcflow.CreateRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/qcflow/runs/create\x1a\x04\x08\x02\x10\x00\x10\x01*\nCreate Run\x12q\n\tupdateRun\x12\x11.qcflow.UpdateRun\x1a\x1a.qcflow.UpdateRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/qcflow/runs/update\x1a\x04\x08\x02\x10\x00\x10\x01*\nUpdate Run\x12q\n\tdeleteRun\x12\x11.qcflow.DeleteRun\x1a\x1a.qcflow.DeleteRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/qcflow/runs/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\nDelete Run\x12v\n\nrestoreRun\x12\x12.qcflow.RestoreRun\x1a\x1b.qcflow.RestoreRun.Response\"7\xf2\x86\x19\x33\n\"\n\x04POST\x12\x14/qcflow/runs/restore\x1a\x04\x08\x02\x10\x00\x10\x01*\x0bRestore Run\x12u\n\tlogMetric\x12\x11.qcflow.LogMetric\x1a\x1a.qcflow.LogMetric.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/qcflow/runs/log-metric\x1a\x04\x08\x02\x10\x00\x10\x01*\nLog Metric\x12t\n\x08logParam\x12\x10.qcflow.LogParam\x1a\x19.qcflow.LogParam.Response\";\xf2\x86\x19\x37\n(\n\x04POST\x12\x1a/qcflow/runs/log-parameter\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Param\x12\xa1\x01\n\x10setExperimentTag\x12\x18.qcflow.SetExperimentTag\x1a!.qcflow.SetExperimentTag.Response\"P\xf2\x86\x19L\n4\n\x04POST\x12&/qcflow/experiments/set-experiment-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Set Experiment Tag\x12\x66\n\x06setTag\x12\x0e.qcflow.SetTag\x1a\x17.qcflow.SetTag.Response\"3\xf2\x86\x19/\n\"\n\x04POST\x12\x14/qcflow/runs/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x07Set Tag\x12\x88\x01\n\x0bsetTraceTag\x12\x13.qcflow.SetTraceTag\x1a\x1c.qcflow.SetTraceTag.Response\"F\xf2\x86\x19\x42\n/\n\x05PATCH\x12 /qcflow/traces/{request_id}/tags\x1a\x04\x08\x02\x10\x00\x10\x03*\rSet Trace Tag\x12\x95\x01\n\x0e\x64\x65leteTraceTag\x12\x16.qcflow.DeleteTraceTag\x1a\x1f.qcflow.DeleteTraceTag.Response\"J\xf2\x86\x19\x46\n0\n\x06\x44\x45LETE\x12 /qcflow/traces/{request_id}/tags\x1a\x04\x08\x02\x10\x00\x10\x03*\x10\x44\x65lete Trace Tag\x12u\n\tdeleteTag\x12\x11.qcflow.DeleteTag\x1a\x1a.qcflow.DeleteTag.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/qcflow/runs/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\nDelete Tag\x12\x65\n\x06getRun\x12\x0e.qcflow.GetRun\x1a\x17.qcflow.GetRun.Response\"2\xf2\x86\x19*\n\x1d\n\x03GET\x12\x10/qcflow/runs/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x07Get Run\xba\x8c\x19\x00\x12y\n\nsearchRuns\x12\x12.qcflow.SearchRuns\x1a\x1b.qcflow.SearchRuns.Response\":\xf2\x86\x19\x32\n!\n\x04POST\x12\x13/qcflow/runs/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x0bSearch Runs\xba\x8c\x19\x00\x12\x87\x01\n\rlistArtifacts\x12\x15.qcflow.ListArtifacts\x1a\x1e.qcflow.ListArtifacts.Response\"?\xf2\x86\x19\x37\n#\n\x03GET\x12\x16/qcflow/artifacts/list\x1a\x04\x08\x02\x10\x00\x10\x01*\x0eList Artifacts\xba\x8c\x19\x00\x12\x95\x01\n\x10getMetricHistory\x12\x18.qcflow.GetMetricHistory\x1a!.qcflow.GetMetricHistory.Response\"D\xf2\x86\x19@\n(\n\x03GET\x12\x1b/qcflow/metrics/get-history\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Get Metric History\x12\xb7\x01\n\x1cgetMetricHistoryBulkInterval\x12$.qcflow.GetMetricHistoryBulkInterval\x1a-.qcflow.GetMetricHistoryBulkInterval.Response\"B\xf2\x86\x19:\n6\n\x03GET\x12)/qcflow/metrics/get-history-bulk-interval\x1a\x04\x08\x02\x10\x0b\x10\x03\xba\x8c\x19\x00\x12p\n\x08logBatch\x12\x10.qcflow.LogBatch\x1a\x19.qcflow.LogBatch.Response\"7\xf2\x86\x19\x33\n$\n\x04POST\x12\x16/qcflow/runs/log-batch\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Batch\x12p\n\x08logModel\x12\x10.qcflow.LogModel\x1a\x19.qcflow.LogModel.Response\"7\xf2\x86\x19\x33\n$\n\x04POST\x12\x16/qcflow/runs/log-model\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Model\x12u\n\tlogInputs\x12\x11.qcflow.LogInputs\x1a\x1a.qcflow.LogInputs.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/qcflow/runs/log-inputs\x1a\x04\x08\x02\x10\x00\x10\x01*\nLog Inputs\x12\x87\x01\n\x0esearchDatasets\x12\x16.qcflow.SearchDatasets\x1a\x1f.qcflow.SearchDatasets.Response\"<\xf2\x86\x19\x34\n0\n\x04POST\x12\"qcflow/experiments/search-datasets\x1a\x04\x08\x02\x10\x00\x10\x03\xba\x8c\x19\x00\x12p\n\nstartTrace\x12\x12.qcflow.StartTrace\x1a\x1b.qcflow.StartTrace.Response\"1\xf2\x86\x19-\n\x1c\n\x04POST\x12\x0e/qcflow/traces\x1a\x04\x08\x02\x10\x00\x10\x03*\x0bStart Trace\x12v\n\x08\x65ndTrace\x12\x10.qcflow.EndTrace\x1a\x19.qcflow.EndTrace.Response\"=\xf2\x86\x19\x39\n*\n\x05PATCH\x12\x1b/qcflow/traces/{request_id}\x1a\x04\x08\x02\x10\x00\x10\x03*\tEnd Trace\x12\x89\x01\n\x0cgetTraceInfo\x12\x14.qcflow.GetTraceInfo\x1a\x1d.qcflow.GetTraceInfo.Response\"D\xf2\x86\x19@\n-\n\x03GET\x12 /qcflow/traces/{request_id}/info\x1a\x04\x08\x02\x10\x00\x10\x03*\rGet TraceInfo\x12w\n\x0csearchTraces\x12\x14.qcflow.SearchTraces\x1a\x1d.qcflow.SearchTraces.Response\"2\xf2\x86\x19.\n\x1b\n\x03GET\x12\x0e/qcflow/traces\x1a\x04\x08\x02\x10\x00\x10\x03*\rSearch Traces\x12\x86\x01\n\x0c\x64\x65leteTraces\x12\x14.qcflow.DeleteTraces\x1a\x1d.qcflow.DeleteTraces.Response\"A\xf2\x86\x19=\n*\n\x04POST\x12\x1c/qcflow/traces/delete-traces\x1a\x04\x08\x02\x10\x00\x10\x03*\rDelete TracesB\x1e\n\x14org.qcflow.api.proto\x90\x01\x01\xe2?\x02\x10\x01')
 
   _globals = globals()
   _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
   _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'service_pb2', _globals)
   if not _descriptor._USE_C_DESCRIPTORS:
     _globals['DESCRIPTOR']._loaded_options = None
-    _globals['DESCRIPTOR']._serialized_options = b'\n\024org.mlflow.api.proto\220\001\001\342?\002\020\001'
+    _globals['DESCRIPTOR']._serialized_options = b'\n\024org.qcflow.api.proto\220\001\001\342?\002\020\001'
     _globals['_DATASETINPUT'].fields_by_name['dataset']._loaded_options = None
     _globals['_DATASETINPUT'].fields_by_name['dataset']._serialized_options = b'\370\206\031\001'
     _globals['_INPUTTAG'].fields_by_name['key']._loaded_options = None
@@ -160,70 +160,70 @@ if Version(google.protobuf.__version__).major >= 5:
     _globals['_DATASETSUMMARY'].fields_by_name['digest']._serialized_options = b'\370\206\031\001'
     _globals['_SEARCHDATASETS']._loaded_options = None
     _globals['_SEARCHDATASETS']._serialized_options = b'\342?(\n&com.databricks.rpc.RPC[$this.Response]'
-    _globals['_MLFLOWSERVICE'].methods_by_name['getExperimentByName']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['getExperimentByName']._serialized_options = b'\362\206\031H\n,\n\003GET\022\037/mlflow/experiments/get-by-name\032\004\010\002\020\000\020\001*\026Get Experiment By Name'
-    _globals['_MLFLOWSERVICE'].methods_by_name['createExperiment']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['createExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/mlflow/experiments/create\032\004\010\002\020\000\020\001*\021Create Experiment'
-    _globals['_MLFLOWSERVICE'].methods_by_name['searchExperiments']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['searchExperiments']._serialized_options = b'\362\206\031i\n(\n\004POST\022\032/mlflow/experiments/search\032\004\010\002\020\000\n\'\n\003GET\022\032/mlflow/experiments/search\032\004\010\002\020\000\020\001*\022Search Experiments'
-    _globals['_MLFLOWSERVICE'].methods_by_name['getExperiment']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['getExperiment']._serialized_options = b'\362\206\0318\n$\n\003GET\022\027/mlflow/experiments/get\032\004\010\002\020\000\020\001*\016Get Experiment\272\214\031\000'
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteExperiment']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/mlflow/experiments/delete\032\004\010\002\020\000\020\001*\021Delete Experiment'
-    _globals['_MLFLOWSERVICE'].methods_by_name['restoreExperiment']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['restoreExperiment']._serialized_options = b'\362\206\031A\n)\n\004POST\022\033/mlflow/experiments/restore\032\004\010\002\020\000\020\001*\022Restore Experiment'
-    _globals['_MLFLOWSERVICE'].methods_by_name['updateExperiment']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['updateExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/mlflow/experiments/update\032\004\010\002\020\000\020\001*\021Update Experiment'
-    _globals['_MLFLOWSERVICE'].methods_by_name['createRun']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['createRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/mlflow/runs/create\032\004\010\002\020\000\020\001*\nCreate Run'
-    _globals['_MLFLOWSERVICE'].methods_by_name['updateRun']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['updateRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/mlflow/runs/update\032\004\010\002\020\000\020\001*\nUpdate Run'
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteRun']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/mlflow/runs/delete\032\004\010\002\020\000\020\001*\nDelete Run'
-    _globals['_MLFLOWSERVICE'].methods_by_name['restoreRun']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['restoreRun']._serialized_options = b'\362\206\0313\n\"\n\004POST\022\024/mlflow/runs/restore\032\004\010\002\020\000\020\001*\013Restore Run'
-    _globals['_MLFLOWSERVICE'].methods_by_name['logMetric']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['logMetric']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/mlflow/runs/log-metric\032\004\010\002\020\000\020\001*\nLog Metric'
-    _globals['_MLFLOWSERVICE'].methods_by_name['logParam']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['logParam']._serialized_options = b'\362\206\0317\n(\n\004POST\022\032/mlflow/runs/log-parameter\032\004\010\002\020\000\020\001*\tLog Param'
-    _globals['_MLFLOWSERVICE'].methods_by_name['setExperimentTag']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['setExperimentTag']._serialized_options = b'\362\206\031L\n4\n\004POST\022&/mlflow/experiments/set-experiment-tag\032\004\010\002\020\000\020\001*\022Set Experiment Tag'
-    _globals['_MLFLOWSERVICE'].methods_by_name['setTag']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['setTag']._serialized_options = b'\362\206\031/\n\"\n\004POST\022\024/mlflow/runs/set-tag\032\004\010\002\020\000\020\001*\007Set Tag'
-    _globals['_MLFLOWSERVICE'].methods_by_name['setTraceTag']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['setTraceTag']._serialized_options = b'\362\206\031B\n/\n\005PATCH\022 /mlflow/traces/{request_id}/tags\032\004\010\002\020\000\020\003*\rSet Trace Tag'
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteTraceTag']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteTraceTag']._serialized_options = b'\362\206\031F\n0\n\006DELETE\022 /mlflow/traces/{request_id}/tags\032\004\010\002\020\000\020\003*\020Delete Trace Tag'
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteTag']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteTag']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/mlflow/runs/delete-tag\032\004\010\002\020\000\020\001*\nDelete Tag'
-    _globals['_MLFLOWSERVICE'].methods_by_name['getRun']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['getRun']._serialized_options = b'\362\206\031*\n\035\n\003GET\022\020/mlflow/runs/get\032\004\010\002\020\000\020\001*\007Get Run\272\214\031\000'
-    _globals['_MLFLOWSERVICE'].methods_by_name['searchRuns']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['searchRuns']._serialized_options = b'\362\206\0312\n!\n\004POST\022\023/mlflow/runs/search\032\004\010\002\020\000\020\001*\013Search Runs\272\214\031\000'
-    _globals['_MLFLOWSERVICE'].methods_by_name['listArtifacts']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['listArtifacts']._serialized_options = b'\362\206\0317\n#\n\003GET\022\026/mlflow/artifacts/list\032\004\010\002\020\000\020\001*\016List Artifacts\272\214\031\000'
-    _globals['_MLFLOWSERVICE'].methods_by_name['getMetricHistory']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['getMetricHistory']._serialized_options = b'\362\206\031@\n(\n\003GET\022\033/mlflow/metrics/get-history\032\004\010\002\020\000\020\001*\022Get Metric History'
-    _globals['_MLFLOWSERVICE'].methods_by_name['getMetricHistoryBulkInterval']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['getMetricHistoryBulkInterval']._serialized_options = b'\362\206\031:\n6\n\003GET\022)/mlflow/metrics/get-history-bulk-interval\032\004\010\002\020\013\020\003\272\214\031\000'
-    _globals['_MLFLOWSERVICE'].methods_by_name['logBatch']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['logBatch']._serialized_options = b'\362\206\0313\n$\n\004POST\022\026/mlflow/runs/log-batch\032\004\010\002\020\000\020\001*\tLog Batch'
-    _globals['_MLFLOWSERVICE'].methods_by_name['logModel']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['logModel']._serialized_options = b'\362\206\0313\n$\n\004POST\022\026/mlflow/runs/log-model\032\004\010\002\020\000\020\001*\tLog Model'
-    _globals['_MLFLOWSERVICE'].methods_by_name['logInputs']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['logInputs']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/mlflow/runs/log-inputs\032\004\010\002\020\000\020\001*\nLog Inputs'
-    _globals['_MLFLOWSERVICE'].methods_by_name['searchDatasets']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['searchDatasets']._serialized_options = b'\362\206\0314\n0\n\004POST\022\"mlflow/experiments/search-datasets\032\004\010\002\020\000\020\003\272\214\031\000'
-    _globals['_MLFLOWSERVICE'].methods_by_name['startTrace']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['startTrace']._serialized_options = b'\362\206\031-\n\034\n\004POST\022\016/mlflow/traces\032\004\010\002\020\000\020\003*\013Start Trace'
-    _globals['_MLFLOWSERVICE'].methods_by_name['endTrace']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['endTrace']._serialized_options = b'\362\206\0319\n*\n\005PATCH\022\033/mlflow/traces/{request_id}\032\004\010\002\020\000\020\003*\tEnd Trace'
-    _globals['_MLFLOWSERVICE'].methods_by_name['getTraceInfo']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['getTraceInfo']._serialized_options = b'\362\206\031@\n-\n\003GET\022 /mlflow/traces/{request_id}/info\032\004\010\002\020\000\020\003*\rGet TraceInfo'
-    _globals['_MLFLOWSERVICE'].methods_by_name['searchTraces']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['searchTraces']._serialized_options = b'\362\206\031.\n\033\n\003GET\022\016/mlflow/traces\032\004\010\002\020\000\020\003*\rSearch Traces'
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteTraces']._loaded_options = None
-    _globals['_MLFLOWSERVICE'].methods_by_name['deleteTraces']._serialized_options = b'\362\206\031=\n*\n\004POST\022\034/mlflow/traces/delete-traces\032\004\010\002\020\000\020\003*\rDelete Traces'
+    _globals['_QCFLOWSERVICE'].methods_by_name['getExperimentByName']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['getExperimentByName']._serialized_options = b'\362\206\031H\n,\n\003GET\022\037/qcflow/experiments/get-by-name\032\004\010\002\020\000\020\001*\026Get Experiment By Name'
+    _globals['_QCFLOWSERVICE'].methods_by_name['createExperiment']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['createExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/qcflow/experiments/create\032\004\010\002\020\000\020\001*\021Create Experiment'
+    _globals['_QCFLOWSERVICE'].methods_by_name['searchExperiments']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['searchExperiments']._serialized_options = b'\362\206\031i\n(\n\004POST\022\032/qcflow/experiments/search\032\004\010\002\020\000\n\'\n\003GET\022\032/qcflow/experiments/search\032\004\010\002\020\000\020\001*\022Search Experiments'
+    _globals['_QCFLOWSERVICE'].methods_by_name['getExperiment']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['getExperiment']._serialized_options = b'\362\206\0318\n$\n\003GET\022\027/qcflow/experiments/get\032\004\010\002\020\000\020\001*\016Get Experiment\272\214\031\000'
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteExperiment']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/qcflow/experiments/delete\032\004\010\002\020\000\020\001*\021Delete Experiment'
+    _globals['_QCFLOWSERVICE'].methods_by_name['restoreExperiment']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['restoreExperiment']._serialized_options = b'\362\206\031A\n)\n\004POST\022\033/qcflow/experiments/restore\032\004\010\002\020\000\020\001*\022Restore Experiment'
+    _globals['_QCFLOWSERVICE'].methods_by_name['updateExperiment']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['updateExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/qcflow/experiments/update\032\004\010\002\020\000\020\001*\021Update Experiment'
+    _globals['_QCFLOWSERVICE'].methods_by_name['createRun']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['createRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/qcflow/runs/create\032\004\010\002\020\000\020\001*\nCreate Run'
+    _globals['_QCFLOWSERVICE'].methods_by_name['updateRun']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['updateRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/qcflow/runs/update\032\004\010\002\020\000\020\001*\nUpdate Run'
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteRun']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/qcflow/runs/delete\032\004\010\002\020\000\020\001*\nDelete Run'
+    _globals['_QCFLOWSERVICE'].methods_by_name['restoreRun']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['restoreRun']._serialized_options = b'\362\206\0313\n\"\n\004POST\022\024/qcflow/runs/restore\032\004\010\002\020\000\020\001*\013Restore Run'
+    _globals['_QCFLOWSERVICE'].methods_by_name['logMetric']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['logMetric']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/qcflow/runs/log-metric\032\004\010\002\020\000\020\001*\nLog Metric'
+    _globals['_QCFLOWSERVICE'].methods_by_name['logParam']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['logParam']._serialized_options = b'\362\206\0317\n(\n\004POST\022\032/qcflow/runs/log-parameter\032\004\010\002\020\000\020\001*\tLog Param'
+    _globals['_QCFLOWSERVICE'].methods_by_name['setExperimentTag']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['setExperimentTag']._serialized_options = b'\362\206\031L\n4\n\004POST\022&/qcflow/experiments/set-experiment-tag\032\004\010\002\020\000\020\001*\022Set Experiment Tag'
+    _globals['_QCFLOWSERVICE'].methods_by_name['setTag']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['setTag']._serialized_options = b'\362\206\031/\n\"\n\004POST\022\024/qcflow/runs/set-tag\032\004\010\002\020\000\020\001*\007Set Tag'
+    _globals['_QCFLOWSERVICE'].methods_by_name['setTraceTag']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['setTraceTag']._serialized_options = b'\362\206\031B\n/\n\005PATCH\022 /qcflow/traces/{request_id}/tags\032\004\010\002\020\000\020\003*\rSet Trace Tag'
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteTraceTag']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteTraceTag']._serialized_options = b'\362\206\031F\n0\n\006DELETE\022 /qcflow/traces/{request_id}/tags\032\004\010\002\020\000\020\003*\020Delete Trace Tag'
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteTag']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteTag']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/qcflow/runs/delete-tag\032\004\010\002\020\000\020\001*\nDelete Tag'
+    _globals['_QCFLOWSERVICE'].methods_by_name['getRun']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['getRun']._serialized_options = b'\362\206\031*\n\035\n\003GET\022\020/qcflow/runs/get\032\004\010\002\020\000\020\001*\007Get Run\272\214\031\000'
+    _globals['_QCFLOWSERVICE'].methods_by_name['searchRuns']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['searchRuns']._serialized_options = b'\362\206\0312\n!\n\004POST\022\023/qcflow/runs/search\032\004\010\002\020\000\020\001*\013Search Runs\272\214\031\000'
+    _globals['_QCFLOWSERVICE'].methods_by_name['listArtifacts']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['listArtifacts']._serialized_options = b'\362\206\0317\n#\n\003GET\022\026/qcflow/artifacts/list\032\004\010\002\020\000\020\001*\016List Artifacts\272\214\031\000'
+    _globals['_QCFLOWSERVICE'].methods_by_name['getMetricHistory']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['getMetricHistory']._serialized_options = b'\362\206\031@\n(\n\003GET\022\033/qcflow/metrics/get-history\032\004\010\002\020\000\020\001*\022Get Metric History'
+    _globals['_QCFLOWSERVICE'].methods_by_name['getMetricHistoryBulkInterval']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['getMetricHistoryBulkInterval']._serialized_options = b'\362\206\031:\n6\n\003GET\022)/qcflow/metrics/get-history-bulk-interval\032\004\010\002\020\013\020\003\272\214\031\000'
+    _globals['_QCFLOWSERVICE'].methods_by_name['logBatch']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['logBatch']._serialized_options = b'\362\206\0313\n$\n\004POST\022\026/qcflow/runs/log-batch\032\004\010\002\020\000\020\001*\tLog Batch'
+    _globals['_QCFLOWSERVICE'].methods_by_name['logModel']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['logModel']._serialized_options = b'\362\206\0313\n$\n\004POST\022\026/qcflow/runs/log-model\032\004\010\002\020\000\020\001*\tLog Model'
+    _globals['_QCFLOWSERVICE'].methods_by_name['logInputs']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['logInputs']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/qcflow/runs/log-inputs\032\004\010\002\020\000\020\001*\nLog Inputs'
+    _globals['_QCFLOWSERVICE'].methods_by_name['searchDatasets']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['searchDatasets']._serialized_options = b'\362\206\0314\n0\n\004POST\022\"qcflow/experiments/search-datasets\032\004\010\002\020\000\020\003\272\214\031\000'
+    _globals['_QCFLOWSERVICE'].methods_by_name['startTrace']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['startTrace']._serialized_options = b'\362\206\031-\n\034\n\004POST\022\016/qcflow/traces\032\004\010\002\020\000\020\003*\013Start Trace'
+    _globals['_QCFLOWSERVICE'].methods_by_name['endTrace']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['endTrace']._serialized_options = b'\362\206\0319\n*\n\005PATCH\022\033/qcflow/traces/{request_id}\032\004\010\002\020\000\020\003*\tEnd Trace'
+    _globals['_QCFLOWSERVICE'].methods_by_name['getTraceInfo']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['getTraceInfo']._serialized_options = b'\362\206\031@\n-\n\003GET\022 /qcflow/traces/{request_id}/info\032\004\010\002\020\000\020\003*\rGet TraceInfo'
+    _globals['_QCFLOWSERVICE'].methods_by_name['searchTraces']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['searchTraces']._serialized_options = b'\362\206\031.\n\033\n\003GET\022\016/qcflow/traces\032\004\010\002\020\000\020\003*\rSearch Traces'
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteTraces']._loaded_options = None
+    _globals['_QCFLOWSERVICE'].methods_by_name['deleteTraces']._serialized_options = b'\362\206\031=\n*\n\004POST\022\034/qcflow/traces/delete-traces\032\004\010\002\020\000\020\003*\rDelete Traces'
     _globals['_VIEWTYPE']._serialized_start=7200
     _globals['_VIEWTYPE']._serialized_end=7254
     _globals['_SOURCETYPE']._serialized_start=7256
@@ -396,8 +396,8 @@ if Version(google.protobuf.__version__).major >= 5:
     _globals['_SEARCHDATASETS']._serialized_end=7198
     _globals['_SEARCHDATASETS_RESPONSE']._serialized_start=7092
     _globals['_SEARCHDATASETS_RESPONSE']._serialized_end=7153
-    _globals['_MLFLOWSERVICE']._serialized_start=7492
-    _globals['_MLFLOWSERVICE']._serialized_end=11819
+    _globals['_QCFLOWSERVICE']._serialized_start=7492
+    _globals['_QCFLOWSERVICE']._serialized_end=11819
   _builder.BuildServices(DESCRIPTOR, 'service_pb2', _globals)
   # @@protoc_insertion_point(module_scope)
 
@@ -423,7 +423,7 @@ else:
   from . import databricks_pb2 as databricks__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rservice.proto\x12\x06mlflow\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"H\n\x06Metric\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0f\n\x04step\x18\x04 \x01(\x03:\x01\x30\"#\n\x05Param\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"f\n\x03Run\x12\x1d\n\x04info\x18\x01 \x01(\x0b\x32\x0f.mlflow.RunInfo\x12\x1d\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x0f.mlflow.RunData\x12!\n\x06inputs\x18\x03 \x01(\x0b\x32\x11.mlflow.RunInputs\"g\n\x07RunData\x12\x1f\n\x07metrics\x18\x01 \x03(\x0b\x32\x0e.mlflow.Metric\x12\x1d\n\x06params\x18\x02 \x03(\x0b\x32\r.mlflow.Param\x12\x1c\n\x04tags\x18\x03 \x03(\x0b\x32\x0e.mlflow.RunTag\"9\n\tRunInputs\x12,\n\x0e\x64\x61taset_inputs\x18\x01 \x03(\x0b\x32\x14.mlflow.DatasetInput\"$\n\x06RunTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"+\n\rExperimentTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xdd\x01\n\x07RunInfo\x12\x0e\n\x06run_id\x18\x0f \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x10\n\x08run_name\x18\x03 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x06 \x01(\t\x12!\n\x06status\x18\x07 \x01(\x0e\x32\x11.mlflow.RunStatus\x12\x12\n\nstart_time\x18\x08 \x01(\x03\x12\x10\n\x08\x65nd_time\x18\t \x01(\x03\x12\x14\n\x0c\x61rtifact_uri\x18\r \x01(\t\x12\x17\n\x0flifecycle_stage\x18\x0e \x01(\t\"\xbb\x01\n\nExperiment\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x61rtifact_location\x18\x03 \x01(\t\x12\x17\n\x0flifecycle_stage\x18\x04 \x01(\t\x12\x18\n\x10last_update_time\x18\x05 \x01(\x03\x12\x15\n\rcreation_time\x18\x06 \x01(\x03\x12#\n\x04tags\x18\x07 \x03(\x0b\x32\x15.mlflow.ExperimentTag\"V\n\x0c\x44\x61tasetInput\x12\x1e\n\x04tags\x18\x01 \x03(\x0b\x32\x10.mlflow.InputTag\x12&\n\x07\x64\x61taset\x18\x02 \x01(\x0b\x32\x0f.mlflow.DatasetB\x04\xf8\x86\x19\x01\"2\n\x08InputTag\x12\x11\n\x03key\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\"\x85\x01\n\x07\x44\x61taset\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06\x64igest\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x19\n\x0bsource_type\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06source\x18\x04 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06schema\x18\x05 \x01(\t\x12\x0f\n\x07profile\x18\x06 \x01(\t\"\xb6\x01\n\x10\x43reateExperiment\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x19\n\x11\x61rtifact_location\x18\x02 \x01(\t\x12#\n\x04tags\x18\x03 \x03(\x0b\x32\x15.mlflow.ExperimentTag\x1a!\n\x08Response\x12\x15\n\rexperiment_id\x18\x01 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xfe\x01\n\x11SearchExperiments\x12\x13\n\x0bmax_results\x18\x01 \x01(\x03\x12\x12\n\npage_token\x18\x02 \x01(\t\x12\x0e\n\x06\x66ilter\x18\x03 \x01(\t\x12\x10\n\x08order_by\x18\x04 \x03(\t\x12#\n\tview_type\x18\x05 \x01(\x0e\x32\x10.mlflow.ViewType\x1aL\n\x08Response\x12\'\n\x0b\x65xperiments\x18\x01 \x03(\x0b\x32\x12.mlflow.Experiment\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8d\x01\n\rGetExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x32\n\x08Response\x12&\n\nexperiment\x18\x01 \x01(\x0b\x32\x12.mlflow.Experiment:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"h\n\x10\x44\x65leteExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"i\n\x11RestoreExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"z\n\x10UpdateExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x10\n\x08new_name\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xca\x01\n\tCreateRun\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x10\n\x08run_name\x18\x03 \x01(\t\x12\x12\n\nstart_time\x18\x07 \x01(\x03\x12\x1c\n\x04tags\x18\t \x03(\x0b\x32\x0e.mlflow.RunTag\x1a$\n\x08Response\x12\x18\n\x03run\x18\x01 \x01(\x0b\x32\x0b.mlflow.Run:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xd0\x01\n\tUpdateRun\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12!\n\x06status\x18\x02 \x01(\x0e\x32\x11.mlflow.RunStatus\x12\x10\n\x08\x65nd_time\x18\x03 \x01(\x03\x12\x10\n\x08run_name\x18\x05 \x01(\t\x1a-\n\x08Response\x12!\n\x08run_info\x18\x01 \x01(\x0b\x32\x0f.mlflow.RunInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"Z\n\tDeleteRun\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"[\n\nRestoreRun\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xb8\x01\n\tLogMetric\x12\x0e\n\x06run_id\x18\x06 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\x01\x42\x04\xf8\x86\x19\x01\x12\x17\n\ttimestamp\x18\x04 \x01(\x03\x42\x04\xf8\x86\x19\x01\x12\x0f\n\x04step\x18\x05 \x01(\x03:\x01\x30\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8d\x01\n\x08LogParam\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x90\x01\n\x10SetExperimentTag\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8b\x01\n\x06SetTag\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"m\n\tDeleteTag\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"}\n\x06GetRun\x12\x0e\n\x06run_id\x18\x02 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x1a$\n\x08Response\x12\x18\n\x03run\x18\x01 \x01(\x0b\x32\x0b.mlflow.Run:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x98\x02\n\nSearchRuns\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x66ilter\x18\x04 \x01(\t\x12\x34\n\rrun_view_type\x18\x03 \x01(\x0e\x32\x10.mlflow.ViewType:\x0b\x41\x43TIVE_ONLY\x12\x19\n\x0bmax_results\x18\x05 \x01(\x05:\x04\x31\x30\x30\x30\x12\x10\n\x08order_by\x18\x06 \x03(\t\x12\x12\n\npage_token\x18\x07 \x01(\t\x1a>\n\x08Response\x12\x19\n\x04runs\x18\x01 \x03(\x0b\x32\x0b.mlflow.Run\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xd8\x01\n\rListArtifacts\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aV\n\x08Response\x12\x10\n\x08root_uri\x18\x01 \x01(\t\x12\x1f\n\x05\x66iles\x18\x02 \x03(\x0b\x32\x10.mlflow.FileInfo\x12\x17\n\x0fnext_page_token\x18\x03 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\";\n\x08\x46ileInfo\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0e\n\x06is_dir\x18\x02 \x01(\x08\x12\x11\n\tfile_size\x18\x03 \x01(\x03\"\xea\x01\n\x10GetMetricHistory\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x18\n\nmetric_key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\npage_token\x18\x04 \x01(\t\x12\x13\n\x0bmax_results\x18\x05 \x01(\x05\x1a\x44\n\x08Response\x12\x1f\n\x07metrics\x18\x01 \x03(\x0b\x32\x0e.mlflow.Metric\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"a\n\x0fMetricWithRunId\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0f\n\x04step\x18\x04 \x01(\x03:\x01\x30\x12\x0e\n\x06run_id\x18\x05 \x01(\t\"\xe7\x01\n\x1cGetMetricHistoryBulkInterval\x12\x0f\n\x07run_ids\x18\x01 \x03(\t\x12\x18\n\nmetric_key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\nstart_step\x18\x03 \x01(\x05\x12\x10\n\x08\x65nd_step\x18\x04 \x01(\x05\x12\x13\n\x0bmax_results\x18\x05 \x01(\x05\x1a\x34\n\x08Response\x12(\n\x07metrics\x18\x01 \x03(\x0b\x32\x17.mlflow.MetricWithRunId:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xb1\x01\n\x08LogBatch\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x1f\n\x07metrics\x18\x02 \x03(\x0b\x32\x0e.mlflow.Metric\x12\x1d\n\x06params\x18\x03 \x03(\x0b\x32\r.mlflow.Param\x12\x1c\n\x04tags\x18\x04 \x03(\x0b\x32\x0e.mlflow.RunTag\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"g\n\x08LogModel\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x12\n\nmodel_json\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x01\n\tLogInputs\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12&\n\x08\x64\x61tasets\x18\x02 \x03(\x0b\x32\x14.mlflow.DatasetInput\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x95\x01\n\x13GetExperimentByName\x12\x1d\n\x0f\x65xperiment_name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x32\n\x08Response\x12&\n\nexperiment\x18\x01 \x01(\x0b\x32\x12.mlflow.Experiment:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xe4\x01\n\tTraceInfo\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x03 \x01(\x03\x12\x19\n\x11\x65xecution_time_ms\x18\x04 \x01(\x03\x12#\n\x06status\x18\x05 \x01(\x0e\x32\x13.mlflow.TraceStatus\x12\x36\n\x10request_metadata\x18\x06 \x03(\x0b\x32\x1c.mlflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x07 \x03(\x0b\x32\x10.mlflow.TraceTag\"2\n\x14TraceRequestMetadata\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"&\n\x08TraceTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xf1\x01\n\nStartTrace\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x03\x12\x36\n\x10request_metadata\x18\x03 \x03(\x0b\x32\x1c.mlflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x04 \x03(\x0b\x32\x10.mlflow.TraceTag\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.mlflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x91\x02\n\x08\x45ndTrace\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x03\x12#\n\x06status\x18\x03 \x01(\x0e\x32\x13.mlflow.TraceStatus\x12\x36\n\x10request_metadata\x18\x04 \x03(\x0b\x32\x1c.mlflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x05 \x03(\x0b\x32\x10.mlflow.TraceTag\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.mlflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x01\n\x0cGetTraceInfo\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.mlflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xeb\x01\n\x0cSearchTraces\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x66ilter\x18\x02 \x01(\t\x12\x18\n\x0bmax_results\x18\x03 \x01(\x05:\x03\x31\x30\x30\x12\x10\n\x08order_by\x18\x04 \x03(\t\x12\x12\n\npage_token\x18\x05 \x01(\t\x1a\x46\n\x08Response\x12!\n\x06traces\x18\x01 \x03(\x0b\x32\x11.mlflow.TraceInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xc3\x01\n\x0c\x44\x65leteTraces\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x1c\n\x14max_timestamp_millis\x18\x02 \x01(\x03\x12\x12\n\nmax_traces\x18\x03 \x01(\x05\x12\x13\n\x0brequest_ids\x18\x04 \x03(\t\x1a\"\n\x08Response\x12\x16\n\x0etraces_deleted\x18\x01 \x01(\x05:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"v\n\x0bSetTraceTag\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"j\n\x0e\x44\x65leteTraceTag\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"h\n\x0e\x44\x61tasetSummary\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\x04name\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06\x64igest\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0f\n\x07\x63ontext\x18\x04 \x01(\t\"\x94\x01\n\x0eSearchDatasets\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x1a=\n\x08Response\x12\x31\n\x11\x64\x61taset_summaries\x18\x01 \x03(\x0b\x32\x16.mlflow.DatasetSummary:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]*6\n\x08ViewType\x12\x0f\n\x0b\x41\x43TIVE_ONLY\x10\x01\x12\x10\n\x0c\x44\x45LETED_ONLY\x10\x02\x12\x07\n\x03\x41LL\x10\x03*I\n\nSourceType\x12\x0c\n\x08NOTEBOOK\x10\x01\x12\x07\n\x03JOB\x10\x02\x12\x0b\n\x07PROJECT\x10\x03\x12\t\n\x05LOCAL\x10\x04\x12\x0c\n\x07UNKNOWN\x10\xe8\x07*M\n\tRunStatus\x12\x0b\n\x07RUNNING\x10\x01\x12\r\n\tSCHEDULED\x10\x02\x12\x0c\n\x08\x46INISHED\x10\x03\x12\n\n\x06\x46\x41ILED\x10\x04\x12\n\n\x06KILLED\x10\x05*O\n\x0bTraceStatus\x12\x1c\n\x18TRACE_STATUS_UNSPECIFIED\x10\x00\x12\x06\n\x02OK\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x0f\n\x0bIN_PROGRESS\x10\x03\x32\xe7!\n\rMlflowService\x12\xa6\x01\n\x13getExperimentByName\x12\x1b.mlflow.GetExperimentByName\x1a$.mlflow.GetExperimentByName.Response\"L\xf2\x86\x19H\n,\n\x03GET\x12\x1f/mlflow/experiments/get-by-name\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Get Experiment By Name\x12\x94\x01\n\x10\x63reateExperiment\x12\x18.mlflow.CreateExperiment\x1a!.mlflow.CreateExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/mlflow/experiments/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x11\x43reate Experiment\x12\xc1\x01\n\x11searchExperiments\x12\x19.mlflow.SearchExperiments\x1a\".mlflow.SearchExperiments.Response\"m\xf2\x86\x19i\n(\n\x04POST\x12\x1a/mlflow/experiments/search\x1a\x04\x08\x02\x10\x00\n\'\n\x03GET\x12\x1a/mlflow/experiments/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Search Experiments\x12\x88\x01\n\rgetExperiment\x12\x15.mlflow.GetExperiment\x1a\x1e.mlflow.GetExperiment.Response\"@\xf2\x86\x19\x38\n$\n\x03GET\x12\x17/mlflow/experiments/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x0eGet Experiment\xba\x8c\x19\x00\x12\x94\x01\n\x10\x64\x65leteExperiment\x12\x18.mlflow.DeleteExperiment\x1a!.mlflow.DeleteExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/mlflow/experiments/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x11\x44\x65lete Experiment\x12\x99\x01\n\x11restoreExperiment\x12\x19.mlflow.RestoreExperiment\x1a\".mlflow.RestoreExperiment.Response\"E\xf2\x86\x19\x41\n)\n\x04POST\x12\x1b/mlflow/experiments/restore\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Restore Experiment\x12\x94\x01\n\x10updateExperiment\x12\x18.mlflow.UpdateExperiment\x1a!.mlflow.UpdateExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/mlflow/experiments/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x11Update Experiment\x12q\n\tcreateRun\x12\x11.mlflow.CreateRun\x1a\x1a.mlflow.CreateRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/mlflow/runs/create\x1a\x04\x08\x02\x10\x00\x10\x01*\nCreate Run\x12q\n\tupdateRun\x12\x11.mlflow.UpdateRun\x1a\x1a.mlflow.UpdateRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/mlflow/runs/update\x1a\x04\x08\x02\x10\x00\x10\x01*\nUpdate Run\x12q\n\tdeleteRun\x12\x11.mlflow.DeleteRun\x1a\x1a.mlflow.DeleteRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/mlflow/runs/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\nDelete Run\x12v\n\nrestoreRun\x12\x12.mlflow.RestoreRun\x1a\x1b.mlflow.RestoreRun.Response\"7\xf2\x86\x19\x33\n\"\n\x04POST\x12\x14/mlflow/runs/restore\x1a\x04\x08\x02\x10\x00\x10\x01*\x0bRestore Run\x12u\n\tlogMetric\x12\x11.mlflow.LogMetric\x1a\x1a.mlflow.LogMetric.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/mlflow/runs/log-metric\x1a\x04\x08\x02\x10\x00\x10\x01*\nLog Metric\x12t\n\x08logParam\x12\x10.mlflow.LogParam\x1a\x19.mlflow.LogParam.Response\";\xf2\x86\x19\x37\n(\n\x04POST\x12\x1a/mlflow/runs/log-parameter\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Param\x12\xa1\x01\n\x10setExperimentTag\x12\x18.mlflow.SetExperimentTag\x1a!.mlflow.SetExperimentTag.Response\"P\xf2\x86\x19L\n4\n\x04POST\x12&/mlflow/experiments/set-experiment-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Set Experiment Tag\x12\x66\n\x06setTag\x12\x0e.mlflow.SetTag\x1a\x17.mlflow.SetTag.Response\"3\xf2\x86\x19/\n\"\n\x04POST\x12\x14/mlflow/runs/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x07Set Tag\x12\x88\x01\n\x0bsetTraceTag\x12\x13.mlflow.SetTraceTag\x1a\x1c.mlflow.SetTraceTag.Response\"F\xf2\x86\x19\x42\n/\n\x05PATCH\x12 /mlflow/traces/{request_id}/tags\x1a\x04\x08\x02\x10\x00\x10\x03*\rSet Trace Tag\x12\x95\x01\n\x0e\x64\x65leteTraceTag\x12\x16.mlflow.DeleteTraceTag\x1a\x1f.mlflow.DeleteTraceTag.Response\"J\xf2\x86\x19\x46\n0\n\x06\x44\x45LETE\x12 /mlflow/traces/{request_id}/tags\x1a\x04\x08\x02\x10\x00\x10\x03*\x10\x44\x65lete Trace Tag\x12u\n\tdeleteTag\x12\x11.mlflow.DeleteTag\x1a\x1a.mlflow.DeleteTag.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/mlflow/runs/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\nDelete Tag\x12\x65\n\x06getRun\x12\x0e.mlflow.GetRun\x1a\x17.mlflow.GetRun.Response\"2\xf2\x86\x19*\n\x1d\n\x03GET\x12\x10/mlflow/runs/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x07Get Run\xba\x8c\x19\x00\x12y\n\nsearchRuns\x12\x12.mlflow.SearchRuns\x1a\x1b.mlflow.SearchRuns.Response\":\xf2\x86\x19\x32\n!\n\x04POST\x12\x13/mlflow/runs/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x0bSearch Runs\xba\x8c\x19\x00\x12\x87\x01\n\rlistArtifacts\x12\x15.mlflow.ListArtifacts\x1a\x1e.mlflow.ListArtifacts.Response\"?\xf2\x86\x19\x37\n#\n\x03GET\x12\x16/mlflow/artifacts/list\x1a\x04\x08\x02\x10\x00\x10\x01*\x0eList Artifacts\xba\x8c\x19\x00\x12\x95\x01\n\x10getMetricHistory\x12\x18.mlflow.GetMetricHistory\x1a!.mlflow.GetMetricHistory.Response\"D\xf2\x86\x19@\n(\n\x03GET\x12\x1b/mlflow/metrics/get-history\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Get Metric History\x12\xb7\x01\n\x1cgetMetricHistoryBulkInterval\x12$.mlflow.GetMetricHistoryBulkInterval\x1a-.mlflow.GetMetricHistoryBulkInterval.Response\"B\xf2\x86\x19:\n6\n\x03GET\x12)/mlflow/metrics/get-history-bulk-interval\x1a\x04\x08\x02\x10\x0b\x10\x03\xba\x8c\x19\x00\x12p\n\x08logBatch\x12\x10.mlflow.LogBatch\x1a\x19.mlflow.LogBatch.Response\"7\xf2\x86\x19\x33\n$\n\x04POST\x12\x16/mlflow/runs/log-batch\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Batch\x12p\n\x08logModel\x12\x10.mlflow.LogModel\x1a\x19.mlflow.LogModel.Response\"7\xf2\x86\x19\x33\n$\n\x04POST\x12\x16/mlflow/runs/log-model\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Model\x12u\n\tlogInputs\x12\x11.mlflow.LogInputs\x1a\x1a.mlflow.LogInputs.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/mlflow/runs/log-inputs\x1a\x04\x08\x02\x10\x00\x10\x01*\nLog Inputs\x12\x87\x01\n\x0esearchDatasets\x12\x16.mlflow.SearchDatasets\x1a\x1f.mlflow.SearchDatasets.Response\"<\xf2\x86\x19\x34\n0\n\x04POST\x12\"mlflow/experiments/search-datasets\x1a\x04\x08\x02\x10\x00\x10\x03\xba\x8c\x19\x00\x12p\n\nstartTrace\x12\x12.mlflow.StartTrace\x1a\x1b.mlflow.StartTrace.Response\"1\xf2\x86\x19-\n\x1c\n\x04POST\x12\x0e/mlflow/traces\x1a\x04\x08\x02\x10\x00\x10\x03*\x0bStart Trace\x12v\n\x08\x65ndTrace\x12\x10.mlflow.EndTrace\x1a\x19.mlflow.EndTrace.Response\"=\xf2\x86\x19\x39\n*\n\x05PATCH\x12\x1b/mlflow/traces/{request_id}\x1a\x04\x08\x02\x10\x00\x10\x03*\tEnd Trace\x12\x89\x01\n\x0cgetTraceInfo\x12\x14.mlflow.GetTraceInfo\x1a\x1d.mlflow.GetTraceInfo.Response\"D\xf2\x86\x19@\n-\n\x03GET\x12 /mlflow/traces/{request_id}/info\x1a\x04\x08\x02\x10\x00\x10\x03*\rGet TraceInfo\x12w\n\x0csearchTraces\x12\x14.mlflow.SearchTraces\x1a\x1d.mlflow.SearchTraces.Response\"2\xf2\x86\x19.\n\x1b\n\x03GET\x12\x0e/mlflow/traces\x1a\x04\x08\x02\x10\x00\x10\x03*\rSearch Traces\x12\x86\x01\n\x0c\x64\x65leteTraces\x12\x14.mlflow.DeleteTraces\x1a\x1d.mlflow.DeleteTraces.Response\"A\xf2\x86\x19=\n*\n\x04POST\x12\x1c/mlflow/traces/delete-traces\x1a\x04\x08\x02\x10\x00\x10\x03*\rDelete TracesB\x1e\n\x14org.mlflow.api.proto\x90\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rservice.proto\x12\x06qcflow\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"H\n\x06Metric\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0f\n\x04step\x18\x04 \x01(\x03:\x01\x30\"#\n\x05Param\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"f\n\x03Run\x12\x1d\n\x04info\x18\x01 \x01(\x0b\x32\x0f.qcflow.RunInfo\x12\x1d\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x0f.qcflow.RunData\x12!\n\x06inputs\x18\x03 \x01(\x0b\x32\x11.qcflow.RunInputs\"g\n\x07RunData\x12\x1f\n\x07metrics\x18\x01 \x03(\x0b\x32\x0e.qcflow.Metric\x12\x1d\n\x06params\x18\x02 \x03(\x0b\x32\r.qcflow.Param\x12\x1c\n\x04tags\x18\x03 \x03(\x0b\x32\x0e.qcflow.RunTag\"9\n\tRunInputs\x12,\n\x0e\x64\x61taset_inputs\x18\x01 \x03(\x0b\x32\x14.qcflow.DatasetInput\"$\n\x06RunTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"+\n\rExperimentTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xdd\x01\n\x07RunInfo\x12\x0e\n\x06run_id\x18\x0f \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x10\n\x08run_name\x18\x03 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x06 \x01(\t\x12!\n\x06status\x18\x07 \x01(\x0e\x32\x11.qcflow.RunStatus\x12\x12\n\nstart_time\x18\x08 \x01(\x03\x12\x10\n\x08\x65nd_time\x18\t \x01(\x03\x12\x14\n\x0c\x61rtifact_uri\x18\r \x01(\t\x12\x17\n\x0flifecycle_stage\x18\x0e \x01(\t\"\xbb\x01\n\nExperiment\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x61rtifact_location\x18\x03 \x01(\t\x12\x17\n\x0flifecycle_stage\x18\x04 \x01(\t\x12\x18\n\x10last_update_time\x18\x05 \x01(\x03\x12\x15\n\rcreation_time\x18\x06 \x01(\x03\x12#\n\x04tags\x18\x07 \x03(\x0b\x32\x15.qcflow.ExperimentTag\"V\n\x0c\x44\x61tasetInput\x12\x1e\n\x04tags\x18\x01 \x03(\x0b\x32\x10.qcflow.InputTag\x12&\n\x07\x64\x61taset\x18\x02 \x01(\x0b\x32\x0f.qcflow.DatasetB\x04\xf8\x86\x19\x01\"2\n\x08InputTag\x12\x11\n\x03key\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\"\x85\x01\n\x07\x44\x61taset\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06\x64igest\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x19\n\x0bsource_type\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06source\x18\x04 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06schema\x18\x05 \x01(\t\x12\x0f\n\x07profile\x18\x06 \x01(\t\"\xb6\x01\n\x10\x43reateExperiment\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x19\n\x11\x61rtifact_location\x18\x02 \x01(\t\x12#\n\x04tags\x18\x03 \x03(\x0b\x32\x15.qcflow.ExperimentTag\x1a!\n\x08Response\x12\x15\n\rexperiment_id\x18\x01 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xfe\x01\n\x11SearchExperiments\x12\x13\n\x0bmax_results\x18\x01 \x01(\x03\x12\x12\n\npage_token\x18\x02 \x01(\t\x12\x0e\n\x06\x66ilter\x18\x03 \x01(\t\x12\x10\n\x08order_by\x18\x04 \x03(\t\x12#\n\tview_type\x18\x05 \x01(\x0e\x32\x10.qcflow.ViewType\x1aL\n\x08Response\x12\'\n\x0b\x65xperiments\x18\x01 \x03(\x0b\x32\x12.qcflow.Experiment\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8d\x01\n\rGetExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x32\n\x08Response\x12&\n\nexperiment\x18\x01 \x01(\x0b\x32\x12.qcflow.Experiment:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"h\n\x10\x44\x65leteExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"i\n\x11RestoreExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"z\n\x10UpdateExperiment\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x10\n\x08new_name\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xca\x01\n\tCreateRun\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x0f\n\x07user_id\x18\x02 \x01(\t\x12\x10\n\x08run_name\x18\x03 \x01(\t\x12\x12\n\nstart_time\x18\x07 \x01(\x03\x12\x1c\n\x04tags\x18\t \x03(\x0b\x32\x0e.qcflow.RunTag\x1a$\n\x08Response\x12\x18\n\x03run\x18\x01 \x01(\x0b\x32\x0b.qcflow.Run:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xd0\x01\n\tUpdateRun\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12!\n\x06status\x18\x02 \x01(\x0e\x32\x11.qcflow.RunStatus\x12\x10\n\x08\x65nd_time\x18\x03 \x01(\x03\x12\x10\n\x08run_name\x18\x05 \x01(\t\x1a-\n\x08Response\x12!\n\x08run_info\x18\x01 \x01(\x0b\x32\x0f.qcflow.RunInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"Z\n\tDeleteRun\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"[\n\nRestoreRun\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xb8\x01\n\tLogMetric\x12\x0e\n\x06run_id\x18\x06 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\x01\x42\x04\xf8\x86\x19\x01\x12\x17\n\ttimestamp\x18\x04 \x01(\x03\x42\x04\xf8\x86\x19\x01\x12\x0f\n\x04step\x18\x05 \x01(\x03:\x01\x30\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8d\x01\n\x08LogParam\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x90\x01\n\x10SetExperimentTag\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8b\x01\n\x06SetTag\x12\x0e\n\x06run_id\x18\x04 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"m\n\tDeleteTag\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"}\n\x06GetRun\x12\x0e\n\x06run_id\x18\x02 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x1a$\n\x08Response\x12\x18\n\x03run\x18\x01 \x01(\x0b\x32\x0b.qcflow.Run:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x98\x02\n\nSearchRuns\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x66ilter\x18\x04 \x01(\t\x12\x34\n\rrun_view_type\x18\x03 \x01(\x0e\x32\x10.qcflow.ViewType:\x0b\x41\x43TIVE_ONLY\x12\x19\n\x0bmax_results\x18\x05 \x01(\x05:\x04\x31\x30\x30\x30\x12\x10\n\x08order_by\x18\x06 \x03(\t\x12\x12\n\npage_token\x18\x07 \x01(\t\x1a>\n\x08Response\x12\x19\n\x04runs\x18\x01 \x03(\x0b\x32\x0b.qcflow.Run\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xd8\x01\n\rListArtifacts\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aV\n\x08Response\x12\x10\n\x08root_uri\x18\x01 \x01(\t\x12\x1f\n\x05\x66iles\x18\x02 \x03(\x0b\x32\x10.qcflow.FileInfo\x12\x17\n\x0fnext_page_token\x18\x03 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\";\n\x08\x46ileInfo\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x0e\n\x06is_dir\x18\x02 \x01(\x08\x12\x11\n\tfile_size\x18\x03 \x01(\x03\"\xea\x01\n\x10GetMetricHistory\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12\x10\n\x08run_uuid\x18\x01 \x01(\t\x12\x18\n\nmetric_key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\npage_token\x18\x04 \x01(\t\x12\x13\n\x0bmax_results\x18\x05 \x01(\x05\x1a\x44\n\x08Response\x12\x1f\n\x07metrics\x18\x01 \x03(\x0b\x32\x0e.qcflow.Metric\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"a\n\x0fMetricWithRunId\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0f\n\x04step\x18\x04 \x01(\x03:\x01\x30\x12\x0e\n\x06run_id\x18\x05 \x01(\t\"\xe7\x01\n\x1cGetMetricHistoryBulkInterval\x12\x0f\n\x07run_ids\x18\x01 \x03(\t\x12\x18\n\nmetric_key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\nstart_step\x18\x03 \x01(\x05\x12\x10\n\x08\x65nd_step\x18\x04 \x01(\x05\x12\x13\n\x0bmax_results\x18\x05 \x01(\x05\x1a\x34\n\x08Response\x12(\n\x07metrics\x18\x01 \x03(\x0b\x32\x17.qcflow.MetricWithRunId:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xb1\x01\n\x08LogBatch\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x1f\n\x07metrics\x18\x02 \x03(\x0b\x32\x0e.qcflow.Metric\x12\x1d\n\x06params\x18\x03 \x03(\x0b\x32\r.qcflow.Param\x12\x1c\n\x04tags\x18\x04 \x03(\x0b\x32\x0e.qcflow.RunTag\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"g\n\x08LogModel\x12\x0e\n\x06run_id\x18\x01 \x01(\t\x12\x12\n\nmodel_json\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x01\n\tLogInputs\x12\x14\n\x06run_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12&\n\x08\x64\x61tasets\x18\x02 \x03(\x0b\x32\x14.qcflow.DatasetInput\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x95\x01\n\x13GetExperimentByName\x12\x1d\n\x0f\x65xperiment_name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x32\n\x08Response\x12&\n\nexperiment\x18\x01 \x01(\x0b\x32\x12.qcflow.Experiment:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xe4\x01\n\tTraceInfo\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x15\n\rexperiment_id\x18\x02 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x03 \x01(\x03\x12\x19\n\x11\x65xecution_time_ms\x18\x04 \x01(\x03\x12#\n\x06status\x18\x05 \x01(\x0e\x32\x13.qcflow.TraceStatus\x12\x36\n\x10request_metadata\x18\x06 \x03(\x0b\x32\x1c.qcflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x07 \x03(\x0b\x32\x10.qcflow.TraceTag\"2\n\x14TraceRequestMetadata\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"&\n\x08TraceTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\xf1\x01\n\nStartTrace\x12\x15\n\rexperiment_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x03\x12\x36\n\x10request_metadata\x18\x03 \x03(\x0b\x32\x1c.qcflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x04 \x03(\x0b\x32\x10.qcflow.TraceTag\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.qcflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x91\x02\n\x08\x45ndTrace\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x14\n\x0ctimestamp_ms\x18\x02 \x01(\x03\x12#\n\x06status\x18\x03 \x01(\x0e\x32\x13.qcflow.TraceStatus\x12\x36\n\x10request_metadata\x18\x04 \x03(\x0b\x32\x1c.qcflow.TraceRequestMetadata\x12\x1e\n\x04tags\x18\x05 \x03(\x0b\x32\x10.qcflow.TraceTag\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.qcflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x01\n\x0cGetTraceInfo\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x1a\x31\n\x08Response\x12%\n\ntrace_info\x18\x01 \x01(\x0b\x32\x11.qcflow.TraceInfo:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xeb\x01\n\x0cSearchTraces\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x66ilter\x18\x02 \x01(\t\x12\x18\n\x0bmax_results\x18\x03 \x01(\x05:\x03\x31\x30\x30\x12\x10\n\x08order_by\x18\x04 \x03(\t\x12\x12\n\npage_token\x18\x05 \x01(\t\x1a\x46\n\x08Response\x12!\n\x06traces\x18\x01 \x03(\x0b\x32\x11.qcflow.TraceInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xc3\x01\n\x0c\x44\x65leteTraces\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x1c\n\x14max_timestamp_millis\x18\x02 \x01(\x03\x12\x12\n\nmax_traces\x18\x03 \x01(\x05\x12\x13\n\x0brequest_ids\x18\x04 \x03(\t\x1a\"\n\x08Response\x12\x16\n\x0etraces_deleted\x18\x01 \x01(\x05:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"v\n\x0bSetTraceTag\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\r\n\x05value\x18\x03 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"j\n\x0e\x44\x65leteTraceTag\x12\x12\n\nrequest_id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"h\n\x0e\x44\x61tasetSummary\x12\x1b\n\rexperiment_id\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x12\n\x04name\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06\x64igest\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0f\n\x07\x63ontext\x18\x04 \x01(\t\"\x94\x01\n\x0eSearchDatasets\x12\x16\n\x0e\x65xperiment_ids\x18\x01 \x03(\t\x1a=\n\x08Response\x12\x31\n\x11\x64\x61taset_summaries\x18\x01 \x03(\x0b\x32\x16.qcflow.DatasetSummary:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]*6\n\x08ViewType\x12\x0f\n\x0b\x41\x43TIVE_ONLY\x10\x01\x12\x10\n\x0c\x44\x45LETED_ONLY\x10\x02\x12\x07\n\x03\x41LL\x10\x03*I\n\nSourceType\x12\x0c\n\x08NOTEBOOK\x10\x01\x12\x07\n\x03JOB\x10\x02\x12\x0b\n\x07PROJECT\x10\x03\x12\t\n\x05LOCAL\x10\x04\x12\x0c\n\x07UNKNOWN\x10\xe8\x07*M\n\tRunStatus\x12\x0b\n\x07RUNNING\x10\x01\x12\r\n\tSCHEDULED\x10\x02\x12\x0c\n\x08\x46INISHED\x10\x03\x12\n\n\x06\x46\x41ILED\x10\x04\x12\n\n\x06KILLED\x10\x05*O\n\x0bTraceStatus\x12\x1c\n\x18TRACE_STATUS_UNSPECIFIED\x10\x00\x12\x06\n\x02OK\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x12\x0f\n\x0bIN_PROGRESS\x10\x03\x32\xe7!\n\rMlflowService\x12\xa6\x01\n\x13getExperimentByName\x12\x1b.qcflow.GetExperimentByName\x1a$.qcflow.GetExperimentByName.Response\"L\xf2\x86\x19H\n,\n\x03GET\x12\x1f/qcflow/experiments/get-by-name\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Get Experiment By Name\x12\x94\x01\n\x10\x63reateExperiment\x12\x18.qcflow.CreateExperiment\x1a!.qcflow.CreateExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/qcflow/experiments/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x11\x43reate Experiment\x12\xc1\x01\n\x11searchExperiments\x12\x19.qcflow.SearchExperiments\x1a\".qcflow.SearchExperiments.Response\"m\xf2\x86\x19i\n(\n\x04POST\x12\x1a/qcflow/experiments/search\x1a\x04\x08\x02\x10\x00\n\'\n\x03GET\x12\x1a/qcflow/experiments/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Search Experiments\x12\x88\x01\n\rgetExperiment\x12\x15.qcflow.GetExperiment\x1a\x1e.qcflow.GetExperiment.Response\"@\xf2\x86\x19\x38\n$\n\x03GET\x12\x17/qcflow/experiments/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x0eGet Experiment\xba\x8c\x19\x00\x12\x94\x01\n\x10\x64\x65leteExperiment\x12\x18.qcflow.DeleteExperiment\x1a!.qcflow.DeleteExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/qcflow/experiments/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x11\x44\x65lete Experiment\x12\x99\x01\n\x11restoreExperiment\x12\x19.qcflow.RestoreExperiment\x1a\".qcflow.RestoreExperiment.Response\"E\xf2\x86\x19\x41\n)\n\x04POST\x12\x1b/qcflow/experiments/restore\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Restore Experiment\x12\x94\x01\n\x10updateExperiment\x12\x18.qcflow.UpdateExperiment\x1a!.qcflow.UpdateExperiment.Response\"C\xf2\x86\x19?\n(\n\x04POST\x12\x1a/qcflow/experiments/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x11Update Experiment\x12q\n\tcreateRun\x12\x11.qcflow.CreateRun\x1a\x1a.qcflow.CreateRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/qcflow/runs/create\x1a\x04\x08\x02\x10\x00\x10\x01*\nCreate Run\x12q\n\tupdateRun\x12\x11.qcflow.UpdateRun\x1a\x1a.qcflow.UpdateRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/qcflow/runs/update\x1a\x04\x08\x02\x10\x00\x10\x01*\nUpdate Run\x12q\n\tdeleteRun\x12\x11.qcflow.DeleteRun\x1a\x1a.qcflow.DeleteRun.Response\"5\xf2\x86\x19\x31\n!\n\x04POST\x12\x13/qcflow/runs/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\nDelete Run\x12v\n\nrestoreRun\x12\x12.qcflow.RestoreRun\x1a\x1b.qcflow.RestoreRun.Response\"7\xf2\x86\x19\x33\n\"\n\x04POST\x12\x14/qcflow/runs/restore\x1a\x04\x08\x02\x10\x00\x10\x01*\x0bRestore Run\x12u\n\tlogMetric\x12\x11.qcflow.LogMetric\x1a\x1a.qcflow.LogMetric.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/qcflow/runs/log-metric\x1a\x04\x08\x02\x10\x00\x10\x01*\nLog Metric\x12t\n\x08logParam\x12\x10.qcflow.LogParam\x1a\x19.qcflow.LogParam.Response\";\xf2\x86\x19\x37\n(\n\x04POST\x12\x1a/qcflow/runs/log-parameter\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Param\x12\xa1\x01\n\x10setExperimentTag\x12\x18.qcflow.SetExperimentTag\x1a!.qcflow.SetExperimentTag.Response\"P\xf2\x86\x19L\n4\n\x04POST\x12&/qcflow/experiments/set-experiment-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Set Experiment Tag\x12\x66\n\x06setTag\x12\x0e.qcflow.SetTag\x1a\x17.qcflow.SetTag.Response\"3\xf2\x86\x19/\n\"\n\x04POST\x12\x14/qcflow/runs/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x07Set Tag\x12\x88\x01\n\x0bsetTraceTag\x12\x13.qcflow.SetTraceTag\x1a\x1c.qcflow.SetTraceTag.Response\"F\xf2\x86\x19\x42\n/\n\x05PATCH\x12 /qcflow/traces/{request_id}/tags\x1a\x04\x08\x02\x10\x00\x10\x03*\rSet Trace Tag\x12\x95\x01\n\x0e\x64\x65leteTraceTag\x12\x16.qcflow.DeleteTraceTag\x1a\x1f.qcflow.DeleteTraceTag.Response\"J\xf2\x86\x19\x46\n0\n\x06\x44\x45LETE\x12 /qcflow/traces/{request_id}/tags\x1a\x04\x08\x02\x10\x00\x10\x03*\x10\x44\x65lete Trace Tag\x12u\n\tdeleteTag\x12\x11.qcflow.DeleteTag\x1a\x1a.qcflow.DeleteTag.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/qcflow/runs/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\nDelete Tag\x12\x65\n\x06getRun\x12\x0e.qcflow.GetRun\x1a\x17.qcflow.GetRun.Response\"2\xf2\x86\x19*\n\x1d\n\x03GET\x12\x10/qcflow/runs/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x07Get Run\xba\x8c\x19\x00\x12y\n\nsearchRuns\x12\x12.qcflow.SearchRuns\x1a\x1b.qcflow.SearchRuns.Response\":\xf2\x86\x19\x32\n!\n\x04POST\x12\x13/qcflow/runs/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x0bSearch Runs\xba\x8c\x19\x00\x12\x87\x01\n\rlistArtifacts\x12\x15.qcflow.ListArtifacts\x1a\x1e.qcflow.ListArtifacts.Response\"?\xf2\x86\x19\x37\n#\n\x03GET\x12\x16/qcflow/artifacts/list\x1a\x04\x08\x02\x10\x00\x10\x01*\x0eList Artifacts\xba\x8c\x19\x00\x12\x95\x01\n\x10getMetricHistory\x12\x18.qcflow.GetMetricHistory\x1a!.qcflow.GetMetricHistory.Response\"D\xf2\x86\x19@\n(\n\x03GET\x12\x1b/qcflow/metrics/get-history\x1a\x04\x08\x02\x10\x00\x10\x01*\x12Get Metric History\x12\xb7\x01\n\x1cgetMetricHistoryBulkInterval\x12$.qcflow.GetMetricHistoryBulkInterval\x1a-.qcflow.GetMetricHistoryBulkInterval.Response\"B\xf2\x86\x19:\n6\n\x03GET\x12)/qcflow/metrics/get-history-bulk-interval\x1a\x04\x08\x02\x10\x0b\x10\x03\xba\x8c\x19\x00\x12p\n\x08logBatch\x12\x10.qcflow.LogBatch\x1a\x19.qcflow.LogBatch.Response\"7\xf2\x86\x19\x33\n$\n\x04POST\x12\x16/qcflow/runs/log-batch\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Batch\x12p\n\x08logModel\x12\x10.qcflow.LogModel\x1a\x19.qcflow.LogModel.Response\"7\xf2\x86\x19\x33\n$\n\x04POST\x12\x16/qcflow/runs/log-model\x1a\x04\x08\x02\x10\x00\x10\x01*\tLog Model\x12u\n\tlogInputs\x12\x11.qcflow.LogInputs\x1a\x1a.qcflow.LogInputs.Response\"9\xf2\x86\x19\x35\n%\n\x04POST\x12\x17/qcflow/runs/log-inputs\x1a\x04\x08\x02\x10\x00\x10\x01*\nLog Inputs\x12\x87\x01\n\x0esearchDatasets\x12\x16.qcflow.SearchDatasets\x1a\x1f.qcflow.SearchDatasets.Response\"<\xf2\x86\x19\x34\n0\n\x04POST\x12\"qcflow/experiments/search-datasets\x1a\x04\x08\x02\x10\x00\x10\x03\xba\x8c\x19\x00\x12p\n\nstartTrace\x12\x12.qcflow.StartTrace\x1a\x1b.qcflow.StartTrace.Response\"1\xf2\x86\x19-\n\x1c\n\x04POST\x12\x0e/qcflow/traces\x1a\x04\x08\x02\x10\x00\x10\x03*\x0bStart Trace\x12v\n\x08\x65ndTrace\x12\x10.qcflow.EndTrace\x1a\x19.qcflow.EndTrace.Response\"=\xf2\x86\x19\x39\n*\n\x05PATCH\x12\x1b/qcflow/traces/{request_id}\x1a\x04\x08\x02\x10\x00\x10\x03*\tEnd Trace\x12\x89\x01\n\x0cgetTraceInfo\x12\x14.qcflow.GetTraceInfo\x1a\x1d.qcflow.GetTraceInfo.Response\"D\xf2\x86\x19@\n-\n\x03GET\x12 /qcflow/traces/{request_id}/info\x1a\x04\x08\x02\x10\x00\x10\x03*\rGet TraceInfo\x12w\n\x0csearchTraces\x12\x14.qcflow.SearchTraces\x1a\x1d.qcflow.SearchTraces.Response\"2\xf2\x86\x19.\n\x1b\n\x03GET\x12\x0e/qcflow/traces\x1a\x04\x08\x02\x10\x00\x10\x03*\rSearch Traces\x12\x86\x01\n\x0c\x64\x65leteTraces\x12\x14.qcflow.DeleteTraces\x1a\x1d.qcflow.DeleteTraces.Response\"A\xf2\x86\x19=\n*\n\x04POST\x12\x1c/qcflow/traces/delete-traces\x1a\x04\x08\x02\x10\x00\x10\x03*\rDelete TracesB\x1e\n\x14org.qcflow.api.proto\x90\x01\x01\xe2?\x02\x10\x01')
 
   _VIEWTYPE = DESCRIPTOR.enum_types_by_name['ViewType']
   ViewType = enum_type_wrapper.EnumTypeWrapper(_VIEWTYPE)
@@ -537,84 +537,84 @@ else:
   Metric = _reflection.GeneratedProtocolMessageType('Metric', (_message.Message,), {
     'DESCRIPTOR' : _METRIC,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.Metric)
+    # @@protoc_insertion_point(class_scope:qcflow.Metric)
     })
   _sym_db.RegisterMessage(Metric)
 
   Param = _reflection.GeneratedProtocolMessageType('Param', (_message.Message,), {
     'DESCRIPTOR' : _PARAM,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.Param)
+    # @@protoc_insertion_point(class_scope:qcflow.Param)
     })
   _sym_db.RegisterMessage(Param)
 
   Run = _reflection.GeneratedProtocolMessageType('Run', (_message.Message,), {
     'DESCRIPTOR' : _RUN,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.Run)
+    # @@protoc_insertion_point(class_scope:qcflow.Run)
     })
   _sym_db.RegisterMessage(Run)
 
   RunData = _reflection.GeneratedProtocolMessageType('RunData', (_message.Message,), {
     'DESCRIPTOR' : _RUNDATA,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RunData)
+    # @@protoc_insertion_point(class_scope:qcflow.RunData)
     })
   _sym_db.RegisterMessage(RunData)
 
   RunInputs = _reflection.GeneratedProtocolMessageType('RunInputs', (_message.Message,), {
     'DESCRIPTOR' : _RUNINPUTS,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RunInputs)
+    # @@protoc_insertion_point(class_scope:qcflow.RunInputs)
     })
   _sym_db.RegisterMessage(RunInputs)
 
   RunTag = _reflection.GeneratedProtocolMessageType('RunTag', (_message.Message,), {
     'DESCRIPTOR' : _RUNTAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RunTag)
+    # @@protoc_insertion_point(class_scope:qcflow.RunTag)
     })
   _sym_db.RegisterMessage(RunTag)
 
   ExperimentTag = _reflection.GeneratedProtocolMessageType('ExperimentTag', (_message.Message,), {
     'DESCRIPTOR' : _EXPERIMENTTAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.ExperimentTag)
+    # @@protoc_insertion_point(class_scope:qcflow.ExperimentTag)
     })
   _sym_db.RegisterMessage(ExperimentTag)
 
   RunInfo = _reflection.GeneratedProtocolMessageType('RunInfo', (_message.Message,), {
     'DESCRIPTOR' : _RUNINFO,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RunInfo)
+    # @@protoc_insertion_point(class_scope:qcflow.RunInfo)
     })
   _sym_db.RegisterMessage(RunInfo)
 
   Experiment = _reflection.GeneratedProtocolMessageType('Experiment', (_message.Message,), {
     'DESCRIPTOR' : _EXPERIMENT,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.Experiment)
+    # @@protoc_insertion_point(class_scope:qcflow.Experiment)
     })
   _sym_db.RegisterMessage(Experiment)
 
   DatasetInput = _reflection.GeneratedProtocolMessageType('DatasetInput', (_message.Message,), {
     'DESCRIPTOR' : _DATASETINPUT,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DatasetInput)
+    # @@protoc_insertion_point(class_scope:qcflow.DatasetInput)
     })
   _sym_db.RegisterMessage(DatasetInput)
 
   InputTag = _reflection.GeneratedProtocolMessageType('InputTag', (_message.Message,), {
     'DESCRIPTOR' : _INPUTTAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.InputTag)
+    # @@protoc_insertion_point(class_scope:qcflow.InputTag)
     })
   _sym_db.RegisterMessage(InputTag)
 
   Dataset = _reflection.GeneratedProtocolMessageType('Dataset', (_message.Message,), {
     'DESCRIPTOR' : _DATASET,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.Dataset)
+    # @@protoc_insertion_point(class_scope:qcflow.Dataset)
     })
   _sym_db.RegisterMessage(Dataset)
 
@@ -623,12 +623,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _CREATEEXPERIMENT_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.CreateExperiment.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.CreateExperiment.Response)
       })
     ,
     'DESCRIPTOR' : _CREATEEXPERIMENT,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.CreateExperiment)
+    # @@protoc_insertion_point(class_scope:qcflow.CreateExperiment)
     })
   _sym_db.RegisterMessage(CreateExperiment)
   _sym_db.RegisterMessage(CreateExperiment.Response)
@@ -638,12 +638,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SEARCHEXPERIMENTS_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SearchExperiments.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SearchExperiments.Response)
       })
     ,
     'DESCRIPTOR' : _SEARCHEXPERIMENTS,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SearchExperiments)
+    # @@protoc_insertion_point(class_scope:qcflow.SearchExperiments)
     })
   _sym_db.RegisterMessage(SearchExperiments)
   _sym_db.RegisterMessage(SearchExperiments.Response)
@@ -653,12 +653,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETEXPERIMENT_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetExperiment.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetExperiment.Response)
       })
     ,
     'DESCRIPTOR' : _GETEXPERIMENT,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetExperiment)
+    # @@protoc_insertion_point(class_scope:qcflow.GetExperiment)
     })
   _sym_db.RegisterMessage(GetExperiment)
   _sym_db.RegisterMessage(GetExperiment.Response)
@@ -668,12 +668,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETEEXPERIMENT_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteExperiment.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteExperiment.Response)
       })
     ,
     'DESCRIPTOR' : _DELETEEXPERIMENT,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteExperiment)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteExperiment)
     })
   _sym_db.RegisterMessage(DeleteExperiment)
   _sym_db.RegisterMessage(DeleteExperiment.Response)
@@ -683,12 +683,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _RESTOREEXPERIMENT_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.RestoreExperiment.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.RestoreExperiment.Response)
       })
     ,
     'DESCRIPTOR' : _RESTOREEXPERIMENT,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RestoreExperiment)
+    # @@protoc_insertion_point(class_scope:qcflow.RestoreExperiment)
     })
   _sym_db.RegisterMessage(RestoreExperiment)
   _sym_db.RegisterMessage(RestoreExperiment.Response)
@@ -698,12 +698,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _UPDATEEXPERIMENT_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.UpdateExperiment.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.UpdateExperiment.Response)
       })
     ,
     'DESCRIPTOR' : _UPDATEEXPERIMENT,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.UpdateExperiment)
+    # @@protoc_insertion_point(class_scope:qcflow.UpdateExperiment)
     })
   _sym_db.RegisterMessage(UpdateExperiment)
   _sym_db.RegisterMessage(UpdateExperiment.Response)
@@ -713,12 +713,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _CREATERUN_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.CreateRun.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.CreateRun.Response)
       })
     ,
     'DESCRIPTOR' : _CREATERUN,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.CreateRun)
+    # @@protoc_insertion_point(class_scope:qcflow.CreateRun)
     })
   _sym_db.RegisterMessage(CreateRun)
   _sym_db.RegisterMessage(CreateRun.Response)
@@ -728,12 +728,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _UPDATERUN_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.UpdateRun.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.UpdateRun.Response)
       })
     ,
     'DESCRIPTOR' : _UPDATERUN,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.UpdateRun)
+    # @@protoc_insertion_point(class_scope:qcflow.UpdateRun)
     })
   _sym_db.RegisterMessage(UpdateRun)
   _sym_db.RegisterMessage(UpdateRun.Response)
@@ -743,12 +743,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETERUN_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteRun.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteRun.Response)
       })
     ,
     'DESCRIPTOR' : _DELETERUN,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteRun)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteRun)
     })
   _sym_db.RegisterMessage(DeleteRun)
   _sym_db.RegisterMessage(DeleteRun.Response)
@@ -758,12 +758,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _RESTORERUN_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.RestoreRun.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.RestoreRun.Response)
       })
     ,
     'DESCRIPTOR' : _RESTORERUN,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RestoreRun)
+    # @@protoc_insertion_point(class_scope:qcflow.RestoreRun)
     })
   _sym_db.RegisterMessage(RestoreRun)
   _sym_db.RegisterMessage(RestoreRun.Response)
@@ -773,12 +773,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _LOGMETRIC_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.LogMetric.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.LogMetric.Response)
       })
     ,
     'DESCRIPTOR' : _LOGMETRIC,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.LogMetric)
+    # @@protoc_insertion_point(class_scope:qcflow.LogMetric)
     })
   _sym_db.RegisterMessage(LogMetric)
   _sym_db.RegisterMessage(LogMetric.Response)
@@ -788,12 +788,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _LOGPARAM_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.LogParam.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.LogParam.Response)
       })
     ,
     'DESCRIPTOR' : _LOGPARAM,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.LogParam)
+    # @@protoc_insertion_point(class_scope:qcflow.LogParam)
     })
   _sym_db.RegisterMessage(LogParam)
   _sym_db.RegisterMessage(LogParam.Response)
@@ -803,12 +803,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SETEXPERIMENTTAG_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SetExperimentTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SetExperimentTag.Response)
       })
     ,
     'DESCRIPTOR' : _SETEXPERIMENTTAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SetExperimentTag)
+    # @@protoc_insertion_point(class_scope:qcflow.SetExperimentTag)
     })
   _sym_db.RegisterMessage(SetExperimentTag)
   _sym_db.RegisterMessage(SetExperimentTag.Response)
@@ -818,12 +818,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SETTAG_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SetTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SetTag.Response)
       })
     ,
     'DESCRIPTOR' : _SETTAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SetTag)
+    # @@protoc_insertion_point(class_scope:qcflow.SetTag)
     })
   _sym_db.RegisterMessage(SetTag)
   _sym_db.RegisterMessage(SetTag.Response)
@@ -833,12 +833,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETETAG_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteTag.Response)
       })
     ,
     'DESCRIPTOR' : _DELETETAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteTag)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteTag)
     })
   _sym_db.RegisterMessage(DeleteTag)
   _sym_db.RegisterMessage(DeleteTag.Response)
@@ -848,12 +848,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETRUN_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetRun.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetRun.Response)
       })
     ,
     'DESCRIPTOR' : _GETRUN,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetRun)
+    # @@protoc_insertion_point(class_scope:qcflow.GetRun)
     })
   _sym_db.RegisterMessage(GetRun)
   _sym_db.RegisterMessage(GetRun.Response)
@@ -863,12 +863,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SEARCHRUNS_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SearchRuns.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SearchRuns.Response)
       })
     ,
     'DESCRIPTOR' : _SEARCHRUNS,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SearchRuns)
+    # @@protoc_insertion_point(class_scope:qcflow.SearchRuns)
     })
   _sym_db.RegisterMessage(SearchRuns)
   _sym_db.RegisterMessage(SearchRuns.Response)
@@ -878,12 +878,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _LISTARTIFACTS_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.ListArtifacts.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.ListArtifacts.Response)
       })
     ,
     'DESCRIPTOR' : _LISTARTIFACTS,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.ListArtifacts)
+    # @@protoc_insertion_point(class_scope:qcflow.ListArtifacts)
     })
   _sym_db.RegisterMessage(ListArtifacts)
   _sym_db.RegisterMessage(ListArtifacts.Response)
@@ -891,7 +891,7 @@ else:
   FileInfo = _reflection.GeneratedProtocolMessageType('FileInfo', (_message.Message,), {
     'DESCRIPTOR' : _FILEINFO,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.FileInfo)
+    # @@protoc_insertion_point(class_scope:qcflow.FileInfo)
     })
   _sym_db.RegisterMessage(FileInfo)
 
@@ -900,12 +900,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETMETRICHISTORY_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetMetricHistory.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetMetricHistory.Response)
       })
     ,
     'DESCRIPTOR' : _GETMETRICHISTORY,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetMetricHistory)
+    # @@protoc_insertion_point(class_scope:qcflow.GetMetricHistory)
     })
   _sym_db.RegisterMessage(GetMetricHistory)
   _sym_db.RegisterMessage(GetMetricHistory.Response)
@@ -913,7 +913,7 @@ else:
   MetricWithRunId = _reflection.GeneratedProtocolMessageType('MetricWithRunId', (_message.Message,), {
     'DESCRIPTOR' : _METRICWITHRUNID,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.MetricWithRunId)
+    # @@protoc_insertion_point(class_scope:qcflow.MetricWithRunId)
     })
   _sym_db.RegisterMessage(MetricWithRunId)
 
@@ -922,12 +922,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETMETRICHISTORYBULKINTERVAL_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetMetricHistoryBulkInterval.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetMetricHistoryBulkInterval.Response)
       })
     ,
     'DESCRIPTOR' : _GETMETRICHISTORYBULKINTERVAL,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetMetricHistoryBulkInterval)
+    # @@protoc_insertion_point(class_scope:qcflow.GetMetricHistoryBulkInterval)
     })
   _sym_db.RegisterMessage(GetMetricHistoryBulkInterval)
   _sym_db.RegisterMessage(GetMetricHistoryBulkInterval.Response)
@@ -937,12 +937,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _LOGBATCH_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.LogBatch.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.LogBatch.Response)
       })
     ,
     'DESCRIPTOR' : _LOGBATCH,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.LogBatch)
+    # @@protoc_insertion_point(class_scope:qcflow.LogBatch)
     })
   _sym_db.RegisterMessage(LogBatch)
   _sym_db.RegisterMessage(LogBatch.Response)
@@ -952,12 +952,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _LOGMODEL_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.LogModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.LogModel.Response)
       })
     ,
     'DESCRIPTOR' : _LOGMODEL,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.LogModel)
+    # @@protoc_insertion_point(class_scope:qcflow.LogModel)
     })
   _sym_db.RegisterMessage(LogModel)
   _sym_db.RegisterMessage(LogModel.Response)
@@ -967,12 +967,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _LOGINPUTS_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.LogInputs.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.LogInputs.Response)
       })
     ,
     'DESCRIPTOR' : _LOGINPUTS,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.LogInputs)
+    # @@protoc_insertion_point(class_scope:qcflow.LogInputs)
     })
   _sym_db.RegisterMessage(LogInputs)
   _sym_db.RegisterMessage(LogInputs.Response)
@@ -982,12 +982,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETEXPERIMENTBYNAME_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetExperimentByName.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetExperimentByName.Response)
       })
     ,
     'DESCRIPTOR' : _GETEXPERIMENTBYNAME,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetExperimentByName)
+    # @@protoc_insertion_point(class_scope:qcflow.GetExperimentByName)
     })
   _sym_db.RegisterMessage(GetExperimentByName)
   _sym_db.RegisterMessage(GetExperimentByName.Response)
@@ -995,21 +995,21 @@ else:
   TraceInfo = _reflection.GeneratedProtocolMessageType('TraceInfo', (_message.Message,), {
     'DESCRIPTOR' : _TRACEINFO,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.TraceInfo)
+    # @@protoc_insertion_point(class_scope:qcflow.TraceInfo)
     })
   _sym_db.RegisterMessage(TraceInfo)
 
   TraceRequestMetadata = _reflection.GeneratedProtocolMessageType('TraceRequestMetadata', (_message.Message,), {
     'DESCRIPTOR' : _TRACEREQUESTMETADATA,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.TraceRequestMetadata)
+    # @@protoc_insertion_point(class_scope:qcflow.TraceRequestMetadata)
     })
   _sym_db.RegisterMessage(TraceRequestMetadata)
 
   TraceTag = _reflection.GeneratedProtocolMessageType('TraceTag', (_message.Message,), {
     'DESCRIPTOR' : _TRACETAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.TraceTag)
+    # @@protoc_insertion_point(class_scope:qcflow.TraceTag)
     })
   _sym_db.RegisterMessage(TraceTag)
 
@@ -1018,12 +1018,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _STARTTRACE_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.StartTrace.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.StartTrace.Response)
       })
     ,
     'DESCRIPTOR' : _STARTTRACE,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.StartTrace)
+    # @@protoc_insertion_point(class_scope:qcflow.StartTrace)
     })
   _sym_db.RegisterMessage(StartTrace)
   _sym_db.RegisterMessage(StartTrace.Response)
@@ -1033,12 +1033,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _ENDTRACE_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.EndTrace.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.EndTrace.Response)
       })
     ,
     'DESCRIPTOR' : _ENDTRACE,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.EndTrace)
+    # @@protoc_insertion_point(class_scope:qcflow.EndTrace)
     })
   _sym_db.RegisterMessage(EndTrace)
   _sym_db.RegisterMessage(EndTrace.Response)
@@ -1048,12 +1048,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETTRACEINFO_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetTraceInfo.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetTraceInfo.Response)
       })
     ,
     'DESCRIPTOR' : _GETTRACEINFO,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetTraceInfo)
+    # @@protoc_insertion_point(class_scope:qcflow.GetTraceInfo)
     })
   _sym_db.RegisterMessage(GetTraceInfo)
   _sym_db.RegisterMessage(GetTraceInfo.Response)
@@ -1063,12 +1063,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SEARCHTRACES_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SearchTraces.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SearchTraces.Response)
       })
     ,
     'DESCRIPTOR' : _SEARCHTRACES,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SearchTraces)
+    # @@protoc_insertion_point(class_scope:qcflow.SearchTraces)
     })
   _sym_db.RegisterMessage(SearchTraces)
   _sym_db.RegisterMessage(SearchTraces.Response)
@@ -1078,12 +1078,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETETRACES_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteTraces.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteTraces.Response)
       })
     ,
     'DESCRIPTOR' : _DELETETRACES,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteTraces)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteTraces)
     })
   _sym_db.RegisterMessage(DeleteTraces)
   _sym_db.RegisterMessage(DeleteTraces.Response)
@@ -1093,12 +1093,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SETTRACETAG_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SetTraceTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SetTraceTag.Response)
       })
     ,
     'DESCRIPTOR' : _SETTRACETAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SetTraceTag)
+    # @@protoc_insertion_point(class_scope:qcflow.SetTraceTag)
     })
   _sym_db.RegisterMessage(SetTraceTag)
   _sym_db.RegisterMessage(SetTraceTag.Response)
@@ -1108,12 +1108,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETETRACETAG_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteTraceTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteTraceTag.Response)
       })
     ,
     'DESCRIPTOR' : _DELETETRACETAG,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteTraceTag)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteTraceTag)
     })
   _sym_db.RegisterMessage(DeleteTraceTag)
   _sym_db.RegisterMessage(DeleteTraceTag.Response)
@@ -1121,7 +1121,7 @@ else:
   DatasetSummary = _reflection.GeneratedProtocolMessageType('DatasetSummary', (_message.Message,), {
     'DESCRIPTOR' : _DATASETSUMMARY,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DatasetSummary)
+    # @@protoc_insertion_point(class_scope:qcflow.DatasetSummary)
     })
   _sym_db.RegisterMessage(DatasetSummary)
 
@@ -1130,21 +1130,21 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SEARCHDATASETS_RESPONSE,
       '__module__' : 'service_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SearchDatasets.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SearchDatasets.Response)
       })
     ,
     'DESCRIPTOR' : _SEARCHDATASETS,
     '__module__' : 'service_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SearchDatasets)
+    # @@protoc_insertion_point(class_scope:qcflow.SearchDatasets)
     })
   _sym_db.RegisterMessage(SearchDatasets)
   _sym_db.RegisterMessage(SearchDatasets.Response)
 
-  _MLFLOWSERVICE = DESCRIPTOR.services_by_name['MlflowService']
+  _QCFLOWSERVICE = DESCRIPTOR.services_by_name['MlflowService']
   if _descriptor._USE_C_DESCRIPTORS == False:
 
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b'\n\024org.mlflow.api.proto\220\001\001\342?\002\020\001'
+    DESCRIPTOR._serialized_options = b'\n\024org.qcflow.api.proto\220\001\001\342?\002\020\001'
     _DATASETINPUT.fields_by_name['dataset']._options = None
     _DATASETINPUT.fields_by_name['dataset']._serialized_options = b'\370\206\031\001'
     _INPUTTAG.fields_by_name['key']._options = None
@@ -1277,70 +1277,70 @@ else:
     _DATASETSUMMARY.fields_by_name['digest']._serialized_options = b'\370\206\031\001'
     _SEARCHDATASETS._options = None
     _SEARCHDATASETS._serialized_options = b'\342?(\n&com.databricks.rpc.RPC[$this.Response]'
-    _MLFLOWSERVICE.methods_by_name['getExperimentByName']._options = None
-    _MLFLOWSERVICE.methods_by_name['getExperimentByName']._serialized_options = b'\362\206\031H\n,\n\003GET\022\037/mlflow/experiments/get-by-name\032\004\010\002\020\000\020\001*\026Get Experiment By Name'
-    _MLFLOWSERVICE.methods_by_name['createExperiment']._options = None
-    _MLFLOWSERVICE.methods_by_name['createExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/mlflow/experiments/create\032\004\010\002\020\000\020\001*\021Create Experiment'
-    _MLFLOWSERVICE.methods_by_name['searchExperiments']._options = None
-    _MLFLOWSERVICE.methods_by_name['searchExperiments']._serialized_options = b'\362\206\031i\n(\n\004POST\022\032/mlflow/experiments/search\032\004\010\002\020\000\n\'\n\003GET\022\032/mlflow/experiments/search\032\004\010\002\020\000\020\001*\022Search Experiments'
-    _MLFLOWSERVICE.methods_by_name['getExperiment']._options = None
-    _MLFLOWSERVICE.methods_by_name['getExperiment']._serialized_options = b'\362\206\0318\n$\n\003GET\022\027/mlflow/experiments/get\032\004\010\002\020\000\020\001*\016Get Experiment\272\214\031\000'
-    _MLFLOWSERVICE.methods_by_name['deleteExperiment']._options = None
-    _MLFLOWSERVICE.methods_by_name['deleteExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/mlflow/experiments/delete\032\004\010\002\020\000\020\001*\021Delete Experiment'
-    _MLFLOWSERVICE.methods_by_name['restoreExperiment']._options = None
-    _MLFLOWSERVICE.methods_by_name['restoreExperiment']._serialized_options = b'\362\206\031A\n)\n\004POST\022\033/mlflow/experiments/restore\032\004\010\002\020\000\020\001*\022Restore Experiment'
-    _MLFLOWSERVICE.methods_by_name['updateExperiment']._options = None
-    _MLFLOWSERVICE.methods_by_name['updateExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/mlflow/experiments/update\032\004\010\002\020\000\020\001*\021Update Experiment'
-    _MLFLOWSERVICE.methods_by_name['createRun']._options = None
-    _MLFLOWSERVICE.methods_by_name['createRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/mlflow/runs/create\032\004\010\002\020\000\020\001*\nCreate Run'
-    _MLFLOWSERVICE.methods_by_name['updateRun']._options = None
-    _MLFLOWSERVICE.methods_by_name['updateRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/mlflow/runs/update\032\004\010\002\020\000\020\001*\nUpdate Run'
-    _MLFLOWSERVICE.methods_by_name['deleteRun']._options = None
-    _MLFLOWSERVICE.methods_by_name['deleteRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/mlflow/runs/delete\032\004\010\002\020\000\020\001*\nDelete Run'
-    _MLFLOWSERVICE.methods_by_name['restoreRun']._options = None
-    _MLFLOWSERVICE.methods_by_name['restoreRun']._serialized_options = b'\362\206\0313\n\"\n\004POST\022\024/mlflow/runs/restore\032\004\010\002\020\000\020\001*\013Restore Run'
-    _MLFLOWSERVICE.methods_by_name['logMetric']._options = None
-    _MLFLOWSERVICE.methods_by_name['logMetric']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/mlflow/runs/log-metric\032\004\010\002\020\000\020\001*\nLog Metric'
-    _MLFLOWSERVICE.methods_by_name['logParam']._options = None
-    _MLFLOWSERVICE.methods_by_name['logParam']._serialized_options = b'\362\206\0317\n(\n\004POST\022\032/mlflow/runs/log-parameter\032\004\010\002\020\000\020\001*\tLog Param'
-    _MLFLOWSERVICE.methods_by_name['setExperimentTag']._options = None
-    _MLFLOWSERVICE.methods_by_name['setExperimentTag']._serialized_options = b'\362\206\031L\n4\n\004POST\022&/mlflow/experiments/set-experiment-tag\032\004\010\002\020\000\020\001*\022Set Experiment Tag'
-    _MLFLOWSERVICE.methods_by_name['setTag']._options = None
-    _MLFLOWSERVICE.methods_by_name['setTag']._serialized_options = b'\362\206\031/\n\"\n\004POST\022\024/mlflow/runs/set-tag\032\004\010\002\020\000\020\001*\007Set Tag'
-    _MLFLOWSERVICE.methods_by_name['setTraceTag']._options = None
-    _MLFLOWSERVICE.methods_by_name['setTraceTag']._serialized_options = b'\362\206\031B\n/\n\005PATCH\022 /mlflow/traces/{request_id}/tags\032\004\010\002\020\000\020\003*\rSet Trace Tag'
-    _MLFLOWSERVICE.methods_by_name['deleteTraceTag']._options = None
-    _MLFLOWSERVICE.methods_by_name['deleteTraceTag']._serialized_options = b'\362\206\031F\n0\n\006DELETE\022 /mlflow/traces/{request_id}/tags\032\004\010\002\020\000\020\003*\020Delete Trace Tag'
-    _MLFLOWSERVICE.methods_by_name['deleteTag']._options = None
-    _MLFLOWSERVICE.methods_by_name['deleteTag']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/mlflow/runs/delete-tag\032\004\010\002\020\000\020\001*\nDelete Tag'
-    _MLFLOWSERVICE.methods_by_name['getRun']._options = None
-    _MLFLOWSERVICE.methods_by_name['getRun']._serialized_options = b'\362\206\031*\n\035\n\003GET\022\020/mlflow/runs/get\032\004\010\002\020\000\020\001*\007Get Run\272\214\031\000'
-    _MLFLOWSERVICE.methods_by_name['searchRuns']._options = None
-    _MLFLOWSERVICE.methods_by_name['searchRuns']._serialized_options = b'\362\206\0312\n!\n\004POST\022\023/mlflow/runs/search\032\004\010\002\020\000\020\001*\013Search Runs\272\214\031\000'
-    _MLFLOWSERVICE.methods_by_name['listArtifacts']._options = None
-    _MLFLOWSERVICE.methods_by_name['listArtifacts']._serialized_options = b'\362\206\0317\n#\n\003GET\022\026/mlflow/artifacts/list\032\004\010\002\020\000\020\001*\016List Artifacts\272\214\031\000'
-    _MLFLOWSERVICE.methods_by_name['getMetricHistory']._options = None
-    _MLFLOWSERVICE.methods_by_name['getMetricHistory']._serialized_options = b'\362\206\031@\n(\n\003GET\022\033/mlflow/metrics/get-history\032\004\010\002\020\000\020\001*\022Get Metric History'
-    _MLFLOWSERVICE.methods_by_name['getMetricHistoryBulkInterval']._options = None
-    _MLFLOWSERVICE.methods_by_name['getMetricHistoryBulkInterval']._serialized_options = b'\362\206\031:\n6\n\003GET\022)/mlflow/metrics/get-history-bulk-interval\032\004\010\002\020\013\020\003\272\214\031\000'
-    _MLFLOWSERVICE.methods_by_name['logBatch']._options = None
-    _MLFLOWSERVICE.methods_by_name['logBatch']._serialized_options = b'\362\206\0313\n$\n\004POST\022\026/mlflow/runs/log-batch\032\004\010\002\020\000\020\001*\tLog Batch'
-    _MLFLOWSERVICE.methods_by_name['logModel']._options = None
-    _MLFLOWSERVICE.methods_by_name['logModel']._serialized_options = b'\362\206\0313\n$\n\004POST\022\026/mlflow/runs/log-model\032\004\010\002\020\000\020\001*\tLog Model'
-    _MLFLOWSERVICE.methods_by_name['logInputs']._options = None
-    _MLFLOWSERVICE.methods_by_name['logInputs']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/mlflow/runs/log-inputs\032\004\010\002\020\000\020\001*\nLog Inputs'
-    _MLFLOWSERVICE.methods_by_name['searchDatasets']._options = None
-    _MLFLOWSERVICE.methods_by_name['searchDatasets']._serialized_options = b'\362\206\0314\n0\n\004POST\022\"mlflow/experiments/search-datasets\032\004\010\002\020\000\020\003\272\214\031\000'
-    _MLFLOWSERVICE.methods_by_name['startTrace']._options = None
-    _MLFLOWSERVICE.methods_by_name['startTrace']._serialized_options = b'\362\206\031-\n\034\n\004POST\022\016/mlflow/traces\032\004\010\002\020\000\020\003*\013Start Trace'
-    _MLFLOWSERVICE.methods_by_name['endTrace']._options = None
-    _MLFLOWSERVICE.methods_by_name['endTrace']._serialized_options = b'\362\206\0319\n*\n\005PATCH\022\033/mlflow/traces/{request_id}\032\004\010\002\020\000\020\003*\tEnd Trace'
-    _MLFLOWSERVICE.methods_by_name['getTraceInfo']._options = None
-    _MLFLOWSERVICE.methods_by_name['getTraceInfo']._serialized_options = b'\362\206\031@\n-\n\003GET\022 /mlflow/traces/{request_id}/info\032\004\010\002\020\000\020\003*\rGet TraceInfo'
-    _MLFLOWSERVICE.methods_by_name['searchTraces']._options = None
-    _MLFLOWSERVICE.methods_by_name['searchTraces']._serialized_options = b'\362\206\031.\n\033\n\003GET\022\016/mlflow/traces\032\004\010\002\020\000\020\003*\rSearch Traces'
-    _MLFLOWSERVICE.methods_by_name['deleteTraces']._options = None
-    _MLFLOWSERVICE.methods_by_name['deleteTraces']._serialized_options = b'\362\206\031=\n*\n\004POST\022\034/mlflow/traces/delete-traces\032\004\010\002\020\000\020\003*\rDelete Traces'
+    _QCFLOWSERVICE.methods_by_name['getExperimentByName']._options = None
+    _QCFLOWSERVICE.methods_by_name['getExperimentByName']._serialized_options = b'\362\206\031H\n,\n\003GET\022\037/qcflow/experiments/get-by-name\032\004\010\002\020\000\020\001*\026Get Experiment By Name'
+    _QCFLOWSERVICE.methods_by_name['createExperiment']._options = None
+    _QCFLOWSERVICE.methods_by_name['createExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/qcflow/experiments/create\032\004\010\002\020\000\020\001*\021Create Experiment'
+    _QCFLOWSERVICE.methods_by_name['searchExperiments']._options = None
+    _QCFLOWSERVICE.methods_by_name['searchExperiments']._serialized_options = b'\362\206\031i\n(\n\004POST\022\032/qcflow/experiments/search\032\004\010\002\020\000\n\'\n\003GET\022\032/qcflow/experiments/search\032\004\010\002\020\000\020\001*\022Search Experiments'
+    _QCFLOWSERVICE.methods_by_name['getExperiment']._options = None
+    _QCFLOWSERVICE.methods_by_name['getExperiment']._serialized_options = b'\362\206\0318\n$\n\003GET\022\027/qcflow/experiments/get\032\004\010\002\020\000\020\001*\016Get Experiment\272\214\031\000'
+    _QCFLOWSERVICE.methods_by_name['deleteExperiment']._options = None
+    _QCFLOWSERVICE.methods_by_name['deleteExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/qcflow/experiments/delete\032\004\010\002\020\000\020\001*\021Delete Experiment'
+    _QCFLOWSERVICE.methods_by_name['restoreExperiment']._options = None
+    _QCFLOWSERVICE.methods_by_name['restoreExperiment']._serialized_options = b'\362\206\031A\n)\n\004POST\022\033/qcflow/experiments/restore\032\004\010\002\020\000\020\001*\022Restore Experiment'
+    _QCFLOWSERVICE.methods_by_name['updateExperiment']._options = None
+    _QCFLOWSERVICE.methods_by_name['updateExperiment']._serialized_options = b'\362\206\031?\n(\n\004POST\022\032/qcflow/experiments/update\032\004\010\002\020\000\020\001*\021Update Experiment'
+    _QCFLOWSERVICE.methods_by_name['createRun']._options = None
+    _QCFLOWSERVICE.methods_by_name['createRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/qcflow/runs/create\032\004\010\002\020\000\020\001*\nCreate Run'
+    _QCFLOWSERVICE.methods_by_name['updateRun']._options = None
+    _QCFLOWSERVICE.methods_by_name['updateRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/qcflow/runs/update\032\004\010\002\020\000\020\001*\nUpdate Run'
+    _QCFLOWSERVICE.methods_by_name['deleteRun']._options = None
+    _QCFLOWSERVICE.methods_by_name['deleteRun']._serialized_options = b'\362\206\0311\n!\n\004POST\022\023/qcflow/runs/delete\032\004\010\002\020\000\020\001*\nDelete Run'
+    _QCFLOWSERVICE.methods_by_name['restoreRun']._options = None
+    _QCFLOWSERVICE.methods_by_name['restoreRun']._serialized_options = b'\362\206\0313\n\"\n\004POST\022\024/qcflow/runs/restore\032\004\010\002\020\000\020\001*\013Restore Run'
+    _QCFLOWSERVICE.methods_by_name['logMetric']._options = None
+    _QCFLOWSERVICE.methods_by_name['logMetric']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/qcflow/runs/log-metric\032\004\010\002\020\000\020\001*\nLog Metric'
+    _QCFLOWSERVICE.methods_by_name['logParam']._options = None
+    _QCFLOWSERVICE.methods_by_name['logParam']._serialized_options = b'\362\206\0317\n(\n\004POST\022\032/qcflow/runs/log-parameter\032\004\010\002\020\000\020\001*\tLog Param'
+    _QCFLOWSERVICE.methods_by_name['setExperimentTag']._options = None
+    _QCFLOWSERVICE.methods_by_name['setExperimentTag']._serialized_options = b'\362\206\031L\n4\n\004POST\022&/qcflow/experiments/set-experiment-tag\032\004\010\002\020\000\020\001*\022Set Experiment Tag'
+    _QCFLOWSERVICE.methods_by_name['setTag']._options = None
+    _QCFLOWSERVICE.methods_by_name['setTag']._serialized_options = b'\362\206\031/\n\"\n\004POST\022\024/qcflow/runs/set-tag\032\004\010\002\020\000\020\001*\007Set Tag'
+    _QCFLOWSERVICE.methods_by_name['setTraceTag']._options = None
+    _QCFLOWSERVICE.methods_by_name['setTraceTag']._serialized_options = b'\362\206\031B\n/\n\005PATCH\022 /qcflow/traces/{request_id}/tags\032\004\010\002\020\000\020\003*\rSet Trace Tag'
+    _QCFLOWSERVICE.methods_by_name['deleteTraceTag']._options = None
+    _QCFLOWSERVICE.methods_by_name['deleteTraceTag']._serialized_options = b'\362\206\031F\n0\n\006DELETE\022 /qcflow/traces/{request_id}/tags\032\004\010\002\020\000\020\003*\020Delete Trace Tag'
+    _QCFLOWSERVICE.methods_by_name['deleteTag']._options = None
+    _QCFLOWSERVICE.methods_by_name['deleteTag']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/qcflow/runs/delete-tag\032\004\010\002\020\000\020\001*\nDelete Tag'
+    _QCFLOWSERVICE.methods_by_name['getRun']._options = None
+    _QCFLOWSERVICE.methods_by_name['getRun']._serialized_options = b'\362\206\031*\n\035\n\003GET\022\020/qcflow/runs/get\032\004\010\002\020\000\020\001*\007Get Run\272\214\031\000'
+    _QCFLOWSERVICE.methods_by_name['searchRuns']._options = None
+    _QCFLOWSERVICE.methods_by_name['searchRuns']._serialized_options = b'\362\206\0312\n!\n\004POST\022\023/qcflow/runs/search\032\004\010\002\020\000\020\001*\013Search Runs\272\214\031\000'
+    _QCFLOWSERVICE.methods_by_name['listArtifacts']._options = None
+    _QCFLOWSERVICE.methods_by_name['listArtifacts']._serialized_options = b'\362\206\0317\n#\n\003GET\022\026/qcflow/artifacts/list\032\004\010\002\020\000\020\001*\016List Artifacts\272\214\031\000'
+    _QCFLOWSERVICE.methods_by_name['getMetricHistory']._options = None
+    _QCFLOWSERVICE.methods_by_name['getMetricHistory']._serialized_options = b'\362\206\031@\n(\n\003GET\022\033/qcflow/metrics/get-history\032\004\010\002\020\000\020\001*\022Get Metric History'
+    _QCFLOWSERVICE.methods_by_name['getMetricHistoryBulkInterval']._options = None
+    _QCFLOWSERVICE.methods_by_name['getMetricHistoryBulkInterval']._serialized_options = b'\362\206\031:\n6\n\003GET\022)/qcflow/metrics/get-history-bulk-interval\032\004\010\002\020\013\020\003\272\214\031\000'
+    _QCFLOWSERVICE.methods_by_name['logBatch']._options = None
+    _QCFLOWSERVICE.methods_by_name['logBatch']._serialized_options = b'\362\206\0313\n$\n\004POST\022\026/qcflow/runs/log-batch\032\004\010\002\020\000\020\001*\tLog Batch'
+    _QCFLOWSERVICE.methods_by_name['logModel']._options = None
+    _QCFLOWSERVICE.methods_by_name['logModel']._serialized_options = b'\362\206\0313\n$\n\004POST\022\026/qcflow/runs/log-model\032\004\010\002\020\000\020\001*\tLog Model'
+    _QCFLOWSERVICE.methods_by_name['logInputs']._options = None
+    _QCFLOWSERVICE.methods_by_name['logInputs']._serialized_options = b'\362\206\0315\n%\n\004POST\022\027/qcflow/runs/log-inputs\032\004\010\002\020\000\020\001*\nLog Inputs'
+    _QCFLOWSERVICE.methods_by_name['searchDatasets']._options = None
+    _QCFLOWSERVICE.methods_by_name['searchDatasets']._serialized_options = b'\362\206\0314\n0\n\004POST\022\"qcflow/experiments/search-datasets\032\004\010\002\020\000\020\003\272\214\031\000'
+    _QCFLOWSERVICE.methods_by_name['startTrace']._options = None
+    _QCFLOWSERVICE.methods_by_name['startTrace']._serialized_options = b'\362\206\031-\n\034\n\004POST\022\016/qcflow/traces\032\004\010\002\020\000\020\003*\013Start Trace'
+    _QCFLOWSERVICE.methods_by_name['endTrace']._options = None
+    _QCFLOWSERVICE.methods_by_name['endTrace']._serialized_options = b'\362\206\0319\n*\n\005PATCH\022\033/qcflow/traces/{request_id}\032\004\010\002\020\000\020\003*\tEnd Trace'
+    _QCFLOWSERVICE.methods_by_name['getTraceInfo']._options = None
+    _QCFLOWSERVICE.methods_by_name['getTraceInfo']._serialized_options = b'\362\206\031@\n-\n\003GET\022 /qcflow/traces/{request_id}/info\032\004\010\002\020\000\020\003*\rGet TraceInfo'
+    _QCFLOWSERVICE.methods_by_name['searchTraces']._options = None
+    _QCFLOWSERVICE.methods_by_name['searchTraces']._serialized_options = b'\362\206\031.\n\033\n\003GET\022\016/qcflow/traces\032\004\010\002\020\000\020\003*\rSearch Traces'
+    _QCFLOWSERVICE.methods_by_name['deleteTraces']._options = None
+    _QCFLOWSERVICE.methods_by_name['deleteTraces']._serialized_options = b'\362\206\031=\n*\n\004POST\022\034/qcflow/traces/delete-traces\032\004\010\002\020\000\020\003*\rDelete Traces'
     _VIEWTYPE._serialized_start=7200
     _VIEWTYPE._serialized_end=7254
     _SOURCETYPE._serialized_start=7256
@@ -1513,15 +1513,15 @@ else:
     _SEARCHDATASETS._serialized_end=7198
     _SEARCHDATASETS_RESPONSE._serialized_start=7092
     _SEARCHDATASETS_RESPONSE._serialized_end=7153
-    _MLFLOWSERVICE._serialized_start=7492
-    _MLFLOWSERVICE._serialized_end=11819
+    _QCFLOWSERVICE._serialized_start=7492
+    _QCFLOWSERVICE._serialized_end=11819
   MlflowService = service_reflection.GeneratedServiceType('MlflowService', (_service.Service,), dict(
-    DESCRIPTOR = _MLFLOWSERVICE,
+    DESCRIPTOR = _QCFLOWSERVICE,
     __module__ = 'service_pb2'
     ))
 
   MlflowService_Stub = service_reflection.GeneratedServiceStubType('MlflowService_Stub', (MlflowService,), dict(
-    DESCRIPTOR = _MLFLOWSERVICE,
+    DESCRIPTOR = _QCFLOWSERVICE,
     __module__ = 'service_pb2'
     ))
 

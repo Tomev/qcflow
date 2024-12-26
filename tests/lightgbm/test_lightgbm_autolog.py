@@ -14,14 +14,14 @@ import yaml
 from packaging.version import Version
 from sklearn import datasets
 
-import mlflow
-import mlflow.lightgbm
-from mlflow import MlflowClient
-from mlflow.lightgbm import _autolog_callback
-from mlflow.models import Model
-from mlflow.models.utils import _read_example
-from mlflow.types.utils import _infer_schema
-from mlflow.utils.autologging_utils import BatchMetricsLogger, picklable_exception_safe_function
+import qcflow
+import qcflow.lightgbm
+from qcflow import MlflowClient
+from qcflow.lightgbm import _autolog_callback
+from qcflow.models import Model
+from qcflow.models.utils import _read_example
+from qcflow.types.utils import _infer_schema
+from qcflow.utils.autologging_utils import BatchMetricsLogger, picklable_exception_safe_function
 
 mpl.use("Agg")
 
@@ -63,30 +63,30 @@ def valid_set():
 
 
 def test_lgb_autolog_ends_auto_created_run(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     lgb.train(bst_params, train_set, num_boost_round=1)
-    assert mlflow.active_run() is None
+    assert qcflow.active_run() is None
 
 
 def test_extra_tags_lightgbm_autolog(bst_params, train_set):
-    mlflow.lightgbm.autolog(extra_tags={"test_tag": "lgb_autolog"})
+    qcflow.lightgbm.autolog(extra_tags={"test_tag": "lgb_autolog"})
     lgb.train(bst_params, train_set, num_boost_round=1)
 
-    run = mlflow.last_active_run()
+    run = qcflow.last_active_run()
     assert run.data.tags["test_tag"] == "lgb_autolog"
-    assert run.data.tags[mlflow.utils.mlflow_tags.MLFLOW_AUTOLOGGING] == "lightgbm"
+    assert run.data.tags[qcflow.utils.qcflow_tags.QCFLOW_AUTOLOGGING] == "lightgbm"
 
 
 def test_lgb_autolog_persists_manually_created_run(bst_params, train_set):
-    mlflow.lightgbm.autolog()
-    with mlflow.start_run() as run:
+    qcflow.lightgbm.autolog()
+    with qcflow.start_run() as run:
         lgb.train(bst_params, train_set, num_boost_round=1)
-        assert mlflow.active_run()
-        assert mlflow.active_run().info.run_id == run.info.run_id
+        assert qcflow.active_run()
+        assert qcflow.active_run().info.run_id == run.info.run_id
 
 
 def test_lgb_autolog_logs_default_params(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     lgb.train(bst_params, train_set)
     run = get_latest_run()
     params = run.data.params
@@ -136,7 +136,7 @@ def test_lgb_autolog_logs_default_params(bst_params, train_set):
 
 
 def test_lgb_autolog_logs_specified_params(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     expected_params = {
         "num_boost_round": 10,
     }
@@ -178,15 +178,15 @@ def test_lgb_autolog_logs_specified_params(bst_params, train_set):
 
 
 def test_lgb_autolog_sklearn():
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
 
     X, y = datasets.load_iris(return_X_y=True)
     params = {"n_estimators": 10, "reg_lambda": 1}
     model = lgb.LGBMClassifier(**params)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         model.fit(X, y)
-        model_uri = mlflow.get_artifact_uri("model")
+        model_uri = qcflow.get_artifact_uri("model")
 
     client = MlflowClient()
     run = client.get_run(run.info.run_id)
@@ -198,15 +198,15 @@ def test_lgb_autolog_sklearn():
         "feature_importance_split.png",
         "feature_importance_split.json",
     }
-    loaded_model = mlflow.lightgbm.load_model(model_uri)
+    loaded_model = qcflow.lightgbm.load_model(model_uri)
     np.testing.assert_allclose(loaded_model.predict(X), model.predict(X))
 
 
 def test_lgb_autolog_sklearn_nested_in_pipeline():
     from sklearn.pipeline import make_pipeline
 
-    mlflow.lightgbm.autolog()
-    mlflow.sklearn.autolog()
+    qcflow.lightgbm.autolog()
+    qcflow.sklearn.autolog()
 
     X, y = datasets.load_iris(return_X_y=True)
     params = {"n_estimators": 10, "reg_lambda": 1}
@@ -214,7 +214,7 @@ def test_lgb_autolog_sklearn_nested_in_pipeline():
 
     model = make_pipeline(model)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         model.fit(X, y)
 
     client = MlflowClient()
@@ -243,7 +243,7 @@ def test_lgb_autolog_with_sklearn_outputs_do_not_reflect_training_dataset_mutati
         mock.patch("lightgbm.LGBMClassifier.fit", patched_lgb_classifier_fit),
         mock.patch("lightgbm.LGBMClassifier.predict", patched_lgb_classifier_predict),
     ):
-        mlflow.lightgbm.autolog(log_models=True, log_model_signatures=True, log_input_examples=True)
+        qcflow.lightgbm.autolog(log_models=True, log_model_signatures=True, log_input_examples=True)
 
         X = pd.DataFrame(
             {
@@ -260,7 +260,7 @@ def test_lgb_autolog_with_sklearn_outputs_do_not_reflect_training_dataset_mutati
         model = lgb.LGBMClassifier(**params)
         model.fit(X, y)
 
-        run_artifact_uri = mlflow.last_active_run().info.artifact_uri
+        run_artifact_uri = qcflow.last_active_run().info.artifact_uri
         model_conf = get_model_conf(run_artifact_uri)
         input_example = pd.read_json(
             os.path.join(run_artifact_uri, "model", "input_example.json"), orient="split"
@@ -273,7 +273,7 @@ def test_lgb_autolog_with_sklearn_outputs_do_not_reflect_training_dataset_mutati
 
 
 def test_lgb_autolog_logs_metrics_with_validation_data(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     evals_result = {}
     if Version(lgb.__version__) <= Version("3.3.1"):
         lgb.train(
@@ -304,7 +304,7 @@ def test_lgb_autolog_logs_metrics_with_validation_data(bst_params, train_set):
 
 
 def test_lgb_autolog_logs_metrics_with_multi_validation_data(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     evals_result = {}
     # If we use [train_set, train_set] here, LightGBM ignores the first dataset.
     # To avoid that, create a new Dataset object.
@@ -340,7 +340,7 @@ def test_lgb_autolog_logs_metrics_with_multi_validation_data(bst_params, train_s
 
 
 def test_lgb_autolog_logs_metrics_with_multi_metrics(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     evals_result = {}
     params = {"metric": ["multi_error", "multi_logloss"]}
     params.update(bst_params)
@@ -376,7 +376,7 @@ def test_lgb_autolog_logs_metrics_with_multi_metrics(bst_params, train_set):
 
 
 def test_lgb_autolog_logs_metrics_with_multi_validation_data_and_metrics(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     evals_result = {}
     params = {"metric": ["multi_error", "multi_logloss"]}
     params.update(bst_params)
@@ -422,7 +422,7 @@ def test_lgb_autolog_batch_metrics_logger_logs_expected_metrics(bst_params, trai
     original = BatchMetricsLogger.record_metrics
 
     with patch(
-        "mlflow.utils.autologging_utils.BatchMetricsLogger.record_metrics", autospec=True
+        "qcflow.utils.autologging_utils.BatchMetricsLogger.record_metrics", autospec=True
     ) as record_metrics_mock:
 
         def record_metrics_side_effect(self, metrics, step=None):
@@ -431,7 +431,7 @@ def test_lgb_autolog_batch_metrics_logger_logs_expected_metrics(bst_params, trai
 
         record_metrics_mock.side_effect = record_metrics_side_effect
 
-        mlflow.lightgbm.autolog()
+        qcflow.lightgbm.autolog()
         evals_result = {}
         params = {"metric": ["multi_error", "multi_logloss"]}
         params.update(bst_params)
@@ -496,7 +496,7 @@ def ranking_dataset(num_rows=100, num_queries=10):
 
 def test_lgb_autolog_atsign_metrics(train_set):
     train_set, valid_set = ranking_dataset()
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     params = {"objective": "regression", "metric": ["map"], "eval_at": [1]}
     lgb.train(
         params,
@@ -510,7 +510,7 @@ def test_lgb_autolog_atsign_metrics(train_set):
 
 
 def test_lgb_autolog_logs_metrics_with_early_stopping(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     evals_result = {}
     params = {"metric": ["multi_error", "multi_logloss"]}
     params.update(bst_params)
@@ -559,7 +559,7 @@ def test_lgb_autolog_logs_metrics_with_early_stopping(bst_params, train_set):
 
 
 def test_lgb_autolog_logs_feature_importance(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     model = lgb.train(bst_params, train_set, num_boost_round=10)
     run = get_latest_run()
     run_id = run.info.run_id
@@ -586,18 +586,18 @@ def test_lgb_autolog_logs_feature_importance(bst_params, train_set):
 
 
 def test_no_figure_is_opened_after_logging(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     lgb.train(bst_params, train_set, num_boost_round=10)
     assert mpl.pyplot.get_fignums() == []
 
 
 def test_lgb_autolog_loads_model_from_artifact(bst_params, train_set):
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     model = lgb.train(bst_params, train_set, num_boost_round=10)
     run = get_latest_run()
     run_id = run.info.run_id
 
-    loaded_model = mlflow.lightgbm.load_model(f"runs:/{run_id}/model")
+    loaded_model = qcflow.lightgbm.load_model(f"runs:/{run_id}/model")
     np.testing.assert_array_almost_equal(
         model.predict(train_set.data), loaded_model.predict(train_set.data)
     )
@@ -612,7 +612,7 @@ def test_lgb_autolog_gets_input_example(bst_params):
     y = iris.target
     dataset = lgb.Dataset(X, y, free_raw_data=True)
 
-    mlflow.lightgbm.autolog(log_input_examples=True)
+    qcflow.lightgbm.autolog(log_input_examples=True)
     lgb.train(bst_params, dataset)
     run = get_latest_run()
 
@@ -623,7 +623,7 @@ def test_lgb_autolog_gets_input_example(bst_params):
 
     pd.testing.assert_frame_equal(input_example, (X[:5]))
 
-    pyfunc_model = mlflow.pyfunc.load_model(os.path.join(run.info.artifact_uri, "model"))
+    pyfunc_model = qcflow.pyfunc.load_model(os.path.join(run.info.artifact_uri, "model"))
 
     # make sure reloading the input_example and predicting on it does not error
     pyfunc_model.predict(input_example)
@@ -635,7 +635,7 @@ def test_lgb_autolog_infers_model_signature_correctly(bst_params):
     y = iris.target
     dataset = lgb.Dataset(X, y, free_raw_data=True)
 
-    mlflow.lightgbm.autolog(log_model_signatures=True)
+    qcflow.lightgbm.autolog(log_model_signatures=True)
     lgb.train(bst_params, dataset)
     run = get_latest_run()
     run_id = run.info.run_id
@@ -686,7 +686,7 @@ def test_lgb_autolog_continues_logging_even_if_signature_inference_fails(tmp_pat
         "num_class": 3,
     }
 
-    mlflow.lightgbm.autolog(log_model_signatures=True)
+    qcflow.lightgbm.autolog(log_model_signatures=True)
     lgb.train(bst_params, dataset)
     run = get_latest_run()
     run_id = run.info.run_id
@@ -714,8 +714,8 @@ def test_lgb_autolog_configuration_options(bst_params, log_input_examples, log_m
     X = pd.DataFrame(iris.data[:, :2], columns=iris.feature_names[:2])
     y = iris.target
 
-    with mlflow.start_run() as run:
-        mlflow.lightgbm.autolog(
+    with qcflow.start_run() as run:
+        qcflow.lightgbm.autolog(
             log_input_examples=log_input_examples, log_model_signatures=log_model_signatures
         )
         dataset = lgb.Dataset(X, y)
@@ -731,8 +731,8 @@ def test_lgb_autolog_log_models_configuration(bst_params, log_models):
     X = pd.DataFrame(iris.data[:, :2], columns=iris.feature_names[:2])
     y = iris.target
 
-    with mlflow.start_run() as run:
-        mlflow.lightgbm.autolog(log_models=log_models)
+    with qcflow.start_run() as run:
+        qcflow.lightgbm.autolog(log_models=log_models)
         dataset = lgb.Dataset(X, y)
         lgb.train(bst_params, dataset)
 
@@ -748,7 +748,7 @@ def test_lgb_autolog_does_not_break_dataset_instantiation_with_data_none():
     LightGBM internally calls `lightgbm.Dataset(None)` to create a subset of `Dataset`:
     https://github.com/microsoft/LightGBM/blob/v3.0.0/python-package/lightgbm/basic.py#L1381
     """
-    mlflow.lightgbm.autolog()
+    qcflow.lightgbm.autolog()
     lgb.Dataset(None)
 
 
@@ -761,13 +761,13 @@ def test_callback_func_is_pickable():
 
 def test_sklearn_api_autolog_registering_model():
     registered_model_name = "test_autolog_registered_model"
-    mlflow.lightgbm.autolog(registered_model_name=registered_model_name)
+    qcflow.lightgbm.autolog(registered_model_name=registered_model_name)
 
     X, y = datasets.load_iris(return_X_y=True)
     params = {"n_estimators": 10, "reg_lambda": 1}
     model = lgb.LGBMClassifier(**params)
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         model.fit(X, y)
 
         registered_model = MlflowClient().get_registered_model(registered_model_name)
@@ -776,9 +776,9 @@ def test_sklearn_api_autolog_registering_model():
 
 def test_lgb_api_autolog_registering_model(bst_params, train_set):
     registered_model_name = "test_autolog_registered_model"
-    mlflow.lightgbm.autolog(registered_model_name=registered_model_name)
+    qcflow.lightgbm.autolog(registered_model_name=registered_model_name)
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         lgb.train(bst_params, train_set, num_boost_round=1)
 
         registered_model = MlflowClient().get_registered_model(registered_model_name)
@@ -787,8 +787,8 @@ def test_lgb_api_autolog_registering_model(bst_params, train_set):
 
 @pytest.mark.parametrize("log_datasets", [True, False])
 def test_lgb_log_datasets(bst_params, train_set, log_datasets):
-    with mlflow.start_run() as run:
-        mlflow.lightgbm.autolog(log_datasets=log_datasets)
+    with qcflow.start_run() as run:
+        qcflow.lightgbm.autolog(log_datasets=log_datasets)
         lgb.train(bst_params, train_set, num_boost_round=1)
 
     run_id = run.info.run_id
@@ -797,15 +797,15 @@ def test_lgb_log_datasets(bst_params, train_set, log_datasets):
     if log_datasets:
         assert len(dataset_inputs) == 1
         assert dataset_inputs[0].dataset.schema == json.dumps(
-            {"mlflow_colspec": _infer_schema(train_set.data).to_dict()}
+            {"qcflow_colspec": _infer_schema(train_set.data).to_dict()}
         )
     else:
         assert len(dataset_inputs) == 0
 
 
 def test_lgb_log_datasets_with_valid_set(bst_params, train_set, valid_set):
-    with mlflow.start_run() as run:
-        mlflow.lightgbm.autolog(log_datasets=True)
+    with qcflow.start_run() as run:
+        qcflow.lightgbm.autolog(log_datasets=True)
         lgb.train(bst_params, train_set, valid_sets=[valid_set], num_boost_round=1)
 
     run_id = run.info.run_id
@@ -814,17 +814,17 @@ def test_lgb_log_datasets_with_valid_set(bst_params, train_set, valid_set):
     assert len(dataset_inputs) == 2
     assert dataset_inputs[0].tags[0].value == "train"
     assert dataset_inputs[0].dataset.schema == json.dumps(
-        {"mlflow_colspec": _infer_schema(train_set.data).to_dict()}
+        {"qcflow_colspec": _infer_schema(train_set.data).to_dict()}
     )
     assert dataset_inputs[1].tags[0].value == "eval"
     assert dataset_inputs[1].dataset.schema == json.dumps(
-        {"mlflow_colspec": _infer_schema(valid_set.data).to_dict()}
+        {"qcflow_colspec": _infer_schema(valid_set.data).to_dict()}
     )
 
 
 def test_lgb_log_datasets_with_valid_set_with_name(bst_params, train_set, valid_set):
-    with mlflow.start_run() as run:
-        mlflow.lightgbm.autolog(log_datasets=True)
+    with qcflow.start_run() as run:
+        qcflow.lightgbm.autolog(log_datasets=True)
         lgb.train(
             bst_params,
             train_set,

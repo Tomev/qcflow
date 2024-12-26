@@ -2,11 +2,11 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { RunsChartsConfigureLineChart } from './RunsChartsConfigureLineChart';
 import { IntlProvider } from 'react-intl';
 import { RunsChartsLineChartXAxisType } from '../RunsCharts.common';
-import { shouldEnableManualRangeControls } from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+import { shouldEnableManualRangeControls } from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 import { DesignSystemProvider } from '@databricks/design-system';
 
-jest.mock('@mlflow/mlflow/src/common/utils/FeatureUtils', () => ({
-  ...jest.requireActual('@mlflow/mlflow/src/common/utils/FeatureUtils'),
+jest.mock('@qcflow/qcflow/src/common/utils/FeatureUtils', () => ({
+  ...jest.requireActual('@qcflow/qcflow/src/common/utils/FeatureUtils'),
   shouldEnableManualRangeControls: jest.fn(),
 }));
 

@@ -4,8 +4,8 @@ import warnings
 import pytest
 import yaml
 
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.config import (
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.config import (
     AnthropicConfig,
     OpenAIConfig,
     RouteConfig,
@@ -13,7 +13,7 @@ from mlflow.gateway.config import (
     _resolve_api_key_from_input,
     _save_route_config,
 )
-from mlflow.gateway.utils import assemble_uri_path
+from qcflow.gateway.utils import assemble_uri_path
 
 
 @pytest.fixture

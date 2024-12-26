@@ -1,7 +1,7 @@
 """
-The :py:mod:`mlflow.models.signature` module provides an API for specification of model signature.
+The :py:mod:`qcflow.models.signature` module provides an API for specification of model signature.
 
-Model signature defines schema of model input and output. See :py:class:`mlflow.types.schema.Schema`
+Model signature defines schema of model input and output. See :py:class:`qcflow.types.schema.Schema`
 for more details on Schema and data types.
 """
 
@@ -16,23 +16,23 @@ from typing import TYPE_CHECKING, Any, Optional, Union, get_type_hints
 import numpy as np
 import pandas as pd
 
-from mlflow.environment_variables import _MLFLOW_TESTING
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.utils import _contains_params, _Example
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, RESOURCE_DOES_NOT_EXIST
-from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
-from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri, _upload_artifact_to_uri
-from mlflow.types.schema import AnyType, ColSpec, ParamSchema, Schema, convert_dataclass_to_schema
-from mlflow.types.type_hints import (
+from qcflow.environment_variables import _QCFLOW_TESTING
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.utils import _contains_params, _Example
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, RESOURCE_DOES_NOT_EXIST
+from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
+from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri, _upload_artifact_to_uri
+from qcflow.types.schema import AnyType, ColSpec, ParamSchema, Schema, convert_dataclass_to_schema
+from qcflow.types.type_hints import (
     InvalidTypeHintException,
     _get_example_validation_result,
     _infer_schema_from_type_hint,
 )
-from mlflow.types.utils import _infer_param_schema, _infer_schema
-from mlflow.utils.uri import append_to_uri_path
+from qcflow.types.utils import _infer_param_schema, _infer_schema
+from qcflow.utils.uri import append_to_uri_path
 
 # At runtime, we don't need  `pyspark.sql.dataframe`
 if TYPE_CHECKING:
@@ -50,7 +50,7 @@ _logger = logging.getLogger(__name__)
 _LOG_MODEL_INFER_SIGNATURE_WARNING_TEMPLATE = (
     "Failed to infer the model signature from the input example. Reason: %s. To see the full "
     "traceback, set the logging level to DEBUG via "
-    '`logging.getLogger("mlflow").setLevel(logging.DEBUG)`.'
+    '`logging.getLogger("qcflow").setLevel(logging.DEBUG)`.'
 )
 
 
@@ -58,10 +58,10 @@ class ModelSignature:
     """
     ModelSignature specifies schema of model's inputs, outputs and params.
 
-    ModelSignature can be :py:func:`inferred <mlflow.models.infer_signature>` from training
+    ModelSignature can be :py:func:`inferred <qcflow.models.infer_signature>` from training
     dataset, model predictions using and params for inference, or constructed by hand by
-    passing an input and output :py:class:`Schema <mlflow.types.Schema>`, and params
-    :py:class:`ParamSchema <mlflow.types.ParamSchema>`.
+    passing an input and output :py:class:`Schema <qcflow.types.Schema>`, and params
+    :py:class:`ParamSchema <qcflow.types.ParamSchema>`.
     """
 
     def __init__(
@@ -72,17 +72,17 @@ class ModelSignature:
     ):
         if inputs and not isinstance(inputs, Schema) and not is_dataclass(inputs):
             raise TypeError(
-                "inputs must be either None, mlflow.models.signature.Schema, or a dataclass,"
+                "inputs must be either None, qcflow.models.signature.Schema, or a dataclass,"
                 f"got '{type(inputs).__name__}'"
             )
         if outputs and not isinstance(outputs, Schema) and not is_dataclass(outputs):
             raise TypeError(
-                "outputs must be either None, mlflow.models.signature.Schema, or a dataclass,"
+                "outputs must be either None, qcflow.models.signature.Schema, or a dataclass,"
                 f"got '{type(outputs).__name__}'"
             )
         if params and not isinstance(params, ParamSchema):
             raise TypeError(
-                "If params are provided, they must by of type mlflow.models.signature.ParamSchema, "
+                "If params are provided, they must by of type qcflow.models.signature.ParamSchema, "
                 f"got '{type(params).__name__}'"
             )
         if all(x is None for x in [inputs, outputs, params]):
@@ -168,11 +168,11 @@ def infer_signature(
     params: Optional[dict[str, Any]] = None,
 ) -> ModelSignature:
     """
-    Infer an MLflow model signature from the training data (input), model predictions (output)
+    Infer an QCFlow model signature from the training data (input), model predictions (output)
     and parameters (for inference).
 
     The signature represents model input and output as data frames with (optionally) named columns
-    and data type specified as one of types defined in :py:class:`mlflow.types.DataType`. It also
+    and data type specified as one of types defined in :py:class:`qcflow.types.DataType`. It also
     includes parameters schema for inference, .
     This method will raise an exception if the user data contains incompatible types or is not
     passed in one of the supported formats listed below.
@@ -187,10 +187,10 @@ def infer_signature(
       - scipy.sparse.csc_matrix
       - dictionary / list of dictionaries of JSON-convertible types
 
-    The element types should be mappable to one of :py:class:`mlflow.types.DataType`.
+    The element types should be mappable to one of :py:class:`qcflow.types.DataType`.
 
     For pyspark.sql.DataFrame inputs, columns of type DateType and TimestampType are both inferred
-    as type :py:data:`datetime <mlflow.types.DataType.datetime>`, which is coerced to
+    as type :py:data:`datetime <qcflow.types.DataType.datetime>`, which is coerced to
     TimestampType at inference.
 
     Args:
@@ -205,8 +205,8 @@ def infer_signature(
 
               .. code-block:: python
 
-                    from mlflow.models import infer_signature
-                    from mlflow.transformers import generate_signature_output
+                    from qcflow.models import infer_signature
+                    from qcflow.transformers import generate_signature_output
 
                     # Define parameters for inference
                     params = {
@@ -224,13 +224,13 @@ def infer_signature(
                     )
 
                     # Saving model with model signature
-                    mlflow.transformers.save_model(
+                    qcflow.transformers.save_model(
                         model,
                         path=model_path,
                         signature=signature,
                     )
 
-                    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+                    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
                     # Passing params to `predict` function directly
                     result = pyfunc_loaded.predict(data, params=params)
@@ -247,7 +247,7 @@ def infer_signature(
                 )
             except Exception:
                 extra_msg = (
-                    ("Note that MLflow doesn't validate data types during inference for AnyType. ")
+                    ("Note that QCFlow doesn't validate data types during inference for AnyType. ")
                     if key == "inputs"
                     else ""
                 )
@@ -459,7 +459,7 @@ def _infer_signature_from_input_example(
         based on the `input_example` and the model's outputs based on the prediction from the
         `wrapped_model`.
     """
-    from mlflow.pyfunc import _validate_prediction_input
+    from qcflow.pyfunc import _validate_prediction_input
 
     if input_example is None:
         return None
@@ -492,8 +492,8 @@ def _infer_signature_from_input_example(
         except Exception:
             # try assign output schema if failing to infer it from prediction for langchain models
             try:
-                from mlflow.langchain import _LangChainModelWrapper
-                from mlflow.langchain.utils.chat import _ChatResponse
+                from qcflow.langchain import _LangChainModelWrapper
+                from qcflow.langchain.utils.chat import _ChatResponse
             except ImportError:
                 pass
             else:
@@ -511,7 +511,7 @@ def _infer_signature_from_input_example(
 
         return ModelSignature(input_schema, output_schema, params_schema)
     except Exception as e:
-        if _MLFLOW_TESTING.get():
+        if _QCFLOW_TESTING.get():
             raise
         _logger.warning(
             _LOG_MODEL_INFER_SIGNATURE_WARNING_TEMPLATE,
@@ -537,19 +537,19 @@ def set_signature(
     To set a signature on a model version, first set the signature on the source model artifacts.
     Following this, generate a new model version using the updated model artifacts. For more
     information about setting signatures on model versions, see
-    `this doc section <https://www.mlflow.org/docs/latest/models.html#set-signature-on-mv>`_.
+    `this doc section <https://www.qcflow.org/docs/latest/models.html#set-signature-on-mv>`_.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
             Please note that model URIs with the ``models:/`` scheme are not supported.
@@ -559,14 +559,14 @@ def set_signature(
     .. code-block:: python
         :caption: Example
 
-        import mlflow
-        from mlflow.models import set_signature, infer_signature
+        import qcflow
+        from qcflow.models import set_signature, infer_signature
 
         # load model from run artifacts
         run_id = "96771d893a5e46159d9f3b49bf9013e2"
         artifact_path = "models"
         model_uri = f"runs:/{run_id}/{artifact_path}"
-        model = mlflow.pyfunc.load_model(model_uri)
+        model = qcflow.pyfunc.load_model(model_uri)
 
         # determine model signature
         test_df = ...

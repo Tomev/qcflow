@@ -1,6 +1,6 @@
 import React from 'react';
 import { CreateModelForm } from './CreateModelForm';
-import { renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 
 describe('Render test', () => {
   const minimalProps = {

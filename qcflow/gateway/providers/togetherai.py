@@ -1,15 +1,15 @@
 import json
 from typing import Any, AsyncGenerator, AsyncIterable
 
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.config import RouteConfig, TogetherAIConfig
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.base import BaseProvider, ProviderAdapter
-from mlflow.gateway.providers.utils import rename_payload_keys, send_request, send_stream_request
-from mlflow.gateway.schemas import chat as chat_schema
-from mlflow.gateway.schemas import completions as completions_schema
-from mlflow.gateway.schemas import embeddings as embeddings_schema
-from mlflow.gateway.utils import strip_sse_prefix
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.config import RouteConfig, TogetherAIConfig
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.base import BaseProvider, ProviderAdapter
+from qcflow.gateway.providers.utils import rename_payload_keys, send_request, send_stream_request
+from qcflow.gateway.schemas import chat as chat_schema
+from qcflow.gateway.schemas import completions as completions_schema
+from qcflow.gateway.schemas import embeddings as embeddings_schema
+from qcflow.gateway.utils import strip_sse_prefix
 
 
 class TogetherAIAdapter(ProviderAdapter):

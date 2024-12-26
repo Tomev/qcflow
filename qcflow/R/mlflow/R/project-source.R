@@ -1,14 +1,14 @@
-#' Source a Script with MLflow Params
+#' Source a Script with QCFlow Params
 #'
 #' This function should not be used interactively. It is designed to be called via `Rscript` from
-#'   the terminal or through the MLflow CLI.
+#'   the terminal or through the QCFlow CLI.
 #'
 #' @param uri Path to an R script, can be a quoted or unquoted string.
 #' @keywords internal
 #' @export
-mlflow_source <- function(uri) {
+qcflow_source <- function(uri) {
   if (interactive()) stop(
-    "`mlflow_source()` cannot be used interactively; use `mlflow_run()` instead.",
+    "`qcflow_source()` cannot be used interactively; use `qcflow_run()` instead.",
     call. = FALSE
   )
 
@@ -27,11 +27,11 @@ mlflow_source <- function(uri) {
     suppressPackageStartupMessages(source(uri, local = parent.frame())),
     error = function(cnd) {
       message(cnd, "\n")
-      mlflow_end_run(status = "FAILED")
+      qcflow_end_run(status = "FAILED")
     },
-    interrupt = function(cnd) mlflow_end_run(status = "KILLED"),
+    interrupt = function(cnd) qcflow_end_run(status = "KILLED"),
     finally = {
-      if (!is.null(mlflow_get_active_run_id())) mlflow_end_run(status = "FAILED")
+      if (!is.null(qcflow_get_active_run_id())) qcflow_end_run(status = "FAILED")
       clear_run_params()
     }
   )

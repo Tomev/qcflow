@@ -48,7 +48,7 @@ export function LoggedModelsDropdownContent({
           if (!registeredModel) {
             return (
               <DropdownMenu.Item
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_50"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_50"
                 onClick={() => onRegisterClick(model)}
                 key={model.absolutePath}
               >
@@ -59,7 +59,7 @@ export function LoggedModelsDropdownContent({
                     to={Routes.getRunPageTabRoute(experimentId, runUuid, 'artifacts/' + model.path)}
                   >
                     <Button
-                      componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_58"
+                      componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_58"
                       type="link"
                       size="small"
                       onClick={(e) => {
@@ -81,14 +81,14 @@ export function LoggedModelsDropdownContent({
 
           return (
             <Link target="_blank" to={getRegisteredModelVersionLink(registeredModel)} key={model.absolutePath}>
-              <DropdownMenu.Item componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_80">
+              <DropdownMenu.Item componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_80">
                 <DropdownMenu.IconWrapper css={{ display: 'flex', alignItems: 'center' }}>
                   {status === 'READY' ? <RegisteredModelOkIcon /> : ModelVersionStatusIcons[status]}
                 </DropdownMenu.IconWrapper>
                 <span css={{ marginRight: theme.spacing.md }}>
                   {name}
                   <Tag
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_90"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_90"
                     css={{ marginLeft: 8, marginRight: 4 }}
                   >
                     v{version}
@@ -96,7 +96,7 @@ export function LoggedModelsDropdownContent({
                 </span>
                 <DropdownMenu.HintColumn>
                   <Button
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_89"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_89"
                     type="link"
                     size="small"
                     onClick={(e) => {
@@ -200,7 +200,7 @@ export const RunViewHeaderRegisterModelButton = ({
           >
             <DropdownMenu.Trigger asChild>
               <Button
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_195"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_195"
                 type="primary"
                 endIcon={<ChevronDownIcon />}
               >
@@ -240,7 +240,7 @@ export const RunViewHeaderRegisterModelButton = ({
         css={{ marginLeft: theme.spacing.sm }}
       >
         <Button
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_231"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewheaderregistermodelbutton.tsx_231"
           endIcon={<NewWindowIcon />}
           type="link"
         >

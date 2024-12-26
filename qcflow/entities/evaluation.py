@@ -1,9 +1,9 @@
 from typing import Any, Optional
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.assessment import Assessment
-from mlflow.entities.evaluation_tag import EvaluationTag  # Assuming EvaluationTag is in this module
-from mlflow.entities.metric import Metric
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.assessment import Assessment
+from qcflow.entities.evaluation_tag import EvaluationTag  # Assuming EvaluationTag is in this module
+from qcflow.entities.metric import Metric
 
 
 class Evaluation(_MlflowObject):
@@ -27,15 +27,15 @@ class Evaluation(_MlflowObject):
         tags: Optional[list[EvaluationTag]] = None,
     ):
         """
-        Construct a new mlflow.entities.Evaluation instance.
+        Construct a new qcflow.entities.Evaluation instance.
 
         Args:
             evaluation_id: A unique identifier for the evaluation.
-            run_id: The ID of the MLflow Run containing the Evaluation.
+            run_id: The ID of the QCFlow Run containing the Evaluation.
             inputs_id: A unique identifier for the input names and values for evaluation.
             inputs: Input names and values for evaluation.
             outputs: Outputs obtained during inference.
-            request_id: The ID of an MLflow Trace corresponding to the inputs and outputs.
+            request_id: The ID of an QCFlow Trace corresponding to the inputs and outputs.
             targets: Expected values that the model should produce during inference.
             error_code: An error code representing any issues encountered during the evaluation.
             error_message: A descriptive error message representing any issues encountered during
@@ -65,7 +65,7 @@ class Evaluation(_MlflowObject):
 
     @property
     def run_id(self) -> str:
-        """The ID of the MLflow Run containing the evaluation"""
+        """The ID of the QCFlow Run containing the evaluation"""
         return self._run_id
 
     @property

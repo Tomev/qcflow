@@ -1,11 +1,11 @@
 """
-The ``mlflow.statsmodels`` module provides an API for logging and loading statsmodels models.
+The ``qcflow.statsmodels`` module provides an API for logging and loading statsmodels models.
 This module exports statsmodels models with the following flavors:
 
 statsmodels (native) format
     This is the main flavor that can be loaded back into statsmodels, which relies on pickle
     internally to serialize a model.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
 
 .. _statsmodels.base.model.Results:
@@ -21,43 +21,43 @@ from typing import Any, Optional
 
 import yaml
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.autologging_utils import (
     autologging_integration,
     get_autologging_config,
     log_fn_args_as_params,
     safe_patch,
 )
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
-from mlflow.utils.thread_utils import ThreadLocalVariable
-from mlflow.utils.validation import _is_numeric
+from qcflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.thread_utils import ThreadLocalVariable
+from qcflow.utils.validation import _is_numeric
 
 FLAVOR_NAME = "statsmodels"
 STATSMODELS_DATA_SUBPATH = "model.statsmodels"
@@ -69,7 +69,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -79,10 +79,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 _model_size_threshold_for_emitting_warning = 100 * 1024 * 1024  # 100 MB
@@ -98,7 +98,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     remove_data: bool = False,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
@@ -115,7 +115,7 @@ def save_model(
         path: Local path where the model is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
         remove_data: bool. If False (default), then the instance is pickled without changes. If
             True, then all arrays with length nobs are set to None before pickling. See the
             remove_data method. In some cases not all arrays will be set to None.
@@ -134,9 +134,9 @@ def save_model(
     model_data_path = os.path.join(path, STATSMODELS_DATA_SUBPATH)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _StatsmodelsModelWrapper(statsmodels_model)
@@ -145,9 +145,9 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     # Save a statsmodels model
     statsmodels_model.save(model_data_path, remove_data)
@@ -158,35 +158,35 @@ def save_model(
                 "The fitted model is larger than "
                 f"{_model_size_threshold_for_emitting_warning // (1024 * 1024)} MB, "
                 f"saving it as artifacts is time consuming.\n"
-                "To reduce model size, use `mlflow.statsmodels.autolog(log_models=False)` and "
+                "To reduce model size, use `qcflow.statsmodels.autolog(log_models=False)` and "
                 "manually log model by "
-                '`mlflow.statsmodels.log_model(model, remove_data=True, artifact_path="model")`'
+                '`qcflow.statsmodels.log_model(model, remove_data=True, artifact_path="model")`'
             )
 
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.statsmodels",
+        qcflow_model,
+        loader_module="qcflow.statsmodels",
         data=STATSMODELS_DATA_SUBPATH,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
     )
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         statsmodels_version=statsmodels.__version__,
         data=STATSMODELS_DATA_SUBPATH,
         code=code_dir_subpath,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -232,7 +232,7 @@ def log_model(
     **kwargs,
 ):
     """
-    Log a statsmodels model as an MLflow artifact for the current run.
+    Log a statsmodels model as an QCFlow artifact for the current run.
 
     Args:
         statsmodels_model: statsmodels model (an instance of `statsmodels.base.model.Results`_) to
@@ -253,15 +253,15 @@ def log_model(
         pip_requirements: {{ pip_requirements }}
         extra_pip_requirements: {{ extra_pip_requirements }}
         metadata: {{ metadata }}
-        kwargs: Extra kwargs to pass to ``mlflow.models.Model.log``.
+        kwargs: Extra kwargs to pass to ``qcflow.models.Model.log``.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the metadata
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the metadata
         of the logged model.
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.statsmodels,
+        flavor=qcflow.statsmodels,
         registered_model_name=registered_model_name,
         statsmodels_model=statsmodels_model,
         conda_env=conda_env,
@@ -288,7 +288,7 @@ def _load_pyfunc(path):
     Load PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``statsmodels`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``statsmodels`` flavor.
     """
     return _StatsmodelsModelWrapper(_load_model(path))
 
@@ -298,15 +298,15 @@ def load_model(model_uri, dst_path=None):
     Load a statsmodels model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
 
         dst_path: The local filesystem path to which to download the model artifact.
@@ -354,7 +354,7 @@ class _StatsmodelsModelWrapper:
         model = self.statsmodels_model.model
         if isinstance(model, TimeSeriesModel):
             # Assume the inference dataframe has columns "start" and "end", and just one row
-            # TODO: move this to a specific mlflow.statsmodels.tsa flavor? Time series models
+            # TODO: move this to a specific qcflow.statsmodels.tsa flavor? Time series models
             # often expect slightly different arguments to make predictions
             if dataframe.shape[0] != 1 or not (
                 "start" in dataframe.columns and "end" in dataframe.columns
@@ -432,7 +432,7 @@ def autolog(
     extra_tags=None,
 ):
     """
-    Enables (or disables) and configures automatic logging from statsmodels to MLflow.
+    Enables (or disables) and configures automatic logging from statsmodels to QCFlow.
     Logs the following:
 
     - allowlisted metrics returned by method `fit` of any subclass of
@@ -441,11 +441,11 @@ def autolog(
     - an html artifact which shows the model summary.
 
     Args:
-        log_models: If ``True``, trained models are logged as MLflow model artifacts.
+        log_models: If ``True``, trained models are logged as QCFlow model artifacts.
             If ``False``, trained models are not logged.
-            Input examples and model signatures, which are attributes of MLflow models,
+            Input examples and model signatures, which are attributes of QCFlow models,
             are also omitted when ``log_models`` is ``False``.
-        log_datasets: If ``True``, dataset information is logged to MLflow Tracking.
+        log_datasets: If ``True``, dataset information is logged to QCFlow Tracking.
             If ``False``, dataset information is not logged.
         disable: If ``True``, disables the statsmodels autologging integration. If ``False``,
             enables the statsmodels autologging integration.
@@ -453,9 +453,9 @@ def autolog(
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
-            statsmodels that have not been tested against this version of the MLflow
+            statsmodels that have not been tested against this version of the QCFlow
             client or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during statsmodels
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during statsmodels
             autologging. If ``False``, show all events and warnings during statsmodels
             autologging.
         registered_model_name: If given, each time a model is trained, it is registered as a
@@ -571,10 +571,10 @@ def autolog(
                 # Log the most common metrics
                 if isinstance(model, statsmodels.base.wrapper.ResultsWrapper):
                     metrics_dict = _get_autolog_metrics(model)
-                    mlflow.log_metrics(metrics_dict)
+                    qcflow.log_metrics(metrics_dict)
 
                     model_summary = model.summary().as_text()
-                    mlflow.log_text(model_summary, "model_summary.txt")
+                    qcflow.log_text(model_summary, "model_summary.txt")
 
             return model
 

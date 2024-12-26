@@ -1,9 +1,9 @@
-import { MLFLOW_SYSTEM_METRIC_PREFIX } from '@mlflow/mlflow/src/experiment-tracking/constants';
-import { KeyValueEntity, MetricEntitiesByName } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { QCFLOW_SYSTEM_METRIC_PREFIX } from '@qcflow/qcflow/src/experiment-tracking/constants';
+import { KeyValueEntity, MetricEntitiesByName } from '@qcflow/qcflow/src/experiment-tracking/types';
 import { useCallback, useMemo } from 'react';
 import { RunsChartsRunData } from '../components/RunsCharts.common';
 import { DifferenceCardAttributes, RunsChartsDifferenceCardConfig } from '../runs-charts.types';
-import Utils from '@mlflow/mlflow/src/common/utils/Utils';
+import Utils from '@qcflow/qcflow/src/common/utils/Utils';
 import type { RunsGroupByConfig } from '../../experiment-page/utils/experimentPage.group-row-utils';
 
 export const DIFFERENCE_CHART_DEFAULT_EMPTY_VALUE = '-';
@@ -109,13 +109,13 @@ export const getDifferenceViewDataGroups = (
   };
 
   const modelMetrics = getMetrics(
-    (metric: string) => !metric.startsWith(MLFLOW_SYSTEM_METRIC_PREFIX),
+    (metric: string) => !metric.startsWith(QCFLOW_SYSTEM_METRIC_PREFIX),
     (runData: RunsChartsRunData) => Object.keys(runData.metrics),
     (runData: RunsChartsRunData) => runData.metrics,
   );
 
   const systemMetrics = getMetrics(
-    (metric: string) => metric.startsWith(MLFLOW_SYSTEM_METRIC_PREFIX),
+    (metric: string) => metric.startsWith(QCFLOW_SYSTEM_METRIC_PREFIX),
     (runData: RunsChartsRunData) => Object.keys(runData.metrics),
     (runData: RunsChartsRunData) => runData.metrics,
   );

@@ -6,9 +6,9 @@ from unittest import mock
 import litellm
 import pytest
 
-import mlflow
-from mlflow.entities.span import SpanType
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
+import qcflow
+from qcflow.entities.span import SpanType
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
 from tests.tracing.helper import get_traces
 
@@ -17,7 +17,7 @@ from tests.tracing.helper import get_traces
 @pytest.fixture(params=[True, False])
 def is_in_databricks(request):
     with mock.patch(
-        "mlflow.utils.databricks_utils.is_in_databricks_runtime", return_value=request.param
+        "qcflow.utils.databricks_utils.is_in_databricks_runtime", return_value=request.param
     ):
         yield request.param
 
@@ -35,7 +35,7 @@ def cleanup_callbacks():
 
 
 def test_litellm_tracing_success(is_in_databricks):
-    mlflow.litellm.autolog()
+    qcflow.litellm.autolog()
 
     response = litellm.completion(
         model="gpt-4o-mini",
@@ -68,7 +68,7 @@ def test_litellm_tracing_success(is_in_databricks):
 
 
 def test_litellm_tracing_failure(is_in_databricks):
-    mlflow.litellm.autolog()
+    qcflow.litellm.autolog()
 
     with pytest.raises(litellm.exceptions.BadRequestError, match="LLM Provider"):
         litellm.completion(
@@ -76,7 +76,7 @@ def test_litellm_tracing_failure(is_in_databricks):
             messages=[{"role": "system", "content": "Hello"}],
         )
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.status == "ERROR"
 
     spans = trace.data.spans
@@ -92,7 +92,7 @@ def test_litellm_tracing_failure(is_in_databricks):
 
 
 def test_litellm_tracing_streaming(is_in_databricks):
-    mlflow.litellm.autolog()
+    qcflow.litellm.autolog()
 
     response = litellm.completion(
         model="gpt-4o-mini",
@@ -105,7 +105,7 @@ def test_litellm_tracing_streaming(is_in_databricks):
 
     _wait_if_not_in_databricks()
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.status == "OK"
 
     spans = trace.data.spans
@@ -123,7 +123,7 @@ def test_litellm_tracing_streaming(is_in_databricks):
 
 @pytest.mark.asyncio
 async def test_litellm_tracing_async(is_in_databricks):
-    mlflow.litellm.autolog()
+    qcflow.litellm.autolog()
 
     response = await litellm.acompletion(
         model="gpt-4o-mini",
@@ -137,7 +137,7 @@ async def test_litellm_tracing_async(is_in_databricks):
     )
     await logger_task
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.status == "OK"
 
     spans = trace.data.spans
@@ -156,7 +156,7 @@ async def test_litellm_tracing_async(is_in_databricks):
 
 @pytest.mark.asyncio
 async def test_litellm_tracing_async_streaming(is_in_databricks):
-    mlflow.litellm.autolog()
+    qcflow.litellm.autolog()
 
     response = await litellm.acompletion(
         model="gpt-4o-mini",
@@ -180,7 +180,7 @@ async def test_litellm_tracing_async_streaming(is_in_databricks):
     )
     await logger_task
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.status == "OK"
 
     spans = trace.data.spans
@@ -191,20 +191,20 @@ async def test_litellm_tracing_async_streaming(is_in_databricks):
 
 
 def test_litellm_tracing_disable(is_in_databricks):
-    mlflow.litellm.autolog()
+    qcflow.litellm.autolog()
 
     litellm.completion("gpt-4o-mini", [{"role": "system", "content": "Hello"}])
     _wait_if_not_in_databricks()
-    assert mlflow.get_last_active_trace() is not None
+    assert qcflow.get_last_active_trace() is not None
     assert len(get_traces()) == 1
 
-    mlflow.litellm.autolog(disable=True)
+    qcflow.litellm.autolog(disable=True)
     litellm.completion("gpt-4o-mini", [{"role": "system", "content": "Hello"}])
     _wait_if_not_in_databricks()
     # no additional trace should be created
     assert len(get_traces()) == 1
 
-    mlflow.litellm.autolog(log_traces=False)
+    qcflow.litellm.autolog(log_traces=False)
     litellm.completion("gpt-4o-mini", [{"role": "system", "content": "Hello"}])
     _wait_if_not_in_databricks()
     # no additional trace should be created

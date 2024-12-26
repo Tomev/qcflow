@@ -10,27 +10,27 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Optional
 
-from mlflow.entities.file_info import FileInfo
-from mlflow.entities.multipart_upload import (
+from qcflow.entities.file_info import FileInfo
+from qcflow.entities.multipart_upload import (
     CreateMultipartUploadResponse,
     MultipartUploadPart,
 )
-from mlflow.exceptions import (
+from qcflow.exceptions import (
     MlflowException,
     MlflowTraceDataCorrupted,
     MlflowTraceDataNotFound,
 )
-from mlflow.protos.databricks_pb2 import (
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.tracing.artifact_utils import TRACE_DATA_FILE_NAME
-from mlflow.utils.annotations import developer_stable
-from mlflow.utils.async_logging.async_artifacts_logging_queue import (
+from qcflow.tracing.artifact_utils import TRACE_DATA_FILE_NAME
+from qcflow.utils.annotations import developer_stable
+from qcflow.utils.async_logging.async_artifacts_logging_queue import (
     AsyncArtifactsLoggingQueue,
 )
-from mlflow.utils.file_utils import ArtifactProgressBar, create_tmp_dir
-from mlflow.utils.validation import bad_path_message, path_not_unique
+from qcflow.utils.file_utils import ArtifactProgressBar, create_tmp_dir
+from qcflow.utils.validation import bad_path_message, path_not_unique
 
 # Constants used to determine max level of parallelism to use while uploading/downloading artifacts.
 # Max threads to use for parallelism.
@@ -139,7 +139,7 @@ class ArtifactRepository:
             artifact: The artifact to be logged.
 
         Returns:
-            An :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance
+            An :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance
             that represents future for logging operation.
         """
 

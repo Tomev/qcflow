@@ -1,34 +1,34 @@
 import inspect
 from logging import Logger
 
-from mlflow.deployments.base import BaseDeploymentClient
-from mlflow.deployments.plugin_manager import DeploymentPlugins
-from mlflow.deployments.utils import get_deployments_target, parse_target_uri
-from mlflow.exceptions import MlflowException
+from qcflow.deployments.base import BaseDeploymentClient
+from qcflow.deployments.plugin_manager import DeploymentPlugins
+from qcflow.deployments.utils import get_deployments_target, parse_target_uri
+from qcflow.exceptions import MlflowException
 
 plugin_store = DeploymentPlugins()
-plugin_store.register("sagemaker", "mlflow.sagemaker")
+plugin_store.register("sagemaker", "qcflow.sagemaker")
 
 _logger = Logger(__name__)
 
 
 def get_deploy_client(target_uri=None):
-    """Returns a subclass of :py:class:`mlflow.deployments.BaseDeploymentClient` exposing standard
+    """Returns a subclass of :py:class:`qcflow.deployments.BaseDeploymentClient` exposing standard
     APIs for deploying models to the specified target. See available deployment APIs
     by calling ``help()`` on the returned object or viewing docs for
-    :py:class:`mlflow.deployments.BaseDeploymentClient`. You can also run
-    ``mlflow deployments help -t <target-uri>`` via the CLI for more details on target-specific
+    :py:class:`qcflow.deployments.BaseDeploymentClient`. You can also run
+    ``qcflow deployments help -t <target-uri>`` via the CLI for more details on target-specific
     configuration options.
 
     Args:
         target_uri: Optional URI of target to deploy to. If no target URI is provided, then
-            MLflow will attempt to get the deployments target set via `get_deployments_target()` or
-            `MLFLOW_DEPLOYMENTS_TARGET` environment variable.
+            QCFlow will attempt to get the deployments target set via `get_deployments_target()` or
+            `QCFLOW_DEPLOYMENTS_TARGET` environment variable.
 
     .. code-block:: python
         :caption: Example
 
-        from mlflow.deployments import get_deploy_client
+        from qcflow.deployments import get_deploy_client
         import pandas as pd
 
         client = get_deploy_client("redisai")
@@ -51,9 +51,9 @@ def get_deploy_client(target_uri=None):
             target_uri = get_deployments_target()
         except MlflowException:
             _logger.info(
-                "No deployments target has been set. Please either set the MLflow deployments "
-                "target via `mlflow.deployments.set_deployments_target()` or set the environment "
-                "variable MLFLOW_DEPLOYMENTS_TARGET to the running deployment server's uri"
+                "No deployments target has been set. Please either set the QCFlow deployments "
+                "target via `qcflow.deployments.set_deployments_target()` or set the environment "
+                "variable QCFLOW_DEPLOYMENTS_TARGET to the running deployment server's uri"
             )
             return None
     target = parse_target_uri(target_uri)
@@ -86,7 +86,7 @@ def run_local(target, name, model_uri, flavor=None, config=None):
 def _target_help(target):
     """
     Return a string containing detailed documentation on the current deployment target,
-    to be displayed when users invoke the ``mlflow deployments help -t <target-name>`` CLI.
+    to be displayed when users invoke the ``qcflow deployments help -t <target-name>`` CLI.
     This method should be defined within the module specified by the plugin author.
     The string should contain:
     * An explanation of target-specific fields in the ``config`` passed to ``create_deployment``,

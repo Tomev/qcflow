@@ -1,14 +1,14 @@
-mlflow.entities
+qcflow.entities
 ===============
 
-.. automodule:: mlflow.entities
+.. automodule:: qcflow.entities
     :members:
     :undoc-members:
 
-.. automodule:: mlflow.entities.model_registry
+.. automodule:: qcflow.entities.model_registry
     :members:
     :undoc-members:
 
-.. automodule:: mlflow.store.entities
+.. automodule:: qcflow.store.entities
     :members:
     :undoc-members:

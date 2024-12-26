@@ -11,33 +11,33 @@ import sys
 import warnings
 from pathlib import Path
 
-from mlflow import pyfunc
-from mlflow.exceptions import MlflowException
-from mlflow.models import FlavorBackend, Model, docker_utils
-from mlflow.models.docker_utils import PYTHON_SLIM_BASE_IMAGE, UBUNTU_BASE_IMAGE
-from mlflow.pyfunc import (
+from qcflow import pyfunc
+from qcflow.exceptions import MlflowException
+from qcflow.models import FlavorBackend, Model, docker_utils
+from qcflow.models.docker_utils import PYTHON_SLIM_BASE_IMAGE, UBUNTU_BASE_IMAGE
+from qcflow.pyfunc import (
     ENV,
     _extract_conda_env,
-    _mlflow_pyfunc_backend_predict,
+    _qcflow_pyfunc_backend_predict,
     mlserver,
     scoring_server,
 )
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils import env_manager as em
-from mlflow.utils.conda import get_conda_bin_executable, get_or_create_conda_env
-from mlflow.utils.environment import Environment, _get_pip_install_mlflow, _PythonEnv
-from mlflow.utils.file_utils import (
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils import env_manager as em
+from qcflow.utils.conda import get_conda_bin_executable, get_or_create_conda_env
+from qcflow.utils.environment import Environment, _get_pip_install_qcflow, _PythonEnv
+from qcflow.utils.file_utils import (
     TempDir,
     get_or_create_nfs_tmp_dir,
     get_or_create_tmp_dir,
     path_to_local_file_uri,
 )
-from mlflow.utils.model_utils import _get_all_flavor_configurations
-from mlflow.utils.nfs_on_spark import get_nfs_cache_root_dir
-from mlflow.utils.os import is_windows
-from mlflow.utils.process import ShellCommandException, cache_return_value_per_process
-from mlflow.utils.virtualenv import _get_or_create_virtualenv
-from mlflow.version import VERSION
+from qcflow.utils.model_utils import _get_all_flavor_configurations
+from qcflow.utils.nfs_on_spark import get_nfs_cache_root_dir
+from qcflow.utils.os import is_windows
+from qcflow.utils.process import ShellCommandException, cache_return_value_per_process
+from qcflow.utils.virtualenv import _get_or_create_virtualenv
+from qcflow.version import VERSION
 
 _logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ LOCAL_ENV_MANAGER_ERROR_MESSAGE = "We cannot use 'LOCAL' environment manager "
 "manager instead with `--env-manager` argument."
 
 
-def _set_mlflow_config_env(command_env, model_config):
+def _set_qcflow_config_env(command_env, model_config):
     if model_config:
         command_env[scoring_server.SERVING_MODEL_CONFIG] = json.dumps(model_config)
     return command_env
@@ -75,7 +75,7 @@ class PyFuncBackend(FlavorBackend):
         config,
         env_manager,
         workers=1,
-        install_mlflow=False,
+        install_qcflow=False,
         create_env_root_dir=False,
         env_root_dir=None,
         **kwargs,
@@ -83,7 +83,7 @@ class PyFuncBackend(FlavorBackend):
         """
         Args:
             env_manager: Environment manager to use for preparing the environment. If None,
-                MLflow will automatically pick the env manager based on the model's flavor
+                QCFlow will automatically pick the env manager based on the model's flavor
                 configuration for generate_dockerfile. It can't be None for other methods.
             env_root_dir: Root path for conda env. If None, use Conda's default environments
                 directory. Note if this is set, conda package cache path becomes
@@ -100,8 +100,8 @@ class PyFuncBackend(FlavorBackend):
             )
             env_manager = em.LOCAL
         self._env_manager = env_manager
-        self._install_mlflow = install_mlflow
-        self._env_id = os.environ.get("MLFLOW_HOME", VERSION) if install_mlflow else None
+        self._install_qcflow = install_qcflow
+        self._env_id = os.environ.get("QCFLOW_HOME", VERSION) if install_qcflow else None
         self._create_env_root_dir = create_env_root_dir
         self._env_root_dir = env_root_dir
         self._environment = None
@@ -158,8 +158,8 @@ class PyFuncBackend(FlavorBackend):
         else:
             raise Exception(f"Unexpected env manager value '{self._env_manager}'")
 
-        if self._install_mlflow:
-            self._environment.execute(_get_pip_install_mlflow())
+        if self._install_qcflow:
+            self._environment.execute(_get_pip_install_qcflow())
         else:
             self._environment.execute('python -c ""')
 
@@ -175,19 +175,19 @@ class PyFuncBackend(FlavorBackend):
         extra_envs=None,
     ):
         """
-        Generate predictions using generic python model saved with MLflow. The expected format of
-        the input JSON is the MLflow scoring format.
+        Generate predictions using generic python model saved with QCFlow. The expected format of
+        the input JSON is the QCFlow scoring format.
         Return the prediction results as a JSON.
         """
         local_path = _download_artifact_from_uri(model_uri)
-        # NB: Absolute windows paths do not work with mlflow apis, use file uri to ensure
+        # NB: Absolute windows paths do not work with qcflow apis, use file uri to ensure
         # platform compatibility.
         local_uri = path_to_local_file_uri(local_path)
 
         if self._env_manager != em.LOCAL:
             predict_cmd = [
                 "python",
-                _mlflow_pyfunc_backend_predict.__file__,
+                _qcflow_pyfunc_backend_predict.__file__,
                 "--model-uri",
                 str(local_uri),
                 "--content-type",
@@ -247,7 +247,7 @@ class PyFuncBackend(FlavorBackend):
         command, command_env = server_implementation.get_cmd(
             local_path, port, host, timeout, self._nworkers
         )
-        _set_mlflow_config_env(command_env, model_config)
+        _set_qcflow_config_env(command_env, model_config)
 
         if sys.platform.startswith("linux"):
 
@@ -285,7 +285,7 @@ class PyFuncBackend(FlavorBackend):
             # Add "exec" before the starting scoring server command, so that the scoring server
             # process replaces the bash process, otherwise the scoring server process is created
             # as a child process of the bash process.
-            # Note we in `mlflow.pyfunc.spark_udf`, use prctl PR_SET_PDEATHSIG to ensure scoring
+            # Note we in `qcflow.pyfunc.spark_udf`, use prctl PR_SET_PDEATHSIG to ensure scoring
             # server process being killed when UDF process exit. The PR_SET_PDEATHSIG can only
             # send signal to the bash process, if the scoring server process is created as a
             # child process of the bash process, then it cannot receive the signal sent by prctl.
@@ -336,7 +336,7 @@ class PyFuncBackend(FlavorBackend):
         local_path = _download_artifact_from_uri(model_uri)
 
         command_env = os.environ.copy()
-        _set_mlflow_config_env(command_env, model_config)
+        _set_qcflow_config_env(command_env, model_config)
 
         return self.prepare_env(local_path).execute(
             command=f"python {_STDIN_SERVER_SCRIPT} --model-uri {local_path}",
@@ -367,8 +367,8 @@ class PyFuncBackend(FlavorBackend):
         model_uri,
         image_name,
         install_java=False,
-        install_mlflow=False,
-        mlflow_home=None,
+        install_qcflow=False,
+        qcflow_home=None,
         enable_mlserver=False,
         base_image=None,
     ):
@@ -378,8 +378,8 @@ class PyFuncBackend(FlavorBackend):
                 model_uri=model_uri,
                 output_dir=cwd,
                 install_java=install_java,
-                install_mlflow=install_mlflow,
-                mlflow_home=mlflow_home,
+                install_qcflow=install_qcflow,
+                qcflow_home=qcflow_home,
                 enable_mlserver=enable_mlserver,
                 base_image=base_image,
             )
@@ -392,8 +392,8 @@ class PyFuncBackend(FlavorBackend):
         model_uri,
         output_dir,
         install_java=False,
-        install_mlflow=False,
-        mlflow_home=None,
+        install_qcflow=False,
+        qcflow_home=None,
         enable_mlserver=False,
         base_image=None,
     ):
@@ -420,9 +420,9 @@ class PyFuncBackend(FlavorBackend):
                     raise MlflowException.invalid_parameter_value(LOCAL_ENV_MANAGER_ERROR_MESSAGE)
 
             model_install_steps = self._model_installation_steps(
-                model_path, env_manager, install_mlflow, enable_mlserver
+                model_path, env_manager, install_qcflow, enable_mlserver
             )
-            entrypoint = f"from mlflow.models import container as C; C._serve('{env_manager}')"
+            entrypoint = f"from qcflow.models import container as C; C._serve('{env_manager}')"
 
         # if no model_uri specified, user must use virtualenv or conda env based on ubuntu image
         else:
@@ -434,7 +434,7 @@ class PyFuncBackend(FlavorBackend):
             model_install_steps = ""
             # If model_uri is not specified, dependencies are installed at runtime
             entrypoint = (
-                self._get_install_pyfunc_deps_cmd(env_manager, install_mlflow, enable_mlserver)
+                self._get_install_pyfunc_deps_cmd(env_manager, install_qcflow, enable_mlserver)
                 + f" C._serve('{env_manager}')"
             )
 
@@ -444,7 +444,7 @@ class PyFuncBackend(FlavorBackend):
             model_install_steps=model_install_steps,
             entrypoint=entrypoint,
             env_manager=env_manager,
-            mlflow_home=mlflow_home,
+            qcflow_home=qcflow_home,
             enable_mlserver=enable_mlserver,
             # always disable env creation at runtime for pyfunc
             disable_env_creation_at_runtime=True,
@@ -488,7 +488,7 @@ class PyFuncBackend(FlavorBackend):
             )
             return UBUNTU_BASE_IMAGE
 
-    def _model_installation_steps(self, model_path, env_manager, install_mlflow, enable_mlserver):
+    def _model_installation_steps(self, model_path, env_manager, install_qcflow, enable_mlserver):
         model_dir = str(posixpath.join(_MODEL_DIR_NAME, os.path.basename(model_path)))
         # Copy model to image if model_uri is specified
         steps = (
@@ -496,7 +496,7 @@ class PyFuncBackend(FlavorBackend):
             f"COPY {model_dir} /opt/ml/model\nRUN python -c "
         )
         steps += (
-            f'"{self._get_install_pyfunc_deps_cmd(env_manager, install_mlflow, enable_mlserver)}"'
+            f'"{self._get_install_pyfunc_deps_cmd(env_manager, install_qcflow, enable_mlserver)}"'
         )
 
         # Install flavor-specific dependencies if needed
@@ -509,10 +509,10 @@ class PyFuncBackend(FlavorBackend):
         return steps
 
     def _get_install_pyfunc_deps_cmd(
-        self, env_manager: str, install_mlflow: bool, enable_mlserver: bool
+        self, env_manager: str, install_qcflow: bool, enable_mlserver: bool
     ):
         return (
-            "from mlflow.models import container as C; "
-            f"C._install_pyfunc_deps('/opt/ml/model', install_mlflow={install_mlflow}, "
+            "from qcflow.models import container as C; "
+            f"C._install_pyfunc_deps('/opt/ml/model', install_qcflow={install_qcflow}, "
             f"enable_mlserver={enable_mlserver}, env_manager='{env_manager}');"
         )

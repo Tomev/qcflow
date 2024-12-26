@@ -57,7 +57,7 @@ const NotConfiguredDifferenceChartPlaceholder = ({ onEdit }: { onEdit: () => voi
             description="Experiment tracking > runs charts > cards > RunsChartsDifferenceChartCard > chart not configured warning > description"
           />
         </Typography.Text>
-        <Button componentId="mlflow.charts.difference_chart_configure_button" type="primary" onClick={onEdit}>
+        <Button componentId="qcflow.charts.difference_chart_configure_button" type="primary" onClick={onEdit}>
           <FormattedMessage
             defaultMessage="Configure chart"
             description="Experiment tracking > runs charts > cards > RunsChartsDifferenceChartCard > configure chart button"

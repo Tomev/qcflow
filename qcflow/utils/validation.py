@@ -8,13 +8,13 @@ import numbers
 import posixpath
 import re
 
-from mlflow.entities import Dataset, DatasetInput, InputTag, Param, RunTag
-from mlflow.environment_variables import MLFLOW_TRUNCATE_LONG_VALUES
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.db.db_types import DATABASE_ENGINES
-from mlflow.utils.os import is_windows
-from mlflow.utils.string_utils import is_string_type
+from qcflow.entities import Dataset, DatasetInput, InputTag, Param, RunTag
+from qcflow.environment_variables import QCFLOW_TRUNCATE_LONG_VALUES
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.db.db_types import DATABASE_ENGINES
+from qcflow.utils.os import is_windows
+from qcflow.utils.string_utils import is_string_type
 
 _logger = logging.getLogger(__name__)
 
@@ -77,9 +77,9 @@ to an individual run_id event logging.
 
 Incorrect Example:
 ---------------------------------------
-with mlflow.start_run():
-    mlflow.log_param("depth", 3)
-    mlflow.log_param("depth", 5)
+with qcflow.start_run():
+    qcflow.log_param("depth", 3)
+    qcflow.log_param("depth", 5)
 ---------------------------------------
 
 Which will throw an MlflowException for overwriting a
@@ -87,11 +87,11 @@ logged parameter.
 
 Correct Example:
 ---------------------------------------
-with mlflow.start_run():
-    with mlflow.start_run(nested=True):
-        mlflow.log_param("depth", 3)
-    with mlflow.start_run(nested=True):
-        mlflow.log_param("depth", 5)
+with qcflow.start_run():
+    with qcflow.start_run(nested=True):
+        qcflow.log_param("depth", 3)
+    with qcflow.start_run(nested=True):
+        qcflow.log_param("depth", 5)
 ---------------------------------------
 
 Which will create a new nested run for each individual
@@ -358,7 +358,7 @@ def _validate_length_limit(entity_name, limit, value, *, truncate=False):
     if len(value) <= limit:
         return value
 
-    if truncate and MLFLOW_TRUNCATE_LONG_VALUES.get():
+    if truncate and QCFLOW_TRUNCATE_LONG_VALUES.get():
         _logger.warning(
             f"{entity_name} '{value[:100]}...' ({len(value)} characters) is truncated to "
             f"{limit} characters to meet the length limit."

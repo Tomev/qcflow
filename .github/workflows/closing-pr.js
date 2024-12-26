@@ -1,8 +1,8 @@
 // Regular expressions to capture a closing syntax in the PR body
 // https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue
 const CLOSING_SYNTAX_PATTERNS = [
-  /(?:(?:close|fixe|resolve)[sd]?|fix)\s+(?:mlflow\/mlflow)?#(\d+)/gi,
-  /(?:(?:close|fixe|resolve)[sd]?|fix)\s+(?:https?:\/\/github.com\/mlflow\/mlflow\/issues\/)(\d+)/gi,
+  /(?:(?:close|fixe|resolve)[sd]?|fix)\s+(?:qcflow\/qcflow)?#(\d+)/gi,
+  /(?:(?:close|fixe|resolve)[sd]?|fix)\s+(?:https?:\/\/github.com\/qcflow\/qcflow\/issues\/)(\d+)/gi,
 ];
 const HAS_CLOSING_PR_LABEL = "has-closing-pr";
 
@@ -38,8 +38,8 @@ const test = () => {
   );
 
   const body2 = `
-Fix mlflow/mlflow#123
-Resolve https://github.com/mlflow/mlflow/issues/456
+Fix qcflow/qcflow#123
+Resolve https://github.com/qcflow/qcflow/issues/456
 `;
   assertArrayEqual(getIssuesToClose(body2), ["123", "456"]);
 

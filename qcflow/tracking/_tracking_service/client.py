@@ -1,7 +1,7 @@
 """
-Internal package providing a Python CRUD interface to MLflow experiments and runs.
-This is a lower level API than the :py:mod:`mlflow.tracking.fluent` module, and is
-exposed in the :py:mod:`mlflow.tracking` module.
+Internal package providing a Python CRUD interface to QCFlow experiments and runs.
+This is a lower level API than the :py:mod:`qcflow.tracking.fluent` module, and is
+exposed in the :py:mod:`qcflow.tracking` module.
 """
 
 import json
@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 from itertools import zip_longest
 from typing import Optional
 
-from mlflow.entities import (
+from qcflow.entities import (
     ExperimentTag,
     Metric,
     Param,
@@ -22,38 +22,38 @@ from mlflow.entities import (
     TraceInfo,
     ViewType,
 )
-from mlflow.entities.dataset_input import DatasetInput
-from mlflow.entities.trace import Trace
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.exceptions import (
+from qcflow.entities.dataset_input import DatasetInput
+from qcflow.entities.trace import Trace
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.exceptions import (
     MlflowException,
     MlflowTraceDataCorrupted,
     MlflowTraceDataException,
     MlflowTraceDataNotFound,
 )
-from mlflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE, ErrorCode
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.tracking import (
+from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE, ErrorCode
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.tracking import (
     GET_METRIC_HISTORY_MAX_RESULTS,
     SEARCH_MAX_RESULTS_DEFAULT,
     SEARCH_TRACES_DEFAULT_MAX_RESULTS,
 )
-from mlflow.store.tracking.rest_store import RestStore
-from mlflow.tracing.artifact_utils import get_artifact_uri_for_trace
-from mlflow.tracing.constant import TraceMetadataKey
-from mlflow.tracing.utils import TraceJSONEncoder, exclude_immutable_tags
-from mlflow.tracking._tracking_service import utils
-from mlflow.tracking.metric_value_conversion_utils import convert_metric_value_to_float_if_possible
-from mlflow.utils import chunk_list
-from mlflow.utils.async_logging.run_operations import RunOperations, get_combined_run_operations
-from mlflow.utils.databricks_utils import get_workspace_url, is_in_databricks_notebook
-from mlflow.utils.mlflow_tags import IMMUTABLE_TAGS, MLFLOW_USER
-from mlflow.utils.string_utils import is_string_type
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.uri import add_databricks_profile_info_to_artifact_uri, is_databricks_uri
-from mlflow.utils.validation import (
+from qcflow.store.tracking.rest_store import RestStore
+from qcflow.tracing.artifact_utils import get_artifact_uri_for_trace
+from qcflow.tracing.constant import TraceMetadataKey
+from qcflow.tracing.utils import TraceJSONEncoder, exclude_immutable_tags
+from qcflow.tracking._tracking_service import utils
+from qcflow.tracking.metric_value_conversion_utils import convert_metric_value_to_float_if_possible
+from qcflow.utils import chunk_list
+from qcflow.utils.async_logging.run_operations import RunOperations, get_combined_run_operations
+from qcflow.utils.databricks_utils import get_workspace_url, is_in_databricks_notebook
+from qcflow.utils.qcflow_tags import IMMUTABLE_TAGS, QCFLOW_USER
+from qcflow.utils.string_utils import is_string_type
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.uri import add_databricks_profile_info_to_artifact_uri, is_databricks_uri
+from qcflow.utils.validation import (
     MAX_ENTITIES_PER_BATCH,
     MAX_METRICS_PER_BATCH,
     MAX_PARAMS_TAGS_PER_BATCH,
@@ -67,7 +67,7 @@ _logger = logging.getLogger(__name__)
 
 class TrackingServiceClient:
     """
-    Client of an MLflow Tracking Server that creates and manages experiments and runs.
+    Client of an QCFlow Tracking Server that creates and manages experiments and runs.
     """
 
     def __init__(self, tracking_uri):
@@ -87,18 +87,18 @@ class TrackingServiceClient:
         return utils._get_store(self.tracking_uri)
 
     def get_run(self, run_id):
-        """Fetch the run from backend store. The resulting :py:class:`Run <mlflow.entities.Run>`
-        contains a collection of run metadata -- :py:class:`RunInfo <mlflow.entities.RunInfo>`,
+        """Fetch the run from backend store. The resulting :py:class:`Run <qcflow.entities.Run>`
+        contains a collection of run metadata -- :py:class:`RunInfo <qcflow.entities.RunInfo>`,
         as well as a collection of run parameters, tags, and metrics --
-        :py:class:`RunData <mlflow.entities.RunData>`. In the case where multiple metrics with the
-        same key are logged for the run, the :py:class:`RunData <mlflow.entities.RunData>` contains
+        :py:class:`RunData <qcflow.entities.RunData>`. In the case where multiple metrics with the
+        same key are logged for the run, the :py:class:`RunData <qcflow.entities.RunData>` contains
         the most recently logged value at the largest step for each metric.
 
         Args:
             run_id: Unique identifier for the run.
 
         Returns:
-            A single :py:class:`mlflow.entities.Run` object, if the run exists. Otherwise,
+            A single :py:class:`qcflow.entities.Run` object, if the run exists. Otherwise,
             raises an exception.
 
         """
@@ -113,7 +113,7 @@ class TrackingServiceClient:
             key: Metric name within the run.
 
         Returns:
-            A list of :py:class:`mlflow.entities.Metric` entities if logged, else empty list.
+            A list of :py:class:`qcflow.entities.Metric` entities if logged, else empty list.
         """
 
         # NB: Paginated query support is currently only available for the RestStore backend.
@@ -141,21 +141,21 @@ class TrackingServiceClient:
         return history
 
     def create_run(self, experiment_id, start_time=None, tags=None, run_name=None):
-        """Create a :py:class:`mlflow.entities.Run` object that can be associated with
+        """Create a :py:class:`qcflow.entities.Run` object that can be associated with
         metrics, parameters, artifacts, etc.
-        Unlike :py:func:`mlflow.projects.run`, creates objects but does not run code.
-        Unlike :py:func:`mlflow.start_run`, does not change the "active run" used by
-        :py:func:`mlflow.log_param`.
+        Unlike :py:func:`qcflow.projects.run`, creates objects but does not run code.
+        Unlike :py:func:`qcflow.start_run`, does not change the "active run" used by
+        :py:func:`qcflow.log_param`.
 
         Args:
             experiment_id: The ID of the experiment to create a run in.
             start_time: If not provided, use the current timestamp.
             tags: A dictionary of key-value pairs that are converted into
-                :py:class:`mlflow.entities.RunTag` objects.
+                :py:class:`qcflow.entities.RunTag` objects.
             run_name: The name of this run.
 
         Returns:
-            :py:class:`mlflow.entities.Run` that was created.
+            :py:class:`qcflow.entities.Run` that was created.
 
         """
 
@@ -164,7 +164,7 @@ class TrackingServiceClient:
         # Extract user from tags
         # This logic is temporary; the user_id attribute of runs is deprecated and will be removed
         # in a later release.
-        user_id = tags.get(MLFLOW_USER, "unknown")
+        user_id = tags.get(QCFLOW_USER, "unknown")
 
         return self.store.create_run(
             experiment_id=experiment_id,
@@ -256,7 +256,7 @@ class TrackingServiceClient:
             request_id: String id of the trace to fetch.
 
         Returns:
-            TraceInfo object, of type ``mlflow.entities.trace_info.TraceInfo``.
+            TraceInfo object, of type ``qcflow.entities.trace_info.TraceInfo``.
         """
         return self.store.get_trace_info(request_id)
 
@@ -268,7 +268,7 @@ class TrackingServiceClient:
             request_id: String id of the trace to fetch.
 
         Returns:
-            The fetched Trace object, of type ``mlflow.entities.Trace``.
+            The fetched Trace object, of type ``qcflow.entities.Trace``.
         """
         trace_info = self.get_trace_info(request_id)
         try:
@@ -422,7 +422,7 @@ class TrackingServiceClient:
 
         Args:
             view_type: One of enum values ``ACTIVE_ONLY``, ``DELETED_ONLY``, or ``ALL``
-                defined in :py:class:`mlflow.entities.ViewType`.
+                defined in :py:class:`qcflow.entities.ViewType`.
             max_results: Maximum number of experiments desired. Certain server backend may apply
                 its own limit.
             filter_string: Filter query string (e.g., ``"name = 'my_experiment'"``), defaults to
@@ -468,8 +468,8 @@ class TrackingServiceClient:
                 a ``search_experiments`` call.
 
         Returns:
-            A :py:class:`PagedList <mlflow.store.entities.PagedList>` of
-            :py:class:`Experiment <mlflow.entities.Experiment>` objects. The pagination token
+            A :py:class:`PagedList <qcflow.store.entities.PagedList>` of
+            :py:class:`Experiment <qcflow.entities.Experiment>` objects. The pagination token
             for the next page can be obtained via the ``token`` attribute of the object.
 
         """
@@ -487,7 +487,7 @@ class TrackingServiceClient:
             experiment_id: The experiment ID returned from ``create_experiment``.
 
         Returns:
-            :py:class:`mlflow.entities.Experiment`
+            :py:class:`qcflow.entities.Experiment`
         """
         return self.store.get_experiment(experiment_id)
 
@@ -497,7 +497,7 @@ class TrackingServiceClient:
             name: The experiment name.
 
         Returns:
-            :py:class:`mlflow.entities.Experiment`
+            :py:class:`qcflow.entities.Experiment`
         """
         return self.store.get_experiment_by_name(name)
 
@@ -509,7 +509,7 @@ class TrackingServiceClient:
             artifact_location: The location to store run artifacts. If not provided, the server
                 picks an appropriate default.
             tags: A dictionary of key-value pairs that are converted into
-                :py:class:`mlflow.entities.ExperimentTag` objects.
+                :py:class:`qcflow.entities.ExperimentTag` objects.
 
         Returns:
             Integer ID of the created experiment.
@@ -572,7 +572,7 @@ class TrackingServiceClient:
 
         Returns:
             When synchronous=True, returns None. When synchronous=False, returns
-            :py:class:`mlflow.RunOperations` that represents future for logging operation.
+            :py:class:`qcflow.RunOperations` that represents future for logging operation.
 
         """
         timestamp = timestamp if timestamp is not None else get_current_time_millis()
@@ -598,7 +598,7 @@ class TrackingServiceClient:
 
         Returns:
             When synchronous=True, returns parameter value.
-            When synchronous=False, returns :py:class:`mlflow.RunOperations` that
+            When synchronous=False, returns :py:class:`qcflow.RunOperations` that
             represents future for logging operation.
 
         """
@@ -645,7 +645,7 @@ class TrackingServiceClient:
 
         Returns:
             When synchronous=True, returns None.
-            When synchronous=False, returns :py:class:`mlflow.RunOperations` object
+            When synchronous=False, returns :py:class:`qcflow.RunOperations` object
             that represents future for logging operation.
 
         """
@@ -708,7 +708,7 @@ class TrackingServiceClient:
 
         Returns:
             When synchronous=True, returns None.
-            When synchronous=False, returns :py:class:`mlflow.RunOperations` that
+            When synchronous=False, returns :py:class:`qcflow.RunOperations` that
             represents future for logging operation.
 
         """
@@ -776,7 +776,7 @@ class TrackingServiceClient:
 
         Args:
             run_id: String ID of the run.
-            datasets: List of :py:class:`mlflow.entities.DatasetInput` instances to log.
+            datasets: List of :py:class:`qcflow.entities.DatasetInput` instances to log.
 
         Raises:
             MlflowException: If any errors occur.
@@ -789,15 +789,15 @@ class TrackingServiceClient:
 
         self.store.log_inputs(run_id=run_id, datasets=datasets)
 
-    def _record_logged_model(self, run_id, mlflow_model):
-        from mlflow.models import Model
+    def _record_logged_model(self, run_id, qcflow_model):
+        from qcflow.models import Model
 
-        if not isinstance(mlflow_model, Model):
+        if not isinstance(qcflow_model, Model):
             raise TypeError(
-                "Argument 'mlflow_model' should be of type mlflow.models.Model but was "
-                f"{type(mlflow_model)}"
+                "Argument 'qcflow_model' should be of type qcflow.models.Model but was "
+                f"{type(qcflow_model)}"
             )
-        self.store.record_logged_model(run_id, mlflow_model)
+        self.store.record_logged_model(run_id, qcflow_model)
 
     def _get_artifact_repo_for_trace(self, trace_info: TraceInfo):
         artifact_uri = get_artifact_uri_for_trace(trace_info)
@@ -883,7 +883,7 @@ class TrackingServiceClient:
                 or the root artifact path.
 
         Returns:
-            List of :py:class:`mlflow.entities.FileInfo`
+            List of :py:class:`qcflow.entities.FileInfo`
 
         """
         return self._get_artifact_repo(run_id).list_artifacts(path)
@@ -911,7 +911,7 @@ class TrackingServiceClient:
         if not isinstance(self.store, RestStore):
             return
         if is_in_databricks_notebook():
-            # In Databricks notebooks, MLflow experiment and run links are displayed automatically.
+            # In Databricks notebooks, QCFlow experiment and run links are displayed automatically.
             return
         host_url = get_workspace_url()
         if host_url is None:
@@ -933,7 +933,7 @@ class TrackingServiceClient:
 
         Args:
             run_id: String ID of the run.
-            status: A string value of :py:class:`mlflow.entities.RunStatus`. Defaults to "FINISHED".
+            status: A string value of :py:class:`qcflow.entities.RunStatus`. Defaults to "FINISHED".
             end_time: If not provided, defaults to the current time.
         """
         end_time = end_time if end_time else get_current_time_millis()
@@ -977,7 +977,7 @@ class TrackingServiceClient:
             experiment_ids: List of experiment IDs, or a single int or string id.
             filter_string: Filter query string, defaults to searching all runs.
             run_view_type: One of enum values ACTIVE_ONLY, DELETED_ONLY, or ALL runs
-                defined in :py:class:`mlflow.entities.ViewType`.
+                defined in :py:class:`qcflow.entities.ViewType`.
             max_results: Maximum number of runs desired.
             order_by: List of columns to order by (e.g., "metrics.rmse"). The ``order_by`` column
                 can contain an optional ``DESC`` or ``ASC`` value. The default is ``ASC``.
@@ -986,8 +986,8 @@ class TrackingServiceClient:
                 a ``search_runs`` call.
 
         Returns:
-            A :py:class:`PagedList <mlflow.store.entities.PagedList>` of
-            :py:class:`Run <mlflow.entities.Run>` objects that satisfy the search expressions.
+            A :py:class:`PagedList <qcflow.store.entities.PagedList>` of
+            :py:class:`Run <qcflow.entities.Run>` objects that satisfy the search expressions.
             If the underlying tracking store supports pagination, the token for the next page may
             be obtained via the ``token`` attribute of the returned object.
 

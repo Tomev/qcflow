@@ -21,7 +21,7 @@ const generateMockTrace = (
   request_metadata: [...requestMetadata],
   tags: [
     {
-      key: 'mlflow.traceName',
+      key: 'qcflow.traceName',
       value: `Trace name: ${uniqueId}`,
     },
     ...tags,
@@ -69,11 +69,11 @@ describe('ExperimentViewTracesTable', () => {
       123,
       [
         {
-          key: 'mlflow.traceInputs',
+          key: 'qcflow.traceInputs',
           value: 'test-inputs',
         },
         {
-          key: 'mlflow.traceOutputs',
+          key: 'qcflow.traceOutputs',
           value: 'test-outputs',
         },
         {
@@ -87,15 +87,15 @@ describe('ExperimentViewTracesTable', () => {
           value: 'value',
         },
         {
-          key: 'mlflow.source.type',
+          key: 'qcflow.source.type',
           value: 'NOTEBOOK',
         },
         {
-          key: 'mlflow.source.name',
+          key: 'qcflow.source.name',
           value: '/Users/test@databricks.com/test-notebook',
         },
         {
-          key: 'mlflow.databricks.notebookID',
+          key: 'qcflow.databricks.notebookID',
           value: 'test-id',
         },
       ],

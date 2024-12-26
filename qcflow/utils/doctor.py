@@ -6,16 +6,16 @@ import importlib_metadata
 import yaml
 from packaging.requirements import Requirement
 
-import mlflow
-from mlflow.utils.databricks_utils import get_databricks_runtime_version
+import qcflow
+from qcflow.utils.databricks_utils import get_databricks_runtime_version
 
 
 def doctor(mask_envs=False):
-    """Prints out useful information for debugging issues with MLflow.
+    """Prints out useful information for debugging issues with QCFlow.
 
     Args:
-        mask_envs: If True, mask the MLflow environment variable values
-            (e.g. `"MLFLOW_ENV_VAR": "***"`) in the output to prevent leaking sensitive
+        mask_envs: If True, mask the QCFlow environment variable values
+            (e.g. `"QCFLOW_ENV_VAR": "***"`) in the output to prevent leaking sensitive
             information.
 
     .. warning::
@@ -26,23 +26,23 @@ def doctor(mask_envs=False):
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_run():
-            mlflow.doctor()
+        with qcflow.start_run():
+            qcflow.doctor()
 
     .. code-block:: text
         :caption: Output
 
         System information: Linux #58~20.04.1-Ubuntu SMP Thu Oct 13 13:09:46 UTC 2022
         Python version: 3.8.13
-        MLflow version: 2.0.1
-        MLflow module location: /usr/local/lib/python3.8/site-packages/mlflow/__init__.py
-        Tracking URI: sqlite:///mlflow.db
-        Registry URI: sqlite:///mlflow.db
-        MLflow environment variables:
-          MLFLOW_TRACKING_URI: sqlite:///mlflow.db
-        MLflow dependencies:
+        QCFlow version: 2.0.1
+        QCFlow module location: /usr/local/lib/python3.8/site-packages/qcflow/__init__.py
+        Tracking URI: sqlite:///qcflow.db
+        Registry URI: sqlite:///qcflow.db
+        QCFlow environment variables:
+          QCFLOW_TRACKING_URI: sqlite:///qcflow.db
+        QCFlow dependencies:
           Flask: 2.2.2
           Jinja2: 3.0.3
           alembic: 1.8.1
@@ -74,16 +74,16 @@ def doctor(mask_envs=False):
     items = [
         ("System information", " ".join((platform.system(), platform.version()))),
         ("Python version", platform.python_version()),
-        ("MLflow version", mlflow.__version__),
-        ("MLflow module location", mlflow.__file__),
-        ("Tracking URI", mlflow.get_tracking_uri()),
-        ("Registry URI", mlflow.get_registry_uri()),
+        ("QCFlow version", qcflow.__version__),
+        ("QCFlow module location", qcflow.__file__),
+        ("Tracking URI", qcflow.get_tracking_uri()),
+        ("Registry URI", qcflow.get_registry_uri()),
     ]
 
     if (runtime := get_databricks_runtime_version()) is not None:
         items.append(("Databricks runtime version", runtime))
 
-    active_run = mlflow.active_run()
+    active_run = qcflow.active_run()
     if active_run:
         items.extend(
             [
@@ -93,31 +93,31 @@ def doctor(mask_envs=False):
             ]
         )
 
-    mlflow_envs = {
-        k: ("***" if mask_envs else v) for k, v in os.environ.items() if k.startswith("MLFLOW_")
+    qcflow_envs = {
+        k: ("***" if mask_envs else v) for k, v in os.environ.items() if k.startswith("QCFLOW_")
     }
-    if mlflow_envs:
+    if qcflow_envs:
         items.append(
             (
-                "MLflow environment variables",
-                yaml.dump({"_": mlflow_envs}, indent=2).replace("'", "").lstrip("_:").rstrip("\n"),
+                "QCFlow environment variables",
+                yaml.dump({"_": qcflow_envs}, indent=2).replace("'", "").lstrip("_:").rstrip("\n"),
             )
         )
 
-    mlflow_dependencies = {}
-    for req in importlib_metadata.requires("mlflow"):
+    qcflow_dependencies = {}
+    for req in importlib_metadata.requires("qcflow"):
         req = Requirement(req)
         try:
             dist = importlib_metadata.distribution(req.name)
         except importlib_metadata.PackageNotFoundError:
             continue
         else:
-            mlflow_dependencies[req.name] = dist.version
+            qcflow_dependencies[req.name] = dist.version
 
     items.append(
         (
-            "MLflow dependencies",
-            yaml.dump({"_": mlflow_dependencies}, indent=2)
+            "QCFlow dependencies",
+            yaml.dump({"_": qcflow_dependencies}, indent=2)
             .replace("'", "")
             .lstrip("_:")
             .rstrip("\n"),

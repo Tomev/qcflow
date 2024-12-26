@@ -10,7 +10,7 @@ import { ExperimentEntity, RunInfoEntity } from '../../types';
 const createExperiment = ({
   experimentId = '0',
   name = 'Default',
-  artifactLocation = 'dbfs:/databricks/mlflow/0',
+  artifactLocation = 'dbfs:/databricks/qcflow/0',
   lifecycleStage = 'active',
   tags = [],
   allowedActions = [],

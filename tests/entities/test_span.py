@@ -5,12 +5,12 @@ import opentelemetry.trace as trace_api
 import pytest
 from opentelemetry.sdk.trace import ReadableSpan as OTelReadableSpan
 
-import mlflow
-from mlflow.entities import LiveSpan, Span, SpanEvent, SpanStatus, SpanStatusCode, SpanType
-from mlflow.entities.span import NoOpSpan, create_mlflow_span
-from mlflow.exceptions import MlflowException
-from mlflow.tracing.provider import _get_tracer, trace_disabled
-from mlflow.tracing.utils import encode_span_id, encode_trace_id
+import qcflow
+from qcflow.entities import LiveSpan, Span, SpanEvent, SpanStatus, SpanStatusCode, SpanType
+from qcflow.entities.span import NoOpSpan, create_qcflow_span
+from qcflow.exceptions import MlflowException
+from qcflow.tracing.provider import _get_tracer, trace_disabled
+from qcflow.tracing.utils import encode_span_id, encode_trace_id
 
 
 def test_create_live_span():
@@ -18,7 +18,7 @@ def test_create_live_span():
 
     tracer = _get_tracer("test")
     with tracer.start_as_current_span("parent") as parent_span:
-        span = create_mlflow_span(parent_span, request_id=request_id, span_type=SpanType.LLM)
+        span = create_qcflow_span(parent_span, request_id=request_id, span_type=SpanType.LLM)
         assert isinstance(span, LiveSpan)
         assert span.request_id == request_id
         assert span._trace_id == encode_trace_id(parent_span.context.trace_id)
@@ -41,10 +41,10 @@ def test_create_live_span():
         span.set_attribute("non_serializable", non_serializable)
         assert span.get_attribute("non_serializable") == str(non_serializable)
         assert parent_span._attributes == {
-            "mlflow.traceRequestId": json.dumps(request_id),
-            "mlflow.spanInputs": '{"input": 1}',
-            "mlflow.spanOutputs": "2",
-            "mlflow.spanType": '"LLM"',
+            "qcflow.traceRequestId": json.dumps(request_id),
+            "qcflow.spanInputs": '{"input": 1}',
+            "qcflow.spanOutputs": "2",
+            "qcflow.spanType": '"LLM"',
             "key": "3",
             "non_serializable": json.dumps(str(non_serializable)),
         }
@@ -60,7 +60,7 @@ def test_create_live_span():
 
         # Test child span
         with tracer.start_as_current_span("child") as child_span:
-            span = create_mlflow_span(child_span, request_id=request_id)
+            span = create_qcflow_span(child_span, request_id=request_id)
             assert isinstance(span, LiveSpan)
             assert span.name == "child"
             assert span.parent_id == encode_span_id(parent_span.context.span_id)
@@ -78,15 +78,15 @@ def test_create_non_live_span():
         ),
         parent=parent_span_context,
         attributes={
-            "mlflow.traceRequestId": json.dumps(request_id),
-            "mlflow.spanInputs": '{"input": 1, "nested": {"foo": "bar"}}',
-            "mlflow.spanOutputs": "2",
+            "qcflow.traceRequestId": json.dumps(request_id),
+            "qcflow.spanInputs": '{"input": 1, "nested": {"foo": "bar"}}',
+            "qcflow.spanOutputs": "2",
             "key": "3",
         },
         start_time=99999,
         end_time=100000,
     )
-    span = create_mlflow_span(readable_span, request_id)
+    span = create_qcflow_span(readable_span, request_id)
 
     assert isinstance(span, Span)
     assert not isinstance(span, LiveSpan)
@@ -115,17 +115,17 @@ def test_create_noop_span():
     def f():
         tracer = _get_tracer("test")
         with tracer.start_as_current_span("span") as otel_span:
-            span = create_mlflow_span(otel_span, request_id=request_id)
+            span = create_qcflow_span(otel_span, request_id=request_id)
         assert isinstance(span, NoOpSpan)
 
     # create from None
-    span = create_mlflow_span(None, request_id=request_id)
+    span = create_qcflow_span(None, request_id=request_id)
     assert isinstance(span, NoOpSpan)
 
 
 def test_create_raise_for_invalid_otel_span():
     with pytest.raises(MlflowException, match=r"The `otel_span` argument must be"):
-        create_mlflow_span(otel_span=123, request_id="tr-12345")
+        create_qcflow_span(otel_span=123, request_id="tr-12345")
 
 
 @pytest.mark.parametrize(
@@ -133,14 +133,14 @@ def test_create_raise_for_invalid_otel_span():
     [SpanStatus("OK"), SpanStatus(SpanStatusCode.ERROR, "Error!"), "OK", "ERROR"],
 )
 def test_set_status(status):
-    with mlflow.start_span("test_span") as span:
+    with qcflow.start_span("test_span") as span:
         span.set_status(status)
 
     assert isinstance(span.status, SpanStatus)
 
 
 def test_set_status_raise_for_invalid_value():
-    with mlflow.start_span("test_span") as span:
+    with qcflow.start_span("test_span") as span:
         with pytest.raises(MlflowException, match=r"INVALID is not a valid SpanStatusCode value."):
             span.set_status("INVALID")
 
@@ -220,7 +220,7 @@ def test_from_dict_raises_when_request_id_is_empty():
                 "status_code": "OK",
                 "status_message": "",
                 "attributes": {
-                    "mlflow.traceRequestId": None,
+                    "qcflow.traceRequestId": None,
                 },
                 "events": [],
             }

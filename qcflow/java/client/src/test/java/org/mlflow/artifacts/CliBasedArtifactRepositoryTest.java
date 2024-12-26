@@ -1,4 +1,4 @@
-package org.mlflow.artifacts;
+package org.qcflow.artifacts;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -18,13 +18,13 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
-import org.mlflow.api.proto.Service.FileInfo;
-import org.mlflow.api.proto.Service.RunInfo;
-import org.mlflow.tracking.MlflowClient;
-import org.mlflow.tracking.TestClientProvider;
-import org.mlflow.tracking.creds.BasicMlflowHostCreds;
-import org.mlflow.tracking.creds.DatabricksMlflowHostCreds;
-import org.mlflow.tracking.creds.MlflowHostCreds;
+import org.qcflow.api.proto.Service.FileInfo;
+import org.qcflow.api.proto.Service.RunInfo;
+import org.qcflow.tracking.MlflowClient;
+import org.qcflow.tracking.TestClientProvider;
+import org.qcflow.tracking.creds.BasicMlflowHostCreds;
+import org.qcflow.tracking.creds.DatabricksMlflowHostCreds;
+import org.qcflow.tracking.creds.MlflowHostCreds;
 
 public class CliBasedArtifactRepositoryTest {
   private static final Logger logger = LoggerFactory.getLogger(
@@ -143,7 +143,7 @@ public class CliBasedArtifactRepositoryTest {
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironment(env, hostCreds);
     Map<String, String> expectedEnv = new HashMap<>();
-    expectedEnv.put("MLFLOW_TRACKING_URI", "just-host");
+    expectedEnv.put("QCFLOW_TRACKING_URI", "just-host");
     Assert.assertEquals(env, expectedEnv);
   }
 
@@ -154,9 +154,9 @@ public class CliBasedArtifactRepositoryTest {
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironment(env, hostCreds);
     Map<String, String> expectedEnv = new HashMap<>();
-    expectedEnv.put("MLFLOW_TRACKING_URI", "just-host");
-    expectedEnv.put("MLFLOW_TRACKING_USERNAME", "user");
-    expectedEnv.put("MLFLOW_TRACKING_PASSWORD", "pass");
+    expectedEnv.put("QCFLOW_TRACKING_URI", "just-host");
+    expectedEnv.put("QCFLOW_TRACKING_USERNAME", "user");
+    expectedEnv.put("QCFLOW_TRACKING_PASSWORD", "pass");
     Assert.assertEquals(env, expectedEnv);
   }
 
@@ -167,8 +167,8 @@ public class CliBasedArtifactRepositoryTest {
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironment(env, hostCreds);
     Map<String, String> expectedEnv = new HashMap<>();
-    expectedEnv.put("MLFLOW_TRACKING_URI", "just-host");
-    expectedEnv.put("MLFLOW_TRACKING_TOKEN", "token");
+    expectedEnv.put("QCFLOW_TRACKING_URI", "just-host");
+    expectedEnv.put("QCFLOW_TRACKING_TOKEN", "token");
     Assert.assertEquals(env, expectedEnv);
   }
 
@@ -180,8 +180,8 @@ public class CliBasedArtifactRepositoryTest {
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironment(env, hostCreds);
     Map<String, String> expectedEnv = new HashMap<>();
-    expectedEnv.put("MLFLOW_TRACKING_URI", "insecure-host");
-    expectedEnv.put("MLFLOW_TRACKING_INSECURE_TLS", "true");
+    expectedEnv.put("QCFLOW_TRACKING_URI", "insecure-host");
+    expectedEnv.put("QCFLOW_TRACKING_INSECURE_TLS", "true");
     Assert.assertEquals(env, expectedEnv);
   }
 

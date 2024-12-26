@@ -12,10 +12,10 @@ import pandas as pd
 import pytest
 from pyspark.sql import SparkSession
 
-import mlflow
-from mlflow.exceptions import MissingConfigException
-from mlflow.utils import file_utils
-from mlflow.utils.file_utils import (
+import qcflow
+from qcflow.exceptions import MissingConfigException
+from qcflow.utils import file_utils
+from qcflow.utils.file_utils import (
     TempDir,
     _copy_file_or_tree,
     _handle_readonly_on_windows,
@@ -26,7 +26,7 @@ from mlflow.utils.file_utils import (
     write_pandas_df_as_parquet,
     write_spark_dataframe_to_parquet_on_local_disk,
 )
-from mlflow.utils.os import is_windows
+from qcflow.utils.os import is_windows
 
 from tests.helper_functions import random_file, random_int, safe_edit_yaml
 from tests.projects.utils import TEST_PROJECT_DIR
@@ -87,7 +87,7 @@ def test_render_and_merge_yaml(tmp_path, monkeypatch):
               preprocess:
                 train_ratio: {{ MY_TRAIN_RATIO|default(0.5) }}
                 experiment:
-                  tracking_uri: {{ MY_MLFLOW_SERVER|default("https://localhost:5000") }}
+                  tracking_uri: {{ MY_QCFLOW_SERVER|default("https://localhost:5000") }}
             test_1: [1, 2, 3]
             test_2: {{ TEST_VAR_1 }}
             test_3: {{ TEST_VAR_2 }}
@@ -99,7 +99,7 @@ def test_render_and_merge_yaml(tmp_path, monkeypatch):
     with open(tmp_path / context_yaml_file, "w") as f:
         f.write(
             """
-            MY_MLFLOW_SERVER: "./mlruns"
+            MY_QCFLOW_SERVER: "./mlruns"
             TEST_VAR_1: ["a", 1.2]
             TEST_VAR_2: {"a": 2}
             """
@@ -109,7 +109,7 @@ def test_render_and_merge_yaml(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     result = file_utils.render_and_merge_yaml(tmp_path, template_yaml_file, context_yaml_file)
     expected = {
-        "MY_MLFLOW_SERVER": "./mlruns",
+        "MY_QCFLOW_SERVER": "./mlruns",
         "TEST_VAR_1": ["a", 1.2],
         "TEST_VAR_2": {"a": 2},
         "TEST_VAR_4": 123,
@@ -353,13 +353,13 @@ def test_shutil_copytree_without_file_permissions(tmp_path):
     dst_dir = tmp_path.joinpath("dst-dir")
     dst_dir.mkdir()
     # Test copying empty directory
-    mlflow.utils.file_utils.shutil_copytree_without_file_permissions(src_dir, dst_dir)
+    qcflow.utils.file_utils.shutil_copytree_without_file_permissions(src_dir, dst_dir)
     assert len(os.listdir(dst_dir)) == 0
     # Test copying directory with contents
     src_dir.joinpath("subdir").mkdir()
     src_dir.joinpath("subdir/subdir-file.txt").write_text("testing 123")
     src_dir.joinpath("top-level-file.txt").write_text("hi")
-    mlflow.utils.file_utils.shutil_copytree_without_file_permissions(src_dir, dst_dir)
+    qcflow.utils.file_utils.shutil_copytree_without_file_permissions(src_dir, dst_dir)
     assert set(os.listdir(dst_dir)) == {"top-level-file.txt", "subdir"}
     assert set(os.listdir(dst_dir.joinpath("subdir"))) == {"subdir-file.txt"}
     assert dst_dir.joinpath("subdir/subdir-file.txt").read_text() == "testing 123"

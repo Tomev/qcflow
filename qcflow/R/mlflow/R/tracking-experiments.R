@@ -1,6 +1,6 @@
 #' Create Experiment
 #'
-#' Creates an MLflow experiment and returns its id.
+#' Creates an QCFlow experiment and returns its id.
 #'
 #' @param name The name of the experiment to create.
 #' @param artifact_location Location where all artifacts for this experiment are stored. If
@@ -8,7 +8,7 @@
 #' @param tags Experiment tags to set on the experiment upon experiment creation.
 #' @template roxlate-client
 #' @export
-mlflow_create_experiment <- function(name, artifact_location = NULL, client = NULL, tags = NULL) {
+qcflow_create_experiment <- function(name, artifact_location = NULL, client = NULL, tags = NULL) {
   client <- resolve_client(client)
   name <- forge::cast_string(name)
 
@@ -16,7 +16,7 @@ mlflow_create_experiment <- function(name, artifact_location = NULL, client = NU
     purrr::imap(~ list(key = .y, value = .x)) %>%
     unname()
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "experiments", "create",
     client = client, verb = "POST",
     data = list(
@@ -43,7 +43,7 @@ mlflow_create_experiment <- function(name, artifact_location = NULL, client = NU
 #'   previous query.
 #' @template roxlate-client
 #' @export
-mlflow_search_experiments <- function(filter = NULL,
+qcflow_search_experiments <- function(filter = NULL,
                                       experiment_view_type = c(
                                         "ACTIVE_ONLY", "DELETED_ONLY", "ALL"
                                       ),
@@ -53,7 +53,7 @@ mlflow_search_experiments <- function(filter = NULL,
                                       client = NULL) {
   client <- resolve_client(client)
   experiment_view_type <- match.arg(experiment_view_type)
-  response <- mlflow_rest("experiments", "search", client = client, verb = "POST", data = list(
+  response <- qcflow_rest("experiments", "search", client = client, verb = "POST", data = list(
     filter = filter,
     view_type = experiment_view_type,
     max_results = max_results,
@@ -86,14 +86,14 @@ mlflow_search_experiments <- function(filter = NULL,
 #' @param experiment_id ID of the experiment.
 #' @template roxlate-client
 #' @export
-mlflow_set_experiment_tag <- function(key, value, experiment_id = NULL, client = NULL) {
+qcflow_set_experiment_tag <- function(key, value, experiment_id = NULL, client = NULL) {
   key <- cast_string(key)
   value <- cast_string(value)
   client <- resolve_client(client)
 
   experiment_id <- resolve_experiment_id(experiment_id)
   experiment_id <- cast_string(experiment_id)
-  response <- mlflow_rest("experiments", "set-experiment-tag", client = client, verb = "POST", data = list(
+  response <- qcflow_rest("experiments", "set-experiment-tag", client = client, verb = "POST", data = list(
       experiment_id = experiment_id,
       key = key,
       value = value
@@ -111,25 +111,25 @@ mlflow_set_experiment_tag <- function(key, value, experiment_id = NULL, client =
 #' @param name The experiment name. Only one of `name` or `experiment_id` should be specified.
 #' @template roxlate-client
 #' @export
-mlflow_get_experiment <- function(experiment_id = NULL, name = NULL, client = NULL) {
+qcflow_get_experiment <- function(experiment_id = NULL, name = NULL, client = NULL) {
   if (!is.null(name) && !is.null(experiment_id)) {
     stop("Only one of `name` or `experiment_id` should be specified.", call. = FALSE)
   }
   client <- resolve_client(client)
   response <- if (!is.null(name)) {
-    mlflow_rest("experiments", "get-by-name",client = client,
+    qcflow_rest("experiments", "get-by-name",client = client,
                 query = list(experiment_name = name))
   } else {
     experiment_id <- resolve_experiment_id(experiment_id)
     experiment_id <- cast_string(experiment_id)
-    response <- mlflow_rest(
+    response <- qcflow_rest(
       "experiments", "get",
       client = client, query = list(experiment_id = experiment_id)
     )
   }
   response$experiment$tags <- parse_run_data(response$experiment$tags)
   response$experiment %>%
-    new_mlflow_experiment()
+    new_qcflow_experiment()
 }
 
 #' Delete Experiment
@@ -140,12 +140,12 @@ mlflow_get_experiment <- function(experiment_id = NULL, name = NULL, client = NU
 #' @param experiment_id ID of the associated experiment. This field is required.
 #' @template roxlate-client
 #' @export
-mlflow_delete_experiment <- function(experiment_id, client = NULL) {
-  if (identical(experiment_id, mlflow_get_active_experiment_id()))
+qcflow_delete_experiment <- function(experiment_id, client = NULL) {
+  if (identical(experiment_id, qcflow_get_active_experiment_id()))
     stop("Cannot delete an active experiment.", call. = FALSE)
 
   client <- resolve_client(client)
-  mlflow_rest(
+  qcflow_rest(
     "experiments", "delete",
     verb = "POST", client = client,
     data = list(experiment_id = experiment_id)
@@ -167,9 +167,9 @@ mlflow_delete_experiment <- function(experiment_id, client = NULL) {
 #' @param experiment_id ID of the associated experiment. This field is required.
 #' @template roxlate-client
 #' @export
-mlflow_restore_experiment <- function(experiment_id, client = NULL) {
+qcflow_restore_experiment <- function(experiment_id, client = NULL) {
   client <- resolve_client(client)
-  mlflow_rest(
+  qcflow_rest(
     "experiments", "restore",
     client = client, verb = "POST",
     data = list(experiment_id = experiment_id)
@@ -185,11 +185,11 @@ mlflow_restore_experiment <- function(experiment_id, client = NULL) {
 #' @param experiment_id ID of the associated experiment. This field is required.
 #' @param new_name The experiment's name will be changed to this. The new name must be unique.
 #' @export
-mlflow_rename_experiment <- function(new_name, experiment_id = NULL, client = NULL) {
+qcflow_rename_experiment <- function(new_name, experiment_id = NULL, client = NULL) {
   experiment_id <- resolve_experiment_id(experiment_id)
 
   client <- resolve_client(client)
-  mlflow_rest(
+  qcflow_rest(
     "experiments", "update",
     client = client, verb = "POST",
     data = list(
@@ -211,7 +211,7 @@ mlflow_rename_experiment <- function(new_name, experiment_id = NULL, client = NU
 #' @param artifact_location Location where all artifacts for this experiment are stored. If
 #'   not provided, the remote server will select an appropriate default.
 #' @export
-mlflow_set_experiment <- function(experiment_name = NULL, experiment_id = NULL, artifact_location = NULL) {
+qcflow_set_experiment <- function(experiment_name = NULL, experiment_id = NULL, artifact_location = NULL) {
   if (!is.null(experiment_name) && !is.null(experiment_id)) {
     stop("Only one of `experiment_name` or `experiment_id` should be specified.",
          call. = FALSE
@@ -223,15 +223,15 @@ mlflow_set_experiment <- function(experiment_name = NULL, experiment_id = NULL, 
          call. = FALSE)
   }
 
-  client <- mlflow_client()
+  client <- qcflow_client()
 
   final_experiment_id <- if (!is.null(experiment_name)) {
     tryCatch(
-      mlflow_id(mlflow_get_experiment(client = client, name = experiment_name)),
+      qcflow_id(qcflow_get_experiment(client = client, name = experiment_name)),
       error = function(e) {
         if (grep("RESOURCE_DOES_NOT_EXIST", e$message, fixed = TRUE)) {
           message("Experiment `", experiment_name, "` does not exist. Creating a new experiment.")
-          mlflow_create_experiment(client = client, name = experiment_name, artifact_location = artifact_location)
+          qcflow_create_experiment(client = client, name = experiment_name, artifact_location = artifact_location)
         } else {
           stop(e)
         }
@@ -240,6 +240,6 @@ mlflow_set_experiment <- function(experiment_name = NULL, experiment_id = NULL, 
   } else {
     experiment_id
   }
-  invisible(mlflow_set_active_experiment_id(final_experiment_id))
+  invisible(qcflow_set_active_experiment_id(final_experiment_id))
   return(final_experiment_id)
 }

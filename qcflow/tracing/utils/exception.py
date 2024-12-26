@@ -1,6 +1,6 @@
 import functools
 
-from mlflow.exceptions import MlflowTracingException
+from qcflow.exceptions import MlflowTracingException
 
 
 def raise_as_trace_exception(f):

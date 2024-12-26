@@ -55,7 +55,7 @@ export const ExperimentViewNotes = React.memo(({ experiment }: ExperimentViewNot
           />{' '}
           {!showNotesEditor && (
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_experimentviewnotes.tsx_57"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_experimentviewnotes.tsx_57"
               type="link"
               onClick={() => setShowNotesEditor(true)}
             >

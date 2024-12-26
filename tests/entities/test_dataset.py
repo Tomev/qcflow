@@ -1,4 +1,4 @@
-from mlflow.entities import Dataset
+from qcflow.entities import Dataset
 
 
 def _check(dataset, name, digest, source_type, source, schema=None, profile=None):

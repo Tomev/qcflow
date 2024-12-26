@@ -1,28 +1,28 @@
 context("Bypass conda")
 
 
-test_that("MLflow finds MLFLOW_PYTHON_BIN environment variable", {
-  orig_global <- mlflow:::.globals$python_bin
-  rm("python_bin", envir = mlflow:::.globals)
-  orig <- Sys.getenv("MLFLOW_PYTHON_BIN")
+test_that("QCFlow finds QCFLOW_PYTHON_BIN environment variable", {
+  orig_global <- qcflow:::.globals$python_bin
+  rm("python_bin", envir = qcflow:::.globals)
+  orig <- Sys.getenv("QCFLOW_PYTHON_BIN")
   expected_path <- "/test/python"
-  Sys.setenv(MLFLOW_PYTHON_BIN = expected_path)
-  python_bin <- mlflow:::get_python_bin()
+  Sys.setenv(QCFLOW_PYTHON_BIN = expected_path)
+  python_bin <- qcflow:::get_python_bin()
   expect_equal(python_bin, expected_path)
   # Clean up
-  Sys.setenv(MLFLOW_PYTHON_BIN = orig)
-  assign("python_bin", orig_global, envir = mlflow:::.globals)
+  Sys.setenv(QCFLOW_PYTHON_BIN = orig)
+  assign("python_bin", orig_global, envir = qcflow:::.globals)
 })
 
-test_that("MLflow finds MLFLOW_BIN environment variable", {
-  orig_global <- mlflow:::.globals$python_bin
-  rm("python_bin", envir = mlflow:::.globals)
-  orig_env <- Sys.getenv("MLFLOW_BIN")
-  expected_path <- "/test/mlflow"
-  Sys.setenv(MLFLOW_BIN = expected_path)
-  mlflow_bin <- mlflow:::python_mlflow_bin()
-  expect_equal(mlflow_bin, expected_path)
+test_that("QCFlow finds QCFLOW_BIN environment variable", {
+  orig_global <- qcflow:::.globals$python_bin
+  rm("python_bin", envir = qcflow:::.globals)
+  orig_env <- Sys.getenv("QCFLOW_BIN")
+  expected_path <- "/test/qcflow"
+  Sys.setenv(QCFLOW_BIN = expected_path)
+  qcflow_bin <- qcflow:::python_qcflow_bin()
+  expect_equal(qcflow_bin, expected_path)
   # Clean up
-  Sys.setenv(MLFLOW_BIN = orig_env)
-  assign("python_bin", orig_global, envir = mlflow:::.globals)
+  Sys.setenv(QCFLOW_BIN = orig_env)
+  assign("python_bin", orig_global, envir = qcflow:::.globals)
 })

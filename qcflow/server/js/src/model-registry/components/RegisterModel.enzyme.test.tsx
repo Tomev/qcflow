@@ -6,8 +6,8 @@
  */
 
 import React from 'react';
-import { shallowWithInjectIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
-import { mountWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { shallowWithInjectIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
+import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 import configureStore from 'redux-mock-store';
 import promiseMiddleware from 'redux-promise-middleware';
 import thunk from 'redux-thunk';

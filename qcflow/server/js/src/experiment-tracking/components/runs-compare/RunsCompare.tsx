@@ -9,7 +9,7 @@ import { isEmptyChartCard, type RunsChartsRunData } from '../runs-charts/compone
 import {
   AUTOML_EVALUATION_METRIC_TAG,
   LOG_IMAGE_TAG_INDICATOR,
-  MLFLOW_EXPERIMENT_PRIMARY_METRIC_NAME,
+  QCFLOW_EXPERIMENT_PRIMARY_METRIC_NAME,
 } from '../../constants';
 import { RunsChartsTooltipBody } from '../runs-charts/components/RunsChartsTooltipBody';
 import { RunsChartsTooltipWrapper } from '../runs-charts/hooks/useRunsChartsTooltip';
@@ -21,7 +21,7 @@ import {
 } from '../experiment-page/models/ExperimentPageUIState';
 import { RunRowType } from '../experiment-page/utils/experimentPage.row-types';
 import { RunsChartsSectionAccordion } from '../runs-charts/components/sections/RunsChartsSectionAccordion';
-import type { ReduxState } from '@mlflow/mlflow/src/redux-types';
+import type { ReduxState } from '@qcflow/qcflow/src/redux-types';
 import { SearchIcon } from '@databricks/design-system';
 import { Input } from '@databricks/design-system';
 import { useIntl } from 'react-intl';
@@ -206,8 +206,8 @@ export const RunsCompareImpl = ({
 
   const primaryMetricKey = useMemo(() => {
     const automlEntry = experimentTags[AUTOML_EVALUATION_METRIC_TAG];
-    const mlflowPrimaryEntry = experimentTags[MLFLOW_EXPERIMENT_PRIMARY_METRIC_NAME];
-    return automlEntry?.value || mlflowPrimaryEntry?.value || metricKeyList[0] || '';
+    const qcflowPrimaryEntry = experimentTags[QCFLOW_EXPERIMENT_PRIMARY_METRIC_NAME];
+    return automlEntry?.value || qcflowPrimaryEntry?.value || metricKeyList[0] || '';
   }, [experimentTags, metricKeyList]);
 
   /**
@@ -451,7 +451,7 @@ export const RunsCompareImpl = ({
           <RunsChartsFilterInput chartsSearchFilter={chartsSearchFilter} />
         ) : (
           <Input
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_runscompare.tsx_454"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_runscompare.tsx_454"
             role="searchbox"
             prefix={<SearchIcon />}
             value={search}

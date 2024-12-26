@@ -18,11 +18,11 @@ describe('getCombinedSearchFilter', () => {
     expect(getCombinedSearchFilter({ query: 'xyz' })).toBe("name ilike '%xyz%'");
   });
 
-  it('should return filter string correctly with MLflow Search Syntax string with tags.', () => {
+  it('should return filter string correctly with QCFlow Search Syntax string with tags.', () => {
     expect(getCombinedSearchFilter({ query: "tags.k = 'v'" })).toBe("tags.k = 'v'");
   });
 
-  it('should return filter string correctly with MLflow Search Syntax string with tags. and name', () => {
+  it('should return filter string correctly with QCFlow Search Syntax string with tags. and name', () => {
     expect(getCombinedSearchFilter({ query: "name ilike '%abc%' AND tags.k = 'v'" })).toBe(
       "name ilike '%abc%' AND tags.k = 'v'",
     );

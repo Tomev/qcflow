@@ -1,14 +1,14 @@
 import time
 from typing import Any
 
-from mlflow.gateway.config import HuggingFaceTextGenerationInferenceConfig, RouteConfig
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.base import BaseProvider
-from mlflow.gateway.providers.utils import (
+from qcflow.gateway.config import HuggingFaceTextGenerationInferenceConfig, RouteConfig
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.base import BaseProvider
+from qcflow.gateway.providers.utils import (
     rename_payload_keys,
     send_request,
 )
-from mlflow.gateway.schemas import completions
+from qcflow.gateway.schemas import completions
 
 
 class HFTextGenerationInferenceServerProvider(BaseProvider):

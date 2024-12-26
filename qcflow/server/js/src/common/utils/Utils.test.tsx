@@ -116,7 +116,7 @@ test('renderNotebookSource', () => {
   expect(Utils.renderNotebookSource(null, notebookId, revisionId, runUuid, sourceName, null)).toEqual(
     <a
       title={sourceName}
-      href={`http://localhost/#notebook/${notebookId}/revision/${revisionId}/mlflow/run/${runUuid}`}
+      href={`http://localhost/#notebook/${notebookId}/revision/${revisionId}/qcflow/run/${runUuid}`}
       target="_top"
     >
       iris_feature
@@ -125,7 +125,7 @@ test('renderNotebookSource', () => {
   expect(Utils.renderNotebookSource(null, notebookId, revisionId, runUuid, null, null)).toEqual(
     <a
       title={Utils.getDefaultNotebookRevisionName(notebookId, revisionId)}
-      href={`http://localhost/#notebook/${notebookId}/revision/${revisionId}/mlflow/run/${runUuid}`}
+      href={`http://localhost/#notebook/${notebookId}/revision/${revisionId}/qcflow/run/${runUuid}`}
       target="_top"
     >
       {Utils.getDefaultNotebookRevisionName(notebookId, revisionId)}
@@ -145,7 +145,7 @@ test('renderNotebookSource', () => {
   ).toEqual(
     <a
       title={sourceName}
-      href={`http://localhost/#notebook/${notebookId}/revision/${revisionId}/mlflow/run/${runUuid}`}
+      href={`http://localhost/#notebook/${notebookId}/revision/${revisionId}/qcflow/run/${runUuid}`}
       target="_top"
     >
       {nameOverride}
@@ -154,7 +154,7 @@ test('renderNotebookSource', () => {
   expect(Utils.renderNotebookSource(queryParams, notebookId, revisionId, runUuid, sourceName, null)).toEqual(
     <a
       title={sourceName}
-      href={`http://localhost/${queryParams}#notebook/${notebookId}/revision/${revisionId}/mlflow/run/${runUuid}`}
+      href={`http://localhost/${queryParams}#notebook/${notebookId}/revision/${revisionId}/qcflow/run/${runUuid}`}
       target="_top"
     >
       iris_feature
@@ -174,7 +174,7 @@ test('renderNotebookSource', () => {
   ).toEqual(
     <a
       title={sourceName}
-      href={`http://databricks/${queryParams}#notebook/${notebookId}/revision/${revisionId}/mlflow/run/${runUuid}`}
+      href={`http://databricks/${queryParams}#notebook/${notebookId}/revision/${revisionId}/qcflow/run/${runUuid}`}
       target="_top"
     >
       iris_feature
@@ -237,35 +237,35 @@ test('renderJobSource', () => {
 
 test('formatSource & renderSource', () => {
   const source_with_name = {
-    'mlflow.source.name': { value: 'source' },
-    'mlflow.source.type': { value: 'PROJECT' },
-    'mlflow.project.entryPoint': { value: 'entry' },
+    'qcflow.source.name': { value: 'source' },
+    'qcflow.source.type': { value: 'PROJECT' },
+    'qcflow.project.entryPoint': { value: 'entry' },
   };
   expect(Utils.formatSource(source_with_name)).toEqual('source:entry');
   // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
   expect(Utils.renderSource(source_with_name)).toEqual('source:entry');
 
   const source_with_main = {
-    'mlflow.source.name': { value: 'source1' },
-    'mlflow.source.type': { value: 'PROJECT' },
-    'mlflow.project.entryPoint': { value: 'main' },
+    'qcflow.source.name': { value: 'source1' },
+    'qcflow.source.type': { value: 'PROJECT' },
+    'qcflow.project.entryPoint': { value: 'main' },
   };
   expect(Utils.formatSource(source_with_main)).toEqual('source1');
   // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
   expect(Utils.renderSource(source_with_main)).toEqual('source1');
 
   const source_no_name = {
-    'mlflow.source.name': { value: 'source2' },
-    'mlflow.source.type': { value: 'PROJECT' },
+    'qcflow.source.name': { value: 'source2' },
+    'qcflow.source.type': { value: 'PROJECT' },
   };
   expect(Utils.formatSource(source_no_name)).toEqual('source2');
   // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
   expect(Utils.renderSource(source_no_name)).toEqual('source2');
 
   const non_project_source = {
-    'mlflow.source.name': { value: 'source3' },
-    'mlflow.source.type': { value: 'NOTEBOOK' },
-    'mlflow.project.entryPoint': { value: 'entry' },
+    'qcflow.source.name': { value: 'source3' },
+    'qcflow.source.type': { value: 'NOTEBOOK' },
+    'qcflow.project.entryPoint': { value: 'entry' },
   };
   expect(Utils.formatSource(non_project_source)).toEqual('source3');
   // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
@@ -273,54 +273,54 @@ test('formatSource & renderSource', () => {
 
   // formatSource should return a string, renderSource should return an HTML element.
   const github_url = {
-    'mlflow.source.name': { value: 'git@github.com:mlflow/mlflow-apps.git' },
-    'mlflow.source.type': { value: 'PROJECT' },
-    'mlflow.project.entryPoint': { value: 'entry' },
+    'qcflow.source.name': { value: 'git@github.com:qcflow/qcflow-apps.git' },
+    'qcflow.source.type': { value: 'PROJECT' },
+    'qcflow.project.entryPoint': { value: 'entry' },
   };
-  expect(Utils.formatSource(github_url)).toEqual('mlflow-apps:entry');
+  expect(Utils.formatSource(github_url)).toEqual('qcflow-apps:entry');
   // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
   expect(Utils.renderSource(github_url)).toEqual(
-    <a href="https://github.com/mlflow/mlflow-apps" target="_top">
-      mlflow-apps:entry
+    <a href="https://github.com/qcflow/qcflow-apps" target="_top">
+      qcflow-apps:entry
     </a>,
   );
 
   const gitlab_url = {
-    'mlflow.source.name': { value: 'git@gitlab.com:mlflow/mlflow-apps.git' },
-    'mlflow.source.type': { value: 'PROJECT' },
-    'mlflow.project.entryPoint': { value: 'entry' },
+    'qcflow.source.name': { value: 'git@gitlab.com:qcflow/qcflow-apps.git' },
+    'qcflow.source.type': { value: 'PROJECT' },
+    'qcflow.project.entryPoint': { value: 'entry' },
   };
-  expect(Utils.formatSource(gitlab_url)).toEqual('mlflow-apps:entry');
+  expect(Utils.formatSource(gitlab_url)).toEqual('qcflow-apps:entry');
   // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
   expect(Utils.renderSource(gitlab_url)).toEqual(
-    <a href="https://gitlab.com/mlflow/mlflow-apps" target="_top">
-      mlflow-apps:entry
+    <a href="https://gitlab.com/qcflow/qcflow-apps" target="_top">
+      qcflow-apps:entry
     </a>,
   );
 
   const gitlab_long_url = {
-    'mlflow.source.name': { value: 'git@gitlab.com:mlflow/mlflow-apps.git#tmp' },
-    'mlflow.source.type': { value: 'PROJECT' },
-    'mlflow.project.entryPoint': { value: 'entry' },
+    'qcflow.source.name': { value: 'git@gitlab.com:qcflow/qcflow-apps.git#tmp' },
+    'qcflow.source.type': { value: 'PROJECT' },
+    'qcflow.project.entryPoint': { value: 'entry' },
   };
-  expect(Utils.formatSource(gitlab_long_url)).toEqual('mlflow-apps:entry');
+  expect(Utils.formatSource(gitlab_long_url)).toEqual('qcflow-apps:entry');
   // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
   expect(Utils.renderSource(gitlab_long_url)).toEqual(
-    <a href="https://gitlab.com/mlflow/mlflow-apps/-/tree/master/tmp" target="_top">
-      mlflow-apps:entry
+    <a href="https://gitlab.com/qcflow/qcflow-apps/-/tree/master/tmp" target="_top">
+      qcflow-apps:entry
     </a>,
   );
 
   const bitbucket_url = {
-    'mlflow.source.name': { value: 'git@bitbucket.org:mlflow/mlflow-apps.git' },
-    'mlflow.source.type': { value: 'PROJECT' },
-    'mlflow.project.entryPoint': { value: 'entry' },
+    'qcflow.source.name': { value: 'git@bitbucket.org:qcflow/qcflow-apps.git' },
+    'qcflow.source.type': { value: 'PROJECT' },
+    'qcflow.project.entryPoint': { value: 'entry' },
   };
-  expect(Utils.formatSource(bitbucket_url)).toEqual('mlflow-apps:entry');
+  expect(Utils.formatSource(bitbucket_url)).toEqual('qcflow-apps:entry');
   // @ts-expect-error TS(2554): Expected 3 arguments, but got 1.
   expect(Utils.renderSource(bitbucket_url)).toEqual(
-    <a href="https://bitbucket.org/mlflow/mlflow-apps" target="_top">
-      mlflow-apps:entry
+    <a href="https://bitbucket.org/qcflow/qcflow-apps" target="_top">
+      qcflow-apps:entry
     </a>,
   );
 });
@@ -403,21 +403,21 @@ test('dropExtension', () => {
 test('getGitHubRegex', () => {
   const gitHubRegex = Utils.getGitHubRegex();
   const urlAndExpected = [
-    ['http://github.com/mlflow/mlflow-apps', ['/github.com/mlflow/mlflow-apps', 'mlflow', 'mlflow-apps', '']],
-    ['https://github.com/mlflow/mlflow-apps', ['/github.com/mlflow/mlflow-apps', 'mlflow', 'mlflow-apps', '']],
-    ['http://github.com/mlflow/mlflow-apps.git', ['/github.com/mlflow/mlflow-apps.git', 'mlflow', 'mlflow-apps', '']],
-    ['https://github.com/mlflow/mlflow-apps.git', ['/github.com/mlflow/mlflow-apps.git', 'mlflow', 'mlflow-apps', '']],
+    ['http://github.com/qcflow/qcflow-apps', ['/github.com/qcflow/qcflow-apps', 'qcflow', 'qcflow-apps', '']],
+    ['https://github.com/qcflow/qcflow-apps', ['/github.com/qcflow/qcflow-apps', 'qcflow', 'qcflow-apps', '']],
+    ['http://github.com/qcflow/qcflow-apps.git', ['/github.com/qcflow/qcflow-apps.git', 'qcflow', 'qcflow-apps', '']],
+    ['https://github.com/qcflow/qcflow-apps.git', ['/github.com/qcflow/qcflow-apps.git', 'qcflow', 'qcflow-apps', '']],
     [
-      'https://github.com/mlflow/mlflow#example/tutorial',
-      ['/github.com/mlflow/mlflow#example/tutorial', 'mlflow', 'mlflow', 'example/tutorial'],
+      'https://github.com/qcflow/qcflow#example/tutorial',
+      ['/github.com/qcflow/qcflow#example/tutorial', 'qcflow', 'qcflow', 'example/tutorial'],
     ],
     [
       'https://github.com/username/repo.name#mlproject',
       ['/github.com/username/repo.name#mlproject', 'username', 'repo.name', 'mlproject'],
     ],
-    ['git@github.com:mlflow/mlflow-apps.git', ['@github.com:mlflow/mlflow-apps.git', 'mlflow', 'mlflow-apps', '']],
-    ['https://some-other-site.com?q=github.com/mlflow/mlflow-apps.git', [null]],
-    ['ssh@some-server:mlflow/mlflow-apps.git', [null]],
+    ['git@github.com:qcflow/qcflow-apps.git', ['@github.com:qcflow/qcflow-apps.git', 'qcflow', 'qcflow-apps', '']],
+    ['https://some-other-site.com?q=github.com/qcflow/qcflow-apps.git', [null]],
+    ['ssh@some-server:qcflow/qcflow-apps.git', [null]],
   ];
   urlAndExpected.forEach((lst) => {
     const url = lst[0];
@@ -432,21 +432,21 @@ test('getGitHubRegex', () => {
 test('getGitLabRegex', () => {
   const gitLabRegex = Utils.getGitLabRegex();
   const urlAndExpected = [
-    ['http://gitlab.com/mlflow/mlflow-apps', ['/gitlab.com/mlflow/mlflow-apps', 'mlflow', 'mlflow-apps', '']],
-    ['https://gitlab.com/mlflow/mlflow-apps', ['/gitlab.com/mlflow/mlflow-apps', 'mlflow', 'mlflow-apps', '']],
-    ['http://gitlab.com/mlflow/mlflow-apps.git', ['/gitlab.com/mlflow/mlflow-apps.git', 'mlflow', 'mlflow-apps', '']],
-    ['https://gitlab.com/mlflow/mlflow-apps.git', ['/gitlab.com/mlflow/mlflow-apps.git', 'mlflow', 'mlflow-apps', '']],
+    ['http://gitlab.com/qcflow/qcflow-apps', ['/gitlab.com/qcflow/qcflow-apps', 'qcflow', 'qcflow-apps', '']],
+    ['https://gitlab.com/qcflow/qcflow-apps', ['/gitlab.com/qcflow/qcflow-apps', 'qcflow', 'qcflow-apps', '']],
+    ['http://gitlab.com/qcflow/qcflow-apps.git', ['/gitlab.com/qcflow/qcflow-apps.git', 'qcflow', 'qcflow-apps', '']],
+    ['https://gitlab.com/qcflow/qcflow-apps.git', ['/gitlab.com/qcflow/qcflow-apps.git', 'qcflow', 'qcflow-apps', '']],
     [
-      'https://gitlab.com/mlflow/mlflow#example/tutorial',
-      ['/gitlab.com/mlflow/mlflow#example/tutorial', 'mlflow', 'mlflow', 'example/tutorial'],
+      'https://gitlab.com/qcflow/qcflow#example/tutorial',
+      ['/gitlab.com/qcflow/qcflow#example/tutorial', 'qcflow', 'qcflow', 'example/tutorial'],
     ],
     [
       'https://gitlab.com/username/repo.name#mlproject',
       ['/gitlab.com/username/repo.name#mlproject', 'username', 'repo.name', 'mlproject'],
     ],
-    ['git@gitlab.com:mlflow/mlflow-apps.git', ['@gitlab.com:mlflow/mlflow-apps.git', 'mlflow', 'mlflow-apps', '']],
-    ['https://some-other-site.com?q=gitlab.com/mlflow/mlflow-apps.git', [null]],
-    ['ssh@some-server:mlflow/mlflow-apps.git', [null]],
+    ['git@gitlab.com:qcflow/qcflow-apps.git', ['@gitlab.com:qcflow/qcflow-apps.git', 'qcflow', 'qcflow-apps', '']],
+    ['https://some-other-site.com?q=gitlab.com/qcflow/qcflow-apps.git', [null]],
+    ['ssh@some-server:qcflow/qcflow-apps.git', [null]],
   ];
   urlAndExpected.forEach((lst) => {
     const url = lst[0];
@@ -469,8 +469,8 @@ test('getRegex', () => {
       'git@git.custom.in/repo/directory#project/directory',
       ['git@git.custom.in', 'repo/directory', 'project/directory'],
     ],
-    ['https://some-other-site.com?q=github.com/mlflow/mlflow-apps.git', [undefined]],
-    ['ssh@some-server:mlflow/mlflow-apps.git', [undefined]],
+    ['https://some-other-site.com?q=github.com/qcflow/qcflow-apps.git', [undefined]],
+    ['ssh@some-server:qcflow/qcflow-apps.git', [undefined]],
   ];
   urlAndExpected.forEach((lst) => {
     const url = lst[0];
@@ -612,18 +612,18 @@ test('compareExperiments', () => {
 test('normalize', () => {
   expect(Utils.normalize('/normalized/absolute/path')).toEqual('/normalized/absolute/path');
   expect(Utils.normalize('normalized/relative/path')).toEqual('normalized/relative/path');
-  expect(Utils.normalize('http://mlflow.org/resource')).toEqual('http://mlflow.org/resource');
+  expect(Utils.normalize('http://qcflow.org/resource')).toEqual('http://qcflow.org/resource');
   expect(Utils.normalize('s3:/bucket/resource')).toEqual('s3:/bucket/resource');
   expect(Utils.normalize('C:\\Windows\\Filesystem\\Path')).toEqual('C:\\Windows\\Filesystem\\Path');
   expect(Utils.normalize('///redundant//absolute/path')).toEqual('/redundant/absolute/path');
   expect(Utils.normalize('redundant//relative///path///')).toEqual('redundant/relative/path');
-  expect(Utils.normalize('http://mlflow.org///redundant/')).toEqual('http://mlflow.org/redundant');
+  expect(Utils.normalize('http://qcflow.org///redundant/')).toEqual('http://qcflow.org/redundant');
   expect(Utils.normalize('s3:///bucket/resource/')).toEqual('s3:/bucket/resource');
 });
 test('getLoggedModelsFromTags correctly parses run tag for logged models', () => {
   const tags = {
-    'mlflow.log-model.history': (RunTag as any).fromJs({
-      key: 'mlflow.log-model.history',
+    'qcflow.log-model.history': (RunTag as any).fromJs({
+      key: 'qcflow.log-model.history',
       value: JSON.stringify([
         {
           run_id: 'run-uuid',
@@ -643,8 +643,8 @@ test('getLoggedModelsFromTags correctly parses run tag for logged models', () =>
 
 test('getLoggedModelsFromTags should correctly dedup and sort logged models', () => {
   const tags = {
-    'mlflow.log-model.history': (RunTag as any).fromJs({
-      key: 'mlflow.log-model.history',
+    'qcflow.log-model.history': (RunTag as any).fromJs({
+      key: 'qcflow.log-model.history',
       value: JSON.stringify([
         {
           run_id: 'run-uuid',
@@ -706,8 +706,8 @@ test('getLoggedModelsFromTags should not crash on invalid JSON', () => {
   ]);
 
   const tags = {
-    'mlflow.log-model.history': {
-      key: 'mlflow.log-model.history',
+    'qcflow.log-model.history': {
+      key: 'qcflow.log-model.history',
       value: tagValue.slice(10), // truncate the JSON string to make it invalid
     },
   };
@@ -719,8 +719,8 @@ test('getLoggedModelsFromTags should not crash on invalid JSON', () => {
 
 test('mergeLoggedAndRegisteredModels should merge logged and registered model', () => {
   const tags = {
-    'mlflow.log-model.history': (RunTag as any).fromJs({
-      key: 'mlflow.log-model.history',
+    'qcflow.log-model.history': (RunTag as any).fromJs({
+      key: 'qcflow.log-model.history',
       value: JSON.stringify([
         {
           run_id: 'run-uuid',
@@ -756,8 +756,8 @@ test('mergeLoggedAndRegisteredModels should merge logged and registered model', 
 
 test('mergeLoggedAndRegisteredModels should output 2 logged and 1 registered model', () => {
   const tags = {
-    'mlflow.log-model.history': (RunTag as any).fromJs({
-      key: 'mlflow.log-model.history',
+    'qcflow.log-model.history': (RunTag as any).fromJs({
+      key: 'qcflow.log-model.history',
       value: JSON.stringify([
         {
           run_id: 'run-uuid',
@@ -804,8 +804,8 @@ test('mergeLoggedAndRegisteredModels should output 2 logged and 1 registered mod
 
 test('mergeLoggedAndRegisteredModels should output registered models in order', () => {
   const tags = {
-    'mlflow.log-model.history': (RunTag as any).fromJs({
-      key: 'mlflow.log-model.history',
+    'qcflow.log-model.history': (RunTag as any).fromJs({
+      key: 'qcflow.log-model.history',
       value: JSON.stringify([
         {
           run_id: 'run-uuid',

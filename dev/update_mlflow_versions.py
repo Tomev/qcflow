@@ -9,7 +9,7 @@ from packaging.version import Version
 _logger = logging.getLogger(__name__)
 
 _PYTHON_VERSION_FILES = [
-    Path("mlflow", "version.py"),
+    Path("qcflow", "version.py"),
 ]
 
 _PYPROJECT_TOML_FILES = [
@@ -18,13 +18,13 @@ _PYPROJECT_TOML_FILES = [
     Path("pyproject.release.toml"),
 ]
 
-_JAVA_VERSION_FILES = Path("mlflow", "java").rglob("*.java")
+_JAVA_VERSION_FILES = Path("qcflow", "java").rglob("*.java")
 
-_JAVA_POM_XML_FILES = Path("mlflow", "java").rglob("*.xml")
+_JAVA_POM_XML_FILES = Path("qcflow", "java").rglob("*.xml")
 
 _JS_VERSION_FILES = [
     Path(
-        "mlflow",
+        "qcflow",
         "server",
         "js",
         "src",
@@ -33,11 +33,11 @@ _JS_VERSION_FILES = [
     )
 ]
 
-_R_VERSION_FILES = [Path("mlflow", "R", "mlflow", "DESCRIPTION")]
+_R_VERSION_FILES = [Path("qcflow", "R", "qcflow", "DESCRIPTION")]
 
 
 def get_current_py_version() -> str:
-    text = Path("mlflow", "version.py").read_text()
+    text = Path("qcflow", "version.py").read_text()
     return re.search(r'VERSION = "(.+)"', text).group(1)
 
 
@@ -83,8 +83,8 @@ def replace_pyproject_toml(new_py_version: str, paths: list[Path]) -> None:
     )
     replace_occurrences(
         files=paths,
-        pattern=re.compile(r"^\s*\"mlflow-skinny==.+\",$", re.MULTILINE),
-        repl=f'  "mlflow-skinny=={new_py_version}",',
+        pattern=re.compile(r"^\s*\"qcflow-skinny==.+\",$", re.MULTILINE),
+        repl=f'  "qcflow-skinny=={new_py_version}",',
     )
 
 
@@ -108,24 +108,24 @@ def replace_java(old_version: str, new_py_version: str, paths: list[Path]) -> No
 
 
 # Note: the pom.xml files define versions of dependencies as
-# well. this causes issues when the mlflow version matches the
+# well. this causes issues when the qcflow version matches the
 # version of a dependency. to work around, we make sure to
 # match only the correct keys
 def replace_java_pom_xml(old_version: str, new_py_version: str, paths: list[Path]) -> None:
     old_py_version_pattern = get_java_py_version_pattern(old_version)
     dev_suffix_replaced = get_java_new_py_version(new_py_version)
 
-    mlflow_version_tag_pattern = r"<mlflow.version>"
-    mlflow_spark_pattern = (
-        r"<artifactId>mlflow-spark_\${scala\.compat\.version}</artifactId>\s+<version>"
+    qcflow_version_tag_pattern = r"<qcflow.version>"
+    qcflow_spark_pattern = (
+        r"<artifactId>qcflow-spark_\${scala\.compat\.version}</artifactId>\s+<version>"
     )
-    mlflow_parent_pattern = r"<artifactId>mlflow-parent</artifactId>\s+<version>"
+    qcflow_parent_pattern = r"<artifactId>qcflow-parent</artifactId>\s+<version>"
 
     # combine the three tags together to form the regex
-    mlflow_replace_pattern = (
-        rf"({mlflow_version_tag_pattern}|{mlflow_spark_pattern}|{mlflow_parent_pattern})"
+    qcflow_replace_pattern = (
+        rf"({qcflow_version_tag_pattern}|{qcflow_spark_pattern}|{qcflow_parent_pattern})"
         + f"{old_py_version_pattern}"
-        + r"(</mlflow.version>|</version>)"
+        + r"(</qcflow.version>|</version>)"
     )
 
     # group 1: everything before the version
@@ -135,7 +135,7 @@ def replace_java_pom_xml(old_version: str, new_py_version: str, paths: list[Path
 
     replace_occurrences(
         files=paths,
-        pattern=mlflow_replace_pattern,
+        pattern=qcflow_replace_pattern,
         repl=replace_str,
     )
 
@@ -189,17 +189,17 @@ def validate_new_version(
 
 
 @click.group()
-def update_mlflow_versions():
+def update_qcflow_versions():
     pass
 
 
-@update_mlflow_versions.command(
+@update_qcflow_versions.command(
     help="""
-Update MLflow package versions BEFORE release.
+Update QCFlow package versions BEFORE release.
 
 Usage:
 
-python dev/update_mlflow_versions.py pre-release --new-version 1.29.0
+python dev/update_qcflow_versions.py pre-release --new-version 1.29.0
 """
 )
 @click.option(
@@ -209,13 +209,13 @@ def pre_release(new_version: str):
     update_versions(new_py_version=new_version)
 
 
-@update_mlflow_versions.command(
+@update_qcflow_versions.command(
     help="""
-Update MLflow package versions AFTER release.
+Update QCFlow package versions AFTER release.
 
 Usage:
 
-python dev/update_mlflow_versions.py post-release --new-version 1.29.0
+python dev/update_qcflow_versions.py post-release --new-version 1.29.0
 """
 )
 @click.option(
@@ -239,4 +239,4 @@ def post_release(new_version: str):
 
 
 if __name__ == "__main__":
-    update_mlflow_versions()
+    update_qcflow_versions()

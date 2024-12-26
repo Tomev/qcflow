@@ -7,9 +7,9 @@ import requests
 from google.auth.exceptions import DefaultCredentialsError
 from google.cloud.storage import client as gcs_client
 
-from mlflow.entities.multipart_upload import MultipartUploadPart
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository, GCSMPUArguments
+from qcflow.entities.multipart_upload import MultipartUploadPart
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository, GCSMPUArguments
 
 from tests.helper_functions import mock_method_chain
 
@@ -370,7 +370,7 @@ def test_create_multipart_upload(mock_client):
     repo = GCSArtifactRepository("gs://test_bucket" + artifact_root_path, mock_client)
 
     gcs_mpu_arguments_patch = mock.patch(
-        "mlflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository._gcs_mpu_arguments",
+        "qcflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository._gcs_mpu_arguments",
         return_value=GCSMPUArguments(
             requests.Session(),
             f"{gcs_base_url}/{bucket_name}/{artifact_root_path}/{file_name}",
@@ -421,7 +421,7 @@ def test_complete_multipart_upload(mock_client):
         parts.append(MultipartUploadPart(part_number=part_number, etag=f"etag_{part_number}"))
 
     gcs_mpu_arguments_patch = mock.patch(
-        "mlflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository._gcs_mpu_arguments",
+        "qcflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository._gcs_mpu_arguments",
         return_value=GCSMPUArguments(
             requests.Session(),
             f"{gcs_base_url}/{bucket_name}/{artifact_root_path}/{file_name}",
@@ -464,7 +464,7 @@ def test_abort_multipart_upload(mock_client):
 
     upload_id = "some_upload_id"
     gcs_mpu_arguments_patch = mock.patch(
-        "mlflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository._gcs_mpu_arguments",
+        "qcflow.store.artifact.gcs_artifact_repo.GCSArtifactRepository._gcs_mpu_arguments",
         return_value=GCSMPUArguments(
             requests.Session(),
             f"{gcs_base_url}/{bucket_name}/{artifact_root_path}/{file_name}",

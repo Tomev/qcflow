@@ -5,13 +5,13 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.environment_variables import MLFLOW_RECIPES_EXECUTION_DIRECTORY
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.steps.transform import TransformStep, _validate_user_code_output
-from mlflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
-from mlflow.utils.file_utils import read_yaml
+import qcflow
+from qcflow import MlflowClient
+from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_DIRECTORY
+from qcflow.exceptions import MlflowException
+from qcflow.recipes.steps.transform import TransformStep, _validate_user_code_output
+from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
+from qcflow.utils.file_utils import read_yaml
 
 
 @pytest.fixture(autouse=True)
@@ -57,7 +57,7 @@ def set_up_transform_step(recipe_root: Path, transform_user_module):
         target_col: "y"
         experiment:
           name: {experiment_name}
-          tracking_uri: {mlflow.get_tracking_uri()}
+          tracking_uri: {qcflow.get_tracking_uri()}
         steps:
           transform:
             using: custom
@@ -74,7 +74,7 @@ def test_transform_step_writes_onehot_encoded_dataframe_and_transformer_pkl(
 ):
     from sklearn.preprocessing import StandardScaler
 
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_recipe_root_path))
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_recipe_root_path))
     with mock.patch("steps.transform.transformer_fn", lambda: StandardScaler()):
         transform_step, transform_step_output_dir, _ = set_up_transform_step(
             tmp_recipe_root_path, "transformer_fn"
@@ -105,7 +105,7 @@ def test_transform_steps_work_without_step_config(tmp_recipe_root_path, recipe):
           fakestep:
             something: else
         """.format(
-            tracking_uri=mlflow.get_tracking_uri(),
+            tracking_uri=qcflow.get_tracking_uri(),
             experiment_name=experiment_name,
             recipe=recipe,
             positive_class='positive_class: "a"' if recipe == "regression/v1" else "",
@@ -117,7 +117,7 @@ def test_transform_steps_work_without_step_config(tmp_recipe_root_path, recipe):
 
 
 def test_transform_empty_step(tmp_recipe_root_path, monkeypatch):
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_recipe_root_path))
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_recipe_root_path))
     with mock.patch("steps.transform.transformer_fn", return_value=None):
         transform_step, transform_step_output_dir, split_step_output_dir = set_up_transform_step(
             tmp_recipe_root_path, "transformer_fn"

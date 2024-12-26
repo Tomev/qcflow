@@ -6,14 +6,14 @@ import time
 import urllib
 from os.path import join
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModel,
     RegisteredModelAlias,
     RegisteredModelTag,
 )
-from mlflow.entities.model_registry.model_version_stages import (
+from qcflow.entities.model_registry.model_version_stages import (
     ALL_STAGES,
     DEFAULT_STAGES_FOR_GET_LATEST_VERSIONS,
     STAGE_ARCHIVED,
@@ -21,22 +21,22 @@ from mlflow.entities.model_registry.model_version_stages import (
     STAGE_NONE,
     get_canonical_stage,
 )
-from mlflow.environment_variables import MLFLOW_REGISTRY_DIR
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.environment_variables import QCFLOW_REGISTRY_DIR
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_ALREADY_EXISTS,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.store.artifact.utils.models import _parse_model_uri
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry import (
+from qcflow.store.artifact.utils.models import _parse_model_uri
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry import (
     DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH,
     SEARCH_MODEL_VERSION_MAX_RESULTS_THRESHOLD,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_THRESHOLD,
 )
-from mlflow.store.model_registry.abstract_store import AbstractStore
-from mlflow.utils.file_utils import (
+from qcflow.store.model_registry.abstract_store import AbstractStore
+from qcflow.utils.file_utils import (
     contains_path_separator,
     contains_percent,
     exists,
@@ -53,23 +53,23 @@ from mlflow.utils.file_utils import (
     write_to,
     write_yaml,
 )
-from mlflow.utils.search_utils import SearchModelUtils, SearchModelVersionUtils, SearchUtils
-from mlflow.utils.string_utils import is_string_type
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.validation import (
+from qcflow.utils.search_utils import SearchModelUtils, SearchModelVersionUtils, SearchUtils
+from qcflow.utils.string_utils import is_string_type
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.validation import (
     _validate_model_alias_name,
     _validate_model_version,
     _validate_model_version_tag,
     _validate_registered_model_tag,
     _validate_tag_name,
 )
-from mlflow.utils.validation import (
+from qcflow.utils.validation import (
     _validate_model_name as _original_validate_model_name,
 )
 
 
 def _default_root_dir():
-    return MLFLOW_REGISTRY_DIR.get() or os.path.abspath(DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH)
+    return QCFLOW_REGISTRY_DIR.get() or os.path.abspath(DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH)
 
 
 def _validate_model_name(name):
@@ -105,7 +105,7 @@ class FileModelVersion(ModelVersion):
         # aggregate with parent class with subclass properties
         return sorted(ModelVersion._properties() + cls._get_properties_helper())
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         meta = dict(self)
         return ModelVersion.from_dictionary(
             {**meta, "tags": [ModelVersionTag(k, v) for k, v in meta["tags"].items()]}
@@ -182,12 +182,12 @@ class FileStore(AbstractStore):
 
         Args:
             name: Name of the new model. This is expected to be unique in the backend store.
-            tags: A list of :py:class:`mlflow.entities.model_registry.RegisteredModelTag`
+            tags: A list of :py:class:`qcflow.entities.model_registry.RegisteredModelTag`
                 instances associated with this registered model.
             description: Description of the model.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.RegisteredModel`
+            A single object of :py:class:`qcflow.entities.model_registry.RegisteredModel`
             created in the backend.
 
         """
@@ -239,7 +239,7 @@ class FileStore(AbstractStore):
             description: New description.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         """
         registered_model = self.get_registered_model(name)
@@ -258,7 +258,7 @@ class FileStore(AbstractStore):
             new_name: New proposed name.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         """
         model_path = self._get_registered_model_path(name)
@@ -328,7 +328,7 @@ class FileStore(AbstractStore):
                 a ``list_registered_models`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.RegisteredModel` objects
+            A PagedList of :py:class:`qcflow.entities.model_registry.RegisteredModel` objects
             that satisfy the search expressions. The pagination token for the next page can be
             obtained via the ``token`` attribute of the object.
 
@@ -357,7 +357,7 @@ class FileStore(AbstractStore):
                 a ``search_registered_models`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.RegisteredModel` objects
+            A PagedList of :py:class:`qcflow.entities.model_registry.RegisteredModel` objects
             that satisfy the search expressions. The pagination token for the next page can be
             obtained via the ``token`` attribute of the object.
         """
@@ -395,7 +395,7 @@ class FileStore(AbstractStore):
             name: Registered model name.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
         """
         _validate_model_name(name)
         model_path = self._get_registered_model_path(name)
@@ -417,7 +417,7 @@ class FileStore(AbstractStore):
                 each stage.
 
         Returns:
-            List of :py:class:`mlflow.entities.model_registry.ModelVersion` objects.
+            List of :py:class:`qcflow.entities.model_registry.ModelVersion` objects.
         """
         registered_model_path = self._get_registered_model_path(name)
         if not exists(registered_model_path):
@@ -437,7 +437,7 @@ class FileStore(AbstractStore):
                     mv.current_stage not in latest_versions
                     or latest_versions[mv.current_stage].version < mv.version
                 ):
-                    latest_versions[mv.current_stage] = mv.to_mlflow_entity()
+                    latest_versions[mv.current_stage] = mv.to_qcflow_entity()
 
         return [latest_versions[stage] for stage in expected_stages if stage in latest_versions]
 
@@ -476,7 +476,7 @@ class FileStore(AbstractStore):
             # On windows, '/' is interpreted as a separator.
             # When the model / model version is read back the path will use '\' for separator.
             # We need to translate the path into posix path.
-            from mlflow.utils.file_utils import relative_path_to_artifact_path
+            from qcflow.utils.file_utils import relative_path_to_artifact_path
 
             file_names = [relative_path_to_artifact_path(x) for x in file_names]
         return source_dirs[0], file_names
@@ -511,7 +511,7 @@ class FileStore(AbstractStore):
 
         Args:
             name: Registered model name.
-            tag: :py:class:`mlflow.entities.model_registry.RegisteredModelTag` instance to log.
+            tag: :py:class:`qcflow.entities.model_registry.RegisteredModelTag` instance to log.
 
         Returns:
             None
@@ -611,15 +611,15 @@ class FileStore(AbstractStore):
         Args:
             name: Registered model name.
             source: URI indicating the location of the model artifacts.
-            run_id: Run ID from MLflow tracking server that generated the model.
-            tags: A list of :py:class:`mlflow.entities.model_registry.ModelVersionTag`
+            run_id: Run ID from QCFlow tracking server that generated the model.
+            tags: A list of :py:class:`qcflow.entities.model_registry.ModelVersionTag`
                 instances associated with this model version.
-            run_link: Link to the run from an MLflow tracking server that generated this model.
+            run_link: Link to the run from an QCFlow tracking server that generated this model.
             description: Description of the version.
             local_model_path: Unused.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A single object of :py:class:`qcflow.entities.model_registry.ModelVersion`
             created in the backend.
 
         """
@@ -677,7 +677,7 @@ class FileStore(AbstractStore):
                 if tags is not None:
                     for tag in tags:
                         self.set_model_version_tag(name, version, tag)
-                return model_version.to_mlflow_entity()
+                return model_version.to_qcflow_entity()
             except Exception as e:
                 more_retries = self.CREATE_MODEL_VERSION_RETRIES - attempt - 1
                 logging.warning(
@@ -702,7 +702,7 @@ class FileStore(AbstractStore):
             description: New model description.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         """
         updated_time = get_current_time_millis()
@@ -710,7 +710,7 @@ class FileStore(AbstractStore):
         model_version.description = description
         model_version.last_updated_timestamp = updated_time
         self._save_model_version_as_meta_file(model_version)
-        return model_version.to_mlflow_entity()
+        return model_version.to_qcflow_entity()
 
     def transition_model_version_stage(
         self, name, version, stage, archive_existing_versions
@@ -728,7 +728,7 @@ class FileStore(AbstractStore):
                 raised.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         """
         is_active_stage = get_canonical_stage(stage) in DEFAULT_STAGES_FOR_GET_LATEST_VERSIONS
@@ -755,7 +755,7 @@ class FileStore(AbstractStore):
         model_version.last_updated_timestamp = last_updated_time
         self._save_model_version_as_meta_file(model_version)
         self._update_registered_model_last_updated_time(name, last_updated_time)
-        return model_version.to_mlflow_entity()
+        return model_version.to_qcflow_entity()
 
     def delete_model_version(self, name, version):
         """
@@ -803,9 +803,9 @@ class FileStore(AbstractStore):
             version: Registered model version.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
         """
-        return self._fetch_file_model_version_if_exists(name, version).to_mlflow_entity()
+        return self._fetch_file_model_version_if_exists(name, version).to_qcflow_entity()
 
     def get_model_version_download_uri(self, name, version) -> str:
         """
@@ -856,7 +856,7 @@ class FileStore(AbstractStore):
                 a ``search_model_versions`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A PagedList of :py:class:`qcflow.entities.model_registry.ModelVersion`
             objects that satisfy the search expressions. The pagination token for the next
             page can be obtained via the ``token`` attribute of the object.
 
@@ -879,7 +879,7 @@ class FileStore(AbstractStore):
         model_versions = []
         for path in registered_model_paths:
             model_versions.extend(
-                file_mv.to_mlflow_entity()
+                file_mv.to_qcflow_entity()
                 for file_mv in self._list_file_model_versions_under_path(path)
             )
         filtered_mvs = SearchModelVersionUtils.filter(model_versions, filter_string)
@@ -910,7 +910,7 @@ class FileStore(AbstractStore):
         Args:
             name: Registered model name.
             version: Registered model version.
-            tag: :py:class:`mlflow.entities.model_registry.ModelVersionTag` instance to log.
+            tag: :py:class:`qcflow.entities.model_registry.ModelVersionTag` instance to log.
 
         Returns:
             None
@@ -998,7 +998,7 @@ class FileStore(AbstractStore):
             alias: Name of the alias.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
         """
         alias_path = self._get_registered_model_alias_path(name, alias)
         if exists(alias_path):

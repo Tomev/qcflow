@@ -6,11 +6,11 @@ from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.models.evaluation import evaluate
-from mlflow.models.evaluation.evaluators.default import DefaultEvaluator
-from mlflow.tracing.constant import TraceMetadataKey
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.models.evaluation import evaluate
+from qcflow.models.evaluation.evaluators.default import DefaultEvaluator
+from qcflow.tracing.constant import TraceMetadataKey
 
 from tests.openai.test_openai_evaluate import purge_traces
 from tests.tracing.helper import get_traces, reset_autolog_state  # noqa: F401
@@ -18,11 +18,11 @@ from tests.tracing.helper import get_traces, reset_autolog_state  # noqa: F401
 _EVAL_DATA = pd.DataFrame(
     {
         "question": [
-            "What is MLflow?",
+            "What is QCFlow?",
             "What is Spark?",
         ],
         "ground_truth": [
-            "MLflow is an open-source platform to manage the ML lifecycle.",
+            "QCFlow is an open-source platform to manage the ML lifecycle.",
             "Spark is a unified analytics engine for big data processing.",
         ],
     }
@@ -49,25 +49,25 @@ def create_fake_chain():
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_langchain_evaluate(config):
     if config:
-        mlflow.langchain.autolog(**config)
-        mlflow.openai.autolog(**config)  # Our chain contains OpenAI call as well
+        qcflow.langchain.autolog(**config)
+        qcflow.openai.autolog(**config)  # Our chain contains OpenAI call as well
 
     is_trace_disabled = config and not config.get("log_traces", True)
     is_trace_enabled = config and config.get("log_traces", True)
 
     chain = create_fake_chain()
 
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
 
         def model(inputs):
             return [chain.invoke({"question": input}) for input in inputs["question"]]
 
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             evaluate(
                 model,
                 data=_EVAL_DATA,
                 targets="ground_truth",
-                extra_metrics=[mlflow.metrics.exact_match()],
+                extra_metrics=[qcflow.metrics.exact_match()],
             )
         log_model_mock.assert_not_called()
 
@@ -83,7 +83,7 @@ def test_langchain_evaluate(config):
     purge_traces()
 
     # Test original langchain autolog configs is restored
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
         chain.invoke({"question": "text"})
 
         if config and config.get("log_models", False):
@@ -95,12 +95,12 @@ def test_langchain_evaluate(config):
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_langchain_evaluate_fails_with_an_exception():
     # Check langchain autolog parameters are restored after evaluation
-    mlflow.langchain.autolog(log_models=True)
+    qcflow.langchain.autolog(log_models=True)
 
     chain = create_fake_chain()
 
     with (
-        mock.patch("mlflow.langchain.log_model") as log_model_mock,
+        mock.patch("qcflow.langchain.log_model") as log_model_mock,
         mock.patch.object(
             DefaultEvaluator, "evaluate", side_effect=MlflowException("evaluate mock error")
         ),
@@ -109,20 +109,20 @@ def test_langchain_evaluate_fails_with_an_exception():
         def model(inputs):
             return [chain.invoke({"question": input}) for input in inputs["question"]]
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             with pytest.raises(MlflowException, match="evaluate mock error"):
                 evaluate(
                     model,
                     data=_EVAL_DATA,
                     targets="ground_truth",
-                    extra_metrics=[mlflow.metrics.exact_match()],
+                    extra_metrics=[qcflow.metrics.exact_match()],
                 )
             log_model_mock.assert_not_called()
 
     assert len(get_traces()) == 0
 
     # Test original langchain autolog configs is restored
-    with mock.patch("mlflow.langchain.log_model") as log_model_mock:
+    with mock.patch("qcflow.langchain.log_model") as log_model_mock:
         chain.invoke({"question": "text"})
 
         log_model_mock.assert_called_once()
@@ -133,13 +133,13 @@ def test_langchain_evaluate_fails_with_an_exception():
 def test_langchain_pyfunc_evaluate():
     chain = create_fake_chain()
 
-    with mlflow.start_run() as run:
-        model_info = mlflow.langchain.log_model(chain, "model")
+    with qcflow.start_run() as run:
+        model_info = qcflow.langchain.log_model(chain, "model")
         evaluate(
             model_info.model_uri,
             data=_EVAL_DATA,
             targets="ground_truth",
-            extra_metrics=[mlflow.metrics.exact_match()],
+            extra_metrics=[qcflow.metrics.exact_match()],
         )
     assert len(get_traces()) == 2
     assert len(get_traces()[0].data.spans) == 5
@@ -150,22 +150,22 @@ def test_langchain_pyfunc_evaluate():
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_langchain_evaluate_should_not_log_traces_when_disabled(globally_disabled):
     if globally_disabled:
-        mlflow.autolog(disable=True)
+        qcflow.autolog(disable=True)
     else:
-        mlflow.langchain.autolog(disable=True)
-        mlflow.openai.autolog(disable=True)  # Our chain contains OpenAI call as well
+        qcflow.langchain.autolog(disable=True)
+        qcflow.openai.autolog(disable=True)  # Our chain contains OpenAI call as well
 
     chain = create_fake_chain()
 
     def model(inputs):
         return [chain.invoke({"question": input}) for input in inputs["question"]]
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         evaluate(
             model,
             data=_EVAL_DATA,
             targets="ground_truth",
-            extra_metrics=[mlflow.metrics.exact_match()],
+            extra_metrics=[qcflow.metrics.exact_match()],
         )
 
     assert len(get_traces()) == 0

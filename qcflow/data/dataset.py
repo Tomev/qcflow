@@ -2,13 +2,13 @@ import json
 from abc import abstractmethod
 from typing import Any, Optional
 
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.entities import Dataset as DatasetEntity
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.entities import Dataset as DatasetEntity
 
 
 class Dataset:
     """
-    Represents a dataset for use with MLflow Tracking, including the name, digest (hash),
+    Represents a dataset for use with QCFlow Tracking, including the name, digest (hash),
     schema, and profile of the dataset as well as source information (e.g. the S3 bucket or
     managed Delta table from which the dataset was derived). Most datasets expose features
     and targets for training and evaluation as well.
@@ -56,10 +56,10 @@ class Dataset:
     def to_json(self) -> str:
         """
         Obtains a JSON string representation of the :py:class:`Dataset
-        <mlflow.data.dataset.Dataset>`.
+        <qcflow.data.dataset.Dataset>`.
 
         Returns:
-            A JSON string representation of the :py:class:`Dataset <mlflow.data.dataset.Dataset>`.
+            A JSON string representation of the :py:class:`Dataset <qcflow.data.dataset.Dataset>`.
         """
 
         return json.dumps(self.to_dict())
@@ -85,7 +85,7 @@ class Dataset:
     def source(self) -> DatasetSource:
         """
         Information about the dataset's source, represented as an instance of
-        :py:class:`DatasetSource <mlflow.data.dataset_source.DatasetSource>`. For example, this
+        :py:class:`DatasetSource <qcflow.data.dataset_source.DatasetSource>`. For example, this
         may be the S3 location or the name of the managed Delta Table from which the dataset
         was derived.
         """
@@ -103,14 +103,14 @@ class Dataset:
     @abstractmethod
     def schema(self) -> Optional[Any]:
         """
-        Optional dataset schema, such as an instance of :py:class:`mlflow.types.Schema` representing
+        Optional dataset schema, such as an instance of :py:class:`qcflow.types.Schema` representing
         the features and targets of the dataset.
         """
 
-    def _to_mlflow_entity(self) -> DatasetEntity:
+    def _to_qcflow_entity(self) -> DatasetEntity:
         """
         Returns:
-            A `mlflow.entities.Dataset` instance representing the dataset.
+            A `qcflow.entities.Dataset` instance representing the dataset.
         """
         dataset_dict = self.to_dict()
         return DatasetEntity(

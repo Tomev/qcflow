@@ -1,7 +1,7 @@
-mlflow.sklearn
+qcflow.sklearn
 ==============
 
-.. automodule:: mlflow.sklearn
+.. automodule:: qcflow.sklearn
     :members:
     :undoc-members:
     :show-inheritance:

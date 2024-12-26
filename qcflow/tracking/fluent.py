@@ -1,6 +1,6 @@
 """
 Internal module implementing the fluent API, allowing management of an active
-MLflow run. This module is exposed to users at the top-level :py:mod:`mlflow` module.
+QCFlow run. This module is exposed to users at the top-level :py:mod:`qcflow` module.
 """
 
 import atexit
@@ -13,9 +13,9 @@ import threading
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Optional, Union
 
-import mlflow
-from mlflow.data.dataset import Dataset
-from mlflow.entities import (
+import qcflow
+from qcflow.data.dataset import Dataset
+from qcflow.entities import (
     DatasetInput,
     Experiment,
     InputTag,
@@ -26,29 +26,29 @@ from mlflow.entities import (
     RunTag,
     ViewType,
 )
-from mlflow.entities.lifecycle_stage import LifecycleStage
-from mlflow.environment_variables import (
-    MLFLOW_ENABLE_ASYNC_LOGGING,
-    MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING,
-    MLFLOW_EXPERIMENT_ID,
-    MLFLOW_EXPERIMENT_NAME,
-    MLFLOW_RUN_ID,
+from qcflow.entities.lifecycle_stage import LifecycleStage
+from qcflow.environment_variables import (
+    QCFLOW_ENABLE_ASYNC_LOGGING,
+    QCFLOW_ENABLE_SYSTEM_METRICS_LOGGING,
+    QCFLOW_EXPERIMENT_ID,
+    QCFLOW_EXPERIMENT_NAME,
+    QCFLOW_RUN_ID,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
-from mlflow.tracing.provider import _get_trace_exporter
-from mlflow.tracking import _get_artifact_repo, _get_store, artifact_utils
-from mlflow.tracking.client import MlflowClient
-from mlflow.tracking.context import registry as context_registry
-from mlflow.tracking.default_experiment import registry as default_experiment_registry
-from mlflow.utils import get_results_from_paginated_fn
-from mlflow.utils.annotations import experimental
-from mlflow.utils.async_logging.run_operations import RunOperations
-from mlflow.utils.autologging_utils import (
+from qcflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
+from qcflow.tracing.provider import _get_trace_exporter
+from qcflow.tracking import _get_artifact_repo, _get_store, artifact_utils
+from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.context import registry as context_registry
+from qcflow.tracking.default_experiment import registry as default_experiment_registry
+from qcflow.utils import get_results_from_paginated_fn
+from qcflow.utils.annotations import experimental
+from qcflow.utils.async_logging.run_operations import RunOperations
+from qcflow.utils.autologging_utils import (
     AUTOLOGGING_CONF_KEY_IS_GLOBALLY_CONFIGURED,
     AUTOLOGGING_INTEGRATIONS,
     autologging_conf_lock,
@@ -56,19 +56,19 @@ from mlflow.utils.autologging_utils import (
     autologging_is_disabled,
     is_testing,
 )
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
-from mlflow.utils.import_hooks import register_post_import_hook
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATASET_CONTEXT,
-    MLFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER,
-    MLFLOW_EXPERIMENT_PRIMARY_METRIC_NAME,
-    MLFLOW_PARENT_RUN_ID,
-    MLFLOW_RUN_NAME,
-    MLFLOW_RUN_NOTE,
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.utils.import_hooks import register_post_import_hook
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATASET_CONTEXT,
+    QCFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER,
+    QCFLOW_EXPERIMENT_PRIMARY_METRIC_NAME,
+    QCFLOW_PARENT_RUN_ID,
+    QCFLOW_RUN_NAME,
+    QCFLOW_RUN_NOTE,
 )
-from mlflow.utils.thread_utils import ThreadLocalVariable
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.validation import _validate_experiment_id_type, _validate_run_id
+from qcflow.utils.thread_utils import ThreadLocalVariable
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.validation import _validate_experiment_id_type, _validate_run_id
 
 if TYPE_CHECKING:
     import matplotlib
@@ -117,17 +117,17 @@ def set_experiment(
             does not exist, an exception is thrown.
 
     Returns:
-        An instance of :py:class:`mlflow.entities.Experiment` representing the new active
+        An instance of :py:class:`qcflow.entities.Experiment` representing the new active
         experiment.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Set an experiment name, which must be unique and case-sensitive.
-        experiment = mlflow.set_experiment("Social NLP Experiments")
+        experiment = qcflow.set_experiment("Social NLP Experiments")
         # Get Experiment Details
         print(f"Experiment_id: {experiment.experiment_id}")
         print(f"Artifact Location: {experiment.artifact_location}")
@@ -192,9 +192,9 @@ def set_experiment(
     global _active_experiment_id
     _active_experiment_id = experiment.experiment_id
 
-    # Set 'MLFLOW_EXPERIMENT_ID' environment variable
+    # Set 'QCFLOW_EXPERIMENT_ID' environment variable
     # so that subprocess can inherit it.
-    MLFLOW_EXPERIMENT_ID.set(_active_experiment_id)
+    QCFLOW_EXPERIMENT_ID.set(_active_experiment_id)
 
     return experiment
 
@@ -203,14 +203,14 @@ def _set_experiment_primary_metric(
     experiment_id: str, primary_metric: str, greater_is_better: bool
 ):
     client = MlflowClient()
-    client.set_experiment_tag(experiment_id, MLFLOW_EXPERIMENT_PRIMARY_METRIC_NAME, primary_metric)
+    client.set_experiment_tag(experiment_id, QCFLOW_EXPERIMENT_PRIMARY_METRIC_NAME, primary_metric)
     client.set_experiment_tag(
-        experiment_id, MLFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER, str(greater_is_better)
+        experiment_id, QCFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER, str(greater_is_better)
     )
 
 
 class ActiveRun(Run):
-    """Wrapper around :py:class:`mlflow.entities.Run` to enable using Python ``with`` syntax."""
+    """Wrapper around :py:class:`qcflow.entities.Run` to enable using Python ``with`` syntax."""
 
     def __init__(self, run):
         Run.__init__(self, run.info, run.data)
@@ -242,18 +242,18 @@ def start_run(
     log_system_metrics: Optional[bool] = None,
 ) -> ActiveRun:
     """
-    Start a new MLflow run, setting it as the active run under which metrics and parameters
+    Start a new QCFlow run, setting it as the active run under which metrics and parameters
     will be logged. The return value can be used as a context manager within a ``with`` block;
     otherwise, you must call ``end_run()`` to terminate the current run.
 
-    If you pass a ``run_id`` or the ``MLFLOW_RUN_ID`` environment variable is set,
+    If you pass a ``run_id`` or the ``QCFLOW_RUN_ID`` environment variable is set,
     ``start_run`` attempts to resume a run with the specified run ID and
-    other parameters are ignored. ``run_id`` takes precedence over ``MLFLOW_RUN_ID``.
+    other parameters are ignored. ``run_id`` takes precedence over ``QCFLOW_RUN_ID``.
 
     If resuming an existing run, the run status is set to ``RunStatus.RUNNING``.
 
-    MLflow sets a variety of default tags on the run, as defined in
-    :ref:`MLflow system tags <system_tags>`.
+    QCFlow sets a variety of default tags on the run, as defined in
+    :ref:`QCFlow system tags <system_tags>`.
 
     Args:
         run_id: If specified, get the run with the specified UUID and log parameters
@@ -263,8 +263,8 @@ def start_run(
         experiment_id: ID of the experiment under which to create the current run (applicable
             only when ``run_id`` is not specified). If ``experiment_id`` argument
             is unspecified, will look for valid experiment in the following order:
-            activated using ``set_experiment``, ``MLFLOW_EXPERIMENT_NAME``
-            environment variable, ``MLFLOW_EXPERIMENT_ID`` environment variable,
+            activated using ``set_experiment``, ``QCFLOW_EXPERIMENT_NAME``
+            environment variable, ``QCFLOW_EXPERIMENT_ID`` environment variable,
             or the default experiment as defined by the tracking server.
         run_name: Name of new run. Used only when ``run_id`` is unspecified. If a new run is
             created and ``run_name`` is not specified, a random name will be generated for the run.
@@ -278,57 +278,57 @@ def start_run(
             If a run is being resumed, the description is set on the resumed run.
             If a new run is being created, the description is set on the new run.
         log_system_metrics: bool, defaults to None. If True, system metrics will be logged
-            to MLflow, e.g., cpu/gpu utilization. If None, we will check environment variable
-            `MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING` to determine whether to log system metrics.
-            System metrics logging is an experimental feature in MLflow 2.8 and subject to change.
+            to QCFlow, e.g., cpu/gpu utilization. If None, we will check environment variable
+            `QCFLOW_ENABLE_SYSTEM_METRICS_LOGGING` to determine whether to log system metrics.
+            System metrics logging is an experimental feature in QCFlow 2.8 and subject to change.
 
     Returns:
-        :py:class:`mlflow.ActiveRun` object that acts as a context manager wrapping the
+        :py:class:`qcflow.ActiveRun` object that acts as a context manager wrapping the
         run's state.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Create nested runs
-        experiment_id = mlflow.create_experiment("experiment1")
-        with mlflow.start_run(
+        experiment_id = qcflow.create_experiment("experiment1")
+        with qcflow.start_run(
             run_name="PARENT_RUN",
             experiment_id=experiment_id,
             tags={"version": "v1", "priority": "P1"},
             description="parent",
         ) as parent_run:
-            mlflow.log_param("parent", "yes")
-            with mlflow.start_run(
+            qcflow.log_param("parent", "yes")
+            with qcflow.start_run(
                 run_name="CHILD_RUN",
                 experiment_id=experiment_id,
                 description="child",
                 nested=True,
             ) as child_run:
-                mlflow.log_param("child", "yes")
+                qcflow.log_param("child", "yes")
         print("parent run:")
         print(f"run_id: {parent_run.info.run_id}")
-        print("description: {}".format(parent_run.data.tags.get("mlflow.note.content")))
+        print("description: {}".format(parent_run.data.tags.get("qcflow.note.content")))
         print("version tag value: {}".format(parent_run.data.tags.get("version")))
         print("priority tag value: {}".format(parent_run.data.tags.get("priority")))
         print("--")
 
         # Search all child runs with a parent id
-        query = f"tags.mlflow.parentRunId = '{parent_run.info.run_id}'"
-        results = mlflow.search_runs(experiment_ids=[experiment_id], filter_string=query)
+        query = f"tags.qcflow.parentRunId = '{parent_run.info.run_id}'"
+        results = qcflow.search_runs(experiment_ids=[experiment_id], filter_string=query)
         print("child runs:")
-        print(results[["run_id", "params.child", "tags.mlflow.runName"]])
+        print(results[["run_id", "params.child", "tags.qcflow.runName"]])
 
         # Create a nested run under the existing parent run
-        with mlflow.start_run(
+        with qcflow.start_run(
             run_name="NEW_CHILD_RUN",
             experiment_id=experiment_id,
             description="new child",
             parent_run_id=parent_run.info.run_id,
         ) as child_run:
-            mlflow.log_param("new-child", "yes")
+            qcflow.log_param("new-child", "yes")
 
     .. code-block:: text
         :caption: Output
@@ -340,7 +340,7 @@ def start_run(
         priority tag value: P1
         --
         child runs:
-                                     run_id params.child tags.mlflow.runName
+                                     run_id params.child tags.qcflow.runName
         0  7d175204675e40328e46d9a6a5a7ee6a          yes           CHILD_RUN
     """
     active_run_stack = _active_run_stack.get()
@@ -351,16 +351,16 @@ def start_run(
         raise Exception(
             (
                 "Run with UUID {} is already active. To start a new run, first end the "
-                + "current run with mlflow.end_run(). To start a nested "
+                + "current run with qcflow.end_run(). To start a nested "
                 + "run, call start_run with nested=True"
             ).format(active_run_stack[0].info.run_id)
         )
     client = MlflowClient()
     if run_id:
         existing_run_id = run_id
-    elif run_id := MLFLOW_RUN_ID.get():
+    elif run_id := QCFLOW_RUN_ID.get():
         existing_run_id = run_id
-        del os.environ[MLFLOW_RUN_ID.name]
+        del os.environ[QCFLOW_RUN_ID.name]
     else:
         existing_run_id = None
     if existing_run_id:
@@ -389,13 +389,13 @@ def start_run(
         )
         tags = tags or {}
         if description:
-            if MLFLOW_RUN_NOTE in tags:
+            if QCFLOW_RUN_NOTE in tags:
                 raise MlflowException(
-                    f"Description is already set via the tag {MLFLOW_RUN_NOTE} in tags."
-                    f"Remove the key {MLFLOW_RUN_NOTE} from the tags or omit the description.",
+                    f"Description is already set via the tag {QCFLOW_RUN_NOTE} in tags."
+                    f"Remove the key {QCFLOW_RUN_NOTE} from the tags or omit the description.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
-            tags[MLFLOW_RUN_NOTE] = description
+            tags[QCFLOW_RUN_NOTE] = description
 
         if tags:
             client.log_batch(
@@ -413,7 +413,7 @@ def start_run(
                     f"Current run with UUID {current_run_id} does not match the specified "
                     f"parent_run_id {parent_run_id}. To start a new nested run under "
                     f"the parent run with UUID {current_run_id}, first end the current run "
-                    "with mlflow.end_run()."
+                    "with qcflow.end_run()."
                 )
             parent_run_obj = client.get_run(parent_run_id)
             # Check if the specified parent_run has been deleted.
@@ -429,17 +429,17 @@ def start_run(
 
         user_specified_tags = deepcopy(tags) or {}
         if description:
-            if MLFLOW_RUN_NOTE in user_specified_tags:
+            if QCFLOW_RUN_NOTE in user_specified_tags:
                 raise MlflowException(
-                    f"Description is already set via the tag {MLFLOW_RUN_NOTE} in tags."
-                    f"Remove the key {MLFLOW_RUN_NOTE} from the tags or omit the description.",
+                    f"Description is already set via the tag {QCFLOW_RUN_NOTE} in tags."
+                    f"Remove the key {QCFLOW_RUN_NOTE} from the tags or omit the description.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
-            user_specified_tags[MLFLOW_RUN_NOTE] = description
+            user_specified_tags[QCFLOW_RUN_NOTE] = description
         if parent_run_id is not None:
-            user_specified_tags[MLFLOW_PARENT_RUN_ID] = parent_run_id
+            user_specified_tags[QCFLOW_PARENT_RUN_ID] = parent_run_id
         if run_name:
-            user_specified_tags[MLFLOW_RUN_NAME] = run_name
+            user_specified_tags[QCFLOW_RUN_NAME] = run_name
 
         resolved_tags = context_registry.resolve_tags(user_specified_tags)
 
@@ -451,7 +451,7 @@ def start_run(
 
     if log_system_metrics is None:
         # If `log_system_metrics` is not specified, we will check environment variable.
-        log_system_metrics = MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING.get()
+        log_system_metrics = QCFLOW_ENABLE_SYSTEM_METRICS_LOGGING.get()
 
     if log_system_metrics:
         if importlib.util.find_spec("psutil") is None:
@@ -459,10 +459,10 @@ def start_run(
                 "Failed to start system metrics monitoring as package `psutil` is not installed. "
                 "Please run `pip install psutil` to resolve the issue, otherwise you can disable "
                 "system metrics logging by passing `log_system_metrics=False` to "
-                "`mlflow.start_run()` or calling `mlflow.disable_system_metrics_logging`."
+                "`qcflow.start_run()` or calling `qcflow.disable_system_metrics_logging`."
             )
         try:
-            from mlflow.system_metrics.system_metrics_monitor import SystemMetricsMonitor
+            from qcflow.system_metrics.system_metrics_monitor import SystemMetricsMonitor
 
             system_monitor = SystemMetricsMonitor(
                 active_run_obj.info.run_id,
@@ -479,27 +479,27 @@ def start_run(
 
 def end_run(status: str = RunStatus.to_string(RunStatus.FINISHED)) -> None:
     """
-    End an active MLflow run (if there is one).
+    End an active QCFlow run (if there is one).
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Start run and get status
-        mlflow.start_run()
-        run = mlflow.active_run()
+        qcflow.start_run()
+        run = qcflow.active_run()
         print(f"run_id: {run.info.run_id}; status: {run.info.status}")
 
         # End run and get status
-        mlflow.end_run()
-        run = mlflow.get_run(run.info.run_id)
+        qcflow.end_run()
+        run = qcflow.get_run(run.info.run_id)
         print(f"run_id: {run.info.run_id}; status: {run.info.status}")
         print("--")
 
         # Check for any active runs
-        print(f"Active run: {mlflow.active_run()}")
+        print(f"Active run: {qcflow.active_run()}")
 
     .. code-block:: text
         :caption: Output
@@ -512,7 +512,7 @@ def end_run(status: str = RunStatus.to_string(RunStatus.FINISHED)) -> None:
     active_run_stack = _active_run_stack.get()
     if len(active_run_stack) > 0:
         # Clear out the global existing run environment variable as well.
-        MLFLOW_RUN_ID.unset()
+        QCFLOW_RUN_ID.unset()
         run = active_run_stack.pop()
         last_active_run_id = run.info.run_id
         _last_active_run_id.set(last_active_run_id)
@@ -540,19 +540,19 @@ def active_run() -> Optional[ActiveRun]:
         this API will not retrieve that run.
 
     **Note**: You cannot access currently-active run attributes
-    (parameters, metrics, etc.) through the run returned by ``mlflow.active_run``. In order
-    to access such attributes, use the :py:class:`mlflow.client.MlflowClient` as follows:
+    (parameters, metrics, etc.) through the run returned by ``qcflow.active_run``. In order
+    to access such attributes, use the :py:class:`qcflow.client.MlflowClient` as follows:
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        mlflow.start_run()
-        run = mlflow.active_run()
+        qcflow.start_run()
+        run = qcflow.active_run()
         print(f"Active run_id: {run.info.run_id}")
-        mlflow.end_run()
+        qcflow.end_run()
 
     .. code-block:: text
         :caption: Output
@@ -572,13 +572,13 @@ def last_active_run() -> Optional[Run]:
         :test:
         :caption: To retrieve the most recent autologged run:
 
-        import mlflow
+        import qcflow
 
         from sklearn.model_selection import train_test_split
         from sklearn.datasets import load_diabetes
         from sklearn.ensemble import RandomForestRegressor
 
-        mlflow.autolog()
+        qcflow.autolog()
 
         db = load_diabetes()
         X_train, X_test, y_train, y_test = train_test_split(db.data, db.target)
@@ -589,30 +589,30 @@ def last_active_run() -> Optional[Run]:
 
         # Use the model to make predictions on the test dataset.
         predictions = rf.predict(X_test)
-        autolog_run = mlflow.last_active_run()
+        autolog_run = qcflow.last_active_run()
 
     .. code-block:: python
         :test:
         :caption: To get the most recently active run that ended:
 
-        import mlflow
+        import qcflow
 
-        mlflow.start_run()
-        mlflow.end_run()
-        run = mlflow.last_active_run()
+        qcflow.start_run()
+        qcflow.end_run()
+        run = qcflow.last_active_run()
 
     .. code-block:: python
         :test:
         :caption: To retrieve the currently active run:
 
-        import mlflow
+        import qcflow
 
-        mlflow.start_run()
-        run = mlflow.last_active_run()
-        mlflow.end_run()
+        qcflow.start_run()
+        run = qcflow.last_active_run()
+        qcflow.end_run()
 
     Returns:
-        The active run (this is equivalent to ``mlflow.active_run()``) if one exists.
+        The active run (this is equivalent to ``qcflow.active_run()``) if one exists.
         Otherwise, the last run started from the current Python process that reached
         a terminal status (i.e. FINISHED, FAILED, or KILLED).
     """
@@ -628,7 +628,7 @@ def last_active_run() -> Optional[Run]:
 
 def _get_latest_active_run():
     """
-    Get active run from global context by checking all threads. The `mlflow.active_run` API
+    Get active run from global context by checking all threads. The `qcflow.active_run` API
     only returns active run from current thread. This API is useful for the case where one
     needs to get a run started from a separate thread.
     """
@@ -658,13 +658,13 @@ def get_run(run_id: str) -> Run:
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_run() as run:
-            mlflow.log_param("p", 0)
+        with qcflow.start_run() as run:
+            qcflow.log_param("p", 0)
         run_id = run.info.run_id
         print(
-            f"run_id: {run_id}; lifecycle_stage: {mlflow.get_run(run_id).info.lifecycle_stage}"
+            f"run_id: {run_id}; lifecycle_stage: {qcflow.get_run(run_id).info.lifecycle_stage}"
         )
 
     .. code-block:: text
@@ -682,21 +682,21 @@ def get_parent_run(run_id: str) -> Optional[Run]:
         run_id: Unique identifier for the child run.
 
     Returns:
-        A single :py:class:`mlflow.entities.Run` object, if the parent run exists. Otherwise,
+        A single :py:class:`qcflow.entities.Run` object, if the parent run exists. Otherwise,
         returns None.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Create nested runs
-        with mlflow.start_run():
-            with mlflow.start_run(nested=True) as child_run:
+        with qcflow.start_run():
+            with qcflow.start_run(nested=True) as child_run:
                 child_run_id = child_run.info.run_id
 
-        parent_run = mlflow.get_parent_run(child_run_id)
+        parent_run = qcflow.get_parent_run(child_run_id)
 
         print(f"child_run_id: {child_run_id}")
         print(f"parent_run_id: {parent_run.info.run_id}")
@@ -723,27 +723,27 @@ def log_param(key: str, value: Any, synchronous: Optional[bool] = None) -> Any:
             values up to length 6000, but some may support larger values.
         synchronous: *Experimental* If True, blocks until the parameter is logged successfully. If
             False, logs the parameter asynchronously and returns a future representing the logging
-            operation. If None, read from environment variable `MLFLOW_ENABLE_ASYNC_LOGGING`,
+            operation. If None, read from environment variable `QCFLOW_ENABLE_ASYNC_LOGGING`,
             which defaults to False if not set.
 
     Returns:
         When `synchronous=True`, returns parameter value. When `synchronous=False`, returns an
-        :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance that represents
+        :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance that represents
         future for logging operation.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_run():
-            value = mlflow.log_param("learning_rate", 0.01)
+        with qcflow.start_run():
+            value = qcflow.log_param("learning_rate", 0.01)
             assert value == 0.01
-            value = mlflow.log_param("learning_rate", 0.02, synchronous=False)
+            value = qcflow.log_param("learning_rate", 0.02, synchronous=False)
     """
     run_id = _get_or_start_run().info.run_id
-    synchronous = synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+    synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
     return MlflowClient().log_param(run_id, key, value, synchronous=synchronous)
 
 
@@ -793,10 +793,10 @@ def set_experiment_tag(key: str, value: Any) -> None:
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_run():
-            mlflow.set_experiment_tag("release.version", "2.2.0")
+        with qcflow.start_run():
+            qcflow.set_experiment_tag("release.version", "2.2.0")
     """
     experiment_id = _get_experiment_id()
     MlflowClient().set_experiment_tag(experiment_id, key, value)
@@ -815,30 +815,30 @@ def set_tag(key: str, value: Any, synchronous: Optional[bool] = None) -> Optiona
             up to length 5000, but some may support larger values.
         synchronous: *Experimental* If True, blocks until the tag is logged successfully. If False,
             logs the tag asynchronously and returns a future representing the logging operation.
-            If None, read from environment variable `MLFLOW_ENABLE_ASYNC_LOGGING`, which
+            If None, read from environment variable `QCFLOW_ENABLE_ASYNC_LOGGING`, which
             defaults to False if not set.
 
     Returns:
         When `synchronous=True`, returns None. When `synchronous=False`, returns an
-        :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance that
+        :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance that
         represents future for logging operation.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Set a tag.
-        with mlflow.start_run():
-            mlflow.set_tag("release.version", "2.2.0")
+        with qcflow.start_run():
+            qcflow.set_tag("release.version", "2.2.0")
 
         # Set a tag in async fashion.
-        with mlflow.start_run():
-            mlflow.set_tag("release.version", "2.2.1", synchronous=False)
+        with qcflow.start_run():
+            qcflow.set_tag("release.version", "2.2.1", synchronous=False)
     """
     run_id = _get_or_start_run().info.run_id
-    synchronous = synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+    synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
     return MlflowClient().set_tag(run_id, key, value, synchronous=synchronous)
 
 
@@ -854,15 +854,15 @@ def delete_tag(key: str) -> None:
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         tags = {"engineering": "ML Platform", "engineering_remote": "ML Platform"}
 
-        with mlflow.start_run() as run:
-            mlflow.set_tags(tags)
+        with qcflow.start_run() as run:
+            qcflow.set_tags(tags)
 
-        with mlflow.start_run(run_id=run.info.run_id):
-            mlflow.delete_tag("engineering_remote")
+        with qcflow.start_run(run_id=run.info.run_id):
+            qcflow.delete_tag("engineering_remote")
     """
     run_id = _get_or_start_run().info.run_id
     MlflowClient().delete_tag(run_id, key)
@@ -894,7 +894,7 @@ def log_metric(
         synchronous: *Experimental* If True, blocks until the metric is logged
             successfully. If False, logs the metric asynchronously and
             returns a future representing the logging operation. If None, read from environment
-            variable `MLFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
+            variable `QCFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
         timestamp: Time when this metric was calculated. Defaults to the current system time.
         run_id: If specified, log the metric to the specified run. If not specified, log the metric
             to the currently active run.
@@ -908,18 +908,18 @@ def log_metric(
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Log a metric
-        with mlflow.start_run():
-            mlflow.log_metric("mse", 2500.00)
+        with qcflow.start_run():
+            qcflow.log_metric("mse", 2500.00)
 
         # Log a metric in async fashion.
-        with mlflow.start_run():
-            mlflow.log_metric("mse", 2500.00, synchronous=False)
+        with qcflow.start_run():
+            qcflow.log_metric("mse", 2500.00, synchronous=False)
     """
     run_id = run_id or _get_or_start_run().info.run_id
-    synchronous = synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+    synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
     return MlflowClient().log_metric(
         run_id,
         key,
@@ -951,36 +951,36 @@ def log_metrics(
         synchronous: *Experimental* If True, blocks until the metrics are logged
             successfully. If False, logs the metrics asynchronously and
             returns a future representing the logging operation. If None, read from environment
-            variable `MLFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
+            variable `QCFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
         run_id: Run ID. If specified, log metrics to the specified run. If not specified, log
             metrics to the currently active run.
         timestamp: Time when these metrics were calculated. Defaults to the current system time.
 
     Returns:
         When `synchronous=True`, returns None. When `synchronous=False`, returns an
-        :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance that
+        :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance that
         represents future for logging operation.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         metrics = {"mse": 2500.00, "rmse": 50.00}
 
         # Log a batch of metrics
-        with mlflow.start_run():
-            mlflow.log_metrics(metrics)
+        with qcflow.start_run():
+            qcflow.log_metrics(metrics)
 
         # Log a batch of metrics in async fashion.
-        with mlflow.start_run():
-            mlflow.log_metrics(metrics, synchronous=False)
+        with qcflow.start_run():
+            qcflow.log_metrics(metrics, synchronous=False)
     """
     run_id = run_id or _get_or_start_run().info.run_id
     timestamp = timestamp or get_current_time_millis()
     metrics_arr = [Metric(key, value, timestamp, step or 0) for key, value in metrics.items()]
-    synchronous = synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+    synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
     return MlflowClient().log_batch(
         run_id=run_id, metrics=metrics_arr, params=[], tags=[], synchronous=synchronous
     )
@@ -999,34 +999,34 @@ def log_params(
         synchronous: *Experimental* If True, blocks until the parameters are logged
             successfully. If False, logs the parameters asynchronously and
             returns a future representing the logging operation. If None, read from environment
-            variable `MLFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
+            variable `QCFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
         run_id: Run ID. If specified, log params to the specified run. If not specified, log
             params to the currently active run.
 
     Returns:
         When `synchronous=True`, returns None. When `synchronous=False`, returns an
-        :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance that
+        :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance that
         represents future for logging operation.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         params = {"learning_rate": 0.01, "n_estimators": 10}
 
         # Log a batch of parameters
-        with mlflow.start_run():
-            mlflow.log_params(params)
+        with qcflow.start_run():
+            qcflow.log_params(params)
 
         # Log a batch of parameters in async fashion.
-        with mlflow.start_run():
-            mlflow.log_params(params, synchronous=False)
+        with qcflow.start_run():
+            qcflow.log_params(params, synchronous=False)
     """
     run_id = run_id or _get_or_start_run().info.run_id
     params_arr = [Param(key, str(value)) for key, value in params.items()]
-    synchronous = synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+    synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
     return MlflowClient().log_batch(
         run_id=run_id, metrics=[], params=params_arr, tags=[], synchronous=synchronous
     )
@@ -1039,9 +1039,9 @@ def log_input(
     Log a dataset used in the current run.
 
     Args:
-        dataset: :py:class:`mlflow.data.dataset.Dataset` object to be logged.
+        dataset: :py:class:`qcflow.data.dataset.Dataset` object to be logged.
         context: Context in which the dataset is used. For example: "training", "testing".
-            This will be set as an input tag with key `mlflow.data.context`.
+            This will be set as an input tag with key `qcflow.data.context`.
         tags: Tags to be associated with the dataset. Dictionary of tag_key -> tag_value.
 
     .. code-block:: python
@@ -1049,23 +1049,23 @@ def log_input(
         :caption: Example
 
         import numpy as np
-        import mlflow
+        import qcflow
 
         array = np.asarray([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        dataset = mlflow.data.from_numpy(array, source="data.csv")
+        dataset = qcflow.data.from_numpy(array, source="data.csv")
 
         # Log an input dataset used for training
-        with mlflow.start_run():
-            mlflow.log_input(dataset, context="training")
+        with qcflow.start_run():
+            qcflow.log_input(dataset, context="training")
     """
     run_id = _get_or_start_run().info.run_id
     tags_to_log = []
     if tags:
         tags_to_log.extend([InputTag(key=key, value=value) for key, value in tags.items()])
     if context:
-        tags_to_log.append(InputTag(key=MLFLOW_DATASET_CONTEXT, value=context))
+        tags_to_log.append(InputTag(key=QCFLOW_DATASET_CONTEXT, value=context))
 
-    dataset_input = DatasetInput(dataset=dataset._to_mlflow_entity(), tags=tags_to_log)
+    dataset_input = DatasetInput(dataset=dataset._to_qcflow_entity(), tags=tags_to_log)
 
     MlflowClient().log_inputs(run_id=run_id, datasets=[dataset_input])
 
@@ -1081,7 +1081,7 @@ def set_experiment_tags(tags: dict[str, Any]) -> None:
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         tags = {
             "engineering": "ML Platform",
@@ -1090,8 +1090,8 @@ def set_experiment_tags(tags: dict[str, Any]) -> None:
         }
 
         # Set a batch of tags
-        with mlflow.start_run():
-            mlflow.set_experiment_tags(tags)
+        with qcflow.start_run():
+            qcflow.set_experiment_tags(tags)
     """
     for key, value in tags.items():
         set_experiment_tag(key, value)
@@ -1107,19 +1107,19 @@ def set_tags(tags: dict[str, Any], synchronous: Optional[bool] = None) -> Option
             not)
         synchronous: *Experimental* If True, blocks until tags are logged successfully. If False,
             logs tags asynchronously and returns a future representing the logging operation.
-            If None, read from environment variable `MLFLOW_ENABLE_ASYNC_LOGGING`, which
+            If None, read from environment variable `QCFLOW_ENABLE_ASYNC_LOGGING`, which
             defaults to False if not set.
 
     Returns:
         When `synchronous=True`, returns None. When `synchronous=False`, returns an
-        :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance that
+        :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance that
         represents future for logging operation.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         tags = {
             "engineering": "ML Platform",
@@ -1128,16 +1128,16 @@ def set_tags(tags: dict[str, Any], synchronous: Optional[bool] = None) -> Option
         }
 
         # Set a batch of tags
-        with mlflow.start_run():
-            mlflow.set_tags(tags)
+        with qcflow.start_run():
+            qcflow.set_tags(tags)
 
         # Set a batch of tags in async fashion.
-        with mlflow.start_run():
-            mlflow.set_tags(tags, synchronous=False)
+        with qcflow.start_run():
+            qcflow.set_tags(tags, synchronous=False)
     """
     run_id = _get_or_start_run().info.run_id
     tags_arr = [RunTag(key, str(value)) for key, value in tags.items()]
-    synchronous = synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+    synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
     return MlflowClient().log_batch(
         run_id=run_id, metrics=[], params=[], tags=tags_arr, synchronous=synchronous
     )
@@ -1163,7 +1163,7 @@ def log_artifact(
         import tempfile
         from pathlib import Path
 
-        import mlflow
+        import qcflow
 
         # Create a features.txt artifact file
         features = "rooms, zipcode, median_price, school_rating, transport"
@@ -1172,8 +1172,8 @@ def log_artifact(
             path.write_text(features)
             # With artifact_path=None write features.txt under
             # root artifact_uri/artifacts directory
-            with mlflow.start_run():
-                mlflow.log_artifact(path)
+            with qcflow.start_run():
+                qcflow.log_artifact(path)
     """
     run_id = run_id or _get_or_start_run().info.run_id
     MlflowClient().log_artifact(run_id, local_path, artifact_path)
@@ -1200,7 +1200,7 @@ def log_artifacts(
         import tempfile
         from pathlib import Path
 
-        import mlflow
+        import qcflow
 
         # Create some files to preserve as artifacts
         features = "rooms, zipcode, median_price, school_rating, transport"
@@ -1212,8 +1212,8 @@ def log_artifacts(
             with (tmp_dir / "features.json").open("w") as f:
                 f.write(features)
             # Write all files in `tmp_dir` to root artifact_uri/states
-            with mlflow.start_run():
-                mlflow.log_artifacts(tmp_dir, artifact_path="states")
+            with qcflow.start_run():
+                qcflow.log_artifacts(tmp_dir, artifact_path="states")
     """
     run_id = run_id or _get_or_start_run().info.run_id
     MlflowClient().log_artifacts(run_id, local_dir, artifact_path)
@@ -1234,17 +1234,17 @@ def log_text(text: str, artifact_file: str, run_id: Optional[str] = None) -> Non
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Log text to a file under the run's root artifact directory
-            mlflow.log_text("text1", "file1.txt")
+            qcflow.log_text("text1", "file1.txt")
 
             # Log text in a subdirectory of the run's root artifact directory
-            mlflow.log_text("text2", "dir/file2.txt")
+            qcflow.log_text("text2", "dir/file2.txt")
 
             # Log HTML text
-            mlflow.log_text("<h1>header</h1>", "index.html")
+            qcflow.log_text("<h1>header</h1>", "index.html")
 
     """
     run_id = run_id or _get_or_start_run().info.run_id
@@ -1269,21 +1269,21 @@ def log_dict(dictionary: dict[str, Any], artifact_file: str, run_id: Optional[st
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         dictionary = {"k": "v"}
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Log a dictionary as a JSON file under the run's root artifact directory
-            mlflow.log_dict(dictionary, "data.json")
+            qcflow.log_dict(dictionary, "data.json")
 
             # Log a dictionary as a YAML file in a subdirectory of the run's root artifact directory
-            mlflow.log_dict(dictionary, "dir/data.yml")
+            qcflow.log_dict(dictionary, "dir/data.yml")
 
             # If the file extension doesn't exist or match any of [".json", ".yaml", ".yml"],
             # JSON format is used.
-            mlflow.log_dict(dictionary, "data")
-            mlflow.log_dict(dictionary, "data.txt")
+            qcflow.log_dict(dictionary, "data")
+            qcflow.log_dict(dictionary, "data.txt")
 
     """
     run_id = run_id or _get_or_start_run().info.run_id
@@ -1318,33 +1318,33 @@ def log_figure(
         :test:
         :caption: Matplotlib Example
 
-        import mlflow
+        import qcflow
         import matplotlib.pyplot as plt
 
         fig, ax = plt.subplots()
         ax.plot([0, 1], [2, 3])
 
-        with mlflow.start_run():
-            mlflow.log_figure(fig, "figure.png")
+        with qcflow.start_run():
+            qcflow.log_figure(fig, "figure.png")
 
     .. code-block:: python
         :test:
         :caption: Plotly Example
 
-        import mlflow
+        import qcflow
         from plotly import graph_objects as go
 
         fig = go.Figure(go.Scatter(x=[0, 1], y=[2, 3]))
 
-        with mlflow.start_run():
-            mlflow.log_figure(fig, "figure.html")
+        with qcflow.start_run():
+            qcflow.log_figure(fig, "figure.html")
     """
     run_id = _get_or_start_run().info.run_id
     MlflowClient().log_figure(run_id, figure, artifact_file, save_kwargs=save_kwargs)
 
 
 def log_image(
-    image: Union["numpy.ndarray", "PIL.Image.Image", "mlflow.Image"],
+    image: Union["numpy.ndarray", "PIL.Image.Image", "qcflow.Image"],
     artifact_file: Optional[str] = None,
     key: Optional[str] = None,
     step: Optional[int] = None,
@@ -1352,7 +1352,7 @@ def log_image(
     synchronous: Optional[bool] = False,
 ) -> None:
     """
-    Logs an image in MLflow, supporting two use cases:
+    Logs an image in QCFlow, supporting two use cases:
 
     1. Time-stepped image logging:
         Ideal for tracking changes or progressions through iterative processes (e.g.,
@@ -1376,7 +1376,7 @@ def log_image(
         .. _PIL.Image.Image:
             https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image
 
-        - :class:`mlflow.Image`: An MLflow wrapper around PIL image for convenient image logging.
+        - :class:`qcflow.Image`: An QCFlow wrapper around PIL image for convenient image logging.
 
     Numpy array support
         - data types:
@@ -1415,59 +1415,59 @@ def log_image(
     .. code-block:: python
         :caption: Time-stepped image logging numpy example
 
-        import mlflow
+        import qcflow
         import numpy as np
 
         image = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
 
-        with mlflow.start_run():
-            mlflow.log_image(image, key="dogs", step=3)
+        with qcflow.start_run():
+            qcflow.log_image(image, key="dogs", step=3)
 
     .. code-block:: python
         :caption: Time-stepped image logging pillow example
 
-        import mlflow
+        import qcflow
         from PIL import Image
 
         image = Image.new("RGB", (100, 100))
 
-        with mlflow.start_run():
-            mlflow.log_image(image, key="dogs", step=3)
+        with qcflow.start_run():
+            qcflow.log_image(image, key="dogs", step=3)
 
     .. code-block:: python
-        :caption: Time-stepped image logging with mlflow.Image example
+        :caption: Time-stepped image logging with qcflow.Image example
 
-        import mlflow
+        import qcflow
         from PIL import Image
 
         # If you have a preexisting saved image
         Image.new("RGB", (100, 100)).save("image.png")
 
-        image = mlflow.Image("image.png")
-        with mlflow.start_run() as run:
-            mlflow.log_image(run.info.run_id, image, key="dogs", step=3)
+        image = qcflow.Image("image.png")
+        with qcflow.start_run() as run:
+            qcflow.log_image(run.info.run_id, image, key="dogs", step=3)
 
     .. code-block:: python
         :caption: Legacy artifact file image logging numpy example
 
-        import mlflow
+        import qcflow
         import numpy as np
 
         image = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
 
-        with mlflow.start_run():
-            mlflow.log_image(image, "image.png")
+        with qcflow.start_run():
+            qcflow.log_image(image, "image.png")
 
     .. code-block:: python
         :caption: Legacy artifact file image logging pillow example
 
-        import mlflow
+        import qcflow
         from PIL import Image
 
         image = Image.new("RGB", (100, 100))
 
-        with mlflow.start_run():
-            mlflow.log_image(image, "image.png")
+        with qcflow.start_run():
+            qcflow.log_image(image, "image.png")
     """
     run_id = _get_or_start_run().info.run_id
     MlflowClient().log_image(run_id, image, artifact_file, key, step, timestamp, synchronous)
@@ -1480,7 +1480,7 @@ def log_table(
     run_id: Optional[str] = None,
 ) -> None:
     """
-    Log a table to MLflow Tracking as a JSON artifact. If the artifact_file already exists
+    Log a table to QCFlow Tracking as a JSON artifact. If the artifact_file already exists
     in the run, the data would be appended to the existing artifact_file.
 
     Args:
@@ -1494,33 +1494,33 @@ def log_table(
         :test:
         :caption: Dictionary Example
 
-        import mlflow
+        import qcflow
 
         table_dict = {
-            "inputs": ["What is MLflow?", "What is Databricks?"],
-            "outputs": ["MLflow is ...", "Databricks is ..."],
+            "inputs": ["What is QCFlow?", "What is Databricks?"],
+            "outputs": ["QCFlow is ...", "Databricks is ..."],
             "toxicity": [0.0, 0.0],
         }
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Log the dictionary as a table
-            mlflow.log_table(data=table_dict, artifact_file="qabot_eval_results.json")
+            qcflow.log_table(data=table_dict, artifact_file="qabot_eval_results.json")
 
     .. code-block:: python
         :test:
         :caption: Pandas DF Example
 
-        import mlflow
+        import qcflow
         import pandas as pd
 
         table_dict = {
-            "inputs": ["What is MLflow?", "What is Databricks?"],
-            "outputs": ["MLflow is ...", "Databricks is ..."],
+            "inputs": ["What is QCFlow?", "What is Databricks?"],
+            "outputs": ["QCFlow is ...", "Databricks is ..."],
             "toxicity": [0.0, 0.0],
         }
         df = pd.DataFrame.from_dict(table_dict)
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Log the df as a table
-            mlflow.log_table(data=df, artifact_file="qabot_eval_results.json")
+            qcflow.log_table(data=df, artifact_file="qabot_eval_results.json")
     """
     run_id = run_id or _get_or_start_run().info.run_id
     MlflowClient().log_table(run_id, data, artifact_file)
@@ -1533,7 +1533,7 @@ def load_table(
     extra_columns: Optional[list[str]] = None,
 ) -> "pandas.DataFrame":
     """
-    Load a table from MLflow Tracking as a pandas.DataFrame. The table is loaded from the
+    Load a table from QCFlow Tracking as a pandas.DataFrame. The table is loaded from the
     specified artifact_file in the specified run_ids. The extra_columns are columns that
     are not in the table but are augmented with run information and added to the DataFrame.
 
@@ -1554,20 +1554,20 @@ def load_table(
         :test:
         :caption: Example with passing run_ids
 
-        import mlflow
+        import qcflow
 
         table_dict = {
-            "inputs": ["What is MLflow?", "What is Databricks?"],
-            "outputs": ["MLflow is ...", "Databricks is ..."],
+            "inputs": ["What is QCFlow?", "What is Databricks?"],
+            "outputs": ["QCFlow is ...", "Databricks is ..."],
             "toxicity": [0.0, 0.0],
         }
 
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             # Log the dictionary as a table
-            mlflow.log_table(data=table_dict, artifact_file="qabot_eval_results.json")
+            qcflow.log_table(data=table_dict, artifact_file="qabot_eval_results.json")
             run_id = run.info.run_id
 
-        loaded_table = mlflow.load_table(
+        loaded_table = qcflow.load_table(
             artifact_file="qabot_eval_results.json",
             run_ids=[run_id],
             # Append a column containing the associated run ID for each row
@@ -1580,19 +1580,19 @@ def load_table(
 
         # Loads the table with the specified name for all runs in the given
         # experiment and joins them together
-        import mlflow
+        import qcflow
 
         table_dict = {
-            "inputs": ["What is MLflow?", "What is Databricks?"],
-            "outputs": ["MLflow is ...", "Databricks is ..."],
+            "inputs": ["What is QCFlow?", "What is Databricks?"],
+            "outputs": ["QCFlow is ...", "Databricks is ..."],
             "toxicity": [0.0, 0.0],
         }
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             # Log the dictionary as a table
-            mlflow.log_table(data=table_dict, artifact_file="qabot_eval_results.json")
+            qcflow.log_table(data=table_dict, artifact_file="qabot_eval_results.json")
 
-        loaded_table = mlflow.load_table(
+        loaded_table = qcflow.load_table(
             "qabot_eval_results.json",
             # Append the run ID and the parent run ID to the table
             extra_columns=["run_id"],
@@ -1602,9 +1602,9 @@ def load_table(
     return MlflowClient().load_table(experiment_id, artifact_file, run_ids, extra_columns)
 
 
-def _record_logged_model(mlflow_model, run_id=None):
+def _record_logged_model(qcflow_model, run_id=None):
     run_id = run_id or _get_or_start_run().info.run_id
-    MlflowClient()._record_logged_model(run_id, mlflow_model)
+    MlflowClient()._record_logged_model(run_id, qcflow_model)
 
 
 def get_experiment(experiment_id: str) -> Experiment:
@@ -1614,15 +1614,15 @@ def get_experiment(experiment_id: str) -> Experiment:
         experiment_id: The string-ified experiment ID returned from ``create_experiment``.
 
     Returns:
-        :py:class:`mlflow.entities.Experiment`
+        :py:class:`qcflow.entities.Experiment`
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        experiment = mlflow.get_experiment("0")
+        experiment = qcflow.get_experiment("0")
         print(f"Name: {experiment.name}")
         print(f"Artifact Location: {experiment.artifact_location}")
         print(f"Tags: {experiment.tags}")
@@ -1649,17 +1649,17 @@ def get_experiment_by_name(name: str) -> Optional[Experiment]:
         name: The case sensitive experiment name.
 
     Returns:
-        An instance of :py:class:`mlflow.entities.Experiment`
+        An instance of :py:class:`qcflow.entities.Experiment`
         if an experiment with the specified name exists, otherwise None.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Case sensitive name
-        experiment = mlflow.get_experiment_by_name("Default")
+        experiment = qcflow.get_experiment_by_name("Default")
         print(f"Experiment_id: {experiment.experiment_id}")
         print(f"Artifact Location: {experiment.artifact_location}")
         print(f"Tags: {experiment.tags}")
@@ -1689,7 +1689,7 @@ def search_experiments(
 
     Args:
         view_type: One of enum values ``ACTIVE_ONLY``, ``DELETED_ONLY``, or ``ALL``
-            defined in :py:class:`mlflow.entities.ViewType`.
+            defined in :py:class:`qcflow.entities.ViewType`.
         max_results: If passed, specifies the maximum number of experiments desired. If not
             passed, all experiments will be returned.
         filter_string: Filter query string (e.g., ``"name = 'my_experiment'"``), defaults to
@@ -1732,13 +1732,13 @@ def search_experiments(
                 - ``last_update_time``: Experiment last update time
 
     Returns:
-        A list of :py:class:`Experiment <mlflow.entities.Experiment>` objects.
+        A list of :py:class:`Experiment <qcflow.entities.Experiment>` objects.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
 
         def assert_experiment_names_equal(experiments, expected_names):
@@ -1746,7 +1746,7 @@ def search_experiments(
             assert actual_names == expected_names, (actual_names, expected_names)
 
 
-        mlflow.set_tracking_uri("sqlite:///:memory:")
+        qcflow.set_tracking_uri("sqlite:///:memory:")
         # Create experiments
         for name, tags in [
             ("a", None),
@@ -1754,25 +1754,25 @@ def search_experiments(
             ("ab", {"k": "v"}),
             ("bb", {"k": "V"}),
         ]:
-            mlflow.create_experiment(name, tags=tags)
+            qcflow.create_experiment(name, tags=tags)
 
         # Search for experiments with name "a"
-        experiments = mlflow.search_experiments(filter_string="name = 'a'")
+        experiments = qcflow.search_experiments(filter_string="name = 'a'")
         assert_experiment_names_equal(experiments, ["a"])
         # Search for experiments with name starting with "a"
-        experiments = mlflow.search_experiments(filter_string="name LIKE 'a%'")
+        experiments = qcflow.search_experiments(filter_string="name LIKE 'a%'")
         assert_experiment_names_equal(experiments, ["ab", "a"])
         # Search for experiments with tag key "k" and value ending with "v" or "V"
-        experiments = mlflow.search_experiments(filter_string="tags.k ILIKE '%v'")
+        experiments = qcflow.search_experiments(filter_string="tags.k ILIKE '%v'")
         assert_experiment_names_equal(experiments, ["bb", "ab"])
         # Search for experiments with name ending with "b" and tag {"k": "v"}
-        experiments = mlflow.search_experiments(filter_string="name LIKE '%b' AND tags.k = 'v'")
+        experiments = qcflow.search_experiments(filter_string="name LIKE '%b' AND tags.k = 'v'")
         assert_experiment_names_equal(experiments, ["ab"])
         # Sort experiments by name in ascending order
-        experiments = mlflow.search_experiments(order_by=["name"])
+        experiments = qcflow.search_experiments(order_by=["name"])
         assert_experiment_names_equal(experiments, ["a", "ab", "b", "bb"])
         # Sort experiments by ID in descending order
-        experiments = mlflow.search_experiments(order_by=["experiment_id DESC"])
+        experiments = qcflow.search_experiments(order_by=["experiment_id DESC"])
         assert_experiment_names_equal(experiments, ["bb", "ab", "b", "a"])
     """
 
@@ -1813,16 +1813,16 @@ def create_experiment(
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
         from pathlib import Path
 
         # Create an experiment name, which must be unique and case sensitive
-        experiment_id = mlflow.create_experiment(
+        experiment_id = qcflow.create_experiment(
             "Social NLP Experiments",
             artifact_location=Path.cwd().joinpath("mlruns").as_uri(),
             tags={"version": "v1", "priority": "P1"},
         )
-        experiment = mlflow.get_experiment(experiment_id)
+        experiment = qcflow.get_experiment(experiment_id)
         print(f"Name: {experiment.name}")
         print(f"Experiment_id: {experiment.experiment_id}")
         print(f"Artifact Location: {experiment.artifact_location}")
@@ -1854,13 +1854,13 @@ def delete_experiment(experiment_id: str) -> None:
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        experiment_id = mlflow.create_experiment("New Experiment")
-        mlflow.delete_experiment(experiment_id)
+        experiment_id = qcflow.create_experiment("New Experiment")
+        qcflow.delete_experiment(experiment_id)
 
         # Examine the deleted experiment details.
-        experiment = mlflow.get_experiment(experiment_id)
+        experiment = qcflow.get_experiment(experiment_id)
         print(f"Name: {experiment.name}")
         print(f"Artifact Location: {experiment.artifact_location}")
         print(f"Lifecycle_stage: {experiment.lifecycle_stage}")
@@ -1889,15 +1889,15 @@ def delete_run(run_id: str) -> None:
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_run() as run:
-            mlflow.log_param("p", 0)
+        with qcflow.start_run() as run:
+            qcflow.log_param("p", 0)
 
         run_id = run.info.run_id
-        mlflow.delete_run(run_id)
+        qcflow.delete_run(run_id)
 
-        lifecycle_stage = mlflow.get_run(run_id).info.lifecycle_stage
+        lifecycle_stage = qcflow.get_run(run_id).info.lifecycle_stage
         print(f"run_id: {run_id}; lifecycle_stage: {lifecycle_stage}")
 
     .. code-block:: text
@@ -1936,22 +1936,22 @@ def get_artifact_uri(artifact_path: Optional[str] = None) -> str:
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         features = "rooms, zipcode, median_price, school_rating, transport"
         with open("features.txt", "w") as f:
             f.write(features)
 
         # Log the artifact in a directory "features" under the root artifact_uri/features
-        with mlflow.start_run():
-            mlflow.log_artifact("features.txt", artifact_path="features")
+        with qcflow.start_run():
+            qcflow.log_artifact("features.txt", artifact_path="features")
 
             # Fetch the artifact uri root directory
-            artifact_uri = mlflow.get_artifact_uri()
+            artifact_uri = qcflow.get_artifact_uri()
             print(f"Artifact uri: {artifact_uri}")
 
             # Fetch a specific artifact uri
-            artifact_uri = mlflow.get_artifact_uri(artifact_path="features/features.txt")
+            artifact_uri = qcflow.get_artifact_uri(artifact_path="features/features.txt")
             print(f"Artifact uri: {artifact_uri}")
 
     .. code-block:: text
@@ -1986,14 +1986,14 @@ def search_runs(
             experiment if ``experiment_names`` is ``None`` or ``[]``.
         filter_string: Filter query string, defaults to searching all runs.
         run_view_type: one of enum values ``ACTIVE_ONLY``, ``DELETED_ONLY``, or ``ALL`` runs
-            defined in :py:class:`mlflow.entities.ViewType`.
+            defined in :py:class:`qcflow.entities.ViewType`.
         max_results: The maximum number of runs to put in the dataframe. Default is 100,000
             to avoid causing out-of-memory issues on the user's machine.
         order_by: List of columns to order by (e.g., "metrics.rmse"). The ``order_by`` column
             can contain an optional ``DESC`` or ``ASC`` value. The default is ``ASC``.
             The default ordering is to sort by ``start_time DESC``, then ``run_id``.
         output_format: The output format to be returned. If ``pandas``, a ``pandas.DataFrame``
-            is returned and, if ``list``, a list of :py:class:`mlflow.entities.Run`
+            is returned and, if ``list``, a list of :py:class:`qcflow.entities.Run`
             is returned.
         search_all_experiments: Boolean specifying whether all experiments should be searched.
             Only honored if ``experiment_ids`` is ``[]`` or ``None``.
@@ -2004,7 +2004,7 @@ def search_runs(
             experiment if ``experiment_ids`` is ``None`` or ``[]``.
 
     Returns:
-        If output_format is ``list``: a list of :py:class:`mlflow.entities.Run`. If
+        If output_format is ``list``: a list of :py:class:`qcflow.entities.Run`. If
         output_format is ``pandas``: ``pandas.DataFrame`` of runs, where each metric,
         parameter, and tag is expanded into its own column named metrics.*, params.*, or
         tags.* respectively. For runs that don't have a particular metric, parameter, or tag,
@@ -2015,29 +2015,29 @@ def search_runs(
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
         # Create an experiment and log two runs under it
         experiment_name = "Social NLP Experiments"
-        experiment_id = mlflow.create_experiment(experiment_name)
-        with mlflow.start_run(experiment_id=experiment_id):
-            mlflow.log_metric("m", 1.55)
-            mlflow.set_tag("s.release", "1.1.0-RC")
-        with mlflow.start_run(experiment_id=experiment_id):
-            mlflow.log_metric("m", 2.50)
-            mlflow.set_tag("s.release", "1.2.0-GA")
+        experiment_id = qcflow.create_experiment(experiment_name)
+        with qcflow.start_run(experiment_id=experiment_id):
+            qcflow.log_metric("m", 1.55)
+            qcflow.set_tag("s.release", "1.1.0-RC")
+        with qcflow.start_run(experiment_id=experiment_id):
+            qcflow.log_metric("m", 2.50)
+            qcflow.set_tag("s.release", "1.2.0-GA")
         # Search for all the runs in the experiment with the given experiment ID
-        df = mlflow.search_runs([experiment_id], order_by=["metrics.m DESC"])
+        df = qcflow.search_runs([experiment_id], order_by=["metrics.m DESC"])
         print(df[["metrics.m", "tags.s.release", "run_id"]])
         print("--")
         # Search the experiment_id using a filter_string with tag
         # that has a case insensitive pattern
         filter_string = "tags.s.release ILIKE '%rc%'"
-        df = mlflow.search_runs([experiment_id], filter_string=filter_string)
+        df = qcflow.search_runs([experiment_id], filter_string=filter_string)
         print(df[["metrics.m", "tags.s.release", "run_id"]])
         print("--")
         # Search for all the runs in the experiment with the given experiment name
-        df = mlflow.search_runs(experiment_names=[experiment_name], order_by=["metrics.m DESC"])
+        df = qcflow.search_runs(experiment_names=[experiment_name], order_by=["metrics.m DESC"])
         print(df[["metrics.m", "tags.s.release", "run_id"]])
 
     .. code-block:: text
@@ -2102,7 +2102,7 @@ def search_runs(
         )
 
     if output_format == "list":
-        return runs  # List[mlflow.entities.run.Run]
+        return runs  # List[qcflow.entities.run.Run]
     elif output_format == "pandas":
         import numpy as np
         import pandas as pd
@@ -2185,14 +2185,14 @@ def _get_or_start_run():
 
 
 def _get_experiment_id_from_env():
-    experiment_name = MLFLOW_EXPERIMENT_NAME.get()
-    experiment_id = MLFLOW_EXPERIMENT_ID.get()
+    experiment_name = QCFLOW_EXPERIMENT_NAME.get()
+    experiment_id = QCFLOW_EXPERIMENT_ID.get()
     if experiment_name is not None:
         exp = MlflowClient().get_experiment_by_name(experiment_name)
         if exp:
             if experiment_id and experiment_id != exp.experiment_id:
                 raise MlflowException(
-                    message=f"The provided {MLFLOW_EXPERIMENT_ID} environment variable "
+                    message=f"The provided {QCFLOW_EXPERIMENT_ID} environment variable "
                     f"value `{experiment_id}` does not match the experiment id "
                     f"`{exp.experiment_id}` for experiment name `{experiment_name}`",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -2207,7 +2207,7 @@ def _get_experiment_id_from_env():
             return exp.experiment_id
         except MlflowException as exc:
             raise MlflowException(
-                message=f"The provided {MLFLOW_EXPERIMENT_ID} environment variable "
+                message=f"The provided {QCFLOW_EXPERIMENT_ID} environment variable "
                 f"value `{experiment_id}` does not exist in the tracking server. Provide a valid "
                 f"experiment_id.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -2221,7 +2221,7 @@ def _get_experiment_id():
         return _get_experiment_id_from_env() or default_experiment_registry.get_experiment_id()
 
 
-@autologging_integration("mlflow")
+@autologging_integration("qcflow")
 def autolog(
     log_input_examples: bool = False,
     log_model_signatures: bool = True,
@@ -2249,9 +2249,9 @@ def autolog(
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
-        mlflow.autolog(log_models=False, exclusive=True)
+        qcflow.autolog(log_models=False, exclusive=True)
         import sklearn
 
     would enable autologging for `sklearn` with `log_models=False` and `exclusive=True`,
@@ -2260,37 +2260,37 @@ def autolog(
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
-        mlflow.autolog(log_models=False, exclusive=True)
+        qcflow.autolog(log_models=False, exclusive=True)
 
         import sklearn
 
-        mlflow.sklearn.autolog(log_models=True)
+        qcflow.sklearn.autolog(log_models=True)
 
     would enable autologging for `sklearn` with `log_models=True` and `exclusive=False`,
-    the latter resulting from the default value for `exclusive` in `mlflow.sklearn.autolog`;
-    other framework autolog functions (e.g. `mlflow.tensorflow.autolog`) would use the
-    configurations set by `mlflow.autolog` (in this instance, `log_models=False`, `exclusive=True`),
+    the latter resulting from the default value for `exclusive` in `qcflow.sklearn.autolog`;
+    other framework autolog functions (e.g. `qcflow.tensorflow.autolog`) would use the
+    configurations set by `qcflow.autolog` (in this instance, `log_models=False`, `exclusive=True`),
     until they are explicitly called by the user.
 
     Args:
         log_input_examples: If ``True``, input examples from training datasets are collected and
             logged along with model artifacts during training. If ``False``,
             input examples are not logged.
-            Note: Input examples are MLflow model attributes
+            Note: Input examples are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
         log_model_signatures: If ``True``,
-            :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
+            :py:class:`ModelSignatures <qcflow.models.ModelSignature>`
             describing model inputs and outputs are collected and logged along
             with model artifacts during training. If ``False``, signatures are
-            not logged. Note: Model signatures are MLflow model attributes
+            not logged. Note: Model signatures are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
-        log_models: If ``True``, trained models are logged as MLflow model artifacts.
+        log_models: If ``True``, trained models are logged as QCFlow model artifacts.
             If ``False``, trained models are not logged.
-            Input examples and model signatures, which are attributes of MLflow models,
+            Input examples and model signatures, which are attributes of QCFlow models,
             are also omitted when ``log_models`` is ``False``.
-        log_datasets: If ``True``, dataset information is logged to MLflow Tracking.
+        log_datasets: If ``True``, dataset information is logged to QCFlow Tracking.
             If ``False``, dataset information is not logged.
         log_traces: If ``True``, traces are collected for integrations.
             If ``False``, no trace is collected.
@@ -2301,8 +2301,8 @@ def autolog(
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
             all integration libraries that have not been tested against this version
-            of the MLflow client or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during autologging
+            of the QCFlow client or are incompatible.
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during autologging
             setup and training execution. If ``False``, show all events and warnings during
             autologging setup and training execution.
         extra_tags: A dictionary of extra tags to set on each managed run created by autologging.
@@ -2314,13 +2314,13 @@ def autolog(
         :caption: Example
 
         import numpy as np
-        import mlflow.sklearn
-        from mlflow import MlflowClient
+        import qcflow.sklearn
+        from qcflow import MlflowClient
         from sklearn.linear_model import LinearRegression
 
 
         def print_auto_logged_info(r):
-            tags = {k: v for k, v in r.data.tags.items() if not k.startswith("mlflow.")}
+            tags = {k: v for k, v in r.data.tags.items() if not k.startswith("qcflow.")}
             artifacts = [f.path for f in MlflowClient().list_artifacts(r.info.run_id, "model")]
             print(f"run_id: {r.info.run_id}")
             print(f"artifacts: {artifacts}")
@@ -2334,13 +2334,13 @@ def autolog(
         y = np.dot(X, np.array([1, 2])) + 3
 
         # Auto log all the parameters, metrics, and artifacts
-        mlflow.autolog()
+        qcflow.autolog()
         model = LinearRegression()
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(X, y)
 
         # fetch the auto logged parameters and metrics for ended run
-        print_auto_logged_info(mlflow.get_run(run_id=run.info.run_id))
+        print_auto_logged_info(qcflow.get_run(run_id=run.info.run_id))
 
     .. code-block:: text
         :caption: Output
@@ -2365,38 +2365,38 @@ def autolog(
     # "tensorflow.autolog" to avoid loading all flavor modules, so we only set autologging for
     # compatible modules.
     LIBRARY_TO_AUTOLOG_MODULE = {
-        "tensorflow": "mlflow.tensorflow",
-        "keras": "mlflow.keras",
-        "xgboost": "mlflow.xgboost",
-        "lightgbm": "mlflow.lightgbm",
-        "statsmodels": "mlflow.statsmodels",
-        "sklearn": "mlflow.sklearn",
-        "fastai": "mlflow.fastai",
-        "pyspark": "mlflow.spark",
-        "pyspark.ml": "mlflow.pyspark.ml",
+        "tensorflow": "qcflow.tensorflow",
+        "keras": "qcflow.keras",
+        "xgboost": "qcflow.xgboost",
+        "lightgbm": "qcflow.lightgbm",
+        "statsmodels": "qcflow.statsmodels",
+        "sklearn": "qcflow.sklearn",
+        "fastai": "qcflow.fastai",
+        "pyspark": "qcflow.spark",
+        "pyspark.ml": "qcflow.pyspark.ml",
         # TODO: Broaden this beyond pytorch_lightning as we add autologging support for more
-        # Pytorch frameworks under mlflow.pytorch.autolog
-        "pytorch_lightning": "mlflow.pytorch",
-        "lightning": "mlflow.pytorch",
-        "setfit": "mlflow.transformers",
-        "transformers": "mlflow.transformers",
+        # Pytorch frameworks under qcflow.pytorch.autolog
+        "pytorch_lightning": "qcflow.pytorch",
+        "lightning": "qcflow.pytorch",
+        "setfit": "qcflow.transformers",
+        "transformers": "qcflow.transformers",
         # do not enable langchain autologging by default
     }
 
     GENAI_LIBRARY_TO_AUTOLOG_MODULE = {
-        "anthropic": "mlflow.anthropic",
-        "autogen": "mlflow.autogen",
-        "openai": "mlflow.openai",
-        "google.generativeai": "mlflow.gemini",
-        "litellm": "mlflow.litellm",
-        "llama_index.core": "mlflow.llama_index",
-        "langchain": "mlflow.langchain",
-        "dspy": "mlflow.dspy",
-        "crewai": "mlflow.crewai",
-        "boto3": "mlflow.bedrock",
+        "anthropic": "qcflow.anthropic",
+        "autogen": "qcflow.autogen",
+        "openai": "qcflow.openai",
+        "google.generativeai": "qcflow.gemini",
+        "litellm": "qcflow.litellm",
+        "llama_index.core": "qcflow.llama_index",
+        "langchain": "qcflow.langchain",
+        "dspy": "qcflow.dspy",
+        "crewai": "qcflow.crewai",
+        "boto3": "qcflow.bedrock",
     }
 
-    # Currently, GenAI libraries are not enabled by `mlflow.autolog` in Databricks,
+    # Currently, GenAI libraries are not enabled by `qcflow.autolog` in Databricks,
     # particularly when disable=False. This is because the function is automatically invoked
     # by system and we don't want to take the risk of enabling GenAI libraries all at once.
     # TODO: Remove this logic once a feature flag is implemented in Databricks Runtime init logic.
@@ -2406,7 +2406,7 @@ def autolog(
         target_library_and_module = LIBRARY_TO_AUTOLOG_MODULE | GENAI_LIBRARY_TO_AUTOLOG_MODULE
 
     if exclude_flavors:
-        excluded_modules = [f"mlflow.{flavor}" for flavor in exclude_flavors]
+        excluded_modules = [f"qcflow.{flavor}" for flavor in exclude_flavors]
         target_library_and_module = {
             k: v for k, v in target_library_and_module.items() if v not in excluded_modules
         }
@@ -2428,16 +2428,16 @@ def autolog(
             autologging_params = None
             autolog_module = importlib.import_module(target_library_and_module[module.__name__])
             autolog_fn = autolog_module.autolog
-            # Only call integration's autolog function with `mlflow.autolog` configs
+            # Only call integration's autolog function with `qcflow.autolog` configs
             # if the integration's autolog function has not already been called by the user.
             # Logic is as follows:
-            # - if a previous_config exists, that means either `mlflow.autolog` or
-            #   `mlflow.integration.autolog` was called.
+            # - if a previous_config exists, that means either `qcflow.autolog` or
+            #   `qcflow.integration.autolog` was called.
             # - if the config contains `AUTOLOGGING_CONF_KEY_IS_GLOBALLY_CONFIGURED`, the
-            #   configuration was set by `mlflow.autolog`, and so we can safely call `autolog_fn`
+            #   configuration was set by `qcflow.autolog`, and so we can safely call `autolog_fn`
             #   with `autologging_params`.
             # - if the config doesn't contain this key, the configuration was set by an
-            #   `mlflow.integration.autolog` call, so we should not call `autolog_fn` with
+            #   `qcflow.integration.autolog` call, so we should not call `autolog_fn` with
             #   new configs.
             prev_config = AUTOLOGGING_INTEGRATIONS.get(autolog_fn.integration_name)
             if prev_config and not prev_config.get(

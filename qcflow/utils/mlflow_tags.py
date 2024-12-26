@@ -1,102 +1,102 @@
 """
-File containing all of the run tags in the mlflow. namespace.
+File containing all of the run tags in the qcflow. namespace.
 
-See the System Tags section in the MLflow Tracking documentation for information on the
+See the System Tags section in the QCFlow Tracking documentation for information on the
 meaning of these tags.
 """
 
-MLFLOW_EXPERIMENT_SOURCE_ID = "mlflow.experiment.sourceId"
-MLFLOW_EXPERIMENT_SOURCE_TYPE = "mlflow.experiment.sourceType"
-MLFLOW_RUN_NAME = "mlflow.runName"
-MLFLOW_RUN_NOTE = "mlflow.note.content"
-MLFLOW_PARENT_RUN_ID = "mlflow.parentRunId"
-MLFLOW_ARTIFACT_LOCATION = "mlflow.artifactLocation"
-MLFLOW_USER = "mlflow.user"
-MLFLOW_SOURCE_TYPE = "mlflow.source.type"
-MLFLOW_RECIPE_TEMPLATE_NAME = "mlflow.pipeline.template.name"
-MLFLOW_RECIPE_STEP_NAME = "mlflow.pipeline.step.name"
-MLFLOW_RECIPE_PROFILE_NAME = "mlflow.pipeline.profile.name"
-MLFLOW_SOURCE_NAME = "mlflow.source.name"
-MLFLOW_GIT_COMMIT = "mlflow.source.git.commit"
-MLFLOW_GIT_BRANCH = "mlflow.source.git.branch"
-MLFLOW_GIT_REPO_URL = "mlflow.source.git.repoURL"
-MLFLOW_LOGGED_MODELS = "mlflow.log-model.history"
-MLFLOW_PROJECT_ENV = "mlflow.project.env"
-MLFLOW_PROJECT_ENTRY_POINT = "mlflow.project.entryPoint"
-MLFLOW_DOCKER_IMAGE_URI = "mlflow.docker.image.uri"
-MLFLOW_DOCKER_IMAGE_ID = "mlflow.docker.image.id"
-# Indicates that an MLflow run was created by an autologging integration
-MLFLOW_AUTOLOGGING = "mlflow.autologging"
+QCFLOW_EXPERIMENT_SOURCE_ID = "qcflow.experiment.sourceId"
+QCFLOW_EXPERIMENT_SOURCE_TYPE = "qcflow.experiment.sourceType"
+QCFLOW_RUN_NAME = "qcflow.runName"
+QCFLOW_RUN_NOTE = "qcflow.note.content"
+QCFLOW_PARENT_RUN_ID = "qcflow.parentRunId"
+QCFLOW_ARTIFACT_LOCATION = "qcflow.artifactLocation"
+QCFLOW_USER = "qcflow.user"
+QCFLOW_SOURCE_TYPE = "qcflow.source.type"
+QCFLOW_RECIPE_TEMPLATE_NAME = "qcflow.pipeline.template.name"
+QCFLOW_RECIPE_STEP_NAME = "qcflow.pipeline.step.name"
+QCFLOW_RECIPE_PROFILE_NAME = "qcflow.pipeline.profile.name"
+QCFLOW_SOURCE_NAME = "qcflow.source.name"
+QCFLOW_GIT_COMMIT = "qcflow.source.git.commit"
+QCFLOW_GIT_BRANCH = "qcflow.source.git.branch"
+QCFLOW_GIT_REPO_URL = "qcflow.source.git.repoURL"
+QCFLOW_LOGGED_MODELS = "qcflow.log-model.history"
+QCFLOW_PROJECT_ENV = "qcflow.project.env"
+QCFLOW_PROJECT_ENTRY_POINT = "qcflow.project.entryPoint"
+QCFLOW_DOCKER_IMAGE_URI = "qcflow.docker.image.uri"
+QCFLOW_DOCKER_IMAGE_ID = "qcflow.docker.image.id"
+# Indicates that an QCFlow run was created by an autologging integration
+QCFLOW_AUTOLOGGING = "qcflow.autologging"
 # Indicates the artifacts type and path that are logged
-MLFLOW_LOGGED_ARTIFACTS = "mlflow.loggedArtifacts"
-MLFLOW_LOGGED_IMAGES = "mlflow.loggedImages"
-MLFLOW_RUN_SOURCE_TYPE = "mlflow.runSourceType"
+QCFLOW_LOGGED_ARTIFACTS = "qcflow.loggedArtifacts"
+QCFLOW_LOGGED_IMAGES = "qcflow.loggedImages"
+QCFLOW_RUN_SOURCE_TYPE = "qcflow.runSourceType"
 
-MLFLOW_DATABRICKS_NOTEBOOK_ID = "mlflow.databricks.notebookID"
-MLFLOW_DATABRICKS_NOTEBOOK_PATH = "mlflow.databricks.notebookPath"
-MLFLOW_DATABRICKS_WEBAPP_URL = "mlflow.databricks.webappURL"
-MLFLOW_DATABRICKS_RUN_URL = "mlflow.databricks.runURL"
-MLFLOW_DATABRICKS_CLUSTER_ID = "mlflow.databricks.cluster.id"
-MLFLOW_DATABRICKS_WORKSPACE_URL = "mlflow.databricks.workspaceURL"
-MLFLOW_DATABRICKS_WORKSPACE_ID = "mlflow.databricks.workspaceID"
+QCFLOW_DATABRICKS_NOTEBOOK_ID = "qcflow.databricks.notebookID"
+QCFLOW_DATABRICKS_NOTEBOOK_PATH = "qcflow.databricks.notebookPath"
+QCFLOW_DATABRICKS_WEBAPP_URL = "qcflow.databricks.webappURL"
+QCFLOW_DATABRICKS_RUN_URL = "qcflow.databricks.runURL"
+QCFLOW_DATABRICKS_CLUSTER_ID = "qcflow.databricks.cluster.id"
+QCFLOW_DATABRICKS_WORKSPACE_URL = "qcflow.databricks.workspaceURL"
+QCFLOW_DATABRICKS_WORKSPACE_ID = "qcflow.databricks.workspaceID"
 # The unique ID of a command execution in a Databricks notebook
-MLFLOW_DATABRICKS_NOTEBOOK_COMMAND_ID = "mlflow.databricks.notebook.commandID"
+QCFLOW_DATABRICKS_NOTEBOOK_COMMAND_ID = "qcflow.databricks.notebook.commandID"
 # The SHELL_JOB_ID and SHELL_JOB_RUN_ID tags are used for tracking the
-# Databricks Job ID and Databricks Job Run ID associated with an MLflow Project run
-MLFLOW_DATABRICKS_SHELL_JOB_ID = "mlflow.databricks.shellJobID"
-MLFLOW_DATABRICKS_SHELL_JOB_RUN_ID = "mlflow.databricks.shellJobRunID"
+# Databricks Job ID and Databricks Job Run ID associated with an QCFlow Project run
+QCFLOW_DATABRICKS_SHELL_JOB_ID = "qcflow.databricks.shellJobID"
+QCFLOW_DATABRICKS_SHELL_JOB_RUN_ID = "qcflow.databricks.shellJobRunID"
 # The JOB_ID, JOB_RUN_ID, and JOB_TYPE tags are used for automatically recording Job information
-# when MLflow Tracking APIs are used within a Databricks Job
-MLFLOW_DATABRICKS_JOB_ID = "mlflow.databricks.jobID"
-MLFLOW_DATABRICKS_JOB_RUN_ID = "mlflow.databricks.jobRunID"
-# Here MLFLOW_DATABRICKS_JOB_TYPE means the job task type and MLFLOW_DATABRICKS_JOB_TYPE_INFO
+# when QCFlow Tracking APIs are used within a Databricks Job
+QCFLOW_DATABRICKS_JOB_ID = "qcflow.databricks.jobID"
+QCFLOW_DATABRICKS_JOB_RUN_ID = "qcflow.databricks.jobRunID"
+# Here QCFLOW_DATABRICKS_JOB_TYPE means the job task type and QCFLOW_DATABRICKS_JOB_TYPE_INFO
 # implies the job type which could be normal, ephemeral, etc.
-MLFLOW_DATABRICKS_JOB_TYPE = "mlflow.databricks.jobType"
-MLFLOW_DATABRICKS_JOB_TYPE_INFO = "mlflow.databricks.jobTypeInfo"
-# For MLflow Repo Lineage tracking
-MLFLOW_DATABRICKS_GIT_REPO_URL = "mlflow.databricks.gitRepoUrl"
-MLFLOW_DATABRICKS_GIT_REPO_COMMIT = "mlflow.databricks.gitRepoCommit"
-MLFLOW_DATABRICKS_GIT_REPO_PROVIDER = "mlflow.databricks.gitRepoProvider"
-MLFLOW_DATABRICKS_GIT_REPO_RELATIVE_PATH = "mlflow.databricks.gitRepoRelativePath"
-MLFLOW_DATABRICKS_GIT_REPO_REFERENCE = "mlflow.databricks.gitRepoReference"
-MLFLOW_DATABRICKS_GIT_REPO_REFERENCE_TYPE = "mlflow.databricks.gitRepoReferenceType"
-MLFLOW_DATABRICKS_GIT_REPO_STATUS = "mlflow.databricks.gitRepoStatus"
+QCFLOW_DATABRICKS_JOB_TYPE = "qcflow.databricks.jobType"
+QCFLOW_DATABRICKS_JOB_TYPE_INFO = "qcflow.databricks.jobTypeInfo"
+# For QCFlow Repo Lineage tracking
+QCFLOW_DATABRICKS_GIT_REPO_URL = "qcflow.databricks.gitRepoUrl"
+QCFLOW_DATABRICKS_GIT_REPO_COMMIT = "qcflow.databricks.gitRepoCommit"
+QCFLOW_DATABRICKS_GIT_REPO_PROVIDER = "qcflow.databricks.gitRepoProvider"
+QCFLOW_DATABRICKS_GIT_REPO_RELATIVE_PATH = "qcflow.databricks.gitRepoRelativePath"
+QCFLOW_DATABRICKS_GIT_REPO_REFERENCE = "qcflow.databricks.gitRepoReference"
+QCFLOW_DATABRICKS_GIT_REPO_REFERENCE_TYPE = "qcflow.databricks.gitRepoReferenceType"
+QCFLOW_DATABRICKS_GIT_REPO_STATUS = "qcflow.databricks.gitRepoStatus"
 
-# For MLflow Dataset tracking
-MLFLOW_DATASET_CONTEXT = "mlflow.data.context"
+# For QCFlow Dataset tracking
+QCFLOW_DATASET_CONTEXT = "qcflow.data.context"
 
-MLFLOW_PROJECT_BACKEND = "mlflow.project.backend"
+QCFLOW_PROJECT_BACKEND = "qcflow.project.backend"
 
-# The following legacy tags are deprecated and will be removed by MLflow 1.0.
-LEGACY_MLFLOW_GIT_BRANCH_NAME = "mlflow.gitBranchName"  # Replaced with mlflow.source.git.branch
-LEGACY_MLFLOW_GIT_REPO_URL = "mlflow.gitRepoURL"  # Replaced with mlflow.source.git.repoURL
+# The following legacy tags are deprecated and will be removed by QCFlow 1.0.
+LEGACY_QCFLOW_GIT_BRANCH_NAME = "qcflow.gitBranchName"  # Replaced with qcflow.source.git.branch
+LEGACY_QCFLOW_GIT_REPO_URL = "qcflow.gitRepoURL"  # Replaced with qcflow.source.git.repoURL
 
-MLFLOW_EXPERIMENT_PRIMARY_METRIC_NAME = "mlflow.experiment.primaryMetric.name"
-MLFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER = (
-    "mlflow.experiment.primaryMetric.greaterIsBetter"
+QCFLOW_EXPERIMENT_PRIMARY_METRIC_NAME = "qcflow.experiment.primaryMetric.name"
+QCFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER = (
+    "qcflow.experiment.primaryMetric.greaterIsBetter"
 )
 
 # For automatic model checkpointing
-LATEST_CHECKPOINT_ARTIFACT_TAG_KEY = "mlflow.latest_checkpoint_artifact"
+LATEST_CHECKPOINT_ARTIFACT_TAG_KEY = "qcflow.latest_checkpoint_artifact"
 
 # A set of tags that cannot be updated by the user
-IMMUTABLE_TAGS = {MLFLOW_USER, MLFLOW_ARTIFACT_LOCATION}
+IMMUTABLE_TAGS = {QCFLOW_USER, QCFLOW_ARTIFACT_LOCATION}
 
 # The list of tags generated from resolve_tags() that are required for tracing UI
 TRACE_RESOLVE_TAGS_ALLOWLIST = (
-    MLFLOW_DATABRICKS_NOTEBOOK_COMMAND_ID,
-    MLFLOW_DATABRICKS_NOTEBOOK_ID,
-    MLFLOW_DATABRICKS_NOTEBOOK_PATH,
-    MLFLOW_DATABRICKS_WEBAPP_URL,
-    MLFLOW_DATABRICKS_WORKSPACE_ID,
-    MLFLOW_DATABRICKS_WORKSPACE_URL,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
-    MLFLOW_USER,
+    QCFLOW_DATABRICKS_NOTEBOOK_COMMAND_ID,
+    QCFLOW_DATABRICKS_NOTEBOOK_ID,
+    QCFLOW_DATABRICKS_NOTEBOOK_PATH,
+    QCFLOW_DATABRICKS_WEBAPP_URL,
+    QCFLOW_DATABRICKS_WORKSPACE_ID,
+    QCFLOW_DATABRICKS_WORKSPACE_URL,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
+    QCFLOW_USER,
 )
 
 
 def _get_run_name_from_tags(tags):
     for tag in tags:
-        if tag.key == MLFLOW_RUN_NAME:
+        if tag.key == QCFLOW_RUN_NAME:
             return tag.value

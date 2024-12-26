@@ -1,7 +1,7 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
 /**
- * An exception that is intended to be thrown when a {@link org.mlflow.sagemaker.Predictor} object
+ * An exception that is intended to be thrown when a {@link org.qcflow.sagemaker.Predictor} object
  * encounters an error during inference.
  */
 public class PredictorEvaluationException extends Exception {

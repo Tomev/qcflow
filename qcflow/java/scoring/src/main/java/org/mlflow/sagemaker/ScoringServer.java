@@ -1,4 +1,4 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -13,9 +13,9 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.mlflow.mleap.MLeapLoader;
-import org.mlflow.models.Model;
-import org.mlflow.utils.EnvironmentUtils;
+import org.qcflow.mleap.MLeapLoader;
+import org.qcflow.models.Model;
+import org.qcflow.utils.EnvironmentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +25,8 @@ public class ScoringServer {
   private static final String REQUEST_CONTENT_TYPE_JSON = "application/json";
   private static final String REQUEST_CONTENT_TYPE_CSV = "text/csv";
 
-  static final String ENV_VAR_MINIMUM_SERVER_THREADS = "MLFLOW_SCORING_SERVER_MIN_THREADS";
-  static final String ENV_VAR_MAXIMUM_SERVER_THREADS = "MLFLOW_SCORING_SERVER_MAX_THREADS";
+  static final String ENV_VAR_MINIMUM_SERVER_THREADS = "QCFLOW_SCORING_SERVER_MIN_THREADS";
+  static final String ENV_VAR_MAXIMUM_SERVER_THREADS = "QCFLOW_SCORING_SERVER_MAX_THREADS";
 
   static final int DEFAULT_MINIMUM_SERVER_THREADS = 1;
   // Assuming an 8 core machine with hyperthreading
@@ -63,10 +63,10 @@ public class ScoringServer {
   }
 
   /**
-   * Loads the MLflow model at the specified path as a {@link Predictor} and serves it on the local
+   * Loads the QCFlow model at the specified path as a {@link Predictor} and serves it on the local
    * host at the specified port
    *
-   * @param modelPath The path to the MLflow model to serve
+   * @param modelPath The path to the QCFlow model to serve
    */
   public ScoringServer(String modelPath) throws PredictorLoadingException {
     this(loadPredictorFromPath(modelPath));
@@ -79,7 +79,7 @@ public class ScoringServer {
       return (new MLeapLoader()).load(config);
     } catch (IOException e) {
       throw new PredictorLoadingException(
-          "Failed to load the configuration for the MLflow model at the specified path.", e);
+          "Failed to load the configuration for the QCFlow model at the specified path.", e);
     }
   }
 
@@ -253,12 +253,12 @@ public class ScoringServer {
   }
 
   /**
-   * Entrypoint for locally serving MLflow models with the MLeap flavor using the {@link
+   * Entrypoint for locally serving QCFlow models with the MLeap flavor using the {@link
    * ScoringServer}
    *
-   * <p>This entrypoint expects the following arguments: 1. The path to the MLflow model to serve.
+   * <p>This entrypoint expects the following arguments: 1. The path to the QCFlow model to serve.
    * This model must have the MLeap flavor. 2. (Optional) the number of the port on which to serve
-   * the MLflow model.
+   * the QCFlow model.
    */
   public static void main(String[] args) throws IOException, PredictorLoadingException {
     String modelPath = args[0];

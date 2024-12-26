@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 
-from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
-from mlflow.store.artifact.s3_artifact_repo import _get_s3_client
+from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+from qcflow.store.artifact.s3_artifact_repo import _get_s3_client
 
 
 class R2ArtifactRepository(OptimizedS3ArtifactRepository):

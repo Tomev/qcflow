@@ -13,14 +13,14 @@ import yaml
 from packaging.version import Version
 from sklearn import datasets
 
-import mlflow
-import mlflow.xgboost
-from mlflow import MlflowClient
-from mlflow.models import Model
-from mlflow.models.utils import _read_example
-from mlflow.types.utils import _infer_schema
-from mlflow.utils.autologging_utils import BatchMetricsLogger, picklable_exception_safe_function
-from mlflow.xgboost._autolog import IS_TRAINING_CALLBACK_SUPPORTED, autolog_callback
+import qcflow
+import qcflow.xgboost
+from qcflow import MlflowClient
+from qcflow.models import Model
+from qcflow.models.utils import _read_example
+from qcflow.types.utils import _infer_schema
+from qcflow.utils.autologging_utils import BatchMetricsLogger, picklable_exception_safe_function
+from qcflow.xgboost._autolog import IS_TRAINING_CALLBACK_SUPPORTED, autolog_callback
 
 mpl.use("Agg")
 
@@ -53,29 +53,29 @@ def dtrain():
 
 
 def test_xgb_autolog_ends_auto_created_run(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     xgb.train(bst_params, dtrain)
-    assert mlflow.active_run() is None
+    assert qcflow.active_run() is None
 
 
 def test_extra_tags_xgboost_autolog(bst_params, dtrain):
-    mlflow.xgboost.autolog(extra_tags={"test_tag": "xgb_autolog"})
+    qcflow.xgboost.autolog(extra_tags={"test_tag": "xgb_autolog"})
     xgb.train(bst_params, dtrain)
-    run = mlflow.last_active_run()
+    run = qcflow.last_active_run()
     assert run.data.tags["test_tag"] == "xgb_autolog"
-    assert run.data.tags[mlflow.utils.mlflow_tags.MLFLOW_AUTOLOGGING] == "xgboost"
+    assert run.data.tags[qcflow.utils.qcflow_tags.QCFLOW_AUTOLOGGING] == "xgboost"
 
 
 def test_xgb_autolog_persists_manually_created_run(bst_params, dtrain):
-    mlflow.xgboost.autolog()
-    with mlflow.start_run() as run:
+    qcflow.xgboost.autolog()
+    with qcflow.start_run() as run:
         xgb.train(bst_params, dtrain)
-        assert mlflow.active_run()
-        assert mlflow.active_run().info.run_id == run.info.run_id
+        assert qcflow.active_run()
+        assert qcflow.active_run().info.run_id == run.info.run_id
 
 
 def test_xgb_autolog_logs_default_params(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     xgb.train(bst_params, dtrain)
     run = get_latest_run()
     params = run.data.params
@@ -118,7 +118,7 @@ def test_xgb_autolog_logs_default_params(bst_params, dtrain):
 
 
 def test_xgb_autolog_logs_specified_params(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     expected_params = {
         "num_boost_round": 20,
         "early_stopping_rounds": 5,
@@ -150,7 +150,7 @@ def test_xgb_autolog_logs_specified_params(bst_params, dtrain):
 
 
 def test_xgb_autolog_atsign_metrics():
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     xgb_metrics = ["ndcg@2", "map@3-", "error@0.4"]
     expected_metrics = {"train-ndcg_at_2", "train-map_at_3-", "train-error_at_0.4"}
 
@@ -163,9 +163,9 @@ def test_xgb_autolog_atsign_metrics():
 
 @pytest.mark.parametrize("xgb_metric", ["ndcg@2", "error"])
 def test_xgb_autolog_atsign_metrics_info_log(xgb_metric):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
 
-    with mock.patch("mlflow.xgboost._autolog._logger.info") as mock_info_log:
+    with mock.patch("qcflow.xgboost._autolog._logger.info") as mock_info_log:
         params = {"objective": "rank:pairwise", "eval_metric": [xgb_metric, "map"]}
         dtrain = xgb.DMatrix(np.array([[0], [1]]), label=[1, 0])
         xgb.train(params, dtrain, evals=[(dtrain, "train")], num_boost_round=1)
@@ -184,30 +184,30 @@ def test_xgb_autolog_atsign_metrics_info_log(xgb_metric):
 
 
 def test_xgb_autolog_sklearn():
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
 
     X, y = datasets.load_iris(return_X_y=True)
     params = {"n_estimators": 10, "reg_lambda": 1}
     model = xgb.XGBRegressor(**params)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         model.fit(X, y)
-        model_uri = mlflow.get_artifact_uri("model")
+        model_uri = qcflow.get_artifact_uri("model")
 
     client = MlflowClient()
     run = client.get_run(run.info.run_id)
     assert run.data.metrics.items() <= params.items()
     artifacts = {x.path for x in client.list_artifacts(run.info.run_id)}
     assert artifacts >= {"feature_importance_weight.png", "feature_importance_weight.json"}
-    loaded_model = mlflow.xgboost.load_model(model_uri)
+    loaded_model = qcflow.xgboost.load_model(model_uri)
     np.testing.assert_allclose(loaded_model.predict(X), model.predict(X))
 
 
 def test_xgb_autolog_sklearn_nested_in_pipeline():
     from sklearn.pipeline import make_pipeline
 
-    mlflow.xgboost.autolog()
-    mlflow.sklearn.autolog()
+    qcflow.xgboost.autolog()
+    qcflow.sklearn.autolog()
 
     X, y = datasets.load_iris(return_X_y=True)
     params = {"n_estimators": 10, "reg_lambda": 1}
@@ -215,7 +215,7 @@ def test_xgb_autolog_sklearn_nested_in_pipeline():
 
     model = make_pipeline(model)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         model.fit(X, y)
 
     client = MlflowClient()
@@ -247,7 +247,7 @@ def test_xgb_autolog_with_sklearn_outputs_do_not_reflect_training_dataset_mutati
         xgb.XGBRegressor.fit = patched_xgb_regressor_fit
         xgb.XGBRegressor.predict = patched_xgb_regressor_predict
 
-        mlflow.xgboost.autolog(log_models=True, log_model_signatures=True, log_input_examples=True)
+        qcflow.xgboost.autolog(log_models=True, log_model_signatures=True, log_input_examples=True)
 
         X = pd.DataFrame(
             {
@@ -264,7 +264,7 @@ def test_xgb_autolog_with_sklearn_outputs_do_not_reflect_training_dataset_mutati
         model = xgb.XGBRegressor(**params)
         model.fit(X, y)
 
-        run_artifact_uri = mlflow.last_active_run().info.artifact_uri
+        run_artifact_uri = qcflow.last_active_run().info.artifact_uri
         model_conf = get_model_conf(run_artifact_uri)
         input_example = pd.read_json(
             os.path.join(run_artifact_uri, "model", "input_example.json"), orient="split"
@@ -277,7 +277,7 @@ def test_xgb_autolog_with_sklearn_outputs_do_not_reflect_training_dataset_mutati
 
 
 def test_xgb_autolog_logs_metrics_with_validation_data(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     evals_result = {}
     xgb.train(
         bst_params, dtrain, num_boost_round=20, evals=[(dtrain, "train")], evals_result=evals_result
@@ -293,7 +293,7 @@ def test_xgb_autolog_logs_metrics_with_validation_data(bst_params, dtrain):
 
 
 def test_xgb_autolog_logs_metrics_with_multi_validation_data(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     evals_result = {}
     evals = [(dtrain, "train"), (dtrain, "valid")]
     xgb.train(bst_params, dtrain, num_boost_round=20, evals=evals, evals_result=evals_result)
@@ -309,7 +309,7 @@ def test_xgb_autolog_logs_metrics_with_multi_validation_data(bst_params, dtrain)
 
 
 def test_xgb_autolog_logs_metrics_with_multi_metrics(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     evals_result = {}
     params = {**bst_params, "eval_metric": ["merror", "mlogloss"]}
     xgb.train(
@@ -327,7 +327,7 @@ def test_xgb_autolog_logs_metrics_with_multi_metrics(bst_params, dtrain):
 
 
 def test_xgb_autolog_logs_metrics_with_multi_validation_data_and_metrics(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     evals_result = {}
     params = {**bst_params, "eval_metric": ["merror", "mlogloss"]}
     evals = [(dtrain, "train"), (dtrain, "valid")]
@@ -347,7 +347,7 @@ def test_xgb_autolog_logs_metrics_with_multi_validation_data_and_metrics(bst_par
 
 
 def test_xgb_autolog_logs_metrics_with_early_stopping(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     evals_result = {}
     params = {**bst_params, "eval_metric": ["merror", "mlogloss"]}
     evals = [(dtrain, "train"), (dtrain, "valid")]
@@ -382,7 +382,7 @@ def test_xgb_autolog_logs_metrics_with_early_stopping(bst_params, dtrain):
 
 
 def test_xgb_autolog_logs_feature_importance(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     model = xgb.train(bst_params, dtrain)
     run = get_latest_run()
     run_id = run.info.run_id
@@ -406,7 +406,7 @@ def test_xgb_autolog_logs_feature_importance(bst_params, dtrain):
 
 def test_xgb_autolog_logs_specified_feature_importance(bst_params, dtrain):
     importance_types = ["weight", "total_gain"]
-    mlflow.xgboost.autolog(importance_types=importance_types)
+    qcflow.xgboost.autolog(importance_types=importance_types)
     model = xgb.train(bst_params, dtrain)
     run = get_latest_run()
     run_id = run.info.run_id
@@ -436,7 +436,7 @@ def test_xgb_autolog_logs_specified_feature_importance(bst_params, dtrain):
     ),
 )
 def test_xgb_autolog_logs_feature_importance_for_linear_boosters(dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
 
     bst_params = {"objective": "multi:softprob", "num_class": 3, "booster": "gblinear"}
     model = xgb.train(bst_params, dtrain)
@@ -462,18 +462,18 @@ def test_xgb_autolog_logs_feature_importance_for_linear_boosters(dtrain):
 
 
 def test_no_figure_is_opened_after_logging(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     xgb.train(bst_params, dtrain)
     assert mpl.pyplot.get_fignums() == []
 
 
 def test_xgb_autolog_loads_model_from_artifact(bst_params, dtrain):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     model = xgb.train(bst_params, dtrain)
     run = get_latest_run()
     run_id = run.info.run_id
 
-    loaded_model = mlflow.xgboost.load_model(f"runs:/{run_id}/model")
+    loaded_model = qcflow.xgboost.load_model(f"runs:/{run_id}/model")
     np.testing.assert_array_almost_equal(model.predict(dtrain), loaded_model.predict(dtrain))
 
 
@@ -489,7 +489,7 @@ def test_xgb_autolog_does_not_throw_if_importance_values_not_supported(dtrain):
     #   where get_score is used to create the importance values plot.
     bst_params = {"objective": "multi:softprob", "num_class": 3, "booster": "gblinear"}
 
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
 
     # we make sure here that we do not throw while attempting to plot
     #   importance values on a model with a linear booster.
@@ -500,7 +500,7 @@ def test_xgb_autolog_does_not_throw_if_importance_values_not_supported(dtrain):
 
 
 def test_xgb_autolog_gets_input_example(bst_params):
-    mlflow.xgboost.autolog(log_input_examples=True)
+    qcflow.xgboost.autolog(log_input_examples=True)
 
     # we cannot use dtrain fixture, as the dataset must be constructed
     #   after the call to autolog() in order to get the input example
@@ -519,14 +519,14 @@ def test_xgb_autolog_gets_input_example(bst_params):
 
     pd.testing.assert_frame_equal(input_example, X[:5])
 
-    pyfunc_model = mlflow.pyfunc.load_model(os.path.join(run.info.artifact_uri, "model"))
+    pyfunc_model = qcflow.pyfunc.load_model(os.path.join(run.info.artifact_uri, "model"))
 
     # make sure reloading the input_example and predicting on it does not error
     pyfunc_model.predict(input_example)
 
 
 def test_xgb_autolog_infers_model_signature_correctly(bst_params):
-    mlflow.xgboost.autolog(log_model_signatures=True)
+    qcflow.xgboost.autolog(log_model_signatures=True)
 
     # we cannot use dtrain fixture, as the dataset must be constructed
     #   after the call to autolog() in order to get the input example
@@ -574,7 +574,7 @@ def test_xgb_autolog_does_not_throw_if_importance_values_are_empty(bst_params, t
         f.write("0,2.4,5.2\n")
         f.write("1,0.3,-1.2\n")
 
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
 
     dataset = xgb.DMatrix(f"{tmp_csv}?format=csv&label_column=0")
 
@@ -592,7 +592,7 @@ def test_xgb_autolog_continues_logging_even_if_signature_inference_fails(bst_par
         f.write("0,2.4,5.2\n")
         f.write("1,0.3,-1.2\n")
 
-    mlflow.xgboost.autolog(importance_types=[], log_model_signatures=True)
+    qcflow.xgboost.autolog(importance_types=[], log_model_signatures=True)
 
     # signature and input example inference should fail here since the dataset is given
     #   as a file path
@@ -619,7 +619,7 @@ def test_xgb_autolog_continues_logging_even_if_signature_inference_fails(bst_par
 
 
 def test_xgb_autolog_does_not_break_dmatrix_serialization(bst_params, tmp_path):
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
 
     # we cannot use dtrain fixture, as the dataset must be constructed
     #   after the call to autolog() in order to test the serialization
@@ -641,8 +641,8 @@ def test_xgb_autolog_configuration_options(bst_params, log_input_examples, log_m
     X = pd.DataFrame(iris.data[:, :2], columns=iris.feature_names[:2])
     y = iris.target
 
-    with mlflow.start_run() as run:
-        mlflow.xgboost.autolog(
+    with qcflow.start_run() as run:
+        qcflow.xgboost.autolog(
             log_input_examples=log_input_examples, log_model_signatures=log_model_signatures
         )
         dataset = xgb.DMatrix(X, y)
@@ -658,8 +658,8 @@ def test_xgb_autolog_log_models_configuration(bst_params, log_models):
     X = pd.DataFrame(iris.data[:, :2], columns=iris.feature_names[:2])
     y = iris.target
 
-    with mlflow.start_run() as run:
-        mlflow.xgboost.autolog(log_models=log_models)
+    with qcflow.start_run() as run:
+        qcflow.xgboost.autolog(log_models=log_models)
         dataset = xgb.DMatrix(X, y)
         xgb.train(bst_params, dataset)
 
@@ -679,7 +679,7 @@ def test_xgb_autolog_does_not_break_dmatrix_instantiation_with_data_none():
     XGBoost internally calls `xgboost.DMatrix(None)` to create a blank `DMatrix` object.
     Example: https://github.com/dmlc/xgboost/blob/v1.2.1/python-package/xgboost/core.py#L701
     """
-    mlflow.xgboost.autolog()
+    qcflow.xgboost.autolog()
     xgb.DMatrix(None)
 
 
@@ -695,7 +695,7 @@ def test_callback_func_is_pickable():
     reason="`xgboost.callback.TrainingCallback` is not supported",
 )
 def test_callback_class_is_pickable():
-    from mlflow.xgboost._autolog import AutologCallback
+    from qcflow.xgboost._autolog import AutologCallback
 
     cb = AutologCallback(BatchMetricsLogger(run_id="1234"), eval_results={})
     pickle.dumps(cb)
@@ -703,13 +703,13 @@ def test_callback_class_is_pickable():
 
 def test_sklearn_api_autolog_registering_model():
     registered_model_name = "test_autolog_registered_model"
-    mlflow.xgboost.autolog(registered_model_name=registered_model_name)
+    qcflow.xgboost.autolog(registered_model_name=registered_model_name)
 
     X, y = datasets.load_iris(return_X_y=True)
     params = {"n_estimators": 10, "reg_lambda": 1}
     model = xgb.XGBRegressor(**params)
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         model.fit(X, y)
 
         registered_model = MlflowClient().get_registered_model(registered_model_name)
@@ -718,9 +718,9 @@ def test_sklearn_api_autolog_registering_model():
 
 def test_xgb_api_autolog_registering_model(bst_params, dtrain):
     registered_model_name = "test_autolog_registered_model"
-    mlflow.xgboost.autolog(registered_model_name=registered_model_name)
+    qcflow.xgboost.autolog(registered_model_name=registered_model_name)
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         xgb.train(bst_params, dtrain)
 
         registered_model = MlflowClient().get_registered_model(registered_model_name)
@@ -729,8 +729,8 @@ def test_xgb_api_autolog_registering_model(bst_params, dtrain):
 
 @pytest.mark.parametrize("model_format", ["xgb", "json", "ubj"])
 def test_xgb_autolog_with_model_format(bst_params, dtrain, model_format):
-    mlflow.xgboost.autolog(log_models=True, model_format=model_format)
-    with mlflow.start_run() as run:
+    qcflow.xgboost.autolog(log_models=True, model_format=model_format)
+    with qcflow.start_run() as run:
         xgb.train(bst_params, dtrain)
     run_id = run.info.run_id
     client = MlflowClient()
@@ -744,8 +744,8 @@ def test_xgb_autolog_with_model_format(bst_params, dtrain, model_format):
 )
 @pytest.mark.parametrize("log_datasets", [True, False])
 def test_xgb_log_datasets(bst_params, dtrain, log_datasets):
-    with mlflow.start_run() as run:
-        mlflow.xgboost.autolog(log_datasets=log_datasets)
+    with qcflow.start_run() as run:
+        qcflow.xgboost.autolog(log_datasets=log_datasets)
         xgb.train(bst_params, dtrain)
 
     run_id = run.info.run_id
@@ -756,7 +756,7 @@ def test_xgb_log_datasets(bst_params, dtrain, log_datasets):
         feature_schema = _infer_schema(dtrain.get_data().toarray())
         assert dataset_inputs[0].dataset.schema == json.dumps(
             {
-                "mlflow_tensorspec": {
+                "qcflow_tensorspec": {
                     "features": feature_schema.to_json(),
                     "targets": None,
                 }
@@ -775,8 +775,8 @@ def test_xgb_log_datasets_with_evals(bst_params, dtrain):
     X = pd.DataFrame(iris.data[:, :2] * 2, columns=iris.feature_names[:2])
     y = iris.target
     deval = xgb.DMatrix(X, y)
-    with mlflow.start_run() as run:
-        mlflow.xgboost.autolog(log_datasets=True)
+    with qcflow.start_run() as run:
+        qcflow.xgboost.autolog(log_datasets=True)
         xgb.train(bst_params, dtrain, evals=[(deval, "eval_dataset")])
 
     run_id = run.info.run_id
@@ -787,7 +787,7 @@ def test_xgb_log_datasets_with_evals(bst_params, dtrain):
     dtrain_feature_schema = _infer_schema(dtrain.get_data().toarray())
     assert dataset_inputs[0].dataset.schema == json.dumps(
         {
-            "mlflow_tensorspec": {
+            "qcflow_tensorspec": {
                 "features": dtrain_feature_schema.to_json(),
                 "targets": None,
             }
@@ -797,7 +797,7 @@ def test_xgb_log_datasets_with_evals(bst_params, dtrain):
     deval_feature_schema = _infer_schema(deval.get_data().toarray())
     assert dataset_inputs[0].dataset.schema == json.dumps(
         {
-            "mlflow_tensorspec": {
+            "qcflow_tensorspec": {
                 "features": deval_feature_schema.to_json(),
                 "targets": None,
             }

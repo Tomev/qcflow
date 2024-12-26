@@ -1,10 +1,10 @@
-package org.mlflow.spark.autologging
+package org.qcflow.spark.autologging
 
 import java.io.File
 import java.nio.file.{Files, Path, Paths}
 import java.util.UUID
 
-import org.apache.spark.mlflow.MlflowSparkAutologgingTestUtils
+import org.apache.spark.qcflow.MlflowSparkAutologgingTestUtils
 import org.apache.spark.sql.execution.ui.SparkListenerSQLExecutionEnd
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
@@ -51,7 +51,7 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
   private def getOrCreateSparkSession(): SparkSession = {
     SparkSession
       .builder()
-      .appName("MLflow Spark Autologging Tests")
+      .appName("QCFlow Spark Autologging Tests")
       .config("spark.master", "local")
       .getOrCreate()
   }

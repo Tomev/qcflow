@@ -4,11 +4,11 @@
 directive @component(name: String!) on QUERY | MUTATION
 
 type Query {
-  mlflowGetExperiment(input: MlflowGetExperimentInput): MlflowGetExperimentResponse
-  mlflowGetMetricHistoryBulkInterval(input: MlflowGetMetricHistoryBulkIntervalInput): MlflowGetMetricHistoryBulkIntervalResponse
-  mlflowGetRun(input: MlflowGetRunInput): MlflowGetRunResponse
-  mlflowListArtifacts(input: MlflowListArtifactsInput): MlflowListArtifactsResponse
-  mlflowSearchModelVersions(input: MlflowSearchModelVersionsInput): MlflowSearchModelVersionsResponse
+  qcflowGetExperiment(input: MlflowGetExperimentInput): MlflowGetExperimentResponse
+  qcflowGetMetricHistoryBulkInterval(input: MlflowGetMetricHistoryBulkIntervalInput): MlflowGetMetricHistoryBulkIntervalResponse
+  qcflowGetRun(input: MlflowGetRunInput): MlflowGetRunResponse
+  qcflowListArtifacts(input: MlflowListArtifactsInput): MlflowListArtifactsResponse
+  qcflowSearchModelVersions(input: MlflowSearchModelVersionsInput): MlflowSearchModelVersionsResponse
 
   """Simple echoing field"""
   test(inputString: String): Test
@@ -229,8 +229,8 @@ type Test {
 }
 
 type Mutation {
-  mlflowSearchDatasets(input: MlflowSearchDatasetsInput): MlflowSearchDatasetsResponse
-  mlflowSearchRuns(input: MlflowSearchRunsInput): MlflowSearchRunsResponse
+  qcflowSearchDatasets(input: MlflowSearchDatasetsInput): MlflowSearchDatasetsResponse
+  qcflowSearchRuns(input: MlflowSearchRunsInput): MlflowSearchRunsResponse
 
   """Simple echoing field"""
   testMutation(inputString: String): TestMutation

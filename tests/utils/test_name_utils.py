@@ -1,4 +1,4 @@
-from mlflow.utils.name_utils import _generate_random_name, _generate_unique_integer_id
+from qcflow.utils.name_utils import _generate_random_name, _generate_unique_integer_id
 
 
 def test_random_name_generation():

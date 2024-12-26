@@ -1,27 +1,27 @@
-import { createMLflowRoutePath, generatePath } from '../common/utils/RoutingUtils';
+import { createQCFlowRoutePath, generatePath } from '../common/utils/RoutingUtils';
 
 // Route path definitions (used in defining route elements)
 export class ModelRegistryRoutePaths {
   static get modelListPage() {
-    return createMLflowRoutePath('/models');
+    return createQCFlowRoutePath('/models');
   }
   static get modelPage() {
-    return createMLflowRoutePath('/models/:modelName');
+    return createQCFlowRoutePath('/models/:modelName');
   }
   static get modelSubpage() {
-    return createMLflowRoutePath('/models/:modelName/:subpage');
+    return createQCFlowRoutePath('/models/:modelName/:subpage');
   }
   static get modelSubpageRouteWithName() {
-    return createMLflowRoutePath('/models/:modelName/:subpage/:name');
+    return createQCFlowRoutePath('/models/:modelName/:subpage/:name');
   }
   static get modelVersionPage() {
-    return createMLflowRoutePath('/models/:modelName/versions/:version');
+    return createQCFlowRoutePath('/models/:modelName/versions/:version');
   }
   static get compareModelVersionsPage() {
-    return createMLflowRoutePath('/compare-model-versions');
+    return createQCFlowRoutePath('/compare-model-versions');
   }
   static get createModel() {
-    return createMLflowRoutePath('/createModel');
+    return createQCFlowRoutePath('/createModel');
   }
 }
 

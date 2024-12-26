@@ -1,6 +1,6 @@
-package org.mlflow.tracking;
+package org.qcflow.tracking;
 
-import org.mlflow.api.proto.Service.*;
+import org.qcflow.api.proto.Service.*;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
- * Represents an active MLflow run and contains APIs to log data to the run.
+ * Represents an active QCFlow run and contains APIs to log data to the run.
  */
 public class ActiveRun {
   private MlflowClient client;
@@ -134,7 +134,7 @@ public class ActiveRun {
    *
    *   <pre>
    *   activeRun.logArtifact("/my/localModel", "model")
-   *   mlflowClient.listArtifacts(activeRun.getId(), "model") // returns "model/localModel"
+   *   qcflowClient.listArtifacts(activeRun.getId(), "model") // returns "model/localModel"
    *   </pre>
    *
    * @param localPath Path of file to upload. Must exist, and must be a simple file
@@ -162,7 +162,7 @@ public class ActiveRun {
    *
    *   <pre>
    *   activeRun.logArtifacts("/my/local/dir", "model")
-   *   mlflowClient.listArtifacts(activeRun.getId(), "model") // returns "model/file1" and
+   *   qcflowClient.listArtifacts(activeRun.getId(), "model") // returns "model/file1" and
    *                                                          // "model/file2"
    *   </pre>
    *
@@ -185,14 +185,14 @@ public class ActiveRun {
   }
 
   /**
-   * Ends the active MLflow run.
+   * Ends the active QCFlow run.
    */
   public void endRun() {
     endRun(RunStatus.FINISHED);
   }
 
   /**
-   * Ends the active MLflow run.
+   * Ends the active QCFlow run.
    *
    * @param status The status of the run.
    */

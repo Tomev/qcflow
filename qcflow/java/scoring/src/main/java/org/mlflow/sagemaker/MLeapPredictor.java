@@ -1,4 +1,4 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
@@ -16,18 +16,18 @@ import ml.combust.mleap.runtime.frame.Transformer;
 import ml.combust.mleap.runtime.javadsl.BundleBuilder;
 import ml.combust.mleap.runtime.javadsl.ContextBuilder;
 import ml.combust.mleap.runtime.javadsl.LeapFrameSupport;
-import org.mlflow.utils.SerializationUtils;
+import org.qcflow.utils.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** A {@link org.mlflow.sagemaker.Predictor} implementation for the MLeap model flavor */
+/** A {@link org.qcflow.sagemaker.Predictor} implementation for the MLeap model flavor */
 public class MLeapPredictor implements Predictor {
   private final Transformer pipelineTransformer;
 
   // As in the `pyfunc` wrapper for Spark models, we expect output dataframes
   // to have a `prediction` column that contains model predictions. Only entries in this
   // column are returned in the response to a query.`pyfunc` reference:
-  // https://github.com/mlflow/mlflow/blob/f4869beec5cd2220d1bf01861d80f7145a8601bf/mlflow/
+  // https://github.com/qcflow/qcflow/blob/f4869beec5cd2220d1bf01861d80f7145a8601bf/qcflow/
   // spark.py#L248
   private static final String PREDICTION_COLUMN_NAME = "prediction";
   private static final Logger logger = LoggerFactory.getLogger(MLeapPredictor.class);

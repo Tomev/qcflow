@@ -1,7 +1,7 @@
-package org.mlflow.mleap;
+package org.qcflow.mleap;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.mlflow.Flavor;
+import org.qcflow.Flavor;
 
 /** Represents an MLeap flavor configuration */
 public class MLeapFlavor implements Flavor {

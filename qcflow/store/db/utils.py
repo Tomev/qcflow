@@ -19,25 +19,25 @@ from sqlalchemy.pool import (
     StaticPool,
 )
 
-from mlflow.environment_variables import (
-    MLFLOW_SQLALCHEMYSTORE_ECHO,
-    MLFLOW_SQLALCHEMYSTORE_MAX_OVERFLOW,
-    MLFLOW_SQLALCHEMYSTORE_POOL_RECYCLE,
-    MLFLOW_SQLALCHEMYSTORE_POOL_SIZE,
-    MLFLOW_SQLALCHEMYSTORE_POOLCLASS,
+from qcflow.environment_variables import (
+    QCFLOW_SQLALCHEMYSTORE_ECHO,
+    QCFLOW_SQLALCHEMYSTORE_MAX_OVERFLOW,
+    QCFLOW_SQLALCHEMYSTORE_POOL_RECYCLE,
+    QCFLOW_SQLALCHEMYSTORE_POOL_SIZE,
+    QCFLOW_SQLALCHEMYSTORE_POOLCLASS,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import BAD_REQUEST, INTERNAL_ERROR, TEMPORARILY_UNAVAILABLE
-from mlflow.store.db.db_types import SQLITE
-from mlflow.store.model_registry.dbmodels.models import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import BAD_REQUEST, INTERNAL_ERROR, TEMPORARILY_UNAVAILABLE
+from qcflow.store.db.db_types import SQLITE
+from qcflow.store.model_registry.dbmodels.models import (
     SqlModelVersion,
     SqlModelVersionTag,
     SqlRegisteredModel,
     SqlRegisteredModelAlias,
     SqlRegisteredModelTag,
 )
-from mlflow.store.tracking.dbmodels.initial_models import Base as InitialBase
-from mlflow.store.tracking.dbmodels.models import (
+from qcflow.store.tracking.dbmodels.initial_models import Base as InitialBase
+from qcflow.store.tracking.dbmodels.models import (
     SqlDataset,
     SqlExperiment,
     SqlExperimentTag,
@@ -59,7 +59,7 @@ MAX_RETRY_COUNT = 10
 
 
 def _get_package_dir():
-    """Returns directory containing MLflow python package."""
+    """Returns directory containing QCFlow python package."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.normpath(os.path.join(current_dir, os.pardir, os.pardir))
 
@@ -93,7 +93,7 @@ def _all_tables_exist(engine):
 
 
 def _initialize_tables(engine):
-    _logger.info("Creating initial MLflow database tables...")
+    _logger.info("Creating initial QCFlow database tables...")
     InitialBase.metadata.create_all(engine)
     _upgrade_db(engine)
 
@@ -119,7 +119,7 @@ def _verify_schema(engine):
         raise MlflowException(
             f"Detected out-of-date database schema (found version {current_rev}, "
             f"but expected {head_revision}). Take a backup of your database, then run "
-            "'mlflow db upgrade <database_uri>' "
+            "'qcflow db upgrade <database_uri>' "
             "to migrate your database to the latest schema. NOTE: schema migration may "
             "result in database downtime - please consult your database's documentation for "
             "more detail."
@@ -176,7 +176,7 @@ def _get_alembic_config(db_url, alembic_dir=None):
             https://docs.sqlalchemy.org/en/13/core/engines.html#database-urls for a full list of
             valid database URLs.
         alembic_dir: Path to migration script directory. Uses canonical migration script
-            directory under mlflow/alembic if unspecified. TODO: remove this argument in MLflow 1.1,
+            directory under qcflow/alembic if unspecified. TODO: remove this argument in QCFlow 1.1,
             as it's only used to run special migrations for pre-1.0 users to remove duplicate
             constraint names.
     """
@@ -198,7 +198,7 @@ def _get_alembic_config(db_url, alembic_dir=None):
 
 def _upgrade_db(engine):  # noqa: D417
     """
-    Upgrade the schema of an MLflow tracking database to the latest supported version.
+    Upgrade the schema of an QCFlow tracking database to the latest supported version.
     Note that schema migrations can be slow and are not guaranteed to be transactional -
     we recommend taking a backup of your database before running migrations.
 
@@ -252,11 +252,11 @@ def create_sqlalchemy_engine_with_retry(db_uri):
 
 
 def create_sqlalchemy_engine(db_uri):
-    pool_size = MLFLOW_SQLALCHEMYSTORE_POOL_SIZE.get()
-    pool_max_overflow = MLFLOW_SQLALCHEMYSTORE_MAX_OVERFLOW.get()
-    pool_recycle = MLFLOW_SQLALCHEMYSTORE_POOL_RECYCLE.get()
-    echo = MLFLOW_SQLALCHEMYSTORE_ECHO.get()
-    poolclass = MLFLOW_SQLALCHEMYSTORE_POOLCLASS.get()
+    pool_size = QCFLOW_SQLALCHEMYSTORE_POOL_SIZE.get()
+    pool_max_overflow = QCFLOW_SQLALCHEMYSTORE_MAX_OVERFLOW.get()
+    pool_recycle = QCFLOW_SQLALCHEMYSTORE_POOL_RECYCLE.get()
+    echo = QCFLOW_SQLALCHEMYSTORE_ECHO.get()
+    poolclass = QCFLOW_SQLALCHEMYSTORE_POOLCLASS.get()
     pool_kwargs = {}
     # Send argument only if they have been injected.
     # Some engine does not support them (for example sqllite)

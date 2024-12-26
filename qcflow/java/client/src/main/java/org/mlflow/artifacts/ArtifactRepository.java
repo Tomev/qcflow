@@ -1,13 +1,13 @@
-package org.mlflow.artifacts;
+package org.qcflow.artifacts;
 
 import java.io.File;
 import java.util.List;
 
-import org.mlflow.api.proto.Service.FileInfo;
+import org.qcflow.api.proto.Service.FileInfo;
 
 /**
  * Allows logging, listing, and downloading artifacts against a remote Artifact Repository.
- * This is used for storing potentially-large objects associated with MLflow runs.
+ * This is used for storing potentially-large objects associated with QCFlow runs.
  */
 public interface ArtifactRepository {
 

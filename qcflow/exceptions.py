@@ -2,7 +2,7 @@ import json
 import logging
 from typing import Optional
 
-from mlflow.protos.databricks_pb2 import (
+from qcflow.protos.databricks_pb2 import (
     ABORTED,
     ALREADY_EXISTS,
     BAD_REQUEST,
@@ -80,7 +80,7 @@ class MlflowException(Exception):
                 included in the exception's serialized JSON representation.
             error_code: An appropriate error code for the error that occurred; it will be
                 included in the exception's serialized JSON representation. This should
-                be one of the codes listed in the `mlflow.protos.databricks_pb2` proto.
+                be one of the codes listed in the `qcflow.protos.databricks_pb2` proto.
             kwargs: Additional key-value pairs to include in the serialized JSON representation
                 of the MlflowException.
         """
@@ -136,8 +136,8 @@ class RestException(MlflowException):
                 super().__init__(message, error_code=ErrorCode.Value(error_code))
             except ValueError or KeyError:
                 _logger.warning(
-                    f"Received error code not recognized by MLflow: {error_code}, this may "
-                    "indicate your request encountered an error before reaching MLflow server, "
+                    f"Received error code not recognized by QCFlow: {error_code}, this may "
+                    "indicate your request encountered an error before reaching QCFlow server, "
                     "e.g., within a proxy server or authentication / authorization service."
                 )
                 super().__init__(message)

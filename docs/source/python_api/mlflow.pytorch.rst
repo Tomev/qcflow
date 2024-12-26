@@ -1,7 +1,7 @@
-mlflow.pytorch
+qcflow.pytorch
 ==================
 
-.. automodule:: mlflow.pytorch
+.. automodule:: qcflow.pytorch
     :members:
     :undoc-members:
     :show-inheritance:

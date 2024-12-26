@@ -6,10 +6,10 @@ import threading
 import time
 from typing import Any, Callable, Optional
 
-import mlflow
-from mlflow.entities import Metric
-from mlflow.tracking.client import MlflowClient
-from mlflow.utils.validation import MAX_METRICS_PER_BATCH
+import qcflow
+from qcflow.entities import Metric
+from qcflow.tracking.client import MlflowClient
+from qcflow.utils.validation import MAX_METRICS_PER_BATCH
 
 # Define the module-level logger for autologging utilities before importing utilities defined in
 # submodules (e.g., `safety`, `events`) that depend on the module-level logger. Add the `noqa: E402`
@@ -17,18 +17,18 @@ from mlflow.utils.validation import MAX_METRICS_PER_BATCH
 _logger = logging.getLogger(__name__)
 
 # Import autologging utilities used by this module
-from mlflow.ml_package_versions import _ML_PACKAGE_VERSIONS, FLAVOR_TO_MODULE_NAME
-from mlflow.utils.autologging_utils.client import MlflowAutologgingQueueingClient  # noqa: F401
-from mlflow.utils.autologging_utils.events import AutologgingEventLogger
-from mlflow.utils.autologging_utils.logging_and_warnings import (
-    set_mlflow_events_and_warnings_behavior_globally,
-    set_non_mlflow_warnings_behavior_for_current_thread,
+from qcflow.ml_package_versions import _ML_PACKAGE_VERSIONS, FLAVOR_TO_MODULE_NAME
+from qcflow.utils.autologging_utils.client import MlflowAutologgingQueueingClient  # noqa: F401
+from qcflow.utils.autologging_utils.events import AutologgingEventLogger
+from qcflow.utils.autologging_utils.logging_and_warnings import (
+    set_qcflow_events_and_warnings_behavior_globally,
+    set_non_qcflow_warnings_behavior_for_current_thread,
 )
 
 # Wildcard import other autologging utilities (e.g. safety utilities, event logging utilities) used
 # in autologging integration implementations, which reference them via the
-# `mlflow.utils.autologging_utils` module
-from mlflow.utils.autologging_utils.safety import (  # noqa: F401
+# `qcflow.utils.autologging_utils` module
+from qcflow.utils.autologging_utils.safety import (  # noqa: F401
     ExceptionSafeAbstractClass,
     ExceptionSafeClass,
     PatchFunction,
@@ -40,7 +40,7 @@ from mlflow.utils.autologging_utils.safety import (  # noqa: F401
     update_wrapper_extended,
     with_managed_run,
 )
-from mlflow.utils.autologging_utils.versioning import (
+from qcflow.utils.autologging_utils.versioning import (
     get_min_max_version_and_pip_release,
     is_flavor_supported_for_associated_package_versions,
 )
@@ -55,8 +55,8 @@ _AUTOLOGGING_GLOBALLY_DISABLED = False
 
 # Autologging config key indicating whether or not a particular autologging integration
 # was configured (i.e. its various `log_models`, `disable`, etc. configuration options
-# were set) via a call to `mlflow.autolog()`, rather than via a call to the integration-specific
-# autologging method (e.g., `mlflow.tensorflow.autolog()`, ...)
+# were set) via a call to `qcflow.autolog()`, rather than via a call to the integration-specific
+# autologging method (e.g., `qcflow.tensorflow.autolog()`, ...)
 AUTOLOGGING_CONF_KEY_IS_GLOBALLY_CONFIGURED = "globally_configured"
 
 # Dict mapping integration name to its config.
@@ -65,7 +65,7 @@ AUTOLOGGING_INTEGRATIONS = {}
 # When the library version installed in the user's environment is outside of the supported
 # version range declared in `ml-package-versions.yml`, a warning message is issued to the user.
 # However, some libraries releases versions very frequently, and our configuration (updated on
-# MLflow release) cannot keep up with the pace, resulting in false alarms. Therefore, we
+# QCFlow release) cannot keep up with the pace, resulting in false alarms. Therefore, we
 # suppress warnings for certain libraries that are known to have frequent releases.
 _AUTOLOGGING_SUPPORTED_VERSION_WARNING_SUPPRESS_LIST = [
     "langchain",
@@ -94,8 +94,8 @@ def autologging_conf_lock(fn):
     return update_wrapper_extended(wrapper, fn)
 
 
-def get_mlflow_run_params_for_fn_args(fn, args, kwargs, unlogged=None):
-    """Given arguments explicitly passed to a function, generate a dictionary of MLflow Run
+def get_qcflow_run_params_for_fn_args(fn, args, kwargs, unlogged=None):
+    """Given arguments explicitly passed to a function, generate a dictionary of QCFlow Run
     parameter key / value pairs.
 
     Args:
@@ -107,7 +107,7 @@ def get_mlflow_run_params_for_fn_args(fn, args, kwargs, unlogged=None):
         unlogged: parameters not to be logged.
 
     Returns:
-        A dictionary of MLflow Run parameter key / value pairs.
+        A dictionary of QCFlow Run parameter key / value pairs.
     """
     unlogged = unlogged or []
     param_spec = inspect.signature(fn).parameters
@@ -137,8 +137,8 @@ def get_mlflow_run_params_for_fn_args(fn, args, kwargs, unlogged=None):
 
 
 def log_fn_args_as_params(fn, args, kwargs, unlogged=None):
-    """Log arguments explicitly passed to a function as MLflow Run parameters to the current active
-    MLflow Run.
+    """Log arguments explicitly passed to a function as QCFlow Run parameters to the current active
+    QCFlow Run.
 
     Args:
         fn: function whose parameters are to be logged
@@ -152,8 +152,8 @@ def log_fn_args_as_params(fn, args, kwargs, unlogged=None):
         None
 
     """
-    params_to_log = get_mlflow_run_params_for_fn_args(fn, args, kwargs, unlogged)
-    mlflow.log_params(params_to_log)
+    params_to_log = get_qcflow_run_params_for_fn_args(fn, args, kwargs, unlogged)
+    qcflow.log_params(params_to_log)
 
 
 class InputExampleInfo:
@@ -240,11 +240,11 @@ def resolve_input_example_and_signature(
 
 class BatchMetricsLogger:
     """
-    The BatchMetricsLogger will log metrics in batch against an mlflow run.
+    The BatchMetricsLogger will log metrics in batch against an qcflow run.
     If run_id is passed to to constructor then all recording and logging will
     happen against that run_id.
     If no run_id is passed into constructor, then the run ID will be fetched
-    from `mlflow.active_run()` each time `record_metrics()` or `flush()` is called; in this
+    from `qcflow.active_run()` each time `record_metrics()` or `flush()` is called; in this
     case, callers must ensure that an active run is present before invoking
     `record_metrics()` or `flush()`.
     """
@@ -261,14 +261,14 @@ class BatchMetricsLogger:
 
     def flush(self):
         """
-        The metrics accumulated by BatchMetricsLogger will be batch logged to an MLflow run.
+        The metrics accumulated by BatchMetricsLogger will be batch logged to an QCFlow run.
         """
         self._timed_log_batch()
         self.data = []
 
     def _timed_log_batch(self):
-        # Retrieving run_id from active mlflow run when run_id is empty.
-        current_run_id = mlflow.active_run().info.run_id if self.run_id is None else self.run_id
+        # Retrieving run_id from active qcflow run when run_id is empty.
+        current_run_id = qcflow.active_run().info.run_id if self.run_id is None else self.run_id
 
         start = time.time()
         metrics_slices = [
@@ -378,10 +378,10 @@ def _check_and_log_warning_for_unsupported_package_versions(integration_name):
         min_var, max_var, pip_release = get_min_max_version_and_pip_release(integration_name)
         module = importlib.import_module(FLAVOR_TO_MODULE_NAME[integration_name])
         _logger.warning(
-            f"MLflow {integration_name} autologging is known to be compatible with "
+            f"QCFlow {integration_name} autologging is known to be compatible with "
             f"{min_var} <= {pip_release} <= {max_var}, but the installed version is "
             f"{module.__version__}. If you encounter errors during autologging, try upgrading "
-            f"/ downgrading {pip_release} to a compatible version, or try upgrading MLflow.",
+            f"/ downgrading {pip_release} to a compatible version, or try upgrading QCFlow.",
         )
 
 
@@ -426,7 +426,7 @@ def autologging_integration(name):
                 # Pass `autolog()` arguments to `log_autolog_called` in keyword format to enable
                 # event loggers to more easily identify important configuration parameters
                 # (e.g., `disable`) without examining positional arguments. Passing positional
-                # arguments to `log_autolog_called` is deprecated in MLflow > 1.13.1
+                # arguments to `log_autolog_called` is deprecated in QCFlow > 1.13.1
                 AutologgingEventLogger.get_logger().log_autolog_called(name, (), config_to_store)
             except Exception:
                 pass
@@ -435,17 +435,17 @@ def autologging_integration(name):
 
             # If disabling autologging using fluent api, then every active integration's autolog
             # needs to be called with disable=True. So do not short circuit and let
-            # `mlflow.autolog()` invoke all active integrations with disable=True.
-            if name != "mlflow" and get_autologging_config(name, "disable", True):
+            # `qcflow.autolog()` invoke all active integrations with disable=True.
+            if name != "qcflow" and get_autologging_config(name, "disable", True):
                 return
 
             is_silent_mode = get_autologging_config(name, "silent", False)
-            # Reroute non-MLflow warnings encountered during autologging enablement to an
-            # MLflow event logger, and enforce silent mode if applicable (i.e. if the corresponding
+            # Reroute non-QCFlow warnings encountered during autologging enablement to an
+            # QCFlow event logger, and enforce silent mode if applicable (i.e. if the corresponding
             # autologging integration was called with `silent=True`)
             with (
-                set_mlflow_events_and_warnings_behavior_globally(
-                    # MLflow warnings emitted during autologging setup / enablement are likely
+                set_qcflow_events_and_warnings_behavior_globally(
+                    # QCFlow warnings emitted during autologging setup / enablement are likely
                     # actionable and relevant to the user, so they should be emitted as normal
                     # when `silent=False`. For reference, see recommended warning and event logging
                     # behaviors from https://docs.python.org/3/howto/logging.html#when-to-use-logging
@@ -453,8 +453,8 @@ def autologging_integration(name):
                     disable_event_logs=is_silent_mode,
                     disable_warnings=is_silent_mode,
                 ),
-                set_non_mlflow_warnings_behavior_for_current_thread(
-                    # non-MLflow warnings emitted during autologging setup / enablement are not
+                set_non_qcflow_warnings_behavior_for_current_thread(
+                    # non-QCFlow warnings emitted during autologging setup / enablement are not
                     # actionable for the user, as they are a byproduct of the autologging
                     # implementation. Accordingly, they should be rerouted to `logger.warning()`.
                     # For reference, see recommended warning and event logging
@@ -470,7 +470,7 @@ def autologging_integration(name):
         wrapped_autolog = update_wrapper_extended(autolog, _autolog)
         # Set the autologging integration name as a function attribute on the wrapped autologging
         # function, allowing the integration name to be extracted from the function. This is used
-        # during the execution of import hooks for `mlflow.autolog()`.
+        # during the execution of import hooks for `qcflow.autolog()`.
         wrapped_autolog.integration_name = name
 
         if name in FLAVOR_TO_MODULE_NAME:
@@ -539,7 +539,7 @@ def get_autolog_function(integration_name: str) -> Optional[Callable[..., Any]]:
     Get the autolog() function for the specified integration.
     Returns None if the flavor does not have an autolog() function.
     """
-    flavor_module = importlib.import_module(f"mlflow.{integration_name}")
+    flavor_module = importlib.import_module(f"qcflow.{integration_name}")
     return getattr(flavor_module, "autolog", None)
 
 
@@ -563,7 +563,7 @@ def disable_discrete_autologging(flavors_to_disable: list[str]) -> None:
     Context manager for disabling specific autologging integrations temporarily while another
     flavor's autologging is activated. This context wrapper is useful in the event that, for
     example, a particular library calls upon another library within a training API that has a
-    current MLflow autologging integration.
+    current QCFlow autologging integration.
     For instance, the transformers library's Trainer class, when running metric scoring,
     builds a sklearn model and runs evaluations as part of its accuracy scoring. Without this
     temporary autologging disabling, a new run will be generated that contains a sklearn model
@@ -579,11 +579,11 @@ def disable_discrete_autologging(flavors_to_disable: list[str]) -> None:
     for flavor in flavors_to_disable:
         if not autologging_is_disabled(flavor):
             enabled_flavors.append(flavor)
-            autolog_func = getattr(mlflow, flavor)
+            autolog_func = getattr(qcflow, flavor)
             autolog_func.autolog(disable=True)
     yield
     for flavor in enabled_flavors:
-        autolog_func = getattr(mlflow, flavor)
+        autolog_func = getattr(qcflow, flavor)
         autolog_func.autolog(disable=False)
 
 

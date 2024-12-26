@@ -23,7 +23,7 @@ export const ModelsHeaderCellRenderer = React.memo(() => {
         title={
           <FormattedMessage
             defaultMessage="Click into an individual run to see all models associated with it"
-            description='MLflow experiment detail page > runs table > tooltip on ML "Models" column header'
+            description='QCFlow experiment detail page > runs table > tooltip on ML "Models" column header'
           />
         }
       >

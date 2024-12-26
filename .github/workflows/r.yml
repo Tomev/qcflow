@@ -20,22 +20,22 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MLFLOW_HOME: /home/runner/work/mlflow/mlflow
+  QCFLOW_HOME: /home/runner/work/qcflow/qcflow
 
 jobs:
   r:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     permissions: {}
-    if: github.event_name == 'push' || (github.event_name == 'schedule' && github.repository == 'mlflow-automation/mlflow') || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    if: github.event_name == 'push' || (github.event_name == 'schedule' && github.repository == 'qcflow-automation/qcflow') || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
     defaults:
       run:
         shell: bash --noprofile --norc -exo pipefail {0}
-        working-directory: mlflow/R/mlflow
+        working-directory: qcflow/R/qcflow
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: ${{ github.event_name == 'schedule' && 'mlflow/mlflow' || null }}
+          repository: ${{ github.event_name == 'schedule' && 'qcflow/qcflow' || null }}
           submodules: recursive
       - uses: ./.github/actions/setup-python
       - uses: ./.github/actions/setup-pyenv
@@ -62,7 +62,7 @@ jobs:
           path: ${{ env.R_LIBS_USER }}
           # We cache R dependencies based on a tuple of the current OS, the R version, and the list of
           # R dependencies
-          key: ${{ steps.os-name.outputs.os-name }}-${{ hashFiles('mlflow/R/mlflow/R-version') }}-0-${{ hashFiles('mlflow/R/mlflow/depends.Rds') }}
+          key: ${{ steps.os-name.outputs.os-name }}-${{ hashFiles('qcflow/R/qcflow/R-version') }}-0-${{ hashFiles('qcflow/R/qcflow/depends.Rds') }}
       - name: Install dependencies
         run: |
           sudo apt-get install -y libcurl4-openssl-dev libharfbuzz-dev libfribidi-dev
@@ -88,7 +88,7 @@ jobs:
           H2O_VERSION=$(Rscript -e "print(packageVersion('h2o'))" | grep -Eo '[0-9][0-9.]+')
           # test-keras-model.R fails with tensorflow>=2.13.0
           pip install xgboost 'tensorflow<2.13.0' "h2o==$H2O_VERSION" "pydantic<3,>=1.0" "typing_extensions>=4.6.0"
-          Rscript -e 'source(".install-mlflow-r.R", echo=TRUE)'
+          Rscript -e 'source(".install-qcflow-r.R", echo=TRUE)'
       - name: Run tests
         env:
           LINTR_COMMENT_BOT: false

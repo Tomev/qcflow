@@ -23,7 +23,7 @@ from transformers import (
     pipeline,
 )
 
-import mlflow
+import qcflow
 
 
 @pytest.fixture
@@ -65,13 +65,13 @@ def setfit_trainer():
 
     # setfit >= 1.1.0 defines an internal BCSentenceTransformersTrainer
     # which directly uses transformers.Trainer, and the default callbacks
-    # include MLflowCallback, so it produces extra runs no matter autologging
+    # include QCFlowCallback, so it produces extra runs no matter autologging
     # is on or off
     # ref: https://github.com/huggingface/transformers/blob/11c27dd331151e7d2ac20016cce11d9d7c4b1756/src/transformers/integrations/integration_utils.py#L2138
     if Version(setfit.__version__) >= Version("1.1.0"):
-        from transformers.integrations.integration_utils import MLflowCallback
+        from transformers.integrations.integration_utils import QCFlowCallback
 
-        trainer.remove_callback(MLflowCallback)
+        trainer.remove_callback(QCFlowCallback)
 
     return trainer
 
@@ -291,11 +291,11 @@ skip_setfit = pytest.mark.skipif(
 
 @skip_setfit
 def test_setfit_does_not_autolog(setfit_trainer):
-    mlflow.autolog()
+    qcflow.autolog()
 
     setfit_trainer.train()
 
-    last_run = mlflow.last_active_run()
+    last_run = qcflow.last_active_run()
     assert not last_run
     preds = setfit_trainer.model(
         ["Always carry a towel!", "The hobbits are going to Isengard", "What's tatoes, precious?"]
@@ -305,13 +305,13 @@ def test_setfit_does_not_autolog(setfit_trainer):
 
 @skip_setfit
 def test_transformers_trainer_does_not_autolog_sklearn(transformers_trainer):
-    mlflow.sklearn.autolog()
+    qcflow.sklearn.autolog()
 
-    exp = mlflow.set_experiment(experiment_name="trainer_autolog_test")
+    exp = qcflow.set_experiment(experiment_name="trainer_autolog_test")
 
     transformers_trainer.train()
 
-    last_run = mlflow.last_active_run()
+    last_run = qcflow.last_active_run()
     assert last_run.data.metrics["epoch"] == 1.0
     assert last_run.data.params["_name_or_path"] == "distilbert-base-uncased"
 
@@ -322,29 +322,29 @@ def test_transformers_trainer_does_not_autolog_sklearn(transformers_trainer):
     )
     assert len(pipe("This is wonderful!")[0]["label"]) > 5  # Checking for 'LABEL_0' or 'LABEL_1'
 
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     runs = client.search_runs([exp.experiment_id])
     assert len(runs) == 1
 
 
 @skip_setfit
 def test_transformers_autolog_adheres_to_global_behavior_using_setfit(setfit_trainer):
-    mlflow.transformers.autolog(disable=False)
+    qcflow.transformers.autolog(disable=False)
 
     setfit_trainer.train()
-    assert len(mlflow.search_runs()) == 0
+    assert len(qcflow.search_runs()) == 0
     preds = setfit_trainer.model(["Jim, I'm a doctor, not an archaeologist!"])
     assert len(preds) == 1
 
 
 def test_transformers_autolog_adheres_to_global_behavior_using_trainer(transformers_trainer):
-    mlflow.transformers.autolog()
+    qcflow.transformers.autolog()
 
-    exp = mlflow.set_experiment(experiment_name="autolog_with_trainer")
+    exp = qcflow.set_experiment(experiment_name="autolog_with_trainer")
 
     transformers_trainer.train()
 
-    last_run = mlflow.last_active_run()
+    last_run = qcflow.last_active_run()
     assert last_run.data.metrics["epoch"] == 1.0
     assert last_run.data.params["model_type"] == "distilbert"
 
@@ -357,7 +357,7 @@ def test_transformers_autolog_adheres_to_global_behavior_using_trainer(transform
     assert len(preds) == 2
     assert all(x["score"] > 0 for x in preds)
 
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     runs = client.search_runs([exp.experiment_id])
     assert len(runs) == 1
 
@@ -366,9 +366,9 @@ def test_transformers_autolog_adheres_to_global_behavior_using_trainer(transform
 def test_active_autolog_no_setfit_logging_followed_by_successful_sklearn_autolog(
     iris_data, setfit_trainer
 ):
-    mlflow.autolog()
+    qcflow.autolog()
 
-    exp = mlflow.set_experiment(experiment_name="setfit_with_sklearn")
+    exp = qcflow.set_experiment(experiment_name="setfit_with_sklearn")
 
     # Train and evaluate
     setfit_trainer.train()
@@ -385,30 +385,30 @@ def test_active_autolog_no_setfit_logging_followed_by_successful_sklearn_autolog
     assert len(preds) == 2
 
     # Test that autologging works for a simple sklearn model (local disabling functions)
-    with mlflow.start_run(experiment_id=exp.experiment_id) as run:
+    with qcflow.start_run(experiment_id=exp.experiment_id) as run:
         model = sklearn.cluster.KMeans()
         X, y = iris_data
         model.fit(X, y)
 
-    logged_sklearn_data = mlflow.get_run(run.info.run_id)
+    logged_sklearn_data = qcflow.get_run(run.info.run_id)
     assert logged_sklearn_data.data.tags["estimator_name"] == "KMeans"
 
     # Assert only the sklearn KMeans model was logged to the experiment
 
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     runs = client.search_runs([exp.experiment_id])
     assert len(runs) == 1
     assert runs[0].info == logged_sklearn_data.info
 
 
 def test_active_autolog_allows_subsequent_sklearn_autolog(iris_data, transformers_trainer):
-    mlflow.autolog()
+    qcflow.autolog()
 
-    exp = mlflow.set_experiment(experiment_name="trainer_with_sklearn")
+    exp = qcflow.set_experiment(experiment_name="trainer_with_sklearn")
 
     transformers_trainer.train()
 
-    last_run = mlflow.last_active_run()
+    last_run = qcflow.last_active_run()
     assert last_run.data.metrics["epoch"] == 1.0
     assert last_run.data.params["model_type"] == "distilbert"
 
@@ -421,17 +421,17 @@ def test_active_autolog_allows_subsequent_sklearn_autolog(iris_data, transformer
     assert len(preds) == 2
     assert all(x["score"] > 0 for x in preds)
 
-    with mlflow.start_run(experiment_id=exp.experiment_id) as run:
+    with qcflow.start_run(experiment_id=exp.experiment_id) as run:
         model = sklearn.cluster.KMeans()
         X, y = iris_data
         model.fit(X, y)
 
-    logged_sklearn_data = mlflow.get_run(run.info.run_id)
+    logged_sklearn_data = qcflow.get_run(run.info.run_id)
     assert logged_sklearn_data.data.tags["estimator_name"] == "KMeans"
 
     # Assert only the sklearn KMeans model was logged to the experiment
 
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     runs = client.search_runs([exp.experiment_id])
     assert len(runs) == 2
     sklearn_run = [x for x in runs if x.info.run_id == run.info.run_id]
@@ -442,10 +442,10 @@ def test_active_autolog_allows_subsequent_sklearn_autolog(iris_data, transformer
 def test_disabled_sklearn_autologging_does_not_revert_to_enabled_with_setfit(
     iris_data, setfit_trainer
 ):
-    mlflow.autolog()
-    mlflow.sklearn.autolog(disable=True)
+    qcflow.autolog()
+    qcflow.sklearn.autolog(disable=True)
 
-    exp = mlflow.set_experiment(experiment_name="setfit_with_sklearn_no_autologging")
+    exp = qcflow.set_experiment(experiment_name="setfit_with_sklearn_no_autologging")
 
     # Train and evaluate
     setfit_trainer.train()
@@ -462,18 +462,18 @@ def test_disabled_sklearn_autologging_does_not_revert_to_enabled_with_setfit(
     assert len(preds) == 2
 
     # Test that autologging does not log since it is manually disabled above.
-    with mlflow.start_run(experiment_id=exp.experiment_id) as run:
+    with qcflow.start_run(experiment_id=exp.experiment_id) as run:
         model = sklearn.cluster.KMeans()
         X, y = iris_data
         model.fit(X, y)
 
     # Assert that only the run info is logged
-    logged_sklearn_data = mlflow.get_run(run.info.run_id)
+    logged_sklearn_data = qcflow.get_run(run.info.run_id)
 
     assert logged_sklearn_data.data.params == {}
     assert logged_sklearn_data.data.metrics == {}
 
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     runs = client.search_runs([exp.experiment_id])
 
     assert len(runs) == 1
@@ -481,15 +481,15 @@ def test_disabled_sklearn_autologging_does_not_revert_to_enabled_with_setfit(
 
 
 def test_disable_sklearn_autologging_does_not_revert_with_trainer(iris_data, transformers_trainer):
-    mlflow.autolog()
-    mlflow.sklearn.autolog(disable=True)
+    qcflow.autolog()
+    qcflow.sklearn.autolog(disable=True)
 
-    exp = mlflow.set_experiment(experiment_name="trainer_with_sklearn")
+    exp = qcflow.set_experiment(experiment_name="trainer_with_sklearn")
 
     transformers_trainer.train()
-    mlflow.flush_async_logging()
+    qcflow.flush_async_logging()
 
-    last_run = mlflow.last_active_run()
+    last_run = qcflow.last_active_run()
     assert last_run.data.metrics["epoch"] == 1.0
     assert last_run.data.params["model_type"] == "distilbert"
 
@@ -505,18 +505,18 @@ def test_disable_sklearn_autologging_does_not_revert_with_trainer(iris_data, tra
     assert all(x["score"] > 0 for x in preds)
 
     # Test that autologging does not log since it is manually disabled above.
-    with mlflow.start_run(experiment_id=exp.experiment_id) as run:
+    with qcflow.start_run(experiment_id=exp.experiment_id) as run:
         model = sklearn.cluster.KMeans()
         X, y = iris_data
         model.fit(X, y)
 
     # Assert that only the run info is logged
-    logged_sklearn_data = mlflow.get_run(run.info.run_id)
+    logged_sklearn_data = qcflow.get_run(run.info.run_id)
 
     assert logged_sklearn_data.data.params == {}
     assert logged_sklearn_data.data.metrics == {}
 
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     runs = client.search_runs([exp.experiment_id])
 
     assert len(runs) == 2
@@ -527,14 +527,14 @@ def test_disable_sklearn_autologging_does_not_revert_with_trainer(iris_data, tra
 def test_trainer_hyperparameter_tuning_does_not_log_sklearn_model(
     transformers_hyperparameter_trainer,
 ):
-    mlflow.autolog()
+    qcflow.autolog()
 
-    exp = mlflow.set_experiment(experiment_name="hyperparam_trainer")
+    exp = qcflow.set_experiment(experiment_name="hyperparam_trainer")
 
     transformers_hyperparameter_trainer.train()
-    mlflow.flush_async_logging()
+    qcflow.flush_async_logging()
 
-    last_run = mlflow.last_active_run()
+    last_run = qcflow.last_active_run()
     assert last_run.data.metrics["epoch"] == 3.0
     assert last_run.data.params["model_type"] == "distilbert"
 
@@ -545,7 +545,7 @@ def test_trainer_hyperparameter_tuning_does_not_log_sklearn_model(
     )
     assert len(pipe("This is wonderful!")[0]["label"]) > 5  # checking for 'LABEL_0' or 'LABEL_1'
 
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     runs = client.search_runs([exp.experiment_id])
 
     assert len(runs) == 1
@@ -554,14 +554,14 @@ def test_trainer_hyperparameter_tuning_does_not_log_sklearn_model(
 def test_trainer_hyperparameter_tuning_functional_does_not_log_sklearn_model(
     transformers_hyperparameter_functional,
 ):
-    mlflow.autolog()
+    qcflow.autolog()
 
-    exp = mlflow.set_experiment(experiment_name="hyperparam_trainer_functional")
+    exp = qcflow.set_experiment(experiment_name="hyperparam_trainer_functional")
 
     transformers_hyperparameter_functional.train()
-    mlflow.flush_async_logging()
+    qcflow.flush_async_logging()
 
-    last_run = mlflow.last_active_run()
+    last_run = qcflow.last_active_run()
     assert last_run.data.metrics["epoch"] == 1.0
     assert last_run.data.params["model_type"] == "distilbert"
 
@@ -572,7 +572,7 @@ def test_trainer_hyperparameter_tuning_functional_does_not_log_sklearn_model(
     )
     assert len(pipe("This is wonderful!")[0]["label"]) > 5  # checking for 'LABEL_0' or 'LABEL_1'
 
-    client = mlflow.MlflowClient()
+    client = qcflow.MlflowClient()
     runs = client.search_runs([exp.experiment_id])
 
     assert len(runs) == 1

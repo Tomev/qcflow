@@ -1,8 +1,8 @@
-from mlflow import __version__
-from mlflow.tracking.request_header.abstract_request_header_provider import RequestHeaderProvider
+from qcflow import __version__
+from qcflow.tracking.request_header.abstract_request_header_provider import RequestHeaderProvider
 
 _USER_AGENT = "User-Agent"
-_DEFAULT_HEADERS = {_USER_AGENT: f"mlflow-python-client/{__version__}"}
+_DEFAULT_HEADERS = {_USER_AGENT: f"qcflow-python-client/{__version__}"}
 
 
 class DefaultRequestHeaderProvider(RequestHeaderProvider):

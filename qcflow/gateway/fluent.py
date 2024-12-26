@@ -1,16 +1,16 @@
 from typing import Any, Optional
 
-from mlflow.gateway.client import MlflowGatewayClient
-from mlflow.gateway.config import LimitsConfig, Route
-from mlflow.gateway.constants import MLFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
-from mlflow.gateway.utils import gateway_deprecated
-from mlflow.utils import get_results_from_paginated_fn
+from qcflow.gateway.client import MlflowGatewayClient
+from qcflow.gateway.config import LimitsConfig, Route
+from qcflow.gateway.constants import QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
+from qcflow.gateway.utils import gateway_deprecated
+from qcflow.utils import get_results_from_paginated_fn
 
 
 @gateway_deprecated
 def get_route(name: str) -> Route:
     """
-    Retrieves a specific route from the MLflow Gateway service.
+    Retrieves a specific route from the QCFlow Gateway service.
 
     This function creates an instance of MlflowGatewayClient and uses it to fetch a route by its
     name from the Gateway service.
@@ -28,7 +28,7 @@ def get_route(name: str) -> Route:
 @gateway_deprecated
 def search_routes() -> list[Route]:
     """
-    Searches for routes in the MLflow Gateway service.
+    Searches for routes in the QCFlow Gateway service.
 
     This function creates an instance of MlflowGatewayClient and uses it to fetch a list of routes
     from the Gateway service.
@@ -43,7 +43,7 @@ def search_routes() -> list[Route]:
 
     return get_results_from_paginated_fn(
         paginated_fn=pagination_wrapper_func,
-        max_results_per_page=MLFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE,
+        max_results_per_page=QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE,
         max_results=None,
     )
 
@@ -79,14 +79,14 @@ def create_route(
 
     .. note::
 
-        See the official Databricks documentation for MLflow Gateway for examples of supported
+        See the official Databricks documentation for QCFlow Gateway for examples of supported
         model configurations and how to dynamically create new routes within Databricks.
 
     Example usage from within Databricks:
 
     .. code-block:: python
 
-        from mlflow.gateway import set_gateway_uri, create_route
+        from qcflow.gateway import set_gateway_uri, create_route
 
         set_gateway_uri(gateway_uri="databricks")
 
@@ -125,7 +125,7 @@ def delete_route(name: str) -> None:
 
     .. code-block:: python
 
-        from mlflow.gateway import set_gateway_uri, delete_route
+        from qcflow.gateway import set_gateway_uri, delete_route
 
         set_gateway_uri(gateway_uri="databricks")
 
@@ -151,7 +151,7 @@ def set_limits(route: str, limits: list[dict[str, Any]]) -> LimitsConfig:
 
     .. code-block:: python
 
-        from mlflow.gateway import set_gateway_uri, set_limits
+        from qcflow.gateway import set_gateway_uri, set_limits
 
         set_gateway_uri(gateway_uri="databricks")
 
@@ -176,7 +176,7 @@ def get_limits(route: str) -> LimitsConfig:
 
     .. code-block:: python
 
-        from mlflow.gateway import set_gateway_uri, get_limits
+        from qcflow.gateway import set_gateway_uri, get_limits
 
         set_gateway_uri(gateway_uri="databricks")
 
@@ -194,7 +194,7 @@ def query(route: str, data):
 
     Args:
         route: The name of the configured route. Route names can be obtained by running
-            `mlflow.gateway.search_routes()`
+            `qcflow.gateway.search_routes()`
         data: The request payload to be submitted to the route. The exact configuration of
             the expected structure varies based on the route configuration.
 
@@ -205,7 +205,7 @@ def query(route: str, data):
 
     .. code-block:: python
 
-        from mlflow.gateway import query, set_gateway_uri
+        from qcflow.gateway import query, set_gateway_uri
 
         set_gateway_uri(gateway_uri="http://my.gateway:9000")
         response = query(
@@ -217,7 +217,7 @@ def query(route: str, data):
 
     .. code-block:: python
 
-        from mlflow.gateway import query, set_gateway_uri
+        from qcflow.gateway import query, set_gateway_uri
 
         set_gateway_uri(gateway_uri="http://my.gateway:9000")
         response = query("a_completions_route", {"prompt": "Where do we go from"})
@@ -226,7 +226,7 @@ def query(route: str, data):
 
     .. code-block:: python
 
-        from mlflow.gateway import query, set_gateway_uri
+        from qcflow.gateway import query, set_gateway_uri
 
         set_gateway_uri(gateway_uri="http://my.gateway:9000")
         response = query(
@@ -239,7 +239,7 @@ def query(route: str, data):
 
     .. code-block:: python
 
-        from mlflow.gateway import query, set_gateway_uri
+        from qcflow.gateway import query, set_gateway_uri
 
         set_gateway_uri(gateway_uri="http://my.gateway:9000")
         response = query(

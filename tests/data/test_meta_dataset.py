@@ -3,14 +3,14 @@ from unittest.mock import patch
 
 import pytest
 
-from mlflow.data.delta_dataset_source import DeltaDatasetSource
-from mlflow.data.http_dataset_source import HTTPDatasetSource
-from mlflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
-from mlflow.data.meta_dataset import MetaDataset
-from mlflow.data.uc_volume_dataset_source import UCVolumeDatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.types import DataType
-from mlflow.types.schema import ColSpec, Schema
+from qcflow.data.delta_dataset_source import DeltaDatasetSource
+from qcflow.data.http_dataset_source import HTTPDatasetSource
+from qcflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
+from qcflow.data.meta_dataset import MetaDataset
+from qcflow.data.uc_volume_dataset_source import UCVolumeDatasetSource
+from qcflow.exceptions import MlflowException
+from qcflow.types import DataType
+from qcflow.types.schema import ColSpec, Schema
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,7 @@ def test_create_meta_dataset_from_source_with_schema(dataset_source_class, path)
     assert parsed_json["digest"] is not None
     assert path in parsed_json["source"]
     assert parsed_json["source_type"] == dataset_source_class._get_source_type()
-    assert json.loads(parsed_json["schema"])["mlflow_colspec"] == schema.to_dict()
+    assert json.loads(parsed_json["schema"])["qcflow_colspec"] == schema.to_dict()
 
 
 def test_meta_dataset_digest():
@@ -83,7 +83,7 @@ def test_meta_dataset_with_uc_source():
 
     with (
         patch(
-            "mlflow.data.uc_volume_dataset_source.UCVolumeDatasetSource._verify_uc_path_is_valid",
+            "qcflow.data.uc_volume_dataset_source.UCVolumeDatasetSource._verify_uc_path_is_valid",
             side_effect=MlflowException(f"{path} does not exist in Databricks Unified Catalog."),
         ),
         pytest.raises(
@@ -93,7 +93,7 @@ def test_meta_dataset_with_uc_source():
         uc_volume_source = UCVolumeDatasetSource(path)
 
     with patch(
-        "mlflow.data.uc_volume_dataset_source.UCVolumeDatasetSource._verify_uc_path_is_valid",
+        "qcflow.data.uc_volume_dataset_source.UCVolumeDatasetSource._verify_uc_path_is_valid",
     ):
         uc_volume_source = UCVolumeDatasetSource(path)
         dataset = MetaDataset(source=uc_volume_source)

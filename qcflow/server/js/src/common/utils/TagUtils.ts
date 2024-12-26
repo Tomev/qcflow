@@ -5,13 +5,13 @@
  * annotations are already looking good, please remove this comment.
  */
 
-import { MLFLOW_LOGGED_ARTIFACTS_TAG } from '@mlflow/mlflow/src/experiment-tracking/constants';
+import { QCFLOW_LOGGED_ARTIFACTS_TAG } from '@qcflow/qcflow/src/experiment-tracking/constants';
 import Utils from './Utils';
-import { KeyValueEntity, RunLoggedArtifactType } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { KeyValueEntity, RunLoggedArtifactType } from '@qcflow/qcflow/src/experiment-tracking/types';
 
-export const MLFLOW_INTERNAL_PREFIX = 'mlflow.';
+export const QCFLOW_INTERNAL_PREFIX = 'qcflow.';
 
-export const isUserFacingTag = (tagKey: string) => !tagKey.startsWith(MLFLOW_INTERNAL_PREFIX);
+export const isUserFacingTag = (tagKey: string) => !tagKey.startsWith(QCFLOW_INTERNAL_PREFIX);
 
 export const getLoggedModelPathsFromTags = (runTags: Record<string, KeyValueEntity>) => {
   const models = Utils.getLoggedModelsFromTags(runTags);
@@ -28,7 +28,7 @@ export const parseJSONSafe = (json: string) => {
 };
 
 export const getLoggedTablesFromTags = (runTags: any) => {
-  const artifactsTags = runTags[MLFLOW_LOGGED_ARTIFACTS_TAG];
+  const artifactsTags = runTags[QCFLOW_LOGGED_ARTIFACTS_TAG];
   if (artifactsTags) {
     const artifacts = parseJSONSafe(artifactsTags.value);
     if (artifacts) {

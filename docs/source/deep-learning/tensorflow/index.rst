@@ -1,4 +1,4 @@
-MLflow Tensorflow Integration
+QCFlow Tensorflow Integration
 ==============================
 
 Introduction
@@ -8,14 +8,14 @@ TensorFlow is an end-to-end open source platform for machine learning. It has a 
 ecosystem of tools, libraries, and community resources that lets researchers push the state-of-the-art
 in ML and developers easily build and deploy ML-powered applications.
 
-MLflow has built-in support (we call it MLflow Tensorflow flavor) for Tensorflow workflow, at a high level
-in MLflow we provide a set of APIs for:
+QCFlow has built-in support (we call it QCFlow Tensorflow flavor) for Tensorflow workflow, at a high level
+in QCFlow we provide a set of APIs for:
 
 - **Simplified Experiment Tracking**: Log parameters, metrics, and models during model training.
-- **Experiments Management**: Store your Tensorflow experiments in MLflow server, and you can view and share them from MLflow UI.
+- **Experiments Management**: Store your Tensorflow experiments in QCFlow server, and you can view and share them from QCFlow UI.
 - **Effortless Deployment**: Deploy Tensorflow models with simple API calls, catering to a variety of production environments.
 
-5 Minute Quick Start with the MLflow Tensorflow Flavor
+5 Minute Quick Start with the QCFlow Tensorflow Flavor
 -------------------------------------------------------
 
 .. raw:: html
@@ -25,10 +25,10 @@ in MLflow we provide a set of APIs for:
             <div class="simple-card">
                 <a href="quickstart/quickstart_tensorflow.html">
                     <div class="header">
-                        Quickstart with MLflow Tensorflow Flavor
+                        Quickstart with QCFlow Tensorflow Flavor
                     </div>
                     <p>
-                        Learn how to leverage MLflow for tracking Tensorflow experiments and models.
+                        Learn how to leverage QCFlow for tracking Tensorflow experiments and models.
                     </p>
                 </a>
             </div>
@@ -42,21 +42,21 @@ in MLflow we provide a set of APIs for:
 
     quickstart/quickstart_tensorflow.ipynb
 
-`Developer Guide of Tensorflow with MLflow <guide/index.html>`_
+`Developer Guide of Tensorflow with QCFlow <guide/index.html>`_
 ----------------------------------------------------------------
 
-To learn more about the nuances of the `tensorflow` flavor in MLflow, please read the developer guide. It will walk you
+To learn more about the nuances of the `tensorflow` flavor in QCFlow, please read the developer guide. It will walk you
 through the following topics:
 
 .. raw:: html
 
     <a href="guide/index.html" class="download-btn">View the Developer Guide</a>
 
-- **Autologging Tensorflow Experiments with MLflow**: How to left MLflow autolog Tensorflow experiments, and what
+- **Autologging Tensorflow Experiments with QCFlow**: How to left QCFlow autolog Tensorflow experiments, and what
   metrics are logged.
-- **Control MLflow Logging with Keras Callback**: For people who don't like autologging, we offer an option to log
-  experiments to MLflow using a custom Keras callback.
-- **Log Your Tensorflow Models with MLflow**: How to log your Tensorflow models with MLflow and how to load them back
+- **Control QCFlow Logging with Keras Callback**: For people who don't like autologging, we offer an option to log
+  experiments to QCFlow using a custom Keras callback.
+- **Log Your Tensorflow Models with QCFlow**: How to log your Tensorflow models with QCFlow and how to load them back
   for inference.
 
 

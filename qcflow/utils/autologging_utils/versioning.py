@@ -5,8 +5,8 @@ from typing import Literal
 
 from packaging.version import InvalidVersion, Version
 
-from mlflow.ml_package_versions import _ML_PACKAGE_VERSIONS, FLAVOR_TO_MODULE_NAME
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.ml_package_versions import _ML_PACKAGE_VERSIONS, FLAVOR_TO_MODULE_NAME
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
 
 def _check_version_in_range(ver, min_ver, max_ver):
@@ -17,7 +17,7 @@ def _check_spark_version_in_range(ver, min_ver, max_ver):
     """
     Utility function for allowing late addition release changes to PySpark minor version increments
     to be accepted, provided that the previous minor version has been previously validated.
-    For example, if version 3.2.1 has been validated as functional with MLflow, an upgrade of
+    For example, if version 3.2.1 has been validated as functional with QCFlow, an upgrade of
     PySpark's minor version to 3.2.2 will still provide a valid version check.
     """
     parsed_ver = Version(ver)
@@ -74,7 +74,7 @@ def is_flavor_supported_for_associated_package_versions(flavor_name):
             actual_version = importlib.metadata.version(module_name)
         except importlib.metadata.PackageNotFoundError:
             # Some package (e.g. dspy) do not publish version info in a standard format.
-            # For this case, we assume the package version is supported by MLflow.
+            # For this case, we assume the package version is supported by QCFlow.
             return True
 
     # In Databricks, treat 'pyspark 3.x.y.dev0' as 'pyspark 3.x.y'
@@ -86,8 +86,8 @@ def is_flavor_supported_for_associated_package_versions(flavor_name):
     min_version, max_version, _ = get_min_max_version_and_pip_release(flavor_name)
 
     if module_name == "pyspark" and is_in_databricks_runtime():
-        # MLflow 1.25.0 is known to be compatible with PySpark 3.3.0 on Databricks, despite the
-        # fact that PySpark 3.3.0 was not available in PyPI at the time of the MLflow 1.25.0 release
+        # QCFlow 1.25.0 is known to be compatible with PySpark 3.3.0 on Databricks, despite the
+        # fact that PySpark 3.3.0 was not available in PyPI at the time of the QCFlow 1.25.0 release
         if Version(max_version) < Version("3.3.0"):
             max_version = "3.3.0"
         return _check_spark_version_in_range(actual_version, min_version, max_version)

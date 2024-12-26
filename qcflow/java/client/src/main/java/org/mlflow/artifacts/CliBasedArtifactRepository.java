@@ -1,4 +1,4 @@
-package org.mlflow.artifacts;
+package org.qcflow.artifacts;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,32 +20,32 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.mlflow.api.proto.Service;
-import org.mlflow.tracking.MlflowClientException;
-import org.mlflow.tracking.creds.MlflowHostCreds;
-import org.mlflow.tracking.creds.DatabricksMlflowHostCreds;
-import org.mlflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.api.proto.Service;
+import org.qcflow.tracking.MlflowClientException;
+import org.qcflow.tracking.creds.MlflowHostCreds;
+import org.qcflow.tracking.creds.DatabricksMlflowHostCreds;
+import org.qcflow.tracking.creds.MlflowHostCredsProvider;
 
 /**
- * Shells out to the 'mlflow' command line utility to upload, download, and list artifacts. This
+ * Shells out to the 'qcflow' command line utility to upload, download, and list artifacts. This
  * is used as a fallback to implement any artifact repositories which are not natively supported
  * within Java.
  *
- * We require that 'mlflow' is available in the system path.
+ * We require that 'qcflow' is available in the system path.
  */
 public class CliBasedArtifactRepository implements ArtifactRepository {
   private static final Logger logger = LoggerFactory.getLogger(CliBasedArtifactRepository.class);
 
-  // Global check if we ever successfully loaded 'mlflow'. This allows us to print a more
+  // Global check if we ever successfully loaded 'qcflow'. This allows us to print a more
   // helpful error message if the executable is not in the path.
-  private static final AtomicBoolean mlflowSuccessfullyLoaded = new AtomicBoolean(false);
+  private static final AtomicBoolean qcflowSuccessfullyLoaded = new AtomicBoolean(false);
 
-  // Name of the Python CLI utility which can be exec'd directly, with MLflow on its path
+  // Name of the Python CLI utility which can be exec'd directly, with QCFlow on its path
   private final String PYTHON_EXECUTABLE =
-    Optional.ofNullable(System.getenv("MLFLOW_PYTHON_EXECUTABLE")).orElse("python");
+    Optional.ofNullable(System.getenv("QCFLOW_PYTHON_EXECUTABLE")).orElse("python");
 
   // Python CLI command
-  private final String PYTHON_COMMAND = "mlflow.store.artifact.cli";
+  private final String PYTHON_COMMAND = "qcflow.store.artifact.cli";
 
   // Base directory of the artifactory, used to let the user know why this repository was chosen.
   private final String artifactBaseDir;
@@ -54,7 +54,7 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
   private final String runId;
 
   // Used to pass credentials as environment variables
-  // (e.g., MLFLOW_TRACKING_URI or DATABRICKS_HOST) to the mlflow process.
+  // (e.g., QCFLOW_TRACKING_URI or DATABRICKS_HOST) to the qcflow process.
   private final MlflowHostCredsProvider hostCredsProvider;
 
   public CliBasedArtifactRepository(
@@ -146,7 +146,7 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
   /**
    * Only available in the CliBasedArtifactRepository. Downloads an artifact to the local
    * filesystem when provided with an artifact uri. This method should not be used directly
-   * by the user. Please use {@link org.mlflow.tracking.MlflowClient}
+   * by the user. Please use {@link org.qcflow.tracking.MlflowClient}
    *
    * @param artifactUri Artifact uri
    * @return Directory/file of the artifact
@@ -159,7 +159,7 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
     return new File(localPath);
   }
 
-  /** Parses a list of JSON FileInfos, as returned by 'mlflow artifacts list'. */
+  /** Parses a list of JSON FileInfos, as returned by 'qcflow artifacts list'. */
   private List<Service.FileInfo> parseFileInfos(String json) {
     // The protobuf deserializer doesn't allow us to directly deserialize a list, so we
     // deserialize a list-of-dictionaries, and then reserialize each dictionary to pass it to
@@ -182,45 +182,45 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
   }
 
   /**
-   * Checks whether the 'mlflow' executable is available, and throws a nice error if not.
+   * Checks whether the 'qcflow' executable is available, and throws a nice error if not.
    * If this method has ever run successfully before (in the entire JVM), we will not rerun it.
    */
   private void checkMlflowAccessible() {
-    if (mlflowSuccessfullyLoaded.get()) {
+    if (qcflowSuccessfullyLoaded.get()) {
       return;
     }
 
     try {
-      String tag = "get mlflow version";
+      String tag = "get qcflow version";
       forkMlflowProcess(Lists.newArrayList("--help"), tag);
-      logger.info("Found local mlflow executable");
-      mlflowSuccessfullyLoaded.set(true);
+      logger.info("Found local qcflow executable");
+      qcflowSuccessfullyLoaded.set(true);
     } catch (MlflowClientException e) {
       String errorMessage = String.format("Failed to exec '%s -m %s', needed to" +
           " access artifacts within the non-Java-native artifact store at '%s'. Please make" +
-          " sure mlflow is available on your local system path (e.g., from 'pip install mlflow')",
+          " sure qcflow is available on your local system path (e.g., from 'pip install qcflow')",
         PYTHON_EXECUTABLE, PYTHON_COMMAND, artifactBaseDir);
       throw new MlflowClientException(errorMessage, e);
     }
   }
 
   /**
-   * Forks the given mlflow command and awaits for its successful completion.
+   * Forks the given qcflow command and awaits for its successful completion.
    *
-   * @param mlflowCommand List of arguments to invoke mlflow with.
+   * @param qcflowCommand List of arguments to invoke qcflow with.
    * @param tag User-facing tag which will be used to identify what we were trying to do
    *            in the case of a failure.
    * @return raw stdout of the process, decoded as a utf-8 string
    * @throws MlflowClientException if the process exits with a non-zero exit code, or anything
    *                               else goes wrong.
    */
-  private String forkMlflowProcess(List<String> mlflowCommand, String tag) {
+  private String forkMlflowProcess(List<String> qcflowCommand, String tag) {
     String stdout;
     Process process = null;
     try {
       MlflowHostCreds hostCreds = hostCredsProvider.getHostCreds();
       List<String> fullCommand = Lists.newArrayList(PYTHON_EXECUTABLE, "-m", PYTHON_COMMAND);
-      fullCommand.addAll(mlflowCommand);
+      fullCommand.addAll(qcflowCommand);
       ProcessBuilder pb = new ProcessBuilder(fullCommand);
       if (hostCreds instanceof DatabricksMlflowHostCreds) {
         setProcessEnvironmentDatabricks(pb.environment(), (DatabricksMlflowHostCreds) hostCreds);
@@ -235,7 +235,7 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
           getErrorBestEffort(process));
       }
     } catch (IOException | InterruptedException e) {
-      throw new MlflowClientException("Failed to fork mlflow process to " + tag +
+      throw new MlflowClientException("Failed to fork qcflow process to " + tag +
         ". Process stderr: " + getErrorBestEffort(process), e);
     }
     return stdout;
@@ -243,18 +243,18 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
 
   @VisibleForTesting
   void setProcessEnvironment(Map<String, String> environment, MlflowHostCreds hostCreds) {
-    environment.put("MLFLOW_TRACKING_URI", hostCreds.getHost());
+    environment.put("QCFLOW_TRACKING_URI", hostCreds.getHost());
     if (hostCreds.getUsername() != null) {
-      environment.put("MLFLOW_TRACKING_USERNAME", hostCreds.getUsername());
+      environment.put("QCFLOW_TRACKING_USERNAME", hostCreds.getUsername());
     }
     if (hostCreds.getPassword() != null) {
-      environment.put("MLFLOW_TRACKING_PASSWORD", hostCreds.getPassword());
+      environment.put("QCFLOW_TRACKING_PASSWORD", hostCreds.getPassword());
     }
     if (hostCreds.getToken() != null) {
-      environment.put("MLFLOW_TRACKING_TOKEN", hostCreds.getToken());
+      environment.put("QCFLOW_TRACKING_TOKEN", hostCreds.getToken());
     }
     if (hostCreds.shouldIgnoreTlsVerification()) {
-      environment.put("MLFLOW_TRACKING_INSECURE_TLS", "true");
+      environment.put("QCFLOW_TRACKING_INSECURE_TLS", "true");
     }
   }
 

@@ -1,10 +1,10 @@
-package org.mlflow.tracking;
+package org.qcflow.tracking;
 
 import static org.mockito.Mockito.*;
 
-import static org.mlflow.api.proto.Service.*;
+import static org.qcflow.api.proto.Service.*;
 
-import org.mlflow.tracking.utils.MlflowTagConstants;
+import org.qcflow.tracking.utils.MlflowTagConstants;
 import org.mockito.ArgumentCaptor;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -23,24 +23,24 @@ public class MlflowContextTest {
 
   public static MlflowContext setupMlflowContext() {
     mockClient = mock(MlflowClient.class);
-    MlflowContext mlflow = new MlflowContext(mockClient);
-    return mlflow;
+    MlflowContext qcflow = new MlflowContext(mockClient);
+    return qcflow;
   }
 
   @Test
   public void testGetClient() {
-    MlflowContext mlflow = setupMlflowContext();
-    Assert.assertEquals(mlflow.getClient(), mockClient);
+    MlflowContext qcflow = setupMlflowContext();
+    Assert.assertEquals(qcflow.getClient(), mockClient);
   }
 
   @Test
   public void testSetExperimentName() {
     // Will throw if there is no experiment with the same name.
     {
-      MlflowContext mlflow = setupMlflowContext();
+      MlflowContext qcflow = setupMlflowContext();
       when(mockClient.getExperimentByName("experiment-name")).thenReturn(Optional.empty());
       try {
-        mlflow.setExperimentName("experiment-name");
+        qcflow.setExperimentName("experiment-name");
         Assert.fail();
       } catch (IllegalArgumentException expected) {
       }
@@ -48,28 +48,28 @@ public class MlflowContextTest {
 
     // Will set experiment-id if experiment is returned from getExperimentByName
     {
-      MlflowContext mlflow = setupMlflowContext();
+      MlflowContext qcflow = setupMlflowContext();
       when(mockClient.getExperimentByName("experiment-name")).thenReturn(
         Optional.of(Experiment.newBuilder().setExperimentId("123").build()));
-      mlflow.setExperimentName("experiment-name");
-      Assert.assertEquals(mlflow.getExperimentId(), "123");
+      qcflow.setExperimentName("experiment-name");
+      Assert.assertEquals(qcflow.getExperimentId(), "123");
     }
   }
 
   @Test
   public void testSetAndGetExperimentId() {
-      MlflowContext mlflow = setupMlflowContext();
-      mlflow.setExperimentId("apple");
-      Assert.assertEquals(mlflow.getExperimentId(), "apple");
+      MlflowContext qcflow = setupMlflowContext();
+      qcflow.setExperimentId("apple");
+      Assert.assertEquals(qcflow.getExperimentId(), "apple");
   }
 
   @Test
   public void testStartRun() {
     // Sets the appropriate tags
     ArgumentCaptor<CreateRun> createRunArgument = ArgumentCaptor.forClass(CreateRun.class);
-    MlflowContext mlflow = setupMlflowContext();
-    mlflow.setExperimentId("123");
-    mlflow.startRun("apple", "parent-run-id");
+    MlflowContext qcflow = setupMlflowContext();
+    qcflow.setExperimentId("123");
+    qcflow.startRun("apple", "parent-run-id");
     verify(mockClient).createRun(createRunArgument.capture());
     List<RunTag> tags = createRunArgument.getValue().getTagsList();
     Assert.assertEquals(createRunArgument.getValue().getExperimentId(), "123");
@@ -83,8 +83,8 @@ public class MlflowContextTest {
   public void testStartRunWithNoRunName() {
     // Sets the appropriate tags
     ArgumentCaptor<CreateRun> createRunArgument = ArgumentCaptor.forClass(CreateRun.class);
-    MlflowContext mlflow = setupMlflowContext();
-    mlflow.startRun();
+    MlflowContext qcflow = setupMlflowContext();
+    qcflow.startRun();
     verify(mockClient).createRun(createRunArgument.capture());
     List<RunTag> tags = createRunArgument.getValue().getTagsList();
     Assert.assertFalse(
@@ -94,11 +94,11 @@ public class MlflowContextTest {
   @Test
   public void testWithActiveRun() {
     // Sets the appropriate tags
-    MlflowContext mlflow = setupMlflowContext();
-    mlflow.setExperimentId("123");
+    MlflowContext qcflow = setupMlflowContext();
+    qcflow.setExperimentId("123");
     when(mockClient.createRun(any(CreateRun.class)))
       .thenReturn(RunInfo.newBuilder().setRunId("test-id").build());
-    mlflow.withActiveRun("apple", activeRun -> {
+    qcflow.withActiveRun("apple", activeRun -> {
       Assert.assertEquals(activeRun.getId(), "test-id");
     });
     verify(mockClient).createRun(any(CreateRun.class));
@@ -108,11 +108,11 @@ public class MlflowContextTest {
   @Test
   public void testWithActiveRunNoRunName() {
     // Sets the appropriate tags
-    MlflowContext mlflow = setupMlflowContext();
-    mlflow.setExperimentId("123");
+    MlflowContext qcflow = setupMlflowContext();
+    qcflow.setExperimentId("123");
     when(mockClient.createRun(any(CreateRun.class)))
       .thenReturn(RunInfo.newBuilder().setRunId("test-id").build());
-    mlflow.withActiveRun(activeRun -> {
+    qcflow.withActiveRun(activeRun -> {
       Assert.assertEquals(activeRun.getId(), "test-id");
     });
     verify(mockClient).createRun(any(CreateRun.class));

@@ -1,4 +1,4 @@
-"""Functions for saving Keras models to MLflow."""
+"""Functions for saving Keras models to QCFlow."""
 
 import importlib
 import logging
@@ -9,33 +9,33 @@ import tempfile
 import keras
 import yaml
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.models import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.models import (
     Model,
     ModelInputExample,
     ModelSignature,
     infer_pip_requirements,
 )
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.utils import _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.types.schema import TensorSpec
-from mlflow.utils.annotations import experimental
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.utils import _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.types.schema import TensorSpec
+from qcflow.utils.annotations import experimental
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "keras"
 
@@ -51,7 +51,7 @@ _MODEL_DATA_PATH = "data"
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by Keras flavor. Calls to
+        A list of default pip requirements for QCFlow Models produced by Keras flavor. Calls to
         `save_model()` and `log_model()` produce a pip environment that, at minimum, contains these
         requirements.
     """
@@ -61,17 +61,17 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to `save_model()` and
+        The default Conda environment for QCFlow Models produced by calls to `save_model()` and
         `log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 def _export_keras_model(model, path, signature):
     if signature is None:
         raise ValueError(
             "`signature` cannot be None when `save_exported_model=True` for "
-            "`mlflow.keras.save_model()` method."
+            "`qcflow.keras.save_model()` method."
         )
     try:
         import tensorflow as tf
@@ -106,7 +106,7 @@ def save_model(
     path,
     save_exported_model=False,
     conda_env=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -118,16 +118,16 @@ def save_model(
     Save a Keras model along with metadata.
 
     This method saves a Keras model along with metadata such as model signature and conda
-    environments to local file system. This method is called inside `mlflow.keras.log_model()`.
+    environments to local file system. This method is called inside `qcflow.keras.log_model()`.
 
     Args:
         model: an instance of `keras.Model`. The Keras model to be saved.
-        path: local path where the MLflow model is to be saved.
+        path: local path where the QCFlow model is to be saved.
         save_exported_model: If True, save Keras model in exported model
             format, otherwise save in `.keras` format. For more information, please
             refer to https://keras.io/guides/serialization_and_saving/.
         conda_env: {{ conda_env }}
-        mlflow_model: an instance of `mlflow.models.Model`, defaults to None. MLflow model
+        qcflow_model: an instance of `qcflow.models.Model`, defaults to None. QCFlow model
             configuration to which to add the Keras model metadata. If None, a blank instance will
             be created.
         signature: {{ signature }}
@@ -142,7 +142,7 @@ def save_model(
         :caption: Example
 
         import keras
-        import mlflow
+        import qcflow
 
         model = keras.Sequential(
             [
@@ -151,8 +151,8 @@ def save_model(
                 keras.layers.Dense(2),
             ]
         )
-        with mlflow.start_run() as run:
-            mlflow.keras.save_model(model, "./model")
+        with qcflow.start_run() as run:
+            qcflow.keras.save_model(model, "./model")
     """
 
     import keras
@@ -179,14 +179,14 @@ def save_model(
                     error_code=INVALID_PARAMETER_VALUE,
                 )
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if input_example is not None:
-        _save_example(mlflow_model, input_example, path)
+        _save_example(qcflow_model, input_example, path)
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     save_model_kwargs = save_model_kwargs or {}
 
@@ -226,29 +226,29 @@ def save_model(
         "save_exported_model": save_exported_model,
     }
 
-    # Add flavor info to `mlflow_model`.
-    mlflow_model.add_flavor(FLAVOR_NAME, **flavor_options)
+    # Add flavor info to `qcflow_model`.
+    qcflow_model.add_flavor(FLAVOR_NAME, **flavor_options)
 
-    # Add loader_module, data and env data to `mlflow_model`.
+    # Add loader_module, data and env data to `qcflow_model`.
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.keras",
+        qcflow_model,
+        loader_module="qcflow.keras",
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
     )
 
-    # Add model file size to `mlflow_model`.
+    # Add model file size to `qcflow_model`.
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
+        qcflow_model.model_size_bytes = size
 
-    # save mlflow_model to path/MLmodel
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    # save qcflow_model to path/MLmodel
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
             inferred_reqs = infer_pip_requirements(path, FLAVOR_NAME, fallback=default_reqs)
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
         else:
@@ -291,10 +291,10 @@ def log_model(
     metadata=None,
 ):
     """
-    Log a Keras model along with metadata to MLflow.
+    Log a Keras model along with metadata to QCFlow.
 
     This method saves a Keras model along with metadata such as model signature and conda
-    environments to MLflow.
+    environments to QCFlow.
 
     Args:
         model: an instance of `keras.Model`. The Keras model to be saved.
@@ -309,7 +309,7 @@ def log_model(
             `registered_model_name`, also create a registered model if one with the given name does
             not exist.
         await_registration_for: defaults to
-            `mlflow.tracking._model_registry.DEFAULT_AWAIT_MAX_SLEEP_SECONDS`. Number of
+            `qcflow.tracking._model_registry.DEFAULT_AWAIT_MAX_SLEEP_SECONDS`. Number of
             seconds to wait for the model version to finish being created and is in ``READY``
             status. By default, the function waits for five minutes. Specify 0 or None to skip
             waiting.
@@ -324,7 +324,7 @@ def log_model(
         :caption: Example
 
         import keras
-        import mlflow
+        import qcflow
 
         model = keras.Sequential(
             [
@@ -333,12 +333,12 @@ def log_model(
                 keras.layers.Dense(2),
             ]
         )
-        with mlflow.start_run() as run:
-            mlflow.keras.log_model(model, "model")
+        with qcflow.start_run() as run:
+            qcflow.keras.log_model(model, "model")
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.keras,
+        flavor=qcflow.keras,
         model=model,
         conda_env=conda_env,
         registered_model_name=registered_model_name,

@@ -5,22 +5,22 @@ from typing import TYPE_CHECKING, Any, Optional
 if TYPE_CHECKING:
     import dspy
 
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
 )
-from mlflow.pyfunc import PythonModel
+from qcflow.pyfunc import PythonModel
 
 _logger = logging.getLogger(__name__)
 
 
 class DspyModelWrapper(PythonModel):
-    """MLflow PyFunc wrapper class for Dspy models.
+    """QCFlow PyFunc wrapper class for Dspy models.
 
     This wrapper serves two purposes:
         - It stores the Dspy model along with dspy global settings, which are required for seamless
             saving and loading.
-        - It provides a `predict` method so that it can be loaded as an MLflow pyfunc, which is
+        - It provides a `predict` method so that it can be loaded as an QCFlow pyfunc, which is
             used at serving time.
     """
 
@@ -69,7 +69,7 @@ class DspyModelWrapper(PythonModel):
 
 
 class DspyChatModelWrapper(DspyModelWrapper):
-    """MLflow PyFunc wrapper class for Dspy chat models."""
+    """QCFlow PyFunc wrapper class for Dspy chat models."""
 
     def predict(self, inputs: Any, params: Optional[dict[str, Any]] = None):
         import dspy

@@ -421,7 +421,7 @@ describe('RunsChartsDraggableCardsGrid', () => {
               sectionConfig={{} as any}
             />
             <Checkbox
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsdraggablecardsgrid.test.tsx_420"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsdraggablecardsgrid.test.tsx_420"
               isChecked={uiState.hideEmptyCharts}
               onChange={(checked) => {
                 updateChartsUIState((state) => ({ ...state, hideEmptyCharts: checked }));

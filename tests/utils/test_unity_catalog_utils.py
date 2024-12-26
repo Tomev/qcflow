@@ -1,37 +1,37 @@
 import pytest
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModel,
     RegisteredModelAlias,
     RegisteredModelTag,
 )
-from mlflow.entities.model_registry.model_version_search import ModelVersionSearch
-from mlflow.entities.model_registry.registered_model_search import RegisteredModelSearch
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.entities.model_registry.model_version_search import ModelVersionSearch
+from qcflow.entities.model_registry.registered_model_search import RegisteredModelSearch
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     EncryptionDetails,
     SseEncryptionAlgorithm,
     SseEncryptionDetails,
     TemporaryCredentials,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import ModelVersion as ProtoModelVersion
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import ModelVersion as ProtoModelVersion
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     ModelVersionStatus as ProtoModelVersionStatus,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     ModelVersionTag as ProtoModelVersionTag,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     RegisteredModel as ProtoRegisteredModel,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     RegisteredModelAlias as ProtoRegisteredModelAlias,
 )
-from mlflow.protos.databricks_uc_registry_messages_pb2 import (
+from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     RegisteredModelTag as ProtoRegisteredModelTag,
 )
-from mlflow.utils._unity_catalog_utils import (
+from qcflow.utils._unity_catalog_utils import (
     _parse_aws_sse_credential,
     model_version_from_uc_proto,
     model_version_search_from_uc_proto,

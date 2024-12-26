@@ -1,4 +1,4 @@
-import { MLFLOW_RUN_SOURCE_TYPE_TAG, MLflowRunSourceType } from '../../constants';
+import { QCFLOW_RUN_SOURCE_TYPE_TAG, QCFlowRunSourceType } from '../../constants';
 import { ModelGatewayRouteType } from '../../sdk/ModelGatewayService';
 import { RunRowType } from '../experiment-page/utils/experimentPage.row-types';
 import {
@@ -13,8 +13,8 @@ export const DEFAULT_PROMPTLAB_INPUT_VALUES = { stock_type: 'books' };
 
 export const DEFAULT_PROMPTLAB_OUTPUT_COLUMN = 'output';
 export const DEFAULT_PROMPTLAB_PROMPT_COLUMN = 'prompt';
-export const PROMPTLAB_METADATA_COLUMN_LATENCY = 'MLFLOW_latency';
-export const PROMPTLAB_METADATA_COLUMN_TOTAL_TOKENS = 'MLFLOW_total_tokens';
+export const PROMPTLAB_METADATA_COLUMN_LATENCY = 'QCFLOW_latency';
+export const PROMPTLAB_METADATA_COLUMN_TOTAL_TOKENS = 'QCFLOW_total_tokens';
 
 const PARAM_MODEL_ROUTE = 'model_route';
 const PARAM_ROUTE_TYPE = 'route_type';
@@ -85,4 +85,4 @@ export const extractEvaluationPrerequisitesForRun = (run: RunRowType) => {
  * thus contains necessary data for the evaluation of new values.
  */
 export const canEvaluateOnRun = (run?: RunRowType) =>
-  run?.tags?.[MLFLOW_RUN_SOURCE_TYPE_TAG]?.value === MLflowRunSourceType.PROMPT_ENGINEERING;
+  run?.tags?.[QCFLOW_RUN_SOURCE_TYPE_TAG]?.value === QCFlowRunSourceType.PROMPT_ENGINEERING;

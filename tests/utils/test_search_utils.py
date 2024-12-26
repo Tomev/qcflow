@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from mlflow.entities import (
+from qcflow.entities import (
     Dataset,
     DatasetInput,
     InputTag,
@@ -18,9 +18,9 @@ from mlflow.entities import (
     RunStatus,
     RunTag,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.utils.mlflow_tags import MLFLOW_DATASET_CONTEXT
-from mlflow.utils.search_utils import SearchUtils
+from qcflow.exceptions import MlflowException
+from qcflow.utils.qcflow_tags import QCFLOW_DATASET_CONTEXT
+from qcflow.utils.search_utils import SearchUtils
 
 
 @pytest.mark.parametrize(
@@ -292,7 +292,7 @@ def test_correct_filtering(filter_string, matching_runs):
                             source_type="my_source_type",
                             source="source",
                         ),
-                        tags=[InputTag(MLFLOW_DATASET_CONTEXT, "train")],
+                        tags=[InputTag(QCFLOW_DATASET_CONTEXT, "train")],
                     )
                 ]
             ),

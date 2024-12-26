@@ -38,7 +38,7 @@ import type {
   ExperimentEntity,
   ModelVersionInfoEntity,
   RunInfoEntity,
-} from '@mlflow/mlflow/src/experiment-tracking/types';
+} from '@qcflow/qcflow/src/experiment-tracking/types';
 import { sampledMetricsByRunUuid } from './SampledMetricsReducer';
 import { ErrorWrapper } from '../../common/utils/ErrorWrapper';
 import { imagesByRunUuid } from './ImageReducer';

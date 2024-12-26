@@ -18,7 +18,7 @@ metric_value_to_rest <- function(value) {
 #'
 #' Logs a metric for a run. Metrics key-value pair that records a single float measure.
 #'   During a single execution of a run, a particular metric can be logged several times.
-#'   The MLflow Backend keeps track of historical metric values along two axes: timestamp and step.
+#'   The QCFlow Backend keeps track of historical metric values along two axes: timestamp and step.
 #'
 #' @param key Name of the metric.
 #' @param value Float value for the metric being logged.
@@ -29,7 +29,7 @@ metric_value_to_rest <- function(value) {
 #' @template roxlate-run-id
 #' @template roxlate-client
 #' @export
-mlflow_log_metric <- function(key, value, timestamp = NULL, step = NULL, run_id = NULL,
+qcflow_log_metric <- function(key, value, timestamp = NULL, step = NULL, run_id = NULL,
                               client = NULL) {
   c(client, run_id) %<-% resolve_client_and_run_id(client, run_id)
   key <- cast_string(key)
@@ -47,18 +47,18 @@ mlflow_log_metric <- function(key, value, timestamp = NULL, step = NULL, run_id 
     timestamp = timestamp,
     step = step
   )
-  mlflow_rest("runs", "log-metric", client = client, verb = "POST", data = data)
-  mlflow_register_tracking_event("log_metric", data)
+  qcflow_rest("runs", "log-metric", client = client, verb = "POST", data = data)
+  qcflow_register_tracking_event("log_metric", data)
 
   invisible(value)
 }
 
-mlflow_create_run <- function(start_time = NULL, tags = NULL, experiment_id = NULL, client) {
+qcflow_create_run <- function(start_time = NULL, tags = NULL, experiment_id = NULL, client) {
   experiment_id <- resolve_experiment_id(experiment_id)
 
   # Read user_id from tags
   # user_id is deprecated and will be removed from a future release
-  user_id <- tags[[MLFLOW_TAGS$MLFLOW_USER]] %||% "unknown"
+  user_id <- tags[[QCFLOW_TAGS$QCFLOW_USER]] %||% "unknown"
 
   tags <- if (!is.null(tags)) tags %>%
     purrr::imap(~ list(key = .y, value = .x)) %>%
@@ -72,14 +72,14 @@ mlflow_create_run <- function(start_time = NULL, tags = NULL, experiment_id = NU
     start_time = start_time,
     tags = tags
   )
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "runs", "create", client = client, verb = "POST", data = data
   )
   run_id <- response$run$info$run_uuid
   data$run_id <- run_id
-  mlflow_register_tracking_event("create_run", data)
+  qcflow_register_tracking_event("create_run", data)
 
-  mlflow_get_run(run_id = run_id, client = client)
+  qcflow_get_run(run_id = run_id, client = client)
 }
 
 #' Delete a Run
@@ -88,14 +88,14 @@ mlflow_create_run <- function(start_time = NULL, tags = NULL, experiment_id = NU
 #' @template roxlate-client
 #' @template roxlate-run-id
 #' @export
-mlflow_delete_run <- function(run_id, client = NULL) {
+qcflow_delete_run <- function(run_id, client = NULL) {
   run_id <- cast_string(run_id)
-  if (identical(run_id, mlflow_get_active_run_id()))
+  if (identical(run_id, qcflow_get_active_run_id()))
     stop("Cannot delete an active run.", call. = FALSE)
   client <- resolve_client(client)
   data <- list(run_id = run_id)
-  mlflow_rest("runs", "delete", client = client, verb = "POST", data = data)
-  mlflow_register_tracking_event("delete_run", data)
+  qcflow_rest("runs", "delete", client = client, verb = "POST", data = data)
+  qcflow_register_tracking_event("delete_run", data)
   invisible(NULL)
 }
 
@@ -105,14 +105,14 @@ mlflow_delete_run <- function(run_id, client = NULL) {
 #' @template roxlate-client
 #' @template roxlate-run-id
 #' @export
-mlflow_restore_run <- function(run_id, client = NULL) {
+qcflow_restore_run <- function(run_id, client = NULL) {
   run_id <- cast_string(run_id)
   client <- resolve_client(client)
   data <- list(run_id = run_id)
-  mlflow_rest("runs", "restore", client = client, verb = "POST", data = data)
-  mlflow_register_tracking_event("restore_run", data)
+  qcflow_rest("runs", "restore", client = client, verb = "POST", data = data)
+  qcflow_register_tracking_event("restore_run", data)
 
-  mlflow_get_run(run_id, client = client)
+  qcflow_get_run(run_id, client = client)
 }
 
 #' Get Run
@@ -123,10 +123,10 @@ mlflow_restore_run <- function(run_id, client = NULL) {
 #' @template roxlate-run-id
 #' @template roxlate-client
 #' @export
-mlflow_get_run <- function(run_id = NULL, client = NULL) {
+qcflow_get_run <- function(run_id = NULL, client = NULL) {
   run_id <- resolve_run_id(run_id)
   client <- resolve_client(client)
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "runs", "get",
     client = client, verb = "GET",
     query = list(run_uuid = run_id, run_id = run_id)
@@ -148,7 +148,7 @@ mlflow_get_run <- function(run_id = NULL, client = NULL) {
 #' @param tags A dataframe of tags to log, containing the following columns: "key", "value".
 #'  This dataframe cannot contain any missing ('NA') entries.
 #' @export
-mlflow_log_batch <- function(metrics = NULL, params = NULL, tags = NULL, run_id = NULL,
+qcflow_log_batch <- function(metrics = NULL, params = NULL, tags = NULL, run_id = NULL,
                              client = NULL) {
   validate_batch_input("metrics", metrics, c("key", "value", "step", "timestamp"))
   metrics$value <- unlist(lapply(metrics$value, metric_value_to_rest))
@@ -163,8 +163,8 @@ mlflow_log_batch <- function(metrics = NULL, params = NULL, tags = NULL, run_id 
     params = params,
     tags = tags
   )
-  mlflow_rest("runs", "log-batch", client = client, verb = "POST", data = data)
-  mlflow_register_tracking_event("log_batch", data)
+  qcflow_rest("runs", "log-batch", client = client, verb = "POST", data = data)
+  qcflow_register_tracking_event("log_batch", data)
 
   invisible(NULL)
 }
@@ -203,7 +203,7 @@ validate_batch_input <- function(input_type, input_dataframe, expected_column_na
 #' @template roxlate-run-id
 #' @template roxlate-client
 #' @export
-mlflow_set_tag <- function(key, value, run_id = NULL, client = NULL) {
+qcflow_set_tag <- function(key, value, run_id = NULL, client = NULL) {
   c(client, run_id) %<-% resolve_client_and_run_id(client, run_id)
 
   key <- cast_string(key)
@@ -215,8 +215,8 @@ mlflow_set_tag <- function(key, value, run_id = NULL, client = NULL) {
     key = key,
     value = value
   )
-  mlflow_rest("runs", "set-tag", client = client, verb = "POST", data = data)
-  mlflow_register_tracking_event("set_tag", data)
+  qcflow_rest("runs", "set-tag", client = client, verb = "POST", data = data)
+  qcflow_register_tracking_event("set_tag", data)
 
   invisible(NULL)
 }
@@ -230,14 +230,14 @@ mlflow_set_tag <- function(key, value, run_id = NULL, client = NULL) {
 #' @template roxlate-run-id
 #' @template roxlate-client
 #' @export
-mlflow_delete_tag <- function(key, run_id = NULL, client = NULL) {
+qcflow_delete_tag <- function(key, run_id = NULL, client = NULL) {
   c(client, run_id) %<-% resolve_client_and_run_id(client, run_id)
 
   key <- cast_string(key)
 
   data <- list(run_id = run_id, key = key)
-  mlflow_rest("runs", "delete-tag", client = client, verb = "POST", data = data)
-  mlflow_register_tracking_event("delete_tag", data)
+  qcflow_rest("runs", "delete-tag", client = client, verb = "POST", data = data)
+  qcflow_register_tracking_event("delete_tag", data)
 
   invisible(NULL)
 }
@@ -254,7 +254,7 @@ mlflow_delete_tag <- function(key, run_id = NULL, client = NULL) {
 #' @template roxlate-run-id
 #' @template roxlate-client
 #' @export
-mlflow_log_param <- function(key, value, run_id = NULL, client = NULL) {
+qcflow_log_param <- function(key, value, run_id = NULL, client = NULL) {
   c(client, run_id) %<-% resolve_client_and_run_id(client, run_id)
 
   key <- cast_string(key)
@@ -267,14 +267,14 @@ mlflow_log_param <- function(key, value, run_id = NULL, client = NULL) {
     key = key,
     value = value
   )
-  mlflow_rest("runs", "log-parameter", client = client, verb = "POST", data = data)
-  mlflow_register_tracking_event("log_param", data)
+  qcflow_rest("runs", "log-parameter", client = client, verb = "POST", data = data)
+  qcflow_register_tracking_event("log_param", data)
 
   invisible(value)
 }
 
 paged_metric_history_request <- function(client, run_id, metric_key, page_token = NULL) {
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "metrics", "get-history",
     client = client, verb = "GET",
     query = list(run_uuid = run_id,
@@ -304,7 +304,7 @@ paged_metric_history_to_dataframe <- function(metrics) {
 #' @param metric_key Name of the metric.
 #'
 #' @export
-mlflow_get_metric_history <- function(metric_key, run_id = NULL, client = NULL) {
+qcflow_get_metric_history <- function(metric_key, run_id = NULL, client = NULL) {
   run_id <- resolve_run_id(run_id)
   client <- resolve_client(client)
 
@@ -340,7 +340,7 @@ mlflow_get_metric_history <- function(metric_key, run_id = NULL, client = NULL) 
 #' @param order_by List of properties to order by. Example: "metrics.acc DESC".
 #'
 #' @export
-mlflow_search_runs <- function(filter = NULL,
+qcflow_search_runs <- function(filter = NULL,
                                run_view_type = c("ACTIVE_ONLY", "DELETED_ONLY", "ALL"),
                                experiment_ids = NULL,
                                order_by = list(),
@@ -356,7 +356,7 @@ mlflow_search_runs <- function(filter = NULL,
   experiment_ids <- cast_string_list(experiment_ids)
   filter <- cast_nullable_string(filter)
 
-  response <- mlflow_rest("runs", "search", client = client, verb = "POST", data = list(
+  response <- qcflow_rest("runs", "search", client = client, verb = "POST", data = list(
     experiment_ids = experiment_ids,
     filter = filter,
     run_view_type = run_view_type,
@@ -378,11 +378,11 @@ mlflow_search_runs <- function(filter = NULL,
 #'  set to the root artifact path
 #'
 #' @export
-mlflow_list_artifacts <- function(path = NULL, run_id = NULL, client = NULL) {
+qcflow_list_artifacts <- function(path = NULL, run_id = NULL, client = NULL) {
   run_id <- resolve_run_id(run_id)
   client <- resolve_client(client)
 
-  response <-   mlflow_rest(
+  response <-   qcflow_rest(
     "artifacts", "list",
     client = client, verb = "GET",
     query = list(
@@ -407,17 +407,17 @@ mlflow_list_artifacts <- function(path = NULL, run_id = NULL, client = NULL) {
     tibble::as_tibble()
 }
 
-mlflow_set_terminated <- function(status, end_time, run_id, client) {
+qcflow_set_terminated <- function(status, end_time, run_id, client) {
   data <- list(
     run_uuid = run_id,
     run_id = run_id,
     status = status,
     end_time = end_time
   )
-  response <- mlflow_rest("runs", "update", verb = "POST", client = client, data = data)
-  mlflow_register_tracking_event("set_terminated", data)
+  response <- qcflow_rest("runs", "update", verb = "POST", client = client, data = data)
+  qcflow_register_tracking_event("set_terminated", data)
 
-  mlflow_get_run(client = client, run_id = response$run_info$run_uuid)
+  qcflow_get_run(client = client, run_id = response$run_info$run_uuid)
 }
 
 #' Download Artifacts
@@ -429,10 +429,10 @@ mlflow_set_terminated <- function(status, end_time, run_id, client) {
 #' @template roxlate-run-id
 #' @param path Relative source path to the desired artifact.
 #' @export
-mlflow_download_artifacts <- function(path, run_id = NULL, client = NULL) {
+qcflow_download_artifacts <- function(path, run_id = NULL, client = NULL) {
   run_id <- resolve_run_id(run_id)
   client <- resolve_client(client)
-  result <- mlflow_cli(
+  result <- qcflow_cli(
     "artifacts", "download",
     "--run-id", run_id,
     "--artifact-path", path,
@@ -451,8 +451,8 @@ mlflow_download_artifacts <- function(path, run_id = NULL, client = NULL) {
 }
 
 # ' Download Artifacts from URI.
-mlflow_download_artifacts_from_uri <- function(artifact_uri, client = mlflow_client()) {
-  result <- mlflow_cli("artifacts", "download", "-u", artifact_uri, echo = FALSE, client = client)
+qcflow_download_artifacts_from_uri <- function(artifact_uri, client = qcflow_client()) {
+  result <- qcflow_cli("artifacts", "download", "-u", artifact_uri, echo = FALSE, client = client)
   # NB: The return type from the artifacts download instruction from the cli can be either
   # a path as a "string" (character vector in R with length of 1) or as a string with a newline
   # ("\n") character separating the source runs:/ path and the local path that is the destination
@@ -488,7 +488,7 @@ mlflow_download_artifacts_from_uri <- function(artifact_uri, client = mlflow_cli
 #' by Amazon IAM.
 #'
 #' @export
-mlflow_log_artifact <- function(path, artifact_path = NULL, run_id = NULL, client = NULL) {
+qcflow_log_artifact <- function(path, artifact_path = NULL, run_id = NULL, client = NULL) {
   c(client, run_id) %<-% resolve_client_and_run_id(client, run_id)
   artifact_param <- NULL
   if (!is.null(artifact_path)) artifact_param <- "--artifact-path"
@@ -501,7 +501,7 @@ mlflow_log_artifact <- function(path, artifact_path = NULL, run_id = NULL, clien
     local_param <- "--local-dir"
   }
 
-  mlflow_cli("artifacts",
+  qcflow_cli("artifacts",
              command,
              local_param,
              path,
@@ -512,13 +512,13 @@ mlflow_log_artifact <- function(path, artifact_path = NULL, run_id = NULL, clien
              client = client
   )
 
-  invisible(mlflow_list_artifacts(run_id = run_id, path = artifact_path, client = client))
+  invisible(qcflow_list_artifacts(run_id = run_id, path = artifact_path, client = client))
 }
 
 # Record logged model metadata with the tracking server.
-mlflow_record_logged_model <- function(model_spec, run_id = NULL, client = NULL) {
+qcflow_record_logged_model <- function(model_spec, run_id = NULL, client = NULL) {
   c(client, run_id) %<-% resolve_client_and_run_id(client, run_id)
-  mlflow_rest("runs", "log-model", client = client, verb = "POST", data = list(
+  qcflow_rest("runs", "log-model", client = client, verb = "POST", data = list(
     run_id = run_id,
     model_json = jsonlite::toJSON(model_spec, auto_unbox = TRUE)
   ))
@@ -543,13 +543,13 @@ mlflow_record_logged_model <- function(model_spec, run_id = NULL, client = NULL)
 #'
 #' @examples
 #' \dontrun{
-#' with(mlflow_start_run(), {
-#'   mlflow_log_metric("test", 10)
+#' with(qcflow_start_run(), {
+#'   qcflow_log_metric("test", 10)
 #' })
 #' }
 #'
 #' @export
-mlflow_start_run <- function(run_id = NULL, experiment_id = NULL,
+qcflow_start_run <- function(run_id = NULL, experiment_id = NULL,
                              start_time = NULL, tags = NULL,
                              client = NULL, nested = FALSE) {
 
@@ -558,7 +558,7 @@ mlflow_start_run <- function(run_id = NULL, experiment_id = NULL,
   if (!is.null(client)) {
     if (!is.null(run_id))
         stop("`run_id` should not be specified when `client` is specified.", call. = FALSE)
-    run <- mlflow_create_run(client = client, start_time = start_time,
+    run <- qcflow_create_run(client = client, start_time = start_time,
                              tags = tags, experiment_id = experiment_id)
     return(run)
   }
@@ -570,55 +570,55 @@ mlflow_start_run <- function(run_id = NULL, experiment_id = NULL,
   if (!is.null(tags))
     stop("`tags` should only be specified when `client` is specified.", call. = FALSE)
 
-  active_run_id <- mlflow_get_active_run_id()
+  active_run_id <- qcflow_get_active_run_id()
   if (!is.null(active_run_id) && !nested) {
     stop("Run with UUID ",
          active_run_id,
-         " is already active. To start a nested run, Call `mlflow_start_run()` with `nested = TRUE`.",
+         " is already active. To start a nested run, Call `qcflow_start_run()` with `nested = TRUE`.",
          call. = FALSE
     )
   }
 
   existing_run_id <- run_id %||% {
-    env_run_id <- Sys.getenv("MLFLOW_RUN_ID")
+    env_run_id <- Sys.getenv("QCFLOW_RUN_ID")
     if (nchar(env_run_id)) env_run_id
   }
 
-  client <- mlflow_client()
+  client <- qcflow_client()
 
   run <- if (!is.null(existing_run_id)) {
-    # This is meant to pick up existing run when we're inside `mlflow_source()` called via `mlflow run`.
-    mlflow_get_run(client = client, run_id = existing_run_id)
+    # This is meant to pick up existing run when we're inside `qcflow_source()` called via `qcflow run`.
+    qcflow_get_run(client = client, run_id = existing_run_id)
   } else {
-    experiment_id <- mlflow_infer_experiment_id(experiment_id)
-    client <- mlflow_client()
+    experiment_id <- qcflow_infer_experiment_id(experiment_id)
+    client <- qcflow_client()
 
-    args <- mlflow_get_run_context(
+    args <- qcflow_get_run_context(
       client,
       experiment_id = experiment_id
     )
-    do.call(mlflow_create_run, args)
+    do.call(qcflow_create_run, args)
   }
-  mlflow_push_active_run_id(mlflow_id(run))
-  mlflow_set_experiment(experiment_id = run$experiment_id)
+  qcflow_push_active_run_id(qcflow_id(run))
+  qcflow_set_experiment(experiment_id = run$experiment_id)
   run
 }
 
-mlflow_get_run_context <- function(client, ...) {
-  UseMethod("mlflow_get_run_context")
+qcflow_get_run_context <- function(client, ...) {
+  UseMethod("qcflow_get_run_context")
 }
 
-mlflow_get_run_context.default <- function(client, experiment_id, ...) {
+qcflow_get_run_context.default <- function(client, experiment_id, ...) {
   tags <- list()
-  tags[[MLFLOW_TAGS$MLFLOW_USER]] <- mlflow_user()
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_NAME]] <- get_source_name()
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_VERSION]] <- get_source_version()
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_TYPE]] <- MLFLOW_SOURCE_TYPE$LOCAL
-  parent_run_id <- mlflow_get_active_run_id()
+  tags[[QCFLOW_TAGS$QCFLOW_USER]] <- qcflow_user()
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_NAME]] <- get_source_name()
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_VERSION]] <- get_source_version()
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_TYPE]] <- QCFLOW_SOURCE_TYPE$LOCAL
+  parent_run_id <- qcflow_get_active_run_id()
   if (!is.null(parent_run_id)) {
-    # create a tag containing the parent run ID so that MLflow UI can display
+    # create a tag containing the parent run ID so that QCFlow UI can display
     # nested runs properly
-    tags[[MLFLOW_TAGS$MLFLOW_PARENT_RUN_ID]] <- parent_run_id
+    tags[[QCFLOW_TAGS$QCFLOW_PARENT_RUN_ID]] <- parent_run_id
   }
   list(
     client = client,
@@ -639,37 +639,37 @@ mlflow_get_run_context.default <- function(client, experiment_id, ...) {
 #' @template roxlate-client
 #'
 #' @export
-mlflow_end_run <- function(status = c("FINISHED", "FAILED", "KILLED"),
+qcflow_end_run <- function(status = c("FINISHED", "FAILED", "KILLED"),
                            end_time = NULL, run_id = NULL, client = NULL) {
 
   status <- match.arg(status)
   end_time <- end_time %||% current_time()
 
-  active_run_id <- mlflow_get_active_run_id()
+  active_run_id <- qcflow_get_active_run_id()
 
   if (!is.null(client) && is.null(run_id))
     stop("`run_id` must be specified when `client` is specified.", call. = FALSE)
 
   run <- if (!is.null(run_id)) {
     client <- resolve_client(client)
-    mlflow_set_terminated(client = client, run_id = run_id, status = status,
+    qcflow_set_terminated(client = client, run_id = run_id, status = status,
                           end_time = end_time)
   } else {
     if (is.null(active_run_id)) stop("There is no active run to end.", call. = FALSE)
-    client <- mlflow_client()
+    client <- qcflow_client()
     run_id <- active_run_id
-    mlflow_set_terminated(client = client, run_id = active_run_id, status = status,
+    qcflow_set_terminated(client = client, run_id = active_run_id, status = status,
                           end_time = end_time)
   }
 
-  if (identical(run_id, active_run_id)) mlflow_pop_active_run_id()
+  if (identical(run_id, active_run_id)) qcflow_pop_active_run_id()
   run
 }
 
-MLFLOW_TAGS <- list(
-  MLFLOW_USER = "mlflow.user",
-  MLFLOW_SOURCE_NAME = "mlflow.source.name",
-  MLFLOW_SOURCE_VERSION = "mlflow.source.version",
-  MLFLOW_SOURCE_TYPE = "mlflow.source.type",
-  MLFLOW_PARENT_RUN_ID = "mlflow.parentRunId"
+QCFLOW_TAGS <- list(
+  QCFLOW_USER = "qcflow.user",
+  QCFLOW_SOURCE_NAME = "qcflow.source.name",
+  QCFLOW_SOURCE_VERSION = "qcflow.source.version",
+  QCFLOW_SOURCE_TYPE = "qcflow.source.type",
+  QCFLOW_PARENT_RUN_ID = "qcflow.parentRunId"
 )

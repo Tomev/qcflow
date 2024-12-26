@@ -3,8 +3,8 @@ from unittest.mock import patch
 import anthropic
 from anthropic.types import Message, TextBlock, Usage
 
-import mlflow.anthropic
-from mlflow.entities.span import SpanType
+import qcflow.anthropic
+from qcflow.entities.span import SpanType
 
 from tests.tracing.helper import get_traces
 
@@ -32,7 +32,7 @@ def create(self, max_tokens, model, messages):
 
 def test_messages_autolog():
     with patch("anthropic.resources.Messages.create", new=create):
-        mlflow.anthropic.autolog()
+        qcflow.anthropic.autolog()
         client = anthropic.Anthropic(api_key="test_key")
         client.messages.create(**DUMMY_CREATE_MESSAGE_REQUEST)
 
@@ -51,7 +51,7 @@ def test_messages_autolog():
     assert span.outputs == DUMMY_CREATE_MESSAGE_RESPONSE.to_dict()
 
     with patch("anthropic.resources.Messages.create", new=create):
-        mlflow.anthropic.autolog(disable=True)
+        qcflow.anthropic.autolog(disable=True)
         client = anthropic.Anthropic(api_key="test_key")
         client.messages.create(**DUMMY_CREATE_MESSAGE_REQUEST)
 

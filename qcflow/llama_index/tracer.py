@@ -33,14 +33,14 @@ from llama_index.core.schema import NodeWithScore
 from llama_index.core.tools import BaseTool
 from packaging.version import Version
 
-import mlflow
-from mlflow.entities import LiveSpan, SpanEvent, SpanType
-from mlflow.entities.document import Document
-from mlflow.entities.span_status import SpanStatusCode
-from mlflow.tracing.constant import SpanAttributeKey
-from mlflow.tracing.provider import detach_span_from_context, set_span_in_context
-from mlflow.tracking.client import MlflowClient
-from mlflow.utils import IS_PYDANTIC_V2_OR_NEWER
+import qcflow
+from qcflow.entities import LiveSpan, SpanEvent, SpanType
+from qcflow.entities.document import Document
+from qcflow.entities.span_status import SpanStatusCode
+from qcflow.tracing.constant import SpanAttributeKey
+from qcflow.tracing.provider import detach_span_from_context, set_span_in_context
+from qcflow.tracking.client import MlflowClient
+from qcflow.utils import IS_PYDANTIC_V2_OR_NEWER
 
 _logger = logging.getLogger(__name__)
 
@@ -88,18 +88,18 @@ def remove_llama_index_tracer():
 
 
 class _LlamaSpan(BaseSpan, extra="allow"):
-    _mlflow_span: LiveSpan = pydantic.PrivateAttr()
+    _qcflow_span: LiveSpan = pydantic.PrivateAttr()
 
-    def __init__(self, id_: str, parent_id: Optional[str], mlflow_span: LiveSpan):
+    def __init__(self, id_: str, parent_id: Optional[str], qcflow_span: LiveSpan):
         super().__init__(id_=id_, parent_id=parent_id)
-        self._mlflow_span = mlflow_span
+        self._qcflow_span = qcflow_span
 
 
 def _end_span(span: LiveSpan, status=SpanStatusCode.OK, outputs=None, token=None):
     """An utility function to end the span or trace."""
     if isinstance(outputs, (StreamingResponse, AsyncStreamingResponse, StreamingAgentChatResponse)):
         _logger.warning(
-            "Trying to record streaming response to the MLflow trace. This may consume "
+            "Trying to record streaming response to the QCFlow trace. This may consume "
             "the generator and result in an empty response."
         )
 
@@ -145,7 +145,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
 
     def get_span_for_event(self, event: BaseEvent) -> LiveSpan:
         llama_span = self.open_spans.get(event.span_id) or self._pending_spans.get(event.span_id)
-        return llama_span._mlflow_span if llama_span else None
+        return llama_span._qcflow_span if llama_span else None
 
     def new_span(
         self,
@@ -158,7 +158,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
         with self.lock:
             parent = self.open_spans.get(parent_span_id) if parent_span_id else None
 
-        parent_span = parent._mlflow_span if parent else mlflow.get_current_active_span()
+        parent_span = parent._qcflow_span if parent else qcflow.get_current_active_span()
 
         try:
             input_args = bound_args.arguments
@@ -184,7 +184,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
 
             token = set_span_in_context(span)
             self._span_id_to_token[span.span_id] = token
-            return _LlamaSpan(id_=id_, parent_id=parent_span_id, mlflow_span=span)
+            return _LlamaSpan(id_=id_, parent_id=parent_span_id, qcflow_span=span)
         except BaseException as e:
             _logger.debug(f"Failed to create a new span: {e}", exc_info=True)
 
@@ -200,7 +200,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
             if not llama_span:
                 return
 
-            span = llama_span._mlflow_span
+            span = llama_span._qcflow_span
             token = self._span_id_to_token.pop(span.span_id, None)
 
             if self._stream_resolver.is_streaming_result(result):
@@ -230,7 +230,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
         """Logic for handling errors during the model execution."""
         with self.lock:
             llama_span = self.open_spans.get(id_)
-        span = llama_span._mlflow_span
+        span = llama_span._qcflow_span
         token = self._span_id_to_token.pop(span.span_id, None)
 
         if _get_llama_index_version() >= Version("0.10.59"):
@@ -247,7 +247,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
 
     def _get_span_type(self, instance: Any) -> SpanType:
         """
-        Map LlamaIndex instance type to MLflow span type. Some span type cannot be determined
+        Map LlamaIndex instance type to QCFlow span type. Some span type cannot be determined
         by instance type alone, rather need event info e.g. ChatModel, ReRanker
         """
         if isinstance(instance, (BaseLLM, MultiModalLLM)):

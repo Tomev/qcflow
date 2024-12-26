@@ -21,7 +21,7 @@ if Version(google.protobuf.__version__).major >= 5:
   from .scalapb import scalapb_pb2 as scalapb_dot_scalapb__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(databricks_managed_catalog_service.proto\x12\x15mlflow.managedcatalog\x1a\x10\x64\x61tabricks.proto\x1a)databricks_managed_catalog_messages.proto\x1a\x15scalapb/scalapb.proto2\xb2\x01\n\x1d\x44\x61tabricksUnityCatalogService\x12\x90\x01\n\x08getTable\x12\x1f.mlflow.managedcatalog.GetTable\x1a\'.mlflow.managedcatalog.GetTableResponse\":\xf2\x86\x19\x36\n2\n\x03GET\x12%/unity-catalog/tables/{full_name_arg}\x1a\x04\x08\x02\x10\x00\x10\x03\x42\x34\n\'com.databricks.api.proto.managedcatalog\x90\x01\x01\xa0\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(databricks_managed_catalog_service.proto\x12\x15qcflow.managedcatalog\x1a\x10\x64\x61tabricks.proto\x1a)databricks_managed_catalog_messages.proto\x1a\x15scalapb/scalapb.proto2\xb2\x01\n\x1d\x44\x61tabricksUnityCatalogService\x12\x90\x01\n\x08getTable\x12\x1f.qcflow.managedcatalog.GetTable\x1a\'.qcflow.managedcatalog.GetTableResponse\":\xf2\x86\x19\x36\n2\n\x03GET\x12%/unity-catalog/tables/{full_name_arg}\x1a\x04\x08\x02\x10\x00\x10\x03\x42\x34\n\'com.databricks.api.proto.managedcatalog\x90\x01\x01\xa0\x01\x01\xe2?\x02\x10\x01')
 
   _globals = globals()
   _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -58,7 +58,7 @@ else:
   from .scalapb import scalapb_pb2 as scalapb_dot_scalapb__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(databricks_managed_catalog_service.proto\x12\x15mlflow.managedcatalog\x1a\x10\x64\x61tabricks.proto\x1a)databricks_managed_catalog_messages.proto\x1a\x15scalapb/scalapb.proto2\xb2\x01\n\x1d\x44\x61tabricksUnityCatalogService\x12\x90\x01\n\x08getTable\x12\x1f.mlflow.managedcatalog.GetTable\x1a\'.mlflow.managedcatalog.GetTableResponse\":\xf2\x86\x19\x36\n2\n\x03GET\x12%/unity-catalog/tables/{full_name_arg}\x1a\x04\x08\x02\x10\x00\x10\x03\x42\x34\n\'com.databricks.api.proto.managedcatalog\x90\x01\x01\xa0\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n(databricks_managed_catalog_service.proto\x12\x15qcflow.managedcatalog\x1a\x10\x64\x61tabricks.proto\x1a)databricks_managed_catalog_messages.proto\x1a\x15scalapb/scalapb.proto2\xb2\x01\n\x1d\x44\x61tabricksUnityCatalogService\x12\x90\x01\n\x08getTable\x12\x1f.qcflow.managedcatalog.GetTable\x1a\'.qcflow.managedcatalog.GetTableResponse\":\xf2\x86\x19\x36\n2\n\x03GET\x12%/unity-catalog/tables/{full_name_arg}\x1a\x04\x08\x02\x10\x00\x10\x03\x42\x34\n\'com.databricks.api.proto.managedcatalog\x90\x01\x01\xa0\x01\x01\xe2?\x02\x10\x01')
 
 
 

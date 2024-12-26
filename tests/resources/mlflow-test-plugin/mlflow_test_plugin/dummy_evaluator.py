@@ -6,16 +6,16 @@ import pandas as pd
 from PIL import Image
 from sklearn import metrics as sk_metrics
 
-from mlflow import MlflowClient
-from mlflow.entities import Metric
-from mlflow.models.evaluation import (
+from qcflow import MlflowClient
+from qcflow.entities import Metric
+from qcflow.models.evaluation import (
     EvaluationArtifact,
     EvaluationResult,
     ModelEvaluator,
 )
-from mlflow.models.evaluation.artifacts import ImageEvaluationArtifact
-from mlflow.tracking.artifact_utils import get_artifact_uri
-from mlflow.utils.time import get_current_time_millis
+from qcflow.models.evaluation.artifacts import ImageEvaluationArtifact
+from qcflow.tracking.artifact_utils import get_artifact_uri
+from qcflow.utils.time import get_current_time_millis
 
 
 class Array2DEvaluationArtifact(EvaluationArtifact):

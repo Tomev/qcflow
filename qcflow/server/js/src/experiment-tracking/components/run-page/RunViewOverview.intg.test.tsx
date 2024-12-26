@@ -1,6 +1,6 @@
 import { DeepPartial } from 'redux';
 import { MockedReduxStoreProvider } from '../../../common/utils/TestUtils';
-import { waitFor, renderWithIntl, screen, within } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { waitFor, renderWithIntl, screen, within } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import { RunViewOverview } from './RunViewOverview';
 import { ReduxState } from '../../../redux-types';
 import { MemoryRouter } from '../../../common/utils/RoutingUtils';
@@ -29,7 +29,7 @@ const testRunName = 'Test run name';
 const testExperimentId = '12345';
 
 const testRunInfo = {
-  artifactUri: 'file:/mlflow/tracking/12345/artifacts',
+  artifactUri: 'file:/qcflow/tracking/12345/artifacts',
   startTime: 1672578000000, // 2023-01-01 14:00:00
   endTime: 1672578300000, // 2023-01-01 14:05:00
   experimentId: testExperimentId,
@@ -175,7 +175,7 @@ describe('RunViewOverview integration', () => {
   test("Render cell with run's author", () => {
     renderComponent({
       tags: {
-        'mlflow.user': { key: 'mlflow.user', value: 'test.joe@databricks.com' },
+        'qcflow.user': { key: 'qcflow.user', value: 'test.joe@databricks.com' },
       },
     });
 
@@ -185,11 +185,11 @@ describe('RunViewOverview integration', () => {
   test('Render cell with logged models and display dropdown menu', async () => {
     renderComponent({
       runInfo: {
-        artifactUri: 'file:/mlflow/tracking/12345/artifacts',
+        artifactUri: 'file:/qcflow/tracking/12345/artifacts',
       },
       tags: {
-        'mlflow.log-model.history': {
-          key: 'mlflow.log-model.history',
+        'qcflow.log-model.history': {
+          key: 'qcflow.log-model.history',
           value: JSON.stringify([
             {
               artifact_path: 'path/to/model',

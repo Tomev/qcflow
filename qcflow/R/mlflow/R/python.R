@@ -1,14 +1,14 @@
-# Computes path to Python executable from the MLFLOW_PYTHON_BIN environment variable.
+# Computes path to Python executable from the QCFLOW_PYTHON_BIN environment variable.
 get_python_bin <- function() {
-  in_env <- Sys.getenv("MLFLOW_PYTHON_BIN")
+  in_env <- Sys.getenv("QCFLOW_PYTHON_BIN")
   if (in_env != "") {
     return(in_env)
   }
-  # MLFLOW_PYTHON_EXECUTABLE is an environment variable that's defined in a Databricks notebook
+  # QCFLOW_PYTHON_EXECUTABLE is an environment variable that's defined in a Databricks notebook
   # environment.
-  mlflow_python_executable <- Sys.getenv("MLFLOW_PYTHON_EXECUTABLE")
-  if (mlflow_python_executable != "") {
-    stdout <- system(paste(mlflow_python_executable, '-c "import sys; print(sys.executable)"'),
+  qcflow_python_executable <- Sys.getenv("QCFLOW_PYTHON_EXECUTABLE")
+  if (qcflow_python_executable != "") {
+    stdout <- system(paste(qcflow_python_executable, '-c "import sys; print(sys.executable)"'),
                      intern = TRUE,
                      ignore.stderr = TRUE)
     return(paste(stdout, collapse = ""))
@@ -17,8 +17,8 @@ get_python_bin <- function() {
   if (python_bin != "") {
     return(python_bin)
   }
-  stop(paste("MLflow not configured, please run `pip install mlflow` or ",
-             "set MLFLOW_PYTHON_BIN and MLFLOW_BIN environment variables.", sep = ""))
+  stop(paste("QCFlow not configured, please run `pip install qcflow` or ",
+             "set QCFLOW_PYTHON_BIN and QCFLOW_BIN environment variables.", sep = ""))
 }
 
 # Returns path to Python executable
@@ -31,21 +31,21 @@ python_bin <- function() {
   .globals$python_bin
 }
 
-# Returns path to MLflow CLI, assumed to be in the same bin/ directory as the
+# Returns path to QCFlow CLI, assumed to be in the same bin/ directory as the
 # Python executable
-python_mlflow_bin <- function() {
-  in_env <- Sys.getenv("MLFLOW_BIN")
+python_qcflow_bin <- function() {
+  in_env <- Sys.getenv("QCFLOW_BIN")
   if (in_env != "") {
     return(in_env)
   }
-  mlflow_bin <- Sys.which("mlflow")
-  if (mlflow_bin != "") {
-    return(mlflow_bin)
+  qcflow_bin <- Sys.which("qcflow")
+  if (qcflow_bin != "") {
+    return(qcflow_bin)
   }
   python_bin_dir <- dirname(python_bin())
   if (.Platform$OS.type == "windows") {
-    file.path(python_bin_dir, "Scripts", "mlflow")
+    file.path(python_bin_dir, "Scripts", "qcflow")
   } else {
-    file.path(python_bin_dir, "mlflow")
+    file.path(python_bin_dir, "qcflow")
   }
 }

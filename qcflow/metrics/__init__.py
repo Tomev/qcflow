@@ -1,8 +1,8 @@
-from mlflow.metrics import genai
-from mlflow.metrics.base import (
+from qcflow.metrics import genai
+from qcflow.metrics.base import (
     MetricValue,
 )
-from mlflow.metrics.metric_definitions import (
+from qcflow.metrics.metric_definitions import (
     _accuracy_eval_fn,
     _ari_eval_fn,
     _bleu_eval_fn,
@@ -26,11 +26,11 @@ from mlflow.metrics.metric_definitions import (
     _token_count_eval_fn,
     _toxicity_eval_fn,
 )
-from mlflow.models import (
+from qcflow.models import (
     EvaluationMetric,
     make_metric,
 )
-from mlflow.utils.annotations import experimental
+from qcflow.utils.annotations import experimental
 
 
 @experimental

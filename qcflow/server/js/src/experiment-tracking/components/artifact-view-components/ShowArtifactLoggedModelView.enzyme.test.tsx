@@ -8,7 +8,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import ShowArtifactLoggedModelView, { ShowArtifactLoggedModelViewImpl } from './ShowArtifactLoggedModelView';
-import { mountWithIntl, shallowWithInjectIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { mountWithIntl, shallowWithInjectIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 
 describe('ShowArtifactLoggedModelView', () => {
   let wrapper: any;
@@ -18,7 +18,7 @@ describe('ShowArtifactLoggedModelView', () => {
   const minimumFlavors = `
 flavors:
   python_function:
-    loader_module: mlflow.sklearn
+    loader_module: qcflow.sklearn
 `;
   const validMlModelFile =
     minimumFlavors +
@@ -218,7 +218,7 @@ flavors:
       expect(impl.state().flavor).toBe('sklearn');
       const codeContent = impl.find('.artifact-logged-model-view-code-content');
       expect(codeContent.length).toBe(2);
-      expect(codeContent.at(1).text().includes('mlflow.sklearn.load_model')).toBe(true);
+      expect(codeContent.at(1).text().includes('qcflow.sklearn.load_model')).toBe(true);
       done();
     });
   });

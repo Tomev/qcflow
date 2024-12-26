@@ -2,7 +2,7 @@ import type { EmotionJSX } from '@emotion/react/types/jsx-namespace';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { shouldShowModelsNextUI } from '../../common/utils/FeatureUtils';
 
-const useOldModelsUIStorageKey = '_mlflow_user_setting_dismiss_next_model_registry_ui';
+const useOldModelsUIStorageKey = '_qcflow_user_setting_dismiss_next_model_registry_ui';
 
 const NextModelsUIContext = React.createContext<{
   usingNextModelsUI: boolean;

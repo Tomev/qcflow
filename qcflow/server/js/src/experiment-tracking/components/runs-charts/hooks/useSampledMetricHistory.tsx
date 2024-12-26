@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ReduxState, ThunkDispatch } from '../../../../redux-types';
 import { createChartAxisRangeKey } from '../components/RunsCharts.common';
 import { getSampledMetricHistoryBulkAction } from '../../../sdk/SampledMetricHistoryService';
-import type { SampledMetricsByRunUuidState } from '@mlflow/mlflow/src/experiment-tracking/types';
+import type { SampledMetricsByRunUuidState } from '@qcflow/qcflow/src/experiment-tracking/types';
 import { EXPERIMENT_RUNS_METRIC_AUTO_REFRESH_INTERVAL } from '../../../utils/MetricsUtils';
 import Utils from '../../../../common/utils/Utils';
 import { shouldEnableGraphQLSampledMetrics } from '../../../../common/utils/FeatureUtils';

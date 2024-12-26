@@ -9,7 +9,7 @@ import uuid
 from dataclasses import dataclass
 from typing import NamedTuple, Optional
 
-from mlflow.entities import (
+from qcflow.entities import (
     Dataset,
     DatasetInput,
     Experiment,
@@ -28,30 +28,30 @@ from mlflow.entities import (
     ViewType,
     _DatasetSummary,
 )
-from mlflow.entities.lifecycle_stage import LifecycleStage
-from mlflow.entities.run_info import check_run_is_active
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.environment_variables import MLFLOW_TRACKING_DIR
-from mlflow.exceptions import MissingConfigException, MlflowException
-from mlflow.protos import databricks_pb2
-from mlflow.protos.databricks_pb2 import (
+from qcflow.entities.lifecycle_stage import LifecycleStage
+from qcflow.entities.run_info import check_run_is_active
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.environment_variables import QCFLOW_TRACKING_DIR
+from qcflow.exceptions import MissingConfigException, MlflowException
+from qcflow.protos import databricks_pb2
+from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.protos.internal_pb2 import InputVertexType
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry.file_store import FileStore as ModelRegistryFileStore
-from mlflow.store.tracking import (
+from qcflow.protos.internal_pb2 import InputVertexType
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry.file_store import FileStore as ModelRegistryFileStore
+from qcflow.store.tracking import (
     DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH,
     SEARCH_MAX_RESULTS_DEFAULT,
     SEARCH_MAX_RESULTS_THRESHOLD,
     SEARCH_TRACES_DEFAULT_MAX_RESULTS,
 )
-from mlflow.store.tracking.abstract_store import AbstractStore
-from mlflow.tracing.utils import generate_request_id
-from mlflow.utils import get_results_from_paginated_fn
-from mlflow.utils.file_utils import (
+from qcflow.store.tracking.abstract_store import AbstractStore
+from qcflow.tracing.utils import generate_request_id
+from qcflow.utils import get_results_from_paginated_fn
+from qcflow.utils.file_utils import (
     append_to,
     exists,
     find,
@@ -71,26 +71,26 @@ from mlflow.utils.file_utils import (
     write_to,
     write_yaml,
 )
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_ARTIFACT_LOCATION,
-    MLFLOW_DATASET_CONTEXT,
-    MLFLOW_LOGGED_MODELS,
-    MLFLOW_RUN_NAME,
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_ARTIFACT_LOCATION,
+    QCFLOW_DATASET_CONTEXT,
+    QCFLOW_LOGGED_MODELS,
+    QCFLOW_RUN_NAME,
     _get_run_name_from_tags,
 )
-from mlflow.utils.name_utils import _generate_random_name, _generate_unique_integer_id
-from mlflow.utils.search_utils import (
+from qcflow.utils.name_utils import _generate_random_name, _generate_unique_integer_id
+from qcflow.utils.search_utils import (
     SearchExperimentsUtils,
     SearchTraceUtils,
     SearchUtils,
 )
-from mlflow.utils.string_utils import is_string_type
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.uri import (
+from qcflow.utils.string_utils import is_string_type
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.uri import (
     append_to_uri_path,
     resolve_uri_if_local,
 )
-from mlflow.utils.validation import (
+from qcflow.utils.validation import (
     _validate_batch_log_data,
     _validate_batch_log_limits,
     _validate_experiment_id,
@@ -108,7 +108,7 @@ _logger = logging.getLogger(__name__)
 
 
 def _default_root_dir():
-    return MLFLOW_TRACKING_DIR.get() or os.path.abspath(DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH)
+    return QCFLOW_TRACKING_DIR.get() or os.path.abspath(DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH)
 
 
 def _read_persisted_experiment_dict(experiment_dict):
@@ -123,7 +123,7 @@ def _read_persisted_experiment_dict(experiment_dict):
 
 def _make_persisted_run_info_dict(run_info):
     # 'tags' was moved from RunInfo to RunData, so we must keep storing it in the meta.yaml for
-    # old mlflow versions to read
+    # old qcflow versions to read
     run_info_dict = dict(run_info)
     run_info_dict["tags"] = []
     if "status" in run_info_dict:
@@ -488,7 +488,7 @@ class FileStore(AbstractStore):
     def _hard_delete_experiment(self, experiment_id):
         """
         Permanently delete an experiment.
-        This is used by the ``mlflow gc`` command line and is not intended to be used elsewhere.
+        This is used by the ``qcflow gc`` command line and is not intended to be used elsewhere.
         """
         experiment_dir = self._get_experiment_path(experiment_id, ViewType.DELETED_ONLY)
         shutil.rmtree(experiment_dir)
@@ -562,7 +562,7 @@ class FileStore(AbstractStore):
     def _hard_delete_run(self, run_id):
         """
         Permanently delete a run (metadata and metrics, tags, parameters).
-        This is used by the ``mlflow gc`` command line and is not intended to be used elsewhere.
+        This is used by the ``qcflow gc`` command line and is not intended to be used elsewhere.
         """
         _, run_dir = self._find_run_root(run_id)
         shutil.rmtree(run_dir)
@@ -627,7 +627,7 @@ class FileStore(AbstractStore):
         check_run_is_active(run_info)
         new_info = run_info._copy_with_overrides(run_status, end_time, run_name=run_name)
         if run_name:
-            self._set_run_tag(run_info, RunTag(MLFLOW_RUN_NAME, run_name))
+            self._set_run_tag(run_info, RunTag(QCFLOW_RUN_NAME, run_name))
         self._overwrite_run_info(new_info)
         return new_info
 
@@ -652,13 +652,13 @@ class FileStore(AbstractStore):
         run_name_tag = _get_run_name_from_tags(tags)
         if run_name and run_name_tag and run_name != run_name_tag:
             raise MlflowException(
-                "Both 'run_name' argument and 'mlflow.runName' tag are specified, but with "
-                f"different values (run_name='{run_name}', mlflow.runName='{run_name_tag}').",
+                "Both 'run_name' argument and 'qcflow.runName' tag are specified, but with "
+                f"different values (run_name='{run_name}', qcflow.runName='{run_name_tag}').",
                 INVALID_PARAMETER_VALUE,
             )
         run_name = run_name or run_name_tag or _generate_random_name()
         if not run_name_tag:
-            tags.append(RunTag(key=MLFLOW_RUN_NAME, value=run_name))
+            tags.append(RunTag(key=QCFLOW_RUN_NAME, value=run_name))
         run_uuid = uuid.uuid4().hex
         artifact_uri = self._get_artifact_dir(experiment_id, run_uuid)
         run_info = RunInfo(
@@ -763,7 +763,7 @@ class FileStore(AbstractStore):
             # Metrics can have '/' in the name. On windows, '/' is interpreted as a separator.
             # When the metric is read back the path will use '\' for separator.
             # We need to translate the path into posix path.
-            from mlflow.utils.file_utils import relative_path_to_artifact_path
+            from qcflow.utils.file_utils import relative_path_to_artifact_path
 
             file_names = [relative_path_to_artifact_path(x) for x in file_names]
         return source_dirs[0], file_names
@@ -826,7 +826,7 @@ class FileStore(AbstractStore):
                 ``None``, an MlflowException will be thrown.
 
         Returns:
-            A List of :py:class:`mlflow.entities.Metric` entities if ``metric_key`` values
+            A List of :py:class:`qcflow.entities.Metric` entities if ``metric_key`` values
             have been logged to the ``run_id``, else an empty list.
 
         """
@@ -1017,7 +1017,7 @@ class FileStore(AbstractStore):
         When logging a parameter with a key that already exists, this function is used to
         enforce immutability by verifying that the specified parameter value matches the existing
         value.
-        :raises: py:class:`mlflow.exceptions.MlflowException` if the specified new parameter value
+        :raises: py:class:`qcflow.exceptions.MlflowException` if the specified new parameter value
                  does not match the existing parameter value.
         """
         with open(param_path) as param_file:
@@ -1056,7 +1056,7 @@ class FileStore(AbstractStore):
         run_info = self._get_run_info(run_id)
         check_run_is_active(run_info)
         self._set_run_tag(run_info, tag)
-        if tag.key == MLFLOW_RUN_NAME:
+        if tag.key == QCFLOW_RUN_NAME:
             run_status = RunStatus.from_string(run_info.status)
             self.update_run_info(run_id, run_status, run_info.end_time, tag.value)
 
@@ -1107,32 +1107,32 @@ class FileStore(AbstractStore):
             for tag in tags:
                 # NB: If the tag run name value is set, update the run info to assure
                 # synchronization.
-                if tag.key == MLFLOW_RUN_NAME:
+                if tag.key == QCFLOW_RUN_NAME:
                     run_status = RunStatus.from_string(run_info.status)
                     self.update_run_info(run_id, run_status, run_info.end_time, tag.value)
                 self._set_run_tag(run_info, tag)
         except Exception as e:
             raise MlflowException(e, INTERNAL_ERROR)
 
-    def record_logged_model(self, run_id, mlflow_model):
-        from mlflow.models import Model
+    def record_logged_model(self, run_id, qcflow_model):
+        from qcflow.models import Model
 
-        if not isinstance(mlflow_model, Model):
+        if not isinstance(qcflow_model, Model):
             raise TypeError(
-                f"Argument 'mlflow_model' should be mlflow.models.Model, got '{type(mlflow_model)}'"
+                f"Argument 'qcflow_model' should be qcflow.models.Model, got '{type(qcflow_model)}'"
             )
         _validate_run_id(run_id)
         run_info = self._get_run_info(run_id)
         check_run_is_active(run_info)
-        model_dict = mlflow_model.get_tags_dict()
+        model_dict = qcflow_model.get_tags_dict()
         run_info = self._get_run_info(run_id)
-        path = self._get_tag_path(run_info.experiment_id, run_info.run_id, MLFLOW_LOGGED_MODELS)
+        path = self._get_tag_path(run_info.experiment_id, run_info.run_id, QCFLOW_LOGGED_MODELS)
         if os.path.exists(path):
             with open(path) as f:
                 model_list = json.loads(f.read())
         else:
             model_list = []
-        tag = RunTag(MLFLOW_LOGGED_MODELS, json.dumps(model_list + [model_dict]))
+        tag = RunTag(QCFLOW_LOGGED_MODELS, json.dumps(model_list + [model_dict]))
 
         try:
             self._set_run_tag(run_info, tag)
@@ -1145,7 +1145,7 @@ class FileStore(AbstractStore):
 
         Args:
             run_id: String id for the run
-            datasets: List of :py:class:`mlflow.entities.DatasetInput` instances to log
+            datasets: List of :py:class:`qcflow.entities.DatasetInput` instances to log
                 as inputs to the run.
 
         Returns:
@@ -1275,7 +1275,7 @@ class FileStore(AbstractStore):
             experiment_ids: List of experiment ids to scope the search
 
         Returns:
-            A List of :py:class:`mlflow.entities.DatasetSummary` entities.
+            A List of :py:class:`qcflow.entities.DatasetSummary` entities.
 
         """
 
@@ -1305,7 +1305,7 @@ class FileStore(AbstractStore):
                 for dataset_input in run_inputs.dataset_inputs:
                     context = None
                     for input_tag in dataset_input.tags:
-                        if input_tag.key == MLFLOW_DATASET_CONTEXT:
+                        if input_tag.key == QCFLOW_DATASET_CONTEXT:
                             context = input_tag.value
                             break
                     dataset = dataset_input.dataset
@@ -1404,7 +1404,7 @@ class FileStore(AbstractStore):
         mkdir(traces_dir, request_id)
         trace_dir = os.path.join(traces_dir, request_id)
         artifact_uri = self._get_traces_artifact_dir(experiment_id, request_id)
-        tags.update({MLFLOW_ARTIFACT_LOCATION: artifact_uri})
+        tags.update({QCFLOW_ARTIFACT_LOCATION: artifact_uri})
         trace_info = TraceInfo(
             request_id=request_id,
             experiment_id=experiment_id,
@@ -1523,7 +1523,7 @@ class FileStore(AbstractStore):
             request_id: String id of the trace to fetch.
 
         Returns:
-            The fetched Trace object, of type ``mlflow.entities.TraceInfo``.
+            The fetched Trace object, of type ``qcflow.entities.TraceInfo``.
         """
         return self._get_trace_info_and_dir(request_id)[0]
 
@@ -1677,7 +1677,7 @@ class FileStore(AbstractStore):
                 a ``search_traces`` call.
 
         Returns:
-            A tuple of a list of :py:class:`TraceInfo <mlflow.entities.TraceInfo>` objects that
+            A tuple of a list of :py:class:`TraceInfo <qcflow.entities.TraceInfo>` objects that
             satisfy the search expressions and a pagination token for the next page of results.
             If the underlying tracking store supports pagination, the token for the
             next page may be obtained via the ``token`` attribute of the returned object; however,

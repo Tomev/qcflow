@@ -9,7 +9,7 @@ import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { ThunkDispatch } from '../../redux-types';
 import { setModelVersionAliasesApi } from '../actions';
-import { mlflowAliasesLearnMoreLink } from '../constants';
+import { qcflowAliasesLearnMoreLink } from '../constants';
 import { ErrorWrapper } from '../../common/utils/ErrorWrapper';
 
 const MAX_ALIASES_PER_MODEL_VERSION = 10;
@@ -122,12 +122,12 @@ export const useEditRegisteredModelAliasesModal = ({
 
   const EditAliasesModal = (
     <Modal
-      componentId="codegen_mlflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_127"
+      componentId="codegen_qcflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_127"
       visible={showModal}
       footer={
         <div>
           <Button
-            componentId="codegen_mlflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_131"
+            componentId="codegen_qcflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_131"
             onClick={() => setShowModal(false)}
           >
             <FormattedMessage
@@ -136,7 +136,7 @@ export const useEditRegisteredModelAliasesModal = ({
             />
           </Button>
           <Button
-            componentId="codegen_mlflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_137"
+            componentId="codegen_qcflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_137"
             loading={false}
             type="primary"
             disabled={isInvalid}
@@ -166,7 +166,7 @@ export const useEditRegisteredModelAliasesModal = ({
           description="Explanation of registered model aliases"
           values={{
             link: (chunks) => (
-              <a href={mlflowAliasesLearnMoreLink} rel="noreferrer" target="_blank">
+              <a href={qcflowAliasesLearnMoreLink} rel="noreferrer" target="_blank">
                 {chunks}
               </a>
             ),
@@ -188,7 +188,7 @@ export const useEditRegisteredModelAliasesModal = ({
         <div css={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs }}>
           {isExceedingLimit && (
             <Alert
-              componentId="codegen_mlflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_192"
+              componentId="codegen_qcflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_192"
               role="alert"
               message={
                 <FormattedMessage
@@ -203,7 +203,7 @@ export const useEditRegisteredModelAliasesModal = ({
           )}
           {conflictedAliases.map(({ alias, otherVersion }) => (
             <Alert
-              componentId="codegen_mlflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_206"
+              componentId="codegen_qcflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_206"
               role="alert"
               key={alias}
               message={
@@ -219,7 +219,7 @@ export const useEditRegisteredModelAliasesModal = ({
           ))}
           {errorMessage && (
             <Alert
-              componentId="codegen_mlflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_220"
+              componentId="codegen_qcflow_app_src_model-registry_hooks_useeditregisteredmodelaliasesmodal.tsx_220"
               role="alert"
               message={errorMessage}
               type="error"

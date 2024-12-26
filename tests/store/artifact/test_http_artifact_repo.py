@@ -5,25 +5,25 @@ from unittest import mock
 import pytest
 from requests import HTTPError
 
-from mlflow.entities.multipart_upload import (
+from qcflow.entities.multipart_upload import (
     CreateMultipartUploadResponse,
     MultipartUploadCredential,
     MultipartUploadPart,
 )
-from mlflow.environment_variables import (
-    MLFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE,
-    MLFLOW_TRACKING_CLIENT_CERT_PATH,
-    MLFLOW_TRACKING_INSECURE_TLS,
-    MLFLOW_TRACKING_PASSWORD,
-    MLFLOW_TRACKING_SERVER_CERT_PATH,
-    MLFLOW_TRACKING_TOKEN,
-    MLFLOW_TRACKING_USERNAME,
+from qcflow.environment_variables import (
+    QCFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE,
+    QCFLOW_TRACKING_CLIENT_CERT_PATH,
+    QCFLOW_TRACKING_INSECURE_TLS,
+    QCFLOW_TRACKING_PASSWORD,
+    QCFLOW_TRACKING_SERVER_CERT_PATH,
+    QCFLOW_TRACKING_TOKEN,
+    QCFLOW_TRACKING_USERNAME,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.http_artifact_repo import HttpArtifactRepository
-from mlflow.utils.credentials import get_default_host_creds
-from mlflow.utils.rest_utils import MlflowHostCreds
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.http_artifact_repo import HttpArtifactRepository
+from qcflow.utils.credentials import get_default_host_creds
+from qcflow.utils.rest_utils import MlflowHostCreds
 
 
 @pytest.mark.parametrize("scheme", ["http", "https"])
@@ -67,7 +67,7 @@ class FileObjectMatcher:
 
 @pytest.fixture
 def http_artifact_repo():
-    artifact_uri = "http://test.com/api/2.0/mlflow-artifacts/artifacts"
+    artifact_uri = "http://test.com/api/2.0/qcflow-artifacts/artifacts"
     return HttpArtifactRepository(artifact_uri)
 
 
@@ -102,22 +102,22 @@ def test_log_artifact(
         )
 
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse({}, 200),
     ) as mock_put:
         http_artifact_repo.log_artifact(file_path, artifact_path)
         assert_called_log_artifact(mock_put)
 
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse({}, 400),
     ):
         with pytest.raises(Exception, match="request failed"):
             http_artifact_repo.log_artifact(file_path, artifact_path)
 
-    monkeypatch.setenv("MLFLOW_ENABLE_PROXY_MULTIPART_UPLOAD", "true")
+    monkeypatch.setenv("QCFLOW_ENABLE_PROXY_MULTIPART_UPLOAD", "true")
     # assert mpu is triggered when file size is larger than minimum file size
-    file_path.write_text("0" * MLFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE.get())
+    file_path.write_text("0" * QCFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE.get())
     with mock.patch.object(
         http_artifact_repo, "_try_multipart_upload", return_value=200
     ) as mock_mpu:
@@ -141,7 +141,7 @@ def test_log_artifact(
             ),
         ),
         mock.patch(
-            "mlflow.store.artifact.http_artifact_repo.http_request",
+            "qcflow.store.artifact.http_artifact_repo.http_request",
             return_value=MockResponse({}, 200),
         ) as mock_put,
     ):
@@ -192,7 +192,7 @@ def test_log_artifacts(http_artifact_repo, tmp_path, artifact_path):
         )
 
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse({}, 400),
     ):
         with pytest.raises(Exception, match="request failed"):
@@ -201,11 +201,11 @@ def test_log_artifacts(http_artifact_repo, tmp_path, artifact_path):
 
 def test_list_artifacts(http_artifact_repo):
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse({}, 200),
     ) as mock_get:
         assert http_artifact_repo.list_artifacts() == []
-        endpoint = "/mlflow-artifacts/artifacts"
+        endpoint = "/qcflow-artifacts/artifacts"
         url, _ = http_artifact_repo.artifact_uri.split(endpoint, maxsplit=1)
         mock_get.assert_called_once_with(
             get_default_host_creds(url),
@@ -215,7 +215,7 @@ def test_list_artifacts(http_artifact_repo):
         )
 
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse(
             {
                 "files": [
@@ -229,7 +229,7 @@ def test_list_artifacts(http_artifact_repo):
         assert [a.path for a in http_artifact_repo.list_artifacts()] == ["1.txt", "dir"]
 
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse(
             {
                 "files": [
@@ -246,7 +246,7 @@ def test_list_artifacts(http_artifact_repo):
         ]
 
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse({}, 400),
     ):
         with pytest.raises(Exception, match="request failed"):
@@ -256,7 +256,7 @@ def test_list_artifacts(http_artifact_repo):
 @pytest.mark.parametrize("path", ["/tmp/path", "../../path", "%2E%2E%2Fpath"])
 def test_list_artifacts_malicious_path(http_artifact_repo, path):
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse(
             {
                 "files": [
@@ -278,7 +278,7 @@ def read_file(path):
 @pytest.mark.parametrize("remote_file_path", ["a.txt", "dir/b.xtx"])
 def test_download_file(http_artifact_repo, tmp_path, remote_file_path):
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockStreamResponse("data", 200),
     ) as mock_get:
         file_path = tmp_path.joinpath(posixpath.basename(remote_file_path))
@@ -292,7 +292,7 @@ def test_download_file(http_artifact_repo, tmp_path, remote_file_path):
         assert file_path.read_text() == "data"
 
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockStreamResponse("data", 400),
     ):
         with pytest.raises(Exception, match="request failed"):
@@ -340,7 +340,7 @@ def test_download_artifacts(http_artifact_repo, tmp_path):
         else:
             raise Exception("Unreachable")
 
-    with mock.patch("mlflow.store.artifact.http_artifact_repo.http_request", http_request):
+    with mock.patch("qcflow.store.artifact.http_artifact_repo.http_request", http_request):
         http_artifact_repo.download_artifacts("", tmp_path)
         paths = [os.path.join(root, f) for root, _, files in os.walk(tmp_path) for f in files]
         assert [os.path.relpath(p, tmp_path) for p in paths] == [
@@ -374,12 +374,12 @@ def test_default_host_creds(monkeypatch):
 
     monkeypatch.setenvs(
         {
-            MLFLOW_TRACKING_USERNAME.name: username,
-            MLFLOW_TRACKING_PASSWORD.name: password,
-            MLFLOW_TRACKING_TOKEN.name: token,
-            MLFLOW_TRACKING_INSECURE_TLS.name: str(ignore_tls_verification),
-            MLFLOW_TRACKING_CLIENT_CERT_PATH.name: client_cert_path,
-            MLFLOW_TRACKING_SERVER_CERT_PATH.name: server_cert_path,
+            QCFLOW_TRACKING_USERNAME.name: username,
+            QCFLOW_TRACKING_PASSWORD.name: password,
+            QCFLOW_TRACKING_TOKEN.name: token,
+            QCFLOW_TRACKING_INSECURE_TLS.name: str(ignore_tls_verification),
+            QCFLOW_TRACKING_CLIENT_CERT_PATH.name: client_cert_path,
+            QCFLOW_TRACKING_SERVER_CERT_PATH.name: server_cert_path,
         }
     )
     assert repo._host_creds == expected_host_creds
@@ -388,7 +388,7 @@ def test_default_host_creds(monkeypatch):
 @pytest.mark.parametrize("remote_file_path", ["a.txt", "dir/b.txt", None])
 def test_delete_artifacts(http_artifact_repo, remote_file_path):
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockStreamResponse("data", 200),
     ) as mock_get:
         http_artifact_repo.delete_artifacts(remote_file_path)
@@ -401,9 +401,9 @@ def test_delete_artifacts(http_artifact_repo, remote_file_path):
 
 
 def test_create_multipart_upload(http_artifact_repo, monkeypatch):
-    monkeypatch.setenv("MLFLOW_ENABLE_PROXY_MULTIPART_UPLOAD", "true")
+    monkeypatch.setenv("QCFLOW_ENABLE_PROXY_MULTIPART_UPLOAD", "true")
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse(
             {
                 "upload_id": "upload_id",
@@ -425,9 +425,9 @@ def test_create_multipart_upload(http_artifact_repo, monkeypatch):
 
 
 def test_complete_multipart_upload(http_artifact_repo, monkeypatch):
-    monkeypatch.setenv("MLFLOW_ENABLE_PROXY_MULTIPART_UPLOAD", "true")
+    monkeypatch.setenv("QCFLOW_ENABLE_PROXY_MULTIPART_UPLOAD", "true")
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse({}, 200),
     ) as mock_post:
         http_artifact_repo.complete_multipart_upload(
@@ -439,11 +439,11 @@ def test_complete_multipart_upload(http_artifact_repo, monkeypatch):
             ],
             artifact_path="artifact/path",
         )
-        endpoint = "/mlflow-artifacts"
+        endpoint = "/qcflow-artifacts"
         url, _ = http_artifact_repo.artifact_uri.split(endpoint, maxsplit=1)
         mock_post.assert_called_once_with(
             get_default_host_creds(url),
-            "/mlflow-artifacts/mpu/complete/artifact/path",
+            "/qcflow-artifacts/mpu/complete/artifact/path",
             "POST",
             json={
                 "path": "local_file",
@@ -457,9 +457,9 @@ def test_complete_multipart_upload(http_artifact_repo, monkeypatch):
 
 
 def test_abort_multipart_upload(http_artifact_repo, monkeypatch):
-    monkeypatch.setenv("MLFLOW_ENABLE_PROXY_MULTIPART_UPLOAD", "true")
+    monkeypatch.setenv("QCFLOW_ENABLE_PROXY_MULTIPART_UPLOAD", "true")
     with mock.patch(
-        "mlflow.store.artifact.http_artifact_repo.http_request",
+        "qcflow.store.artifact.http_artifact_repo.http_request",
         return_value=MockResponse({}, 200),
     ) as mock_post:
         http_artifact_repo.abort_multipart_upload(
@@ -467,11 +467,11 @@ def test_abort_multipart_upload(http_artifact_repo, monkeypatch):
             upload_id="upload_id",
             artifact_path="artifact/path",
         )
-        endpoint = "/mlflow-artifacts"
+        endpoint = "/qcflow-artifacts"
         url, _ = http_artifact_repo.artifact_uri.split(endpoint, maxsplit=1)
         mock_post.assert_called_once_with(
             get_default_host_creds(url),
-            "/mlflow-artifacts/mpu/abort/artifact/path",
+            "/qcflow-artifacts/mpu/abort/artifact/path",
             "POST",
             json={
                 "path": "local_file",

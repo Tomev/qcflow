@@ -1,13 +1,13 @@
 """
-The ``mlflow.paddle`` module provides an API for logging and loading paddle models.
+The ``qcflow.paddle`` module provides an API for logging and loading paddle models.
 This module exports paddle models with the following flavors:
 
 Paddle (native) format
     This is the main flavor that can be loaded back into paddle.
 
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
-    NOTE: The `mlflow.pyfunc` flavor is only added for paddle models that define `predict()`,
+    NOTE: The `qcflow.pyfunc` flavor is only added for paddle models that define `predict()`,
     since `predict()` is required for pyfunc model inference.
 """
 
@@ -17,35 +17,35 @@ from typing import Any, Optional
 
 import yaml
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.autologging_utils import autologging_integration, safe_patch
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.autologging_utils import autologging_integration, safe_patch
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "paddle"
 
@@ -57,7 +57,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -67,10 +67,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
@@ -80,7 +80,7 @@ def save_model(
     training=False,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -88,11 +88,11 @@ def save_model(
     metadata=None,
 ):
     """
-    Save a paddle model to a path on the local file system. Produces an MLflow Model
+    Save a paddle model to a path on the local file system. Produces an QCFlow Model
     containing the following flavors:
 
-        - :py:mod:`mlflow.paddle`
-        - :py:mod:`mlflow.pyfunc`. NOTE: This flavor is only included for paddle models
+        - :py:mod:`qcflow.paddle`
+        - :py:mod:`qcflow.pyfunc`. NOTE: This flavor is only included for paddle models
           that define `predict()`, since `predict()` is required for pyfunc model inference.
 
     Args:
@@ -103,7 +103,7 @@ def save_model(
             inference. If set to False, it only supports inference.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
         signature: {{ signature }}
         input_example: {{ input_example }}
         pip_requirements: {{ pip_requirements }}
@@ -113,7 +113,7 @@ def save_model(
     .. code-block:: python
         :caption: Example
 
-        import mlflow.paddle
+        import qcflow.paddle
         import paddle
         from paddle.nn import Linear
         import paddle.nn.functional as F
@@ -177,11 +177,11 @@ def save_model(
                 avg_loss.backward()
                 opt.step()
                 opt.clear_grad()
-        mlflow.log_param("learning_rate", 0.01)
-        mlflow.paddle.log_model(model, "model")
+        qcflow.log_param("learning_rate", 0.01)
+        qcflow.paddle.log_model(model, "model")
         sk_path_dir = "./test-out"
-        mlflow.paddle.save_model(model, sk_path_dir)
-        print("Model saved in run %s" % mlflow.active_run().info.run_uuid)
+        qcflow.paddle.save_model(model, sk_path_dir)
+        print("Model saved in run %s" % qcflow.active_run().info.run_uuid)
     """
     import paddle
 
@@ -190,9 +190,9 @@ def save_model(
     _validate_and_prepare_target_save_path(path)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _PaddleWrapper(pd_model)
@@ -201,9 +201,9 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     model_data_subpath = _MODEL_DATA_SUBPATH
     output_path = os.path.join(path, model_data_subpath)
@@ -215,27 +215,27 @@ def save_model(
 
     # `PyFuncModel` only works for paddle models that define `predict()`.
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.paddle",
+        qcflow_model,
+        loader_module="qcflow.paddle",
         model_path=model_data_subpath,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
     )
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         pickled_model=model_data_subpath,
         paddle_version=paddle.__version__,
         code=code_dir_subpath,
     )
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -269,11 +269,11 @@ def load_model(model_uri, model=None, dst_path=None, **kwargs):
     Load a paddle model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model, for example:
+        model_uri: The location, in URI format, of the QCFlow model, for example:
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
         model: Required when loading a `paddle.Model` model saved with `training=True`.
@@ -284,7 +284,7 @@ def load_model(model_uri, model=None, dst_path=None, **kwargs):
             or `model.load`.
 
     For more information about supported URI schemes, see
-    `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+    `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
     artifact-locations>`_.
 
     Returns:
@@ -293,9 +293,9 @@ def load_model(model_uri, model=None, dst_path=None, **kwargs):
     .. code-block:: python
         :caption: Example
 
-        import mlflow.paddle
+        import qcflow.paddle
 
-        pd_model = mlflow.paddle.load_model("runs:/96771d893a5e46159d9f3b49bf9013e2/pd_models")
+        pd_model = qcflow.paddle.load_model("runs:/96771d893a5e46159d9f3b49bf9013e2/pd_models")
         # use Pandas DataFrame to make predictions
         np_array = ...
         predictions = pd_model(np_array)
@@ -339,11 +339,11 @@ def log_model(
     metadata=None,
 ):
     """
-    Log a paddle model as an MLflow artifact for the current run. Produces an MLflow Model
+    Log a paddle model as an QCFlow artifact for the current run. Produces an QCFlow Model
     containing the following flavors:
 
-        - :py:mod:`mlflow.paddle`
-        - :py:mod:`mlflow.pyfunc`. NOTE: This flavor is only included for paddle models
+        - :py:mod:`qcflow.paddle`
+        - :py:mod:`qcflow.pyfunc`. NOTE: This flavor is only included for paddle models
           that define `predict()`, since `predict()` is required for pyfunc model inference.
 
     Args:
@@ -367,13 +367,13 @@ def log_model(
         metadata: {{ metadata }}
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
         :caption: Example
 
-        import mlflow.paddle
+        import qcflow.paddle
 
 
         def load_data(): ...
@@ -390,14 +390,14 @@ def log_model(
         BATCH_SIZE = 10
         for epoch_id in range(EPOCH_NUM):
             ...
-        mlflow.log_param("learning_rate", 0.01)
-        mlflow.paddle.log_model(model, "model")
+        qcflow.log_param("learning_rate", 0.01)
+        qcflow.paddle.log_model(model, "model")
         sk_path_dir = ...
-        mlflow.paddle.save_model(model, sk_path_dir)
+        qcflow.paddle.save_model(model, sk_path_dir)
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.paddle,
+        flavor=qcflow.paddle,
         pd_model=pd_model,
         conda_env=conda_env,
         code_paths=code_paths,
@@ -417,7 +417,7 @@ def _load_pyfunc(path):
     Loads PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``paddle`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``paddle`` flavor.
     """
     return _PaddleWrapper(load_model(path))
 
@@ -489,7 +489,7 @@ def autolog(
     extra_tags=None,
 ):
     """
-    Enables (or disables) and configures autologging from PaddlePaddle to MLflow.
+    Enables (or disables) and configures autologging from PaddlePaddle to QCFlow.
 
     Autologging is performed when the `fit` method of `paddle.Model`_ is called.
 
@@ -499,14 +499,14 @@ def autolog(
     Args:
         log_every_n_epoch: If specified, logs metrics once every `n` epochs. By default, metrics
             are logged after every epoch.
-        log_models: If ``True``, trained models are logged as MLflow model artifacts.
+        log_models: If ``True``, trained models are logged as QCFlow model artifacts.
             If ``False``, trained models are not logged.
         disable: If ``True``, disables the PaddlePaddle autologging integration.
             If ``False``, enables the PaddlePaddle autologging integration.
         exclusive: If ``True``, autologged content is not logged to user-created fluent runs.
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during PyTorch
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during PyTorch
             Lightning autologging. If ``False``, show all events and warnings during
             PaddlePaddle autologging.
         registered_model_name: If given, each time a model is trained, it is registered as a
@@ -518,12 +518,12 @@ def autolog(
         :caption: Example
 
         import paddle
-        import mlflow
-        from mlflow import MlflowClient
+        import qcflow
+        from qcflow import MlflowClient
 
 
         def show_run_data(run_id):
-            run = mlflow.get_run(run_id)
+            run = qcflow.get_run(run_id)
             print(f"params: {run.data.params}")
             print(f"metrics: {run.data.metrics}")
             client = MlflowClient()
@@ -545,8 +545,8 @@ def autolog(
         model = paddle.Model(LinearRegression())
         optim = paddle.optimizer.SGD(learning_rate=1e-2, parameters=model.parameters())
         model.prepare(optim, paddle.nn.MSELoss(), paddle.metric.Accuracy())
-        mlflow.paddle.autolog()
-        with mlflow.start_run() as run:
+        qcflow.paddle.autolog()
+        with qcflow.start_run() as run:
             model.fit(train_dataset, eval_dataset, batch_size=16, epochs=10)
         show_run_data(run.info.run_id)
 
@@ -578,7 +578,7 @@ def autolog(
     """
     import paddle
 
-    from mlflow.paddle._paddle_autolog import patched_fit
+    from qcflow.paddle._paddle_autolog import patched_fit
 
     safe_patch(
         FLAVOR_NAME, paddle.Model, "fit", patched_fit, manage_run=True, extra_tags=extra_tags

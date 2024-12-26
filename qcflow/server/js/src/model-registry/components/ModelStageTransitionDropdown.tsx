@@ -106,7 +106,7 @@ export class ModelStageTransitionDropdown extends React.Component<
       );
       return (
         <Modal
-          componentId="codegen_mlflow_app_src_model-registry_components_modelstagetransitiondropdown.tsx_270"
+          componentId="codegen_qcflow_app_src_model-registry_components_modelstagetransitiondropdown.tsx_270"
           title={
             <FormattedMessage
               defaultMessage="Stage Transition"

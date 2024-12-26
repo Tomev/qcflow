@@ -1,10 +1,10 @@
 import warnings
 from abc import ABCMeta
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.utils.plugins import get_entry_points
-from mlflow.utils.uri import get_uri_scheme
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.utils.plugins import get_entry_points
+from qcflow.utils.uri import get_uri_scheme
 
 
 class UnsupportedModelRegistryStoreURIException(MlflowException):
@@ -15,8 +15,8 @@ class UnsupportedModelRegistryStoreURIException(MlflowException):
             " Model registry functionality is unavailable; got unsupported URI"
             f" '{unsupported_uri}' for model registry data storage. Supported URI schemes are:"
             f" {supported_uri_schemes}."
-            " See https://www.mlflow.org/docs/latest/tracking.html#storage for how to run"
-            " an MLflow server against one of the supported backend storage locations."
+            " See https://www.qcflow.org/docs/latest/tracking.html#storage for how to run"
+            " an QCFlow server against one of the supported backend storage locations."
         )
         super().__init__(message, error_code=INVALID_PARAMETER_VALUE)
         self.supported_uri_schemes = supported_uri_schemes
@@ -69,7 +69,7 @@ class StoreRegistry:
 
         Returns:
             A function that returns an instance of
-            ``mlflow.store.{tracking|model_registry}.AbstractStore`` that fulfills the store
+            ``qcflow.store.{tracking|model_registry}.AbstractStore`` that fulfills the store
             URI requirements.
         """
         scheme = (

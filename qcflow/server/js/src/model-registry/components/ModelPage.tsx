@@ -219,6 +219,6 @@ const ModelPageWithRouter = withRouterNext(
   connect(mapStateToProps, mapDispatchToProps)(injectIntl(ModelPageImpl)),
 );
 
-export const ModelPage = withErrorBoundary(ErrorUtils.mlflowServices.MODEL_REGISTRY, ModelPageWithRouter);
+export const ModelPage = withErrorBoundary(ErrorUtils.qcflowServices.MODEL_REGISTRY, ModelPageWithRouter);
 
 export default ModelPage;

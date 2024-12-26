@@ -8,15 +8,15 @@ from unittest import mock
 import pytest
 from opentelemetry import trace as trace_api
 
-import mlflow
-from mlflow.tracing.display.display_handler import IPythonTraceDisplayHandler
-from mlflow.tracing.export.inference_table import _TRACE_BUFFER
-from mlflow.tracing.fluent import TRACE_BUFFER
-from mlflow.tracing.provider import reset_tracer_setup
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracking._tracking_service.utils import _use_tracking_uri
-from mlflow.utils.file_utils import path_to_local_sqlite_uri
-from mlflow.utils.os import is_windows
+import qcflow
+from qcflow.tracing.display.display_handler import IPythonTraceDisplayHandler
+from qcflow.tracing.export.inference_table import _TRACE_BUFFER
+from qcflow.tracing.fluent import TRACE_BUFFER
+from qcflow.tracing.provider import reset_tracer_setup
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracking._tracking_service.utils import _use_tracking_uri
+from qcflow.utils.file_utils import path_to_local_sqlite_uri
+from qcflow.utils.os import is_windows
 
 from tests.autologging.fixtures import enable_test_mode
 
@@ -34,15 +34,15 @@ def tracking_uri_mock(tmp_path, request):
 @pytest.fixture(autouse=True)
 def reset_active_experiment_id():
     yield
-    mlflow.tracking.fluent._active_experiment_id = None
-    os.environ.pop("MLFLOW_EXPERIMENT_ID", None)
+    qcflow.tracking.fluent._active_experiment_id = None
+    os.environ.pop("QCFLOW_EXPERIMENT_ID", None)
 
 
 @pytest.fixture(autouse=True)
-def reset_mlflow_uri():
+def reset_qcflow_uri():
     yield
-    os.environ.pop("MLFLOW_TRACKING_URI", None)
-    os.environ.pop("MLFLOW_REGISTRY_URI", None)
+    os.environ.pop("QCFLOW_TRACKING_URI", None)
+    os.environ.pop("QCFLOW_REGISTRY_URI", None)
 
 
 @pytest.fixture(autouse=True)
@@ -55,7 +55,7 @@ def reset_tracing():
     """
     yield
 
-    # Reset OpenTelemetry and MLflow tracer setup
+    # Reset OpenTelemetry and QCFlow tracer setup
     reset_tracer_setup()
 
     # Clear other global state and singletons
@@ -94,9 +94,9 @@ def validate_trace_finish():
 @pytest.fixture(autouse=True, scope="session")
 def enable_test_mode_by_default_for_autologging_integrations():
     """
-    Run all MLflow tests in autologging test mode, ensuring that errors in autologging patch code
+    Run all QCFlow tests in autologging test mode, ensuring that errors in autologging patch code
     are raised and detected. For more information about autologging test mode, see the docstring
-    for :py:func:`mlflow.utils.autologging_utils._is_testing()`.
+    for :py:func:`qcflow.utils.autologging_utils._is_testing()`.
     """
     yield from enable_test_mode()
 
@@ -112,13 +112,13 @@ def clean_up_leaked_runs():
     try:
         yield
         assert (
-            not mlflow.active_run()
+            not qcflow.active_run()
         ), "test case unexpectedly leaked a run. Run info: {}. Run data: {}".format(
-            mlflow.active_run().info, mlflow.active_run().data
+            qcflow.active_run().info, qcflow.active_run().data
         )
     finally:
-        while mlflow.active_run():
-            mlflow.end_run()
+        while qcflow.active_run():
+            qcflow.end_run()
 
 
 def _called_in_save_model():
@@ -131,20 +131,20 @@ def _called_in_save_model():
 @pytest.fixture(autouse=True)
 def prevent_infer_pip_requirements_fallback(request):
     """
-    Prevents `mlflow.models.infer_pip_requirements` from falling back in `mlflow.*.save_model`
+    Prevents `qcflow.models.infer_pip_requirements` from falling back in `qcflow.*.save_model`
     unless explicitly disabled via `pytest.mark.allow_infer_pip_requirements_fallback`.
     """
-    from mlflow.utils.environment import _INFER_PIP_REQUIREMENTS_GENERAL_ERROR_MESSAGE
+    from qcflow.utils.environment import _INFER_PIP_REQUIREMENTS_GENERAL_ERROR_MESSAGE
 
     def new_exception(msg, *_, **__):
         if msg == _INFER_PIP_REQUIREMENTS_GENERAL_ERROR_MESSAGE and _called_in_save_model():
             raise Exception(
-                "`mlflow.models.infer_pip_requirements` should not fall back in"
-                "`mlflow.*.save_model` during test"
+                "`qcflow.models.infer_pip_requirements` should not fall back in"
+                "`qcflow.*.save_model` during test"
             )
 
     if "allow_infer_pip_requirements_fallback" not in request.keywords:
-        with mock.patch("mlflow.utils.environment._logger.exception", new=new_exception):
+        with mock.patch("qcflow.utils.environment._logger.exception", new=new_exception):
             yield
     else:
         yield
@@ -211,19 +211,19 @@ def monkeypatch():
 
 @pytest.fixture
 def tmp_sqlite_uri(tmp_path):
-    path = tmp_path.joinpath("mlflow.db").as_uri()
+    path = tmp_path.joinpath("qcflow.db").as_uri()
     return ("sqlite://" if is_windows() else "sqlite:////") + path[len("file://") :]
 
 
 @pytest.fixture
 def mock_databricks_serving_with_tracing_env(monkeypatch):
     monkeypatch.setenv("IS_IN_DB_MODEL_SERVING_ENV", "true")
-    monkeypatch.setenv("ENABLE_MLFLOW_TRACING", "true")
+    monkeypatch.setenv("ENABLE_QCFLOW_TRACING", "true")
 
 
 @pytest.fixture(params=[True, False])
 def mock_is_in_databricks(request):
     with mock.patch(
-        "mlflow.models.model.is_in_databricks_runtime", return_value=request.param
+        "qcflow.models.model.is_in_databricks_runtime", return_value=request.param
     ) as mock_databricks:
         yield mock_databricks

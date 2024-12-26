@@ -3,10 +3,10 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities.file_info import FileInfo
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.uc_volume_artifact_repo import UCVolumesArtifactRepository
+from qcflow.entities.file_info import FileInfo
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.uc_volume_artifact_repo import UCVolumesArtifactRepository
 
 HOST = "http://localhost:5000"
 
@@ -67,7 +67,7 @@ def test_log_artifact(artifact_repo, artifact_path, tmp_path):
     mock_response = mock.MagicMock()
     mock_response.status_code = 204
 
-    with mock.patch("mlflow.store.artifact.uc_volume_artifact_repo.http_request") as mock_request:
+    with mock.patch("qcflow.store.artifact.uc_volume_artifact_repo.http_request") as mock_request:
         tmp_file = tmp_path.joinpath("local_file")
         tmp_file.touch()
         artifact_repo.log_artifact(tmp_file, artifact_path)
@@ -84,7 +84,7 @@ def test_log_artifacts(artifact_repo, artifact_path, tmp_path):
     mock_response.status_code = 204
 
     with mock.patch(
-        "mlflow.store.artifact.uc_volume_artifact_repo.http_request", return_value=mock_response
+        "qcflow.store.artifact.uc_volume_artifact_repo.http_request", return_value=mock_response
     ) as mock_request:
         file1 = tmp_path.joinpath("local_file1")
         file1.touch()
@@ -127,7 +127,7 @@ def test_list_artifacts(artifact_repo, artifact_path):
         ],
     }
     with mock.patch(
-        "mlflow.store.artifact.uc_volume_artifact_repo.http_request", return_value=mock_response
+        "qcflow.store.artifact.uc_volume_artifact_repo.http_request", return_value=mock_response
     ) as mock_request:
         artifacts = artifact_repo.list_artifacts(artifact_path)
         assert artifacts == [
@@ -184,7 +184,7 @@ def test_list_artifacts_pagination(artifact_repo, artifact_path):
     }
 
     with mock.patch(
-        "mlflow.store.artifact.uc_volume_artifact_repo.http_request",
+        "qcflow.store.artifact.uc_volume_artifact_repo.http_request",
         side_effect=[first_mock_response, second_mock_response],
     ) as mock_request:
         artifacts = artifact_repo.list_artifacts(artifact_path)
@@ -210,7 +210,7 @@ def test_download_file(artifact_repo, remote_file_path, tmp_path):
     mock_response.status_code = 200
     mock_response.__enter__.return_value.iter_content.return_value = iter([b"content"])
     with mock.patch(
-        "mlflow.store.artifact.uc_volume_artifact_repo.http_request", return_value=mock_response
+        "qcflow.store.artifact.uc_volume_artifact_repo.http_request", return_value=mock_response
     ) as mock_request:
         output_path = tmp_path.joinpath("output_path")
         artifact_repo._download_file(remote_file_path, output_path)

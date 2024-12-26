@@ -1,6 +1,6 @@
 import React from 'react';
 import { SimplePagination } from './SimplePagination';
-import { renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 
 const minimalProps = {
   currentPage: 3,

@@ -1,12 +1,12 @@
 from contextlib import contextmanager
 from threading import Thread
 
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import (
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import (
     autologging_integration,
     safe_patch,
 )
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
 FLAVOR_NAME = "litellm"
 
@@ -18,7 +18,7 @@ def autolog(
     silent: bool = False,
 ):
     """
-    Enables (or disables) and configures autologging from LiteLLM to MLflow. Currently, MLflow
+    Enables (or disables) and configures autologging from LiteLLM to QCFlow. Currently, QCFlow
     only supports autologging for tracing.
 
     Args:
@@ -26,7 +26,7 @@ def autolog(
             no traces are collected during inference. Default to ``True``.
         disable: If ``True``, disables the LiteLLM autologging integration. If ``False``,
             enables the LiteLLM autologging integration.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during LiteLLM
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during LiteLLM
             autologging. If ``False``, show all events and warnings.
     """
     import litellm
@@ -36,8 +36,8 @@ def autolog(
     _autolog(log_traces=log_traces, disable=disable, silent=silent)
 
     if log_traces and not disable:
-        litellm.success_callback = _append_mlflow_callbacks(litellm.success_callback)
-        litellm.failure_callback = _append_mlflow_callbacks(litellm.failure_callback)
+        litellm.success_callback = _append_qcflow_callbacks(litellm.success_callback)
+        litellm.failure_callback = _append_qcflow_callbacks(litellm.failure_callback)
 
         if is_in_databricks_runtime():
             # Patch main APIs e.g. completion to inject custom handling for threading.
@@ -66,14 +66,14 @@ def autolog(
             # NB: We don't need to patch async function because Databricks notebook waits
             # for the async task to finish before finishing the cell.
     else:
-        litellm.success_callback = _remove_mlflow_callbacks(litellm.success_callback)
-        litellm.failure_callback = _remove_mlflow_callbacks(litellm.failure_callback)
+        litellm.success_callback = _remove_qcflow_callbacks(litellm.success_callback)
+        litellm.failure_callback = _remove_qcflow_callbacks(litellm.failure_callback)
         # Callback also needs to be removed from 'callbacks' as litellm adds
         # success/failure callbacks to there as well.
-        litellm.callbacks = _remove_mlflow_callbacks(litellm.callbacks)
+        litellm.callbacks = _remove_qcflow_callbacks(litellm.callbacks)
 
 
-# This is required by mlflow.autolog()
+# This is required by qcflow.autolog()
 autolog.integration_name = FLAVOR_NAME
 
 
@@ -137,16 +137,16 @@ def _patch_thread_start():
         Thread.start = original
 
 
-def _append_mlflow_callbacks(callbacks):
-    if not any(cb == "mlflow" for cb in callbacks):
-        return callbacks + ["mlflow"]
+def _append_qcflow_callbacks(callbacks):
+    if not any(cb == "qcflow" for cb in callbacks):
+        return callbacks + ["qcflow"]
     return callbacks
 
 
-def _remove_mlflow_callbacks(callbacks):
+def _remove_qcflow_callbacks(callbacks):
     try:
-        from litellm.integrations.mlflow import MlflowLogger
+        from litellm.integrations.qcflow import MlflowLogger
 
-        return [cb for cb in callbacks if not (cb == "mlflow" or isinstance(cb, MlflowLogger))]
+        return [cb for cb in callbacks if not (cb == "qcflow" or isinstance(cb, MlflowLogger))]
     except ImportError:
         return callbacks

@@ -1,7 +1,7 @@
-mlflow.config
+qcflow.config
 ==============
 
-.. automodule:: mlflow.config
+.. automodule:: qcflow.config
     :members:
     :undoc-members:
     :show-inheritance:

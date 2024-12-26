@@ -1,8 +1,8 @@
 import warnings
 
-from mlflow.exceptions import MlflowException
-from mlflow.utils.import_hooks import register_post_import_hook
-from mlflow.utils.plugins import get_entry_points
+from qcflow.exceptions import MlflowException
+from qcflow.utils.import_hooks import register_post_import_hook
+from qcflow.utils.plugins import get_entry_points
 
 
 class ModelEvaluatorRegistry:
@@ -25,7 +25,7 @@ class ModelEvaluatorRegistry:
 
     def register_entrypoints(self):
         # Register ModelEvaluator implementation provided by other packages
-        for entrypoint in get_entry_points("mlflow.model_evaluator"):
+        for entrypoint in get_entry_points("qcflow.model_evaluator"):
             try:
                 self.register(entrypoint.name, entrypoint.load())
             except (AttributeError, ImportError) as exc:
@@ -59,10 +59,10 @@ _model_evaluation_registry = ModelEvaluatorRegistry()
 
 
 def register_evaluators(module):
-    from mlflow.models.evaluation.evaluators.classifier import ClassifierEvaluator
-    from mlflow.models.evaluation.evaluators.default import DefaultEvaluator
-    from mlflow.models.evaluation.evaluators.regressor import RegressorEvaluator
-    from mlflow.models.evaluation.evaluators.shap import ShapEvaluator
+    from qcflow.models.evaluation.evaluators.classifier import ClassifierEvaluator
+    from qcflow.models.evaluation.evaluators.default import DefaultEvaluator
+    from qcflow.models.evaluation.evaluators.regressor import RegressorEvaluator
+    from qcflow.models.evaluation.evaluators.shap import ShapEvaluator
 
     # Built-in evaluators
     module._model_evaluation_registry.register_builtin(DefaultEvaluator.name, DefaultEvaluator)

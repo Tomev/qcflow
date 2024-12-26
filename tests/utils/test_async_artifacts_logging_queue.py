@@ -7,8 +7,8 @@ import time
 import pytest
 from PIL import Image
 
-from mlflow import MlflowException
-from mlflow.utils.async_logging.async_artifacts_logging_queue import AsyncArtifactsLoggingQueue
+from qcflow import MlflowException
+from qcflow.utils.async_logging.async_artifacts_logging_queue import AsyncArtifactsLoggingQueue
 
 TOTAL_ARTIFACTS = 5
 

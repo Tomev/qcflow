@@ -20,7 +20,7 @@ if Version(google.protobuf.__version__).major >= 5:
   from . import databricks_pb2 as databricks__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n unity_catalog_oss_messages.proto\x12\x13mlflow.unitycatalog\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"\xfd\x01\n\x13RegisteredModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x18\n\x10storage_location\x18\x06 \x01(\t\x12\x11\n\tfull_name\x18\t \x01(\t\x12\x12\n\ncreated_at\x18\x0b \x01(\x03\x12\x12\n\ncreated_by\x18\x0c \x01(\t\x12\x12\n\nupdated_at\x18\r \x01(\x03\x12\x12\n\nupdated_by\x18\x0e \x01(\t\x12\n\n\x02id\x18\x12 \x01(\t\x12\x13\n\x0b\x62rowse_only\x18\x15 \x01(\x08\"\xd0\x01\n\x15\x43reateRegisteredModel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x18\n\x10storage_location\x18\x06 \x01(\t\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.mlflow.unitycatalog.RegisteredModelInfo\"E\n\x15\x44\x65leteRegisteredModel\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\r\n\x05\x66orce\x18\x02 \x01(\x08\x1a\n\n\x08Response\"\x82\x01\n\x12GetRegisteredModel\x12\x17\n\tfull_name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.mlflow.unitycatalog.RegisteredModelInfo\"\xa2\x01\n\x15UpdateRegisteredModel\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x10\n\x08new_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.mlflow.unitycatalog.RegisteredModelInfo\"\xd4\x01\n\x14ListRegisteredModels\x12\x14\n\x0c\x63\x61talog_name\x18\x01 \x01(\t\x12\x13\n\x0bschema_name\x18\x02 \x01(\t\x12\x13\n\x0bmax_results\x18\x05 \x01(\x03\x12\x12\n\npage_token\x18\x06 \x01(\t\x1ah\n\x08Response\x12\x43\n\x11registered_models\x18\x01 \x03(\x0b\x32(.mlflow.unitycatalog.RegisteredModelInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\xc2\x02\n\x10ModelVersionInfo\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x05 \x01(\t\x12\x0f\n\x07\x63omment\x18\x04 \x01(\t\x12\x0e\n\x06run_id\x18\x06 \x01(\t\x12\x37\n\x06status\x18\x08 \x01(\x0e\x32\'.mlflow.unitycatalog.ModelVersionStatus\x12\x0f\n\x07version\x18\t \x01(\x03\x12\x18\n\x10storage_location\x18\n \x01(\t\x12\x12\n\ncreated_at\x18\x0c \x01(\x03\x12\x12\n\ncreated_by\x18\r \x01(\t\x12\x12\n\nupdated_at\x18\x0e \x01(\x03\x12\x12\n\nupdated_by\x18\x0f \x01(\t\x12\n\n\x02id\x18\x10 \x01(\t\"\xd3\x01\n\x12\x43reateModelVersion\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x04 \x01(\t\x12\x0e\n\x06run_id\x18\x05 \x01(\t\x12\x0f\n\x07\x63omment\x18\x06 \x01(\t\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\"D\n\x12\x44\x65leteModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1a\n\n\x08Response\"\x89\x01\n\x14\x46inalizeModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\"\x84\x01\n\x0fGetModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\"\x98\x01\n\x12UpdateModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x12\x0f\n\x07\x63omment\x18\x03 \x01(\t\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\"\xb3\x01\n\x11ListModelVersions\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x13\n\x0bmax_results\x18\x04 \x01(\x03\x12\x12\n\npage_token\x18\x05 \x01(\t\x1a\x62\n\x08Response\x12=\n\x0emodel_versions\x18\x01 \x03(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\xff\x01\n\x14TemporaryCredentials\x12\x41\n\x14\x61ws_temp_credentials\x18\x02 \x01(\x0b\x32#.mlflow.unitycatalog.AwsCredentials\x12N\n\x19\x61zure_user_delegation_sas\x18\x03 \x01(\x0b\x32+.mlflow.unitycatalog.AzureUserDelegationSAS\x12;\n\x0fgcp_oauth_token\x18\x04 \x01(\x0b\x32\".mlflow.unitycatalog.GcpOauthToken\x12\x17\n\x0f\x65xpiration_time\x18\x01 \x01(\x03\"Y\n\x0e\x41wsCredentials\x12\x15\n\raccess_key_id\x18\x01 \x01(\t\x12\x19\n\x11secret_access_key\x18\x02 \x01(\t\x12\x15\n\rsession_token\x18\x03 \x01(\t\"+\n\x16\x41zureUserDelegationSAS\x12\x11\n\tsas_token\x18\x01 \x01(\t\"$\n\rGcpOauthToken\x12\x13\n\x0boauth_token\x18\x01 \x01(\t\"\x84\x02\n\'GenerateTemporaryModelVersionCredential\x12\x14\n\x0c\x63\x61talog_name\x18\x01 \x01(\t\x12\x13\n\x0bschema_name\x18\x02 \x01(\t\x12\x12\n\nmodel_name\x18\x03 \x01(\t\x12\x0f\n\x07version\x18\x04 \x01(\x03\x12=\n\toperation\x18\x05 \x01(\x0e\x32*.mlflow.unitycatalog.ModelVersionOperation\x1aJ\n\x08Response\x12>\n\x0b\x63redentials\x18\x01 \x01(\x0b\x32).mlflow.unitycatalog.TemporaryCredentials*t\n\x12ModelVersionStatus\x12 \n\x1cMODEL_VERSION_STATUS_UNKNOWN\x10\x00\x12\x18\n\x14PENDING_REGISTRATION\x10\x01\x12\x17\n\x13\x46\x41ILED_REGISTRATION\x10\x02\x12\t\n\x05READY\x10\x03*r\n\x15ModelVersionOperation\x12#\n\x1fUNKNOWN_MODEL_VERSION_OPERATION\x10\x00\x12\x16\n\x12READ_MODEL_VERSION\x10\x01\x12\x1c\n\x18READ_WRITE_MODEL_VERSION\x10\x02\x42\x31\n\'com.databricks.api.proto.managedcatalog\xa0\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n unity_catalog_oss_messages.proto\x12\x13qcflow.unitycatalog\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"\xfd\x01\n\x13RegisteredModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x18\n\x10storage_location\x18\x06 \x01(\t\x12\x11\n\tfull_name\x18\t \x01(\t\x12\x12\n\ncreated_at\x18\x0b \x01(\x03\x12\x12\n\ncreated_by\x18\x0c \x01(\t\x12\x12\n\nupdated_at\x18\r \x01(\x03\x12\x12\n\nupdated_by\x18\x0e \x01(\t\x12\n\n\x02id\x18\x12 \x01(\t\x12\x13\n\x0b\x62rowse_only\x18\x15 \x01(\x08\"\xd0\x01\n\x15\x43reateRegisteredModel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x18\n\x10storage_location\x18\x06 \x01(\t\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.qcflow.unitycatalog.RegisteredModelInfo\"E\n\x15\x44\x65leteRegisteredModel\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\r\n\x05\x66orce\x18\x02 \x01(\x08\x1a\n\n\x08Response\"\x82\x01\n\x12GetRegisteredModel\x12\x17\n\tfull_name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.qcflow.unitycatalog.RegisteredModelInfo\"\xa2\x01\n\x15UpdateRegisteredModel\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x10\n\x08new_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.qcflow.unitycatalog.RegisteredModelInfo\"\xd4\x01\n\x14ListRegisteredModels\x12\x14\n\x0c\x63\x61talog_name\x18\x01 \x01(\t\x12\x13\n\x0bschema_name\x18\x02 \x01(\t\x12\x13\n\x0bmax_results\x18\x05 \x01(\x03\x12\x12\n\npage_token\x18\x06 \x01(\t\x1ah\n\x08Response\x12\x43\n\x11registered_models\x18\x01 \x03(\x0b\x32(.qcflow.unitycatalog.RegisteredModelInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\xc2\x02\n\x10ModelVersionInfo\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x05 \x01(\t\x12\x0f\n\x07\x63omment\x18\x04 \x01(\t\x12\x0e\n\x06run_id\x18\x06 \x01(\t\x12\x37\n\x06status\x18\x08 \x01(\x0e\x32\'.qcflow.unitycatalog.ModelVersionStatus\x12\x0f\n\x07version\x18\t \x01(\x03\x12\x18\n\x10storage_location\x18\n \x01(\t\x12\x12\n\ncreated_at\x18\x0c \x01(\x03\x12\x12\n\ncreated_by\x18\r \x01(\t\x12\x12\n\nupdated_at\x18\x0e \x01(\x03\x12\x12\n\nupdated_by\x18\x0f \x01(\t\x12\n\n\x02id\x18\x10 \x01(\t\"\xd3\x01\n\x12\x43reateModelVersion\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x04 \x01(\t\x12\x0e\n\x06run_id\x18\x05 \x01(\t\x12\x0f\n\x07\x63omment\x18\x06 \x01(\t\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\"D\n\x12\x44\x65leteModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1a\n\n\x08Response\"\x89\x01\n\x14\x46inalizeModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\"\x84\x01\n\x0fGetModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\"\x98\x01\n\x12UpdateModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x12\x0f\n\x07\x63omment\x18\x03 \x01(\t\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\"\xb3\x01\n\x11ListModelVersions\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x13\n\x0bmax_results\x18\x04 \x01(\x03\x12\x12\n\npage_token\x18\x05 \x01(\t\x1a\x62\n\x08Response\x12=\n\x0emodel_versions\x18\x01 \x03(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\xff\x01\n\x14TemporaryCredentials\x12\x41\n\x14\x61ws_temp_credentials\x18\x02 \x01(\x0b\x32#.qcflow.unitycatalog.AwsCredentials\x12N\n\x19\x61zure_user_delegation_sas\x18\x03 \x01(\x0b\x32+.qcflow.unitycatalog.AzureUserDelegationSAS\x12;\n\x0fgcp_oauth_token\x18\x04 \x01(\x0b\x32\".qcflow.unitycatalog.GcpOauthToken\x12\x17\n\x0f\x65xpiration_time\x18\x01 \x01(\x03\"Y\n\x0e\x41wsCredentials\x12\x15\n\raccess_key_id\x18\x01 \x01(\t\x12\x19\n\x11secret_access_key\x18\x02 \x01(\t\x12\x15\n\rsession_token\x18\x03 \x01(\t\"+\n\x16\x41zureUserDelegationSAS\x12\x11\n\tsas_token\x18\x01 \x01(\t\"$\n\rGcpOauthToken\x12\x13\n\x0boauth_token\x18\x01 \x01(\t\"\x84\x02\n\'GenerateTemporaryModelVersionCredential\x12\x14\n\x0c\x63\x61talog_name\x18\x01 \x01(\t\x12\x13\n\x0bschema_name\x18\x02 \x01(\t\x12\x12\n\nmodel_name\x18\x03 \x01(\t\x12\x0f\n\x07version\x18\x04 \x01(\x03\x12=\n\toperation\x18\x05 \x01(\x0e\x32*.qcflow.unitycatalog.ModelVersionOperation\x1aJ\n\x08Response\x12>\n\x0b\x63redentials\x18\x01 \x01(\x0b\x32).qcflow.unitycatalog.TemporaryCredentials*t\n\x12ModelVersionStatus\x12 \n\x1cMODEL_VERSION_STATUS_UNKNOWN\x10\x00\x12\x18\n\x14PENDING_REGISTRATION\x10\x01\x12\x17\n\x13\x46\x41ILED_REGISTRATION\x10\x02\x12\t\n\x05READY\x10\x03*r\n\x15ModelVersionOperation\x12#\n\x1fUNKNOWN_MODEL_VERSION_OPERATION\x10\x00\x12\x16\n\x12READ_MODEL_VERSION\x10\x01\x12\x1c\n\x18READ_WRITE_MODEL_VERSION\x10\x02\x42\x31\n\'com.databricks.api.proto.managedcatalog\xa0\x01\x01\xe2?\x02\x10\x01')
 
   _globals = globals()
   _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -116,7 +116,7 @@ else:
   from . import databricks_pb2 as databricks__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n unity_catalog_oss_messages.proto\x12\x13mlflow.unitycatalog\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"\xfd\x01\n\x13RegisteredModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x18\n\x10storage_location\x18\x06 \x01(\t\x12\x11\n\tfull_name\x18\t \x01(\t\x12\x12\n\ncreated_at\x18\x0b \x01(\x03\x12\x12\n\ncreated_by\x18\x0c \x01(\t\x12\x12\n\nupdated_at\x18\r \x01(\x03\x12\x12\n\nupdated_by\x18\x0e \x01(\t\x12\n\n\x02id\x18\x12 \x01(\t\x12\x13\n\x0b\x62rowse_only\x18\x15 \x01(\x08\"\xd0\x01\n\x15\x43reateRegisteredModel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x18\n\x10storage_location\x18\x06 \x01(\t\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.mlflow.unitycatalog.RegisteredModelInfo\"E\n\x15\x44\x65leteRegisteredModel\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\r\n\x05\x66orce\x18\x02 \x01(\x08\x1a\n\n\x08Response\"\x82\x01\n\x12GetRegisteredModel\x12\x17\n\tfull_name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.mlflow.unitycatalog.RegisteredModelInfo\"\xa2\x01\n\x15UpdateRegisteredModel\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x10\n\x08new_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.mlflow.unitycatalog.RegisteredModelInfo\"\xd4\x01\n\x14ListRegisteredModels\x12\x14\n\x0c\x63\x61talog_name\x18\x01 \x01(\t\x12\x13\n\x0bschema_name\x18\x02 \x01(\t\x12\x13\n\x0bmax_results\x18\x05 \x01(\x03\x12\x12\n\npage_token\x18\x06 \x01(\t\x1ah\n\x08Response\x12\x43\n\x11registered_models\x18\x01 \x03(\x0b\x32(.mlflow.unitycatalog.RegisteredModelInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\xc2\x02\n\x10ModelVersionInfo\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x05 \x01(\t\x12\x0f\n\x07\x63omment\x18\x04 \x01(\t\x12\x0e\n\x06run_id\x18\x06 \x01(\t\x12\x37\n\x06status\x18\x08 \x01(\x0e\x32\'.mlflow.unitycatalog.ModelVersionStatus\x12\x0f\n\x07version\x18\t \x01(\x03\x12\x18\n\x10storage_location\x18\n \x01(\t\x12\x12\n\ncreated_at\x18\x0c \x01(\x03\x12\x12\n\ncreated_by\x18\r \x01(\t\x12\x12\n\nupdated_at\x18\x0e \x01(\x03\x12\x12\n\nupdated_by\x18\x0f \x01(\t\x12\n\n\x02id\x18\x10 \x01(\t\"\xd3\x01\n\x12\x43reateModelVersion\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x04 \x01(\t\x12\x0e\n\x06run_id\x18\x05 \x01(\t\x12\x0f\n\x07\x63omment\x18\x06 \x01(\t\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\"D\n\x12\x44\x65leteModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1a\n\n\x08Response\"\x89\x01\n\x14\x46inalizeModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\"\x84\x01\n\x0fGetModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\"\x98\x01\n\x12UpdateModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x12\x0f\n\x07\x63omment\x18\x03 \x01(\t\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\"\xb3\x01\n\x11ListModelVersions\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x13\n\x0bmax_results\x18\x04 \x01(\x03\x12\x12\n\npage_token\x18\x05 \x01(\t\x1a\x62\n\x08Response\x12=\n\x0emodel_versions\x18\x01 \x03(\x0b\x32%.mlflow.unitycatalog.ModelVersionInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\xff\x01\n\x14TemporaryCredentials\x12\x41\n\x14\x61ws_temp_credentials\x18\x02 \x01(\x0b\x32#.mlflow.unitycatalog.AwsCredentials\x12N\n\x19\x61zure_user_delegation_sas\x18\x03 \x01(\x0b\x32+.mlflow.unitycatalog.AzureUserDelegationSAS\x12;\n\x0fgcp_oauth_token\x18\x04 \x01(\x0b\x32\".mlflow.unitycatalog.GcpOauthToken\x12\x17\n\x0f\x65xpiration_time\x18\x01 \x01(\x03\"Y\n\x0e\x41wsCredentials\x12\x15\n\raccess_key_id\x18\x01 \x01(\t\x12\x19\n\x11secret_access_key\x18\x02 \x01(\t\x12\x15\n\rsession_token\x18\x03 \x01(\t\"+\n\x16\x41zureUserDelegationSAS\x12\x11\n\tsas_token\x18\x01 \x01(\t\"$\n\rGcpOauthToken\x12\x13\n\x0boauth_token\x18\x01 \x01(\t\"\x84\x02\n\'GenerateTemporaryModelVersionCredential\x12\x14\n\x0c\x63\x61talog_name\x18\x01 \x01(\t\x12\x13\n\x0bschema_name\x18\x02 \x01(\t\x12\x12\n\nmodel_name\x18\x03 \x01(\t\x12\x0f\n\x07version\x18\x04 \x01(\x03\x12=\n\toperation\x18\x05 \x01(\x0e\x32*.mlflow.unitycatalog.ModelVersionOperation\x1aJ\n\x08Response\x12>\n\x0b\x63redentials\x18\x01 \x01(\x0b\x32).mlflow.unitycatalog.TemporaryCredentials*t\n\x12ModelVersionStatus\x12 \n\x1cMODEL_VERSION_STATUS_UNKNOWN\x10\x00\x12\x18\n\x14PENDING_REGISTRATION\x10\x01\x12\x17\n\x13\x46\x41ILED_REGISTRATION\x10\x02\x12\t\n\x05READY\x10\x03*r\n\x15ModelVersionOperation\x12#\n\x1fUNKNOWN_MODEL_VERSION_OPERATION\x10\x00\x12\x16\n\x12READ_MODEL_VERSION\x10\x01\x12\x1c\n\x18READ_WRITE_MODEL_VERSION\x10\x02\x42\x31\n\'com.databricks.api.proto.managedcatalog\xa0\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n unity_catalog_oss_messages.proto\x12\x13qcflow.unitycatalog\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"\xfd\x01\n\x13RegisteredModelInfo\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x18\n\x10storage_location\x18\x06 \x01(\t\x12\x11\n\tfull_name\x18\t \x01(\t\x12\x12\n\ncreated_at\x18\x0b \x01(\x03\x12\x12\n\ncreated_by\x18\x0c \x01(\t\x12\x12\n\nupdated_at\x18\r \x01(\x03\x12\x12\n\nupdated_by\x18\x0e \x01(\t\x12\n\n\x02id\x18\x12 \x01(\t\x12\x13\n\x0b\x62rowse_only\x18\x15 \x01(\x08\"\xd0\x01\n\x15\x43reateRegisteredModel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x05 \x01(\t\x12\x18\n\x10storage_location\x18\x06 \x01(\t\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.qcflow.unitycatalog.RegisteredModelInfo\"E\n\x15\x44\x65leteRegisteredModel\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\r\n\x05\x66orce\x18\x02 \x01(\x08\x1a\n\n\x08Response\"\x82\x01\n\x12GetRegisteredModel\x12\x17\n\tfull_name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.qcflow.unitycatalog.RegisteredModelInfo\"\xa2\x01\n\x15UpdateRegisteredModel\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x10\n\x08new_name\x18\x03 \x01(\t\x12\x0f\n\x07\x63omment\x18\x02 \x01(\t\x1aS\n\x08Response\x12G\n\x15registered_model_info\x18\x01 \x01(\x0b\x32(.qcflow.unitycatalog.RegisteredModelInfo\"\xd4\x01\n\x14ListRegisteredModels\x12\x14\n\x0c\x63\x61talog_name\x18\x01 \x01(\t\x12\x13\n\x0bschema_name\x18\x02 \x01(\t\x12\x13\n\x0bmax_results\x18\x05 \x01(\x03\x12\x12\n\npage_token\x18\x06 \x01(\t\x1ah\n\x08Response\x12\x43\n\x11registered_models\x18\x01 \x03(\x0b\x32(.qcflow.unitycatalog.RegisteredModelInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\xc2\x02\n\x10ModelVersionInfo\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x05 \x01(\t\x12\x0f\n\x07\x63omment\x18\x04 \x01(\t\x12\x0e\n\x06run_id\x18\x06 \x01(\t\x12\x37\n\x06status\x18\x08 \x01(\x0e\x32\'.qcflow.unitycatalog.ModelVersionStatus\x12\x0f\n\x07version\x18\t \x01(\x03\x12\x18\n\x10storage_location\x18\n \x01(\t\x12\x12\n\ncreated_at\x18\x0c \x01(\x03\x12\x12\n\ncreated_by\x18\r \x01(\t\x12\x12\n\nupdated_at\x18\x0e \x01(\x03\x12\x12\n\nupdated_by\x18\x0f \x01(\t\x12\n\n\x02id\x18\x10 \x01(\t\"\xd3\x01\n\x12\x43reateModelVersion\x12\x12\n\nmodel_name\x18\x01 \x01(\t\x12\x14\n\x0c\x63\x61talog_name\x18\x02 \x01(\t\x12\x13\n\x0bschema_name\x18\x03 \x01(\t\x12\x0e\n\x06source\x18\x04 \x01(\t\x12\x0e\n\x06run_id\x18\x05 \x01(\t\x12\x0f\n\x07\x63omment\x18\x06 \x01(\t\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\"D\n\x12\x44\x65leteModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1a\n\n\x08Response\"\x89\x01\n\x14\x46inalizeModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\"\x84\x01\n\x0fGetModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\"\x98\x01\n\x12UpdateModelVersion\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x03\x12\x0f\n\x07\x63omment\x18\x03 \x01(\t\x1aM\n\x08Response\x12\x41\n\x12model_version_info\x18\x01 \x01(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\"\xb3\x01\n\x11ListModelVersions\x12\x11\n\tfull_name\x18\x01 \x01(\t\x12\x13\n\x0bmax_results\x18\x04 \x01(\x03\x12\x12\n\npage_token\x18\x05 \x01(\t\x1a\x62\n\x08Response\x12=\n\x0emodel_versions\x18\x01 \x03(\x0b\x32%.qcflow.unitycatalog.ModelVersionInfo\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t\"\xff\x01\n\x14TemporaryCredentials\x12\x41\n\x14\x61ws_temp_credentials\x18\x02 \x01(\x0b\x32#.qcflow.unitycatalog.AwsCredentials\x12N\n\x19\x61zure_user_delegation_sas\x18\x03 \x01(\x0b\x32+.qcflow.unitycatalog.AzureUserDelegationSAS\x12;\n\x0fgcp_oauth_token\x18\x04 \x01(\x0b\x32\".qcflow.unitycatalog.GcpOauthToken\x12\x17\n\x0f\x65xpiration_time\x18\x01 \x01(\x03\"Y\n\x0e\x41wsCredentials\x12\x15\n\raccess_key_id\x18\x01 \x01(\t\x12\x19\n\x11secret_access_key\x18\x02 \x01(\t\x12\x15\n\rsession_token\x18\x03 \x01(\t\"+\n\x16\x41zureUserDelegationSAS\x12\x11\n\tsas_token\x18\x01 \x01(\t\"$\n\rGcpOauthToken\x12\x13\n\x0boauth_token\x18\x01 \x01(\t\"\x84\x02\n\'GenerateTemporaryModelVersionCredential\x12\x14\n\x0c\x63\x61talog_name\x18\x01 \x01(\t\x12\x13\n\x0bschema_name\x18\x02 \x01(\t\x12\x12\n\nmodel_name\x18\x03 \x01(\t\x12\x0f\n\x07version\x18\x04 \x01(\x03\x12=\n\toperation\x18\x05 \x01(\x0e\x32*.qcflow.unitycatalog.ModelVersionOperation\x1aJ\n\x08Response\x12>\n\x0b\x63redentials\x18\x01 \x01(\x0b\x32).qcflow.unitycatalog.TemporaryCredentials*t\n\x12ModelVersionStatus\x12 \n\x1cMODEL_VERSION_STATUS_UNKNOWN\x10\x00\x12\x18\n\x14PENDING_REGISTRATION\x10\x01\x12\x17\n\x13\x46\x41ILED_REGISTRATION\x10\x02\x12\t\n\x05READY\x10\x03*r\n\x15ModelVersionOperation\x12#\n\x1fUNKNOWN_MODEL_VERSION_OPERATION\x10\x00\x12\x16\n\x12READ_MODEL_VERSION\x10\x01\x12\x1c\n\x18READ_WRITE_MODEL_VERSION\x10\x02\x42\x31\n\'com.databricks.api.proto.managedcatalog\xa0\x01\x01\xe2?\x02\x10\x01')
 
   _MODELVERSIONSTATUS = DESCRIPTOR.enum_types_by_name['ModelVersionStatus']
   ModelVersionStatus = enum_type_wrapper.EnumTypeWrapper(_MODELVERSIONSTATUS)
@@ -164,7 +164,7 @@ else:
   RegisteredModelInfo = _reflection.GeneratedProtocolMessageType('RegisteredModelInfo', (_message.Message,), {
     'DESCRIPTOR' : _REGISTEREDMODELINFO,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.RegisteredModelInfo)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.RegisteredModelInfo)
     })
   _sym_db.RegisterMessage(RegisteredModelInfo)
 
@@ -173,12 +173,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _CREATEREGISTEREDMODEL_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.CreateRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.CreateRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _CREATEREGISTEREDMODEL,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.CreateRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.CreateRegisteredModel)
     })
   _sym_db.RegisterMessage(CreateRegisteredModel)
   _sym_db.RegisterMessage(CreateRegisteredModel.Response)
@@ -188,12 +188,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETEREGISTEREDMODEL_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.DeleteRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.DeleteRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _DELETEREGISTEREDMODEL,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.DeleteRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.DeleteRegisteredModel)
     })
   _sym_db.RegisterMessage(DeleteRegisteredModel)
   _sym_db.RegisterMessage(DeleteRegisteredModel.Response)
@@ -203,12 +203,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETREGISTEREDMODEL_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.GetRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.GetRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _GETREGISTEREDMODEL,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.GetRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.GetRegisteredModel)
     })
   _sym_db.RegisterMessage(GetRegisteredModel)
   _sym_db.RegisterMessage(GetRegisteredModel.Response)
@@ -218,12 +218,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _UPDATEREGISTEREDMODEL_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.UpdateRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.UpdateRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _UPDATEREGISTEREDMODEL,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.UpdateRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.UpdateRegisteredModel)
     })
   _sym_db.RegisterMessage(UpdateRegisteredModel)
   _sym_db.RegisterMessage(UpdateRegisteredModel.Response)
@@ -233,12 +233,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _LISTREGISTEREDMODELS_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.ListRegisteredModels.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.ListRegisteredModels.Response)
       })
     ,
     'DESCRIPTOR' : _LISTREGISTEREDMODELS,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.ListRegisteredModels)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.ListRegisteredModels)
     })
   _sym_db.RegisterMessage(ListRegisteredModels)
   _sym_db.RegisterMessage(ListRegisteredModels.Response)
@@ -246,7 +246,7 @@ else:
   ModelVersionInfo = _reflection.GeneratedProtocolMessageType('ModelVersionInfo', (_message.Message,), {
     'DESCRIPTOR' : _MODELVERSIONINFO,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.ModelVersionInfo)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.ModelVersionInfo)
     })
   _sym_db.RegisterMessage(ModelVersionInfo)
 
@@ -255,12 +255,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _CREATEMODELVERSION_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.CreateModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.CreateModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _CREATEMODELVERSION,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.CreateModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.CreateModelVersion)
     })
   _sym_db.RegisterMessage(CreateModelVersion)
   _sym_db.RegisterMessage(CreateModelVersion.Response)
@@ -270,12 +270,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETEMODELVERSION_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.DeleteModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.DeleteModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _DELETEMODELVERSION,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.DeleteModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.DeleteModelVersion)
     })
   _sym_db.RegisterMessage(DeleteModelVersion)
   _sym_db.RegisterMessage(DeleteModelVersion.Response)
@@ -285,12 +285,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _FINALIZEMODELVERSION_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.FinalizeModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.FinalizeModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _FINALIZEMODELVERSION,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.FinalizeModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.FinalizeModelVersion)
     })
   _sym_db.RegisterMessage(FinalizeModelVersion)
   _sym_db.RegisterMessage(FinalizeModelVersion.Response)
@@ -300,12 +300,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETMODELVERSION_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.GetModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.GetModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _GETMODELVERSION,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.GetModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.GetModelVersion)
     })
   _sym_db.RegisterMessage(GetModelVersion)
   _sym_db.RegisterMessage(GetModelVersion.Response)
@@ -315,12 +315,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _UPDATEMODELVERSION_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.UpdateModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.UpdateModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _UPDATEMODELVERSION,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.UpdateModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.UpdateModelVersion)
     })
   _sym_db.RegisterMessage(UpdateModelVersion)
   _sym_db.RegisterMessage(UpdateModelVersion.Response)
@@ -330,12 +330,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _LISTMODELVERSIONS_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.ListModelVersions.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.ListModelVersions.Response)
       })
     ,
     'DESCRIPTOR' : _LISTMODELVERSIONS,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.ListModelVersions)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.ListModelVersions)
     })
   _sym_db.RegisterMessage(ListModelVersions)
   _sym_db.RegisterMessage(ListModelVersions.Response)
@@ -343,28 +343,28 @@ else:
   TemporaryCredentials = _reflection.GeneratedProtocolMessageType('TemporaryCredentials', (_message.Message,), {
     'DESCRIPTOR' : _TEMPORARYCREDENTIALS,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.TemporaryCredentials)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.TemporaryCredentials)
     })
   _sym_db.RegisterMessage(TemporaryCredentials)
 
   AwsCredentials = _reflection.GeneratedProtocolMessageType('AwsCredentials', (_message.Message,), {
     'DESCRIPTOR' : _AWSCREDENTIALS,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.AwsCredentials)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.AwsCredentials)
     })
   _sym_db.RegisterMessage(AwsCredentials)
 
   AzureUserDelegationSAS = _reflection.GeneratedProtocolMessageType('AzureUserDelegationSAS', (_message.Message,), {
     'DESCRIPTOR' : _AZUREUSERDELEGATIONSAS,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.AzureUserDelegationSAS)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.AzureUserDelegationSAS)
     })
   _sym_db.RegisterMessage(AzureUserDelegationSAS)
 
   GcpOauthToken = _reflection.GeneratedProtocolMessageType('GcpOauthToken', (_message.Message,), {
     'DESCRIPTOR' : _GCPOAUTHTOKEN,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.GcpOauthToken)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.GcpOauthToken)
     })
   _sym_db.RegisterMessage(GcpOauthToken)
 
@@ -373,12 +373,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GENERATETEMPORARYMODELVERSIONCREDENTIAL_RESPONSE,
       '__module__' : 'unity_catalog_oss_messages_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.GenerateTemporaryModelVersionCredential.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.GenerateTemporaryModelVersionCredential.Response)
       })
     ,
     'DESCRIPTOR' : _GENERATETEMPORARYMODELVERSIONCREDENTIAL,
     '__module__' : 'unity_catalog_oss_messages_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.unitycatalog.GenerateTemporaryModelVersionCredential)
+    # @@protoc_insertion_point(class_scope:qcflow.unitycatalog.GenerateTemporaryModelVersionCredential)
     })
   _sym_db.RegisterMessage(GenerateTemporaryModelVersionCredential)
   _sym_db.RegisterMessage(GenerateTemporaryModelVersionCredential.Response)

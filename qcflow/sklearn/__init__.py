@@ -1,13 +1,13 @@
 """
-The ``mlflow.sklearn`` module provides an API for logging and loading scikit-learn models. This
+The ``qcflow.sklearn`` module provides an API for logging and loading scikit-learn models. This
 module exports scikit-learn models with the following flavors:
 
 Python (native) `pickle <https://scikit-learn.org/stable/modules/model_persistence.html>`_ format
     This is the main flavor that can be loaded back into scikit-learn.
 
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
-    NOTE: The `mlflow.pyfunc` flavor is only added for scikit-learn models that define `predict()`,
+    NOTE: The `qcflow.pyfunc` flavor is only added for scikit-learn models that define `predict()`,
     since `predict()` is required for pyfunc model inference.
 """
 
@@ -25,24 +25,24 @@ import numpy as np
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.numpy_dataset import from_numpy
-from mlflow.data.pandas_dataset import from_pandas
-from mlflow.entities.dataset_input import DatasetInput
-from mlflow.entities.input_tag import InputTag
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.tracking.client import MlflowClient
-from mlflow.utils import _inspect_original_var_name, gorilla
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.numpy_dataset import from_numpy
+from qcflow.data.pandas_dataset import from_pandas
+from qcflow.entities.dataset_input import DatasetInput
+from qcflow.entities.input_tag import InputTag
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.tracking.client import MlflowClient
+from qcflow.utils import _inspect_original_var_name, gorilla
+from qcflow.utils.autologging_utils import (
     INPUT_EXAMPLE_SAMPLE_ROWS,
     MlflowAutologgingQueueingClient,
     _get_new_training_session_class,
@@ -54,30 +54,30 @@ from mlflow.utils.autologging_utils import (
     safe_patch,
     update_wrapper_extended,
 )
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_AUTOLOGGING,
-    MLFLOW_DATASET_CONTEXT,
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_AUTOLOGGING,
+    QCFLOW_DATASET_CONTEXT,
 )
-from mlflow.utils.model_utils import (
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "sklearn"
 
@@ -93,7 +93,7 @@ _MODEL_DATA_SUBPATH = "model.pkl"
 
 
 def _gen_estimators_to_patch():
-    from mlflow.sklearn.utils import (
+    from qcflow.sklearn.utils import (
         _all_estimators,
         _get_meta_estimators_for_autologging,
     )
@@ -106,7 +106,7 @@ def _gen_estimators_to_patch():
     )
     # Exclude certain preprocessing & feature manipulation estimators from patching. These
     # estimators represent data manipulation routines (e.g., normalization, label encoding)
-    # rather than ML algorithms. Accordingly, we should not create MLflow runs and log
+    # rather than ML algorithms. Accordingly, we should not create QCFlow runs and log
     # parameters / metrics for these routines, unless they are captured as part of an ML pipeline
     # (via `sklearn.pipeline.Pipeline`)
     excluded_module_names = [
@@ -134,7 +134,7 @@ def _gen_estimators_to_patch():
 def get_default_pip_requirements(include_cloudpickle=False):
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -148,10 +148,10 @@ def get_default_pip_requirements(include_cloudpickle=False):
 def get_default_conda_env(include_cloudpickle=False):
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements(include_cloudpickle))
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements(include_cloudpickle))
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name="scikit-learn"))
@@ -160,7 +160,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     serialization_format=SERIALIZATION_FORMAT_CLOUDPICKLE,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
@@ -170,11 +170,11 @@ def save_model(
     metadata=None,
 ):
     """
-    Save a scikit-learn model to a path on the local file system. Produces a MLflow Model
+    Save a scikit-learn model to a path on the local file system. Produces a QCFlow Model
     containing the following flavors:
 
-        - :py:mod:`mlflow.sklearn`
-        - :py:mod:`mlflow.pyfunc`. NOTE: This flavor is only included for scikit-learn models
+        - :py:mod:`qcflow.sklearn`
+        - :py:mod:`qcflow.pyfunc`. NOTE: This flavor is only included for scikit-learn models
           that define `predict()`, since `predict()` is required for pyfunc model inference.
 
     Args:
@@ -182,11 +182,11 @@ def save_model(
         path: Local path where the model is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
         serialization_format: The format in which to serialize the model. This should be one of
             the formats listed in
-            ``mlflow.sklearn.SUPPORTED_SERIALIZATION_FORMATS``. The Cloudpickle
-            format, ``mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``,
+            ``qcflow.sklearn.SUPPORTED_SERIALIZATION_FORMATS``. The Cloudpickle
+            format, ``qcflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``,
             provides better cross-system compatibility by identifying and
             packaging code dependencies with the serialized model.
 
@@ -195,7 +195,7 @@ def save_model(
         pip_requirements: {{ pip_requirements }}
         extra_pip_requirements: {{ extra_pip_requirements }}
         pyfunc_predict_fn: The name of the prediction function to use for inference with the
-            pyfunc representation of the resulting MLflow Model. Current supported functions
+            pyfunc representation of the resulting QCFlow Model. Current supported functions
             are: ``"predict"``, ``"predict_proba"``, ``"predict_log_proba"``,
             ``"predict_joint_log_proba"``, and ``"score"``.
         metadata: {{ metadata }}
@@ -203,7 +203,7 @@ def save_model(
     .. code-block:: python
         :caption: Example
 
-        import mlflow.sklearn
+        import qcflow.sklearn
         from sklearn.datasets import load_iris
         from sklearn import tree
 
@@ -214,19 +214,19 @@ def save_model(
         # Save the model in cloudpickle format
         # set path to location for persistence
         sk_path_dir_1 = ...
-        mlflow.sklearn.save_model(
+        qcflow.sklearn.save_model(
             sk_model,
             sk_path_dir_1,
-            serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+            serialization_format=qcflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
         )
 
         # save the model in pickle format
         # set path to location for persistence
         sk_path_dir_2 = ...
-        mlflow.sklearn.save_model(
+        qcflow.sklearn.save_model(
             sk_model,
             sk_path_dir_2,
-            serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE,
+            serialization_format=qcflow.sklearn.SERIALIZATION_FORMAT_PICKLE,
         )
     """
     import sklearn
@@ -245,9 +245,9 @@ def save_model(
     _validate_and_prepare_target_save_path(path)
     code_path_subdir = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _SklearnModelWrapper(sk_model)
@@ -256,9 +256,9 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     model_data_subpath = _MODEL_DATA_SUBPATH
     model_data_path = os.path.join(path, model_data_subpath)
@@ -272,8 +272,8 @@ def save_model(
 
     if hasattr(sk_model, pyfunc_predict_fn):
         pyfunc.add_to_model(
-            mlflow_model,
-            loader_module="mlflow.sklearn",
+            qcflow_model,
+            loader_module="qcflow.sklearn",
             model_path=model_data_subpath,
             conda_env=_CONDA_ENV_FILE_NAME,
             python_env=_PYTHON_ENV_FILE_NAME,
@@ -285,7 +285,7 @@ def save_model(
             f"Model was missing function: {pyfunc_predict_fn}. Not logging python_function flavor!"
         )
 
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         pickled_model=model_data_subpath,
         sklearn_version=sklearn.__version__,
@@ -293,16 +293,16 @@ def save_model(
         code=code_path_subdir,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             include_cloudpickle = serialization_format == SERIALIZATION_FORMAT_CLOUDPICKLE
             default_reqs = get_default_pip_requirements(include_cloudpickle)
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 model_data_path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -348,11 +348,11 @@ def log_model(
     metadata=None,
 ):
     """
-    Log a scikit-learn model as an MLflow artifact for the current run. Produces an MLflow Model
+    Log a scikit-learn model as an QCFlow artifact for the current run. Produces an QCFlow Model
     containing the following flavors:
 
-        - :py:mod:`mlflow.sklearn`
-        - :py:mod:`mlflow.pyfunc`. NOTE: This flavor is only included for scikit-learn models
+        - :py:mod:`qcflow.sklearn`
+        - :py:mod:`qcflow.pyfunc`. NOTE: This flavor is only included for scikit-learn models
           that define `predict()`, since `predict()` is required for pyfunc model inference.
 
     Args:
@@ -362,8 +362,8 @@ def log_model(
         code_paths: {{ code_paths }}
         serialization_format: The format in which to serialize the model. This should be one of
             the formats listed in
-            ``mlflow.sklearn.SUPPORTED_SERIALIZATION_FORMATS``. The Cloudpickle
-            format, ``mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``,
+            ``qcflow.sklearn.SUPPORTED_SERIALIZATION_FORMATS``. The Cloudpickle
+            format, ``qcflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``,
             provides better cross-system compatibility by identifying and
             packaging code dependencies with the serialized model.
         registered_model_name: If given, create a model version under
@@ -377,42 +377,42 @@ def log_model(
         pip_requirements: {{ pip_requirements }}
         extra_pip_requirements: {{ extra_pip_requirements }}
         pyfunc_predict_fn: The name of the prediction function to use for inference with the
-            pyfunc representation of the resulting MLflow Model. Current supported functions
+            pyfunc representation of the resulting QCFlow Model. Current supported functions
             are: ``"predict"``, ``"predict_proba"``, ``"predict_log_proba"``,
             ``"predict_joint_log_proba"``, and ``"score"``.
         metadata: {{ metadata }}
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
         :caption: Example
 
-        import mlflow
-        import mlflow.sklearn
-        from mlflow.models import infer_signature
+        import qcflow
+        import qcflow.sklearn
+        from qcflow.models import infer_signature
         from sklearn.datasets import load_iris
         from sklearn import tree
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             # load dataset and train model
             iris = load_iris()
             sk_model = tree.DecisionTreeClassifier()
             sk_model = sk_model.fit(iris.data, iris.target)
 
             # log model params
-            mlflow.log_param("criterion", sk_model.criterion)
-            mlflow.log_param("splitter", sk_model.splitter)
+            qcflow.log_param("criterion", sk_model.criterion)
+            qcflow.log_param("splitter", sk_model.splitter)
             signature = infer_signature(iris.data, sk_model.predict(iris.data))
 
             # log model
-            mlflow.sklearn.log_model(sk_model, "sk_models", signature=signature)
+            qcflow.sklearn.log_model(sk_model, "sk_models", signature=signature)
 
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.sklearn,
+        flavor=qcflow.sklearn,
         sk_model=sk_model,
         conda_env=conda_env,
         code_paths=code_paths,
@@ -429,13 +429,13 @@ def log_model(
 
 
 def _load_model_from_local_file(path, serialization_format):
-    """Load a scikit-learn model saved as an MLflow artifact on the local file system.
+    """Load a scikit-learn model saved as an QCFlow artifact on the local file system.
 
     Args:
-        path: Local filesystem path to the MLflow Model saved with the ``sklearn`` flavor
+        path: Local filesystem path to the QCFlow Model saved with the ``sklearn`` flavor
         serialization_format: The format in which the model was serialized. This should be one of
-            the following: ``mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE`` or
-            ``mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``.
+            the following: ``qcflow.sklearn.SERIALIZATION_FORMAT_PICKLE`` or
+            ``qcflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``.
     """
     # TODO: we could validate the scikit-learn version here
     if serialization_format not in SUPPORTED_SERIALIZATION_FORMATS:
@@ -462,19 +462,19 @@ def _load_pyfunc(path):
     Load PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``sklearn`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``sklearn`` flavor.
     """
     if os.path.isfile(path):
-        # Scikit-learn models saved in older versions of MLflow (<= 1.9.1) specify the ``data``
+        # Scikit-learn models saved in older versions of QCFlow (<= 1.9.1) specify the ``data``
         # field within the pyfunc flavor configuration. For these older models, the ``path``
         # parameter of ``_load_pyfunc()`` refers directly to a serialized scikit-learn model
         # object. In this case, we assume that the serialization format is ``pickle``, since
-        # the model loading procedure in older versions of MLflow used ``pickle.load()``.
+        # the model loading procedure in older versions of QCFlow used ``pickle.load()``.
         serialization_format = SERIALIZATION_FORMAT_PICKLE
     else:
-        # In contrast, scikit-learn models saved in versions of MLflow > 1.9.1 do not
+        # In contrast, scikit-learn models saved in versions of QCFlow > 1.9.1 do not
         # specify the ``data`` field within the pyfunc flavor configuration. For these newer
-        # models, the ``path`` parameter of ``load_pyfunc()`` refers to the top-level MLflow
+        # models, the ``path`` parameter of ``load_pyfunc()`` refers to the top-level QCFlow
         # Model directory. In this case, we parse the model path from the MLmodel's pyfunc
         # flavor configuration and attempt to fetch the serialization format from the
         # scikit-learn flavor configuration
@@ -563,7 +563,7 @@ def _dump_model(pickle_lib, sk_model, out):
     try:
         # Using python's default protocol to optimize compatibility.
         # Otherwise cloudpickle uses latest protocol leading to incompatibilities.
-        # See https://github.com/mlflow/mlflow/issues/5419
+        # See https://github.com/qcflow/qcflow/issues/5419
         pickle_lib.dump(sk_model, out, protocol=pickle.DEFAULT_PROTOCOL)
     except (pickle.PicklingError, TypeError, AttributeError) as e:
         if sk_model.__class__ not in _gen_estimators_to_patch():
@@ -578,8 +578,8 @@ def _save_model(sk_model, output_path, serialization_format):
         sk_model: The scikit-learn model to serialize.
         output_path: The file path to which to write the serialized model.
         serialization_format: The format in which to serialize the model. This should be one of
-            the following: ``mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE`` or
-            ``mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``.
+            the following: ``qcflow.sklearn.SERIALIZATION_FORMAT_PICKLE`` or
+            ``qcflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``.
     """
     with open(output_path, "wb") as out:
         if serialization_format == SERIALIZATION_FORMAT_PICKLE:
@@ -600,17 +600,17 @@ def load_model(model_uri, dst_path=None):
     Load a scikit-learn model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model, for example:
+        model_uri: The location, in URI format, of the QCFlow model, for example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
@@ -622,9 +622,9 @@ def load_model(model_uri, dst_path=None):
     .. code-block:: python
         :caption: Example
 
-        import mlflow.sklearn
+        import qcflow.sklearn
 
-        sk_model = mlflow.sklearn.load_model("runs:/96771d893a5e46159d9f3b49bf9013e2/sk_models")
+        sk_model = qcflow.sklearn.load_model("runs:/96771d893a5e46159d9f3b49bf9013e2/sk_models")
 
         # use Pandas DataFrame to make predictions
         pandas_df = ...
@@ -721,13 +721,13 @@ class _AutologgingMetricsManager:
 
     @staticmethod
     def get_run_id_for_model(model):
-        return getattr(model, "_mlflow_run_id", None)
+        return getattr(model, "_qcflow_run_id", None)
 
     @staticmethod
     def is_metric_value_loggable(metric_value):
         """
         Check whether the specified `metric_value` is a numeric value which can be logged
-        as an MLflow metric.
+        as an QCFlow metric.
         """
         return isinstance(metric_value, (int, float, np.number)) and not isinstance(
             metric_value, bool
@@ -739,7 +739,7 @@ class _AutologgingMetricsManager:
         So that in following metric autologging, the metric will be logged into the registered
         run_id
         """
-        model._mlflow_run_id = run_id
+        model._qcflow_run_id = run_id
 
     @staticmethod
     def gen_name_with_index(name, index):
@@ -908,7 +908,7 @@ class _AutologgingMetricsManager:
 
     def log_post_training_metric(self, run_id, key, value):
         """
-        Log the metric into the specified mlflow run.
+        Log the metric into the specified qcflow run.
         and it will also update the metric_info artifact if needed.
         """
         # Note: if the case log the same metric key multiple times,
@@ -1085,8 +1085,8 @@ def autolog(
       .. _post training metrics:
 
       **Post training metrics**
-        When users call metric APIs after model training, MLflow tries to capture the metric API
-        results and log them as MLflow metrics to the Run associated with the model. The following
+        When users call metric APIs after model training, QCFlow tries to capture the metric API
+        results and log them as QCFlow metrics to the Run associated with the model. The following
         types of scikit-learn metric APIs are supported:
 
         - model.score
@@ -1095,15 +1095,15 @@ def autolog(
         For post training metrics autologging, the metric key format is:
         "{metric_name}[-{call_index}]_{dataset_name}"
 
-        - If the metric function is from `sklearn.metrics`, the MLflow "metric_name" is the
+        - If the metric function is from `sklearn.metrics`, the QCFlow "metric_name" is the
           metric function name. If the metric function is `model.score`, then "metric_name" is
           "{model_class_name}_score".
         - If multiple calls are made to the same scikit-learn metric API, each subsequent call
           adds a "call_index" (starting from 2) to the metric key.
-        - MLflow uses the prediction input dataset variable name as the "dataset_name" in the
+        - QCFlow uses the prediction input dataset variable name as the "dataset_name" in the
           metric key. The "prediction input dataset variable" refers to the variable which was
           used as the first argument of the associated `model.predict` or `model.score` call.
-          Note: MLflow captures the "prediction input dataset" instance in the outermost call
+          Note: QCFlow captures the "prediction input dataset" instance in the outermost call
           frame and fetches the variable name in the outermost call frame. If the "prediction
           input dataset" instance is an intermediate expression without a defined variable
           name, the dataset name is set to "unknown_dataset". If multiple "prediction input
@@ -1111,16 +1111,16 @@ def autolog(
           index (starting from 2) to the inspected dataset name.
 
         **Limitations**
-           - MLflow can only map the original prediction result object returned by a model
+           - QCFlow can only map the original prediction result object returned by a model
              prediction API (including predict / predict_proba / predict_log_proba / transform,
-             but excluding fit_predict / fit_transform.) to an MLflow run.
-             MLflow cannot find run information
+             but excluding fit_predict / fit_transform.) to an QCFlow run.
+             QCFlow cannot find run information
              for other objects derived from a given prediction result (e.g. by copying or selecting
              a subset of the prediction result). scikit-learn metric APIs invoked on derived objects
-             do not log metrics to MLflow.
+             do not log metrics to QCFlow.
            - Autologging must be enabled before scikit-learn metric APIs are imported from
              `sklearn.metrics`. Metric APIs imported before autologging is enabled do not log
-             metrics to MLflow runs.
+             metrics to QCFlow runs.
            - If user define a scorer which is not based on metric APIs in `sklearn.metrics`, then
              then post training metric autologging for the scorer is invalid.
 
@@ -1130,11 +1130,11 @@ def autolog(
             (e.g. "sklearn.linear_model._base.LinearRegression").
 
         **Artifacts**
-          - An MLflow Model with the :py:mod:`mlflow.sklearn` flavor containing a fitted estimator
-            (logged by :py:func:`mlflow.sklearn.log_model()`). The Model also contains the
-            :py:mod:`mlflow.pyfunc` flavor when the scikit-learn estimator defines `predict()`.
+          - An QCFlow Model with the :py:mod:`qcflow.sklearn` flavor containing a fitted estimator
+            (logged by :py:func:`qcflow.sklearn.log_model()`). The Model also contains the
+            :py:mod:`qcflow.pyfunc` flavor when the scikit-learn estimator defines `predict()`.
           - For post training metrics API calls, a "metric_info.json" artifact is logged. This is a
-            JSON object whose keys are MLflow post training metric names
+            JSON object whose keys are QCFlow post training metric names
             (see "Post training metrics" section for the key format) and whose values are the
             corresponding metric call commands that produced the metrics, e.g.
             ``accuracy_score(y_true=test_iris_y, y_pred=pred_iris_y, normalize=False)``.
@@ -1169,27 +1169,27 @@ def autolog(
 
     **Example**
 
-    `See more examples <https://github.com/mlflow/mlflow/blob/master/examples/sklearn_autolog>`_
+    `See more examples <https://github.com/qcflow/qcflow/blob/master/examples/sklearn_autolog>`_
 
     .. code-block:: python
 
         from pprint import pprint
         import numpy as np
         from sklearn.linear_model import LinearRegression
-        import mlflow
-        from mlflow import MlflowClient
+        import qcflow
+        from qcflow import MlflowClient
 
 
         def fetch_logged_data(run_id):
             client = MlflowClient()
             data = client.get_run(run_id).data
-            tags = {k: v for k, v in data.tags.items() if not k.startswith("mlflow.")}
+            tags = {k: v for k, v in data.tags.items() if not k.startswith("qcflow.")}
             artifacts = [f.path for f in client.list_artifacts(run_id, "model")]
             return data.params, data.metrics, tags, artifacts
 
 
         # enable autologging
-        mlflow.sklearn.autolog()
+        qcflow.sklearn.autolog()
 
         # prepare training data
         X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
@@ -1197,7 +1197,7 @@ def autolog(
 
         # train a model
         model = LinearRegression()
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(X, y)
 
         # fetch logged data
@@ -1227,20 +1227,20 @@ def autolog(
         log_input_examples: If ``True``, input examples from training datasets are collected and
             logged along with scikit-learn model artifacts during training. If
             ``False``, input examples are not logged.
-            Note: Input examples are MLflow model attributes
+            Note: Input examples are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
         log_model_signatures: If ``True``,
-            :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
+            :py:class:`ModelSignatures <qcflow.models.ModelSignature>`
             describing model inputs and outputs are collected and logged along
             with scikit-learn model artifacts during training. If ``False``,
             signatures are not logged.
-            Note: Model signatures are MLflow model attributes
+            Note: Model signatures are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
-        log_models: If ``True``, trained models are logged as MLflow model artifacts.
+        log_models: If ``True``, trained models are logged as QCFlow model artifacts.
             If ``False``, trained models are not logged.
-            Input examples and model signatures, which are attributes of MLflow models,
+            Input examples and model signatures, which are attributes of QCFlow models,
             are also omitted when ``log_models`` is ``False``.
-        log_datasets: If ``True``, train and validation dataset information is logged to MLflow
+        log_datasets: If ``True``, train and validation dataset information is logged to QCFlow
             Tracking if applicable. If ``False``, dataset information is not logged.
         disable: If ``True``, disables the scikit-learn autologging integration. If ``False``,
             enables the scikit-learn autologging integration.
@@ -1248,12 +1248,12 @@ def autolog(
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
-            scikit-learn that have not been tested against this version of the MLflow
+            scikit-learn that have not been tested against this version of the QCFlow
             client or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during scikit-learn
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during scikit-learn
             autologging. If ``False``, show all events and warnings during scikit-learn
             autologging.
-        max_tuning_runs: The maximum number of child MLflow runs created for hyperparameter
+        max_tuning_runs: The maximum number of child QCFlow runs created for hyperparameter
             search estimators. To create child runs for the best `k` results from
             the search, set `max_tuning_runs` to `k`. The default value is to track
             the best 5 search parameter sets. If `max_tuning_runs=None`, then
@@ -1267,8 +1267,8 @@ def autolog(
             ``True``. See the `post training metrics`_ section for more
             details.
         serialization_format: The format in which to serialize the model. This should be one of
-            the following: ``mlflow.sklearn.SERIALIZATION_FORMAT_PICKLE`` or
-            ``mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``.
+            the following: ``qcflow.sklearn.SERIALIZATION_FORMAT_PICKLE`` or
+            ``qcflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE``.
         registered_model_name: If given, each time a model is trained, it is registered as a
             new model version of the registered model with this name.
             The registered model is created if it does not already exist.
@@ -1317,9 +1317,9 @@ def _autolog(  # noqa: D417
     Internal autologging function for scikit-learn models.
 
     Args:
-        flavor_name: A string value. Enable a ``mlflow.sklearn`` autologging routine
+        flavor_name: A string value. Enable a ``qcflow.sklearn`` autologging routine
             for a flavor. By default it enables autologging for original
-            scikit-learn models, as ``mlflow.sklearn.autolog()`` does. If
+            scikit-learn models, as ``qcflow.sklearn.autolog()`` does. If
             the argument is `xgboost`, autologging for XGBoost scikit-learn
             models is enabled.
     """
@@ -1328,8 +1328,8 @@ def _autolog(  # noqa: D417
     import sklearn.metrics
     import sklearn.model_selection
 
-    from mlflow.models import infer_signature
-    from mlflow.sklearn.utils import (
+    from qcflow.models import infer_signature
+    from qcflow.sklearn.utils import (
         _TRAINING_PREFIX,
         _create_child_runs_for_parameter_search,
         _gen_lightgbm_sklearn_estimators_to_patch,
@@ -1340,7 +1340,7 @@ def _autolog(  # noqa: D417
         _log_estimator_content,
         _log_parameter_search_results_as_artifact,
     )
-    from mlflow.tracking.context import registry as context_registry
+    from qcflow.tracking.context import registry as context_registry
 
     if max_tuning_runs is not None and max_tuning_runs < 0:
         raise MlflowException(
@@ -1348,7 +1348,7 @@ def _autolog(  # noqa: D417
             error_code=INVALID_PARAMETER_VALUE,
         )
 
-    def fit_mlflow_xgboost_and_lightgbm(original, self, *args, **kwargs):
+    def fit_qcflow_xgboost_and_lightgbm(original, self, *args, **kwargs):
         """
         Autologging function for XGBoost and LightGBM scikit-learn models
         """
@@ -1370,7 +1370,7 @@ def _autolog(  # noqa: D417
                 return input_example
 
         # parameter, metric, and non-model artifact logging are done in
-        # `train()` in `mlflow.xgboost.autolog()` and `mlflow.lightgbm.autolog()`
+        # `train()` in `qcflow.xgboost.autolog()` and `qcflow.lightgbm.autolog()`
         fit_output = original(self, *args, **kwargs)
         # log models after training
         if log_models:
@@ -1387,14 +1387,14 @@ def _autolog(  # noqa: D417
                 _logger,
             )
             log_model_func = (
-                mlflow.xgboost.log_model
-                if flavor_name == mlflow.xgboost.FLAVOR_NAME
-                else mlflow.lightgbm.log_model
+                qcflow.xgboost.log_model
+                if flavor_name == qcflow.xgboost.FLAVOR_NAME
+                else qcflow.lightgbm.log_model
             )
             registered_model_name = get_autologging_config(
                 flavor_name, "registered_model_name", None
             )
-            if flavor_name == mlflow.xgboost.FLAVOR_NAME:
+            if flavor_name == qcflow.xgboost.FLAVOR_NAME:
                 model_format = get_autologging_config(flavor_name, "model_format", "xgb")
                 log_model_func(
                     self,
@@ -1414,11 +1414,11 @@ def _autolog(  # noqa: D417
                 )
         return fit_output
 
-    def fit_mlflow(original, self, *args, **kwargs):
+    def fit_qcflow(original, self, *args, **kwargs):
         """
         Autologging function that performs model training by executing the training method
         referred to be `func_name` on the instance of `clazz` referred to by `self` & records
-        MLflow parameters, metrics, tags, and artifacts to a corresponding MLflow Run.
+        QCFlow parameters, metrics, tags, and artifacts to a corresponding QCFlow Run.
         """
         # Obtain a copy of the training dataset prior to model training for subsequent
         # use during model logging & input example extraction, ensuring that we don't
@@ -1438,11 +1438,11 @@ def _autolog(  # noqa: D417
         Records metadata (e.g., params and tags) for a scikit-learn estimator prior to training.
         This is intended to be invoked within a patched scikit-learn training routine
         (e.g., `fit()`, `fit_transform()`, ...) and assumes the existence of an active
-        MLflow run that can be referenced via the fluent Tracking API.
+        QCFlow run that can be referenced via the fluent Tracking API.
 
         Args:
             autologging_client: An instance of `MlflowAutologgingQueueingClient` used for
-                efficiently logging run data to MLflow Tracking.
+                efficiently logging run data to QCFlow Tracking.
             estimator: The scikit-learn estimator for which to log metadata.
         """
         # Deep parameter logging includes parameters from children of a given
@@ -1452,9 +1452,9 @@ def _autolog(  # noqa: D417
         # process; accordingly, we avoid logging initial, untuned parameters
         # for these seed estimators.
         should_log_params_deeply = not _is_parameter_search_estimator(estimator)
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
         autologging_client.log_params(
-            run_id=mlflow.active_run().info.run_id,
+            run_id=qcflow.active_run().info.run_id,
             params=estimator.get_params(deep=should_log_params_deeply),
         )
         autologging_client.set_tags(
@@ -1469,15 +1469,15 @@ def _autolog(  # noqa: D417
 
                 dataset = _create_dataset(X, source, y)
                 if dataset:
-                    tags = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="train")]
-                    dataset_input = DatasetInput(dataset=dataset._to_mlflow_entity(), tags=tags)
+                    tags = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="train")]
+                    dataset_input = DatasetInput(dataset=dataset._to_qcflow_entity(), tags=tags)
 
                     autologging_client.log_inputs(
-                        run_id=mlflow.active_run().info.run_id, datasets=[dataset_input]
+                        run_id=qcflow.active_run().info.run_id, datasets=[dataset_input]
                     )
             except Exception as e:
                 _logger.warning(
-                    "Failed to log training dataset information to MLflow Tracking. Reason: %s", e
+                    "Failed to log training dataset information to QCFlow Tracking. Reason: %s", e
                 )
 
     def _log_posttraining_metadata(autologging_client, estimator, X, y, sample_weight):
@@ -1485,11 +1485,11 @@ def _autolog(  # noqa: D417
         Records metadata for a scikit-learn estimator after training has completed.
         This is intended to be invoked within a patched scikit-learn training routine
         (e.g., `fit()`, `fit_transform()`, ...) and assumes the existence of an active
-        MLflow run that can be referenced via the fluent Tracking API.
+        QCFlow run that can be referenced via the fluent Tracking API.
 
         Args:
             autologging_client: An instance of `MlflowAutologgingQueueingClient` used for
-                efficiently logging run data to MLflow Tracking.
+                efficiently logging run data to QCFlow Tracking.
             estimator: The scikit-learn estimator for which to log metadata.
             X: The training dataset samples passed to the ``estimator.fit()`` function.
             y: The training dataset labels passed to the ``estimator.fit()`` function.
@@ -1530,7 +1530,7 @@ def _autolog(  # noqa: D417
             autologging_client=autologging_client,
             estimator=estimator,
             prefix=_TRAINING_PREFIX,
-            run_id=mlflow.active_run().info.run_id,
+            run_id=qcflow.active_run().info.run_id,
             X=X,
             y_true=y,
             sample_weight=sample_weight,
@@ -1582,7 +1582,7 @@ def _autolog(  # noqa: D417
 
             if hasattr(estimator, "best_score_"):
                 autologging_client.log_metrics(
-                    run_id=mlflow.active_run().info.run_id,
+                    run_id=qcflow.active_run().info.run_id,
                     metrics={"best_cv_score": estimator.best_score_},
                 )
 
@@ -1592,7 +1592,7 @@ def _autolog(  # noqa: D417
                     for param_name, param_value in estimator.best_params_.items()
                 }
                 autologging_client.log_params(
-                    run_id=mlflow.active_run().info.run_id,
+                    run_id=qcflow.active_run().info.run_id,
                     params=best_params,
                 )
 
@@ -1601,11 +1601,11 @@ def _autolog(  # noqa: D417
                     # Fetch environment-specific tags (e.g., user and source) to ensure that lineage
                     # information is consistent with the parent run
                     child_tags = context_registry.resolve_tags()
-                    child_tags.update({MLFLOW_AUTOLOGGING: flavor_name})
+                    child_tags.update({QCFLOW_AUTOLOGGING: flavor_name})
                     _create_child_runs_for_parameter_search(
                         autologging_client=autologging_client,
                         cv_estimator=estimator,
-                        parent_run=mlflow.active_run(),
+                        parent_run=qcflow.active_run(),
                         max_tuning_runs=max_tuning_runs,
                         child_tags=child_tags,
                     )
@@ -1618,7 +1618,7 @@ def _autolog(  # noqa: D417
                 try:
                     cv_results_df = pd.DataFrame.from_dict(estimator.cv_results_)
                     _log_parameter_search_results_as_artifact(
-                        cv_results_df, mlflow.active_run().info.run_id
+                        cv_results_df, qcflow.active_run().info.run_id
                     )
                 except Exception as e:
                     _logger.warning(
@@ -1632,7 +1632,7 @@ def _autolog(  # noqa: D417
 
         Args:
             fit_impl: The patched fit function implementation, the function should be defined as
-                `fit_mlflow(original, self, *args, **kwargs)`, the `original` argument
+                `fit_qcflow(original, self, *args, **kwargs)`, the `original` argument
                 refers to the original `EstimatorClass.fit` method, the `self` argument
                 refers to the estimator instance being patched, the `*args` and
                 `**kwargs` are arguments passed to the original fit method.
@@ -1649,13 +1649,13 @@ def _autolog(  # noqa: D417
 
         with _SklearnTrainingSession(estimator=self, allow_children=allow_children_patch) as t:
             if t.should_log():
-                # In `fit_mlflow` call, it will also call metric API for computing training metrics
+                # In `fit_qcflow` call, it will also call metric API for computing training metrics
                 # so we need temporarily disable the post_training_metrics patching.
                 with _AUTOLOGGING_METRICS_MANAGER.disable_log_post_training_metrics():
                     result = fit_impl(original, self, *args, **kwargs)
                 if should_log_post_training_metrics:
                     _AUTOLOGGING_METRICS_MANAGER.register_model(
-                        self, mlflow.active_run().info.run_id
+                        self, qcflow.active_run().info.run_id
                     )
                 return result
             else:
@@ -1696,16 +1696,16 @@ def _autolog(  # noqa: D417
 
                     # log the dataset
                     if dataset:
-                        tags = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="eval")]
-                        dataset_input = DatasetInput(dataset=dataset._to_mlflow_entity(), tags=tags)
+                        tags = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="eval")]
+                        dataset_input = DatasetInput(dataset=dataset._to_qcflow_entity(), tags=tags)
 
                         # log the dataset
-                        client = mlflow.MlflowClient()
+                        client = qcflow.MlflowClient()
                         client.log_inputs(run_id=run_id, datasets=[dataset_input])
                 except Exception as e:
                     _logger.warning(
                         "Failed to log evaluation dataset information to "
-                        "MLflow Tracking. Reason: %s",
+                        "QCFlow Tracking. Reason: %s",
                         e,
                     )
             return predict_result
@@ -1832,17 +1832,17 @@ def _autolog(  # noqa: D417
 
     _apply_sklearn_descriptor_unbound_method_call_fix()
 
-    if flavor_name == mlflow.xgboost.FLAVOR_NAME:
+    if flavor_name == qcflow.xgboost.FLAVOR_NAME:
         estimators_to_patch = _gen_xgboost_sklearn_estimators_to_patch()
-        patched_fit_impl = fit_mlflow_xgboost_and_lightgbm
+        patched_fit_impl = fit_qcflow_xgboost_and_lightgbm
         allow_children_patch = True
-    elif flavor_name == mlflow.lightgbm.FLAVOR_NAME:
+    elif flavor_name == qcflow.lightgbm.FLAVOR_NAME:
         estimators_to_patch = _gen_lightgbm_sklearn_estimators_to_patch()
-        patched_fit_impl = fit_mlflow_xgboost_and_lightgbm
+        patched_fit_impl = fit_qcflow_xgboost_and_lightgbm
         allow_children_patch = True
     else:
         estimators_to_patch = _gen_estimators_to_patch()
-        patched_fit_impl = fit_mlflow
+        patched_fit_impl = fit_qcflow
         allow_children_patch = False
 
     for class_def in estimators_to_patch:

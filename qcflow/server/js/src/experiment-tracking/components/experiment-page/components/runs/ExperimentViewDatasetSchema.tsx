@@ -50,7 +50,7 @@ export const ExperimentViewDatasetSchema = ({ datasetWithTags }: DatasetsCellRen
   }
   try {
     const schema = JSON.parse(dataset.schema);
-    if ('mlflow_colspec' in schema) {
+    if ('qcflow_colspec' in schema) {
       // if the dataset schema is colspec
       return (
         <div
@@ -68,7 +68,7 @@ export const ExperimentViewDatasetSchema = ({ datasetWithTags }: DatasetsCellRen
             }}
           >
             <TableFilterInput
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewdatasetschema.tsx_92"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewdatasetschema.tsx_92"
               value={filter}
               placeholder="Search fields"
               onChange={(e) => setFilter(e.target.value)}
@@ -85,11 +85,11 @@ export const ExperimentViewDatasetSchema = ({ datasetWithTags }: DatasetsCellRen
               overflow: 'hidden',
             }}
           >
-            <ExperimentViewDatasetSchemaTable schema={schema.mlflow_colspec} filter={filter} />
+            <ExperimentViewDatasetSchemaTable schema={schema.qcflow_colspec} filter={filter} />
           </div>
         </div>
       );
-    } else if ('mlflow_tensorspec' in schema) {
+    } else if ('qcflow_tensorspec' in schema) {
       // if the dataset schema is tensorspec
       return (
         <div css={{ height: '100vh' }}>

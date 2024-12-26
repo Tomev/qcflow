@@ -7,18 +7,18 @@ from unittest.mock import call
 import pyarrow
 import pytest
 
-from mlflow.entities import FileInfo
-from mlflow.store.artifact.hdfs_artifact_repo import (
+from qcflow.entities import FileInfo
+from qcflow.store.artifact.hdfs_artifact_repo import (
     HdfsArtifactRepository,
     _parse_extra_conf,
     _relative_path_remote,
     _resolve_base_path,
 )
-from mlflow.utils.file_utils import TempDir
+from qcflow.utils.file_utils import TempDir
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_log_artifact(hdfs_system_mock):
     repo = HdfsArtifactRepository("hdfs://host_name:8020/hdfs/path")
@@ -39,7 +39,7 @@ def test_log_artifact(hdfs_system_mock):
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_log_artifact_viewfs(hdfs_system_mock):
     repo = HdfsArtifactRepository("viewfs://host_name/mypath")
@@ -59,13 +59,13 @@ def test_log_artifact_viewfs(hdfs_system_mock):
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_log_artifact_with_kerberos_setup(hdfs_system_mock, monkeypatch):
     if sys.platform == "win32":
         pytest.skip()
-    monkeypatch.setenv("MLFLOW_KERBEROS_TICKET_CACHE", "/tmp/krb5cc_22222222")
-    monkeypatch.setenv("MLFLOW_KERBEROS_USER", "some_kerberos_user")
+    monkeypatch.setenv("QCFLOW_KERBEROS_TICKET_CACHE", "/tmp/krb5cc_22222222")
+    monkeypatch.setenv("QCFLOW_KERBEROS_USER", "some_kerberos_user")
 
     repo = HdfsArtifactRepository("hdfs:/some/maybe/path")
 
@@ -87,7 +87,7 @@ def test_log_artifact_with_kerberos_setup(hdfs_system_mock, monkeypatch):
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_log_artifact_with_invalid_local_dir(_):
     repo = HdfsArtifactRepository("hdfs://host_name:8020/maybe/path")
@@ -97,11 +97,11 @@ def test_log_artifact_with_invalid_local_dir(_):
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_log_artifacts(hdfs_system_mock, monkeypatch):
-    monkeypatch.setenv("MLFLOW_KERBEROS_TICKET_CACHE", "/tmp/krb5cc_22222222")
-    monkeypatch.setenv("MLFLOW_KERBEROS_USER", "some_kerberos_user")
+    monkeypatch.setenv("QCFLOW_KERBEROS_TICKET_CACHE", "/tmp/krb5cc_22222222")
+    monkeypatch.setenv("QCFLOW_KERBEROS_USER", "some_kerberos_user")
 
     repo = HdfsArtifactRepository("hdfs:/some_path/maybe/path")
 
@@ -134,7 +134,7 @@ def test_log_artifacts(hdfs_system_mock, monkeypatch):
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_list_artifacts_root(hdfs_system_mock):
     repo = HdfsArtifactRepository("hdfs://host/some/path")
@@ -152,7 +152,7 @@ def test_list_artifacts_root(hdfs_system_mock):
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_list_artifacts_nested(hdfs_system_mock):
     repo = HdfsArtifactRepository("hdfs://host/some/path")
@@ -184,7 +184,7 @@ def test_list_artifacts_nested(hdfs_system_mock):
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_list_artifacts_empty_hdfs_dir(hdfs_system_mock):
     hdfs_system_mock.return_value.get_file_info.return_value = pyarrow.fs.FileInfo(
@@ -218,7 +218,7 @@ def test_parse_extra_conf():
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_delete_artifacts(hdfs_system_mock):
     repo = HdfsArtifactRepository("hdfs:/some_path/maybe/path/")
@@ -237,7 +237,7 @@ def test_delete_artifacts(hdfs_system_mock):
 
 
 @mock.patch(
-    "mlflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
+    "qcflow.store.artifact.hdfs_artifact_repo.HadoopFileSystem", spec=pyarrow.fs.HadoopFileSystem
 )
 def test_is_directory_called_with_relative_path(hdfs_system_mock):
     repo = HdfsArtifactRepository("hdfs://host/some/path")

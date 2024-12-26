@@ -7,7 +7,7 @@ Create Date: 2020-06-26 13:30:00.290154
 """
 from alembic import op
 import sqlalchemy as sa
-from mlflow.store.model_registry.dbmodels.models import SqlRegisteredModelTag
+from qcflow.store.model_registry.dbmodels.models import SqlRegisteredModelTag
 
 # revision identifiers, used by Alembic.
 revision = "728d730b5ebd"

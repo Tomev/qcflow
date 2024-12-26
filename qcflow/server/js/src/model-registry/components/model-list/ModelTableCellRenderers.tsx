@@ -11,7 +11,7 @@ import {
 } from '@databricks/design-system';
 import { ModelRegistryRoutes } from '../../routes';
 import { KeyValueEntity } from '../../../experiment-tracking/types';
-import { MLFLOW_INTERNAL_PREFIX } from '../../../common/utils/TagUtils';
+import { QCFLOW_INTERNAL_PREFIX } from '../../../common/utils/TagUtils';
 
 const EmptyCell = () => <>&mdash;</>;
 
@@ -20,7 +20,7 @@ export const ModelListTagsCell = ({ tags }: { tags: KeyValueEntity[] }) => {
   const { theme } = useDesignSystemTheme();
   const [showMore, setShowMore] = useState(false);
 
-  const validTags = tags?.filter((tag) => !tag.key.startsWith(MLFLOW_INTERNAL_PREFIX));
+  const validTags = tags?.filter((tag) => !tag.key.startsWith(QCFLOW_INTERNAL_PREFIX));
 
   const tagsToDisplay = validTags?.slice(0, showMore ? undefined : tagsToShowInitially);
 
@@ -57,7 +57,7 @@ export const ModelListTagsCell = ({ tags }: { tags: KeyValueEntity[] }) => {
       ))}
       {tags.length > tagsToShowInitially && (
         <Button
-          componentId="codegen_mlflow_app_src_model-registry_components_model-list_modeltablecellrenderers.tsx_65"
+          componentId="codegen_qcflow_app_src_model-registry_components_model-list_modeltablecellrenderers.tsx_65"
           css={{ marginTop: theme.spacing.sm }}
           size="small"
           onClick={() => setShowMore(!showMore)}

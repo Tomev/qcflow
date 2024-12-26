@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 
-from mlflow.metrics.base import MetricValue, standard_aggregations
+from qcflow.metrics.base import MetricValue, standard_aggregations
 
 _logger = logging.getLogger(__name__)
 

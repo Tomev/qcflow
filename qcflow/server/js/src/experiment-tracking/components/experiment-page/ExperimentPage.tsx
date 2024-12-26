@@ -32,7 +32,7 @@ export const ExperimentPage = () => {
   useEffect(() => {
     const pageTitle = formatMessage({
       defaultMessage: 'Experiment Runs - Databricks',
-      description: 'Title on a page used to manage MLflow experiments runs',
+      description: 'Title on a page used to manage QCFlow experiments runs',
     });
     Utils.updatePageTitle(pageTitle);
   }, [formatMessage]);

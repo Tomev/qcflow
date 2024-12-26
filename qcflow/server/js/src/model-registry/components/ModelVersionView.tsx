@@ -77,7 +77,7 @@ export class ModelVersionViewImpl extends React.Component<ModelVersionViewImplPr
   formRef = React.createRef();
 
   componentDidMount() {
-    const pageTitle = `${this.props.modelName} v${this.props.modelVersion.version} - MLflow Model`;
+    const pageTitle = `${this.props.modelName} v${this.props.modelVersion.version} - QCFlow Model`;
     Utils.updatePageTitle(pageTitle);
   }
 
@@ -232,7 +232,7 @@ export class ModelVersionViewImpl extends React.Component<ModelVersionViewImplPr
         values={{
           link: (chunks: any) => (
             <Typography.Link
-              componentId="codegen_mlflow_app_src_model-registry_components_modelversionview.tsx_301"
+              componentId="codegen_qcflow_app_src_model-registry_components_modelversionview.tsx_301"
               href={modelStagesMigrationGuideLink}
               openInNewTab
             >
@@ -428,7 +428,7 @@ export class ModelVersionViewImpl extends React.Component<ModelVersionViewImplPr
   renderDescriptionEditIcon() {
     return (
       <Button
-        componentId="codegen_mlflow_app_src_model-registry_components_modelversionview.tsx_516"
+        componentId="codegen_qcflow_app_src_model-registry_components_modelversionview.tsx_516"
         data-test-id="descriptionEditButton"
         type="link"
         onClick={this.startEditingDescription}

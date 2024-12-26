@@ -13,7 +13,7 @@ import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
 import { latestMetricsByRunUuid, metricsByRunUuid } from '../../reducers/MetricReducer';
 import { paramsByRunUuid, tagsByRunUuid } from '../../reducers/Reducers';
-import { imagesByRunUuid } from '@mlflow/mlflow/src/experiment-tracking/reducers/ImageReducer';
+import { imagesByRunUuid } from '@qcflow/qcflow/src/experiment-tracking/reducers/ImageReducer';
 import { fetchEndpoint } from '../../../common/utils/FetchUtils';
 import { DesignSystemProvider } from '@databricks/design-system';
 

@@ -1,10 +1,10 @@
 import { type ApolloError, type ApolloQueryResult, gql } from '@apollo/client';
 import type { GetRun, GetRunVariables } from '../../../../graphql/__generated__/graphql';
-import { useQuery, useLazyQuery } from '@mlflow/mlflow/src/common/utils/graphQLHooks';
+import { useQuery, useLazyQuery } from '@qcflow/qcflow/src/common/utils/graphQLHooks';
 
 const GET_RUN_QUERY = gql`
-  query GetRun($data: MlflowGetRunInput!) @component(name: "MLflow.ExperimentRunTracking") {
-    mlflowGetRun(input: $data) {
+  query GetRun($data: MlflowGetRunInput!) @component(name: "QCFlow.ExperimentRunTracking") {
+    qcflowGetRun(input: $data) {
       apiError {
         helpUrl
         code
@@ -85,8 +85,8 @@ export type UseGetRunQueryResponseDataMetrics = NonNullable<
   NonNullable<NonNullable<UseGetRunQueryDataResponse>['data']>['metrics']
 >;
 
-export type UseGetRunQueryDataResponse = NonNullable<GetRun['mlflowGetRun']>['run'];
-export type UseGetRunQueryDataApiError = NonNullable<GetRun['mlflowGetRun']>['apiError'];
+export type UseGetRunQueryDataResponse = NonNullable<GetRun['qcflowGetRun']>['run'];
+export type UseGetRunQueryDataApiError = NonNullable<GetRun['qcflowGetRun']>['apiError'];
 export type UseGetRunQueryResponse = {
   data?: UseGetRunQueryDataResponse;
   loading: boolean;
@@ -118,10 +118,10 @@ export const useGetRunQuery = ({
 
   return {
     loading,
-    data: data?.mlflowGetRun?.run,
+    data: data?.qcflowGetRun?.run,
     refetchRun: refetch,
     apolloError,
-    apiError: data?.mlflowGetRun?.apiError,
+    apiError: data?.qcflowGetRun?.apiError,
   } as const;
 };
 

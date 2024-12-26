@@ -28,7 +28,7 @@ export const ModelVersionTableAliasesCell = ({ aliases = [], onAddEdit }: ModelV
     >
       {aliases.length < 1 ? (
         <Button
-          componentId="codegen_mlflow_app_src_model-registry_components_aliases_modelversiontablealiasescell.tsx_30"
+          componentId="codegen_qcflow_app_src_model-registry_components_aliases_modelversiontablealiasescell.tsx_30"
           size="small"
           type="link"
           onClick={onAddEdit}
@@ -44,7 +44,7 @@ export const ModelVersionTableAliasesCell = ({ aliases = [], onAddEdit }: ModelV
             <ModelVersionAliasTag value={alias} key={alias} css={{ marginTop: theme.spacing.xs / 2 }} />
           ))}
           <Button
-            componentId="codegen_mlflow_app_src_model-registry_components_aliases_modelversiontablealiasescell.tsx_41"
+            componentId="codegen_qcflow_app_src_model-registry_components_aliases_modelversiontablealiasescell.tsx_41"
             size="small"
             icon={<PencilIcon />}
             onClick={onAddEdit}

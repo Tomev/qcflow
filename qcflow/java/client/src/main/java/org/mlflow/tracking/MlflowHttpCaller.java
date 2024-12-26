@@ -1,4 +1,4 @@
-package org.mlflow.tracking;
+package org.qcflow.tracking;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -27,13 +27,13 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.mlflow.tracking.creds.MlflowHostCreds;
-import org.mlflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.tracking.creds.MlflowHostCreds;
+import org.qcflow.tracking.creds.MlflowHostCredsProvider;
 
 
 class MlflowHttpCaller {
   private static final Logger logger = LoggerFactory.getLogger(MlflowHttpCaller.class);
-  private static final String BASE_API_PATH = "api/2.0/mlflow";
+  private static final String BASE_API_PATH = "api/2.0/qcflow";
   protected CloseableHttpClient httpClient;
   private final MlflowHostCredsProvider hostCredsProvider;
   private final int maxRateLimitIntervalMillis;
@@ -215,7 +215,7 @@ class MlflowHttpCaller {
       request.addHeader("Authorization", "Bearer " + token);
     }
 
-    String userAgent = "mlflow-java-client";
+    String userAgent = "qcflow-java-client";
     String clientVersion = MlflowClientVersion.getClientVersion();
     if (!clientVersion.isEmpty()) {
       userAgent += "/" + clientVersion;
@@ -253,7 +253,7 @@ class MlflowHttpCaller {
       try {
 	  httpClient.close();
       } catch(IOException e){
-	  logger.warn("Unable to close connection to mlflow backend", e);
+	  logger.warn("Unable to close connection to qcflow backend", e);
       }
     }
   }

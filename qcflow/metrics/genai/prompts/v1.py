@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from mlflow.metrics.genai.base import EvaluationExample
-from mlflow.metrics.genai.prompt_template import PromptTemplate
+from qcflow.metrics.genai.base import EvaluationExample
+from qcflow.metrics.genai.prompt_template import PromptTemplate
 
 # TODO: Update the default_mode and default_parameters to the correct values post experimentation
 default_model = "openai:/gpt-4"
@@ -120,18 +120,18 @@ class AnswerSimilarityMetric:
     default_model = default_model
 
     example_score_2 = EvaluationExample(
-        input="What is MLflow?",
-        output="MLflow is an open-source platform.",
+        input="What is QCFlow?",
+        output="QCFlow is an open-source platform.",
         score=2,
         justification="The provided output is partially similar to the target, as it captures the "
-        "general idea that MLflow is an open-source platform. However, it lacks the comprehensive "
-        "details and context provided in the target about MLflow's purpose, development, and "
+        "general idea that QCFlow is an open-source platform. However, it lacks the comprehensive "
+        "details and context provided in the target about QCFlow's purpose, development, and "
         "challenges it addresses. Therefore, it demonstrates partial, but not complete, "
         "semantic similarity.",
         grading_context={
-            "targets": "MLflow is an open-source platform for managing the end-to-end "
+            "targets": "QCFlow is an open-source platform for managing the end-to-end "
             "machine learning (ML) lifecycle. It was developed by Databricks, a company "
-            "that specializes in big data and machine learning solutions. MLflow is "
+            "that specializes in big data and machine learning solutions. QCFlow is "
             "designed to address the challenges that data scientists and machine learning "
             "engineers face when developing, training, and deploying machine learning "
             "models."
@@ -139,8 +139,8 @@ class AnswerSimilarityMetric:
     )
 
     example_score_4 = EvaluationExample(
-        input="What is MLflow?",
-        output="MLflow is an open-source platform for managing machine learning workflows, "
+        input="What is QCFlow?",
+        output="QCFlow is an open-source platform for managing machine learning workflows, "
         "including experiment tracking, model packaging, versioning, and deployment, simplifying "
         "the ML lifecycle.",
         score=4,
@@ -149,9 +149,9 @@ class AnswerSimilarityMetric:
         "experiment tracking, model packaging, versioning, and deployment. While it may not include"
         " every single detail from the target, it demonstrates substantial semantic similarity.",
         grading_context={
-            "targets": "MLflow is an open-source platform for managing the end-to-end "
+            "targets": "QCFlow is an open-source platform for managing the end-to-end "
             "machine learning (ML) lifecycle. It was developed by Databricks, a company "
-            "that specializes in big data and machine learning solutions. MLflow is "
+            "that specializes in big data and machine learning solutions. QCFlow is "
             "designed to address the challenges that data scientists and machine learning "
             "engineers face when developing, training, and deploying machine learning "
             "models."
@@ -191,30 +191,30 @@ class FaithfulnessMetric:
     default_model = default_model
 
     example_score_2 = EvaluationExample(
-        input="How is MLflow related to Databricks?",
+        input="How is QCFlow related to Databricks?",
         output="Databricks is a company that specializes in big data and machine learning "
-        "solutions. MLflow has nothing to do with Databricks. MLflow is an open-source platform "
+        "solutions. QCFlow has nothing to do with Databricks. QCFlow is an open-source platform "
         "for managing the end-to-end machine learning (ML) lifecycle.",
         score=2,
-        justification='The output claims that "MLflow has nothing to do with Databricks" which is '
+        justification='The output claims that "QCFlow has nothing to do with Databricks" which is '
         'contradictory to the provided context that states "It was developed by Databricks". This '
-        'is a major inconsistency. However, the output correctly identifies that "MLflow is an '
+        'is a major inconsistency. However, the output correctly identifies that "QCFlow is an '
         'open-source platform for managing the end-to-end machine learning (ML) lifecycle" and '
         '"Databricks is a company that specializes in big data and machine learning solutions", '
         "which are both supported by the context. Therefore, some of the claims in the output can "
         "be inferred from the provided context, but the majority of the output is inconsistent "
         "with the provided context, leading to a faithfulness score of 2.",
         grading_context={
-            "context": "MLflow is an open-source platform for managing the end-to-end machine "
+            "context": "QCFlow is an open-source platform for managing the end-to-end machine "
             "learning (ML) lifecycle. It was developed by Databricks, a company that specializes "
-            "in big data and machine learning solutions. MLflow is designed to address the "
+            "in big data and machine learning solutions. QCFlow is designed to address the "
             "challenges that data scientists and machine learning engineers face when developing, "
             "training, and deploying machine learning models."
         },
     )
 
     example_score_5 = EvaluationExample(
-        input="How is MLflow related to Databricks?",
+        input="How is QCFlow related to Databricks?",
         output="Databricks is a company that specializes in big data and machine learning "
         "solutions.",
         score=5,
@@ -224,9 +224,9 @@ class FaithfulnessMetric:
         'machine learning solutions." Therefore, the faithfulness score is 5 as all the claims in '
         'the output are directly supported by the provided context."',
         grading_context={
-            "context": "MLflow is an open-source platform for managing the end-to-end "
+            "context": "QCFlow is an open-source platform for managing the end-to-end "
             "machine learning (ML) lifecycle. It was developed by Databricks, a company "
-            "that specializes in big data and machine learning solutions. MLflow is "
+            "that specializes in big data and machine learning solutions. QCFlow is "
             "designed to address the challenges that data scientists and machine learning "
             "engineers face when developing, training, and deploying machine learning "
             "models."
@@ -265,7 +265,7 @@ class AnswerCorrectnessMetric:
     default_model = default_model
 
     example_score_2 = EvaluationExample(
-        input="How is MLflow related to Databricks?",
+        input="How is QCFlow related to Databricks?",
         output="Databricks is a data engineering and analytics platform designed to help "
         "organizations process and analyze large amounts of data. Databricks is a company "
         "specializing in big data and machine learning solutions.",
@@ -273,33 +273,33 @@ class AnswerCorrectnessMetric:
         justification="The output provided by the model does demonstrate some degree of semantic "
         "similarity to the targets, as it correctly identifies Databricks as a company "
         "specializing in big data and machine learning solutions. However, it fails to address "
-        "the main point of the input question, which is the relationship between MLflow and "
-        "Databricks. The output does not mention MLflow at all, which is a significant discrepancy "
+        "the main point of the input question, which is the relationship between QCFlow and "
+        "Databricks. The output does not mention QCFlow at all, which is a significant discrepancy "
         "with the provided targets. Therefore, the model's answer_correctness score is 2.",
         grading_context={
-            "targets": "MLflow is an open-source platform for managing the end-to-end machine "
+            "targets": "QCFlow is an open-source platform for managing the end-to-end machine "
             "learning (ML) lifecycle. It was developed by Databricks, a company that specializes "
-            "in big data and machine learning solutions. MLflow is designed to address the "
+            "in big data and machine learning solutions. QCFlow is designed to address the "
             "challenges that data scientists and machine learning engineers face when developing, "
             "training, and deploying machine learning models."
         },
     )
 
     example_score_4 = EvaluationExample(
-        input="How is MLflow related to Databricks?",
-        output="MLflow is a product created by Databricks to enhance the efficiency of machine "
+        input="How is QCFlow related to Databricks?",
+        output="QCFlow is a product created by Databricks to enhance the efficiency of machine "
         "learning processes.",
         score=4,
         justification="The output provided by the model is mostly correct. It correctly identifies "
-        "that MLflow is a product created by Databricks. However, it does not mention that MLflow "
+        "that QCFlow is a product created by Databricks. However, it does not mention that QCFlow "
         "is an open-source platform for managing the end-to-end machine learning lifecycle, which "
         "is a significant part of its function. Therefore, while the output is mostly accurate, "
         "it has a minor omission, which is why it gets a score of 4 according to the grading "
         "rubric.",
         grading_context={
-            "targets": "MLflow is an open-source platform for managing the end-to-end machine "
+            "targets": "QCFlow is an open-source platform for managing the end-to-end machine "
             "learning (ML) lifecycle. It was developed by Databricks, a company that specializes "
-            "in big data and machine learning solutions. MLflow is designed to address the "
+            "in big data and machine learning solutions. QCFlow is designed to address the "
             "challenges that data scientists and machine learning engineers face when developing, "
             "training, and deploying machine learning models."
         },
@@ -330,26 +330,26 @@ class AnswerRelevanceMetric:
     default_model = default_model
 
     example_score_2 = EvaluationExample(
-        input="How is MLflow related to Databricks?",
+        input="How is QCFlow related to Databricks?",
         output="Databricks is a company that specializes in big data and machine learning "
         "solutions.",
         score=2,
         justification="The output provided by the model does give some information about "
         "Databricks, which is part of the input question. However, it does not address the main "
-        "point of the question, which is the relationship between MLflow and Databricks. "
+        "point of the question, which is the relationship between QCFlow and Databricks. "
         "Therefore, while the output is not completely irrelevant, it does not fully answer the "
         "question, leading to a lower score.",
     )
 
     example_score_5 = EvaluationExample(
-        input="How is MLflow related to Databricks?",
-        output="MLflow is a product created by Databricks to enhance the efficiency of machine "
+        input="How is QCFlow related to Databricks?",
+        output="QCFlow is a product created by Databricks to enhance the efficiency of machine "
         "learning processes.",
         score=5,
         justification="The output directly addresses the input question by explaining the "
-        "relationship between MLflow and Databricks. It provides a clear and concise answer that "
-        "MLflow is a product created by Databricks, and also adds relevant information about the "
-        "purpose of MLflow, which is to enhance the efficiency of machine learning processes. "
+        "relationship between QCFlow and Databricks. It provides a clear and concise answer that "
+        "QCFlow is a product created by Databricks, and also adds relevant information about the "
+        "purpose of QCFlow, which is to enhance the efficiency of machine learning processes. "
         "Therefore, the output is highly relevant to the input and deserves a full score.",
     )
 
@@ -381,39 +381,39 @@ class RelevanceMetric:
     default_model = default_model
 
     example_score_2 = EvaluationExample(
-        input="How is MLflow related to Databricks?",
+        input="How is QCFlow related to Databricks?",
         output="Databricks is a data engineering and analytics platform designed to help "
         "organizations process and analyze large amounts of data. Databricks is a company "
         "specializing in big data and machine learning solutions.",
         score=2,
         justification="The output provides relevant information about Databricks, mentioning it "
         "as a company specializing in big data and machine learning solutions. However, it doesn't "
-        "directly address how MLflow is related to Databricks, which is the specific question "
+        "directly address how QCFlow is related to Databricks, which is the specific question "
         "asked in the input. Therefore, the output is only somewhat related to the provided "
         "context.",
         grading_context={
-            "context": "MLflow is an open-source platform for managing the end-to-end machine "
+            "context": "QCFlow is an open-source platform for managing the end-to-end machine "
             "learning (ML) lifecycle. It was developed by Databricks, a company that specializes "
-            "in big data and machine learning solutions. MLflow is designed to address the "
+            "in big data and machine learning solutions. QCFlow is designed to address the "
             "challenges that data scientists and machine learning engineers face when developing, "
             "training, and deploying machine learning models."
         },
     )
 
     example_score_4 = EvaluationExample(
-        input="How is MLflow related to Databricks?",
-        output="MLflow is a product created by Databricks to enhance the efficiency of machine "
+        input="How is QCFlow related to Databricks?",
+        output="QCFlow is a product created by Databricks to enhance the efficiency of machine "
         "learning processes.",
         score=4,
         justification="The output provides a relevant and accurate statement about the "
-        "relationship between MLflow and Databricks. While it doesn't provide extensive detail, "
+        "relationship between QCFlow and Databricks. While it doesn't provide extensive detail, "
         "it still offers a substantial and meaningful response. To achieve a score of 5, the "
         "response could be further improved by providing additional context or details about "
-        "how MLflow specifically functions within the Databricks ecosystem.",
+        "how QCFlow specifically functions within the Databricks ecosystem.",
         grading_context={
-            "context": "MLflow is an open-source platform for managing the end-to-end machine "
+            "context": "QCFlow is an open-source platform for managing the end-to-end machine "
             "learning (ML) lifecycle. It was developed by Databricks, a company that specializes "
-            "in big data and machine learning solutions. MLflow is designed to address the "
+            "in big data and machine learning solutions. QCFlow is designed to address the "
             "challenges that data scientists and machine learning engineers face when developing, "
             "training, and deploying machine learning models."
         },

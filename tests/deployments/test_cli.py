@@ -5,8 +5,8 @@ from unittest import mock
 import pytest
 from click.testing import CliRunner
 
-from mlflow.deployments import cli
-from mlflow.exceptions import MlflowException
+from qcflow.deployments import cli
+from qcflow.exceptions import MlflowException
 
 f_model_uri = "fake_model_uri"
 f_name = "fake_deployment_name"
@@ -84,7 +84,7 @@ def test_get():
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny Client does not support predict due to the pandas dependency",
 )
 def test_predict(tmp_path):
@@ -129,7 +129,7 @@ def test_run_local():
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny Client does not support explain due to the pandas dependency",
 )
 def test_explain(tmp_path):

@@ -43,8 +43,8 @@ export const EvaluationRunHeaderModelIndicator = ({ run }: EvaluationRunHeaderMo
         width: '100%',
       }}
     >
-      {gatewayRoute && 'mlflowDeployment' in gatewayRoute && gatewayRoute.mlflowDeployment && (
-        <Typography.Hint>{gatewayRoute.mlflowDeployment.name}</Typography.Hint>
+      {gatewayRoute && 'qcflowDeployment' in gatewayRoute && gatewayRoute.qcflowDeployment && (
+        <Typography.Hint>{gatewayRoute.qcflowDeployment.name}</Typography.Hint>
       )}
       {isHeaderExpanded && (
         <>
@@ -72,10 +72,10 @@ export const EvaluationRunHeaderModelIndicator = ({ run }: EvaluationRunHeaderMo
             </Typography.Hint>
           ) : null}
           <div css={{ fontSize: 0 }}>
-            <Popover.Root componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadermodelindicator.tsx_107">
+            <Popover.Root componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadermodelindicator.tsx_107">
               <Popover.Trigger asChild>
                 <Button
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadermodelindicator.tsx_115"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationrunheadermodelindicator.tsx_115"
                   type="link"
                   size="small"
                   css={{

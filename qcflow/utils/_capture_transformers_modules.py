@@ -6,10 +6,10 @@ import json
 import os
 import sys
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.utils._capture_modules import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.utils._capture_modules import (
     _CaptureImportedModules,
     parse_args,
     store_imported_modules,
@@ -44,9 +44,9 @@ def main():
     # Mirror `sys.path` of the parent process
     sys.path = json.loads(args.sys_path)
 
-    if flavor != mlflow.transformers.FLAVOR_NAME:
+    if flavor != qcflow.transformers.FLAVOR_NAME:
         raise MlflowException(
-            f"This script is only applicable to '{mlflow.transformers.FLAVOR_NAME}' flavor, "
+            f"This script is only applicable to '{qcflow.transformers.FLAVOR_NAME}' flavor, "
             "if you're applying other flavors, please use _capture_modules script.",
         )
 

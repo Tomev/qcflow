@@ -1,4 +1,4 @@
-package org.mlflow.models;
+package org.qcflow.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.mlflow.Flavor;
-import org.mlflow.utils.FileUtils;
-import org.mlflow.utils.SerializationUtils;
+import org.qcflow.Flavor;
+import org.qcflow.utils.FileUtils;
+import org.qcflow.utils.SerializationUtils;
 
 /**
- * Represents an MLflow model. This class includes utility functions for parsing a serialized MLflow
+ * Represents an QCFlow model. This class includes utility functions for parsing a serialized QCFlow
  * model configuration (`MLModel`) as a {@link Model} object.
  */
 public class Model {
@@ -46,8 +46,8 @@ public class Model {
   @JsonProperty("model_uuid")
   private String modelUuid;
 
-  @JsonProperty("mlflow_version")
-  private String mlflowVersion;
+  @JsonProperty("qcflow_version")
+  private String qcflowVersion;
 
   @JsonProperty("databricks_runtime")
   private String databricksRuntime;
@@ -64,9 +64,9 @@ public class Model {
   private String rootPath;
 
   /**
-   * Loads the configuration of an MLflow model and parses it as a {@link Model} object.
+   * Loads the configuration of an QCFlow model and parses it as a {@link Model} object.
    *
-   * @param modelRootPath The path to the root directory of the MLflow model
+   * @param modelRootPath The path to the root directory of the QCFlow model
    */
   public static Model fromRootPath(String modelRootPath) throws IOException {
     String configPath = FileUtils.join(modelRootPath, "MLmodel");
@@ -74,7 +74,7 @@ public class Model {
   }
 
   /**
-   * Loads the configuration of an MLflow model and parses it as a {@link Model} object.
+   * Loads the configuration of an QCFlow model and parses it as a {@link Model} object.
    *
    * @param configPath The path to the `MLModel` configuration file
    */
@@ -87,30 +87,30 @@ public class Model {
     return model;
   }
 
-  /** @return The MLflow model's artifact path */
+  /** @return The QCFlow model's artifact path */
   public Optional<String> getArtifactPath() {
     return Optional.ofNullable(this.artifactPath);
   }
 
-  /** @return The MLflow model's time of creation */
+  /** @return The QCFlow model's time of creation */
   public Optional<String> getUtcTimeCreated() {
     return Optional.ofNullable(this.utcTimeCreated);
   }
 
-  /** @return The MLflow model's run id */
+  /** @return The QCFlow model's run id */
   public Optional<String> getRunId() {
     return Optional.ofNullable(this.runId);
   }
 
-    /** @return The MLflow model's uuid */
+    /** @return The QCFlow model's uuid */
   public Optional<String> getModelUuid() {
     return Optional.ofNullable(this.modelUuid);
   }
 
 
-  /** @return The version of MLflow with which the model was saved */
+  /** @return The version of QCFlow with which the model was saved */
   public Optional<String> getMlflowVersion() {
-    return Optional.ofNullable(this.mlflowVersion);
+    return Optional.ofNullable(this.qcflowVersion);
   }
 
   /**
@@ -128,13 +128,13 @@ public class Model {
     return Optional.ofNullable(this.metadata);
   }
 
-  /** @return The path to the root directory of the MLflow model */
+  /** @return The path to the root directory of the QCFlow model */
   public Optional<String> getRootPath() {
     return Optional.ofNullable(this.rootPath);
   }
 
   /**
-   * @return The user defined model size bytes of the MLflow model
+   * @return The user defined model size bytes of the QCFlow model
    */
   public Optional<Integer> getModelSizeBytes() {
     return Optional.ofNullable(this.model_size_bytes);

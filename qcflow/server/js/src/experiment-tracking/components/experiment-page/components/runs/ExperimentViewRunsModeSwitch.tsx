@@ -12,7 +12,7 @@ import { FormattedMessage } from 'react-intl';
 import { ExperimentPageViewState } from '../../models/ExperimentPageViewState';
 import { useExperimentViewLocalStore } from '../../hooks/useExperimentViewLocalStore';
 import type { ExperimentViewRunsCompareMode } from '../../../../types';
-import { PreviewBadge } from '@mlflow/mlflow/src/shared/building_blocks/PreviewBadge';
+import { PreviewBadge } from '@qcflow/qcflow/src/shared/building_blocks/PreviewBadge';
 import { getExperimentPageDefaultViewMode, useExperimentPageViewMode } from '../../hooks/useExperimentPageViewMode';
 import { isExperimentLoggedModelsUIEnabled, shouldEnableTracingUI } from '../../../../../common/utils/FeatureUtils';
 import { useShouldShowCombinedRunsTab } from '../../hooks/useShouldShowCombinedRunsTab';
@@ -58,7 +58,7 @@ const ChartViewButtonTooltip: React.FC<{
   return (
     <>
       <Popover.Root
-        componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsmodeswitch.tsx_60"
+        componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsmodeswitch.tsx_60"
         open={isToolTipOpen}
       >
         <Popover.Trigger asChild>
@@ -74,7 +74,7 @@ const ChartViewButtonTooltip: React.FC<{
             </Typography.Paragraph>
             <div css={{ textAlign: 'right' }}>
               <Button
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsmodeswitch.tsx_65"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsmodeswitch.tsx_65"
                 onClick={() => updateIsTooltipOpen(false)}
                 type="primary"
               >

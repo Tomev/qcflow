@@ -10,9 +10,9 @@ import threading
 import click
 import pytest
 
-from mlflow.environment_variables import _MLFLOW_TESTING, MLFLOW_TRACKING_URI
-from mlflow.utils.os import is_windows
-from mlflow.version import VERSION
+from qcflow.environment_variables import _QCFLOW_TESTING, QCFLOW_TRACKING_URI
+from qcflow.utils.os import is_windows
+from qcflow.version import VERSION
 
 from tests.helper_functions import get_safe_port
 
@@ -50,7 +50,7 @@ def pytest_addoption(parser):
         "--serve-wheel",
         action="store_true",
         default=os.getenv("CI", "false").lower() == "true",
-        help="Serve a wheel for the dev version of MLflow. True by default in CI, False otherwise.",
+        help="Serve a wheel for the dev version of QCFlow. True by default in CI, False otherwise.",
     )
 
 
@@ -92,11 +92,11 @@ def pytest_cmdline_main(config):
 
 
 def pytest_sessionstart(session):
-    if uri := MLFLOW_TRACKING_URI.get():
+    if uri := QCFLOW_TRACKING_URI.get():
         click.echo(
             click.style(
                 (
-                    f"Environment variable {MLFLOW_TRACKING_URI} is set to {uri!r}, "
+                    f"Environment variable {QCFLOW_TRACKING_URI} is set to {uri!r}, "
                     "which may interfere with tests."
                 ),
                 fg="red",
@@ -202,7 +202,7 @@ def pytest_ignore_collect(collection_path, config):
             "tests/transformers",
             "tests/xgboost",
             # Lazy loading test.
-            "tests/test_mlflow_lazily_imports_ml_packages.py",
+            "tests/test_qcflow_lazily_imports_ml_packages.py",
             # Tests of utils.
             "tests/utils/test_model_utils.py",
             # This test is included here because it imports many big libraries like tf, keras, etc.
@@ -253,14 +253,14 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         terminalreporter.write(" ".join(["pytest"] + ids))
         terminalreporter.write("\n" * 2)
 
-        # If some tests failed at installing mlflow, we suggest using `--serve-wheel` flag.
-        # Some test cases try to install mlflow via pip e.g. model loading. They pins
-        # mlflow version to install based on local environment i.e. dev version ahead of
+        # If some tests failed at installing qcflow, we suggest using `--serve-wheel` flag.
+        # Some test cases try to install qcflow via pip e.g. model loading. They pins
+        # qcflow version to install based on local environment i.e. dev version ahead of
         # the latest release, hence it's not found on PyPI. `--serve-wheel` flag was
         # introduced to resolve this issue, which starts local PyPI server and serve
-        # an mlflow wheel based on local source code.
-        # Ref: https://github.com/mlflow/mlflow/pull/10247
-        msg = f"No matching distribution found for mlflow=={VERSION}"
+        # an qcflow wheel based on local source code.
+        # Ref: https://github.com/qcflow/qcflow/pull/10247
+        msg = f"No matching distribution found for qcflow=={VERSION}"
         for rep in failed_test_reports:
             if any(msg in t for t in (rep.longreprtext, rep.capstdout, rep.capstderr)):
                 terminalreporter.section("HINTS", yellow=True)
@@ -307,13 +307,13 @@ def clean_up_envs():
     yield
 
     if "GITHUB_ACTIONS" in os.environ:
-        from mlflow.utils.virtualenv import _get_mlflow_virtualenv_root
+        from qcflow.utils.virtualenv import _get_qcflow_virtualenv_root
 
-        shutil.rmtree(_get_mlflow_virtualenv_root(), ignore_errors=True)
+        shutil.rmtree(_get_qcflow_virtualenv_root(), ignore_errors=True)
         if not is_windows():
             conda_info = json.loads(subprocess.check_output(["conda", "info", "--json"], text=True))
             root_prefix = conda_info["root_prefix"]
-            regex = re.compile(r"mlflow-\w{32,}")
+            regex = re.compile(r"qcflow-\w{32,}")
             for env in conda_info["envs"]:
                 if env == root_prefix:
                     continue
@@ -322,17 +322,17 @@ def clean_up_envs():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def enable_mlflow_testing():
+def enable_qcflow_testing():
     with pytest.MonkeyPatch.context() as mp:
-        mp.setenv(_MLFLOW_TESTING.name, "TRUE")
+        mp.setenv(_QCFLOW_TESTING.name, "TRUE")
         yield
 
 
 @pytest.fixture(scope="session", autouse=True)
 def serve_wheel(request, tmp_path_factory):
     """
-    Models logged during tests have a dependency on the dev version of MLflow built from
-    source (e.g., mlflow==1.20.0.dev0) and cannot be served because the dev version is not
+    Models logged during tests have a dependency on the dev version of QCFlow built from
+    source (e.g., qcflow==1.20.0.dev0) and cannot be served because the dev version is not
     available on PyPI. This fixture serves a wheel for the dev version from a temporary
     PyPI repository running on localhost and appends the repository URL to the
     `PIP_EXTRA_INDEX_URL` environment variable to make the wheel available to pip.
@@ -342,8 +342,8 @@ def serve_wheel(request, tmp_path_factory):
         return
 
     root = tmp_path_factory.mktemp("root")
-    mlflow_dir = root.joinpath("mlflow")
-    mlflow_dir.mkdir()
+    qcflow_dir = root.joinpath("qcflow")
+    qcflow_dir.mkdir()
     port = get_safe_port()
     try:
         repo_root = subprocess.check_output(
@@ -366,7 +366,7 @@ def serve_wheel(request, tmp_path_factory):
             "pip",
             "wheel",
             "--wheel-dir",
-            mlflow_dir,
+            qcflow_dir,
             "--no-deps",
             repo_root,
         ],
@@ -388,7 +388,7 @@ def serve_wheel(request, tmp_path_factory):
             os.environ["PIP_EXTRA_INDEX_URL"] = url
             # Set the `UV_INDEX` environment variable to allow fetching the wheel from the
             # url when using `uv` as environment manager
-            os.environ["UV_INDEX"] = f"mlflow={url}"
+            os.environ["UV_INDEX"] = f"qcflow={url}"
             yield
         finally:
             prc.terminate()

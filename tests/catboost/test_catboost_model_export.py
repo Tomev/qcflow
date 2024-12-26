@@ -13,24 +13,24 @@ from packaging.version import Version
 from sklearn import datasets
 from sklearn.pipeline import Pipeline
 
-import mlflow.catboost
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow import pyfunc
-from mlflow.models import Model, ModelSignature
-from mlflow.models.utils import _read_example, load_serving_example
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types import DataType
-from mlflow.types.schema import ColSpec, Schema, TensorSpec
-from mlflow.utils.environment import _mlflow_conda_env
-from mlflow.utils.model_utils import _get_flavor_configuration
+import qcflow.catboost
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow import pyfunc
+from qcflow.models import Model, ModelSignature
+from qcflow.models.utils import _read_example, load_serving_example
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types import DataType
+from qcflow.types.schema import ColSpec, Schema, TensorSpec
+from qcflow.utils.environment import _qcflow_conda_env
+from qcflow.utils.model_utils import _get_flavor_configuration
 
 from tests.helper_functions import (
     _assert_pip_requirements,
     _compare_conda_env_requirements,
     _compare_logged_code_paths,
     _is_available_on_pypi,
-    _mlflow_major_version_string,
+    _qcflow_major_version_string,
     assert_register_model_called_with_local_model_path,
     pyfunc_serve_and_score_model,
 )
@@ -99,13 +99,13 @@ def model_path(tmp_path):
 @pytest.fixture
 def custom_env(tmp_path):
     conda_env_path = os.path.join(tmp_path, "conda_env.yml")
-    _mlflow_conda_env(conda_env_path, additional_pip_deps=["catboost", "pytest"])
+    _qcflow_conda_env(conda_env_path, additional_pip_deps=["catboost", "pytest"])
     return conda_env_path
 
 
 @pytest.mark.parametrize("model_type", ["CatBoost", "CatBoostClassifier", "CatBoostRegressor"])
 def test_init_model(model_type):
-    model = mlflow.catboost._init_model(model_type)
+    model = qcflow.catboost._init_model(model_type)
     assert model.__class__.__name__ == model_type
 
 
@@ -128,23 +128,23 @@ def test_log_catboost_ranker():
     model = cb.CatBoostRanker(**MODEL_PARAMS, subsample=1.0)
     model.fit(X, y, group_id=dummy_group_id)
 
-    with mlflow.start_run():
-        model_info = mlflow.catboost.log_model(model, "model")
-        loaded_model = mlflow.catboost.load_model(model_info.model_uri)
+    with qcflow.start_run():
+        model_info = qcflow.catboost.log_model(model, "model")
+        loaded_model = qcflow.catboost.load_model(model_info.model_uri)
         assert isinstance(loaded_model, cb.CatBoostRanker)
         np.testing.assert_array_almost_equal(model.predict(X), loaded_model.predict(X))
 
 
 def test_init_model_throws_for_invalid_model_type():
     with pytest.raises(TypeError, match="Invalid model type"):
-        mlflow.catboost._init_model("unsupported")
+        qcflow.catboost._init_model("unsupported")
 
 
 def test_model_save_load(cb_model, model_path):
     model, inference_dataframe = cb_model
-    mlflow.catboost.save_model(cb_model=model, path=model_path)
+    qcflow.catboost.save_model(cb_model=model, path=model_path)
 
-    loaded_model = mlflow.catboost.load_model(model_uri=model_path)
+    loaded_model = qcflow.catboost.load_model(model_uri=model_path)
     np.testing.assert_array_almost_equal(
         model.predict(inference_dataframe),
         loaded_model.predict(inference_dataframe),
@@ -158,10 +158,10 @@ def test_model_save_load(cb_model, model_path):
 
 
 def test_log_model_logs_model_type(cb_model):
-    with mlflow.start_run():
+    with qcflow.start_run():
         artifact_path = "model"
-        mlflow.catboost.log_model(cb_model.model, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        qcflow.catboost.log_model(cb_model.model, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     flavor_conf = Model.load(model_uri).flavors["catboost"]
     assert "model_type" in flavor_conf
@@ -177,20 +177,20 @@ save_formats = SUPPORTS_DESERIALIZATION + ["python", "cpp", "pmml"]
 @pytest.mark.allow_infer_pip_requirements_fallback
 @pytest.mark.parametrize("save_format", save_formats)
 def test_log_model_logs_save_format(reg_model, save_format):
-    with mlflow.start_run():
+    with qcflow.start_run():
         artifact_path = "model"
-        mlflow.catboost.log_model(reg_model.model, artifact_path, format=save_format)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        qcflow.catboost.log_model(reg_model.model, artifact_path, format=save_format)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     flavor_conf = Model.load(model_uri).flavors["catboost"]
     assert "save_format" in flavor_conf
     assert flavor_conf["save_format"] == save_format
 
     if save_format in SUPPORTS_DESERIALIZATION:
-        mlflow.catboost.load_model(model_uri)
+        qcflow.catboost.load_model(model_uri)
     else:
         with pytest.raises(cb.CatBoostError, match="deserialization not supported or missing"):
-            mlflow.catboost.load_model(model_uri)
+            qcflow.catboost.load_model(model_uri)
 
 
 @pytest.mark.parametrize("signature", [None, get_reg_model_signature()])
@@ -198,30 +198,30 @@ def test_log_model_logs_save_format(reg_model, save_format):
 def test_signature_and_examples_are_saved_correctly(
     reg_model, model_path, signature, input_example
 ):
-    mlflow.catboost.save_model(
+    qcflow.catboost.save_model(
         reg_model.model, model_path, signature=signature, input_example=input_example
     )
-    mlflow_model = Model.load(model_path)
+    qcflow_model = Model.load(model_path)
     if signature is None and input_example is None:
-        assert mlflow_model.signature is None
+        assert qcflow_model.signature is None
     else:
-        assert mlflow_model.signature == get_reg_model_signature()
+        assert qcflow_model.signature == get_reg_model_signature()
     if input_example is None:
-        assert mlflow_model.saved_input_example_info is None
+        assert qcflow_model.saved_input_example_info is None
     else:
-        pd.testing.assert_frame_equal(_read_example(mlflow_model, model_path), input_example)
+        pd.testing.assert_frame_equal(_read_example(qcflow_model, model_path), input_example)
 
 
 def test_model_load_from_remote_uri_succeeds(reg_model, model_path, mock_s3_bucket):
     model, inference_dataframe = reg_model
-    mlflow.catboost.save_model(cb_model=model, path=model_path)
+    qcflow.catboost.save_model(cb_model=model, path=model_path)
     artifact_root = f"s3://{mock_s3_bucket}"
     artifact_repo = S3ArtifactRepository(artifact_root)
     artifact_path = "model"
     artifact_repo.log_artifacts(model_path, artifact_path=artifact_path)
 
     model_uri = artifact_root + "/" + artifact_path
-    loaded_model = mlflow.catboost.load_model(model_uri=model_uri)
+    loaded_model = qcflow.catboost.load_model(model_uri=model_uri)
     np.testing.assert_array_almost_equal(
         model.predict(inference_dataframe),
         loaded_model.predict(inference_dataframe),
@@ -230,16 +230,16 @@ def test_model_load_from_remote_uri_succeeds(reg_model, model_path, mock_s3_buck
 
 def test_log_model(cb_model, tmp_path):
     model, inference_dataframe = cb_model
-    with mlflow.start_run():
+    with qcflow.start_run():
         artifact_path = "model"
         conda_env = os.path.join(tmp_path, "conda_env.yaml")
-        _mlflow_conda_env(conda_env, additional_pip_deps=["catboost"])
+        _qcflow_conda_env(conda_env, additional_pip_deps=["catboost"])
 
-        model_info = mlflow.catboost.log_model(model, artifact_path, conda_env=conda_env)
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+        model_info = qcflow.catboost.log_model(model, artifact_path, conda_env=conda_env)
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
         assert model_info.model_uri == model_uri
 
-        loaded_model = mlflow.catboost.load_model(model_uri)
+        loaded_model = qcflow.catboost.load_model(model_uri)
         np.testing.assert_array_almost_equal(
             model.predict(inference_dataframe),
             loaded_model.predict(inference_dataframe),
@@ -257,12 +257,12 @@ def test_log_model_calls_register_model(cb_model, tmp_path):
     artifact_path = "model"
     registered_model_name = "registered_model"
     with (
-        mlflow.start_run() as run,
-        mock.patch("mlflow.tracking._model_registry.fluent._register_model"),
+        qcflow.start_run() as run,
+        mock.patch("qcflow.tracking._model_registry.fluent._register_model"),
     ):
         conda_env_path = os.path.join(tmp_path, "conda_env.yaml")
-        _mlflow_conda_env(conda_env_path, additional_pip_deps=["catboost"])
-        mlflow.catboost.log_model(
+        _qcflow_conda_env(conda_env_path, additional_pip_deps=["catboost"])
+        qcflow.catboost.log_model(
             cb_model.model,
             artifact_path,
             conda_env=conda_env_path,
@@ -270,25 +270,25 @@ def test_log_model_calls_register_model(cb_model, tmp_path):
         )
         model_uri = f"runs:/{run.info.run_id}/{artifact_path}"
         assert_register_model_called_with_local_model_path(
-            register_model_mock=mlflow.tracking._model_registry.fluent._register_model,
+            register_model_mock=qcflow.tracking._model_registry.fluent._register_model,
             model_uri=model_uri,
             registered_model_name=registered_model_name,
         )
 
 
 def test_log_model_no_registered_model_name(cb_model, tmp_path):
-    with mlflow.start_run(), mock.patch("mlflow.register_model") as register_model_mock:
+    with qcflow.start_run(), mock.patch("qcflow.register_model") as register_model_mock:
         artifact_path = "model"
         conda_env_path = os.path.join(tmp_path, "conda_env.yaml")
-        _mlflow_conda_env(conda_env_path, additional_pip_deps=["catboost"])
-        mlflow.catboost.log_model(cb_model.model, artifact_path, conda_env=conda_env_path)
+        _qcflow_conda_env(conda_env_path, additional_pip_deps=["catboost"])
+        qcflow.catboost.log_model(cb_model.model, artifact_path, conda_env=conda_env_path)
         register_model_mock.assert_not_called()
 
 
-def test_model_save_persists_specified_conda_env_in_mlflow_model_directory(
+def test_model_save_persists_specified_conda_env_in_qcflow_model_directory(
     reg_model, model_path, custom_env
 ):
-    mlflow.catboost.save_model(cb_model=reg_model.model, path=model_path, conda_env=custom_env)
+    qcflow.catboost.save_model(cb_model=reg_model.model, path=model_path, conda_env=custom_env)
     pyfunc_conf = _get_flavor_configuration(model_path=model_path, flavor_name=pyfunc.FLAVOR_NAME)
     saved_conda_env_path = os.path.join(model_path, pyfunc_conf[pyfunc.ENV]["conda"])
     assert os.path.exists(saved_conda_env_path)
@@ -296,19 +296,19 @@ def test_model_save_persists_specified_conda_env_in_mlflow_model_directory(
     assert read_yaml(saved_conda_env_path) == read_yaml(custom_env)
 
 
-def test_model_save_persists_requirements_in_mlflow_model_directory(
+def test_model_save_persists_requirements_in_qcflow_model_directory(
     reg_model, model_path, custom_env
 ):
-    mlflow.catboost.save_model(cb_model=reg_model.model, path=model_path, conda_env=custom_env)
+    qcflow.catboost.save_model(cb_model=reg_model.model, path=model_path, conda_env=custom_env)
 
     saved_pip_req_path = os.path.join(model_path, "requirements.txt")
     _compare_conda_env_requirements(custom_env, saved_pip_req_path)
 
 
 def test_model_save_accepts_conda_env_as_dict(reg_model, model_path):
-    conda_env = mlflow.catboost.get_default_conda_env()
+    conda_env = qcflow.catboost.get_default_conda_env()
     conda_env["dependencies"].append("pytest")
-    mlflow.catboost.save_model(cb_model=reg_model.model, path=model_path, conda_env=conda_env)
+    qcflow.catboost.save_model(cb_model=reg_model.model, path=model_path, conda_env=conda_env)
 
     pyfunc_conf = _get_flavor_configuration(model_path=model_path, flavor_name=pyfunc.FLAVOR_NAME)
     saved_conda_env_path = os.path.join(model_path, pyfunc_conf[pyfunc.ENV]["conda"])
@@ -316,11 +316,11 @@ def test_model_save_accepts_conda_env_as_dict(reg_model, model_path):
     assert read_yaml(saved_conda_env_path) == conda_env
 
 
-def test_model_log_persists_specified_conda_env_in_mlflow_model_directory(reg_model, custom_env):
+def test_model_log_persists_specified_conda_env_in_qcflow_model_directory(reg_model, custom_env):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.catboost.log_model(reg_model.model, artifact_path, conda_env=custom_env)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.catboost.log_model(reg_model.model, artifact_path, conda_env=custom_env)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     local_path = _download_artifact_from_uri(artifact_uri=model_uri)
     pyfunc_conf = _get_flavor_configuration(model_path=local_path, flavor_name=pyfunc.FLAVOR_NAME)
@@ -330,11 +330,11 @@ def test_model_log_persists_specified_conda_env_in_mlflow_model_directory(reg_mo
     assert read_yaml(saved_conda_env_path) == read_yaml(custom_env)
 
 
-def test_model_log_persists_requirements_in_mlflow_model_directory(reg_model, custom_env):
+def test_model_log_persists_requirements_in_qcflow_model_directory(reg_model, custom_env):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.catboost.log_model(reg_model.model, artifact_path, conda_env=custom_env)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.catboost.log_model(reg_model.model, artifact_path, conda_env=custom_env)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     local_path = _download_artifact_from_uri(artifact_uri=model_uri)
     saved_pip_req_path = os.path.join(local_path, "requirements.txt")
@@ -342,68 +342,68 @@ def test_model_log_persists_requirements_in_mlflow_model_directory(reg_model, cu
 
 
 def test_log_model_with_pip_requirements(reg_model, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
     # Path to a requirements file
     req_file = tmp_path.joinpath("requirements.txt")
     req_file.write_text("a")
-    with mlflow.start_run():
-        mlflow.catboost.log_model(reg_model.model, "model", pip_requirements=str(req_file))
+    with qcflow.start_run():
+        qcflow.catboost.log_model(reg_model.model, "model", pip_requirements=str(req_file))
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, "a"], strict=True
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, "a"], strict=True
         )
 
     # List of requirements
-    with mlflow.start_run():
-        mlflow.catboost.log_model(
+    with qcflow.start_run():
+        qcflow.catboost.log_model(
             reg_model.model, "model", pip_requirements=[f"-r {req_file}", "b"]
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, "a", "b"], strict=True
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, "a", "b"], strict=True
         )
 
     # Constraints file
-    with mlflow.start_run():
-        mlflow.catboost.log_model(
+    with qcflow.start_run():
+        qcflow.catboost.log_model(
             reg_model.model, "model", pip_requirements=[f"-c {req_file}", "b"]
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "b", "-c constraints.txt"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "b", "-c constraints.txt"],
             ["a"],
             strict=True,
         )
 
 
 def test_log_model_with_extra_pip_requirements(reg_model, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
-    default_reqs = mlflow.catboost.get_default_pip_requirements()
+    expected_qcflow_version = _qcflow_major_version_string()
+    default_reqs = qcflow.catboost.get_default_pip_requirements()
 
     # Path to a requirements file
     req_file = tmp_path.joinpath("requirements.txt")
     req_file.write_text("a")
-    with mlflow.start_run():
-        mlflow.catboost.log_model(reg_model.model, "model", extra_pip_requirements=str(req_file))
+    with qcflow.start_run():
+        qcflow.catboost.log_model(reg_model.model, "model", extra_pip_requirements=str(req_file))
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, *default_reqs, "a"]
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, *default_reqs, "a"]
         )
 
     # List of requirements
-    with mlflow.start_run():
-        mlflow.catboost.log_model(
+    with qcflow.start_run():
+        qcflow.catboost.log_model(
             reg_model.model, "model", extra_pip_requirements=[f"-r {req_file}", "b"]
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, *default_reqs, "a", "b"]
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, *default_reqs, "a", "b"]
         )
 
     # Constraints file
-    with mlflow.start_run():
-        mlflow.catboost.log_model(
+    with qcflow.start_run():
+        qcflow.catboost.log_model(
             reg_model.model, "model", extra_pip_requirements=[f"-c {req_file}", "b"]
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, *default_reqs, "b", "-c constraints.txt"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, *default_reqs, "b", "-c constraints.txt"],
             ["a"],
         )
 
@@ -411,26 +411,26 @@ def test_log_model_with_extra_pip_requirements(reg_model, tmp_path):
 def test_model_save_without_specified_conda_env_uses_default_env_with_expected_dependencies(
     reg_model, model_path
 ):
-    mlflow.catboost.save_model(reg_model.model, model_path)
-    _assert_pip_requirements(model_path, mlflow.catboost.get_default_pip_requirements())
+    qcflow.catboost.save_model(reg_model.model, model_path)
+    _assert_pip_requirements(model_path, qcflow.catboost.get_default_pip_requirements())
 
 
 def test_model_log_without_specified_conda_env_uses_default_env_with_expected_dependencies(
     reg_model,
 ):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.catboost.log_model(reg_model.model, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.catboost.log_model(reg_model.model, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    _assert_pip_requirements(model_uri, mlflow.catboost.get_default_pip_requirements())
+    _assert_pip_requirements(model_uri, qcflow.catboost.get_default_pip_requirements())
 
 
 def test_pyfunc_serve_and_score(reg_model):
     model, inference_dataframe = reg_model
     artifact_path = "model"
-    with mlflow.start_run():
-        model_info = mlflow.catboost.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.catboost.log_model(
             model, artifact_path, input_example=inference_dataframe
         )
 
@@ -451,8 +451,8 @@ def test_pyfunc_serve_and_score_sklearn(reg_model):
     model, inference_dataframe = reg_model
     model = Pipeline([("model", reg_model.model)])
 
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(
             model, "model", input_example=inference_dataframe.head(3)
         )
 
@@ -472,18 +472,18 @@ def test_pyfunc_serve_and_score_sklearn(reg_model):
 def test_log_model_with_code_paths(cb_model):
     artifact_path = "model"
     with (
-        mlflow.start_run(),
-        mock.patch("mlflow.catboost._add_code_from_conf_to_system_path") as add_mock,
+        qcflow.start_run(),
+        mock.patch("qcflow.catboost._add_code_from_conf_to_system_path") as add_mock,
     ):
-        mlflow.catboost.log_model(cb_model.model, artifact_path, code_paths=[__file__])
-        model_uri = mlflow.get_artifact_uri(artifact_path)
-        _compare_logged_code_paths(__file__, model_uri, mlflow.catboost.FLAVOR_NAME)
-        mlflow.catboost.load_model(model_uri=model_uri)
+        qcflow.catboost.log_model(cb_model.model, artifact_path, code_paths=[__file__])
+        model_uri = qcflow.get_artifact_uri(artifact_path)
+        _compare_logged_code_paths(__file__, model_uri, qcflow.catboost.FLAVOR_NAME)
+        qcflow.catboost.load_model(model_uri=model_uri)
         add_mock.assert_called()
 
 
 def test_virtualenv_subfield_points_to_correct_path(cb_model, model_path):
-    mlflow.catboost.save_model(cb_model.model, path=model_path)
+    qcflow.catboost.save_model(cb_model.model, path=model_path)
     pyfunc_conf = _get_flavor_configuration(model_path=model_path, flavor_name=pyfunc.FLAVOR_NAME)
     python_env_path = Path(model_path, pyfunc_conf[pyfunc.ENV]["virtualenv"])
     assert python_env_path.exists()
@@ -491,24 +491,24 @@ def test_virtualenv_subfield_points_to_correct_path(cb_model, model_path):
 
 
 def test_model_save_load_with_metadata(cb_model, model_path):
-    mlflow.catboost.save_model(
+    qcflow.catboost.save_model(
         cb_model.model, path=model_path, metadata={"metadata_key": "metadata_value"}
     )
 
-    reloaded_model = mlflow.pyfunc.load_model(model_uri=model_path)
+    reloaded_model = qcflow.pyfunc.load_model(model_uri=model_path)
     assert reloaded_model.metadata.metadata["metadata_key"] == "metadata_value"
 
 
 def test_model_log_with_metadata(cb_model):
     artifact_path = "model"
 
-    with mlflow.start_run():
-        mlflow.catboost.log_model(
+    with qcflow.start_run():
+        qcflow.catboost.log_model(
             cb_model.model, artifact_path, metadata={"metadata_key": "metadata_value"}
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    reloaded_model = mlflow.pyfunc.load_model(model_uri=model_uri)
+    reloaded_model = qcflow.pyfunc.load_model(model_uri=model_uri)
     assert reloaded_model.metadata.metadata["metadata_key"] == "metadata_value"
 
 
@@ -516,9 +516,9 @@ def test_model_log_with_signature_inference(cb_model):
     artifact_path = "model"
     example = cb_model.inference_dataframe.head(3)
 
-    with mlflow.start_run():
-        mlflow.catboost.log_model(cb_model.model, artifact_path, input_example=example)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.catboost.log_model(cb_model.model, artifact_path, input_example=example)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     model_info = Model.load(model_uri)
     assert model_info.signature.inputs == Schema(

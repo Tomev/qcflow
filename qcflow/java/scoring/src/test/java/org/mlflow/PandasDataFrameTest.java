@@ -1,4 +1,4 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,8 +13,8 @@ import ml.combust.mleap.runtime.frame.DefaultLeapFrame;
 import ml.combust.mleap.runtime.javadsl.LeapFrameBuilder;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mlflow.MLflowRootResourceProvider;
-import org.mlflow.utils.SerializationUtils;
+import org.qcflow.QCFlowRootResourceProvider;
+import org.qcflow.utils.SerializationUtils;
 
 public class PandasDataFrameTest {
 
@@ -23,7 +23,7 @@ public class PandasDataFrameTest {
   @Test
   public void testPandasDataFrameIsProducedFromValidJsonSuccessfully() throws IOException {
     String sampleInputPath =
-        MLflowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
+        QCFlowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
     String sampleInputJson = new String(Files.readAllBytes(Paths.get(sampleInputPath)));
     PandasSplitOrientedDataFrame pandasFrame =
         PandasSplitOrientedDataFrame.fromJson(sampleInputJson);
@@ -46,7 +46,7 @@ public class PandasDataFrameTest {
   public void testLoadingPandasDataFrameFromJsonWithInvalidSplitOrientationSchemaThrowsException()
       throws IOException {
     String sampleInputPath =
-        MLflowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
+        QCFlowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
     String sampleInputJson = new String(Files.readAllBytes(Paths.get(sampleInputPath)));
     Map<String, Object> sampleInput = SerializationUtils.fromJson(sampleInputJson, Map.class);
     Map<String, List<?>> dataframe = (Map<String, List<?>>)sampleInput.get("dataframe_split");
@@ -68,7 +68,7 @@ public class PandasDataFrameTest {
   public void testLoadingPandasDataFrameFromJsonWithInvalidFrameDataThrowsException()
       throws IOException {
     String sampleInputPath =
-        MLflowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
+        QCFlowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
     String sampleInputJson = new String(Files.readAllBytes(Paths.get(sampleInputPath)));
     Map<String, List<?>> sampleInput = (Map<String, List<?>>)SerializationUtils
         .fromJson(sampleInputJson, Map.class)
@@ -99,7 +99,7 @@ public class PandasDataFrameTest {
     StructType leapFrameSchema = leapFrameBuilder.createSchema(Arrays.asList(
             leapFrameBuilder.createField("topic", leapFrameBuilder.createString())));
     String sampleInputPath =
-        MLflowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
+        QCFlowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
     String sampleInputJson = new String(Files.readAllBytes(Paths.get(sampleInputPath)));
     PandasSplitOrientedDataFrame pandasFrame =
         PandasSplitOrientedDataFrame.fromJson(sampleInputJson);
@@ -118,7 +118,7 @@ public class PandasDataFrameTest {
     StructType leapFrameSchema = leapFrameBuilder.createSchema(Arrays.asList(
             leapFrameBuilder.createField("topic", leapFrameBuilder.createString())));
     String sampleInputPath =
-        MLflowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
+        QCFlowRootResourceProvider.getResourcePath("mleap_model/sample_input.json");
     String sampleInputJson = new String(Files.readAllBytes(Paths.get(sampleInputPath)));
     Map<String, Object> sampleInput = SerializationUtils.fromJson(sampleInputJson, Map.class);
     Map<String, List<?>> dataframe = (Map<String, List<?>>) sampleInput.get("dataframe_split");

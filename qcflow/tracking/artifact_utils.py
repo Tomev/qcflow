@@ -9,15 +9,15 @@ import tempfile
 import urllib.parse
 import uuid
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.dbfs_artifact_repo import DbfsRestArtifactRepository
-from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
-from mlflow.tracking._tracking_service.utils import _get_store
-from mlflow.utils.file_utils import path_to_local_file_uri
-from mlflow.utils.os import is_windows
-from mlflow.utils.uri import add_databricks_profile_info_to_artifact_uri, append_to_uri_path
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.dbfs_artifact_repo import DbfsRestArtifactRepository
+from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
+from qcflow.tracking._tracking_service.utils import _get_store
+from qcflow.utils.file_utils import path_to_local_file_uri
+from qcflow.utils.os import is_windows
+from qcflow.utils.uri import add_databricks_profile_info_to_artifact_uri, append_to_uri_path
 
 
 def get_artifact_uri(run_id, artifact_path=None, tracking_uri=None):
@@ -150,7 +150,7 @@ def _upload_artifacts_to_databricks(
     with tempfile.TemporaryDirectory() as local_dir:
         source_with_profile = add_databricks_profile_info_to_artifact_uri(source, source_host_uri)
         _download_artifact_from_uri(source_with_profile, local_dir)
-        dest_root = "dbfs:/databricks/mlflow/tmp-external-source/"
+        dest_root = "dbfs:/databricks/qcflow/tmp-external-source/"
         dest_root_with_profile = add_databricks_profile_info_to_artifact_uri(
             dest_root, target_databricks_profile_uri
         )

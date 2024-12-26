@@ -82,7 +82,7 @@ export class MetricsPlotControlsImpl extends React.Component<Props> {
     const completedRunsTooltipText = (
       <FormattedMessage
         // eslint-disable-next-line max-len
-        defaultMessage="MLflow UI automatically fetches metric histories for active runs and updates the metrics plot with a {interval} second interval."
+        defaultMessage="QCFlow UI automatically fetches metric histories for active runs and updates the metrics plot with a {interval} second interval."
         description="Helpful tooltip message to explain the automatic metrics plot update"
         values={{ interval: Math.round(METRICS_PLOT_POLLING_INTERVAL_MS / 1000) }}
       />
@@ -118,7 +118,7 @@ export class MetricsPlotControlsImpl extends React.Component<Props> {
                 />
               </div>
               <Switch
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_metricsplotcontrols.tsx_120"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_metricsplotcontrols.tsx_120"
                 data-testid="show-point-toggle"
                 defaultChecked={showPoint}
                 onChange={this.props.handleShowPointChange}
@@ -153,7 +153,7 @@ export class MetricsPlotControlsImpl extends React.Component<Props> {
                 />
               </div>
               <RadioGroup
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_metricsplotcontrols.tsx_154"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_metricsplotcontrols.tsx_154"
                 name="metrics-plot-x-axis-radio-group"
                 css={styles.xAxisControls}
                 onChange={this.props.handleXAxisChange}
@@ -220,14 +220,14 @@ export class MetricsPlotControlsImpl extends React.Component<Props> {
             />
           </div>
           <Switch
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_metricsplotcontrols.tsx_220"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_metricsplotcontrols.tsx_220"
             defaultChecked={yAxisLogScale}
             onChange={this.props.handleYAxisLogScaleChange}
           />
         </div>
         <div className="inline-control">
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_metricsplotcontrols.tsx_222"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_metricsplotcontrols.tsx_222"
             css={{
               textAlign: 'justify',
               textAlignLast: 'left',

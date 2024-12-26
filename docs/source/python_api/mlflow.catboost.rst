@@ -1,7 +1,7 @@
-mlflow.catboost
+qcflow.catboost
 ===============
 
-.. automodule:: mlflow.catboost
+.. automodule:: qcflow.catboost
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,7 +1,7 @@
-mlflow.openai
+qcflow.openai
 =============
 
-.. automodule:: mlflow.openai
+.. automodule:: qcflow.openai
     :members:
     :undoc-members:
     :show-inheritance:

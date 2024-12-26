@@ -15,7 +15,7 @@ import {
 } from '../runs-charts.types';
 import { RunsChartsConfigureField } from './config/RunsChartsConfigure.common';
 import { FormattedMessage } from 'react-intl';
-import { shouldEnableChartExpressions } from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+import { shouldEnableChartExpressions } from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 import { useCallback, useEffect, useState } from 'react';
 import { useChartExpressionParser } from '../hooks/useChartExpressionParser';
 import { RunsChartsLineChartXAxisType } from './RunsCharts.common';
@@ -120,13 +120,13 @@ const ExpressionInput = ({
   return (
     <span css={{ display: 'flex', width: '100%', gap: theme.spacing.sm }}>
       <Input
-        componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsyaxismetricandexpressionselector.tsx_122"
+        componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsyaxismetricandexpressionselector.tsx_122"
         value={chartExpression.expression}
         onChange={(e) => validateAndUpdate(e.target.value)}
         validationState={isValidExpression ? undefined : 'error'}
       />
       <Button
-        componentId="mlflow.charts.line-chart-expressions-remove"
+        componentId="qcflow.charts.line-chart-expressions-remove"
         icon={<CloseIcon />}
         onClick={() => removeYAxisExpression(index)}
       />
@@ -219,7 +219,7 @@ export const RunsChartsYAxisMetricAndExpressionSelector = ({
       {usingChartExpressions && (
         <RunsChartsConfigureField title="Metric type" compact>
           <Radio.Group
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsyaxismetricandexpressionselector.tsx_221"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsyaxismetricandexpressionselector.tsx_221"
             name="runs-charts-field-group-metric-type-y-axis"
             value={state.yAxisKey || RunsChartsLineChartYAxisType.METRIC}
             onChange={({ target: { value } }) => updateYAxisKey(value)}
@@ -255,7 +255,7 @@ export const RunsChartsYAxisMetricAndExpressionSelector = ({
               );
             })}
             <Button
-              componentId="mlflow.charts.line-chart-expressions-add-new"
+              componentId="qcflow.charts.line-chart-expressions-add-new"
               icon={<PlusIcon />}
               onClick={addNewYAxisExpressionTemporary}
             >

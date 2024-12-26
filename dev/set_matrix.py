@@ -1,5 +1,5 @@
 """
-A script to set a matrix for the cross version tests for MLflow Models / autologging integrations.
+A script to set a matrix for the cross version tests for QCFlow Models / autologging integrations.
 
 # Usage:
 
@@ -12,10 +12,10 @@ python dev/set_matrix.py --no-dev
 
 # Test items affected by config file updates
 python dev/set_matrix.py --ref-versions-yaml \
-    "https://raw.githubusercontent.com/mlflow/mlflow/master/ml-package-versions.yml"
+    "https://raw.githubusercontent.com/qcflow/qcflow/master/ml-package-versions.yml"
 
 # Test items affected by flavor module updates
-python dev/set_matrix.py --changed-files "mlflow/sklearn/__init__.py"
+python dev/set_matrix.py --changed-files "qcflow/sklearn/__init__.py"
 
 # Test a specific flavor
 python dev/set_matrix.py --flavors sklearn
@@ -46,7 +46,7 @@ from packaging.version import InvalidVersion
 from packaging.version import Version as OriginalVersion
 from pydantic import BaseModel, validator
 
-VERSIONS_YAML_PATH = "mlflow/ml-package-versions.yml"
+VERSIONS_YAML_PATH = "qcflow/ml-package-versions.yml"
 DEV_VERSION = "dev"
 # Treat "dev" as "newer than any existing versions"
 DEV_NUMERIC = "9999.9999.9999"
@@ -247,7 +247,7 @@ def filter_versions(
     )
 
 
-FLAVOR_FILE_PATTERN = re.compile(r"^(mlflow|tests)/(.+?)(_autolog(ging)?)?(\.py|/)")
+FLAVOR_FILE_PATTERN = re.compile(r"^(qcflow|tests)/(.+?)(_autolog(ging)?)?(\.py|/)")
 
 
 def get_changed_flavors(changed_files, flavors):
@@ -369,10 +369,10 @@ def parse_args(args):
     parser.add_argument(
         "--versions-yaml",
         required=False,
-        default="mlflow/ml-package-versions.yml",
+        default="qcflow/ml-package-versions.yml",
         help=(
             "URL or local file path of the config yaml. Defaults to "
-            "'mlflow/ml-package-versions.yml' on the branch where this script is running."
+            "'qcflow/ml-package-versions.yml' on the branch where this script is running."
         ),
     )
     parser.add_argument(
@@ -650,7 +650,7 @@ def apply_changed_files(changed_files, matrix):
     )
 
     # Run langchain tests if any tracing files have been changed
-    if any(f.startswith("mlflow/tracing/") for f in changed_files):
+    if any(f.startswith("qcflow/tracing/") for f in changed_files):
         changed_flavors.add("langchain")
 
     return set(filter(lambda x: x.flavor in changed_flavors, matrix))

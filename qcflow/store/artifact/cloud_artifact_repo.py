@@ -7,25 +7,25 @@ from abc import abstractmethod
 from collections import namedtuple
 from concurrent.futures import as_completed
 
-from mlflow.environment_variables import (
-    _MLFLOW_MPD_NUM_RETRIES,
-    _MLFLOW_MPD_RETRY_INTERVAL_SECONDS,
-    MLFLOW_ENABLE_MULTIPART_DOWNLOAD,
-    MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE,
-    MLFLOW_MULTIPART_DOWNLOAD_MINIMUM_FILE_SIZE,
-    MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
+from qcflow.environment_variables import (
+    _QCFLOW_MPD_NUM_RETRIES,
+    _QCFLOW_MPD_RETRY_INTERVAL_SECONDS,
+    QCFLOW_ENABLE_MULTIPART_DOWNLOAD,
+    QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE,
+    QCFLOW_MULTIPART_DOWNLOAD_MINIMUM_FILE_SIZE,
+    QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.utils import chunk_list
-from mlflow.utils.file_utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.utils import chunk_list
+from qcflow.utils.file_utils import (
     ArtifactProgressBar,
     parallelized_download_file_using_http_uri,
     relative_path_to_artifact_path,
     remove_on_error,
 )
-from mlflow.utils.request_utils import download_chunk
-from mlflow.utils.uri import is_fuse_or_uc_volumes_uri
+from qcflow.utils.request_utils import download_chunk
+from qcflow.utils.uri import is_fuse_or_uc_volumes_uri
 
 _logger = logging.getLogger(__name__)
 _ARTIFACT_UPLOAD_BATCH_SIZE = (
@@ -72,7 +72,7 @@ def _complete_futures(futures_dict, file):
     with ArtifactProgressBar.chunks(
         os.path.getsize(file),
         f"Uploading {file}",
-        MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get(),
+        QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get(),
     ) as pbar:
         for future in as_completed(futures_dict):
             key = futures_dict[future]
@@ -225,12 +225,12 @@ class CloudArtifactRepository(ArtifactRepository):
                 remote_file_path=remote_file_path,
                 file_size=file_size,
                 uri_type=cloud_credential_info.type,
-                chunk_size=MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get(),
+                chunk_size=QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get(),
                 env=parallel_download_subproc_env,
                 headers=self._extract_headers_from_credentials(cloud_credential_info.headers),
             )
-            num_retries = _MLFLOW_MPD_NUM_RETRIES.get()
-            interval = _MLFLOW_MPD_RETRY_INTERVAL_SECONDS.get()
+            num_retries = _QCFLOW_MPD_NUM_RETRIES.get()
+            interval = _QCFLOW_MPD_RETRY_INTERVAL_SECONDS.get()
             failed_downloads = list(failed_downloads)
             while failed_downloads and num_retries > 0:
                 self._refresh_credentials()
@@ -287,9 +287,9 @@ class CloudArtifactRepository(ArtifactRepository):
         # Due to this limitation (writes must start at the beginning of a file),
         # offset writes are disabled if FUSE is the local_path destination.
         if (
-            not MLFLOW_ENABLE_MULTIPART_DOWNLOAD.get()
+            not QCFLOW_ENABLE_MULTIPART_DOWNLOAD.get()
             or not file_size
-            or file_size < MLFLOW_MULTIPART_DOWNLOAD_MINIMUM_FILE_SIZE.get()
+            or file_size < QCFLOW_MULTIPART_DOWNLOAD_MINIMUM_FILE_SIZE.get()
             or is_fuse_or_uc_volumes_uri(local_path)
             # DatabricksSDKModelsArtifactRepository can only download file via databricks sdk
             # rather than presigned uri used in _parallelized_download_from_cloud.

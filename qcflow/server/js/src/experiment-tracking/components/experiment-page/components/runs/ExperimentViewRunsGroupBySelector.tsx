@@ -15,7 +15,7 @@ import {
 } from '@databricks/design-system';
 import { compact, isEmpty, isString, keys, uniq, values } from 'lodash';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { MLFLOW_INTERNAL_PREFIX } from '../../../../../common/utils/TagUtils';
+import { QCFLOW_INTERNAL_PREFIX } from '../../../../../common/utils/TagUtils';
 import {
   RunsGroupByConfig,
   createRunsGroupByKey,
@@ -108,7 +108,7 @@ const GroupBySelectorBody = ({
     () =>
       uniq(
         values(runsData.tagsList).flatMap((runTags) =>
-          keys(runTags).filter((tagKey) => !tagKey.startsWith(MLFLOW_INTERNAL_PREFIX)),
+          keys(runTags).filter((tagKey) => !tagKey.startsWith(QCFLOW_INTERNAL_PREFIX)),
         ),
       ),
     [runsData.tagsList],
@@ -189,7 +189,7 @@ const GroupBySelectorBody = ({
     <>
       <div css={{ display: 'flex', gap: theme.spacing.xs, padding: theme.spacing.sm }}>
         <Input
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_191"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_191"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           prefix={<SearchIcon />}
@@ -221,7 +221,7 @@ const GroupBySelectorBody = ({
           >
             <DropdownMenu.Trigger asChild>
               <Button
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_168"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_168"
                 icon={<GearIcon />}
                 css={{ minWidth: 32 }}
                 aria-label="Change aggregation function"
@@ -232,7 +232,7 @@ const GroupBySelectorBody = ({
             {shouldEnableToggleIndividualRunsInGroups() && (
               <>
                 <DropdownMenu.CheckboxItem
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_233"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_233"
                   disabled={!groupByKeys.length}
                   checked={useGroupedValuesInCharts}
                   onCheckedChange={onUseGroupedValuesInChartsChange}
@@ -244,7 +244,7 @@ const GroupBySelectorBody = ({
               </>
             )}
             <DropdownMenu.RadioGroup
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_244"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_244"
               value={aggregateFunction}
               onValueChange={aggregateFunctionChanged}
             >
@@ -284,7 +284,7 @@ const GroupBySelectorBody = ({
             </DropdownMenu.Label>
             {datasetLabel.toLowerCase().includes(filter.toLowerCase()) && (
               <DropdownMenu.CheckboxItem
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_280"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_280"
                 checked={isGroupedBy(RunGroupingMode.Dataset, 'dataset')}
                 key={createRunsGroupByKey(RunGroupingMode.Dataset, 'dataset', aggregateFunction)}
                 ref={attributeElementRef}
@@ -307,7 +307,7 @@ const GroupBySelectorBody = ({
               const groupByKey = createRunsGroupByKey(RunGroupingMode.Tag, tagName, aggregateFunction);
               return (
                 <DropdownMenu.CheckboxItem
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_302"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_302"
                   checked={isGroupedBy(RunGroupingMode.Tag, tagName)}
                   key={groupByKey}
                   ref={index === 0 ? tagElementRef : undefined}
@@ -320,7 +320,7 @@ const GroupBySelectorBody = ({
             })}
             {!tagNames.length && (
               <DropdownMenu.Item
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_314"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_314"
                 disabled
               >
                 <DropdownMenu.ItemIndicator /> <FormattedMessage {...messages.noTags} />
@@ -339,7 +339,7 @@ const GroupBySelectorBody = ({
               const groupByKey = createRunsGroupByKey(RunGroupingMode.Param, paramName, aggregateFunction);
               return (
                 <DropdownMenu.CheckboxItem
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_330"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_330"
                   checked={isGroupedBy(RunGroupingMode.Param, paramName)}
                   key={groupByKey}
                   ref={index === 0 ? paramElementRef : undefined}
@@ -352,7 +352,7 @@ const GroupBySelectorBody = ({
             })}
             {!runsData.paramKeyList.length && (
               <DropdownMenu.Item
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_342"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_342"
                 disabled
               >
                 <FormattedMessage {...messages.noParams} />
@@ -362,7 +362,7 @@ const GroupBySelectorBody = ({
         )}
         {!hasAnyResults && (
           <DropdownMenu.Item
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_349"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_349"
             disabled
           >
             <FormattedMessage {...messages.noResults} />
@@ -401,7 +401,7 @@ export const ExperimentViewRunsGroupBySelector = React.memo(
       <DropdownMenu.Root modal={false}>
         <DropdownMenu.Trigger asChild>
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_306"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_306"
             icon={<ListBorderIcon />}
             style={{ display: 'flex', alignItems: 'center' }}
             data-testid="column-selection-dropdown"
@@ -424,7 +424,7 @@ export const ExperimentViewRunsGroupBySelector = React.memo(
             )}
             {normalizedGroupBy.groupByKeys.length > 1 && (
               <Tag
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_426"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_426"
                 css={{ marginLeft: 4, marginRight: 0 }}
               >
                 +{normalizedGroupBy.groupByKeys.length - 1}
@@ -456,7 +456,7 @@ export const ExperimentViewRunsGroupBySelector = React.memo(
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           {isLoading ? (
-            <DropdownMenu.Item componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_436">
+            <DropdownMenu.Item componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_experimentviewrunsgroupbyselector.tsx_436">
               <Spinner />
             </DropdownMenu.Item>
           ) : (

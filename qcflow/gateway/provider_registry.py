@@ -1,9 +1,9 @@
 from typing import Union
 
-from mlflow import MlflowException
-from mlflow.gateway.config import Provider
-from mlflow.gateway.providers import BaseProvider
-from mlflow.utils.plugins import get_entry_points
+from qcflow import MlflowException
+from qcflow.gateway.config import Provider
+from qcflow.gateway.providers import BaseProvider
+from qcflow.utils.plugins import get_entry_points
 
 
 class ProviderRegistry:
@@ -27,17 +27,17 @@ class ProviderRegistry:
 
 
 def _register_default_providers(registry: ProviderRegistry):
-    from mlflow.gateway.providers.ai21labs import AI21LabsProvider
-    from mlflow.gateway.providers.anthropic import AnthropicProvider
-    from mlflow.gateway.providers.bedrock import AmazonBedrockProvider
-    from mlflow.gateway.providers.cohere import CohereProvider
-    from mlflow.gateway.providers.huggingface import HFTextGenerationInferenceServerProvider
-    from mlflow.gateway.providers.mistral import MistralProvider
-    from mlflow.gateway.providers.mlflow import MlflowModelServingProvider
-    from mlflow.gateway.providers.mosaicml import MosaicMLProvider
-    from mlflow.gateway.providers.openai import OpenAIProvider
-    from mlflow.gateway.providers.palm import PaLMProvider
-    from mlflow.gateway.providers.togetherai import TogetherAIProvider
+    from qcflow.gateway.providers.ai21labs import AI21LabsProvider
+    from qcflow.gateway.providers.anthropic import AnthropicProvider
+    from qcflow.gateway.providers.bedrock import AmazonBedrockProvider
+    from qcflow.gateway.providers.cohere import CohereProvider
+    from qcflow.gateway.providers.huggingface import HFTextGenerationInferenceServerProvider
+    from qcflow.gateway.providers.mistral import MistralProvider
+    from qcflow.gateway.providers.qcflow import MlflowModelServingProvider
+    from qcflow.gateway.providers.mosaicml import MosaicMLProvider
+    from qcflow.gateway.providers.openai import OpenAIProvider
+    from qcflow.gateway.providers.palm import PaLMProvider
+    from qcflow.gateway.providers.togetherai import TogetherAIProvider
 
     registry.register(Provider.OPENAI, OpenAIProvider)
     registry.register(Provider.ANTHROPIC, AnthropicProvider)
@@ -45,7 +45,7 @@ def _register_default_providers(registry: ProviderRegistry):
     registry.register(Provider.AI21LABS, AI21LabsProvider)
     registry.register(Provider.MOSAICML, MosaicMLProvider)
     registry.register(Provider.PALM, PaLMProvider)
-    registry.register(Provider.MLFLOW_MODEL_SERVING, MlflowModelServingProvider)
+    registry.register(Provider.QCFLOW_MODEL_SERVING, MlflowModelServingProvider)
     registry.register(Provider.BEDROCK, AmazonBedrockProvider)
     registry.register(Provider.AMAZON_BEDROCK, AmazonBedrockProvider)
     registry.register(
@@ -56,7 +56,7 @@ def _register_default_providers(registry: ProviderRegistry):
 
 
 def _register_plugin_providers(registry: ProviderRegistry):
-    providers = get_entry_points("mlflow.gateway.providers")
+    providers = get_entry_points("qcflow.gateway.providers")
     for p in providers:
         cls = p.load()
         registry.register(p.name, cls)

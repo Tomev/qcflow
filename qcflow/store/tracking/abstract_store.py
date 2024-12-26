@@ -1,19 +1,19 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional
 
-from mlflow.entities import (
+from qcflow.entities import (
     DatasetInput,
     TraceInfo,
     ViewType,
 )
-from mlflow.entities.metric import MetricWithRunId
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.exceptions import MlflowException
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT, SEARCH_TRACES_DEFAULT_MAX_RESULTS
-from mlflow.utils.annotations import developer_stable
-from mlflow.utils.async_logging.async_logging_queue import AsyncLoggingQueue
-from mlflow.utils.async_logging.run_operations import RunOperations
+from qcflow.entities.metric import MetricWithRunId
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.exceptions import MlflowException
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT, SEARCH_TRACES_DEFAULT_MAX_RESULTS
+from qcflow.utils.annotations import developer_stable
+from qcflow.utils.async_logging.async_logging_queue import AsyncLoggingQueue
+from qcflow.utils.async_logging.run_operations import RunOperations
 
 
 @developer_stable
@@ -46,7 +46,7 @@ class AbstractStore:
 
         Args:
             view_type: One of enum values ``ACTIVE_ONLY``, ``DELETED_ONLY``, or ``ALL``
-                defined in :py:class:`mlflow.entities.ViewType`.
+                defined in :py:class:`qcflow.entities.ViewType`.
             max_results: Maximum number of experiments desired. Certain server backend may apply
                 its own limit.
             filter_string: Filter query string (e.g., ``"name = 'my_experiment'"``), defaults to
@@ -92,8 +92,8 @@ class AbstractStore:
                 a ``search_experiments`` call.
 
         Returns:
-            A :py:class:`PagedList <mlflow.store.entities.PagedList>` of
-            :py:class:`Experiment <mlflow.entities.Experiment>` objects. The pagination token
+            A :py:class:`PagedList <qcflow.store.entities.PagedList>` of
+            :py:class:`Experiment <qcflow.entities.Experiment>` objects. The pagination token
             for the next page can be obtained via the ``token`` attribute of the object.
 
         """
@@ -123,7 +123,7 @@ class AbstractStore:
             experiment_id: String id for the experiment
 
         Returns:
-            A single :py:class:`mlflow.entities.Experiment` object if it exists,
+            A single :py:class:`qcflow.entities.Experiment` object if it exists,
             otherwise raises an exception.
         """
 
@@ -135,7 +135,7 @@ class AbstractStore:
             experiment_name: Name of experiment
 
         Returns:
-            A single :py:class:`mlflow.entities.Experiment` object if it exists.
+            A single :py:class:`qcflow.entities.Experiment` object if it exists.
         """
 
     @abstractmethod
@@ -170,11 +170,11 @@ class AbstractStore:
     @abstractmethod
     def get_run(self, run_id):
         """
-        Fetch the run from backend store. The resulting :py:class:`Run <mlflow.entities.Run>`
-        contains a collection of run metadata - :py:class:`RunInfo <mlflow.entities.RunInfo>`,
+        Fetch the run from backend store. The resulting :py:class:`Run <qcflow.entities.Run>`
+        contains a collection of run metadata - :py:class:`RunInfo <qcflow.entities.RunInfo>`,
         as well as a collection of run parameters, tags, and metrics -
-        :py:class:`RunData <mlflow.entities.RunData>`. In the case where multiple metrics with the
-        same key are logged for the run, the :py:class:`RunData <mlflow.entities.RunData>` contains
+        :py:class:`RunData <qcflow.entities.RunData>`. In the case where multiple metrics with the
+        same key are logged for the run, the :py:class:`RunData <qcflow.entities.RunData>` contains
         the value at the latest timestamp for each metric. If there are multiple values with the
         latest timestamp for a given metric, the maximum of these values is returned.
 
@@ -182,7 +182,7 @@ class AbstractStore:
             run_id: Unique identifier for the run.
 
         Returns:
-            A single :py:class:`mlflow.entities.Run` object, if the run exists. Otherwise,
+            A single :py:class:`qcflow.entities.Run` object, if the run exists. Otherwise,
             raises an exception.
         """
 
@@ -192,7 +192,7 @@ class AbstractStore:
         Update the metadata of the specified run.
 
         Returns:
-            mlflow.entities.RunInfo: Describing the updated run.
+            qcflow.entities.RunInfo: Describing the updated run.
         """
 
     @abstractmethod
@@ -343,7 +343,7 @@ class AbstractStore:
             request_id: String id of the trace to fetch.
 
         Returns:
-            The fetched Trace object, of type ``mlflow.entities.TraceInfo``.
+            The fetched Trace object, of type ``qcflow.entities.TraceInfo``.
         """
         raise NotImplementedError
 
@@ -367,7 +367,7 @@ class AbstractStore:
                 a ``search_traces`` call.
 
         Returns:
-            A tuple of a list of :py:class:`TraceInfo <mlflow.entities.TraceInfo>` objects that
+            A tuple of a list of :py:class:`TraceInfo <qcflow.entities.TraceInfo>` objects that
             satisfy the search expressions and a pagination token for the next page of results.
             If the underlying tracking store supports pagination, the token for the
             next page may be obtained via the ``token`` attribute of the returned object; however,
@@ -403,7 +403,7 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run
-            metric: `mlflow.entities.Metric` instance to log
+            metric: `qcflow.entities.Metric` instance to log
         """
         self.log_batch(run_id, metrics=[metric], params=[], tags=[])
 
@@ -413,7 +413,7 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run
-            metric: `mlflow.entities.Metric` instance to log
+            metric: `qcflow.entities.Metric` instance to log
         """
         return self.log_batch_async(run_id, metrics=[metric], params=[], tags=[])
 
@@ -423,7 +423,7 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run
-            param: :py:class:`mlflow.entities.Param` instance to log
+            param: :py:class:`qcflow.entities.Param` instance to log
         """
         self.log_batch(run_id, metrics=[], params=[param], tags=[])
 
@@ -433,7 +433,7 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run.
-            param: :py:class:`mlflow.entities.Param` instance to log.
+            param: :py:class:`qcflow.entities.Param` instance to log.
         """
         return self.log_batch_async(run_id, metrics=[], params=[param], tags=[])
 
@@ -443,7 +443,7 @@ class AbstractStore:
 
         Args:
             experiment_id: String id for the experiment.
-            tag: :py:class:`mlflow.entities.ExperimentTag` instance to set.
+            tag: :py:class:`qcflow.entities.ExperimentTag` instance to set.
         """
 
     def set_tag(self, run_id, tag):
@@ -452,7 +452,7 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run.
-            tag: :py:class:`mlflow.entities.RunTag` instance to set.
+            tag: :py:class:`qcflow.entities.RunTag` instance to set.
         """
         self.log_batch(run_id, metrics=[], params=[], tags=[tag])
 
@@ -462,7 +462,7 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run.
-            tag: :py:class:`mlflow.entities.RunTag` instance to set.
+            tag: :py:class:`qcflow.entities.RunTag` instance to set.
         """
         return self.log_batch_async(run_id, metrics=[], params=[], tags=[tag])
 
@@ -481,7 +481,7 @@ class AbstractStore:
                 This value is obtained as a return value from a paginated call to GetMetricHistory.
 
         Returns:
-            A list of :py:class:`mlflow.entities.Metric` entities if logged, else empty list.
+            A list of :py:class:`qcflow.entities.Metric` entities if logged, else empty list.
         """
 
         # NB: Pagination for this API is not supported in FileStore or SQLAlchemyStore. The
@@ -542,8 +542,8 @@ class AbstractStore:
                 a ``search_runs`` call.
 
         Returns:
-            A :py:class:`PagedList <mlflow.store.entities.PagedList>` of
-            :py:class:`Run <mlflow.entities.Run>` objects that satisfy the search expressions.
+            A :py:class:`PagedList <qcflow.store.entities.PagedList>` of
+            :py:class:`Run <qcflow.entities.Run>` objects that satisfy the search expressions.
             If the underlying tracking store supports pagination, the token for the next page may
             be obtained via the ``token`` attribute of the returned object; however, some store
             implementations may not support pagination and thus the returned token would not be
@@ -579,7 +579,7 @@ class AbstractStore:
 
         Returns:
             A tuple of ``runs`` and ``token`` where ``runs`` is a list of
-            :py:class:`mlflow.entities.Run` objects that satisfy the search expressions,
+            :py:class:`qcflow.entities.Run` objects that satisfy the search expressions,
             and ``token`` is the pagination token for the next page of results.
         """
 
@@ -590,9 +590,9 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run
-            metrics: List of :py:class:`mlflow.entities.Metric` instances to log
-            params: List of :py:class:`mlflow.entities.Param` instances to log
-            tags: List of :py:class:`mlflow.entities.RunTag` instances to log
+            metrics: List of :py:class:`qcflow.entities.Metric` instances to log
+            params: List of :py:class:`qcflow.entities.Param` instances to log
+            tags: List of :py:class:`qcflow.entities.RunTag` instances to log
 
         Returns:
             None.
@@ -607,12 +607,12 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run.
-            metrics: List of :py:class:`mlflow.entities.Metric` instances to log.
-            params: List of :py:class:`mlflow.entities.Param` instances to log.
-            tags: List of :py:class:`mlflow.entities.RunTag` instances to log.
+            metrics: List of :py:class:`qcflow.entities.Metric` instances to log.
+            params: List of :py:class:`qcflow.entities.Param` instances to log.
+            tags: List of :py:class:`qcflow.entities.RunTag` instances to log.
 
         Returns:
-            An :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance
+            An :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance
             that represents future for logging operation.
         """
         if not self._async_logging_queue.is_active():
@@ -650,16 +650,16 @@ class AbstractStore:
             self._async_logging_queue.shut_down_async_logging()
 
     @abstractmethod
-    def record_logged_model(self, run_id, mlflow_model):
+    def record_logged_model(self, run_id, qcflow_model):
         """
         Record logged model information with tracking store. The list of logged model infos is
-        maintained in a mlflow.models tag in JSON format.
+        maintained in a qcflow.models tag in JSON format.
 
         Note: The actual models are logged as artifacts via artifact repository.
 
         Args:
             run_id: String id for the run.
-            mlflow_model: Model object to be recorded.
+            qcflow_model: Model object to be recorded.
 
         The default implementation is a no-op.
 
@@ -674,7 +674,7 @@ class AbstractStore:
 
         Args:
             run_id: String id for the run
-            datasets: List of :py:class:`mlflow.entities.DatasetInput` instances to log
+            datasets: List of :py:class:`qcflow.entities.DatasetInput` instances to log
                 as inputs to the run.
 
         Returns:

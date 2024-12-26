@@ -2,26 +2,26 @@ import logging
 from pathlib import Path
 from typing import Any
 
-import mlflow
-from mlflow.entities import SourceType
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.recipes.artifacts import ModelVersionArtifact, RegisteredModelVersionInfo
-from mlflow.recipes.cards import BaseCard
-from mlflow.recipes.step import BaseStep, StepClass
-from mlflow.recipes.steps.train import TrainStep
-from mlflow.recipes.utils.execution import get_step_output_path
-from mlflow.recipes.utils.tracking import (
+import qcflow
+from qcflow.entities import SourceType
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.recipes.artifacts import ModelVersionArtifact, RegisteredModelVersionInfo
+from qcflow.recipes.cards import BaseCard
+from qcflow.recipes.step import BaseStep, StepClass
+from qcflow.recipes.steps.train import TrainStep
+from qcflow.recipes.utils.execution import get_step_output_path
+from qcflow.recipes.utils.tracking import (
     TrackingConfig,
     apply_recipe_tracking_config,
     get_recipe_tracking_config,
 )
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.utils.databricks_utils import (
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.utils.databricks_utils import (
     get_databricks_env_vars,
     get_databricks_model_version_url,
     get_databricks_run_url,
 )
-from mlflow.utils.mlflow_tags import MLFLOW_RECIPE_TEMPLATE_NAME, MLFLOW_SOURCE_TYPE
+from qcflow.utils.qcflow_tags import QCFLOW_RECIPE_TEMPLATE_NAME, QCFLOW_SOURCE_TYPE
 
 _logger = logging.getLogger(__name__)
 
@@ -67,16 +67,16 @@ class RegisterStep(BaseStep):
         model_validation = Path(model_validation_path).read_text()
         artifact_path = "train/model"
         tags = {
-            MLFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.RECIPE),
-            MLFLOW_RECIPE_TEMPLATE_NAME: self.step_config["recipe"],
+            QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.RECIPE),
+            QCFLOW_RECIPE_TEMPLATE_NAME: self.step_config["recipe"],
         }
         self.model_uri = f"runs:/{run_id}/{artifact_path}"
         if model_validation == "VALIDATED" or (
             model_validation == "UNKNOWN" and self.allow_non_validated_model
         ):
             if self.registry_uri:
-                mlflow.set_registry_uri(self.registry_uri)
-            self.model_details = mlflow.register_model(
+                qcflow.set_registry_uri(self.registry_uri)
+            self.model_details = qcflow.register_model(
                 model_uri=self.model_uri,
                 name=self.register_model_name,
                 tags=tags,
@@ -114,7 +114,7 @@ class RegisterStep(BaseStep):
 
         if self.version is not None:
             model_version_url = get_databricks_model_version_url(
-                registry_uri=mlflow.get_registry_uri(),
+                registry_uri=qcflow.get_registry_uri(),
                 name=self.register_model_name,
                 version=self.version,
             )
@@ -145,7 +145,7 @@ class RegisterStep(BaseStep):
                 )
 
         model_source_url = get_databricks_run_url(
-            tracking_uri=mlflow.get_tracking_uri(),
+            tracking_uri=qcflow.get_tracking_uri(),
             run_id=run_id,
             artifact_path=f"train/{TrainStep.MODEL_ARTIFACT_RELATIVE_PATH}",
         )

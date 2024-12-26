@@ -5,18 +5,18 @@ from unittest.mock import ANY
 import pytest
 import requests
 
-from mlflow import MlflowClient
-from mlflow.entities import FileInfo
-from mlflow.entities.model_registry import ModelVersion
-from mlflow.environment_variables import MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.databricks_models_artifact_repo import (
+from qcflow import MlflowClient
+from qcflow.entities import FileInfo
+from qcflow.entities.model_registry import ModelVersion
+from qcflow.environment_variables import QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.databricks_models_artifact_repo import (
     DatabricksModelsArtifactRepository,
 )
-from mlflow.utils.file_utils import _Chunk
+from qcflow.utils.file_utils import _Chunk
 
 DATABRICKS_MODEL_ARTIFACT_REPOSITORY_PACKAGE = (
-    "mlflow.store.artifact.databricks_models_artifact_repo"
+    "qcflow.store.artifact.databricks_models_artifact_repo"
 )
 DATABRICKS_MODEL_ARTIFACT_REPOSITORY = (
     DATABRICKS_MODEL_ARTIFACT_REPOSITORY_PACKAGE + ".DatabricksModelsArtifactRepository"
@@ -27,8 +27,8 @@ MOCK_PROFILE = "databricks://profile"
 MOCK_MODEL_NAME = "MyModel"
 MOCK_MODEL_VERSION = "12"
 
-REGISTRY_LIST_ARTIFACTS_ENDPOINT = "/api/2.0/mlflow/model-versions/list-artifacts"
-REGISTRY_ARTIFACT_PRESIGNED_URI_ENDPOINT = "/api/2.0/mlflow/model-versions/get-signed-download-uri"
+REGISTRY_LIST_ARTIFACTS_ENDPOINT = "/api/2.0/qcflow/model-versions/list-artifacts"
+REGISTRY_ARTIFACT_PRESIGNED_URI_ENDPOINT = "/api/2.0/qcflow/model-versions/get-signed-download-uri"
 
 
 @pytest.fixture
@@ -77,8 +77,8 @@ def test_init_with_stage_uri_containing_profile(stage_uri_with_profile):
     "invalid_artifact_uri",
     [
         "s3://test",
-        "dbfs:/databricks/mlflow/MV-id/models",
-        "dbfs://scope:key@notdatabricks/databricks/mlflow-regisry/123/models",
+        "dbfs:/databricks/qcflow/MV-id/models",
+        "dbfs://scope:key@notdatabricks/databricks/qcflow-regisry/123/models",
         "models:/MyModel/12",
         "models://scope:key@notdatabricks/MyModel/12",
     ],
@@ -96,10 +96,10 @@ def test_init_with_version_uri_and_profile_is_inferred():
     # Second mock to set `databricks_profile_uri` during instantiation
     with (
         mock.patch(
-            "mlflow.store.artifact.utils.models.mlflow.get_registry_uri",
+            "qcflow.store.artifact.utils.models.qcflow.get_registry_uri",
             return_value=MOCK_PROFILE,
         ),
-        mock.patch("mlflow.tracking.get_registry_uri", return_value=MOCK_PROFILE),
+        mock.patch("qcflow.tracking.get_registry_uri", return_value=MOCK_PROFILE),
     ):
         repo = DatabricksModelsArtifactRepository(MOCK_MODEL_ROOT_URI_WITHOUT_PROFILE)
         assert repo.artifact_uri == MOCK_MODEL_ROOT_URI_WITHOUT_PROFILE
@@ -130,10 +130,10 @@ def test_init_with_stage_uri_and_profile_is_inferred(stage_uri_without_profile):
     with (
         get_latest_versions_patch,
         mock.patch(
-            "mlflow.store.artifact.utils.models.mlflow.get_registry_uri",
+            "qcflow.store.artifact.utils.models.qcflow.get_registry_uri",
             return_value=MOCK_PROFILE,
         ),
-        mock.patch("mlflow.tracking.get_registry_uri", return_value=MOCK_PROFILE),
+        mock.patch("qcflow.tracking.get_registry_uri", return_value=MOCK_PROFILE),
     ):
         repo = DatabricksModelsArtifactRepository(stage_uri_without_profile)
         assert repo.artifact_uri == stage_uri_without_profile
@@ -149,7 +149,7 @@ def test_init_with_stage_uri_and_profile_is_inferred(stage_uri_without_profile):
 def test_init_with_valid_uri_but_no_profile(valid_profileless_artifact_uri):
     # Mock for `is_using_databricks_registry` fail when calling `get_registry_uri`
     with mock.patch(
-        "mlflow.store.artifact.utils.models.mlflow.get_registry_uri",
+        "qcflow.store.artifact.utils.models.qcflow.get_registry_uri",
         return_value=None,
     ):
         with pytest.raises(
@@ -165,7 +165,7 @@ def test_list_artifacts(databricks_model_artifact_repo):
     def _raise_for_status():
         if status_code == 404:
             raise Exception(
-                "404 Client Error: Not Found for url: https://shard-uri/api/2.0/mlflow/model-versions/list-artifacts?name=model&version=1"
+                "404 Client Error: Not Found for url: https://shard-uri/api/2.0/qcflow/model-versions/list-artifacts?name=model&version=1"
             )
 
     list_artifact_dir_response_mock = mock.MagicMock()
@@ -283,7 +283,7 @@ def test_parallelized_download_file_using_http_uri_success(
         mock.patch(
             DATABRICKS_MODEL_ARTIFACT_REPOSITORY + ".list_artifacts",
             return_value=[
-                FileInfo(remote_file_path, True, MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get() + 1)
+                FileInfo(remote_file_path, True, QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get() + 1)
             ],
         ),
         mock.patch(
@@ -291,7 +291,7 @@ def test_parallelized_download_file_using_http_uri_success(
             return_value=(signed_uri_mock["signed_uri"], signed_uri_mock["headers"]),
         ),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_databricks_env_vars",
+            "qcflow.utils.databricks_utils.get_databricks_env_vars",
             return_value={},
         ),
         mock.patch(
@@ -324,7 +324,7 @@ def test_parallelized_download_file_using_http_uri_with_error_downloads(
         mock.patch(
             DATABRICKS_MODEL_ARTIFACT_REPOSITORY + ".list_artifacts",
             return_value=[
-                FileInfo(remote_file_path, True, MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get() + 1)
+                FileInfo(remote_file_path, True, QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get() + 1)
             ],
         ),
         mock.patch(
@@ -332,7 +332,7 @@ def test_parallelized_download_file_using_http_uri_with_error_downloads(
             return_value=(signed_uri_mock["signed_uri"], signed_uri_mock["headers"]),
         ),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_databricks_env_vars",
+            "qcflow.utils.databricks_utils.get_databricks_env_vars",
             return_value={},
         ),
         mock.patch(
@@ -341,7 +341,7 @@ def test_parallelized_download_file_using_http_uri_with_error_downloads(
             return_value=error_downloads,
         ),
         mock.patch(
-            "mlflow.utils.file_utils.download_chunk", side_effect=Exception("Retry failed")
+            "qcflow.utils.file_utils.download_chunk", side_effect=Exception("Retry failed")
         ) as mock_download_chunk,
     ):
         with pytest.raises(MlflowException, match="Retry failed"):
@@ -376,7 +376,7 @@ def test_parallelized_download_file_using_http_uri_with_failed_downloads(
         mock.patch(
             DATABRICKS_MODEL_ARTIFACT_REPOSITORY + ".list_artifacts",
             return_value=[
-                FileInfo(remote_file_path, True, MLFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get() + 1)
+                FileInfo(remote_file_path, True, QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE.get() + 1)
             ],
         ),
         mock.patch(
@@ -384,7 +384,7 @@ def test_parallelized_download_file_using_http_uri_with_failed_downloads(
             return_value=(signed_uri_mock["signed_uri"], signed_uri_mock["headers"]),
         ),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_databricks_env_vars",
+            "qcflow.utils.databricks_utils.get_databricks_env_vars",
             return_value={},
         ),
         mock.patch(
@@ -393,7 +393,7 @@ def test_parallelized_download_file_using_http_uri_with_failed_downloads(
             return_value=failed_downloads,
         ),
         mock.patch(
-            "mlflow.utils.file_utils.download_chunk",
+            "qcflow.utils.file_utils.download_chunk",
             return_value=None,
         ) as download_chunk_mock,
     ):

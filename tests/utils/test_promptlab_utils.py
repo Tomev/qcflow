@@ -3,11 +3,11 @@ import os
 
 import pytest
 
-from mlflow.entities.param import Param
-from mlflow.entities.run_status import RunStatus
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.tracking.file_store import FileStore
-from mlflow.utils.promptlab_utils import (
+from qcflow.entities.param import Param
+from qcflow.entities.run_status import RunStatus
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.tracking.file_store import FileStore
+from qcflow.utils.promptlab_utils import (
     _create_promptlab_run_impl,
     create_eval_results_json,
 )
@@ -50,7 +50,7 @@ def store(tmp_path):
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny does not support the np or pandas dependencies",
 )
 def test_create_promptlab_run(store):
@@ -67,7 +67,7 @@ def test_create_promptlab_run(store):
         model_input="",
         model_output_parameters=[Param("output_param_key", "output_param_value")],
         model_output="my_output",
-        mlflow_version="1.0.0",
+        qcflow_version="1.0.0",
         user_id="user",
         start_time=1,
     )
@@ -78,13 +78,13 @@ def test_create_promptlab_run(store):
     assert run.data.params["model_route"] == "my_route"
     assert run.data.params["temperature"] == "0.1"
 
-    assert run.data.tags["mlflow.runName"] == "my_promptlab_run"
+    assert run.data.tags["qcflow.runName"] == "my_promptlab_run"
     assert (
-        run.data.tags["mlflow.loggedArtifacts"]
+        run.data.tags["qcflow.loggedArtifacts"]
         == '[{"path": "eval_results_table.json", "type": "table"}]'
     )
-    assert run.data.tags["mlflow.runSourceType"] == "PROMPT_ENGINEERING"
-    assert run.data.tags["mlflow.log-model.history"] is not None
+    assert run.data.tags["qcflow.runSourceType"] == "PROMPT_ENGINEERING"
+    assert run.data.tags["qcflow.log-model.history"] is not None
 
     # list the files in the model folder
     artifact_location = run.info.artifact_uri
@@ -102,6 +102,6 @@ def test_create_promptlab_run(store):
     assert "model/input_example.json" in model_files
 
     # try to load the model
-    import mlflow.pyfunc
+    import qcflow.pyfunc
 
-    mlflow.pyfunc.load_model(f"{artifact_location}/model")
+    qcflow.pyfunc.load_model(f"{artifact_location}/model")

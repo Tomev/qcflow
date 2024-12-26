@@ -1,12 +1,12 @@
 """
-Tests that `import mlflow` and `mlflow.autolog()` do not import ML packages.
+Tests that `import qcflow` and `qcflow.autolog()` do not import ML packages.
 """
 
 import importlib
 import logging
 import sys
 
-import mlflow
+import qcflow
 
 logger = logging.getLogger()
 
@@ -34,11 +34,11 @@ def main():
         "sentence_transformers",
     }
     imported = ml_packages.intersection(set(sys.modules))
-    assert imported == set(), f"mlflow imports {imported} when it's imported but it should not"
+    assert imported == set(), f"qcflow imports {imported} when it's imported but it should not"
 
-    mlflow.autolog()
+    qcflow.autolog()
     imported = ml_packages.intersection(set(sys.modules))
-    assert imported == set(), f"`mlflow.autolog` imports {imported} but it should not"
+    assert imported == set(), f"`qcflow.autolog` imports {imported} but it should not"
 
     # Ensure that the ML packages are importable
     failed_to_import = []

@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { MLFLOW_RUN_COLOR_TAG } from '../../../constants';
+import { QCFLOW_RUN_COLOR_TAG } from '../../../constants';
 import { ReduxState, ThunkDispatch } from '../../../../redux-types';
 import { setTagApi } from '../../../actions';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -47,7 +47,7 @@ export const useSaveExperimentRunColor = () => {
         });
       }
       if (runUuid) {
-        dispatch(setTagApi(runUuid, MLFLOW_RUN_COLOR_TAG, colorValue));
+        dispatch(setTagApi(runUuid, QCFLOW_RUN_COLOR_TAG, colorValue));
       }
       if (groupUuid) {
         const colors = loadSavedColors();

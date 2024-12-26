@@ -1,6 +1,6 @@
-mlflow.environment_variables
+qcflow.environment_variables
 ============================
 
-.. automodule:: mlflow.environment_variables
+.. automodule:: qcflow.environment_variables
     :members:
     :undoc-members:

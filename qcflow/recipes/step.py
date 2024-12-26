@@ -9,11 +9,11 @@ from typing import Any, Optional
 
 import yaml
 
-from mlflow.recipes.cards import CARD_HTML_NAME, CARD_PICKLE_NAME, BaseCard, FailureCard
-from mlflow.recipes.utils import get_recipe_name
-from mlflow.recipes.utils.step import display_html
-from mlflow.tracking import MlflowClient
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.recipes.cards import CARD_HTML_NAME, CARD_PICKLE_NAME, BaseCard, FailureCard
+from qcflow.recipes.utils import get_recipe_name
+from qcflow.recipes.utils.step import display_html
+from qcflow.tracking import MlflowClient
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
 _logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ class StepExecutionState:
 
 class BaseStep(metaclass=abc.ABCMeta):
     """
-    Base class representing a step in an MLflow Recipe
+    Base class representing a step in an QCFlow Recipe
     """
 
     _EXECUTION_STATE_FILE_NAME = "execution_state.json"
@@ -302,7 +302,7 @@ class BaseStep(metaclass=abc.ABCMeta):
     def _initialize_databricks_spark_connection_and_hooks_if_applicable(self) -> None:
         """
         Initializes a connection to the Databricks Spark Gateway and sets up associated hooks
-        (e.g. MLflow Run creation notification hooks) if MLflow Recipes is running in the
+        (e.g. QCFlow Run creation notification hooks) if QCFlow Recipes is running in the
         Databricks Runtime.
         """
         if is_in_databricks_runtime():
@@ -323,15 +323,15 @@ class BaseStep(metaclass=abc.ABCMeta):
                 )
             else:
                 try:
-                    from dbruntime.MlflowCreateRunHook import get_mlflow_create_run_hook
+                    from dbruntime.MlflowCreateRunHook import get_qcflow_create_run_hook
 
-                    # `get_mlflow_create_run_hook` sets up a patch to trigger a Databricks command
-                    # notification every time an MLflow Run is created. This notification is
+                    # `get_qcflow_create_run_hook` sets up a patch to trigger a Databricks command
+                    # notification every time an QCFlow Run is created. This notification is
                     # visible to users in notebook environments
-                    get_mlflow_create_run_hook(spark_handles["sc"], entry_point)
+                    get_qcflow_create_run_hook(spark_handles["sc"], entry_point)
                 except Exception as e:
                     _logger.warning(
-                        "Encountered unexpected failure while setting up Databricks MLflow Run"
+                        "Encountered unexpected failure while setting up Databricks QCFlow Run"
                         " creation hooks. Exception: %s",
                         e,
                     )
@@ -345,7 +345,7 @@ class BaseStep(metaclass=abc.ABCMeta):
             run_id: Run ID to which the step card is logged.
             step_name: Step name.
         """
-        from mlflow.recipes.utils.execution import get_step_output_path
+        from qcflow.recipes.utils.execution import get_step_output_path
 
         local_card_path = get_step_output_path(
             recipe_root_path=self.recipe_root,

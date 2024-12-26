@@ -1,4 +1,4 @@
-from mlflow.entities.model_registry import RegisteredModel
+from qcflow.entities.model_registry import RegisteredModel
 
 
 class RegisteredModelSearch(RegisteredModel):

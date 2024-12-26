@@ -40,7 +40,7 @@ const ContextMenuComponent = ({
       {!isHovering && (
         <div css={{ marginTop: 8 }}>
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_hooks_userunschartstooltip.stories.tsx_42"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_hooks_userunschartstooltip.stories.tsx_42"
             onClick={closeContextMenu}
             icon={<CloseIcon />}
           >

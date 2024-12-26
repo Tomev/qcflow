@@ -1,7 +1,7 @@
 import { CopyIcon, Typography, useDesignSystemTheme } from '@databricks/design-system';
 import { FormattedMessage } from 'react-intl';
 import { CodeSnippet } from '@databricks/web-shared/snippet';
-import { CopyButton } from '@mlflow/mlflow/src/shared/building_blocks/CopyButton';
+import { CopyButton } from '@qcflow/qcflow/src/shared/building_blocks/CopyButton';
 
 export const TraceTableOpenAIQuickstartContent = ({
   baseComponentId,
@@ -13,10 +13,10 @@ export const TraceTableOpenAIQuickstartContent = ({
   runUuid?: string;
 }) => {
   const { theme } = useDesignSystemTheme();
-  const code = `import mlflow
+  const code = `import qcflow
 from openai import OpenAI
-${experimentId ? `\nmlflow.set_experiment(experiment_id="${experimentId}")` : ''}
-mlflow.openai.autolog()
+${experimentId ? `\nqcflow.set_experiment(experiment_id="${experimentId}")` : ''}
+qcflow.openai.autolog()
 
 # Ensure that the "OPENAI_API_KEY" environment variable is set
 client = OpenAI()
@@ -28,7 +28,7 @@ messages = [
 
 # Inputs and outputs of the API request will be logged in a trace
 ${
-  runUuid ? `with mlflow.start_run():\n    ` : ''
+  runUuid ? `with qcflow.start_run():\n    ` : ''
 }client.chat.completions.create(model="gpt-4o-mini", messages=messages)`;
 
   return (
@@ -36,9 +36,9 @@ ${
       <Typography.Text>
         <FormattedMessage
           defaultMessage="Automatically log traces for OpenAI API calls by calling the {code} function. For example:"
-          description="Description of how to log traces for the OpenAI package using MLflow autologging. This message is followed by a code example."
+          description="Description of how to log traces for the OpenAI package using QCFlow autologging. This message is followed by a code example."
           values={{
-            code: <code>mlflow.openai.autolog()</code>,
+            code: <code>qcflow.openai.autolog()</code>,
           }}
         />
       </Typography.Text>

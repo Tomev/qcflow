@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from mlflow.exceptions import MlflowException
-from mlflow.types import DataType
-from mlflow.types.schema import (
+from qcflow.exceptions import MlflowException
+from qcflow.types import DataType
+from qcflow.types.schema import (
     HAS_PYSPARK,
     AnyType,
     Array,
@@ -27,7 +27,7 @@ from mlflow.types.schema import (
 MULTIPLE_TYPES_ERROR_MSG = (
     "Expected all values in the list to be of the same type. To specify a model signature "
     "with a list containing elements of multiple types, define the signature manually "
-    "using the Array(AnyType()) type from mlflow.models.schema."
+    "using the Array(AnyType()) type from qcflow.models.schema."
 )
 _logger = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ def clean_tensor_type(dtype: np.dtype):
 
 def _infer_colspec_type(data: Any) -> Union[DataType, Array, Object, AnyType]:
     """
-    Infer an MLflow Colspec type from the dataset.
+    Infer an QCFlow Colspec type from the dataset.
 
     Args:
         data: data to infer from.
@@ -230,7 +230,7 @@ def _infer_scalar_datatype(data) -> DataType:
 
 def _infer_schema(data: Any) -> Schema:
     """
-    Infer an MLflow schema from a dataset.
+    Infer an QCFlow schema from a dataset.
 
     Data inputted as a numpy array or a dictionary is represented by :py:class:`TensorSpec`.
     All other inputted data types are specified by :py:class:`ColSpec`.
@@ -291,7 +291,7 @@ def _infer_schema(data: Any) -> Schema:
                 ),
             ])
 
-    The element types should be mappable to one of :py:class:`mlflow.models.signature.DataType` for
+    The element types should be mappable to one of :py:class:`qcflow.models.signature.DataType` for
     dataframes and to one of numpy types for tensors.
 
     Args:
@@ -303,7 +303,7 @@ def _infer_schema(data: Any) -> Schema:
     from scipy.sparse import csc_matrix, csr_matrix
 
     # To keep backward compatibility with < 2.9.0, an empty list is inferred as string.
-    #   ref: https://github.com/mlflow/mlflow/pull/10125#discussion_r1372751487
+    #   ref: https://github.com/qcflow/qcflow/pull/10125#discussion_r1372751487
     if isinstance(data, list) and data == []:
         return Schema([ColSpec(DataType.string)])
 
@@ -441,7 +441,7 @@ def _infer_schema(data: Any) -> Schema:
             "dataset) that includes missing values. Alternatively, you can declare "
             "integer columns as doubles (float64) whenever these columns may have "
             "missing values. See `Handling Integers With Missing Values "
-            "<https://www.mlflow.org/docs/latest/models.html#"
+            "<https://www.qcflow.org/docs/latest/models.html#"
             "handling-integers-with-missing-values>`_ for more details."
         )
     return schema
@@ -579,7 +579,7 @@ def _infer_spark_type(x, data=None, col_name=None) -> DataType:
         if isinstance(x.valueType, pyspark.sql.types.MapType):
             raise MlflowException(
                 "Please construct spark DataFrame with schema using StructType "
-                "for dictionary/map fields, MLflow schema inference only supports "
+                "for dictionary/map fields, QCFlow schema inference only supports "
                 "scalar, array and struct types."
             )
 
@@ -604,7 +604,7 @@ def _infer_spark_type(x, data=None, col_name=None) -> DataType:
 
     else:
         raise MlflowException.invalid_parameter_value(
-            f"Unsupported Spark Type '{type(x)}' for MLflow schema."
+            f"Unsupported Spark Type '{type(x)}' for QCFlow schema."
         )
 
 

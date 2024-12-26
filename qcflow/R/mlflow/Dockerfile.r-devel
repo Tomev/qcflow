@@ -3,7 +3,7 @@ FROM rocker/r-ver:devel
 # Daily News about R-devel:
 # https://developer.r-project.org/blosxom.cgi/R-devel
 
-WORKDIR /mlflow/mlflow/R/mlflow
+WORKDIR /qcflow/qcflow/R/qcflow
 RUN apt-get update -y
 RUN apt-get install lsb-release git wget libxml2-dev libgit2-dev libfontconfig1-dev \
     libssl-dev libharfbuzz-dev libfribidi-dev libcurl4-openssl-dev \

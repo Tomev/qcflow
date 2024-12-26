@@ -3,7 +3,7 @@ import uuid
 
 import pytest
 
-from mlflow.entities import (
+from qcflow.entities import (
     Dataset,
     DatasetInput,
     InputTag,
@@ -16,7 +16,7 @@ from mlflow.entities import (
     RunStatus,
     RunTag,
 )
-from mlflow.utils.time import get_current_time_millis
+from qcflow.utils.time import get_current_time_millis
 
 from tests.helper_functions import random_int, random_str
 

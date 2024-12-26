@@ -10,7 +10,7 @@ import {
 } from './experimentPage.row-types';
 import type { SingleRunData } from './experimentPage.row-utils';
 import type { MetricEntity, RunDatasetWithTags } from '../../../types';
-import type { SampledMetricsByRun } from '@mlflow/mlflow/src/experiment-tracking/components/runs-charts/hooks/useSampledMetricHistory';
+import type { SampledMetricsByRun } from '@qcflow/qcflow/src/experiment-tracking/components/runs-charts/hooks/useSampledMetricHistory';
 import { RUNS_VISIBILITY_MODE } from '../models/ExperimentPageUIState';
 import {
   shouldEnableToggleIndividualRunsInGroups,

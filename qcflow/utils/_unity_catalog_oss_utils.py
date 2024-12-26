@@ -1,13 +1,13 @@
 import re
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionSearch,
     RegisteredModel,
     RegisteredModelSearch,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.unity_catalog_oss_messages_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     ModelVersionInfo,
     ModelVersionStatus,
     RegisteredModelInfo,

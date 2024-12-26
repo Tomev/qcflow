@@ -4,13 +4,13 @@ import os
 
 import yaml
 
-from mlflow.exceptions import ExecutionException, MlflowException
-from mlflow.projects import env_type
-from mlflow.tracking import artifact_utils
-from mlflow.utils import data_utils
-from mlflow.utils.environment import _PYTHON_ENV_FILE_NAME
-from mlflow.utils.file_utils import get_local_path_or_none
-from mlflow.utils.string_utils import is_string_type, quote
+from qcflow.exceptions import ExecutionException, MlflowException
+from qcflow.projects import env_type
+from qcflow.tracking import artifact_utils
+from qcflow.utils import data_utils
+from qcflow.utils.environment import _PYTHON_ENV_FILE_NAME
+from qcflow.utils.file_utils import get_local_path_or_none
+from qcflow.utils.string_utils import is_string_type, quote
 
 MLPROJECT_FILE_NAME = "mlproject"
 DEFAULT_CONDA_FILE_NAME = "conda.yaml"
@@ -221,7 +221,7 @@ class Project:
             if self.databricks_spark_job_spec.python_file is not None:
                 # If Databricks Spark job is configured with python_file field,
                 # it does not need to configure entry_point section
-                # and the 'entry_point' param in 'mlflow run' command is ignored
+                # and the 'entry_point' param in 'qcflow run' command is ignored
                 return None
 
             if self._entry_points is None or entry_point not in self._entry_points:
@@ -240,7 +240,7 @@ class Project:
                 command = command.encode("utf-8")
             return EntryPoint(name=entry_point, parameters={}, command=command)
         elif file_extension == ".R":
-            command = f"Rscript -e \"mlflow::mlflow_source('{quote(entry_point)}')\" --args"
+            command = f"Rscript -e \"qcflow::qcflow_source('{quote(entry_point)}')\" --args"
             return EntryPoint(name=entry_point, parameters={}, command=command)
         raise ExecutionException(
             "Could not find {0} among entry points {1} or interpret {0} as a "

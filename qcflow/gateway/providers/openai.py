@@ -3,14 +3,14 @@ import os
 from typing import TYPE_CHECKING, AsyncIterable
 from urllib.parse import urlparse, urlunparse
 
-from mlflow.environment_variables import MLFLOW_ENABLE_UC_FUNCTIONS
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.config import OpenAIAPIType, OpenAIConfig, RouteConfig
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.base import BaseProvider, ProviderAdapter
-from mlflow.gateway.providers.utils import send_request, send_stream_request
-from mlflow.gateway.schemas import chat, completions, embeddings
-from mlflow.gateway.uc_function_utils import (
+from qcflow.environment_variables import QCFLOW_ENABLE_UC_FUNCTIONS
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.config import OpenAIAPIType, OpenAIConfig, RouteConfig
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.base import BaseProvider, ProviderAdapter
+from qcflow.gateway.providers.utils import send_request, send_stream_request
+from qcflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.uc_function_utils import (
     _UC_FUNCTION,
     TokenUsageAccumulator,
     execute_function,
@@ -19,8 +19,8 @@ from mlflow.gateway.uc_function_utils import (
     parse_uc_functions,
     prepend_uc_functions,
 )
-from mlflow.gateway.utils import handle_incomplete_chunks, strip_sse_prefix
-from mlflow.utils.uri import append_to_uri_path, append_to_uri_query_params
+from qcflow.gateway.utils import handle_incomplete_chunks, strip_sse_prefix
+from qcflow.utils.uri import append_to_uri_path, append_to_uri_query_params
 
 if TYPE_CHECKING:
     from databricks.sdk import FunctionInfo
@@ -543,7 +543,7 @@ class OpenAIProvider(BaseProvider):
         return resp
 
     async def chat(self, payload: chat.RequestPayload) -> chat.ResponsePayload:
-        if MLFLOW_ENABLE_UC_FUNCTIONS.get():
+        if QCFLOW_ENABLE_UC_FUNCTIONS.get():
             resp = await self._chat_uc_function(payload)
         else:
             resp = await self._chat(payload)

@@ -50,12 +50,12 @@ describe('useExperimentRuns', () => {
     const result = mountComponentWithExperimentRuns(['123456789']);
     expect(result.experimentTags).toEqual(
       expect.objectContaining({
-        'mlflow.experimentType': expect.objectContaining({
-          key: 'mlflow.experimentType',
+        'qcflow.experimentType': expect.objectContaining({
+          key: 'qcflow.experimentType',
           value: 'NOTEBOOK',
         }),
-        'mlflow.ownerEmail': expect.objectContaining({
-          key: 'mlflow.ownerEmail',
+        'qcflow.ownerEmail': expect.objectContaining({
+          key: 'qcflow.ownerEmail',
           value: 'john.doe@databricks.com',
         }),
       }),

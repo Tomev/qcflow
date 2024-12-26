@@ -1,22 +1,22 @@
-"""MLflow autologging support for Keras 3."""
+"""QCFlow autologging support for Keras 3."""
 
 import logging
 
 import keras
 import numpy as np
 
-import mlflow
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.numpy_dataset import from_numpy
-from mlflow.data.tensorflow_dataset import from_tensorflow
-from mlflow.exceptions import MlflowException
-from mlflow.keras.callback import MlflowCallback
-from mlflow.keras.save import log_model
-from mlflow.keras.utils import get_model_signature
-from mlflow.tracking.context import registry as context_registry
-from mlflow.utils import is_iterator
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.numpy_dataset import from_numpy
+from qcflow.data.tensorflow_dataset import from_tensorflow
+from qcflow.exceptions import MlflowException
+from qcflow.keras.callback import MlflowCallback
+from qcflow.keras.save import log_model
+from qcflow.keras.utils import get_model_signature
+from qcflow.tracking.context import registry as context_registry
+from qcflow.utils import is_iterator
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import (
     PatchFunction,
     autologging_integration,
     get_autologging_config,
@@ -27,19 +27,19 @@ from mlflow.utils.autologging_utils import (
 _logger = logging.getLogger(__name__)
 
 
-def _check_existing_mlflow_callback(callbacks):
+def _check_existing_qcflow_callback(callbacks):
     for callback in callbacks:
         if isinstance(callback, MlflowCallback):
             raise MlflowException(
-                "MLflow autologging must be turned off if an `MlflowCallback` is explicitly added "
+                "QCFlow autologging must be turned off if an `MlflowCallback` is explicitly added "
                 "to the callback list. You are creating an `MlflowCallback` while having "
-                "autologging enabled. Please either call `mlflow.keras.autolog(disable=True)` "
+                "autologging enabled. Please either call `qcflow.keras.autolog(disable=True)` "
                 "to disable autologging or remove `MlflowCallback` from the callback list. "
             )
 
 
 def _log_dataset(dataset, source, context, name=None, targets=None):
-    """Helper function to log the dataset information to MLflow."""
+    """Helper function to log the dataset information to QCFlow."""
     try:
         import tensorflow as tf
 
@@ -66,7 +66,7 @@ def _log_dataset(dataset, source, context, name=None, targets=None):
         _logger.warning(f"Unrecognized dataset type {type(dataset)}. Dataset logging skipped.")
         return
 
-    mlflow.log_input(dataset, context)
+    qcflow.log_input(dataset, context)
 
 
 def _parse_dataset(*keras_fit_args, **keras_fit_kwargs):
@@ -88,7 +88,7 @@ def _log_keras_model(
     log_model_signatures=True,
     save_model_kwargs=None,
 ):
-    """Helper function to log the Keras model to MLflow."""
+    """Helper function to log the Keras model to QCFlow."""
     if log_model_signatures:
         try:
             signature = get_model_signature(model)
@@ -130,10 +130,10 @@ def autolog(
     Enable autologging for Keras.
 
     This method configures the autologging for Keras workflow. Only Keras > 3 is supported. For
-    usage of lower Keras version (also known as tf-keras), please refer to `mlflow.tensorflow`
-    flavor. At a high level, calling this `mlflow.keras.autolog()` function will replace
-    `keras.Model.fit` method with the custom `fit` method provided by MLflow, which logs
-    metrics/params/info/model to MLflow at the corresponding time.
+    usage of lower Keras version (also known as tf-keras), please refer to `qcflow.tensorflow`
+    flavor. At a high level, calling this `qcflow.keras.autolog()` function will replace
+    `keras.Model.fit` method with the custom `fit` method provided by QCFlow, which logs
+    metrics/params/info/model to QCFlow at the corresponding time.
 
     Autologging is compatible with all backends supported by Keras, including Tensorflow, PyTorch
     and JAX.
@@ -145,12 +145,12 @@ def autolog(
         log_every_epoch: If True, training metrics will be logged at the end of each epoch.
         log_every_n_steps: If set, training metrics will be logged every `n` training steps.
             `log_every_n_steps` must be `None` when `log_every_epoch=True`.
-        log_models: If True, the Keras model will be logged to MLflow at the end of `model.fit()`.
+        log_models: If True, the Keras model will be logged to QCFlow at the end of `model.fit()`.
         log_model_signatures: If True, model signature will be automatically captured and logged.
         save_exported_model: If True, model will be saved as the exported format (compiled graph),
             which is suitable for serving and deployment. If False, model will be saved in `.keras`
             format, which contains model architecture and weights.
-        log_datasets: If True, the dataset metadata will be logged to MLflow.
+        log_datasets: If True, the dataset metadata will be logged to QCFlow.
         log_input_examples: If True, input examples will be logged.
         disable: If `True`, disables the Keras autologging.
         exclusive: If `True`, autologged content is not logged to user-created fluent runs. If
@@ -158,9 +158,9 @@ def autolog(
             user-created.  disable_for_unsupported_versions: If `True`, disable autologging for
             incompatible Keras versions.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of keras
-            that have not been tested against this version of the MLflow client or are
+            that have not been tested against this version of the QCFlow client or are
             incompatible.
-        silent: If `True`, suppress all event logs and warnings from MLflow during Keras
+        silent: If `True`, suppress all event logs and warnings from QCFlow during Keras
             autologging.  If `True`, show all events and warnings during Keras autologging.
         registered_model_name: If set, each time a model is trained, it is registered as a new model
             version of the registered model with this name. The registered model is created if it
@@ -172,10 +172,10 @@ def autolog(
         :caption: Example
 
         import keras
-        import mlflow
+        import qcflow
         import numpy as np
 
-        mlflow.keras.autolog()
+        qcflow.keras.autolog()
 
         # Prepare data for a 2-class classification.
         data = np.random.uniform([8, 28, 28, 3])
@@ -192,7 +192,7 @@ def autolog(
             optimizer=keras.optimizers.Adam(0.001),
             metrics=[keras.metrics.SparseCategoricalAccuracy()],
         )
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(data, label, batch_size=4, epochs=2)
     """
 
@@ -235,7 +235,7 @@ def autolog(
             batch_size, args, kwargs = self._infer_batch_size(inst, *args, **kwargs)
 
             if batch_size is not None:
-                mlflow.log_param("batch_size", batch_size)
+                qcflow.log_param("batch_size", batch_size)
                 unlogged_params.append("batch_size")
 
             log_fn_args_as_params(original, [], kwargs, unlogged_params)
@@ -251,16 +251,16 @@ def autolog(
                         _log_dataset(kwargs["validation_data"], source, "eval")
 
                 except Exception as e:
-                    _logger.warning(f"Failed to log dataset information to MLflow. Reason: {e}")
+                    _logger.warning(f"Failed to log dataset information to QCFlow. Reason: {e}")
 
             # Add `MlflowCallback` to the callback list.
             callbacks = args[5] if len(args) >= 6 else kwargs.get("callbacks", [])
-            mlflow_callback = MlflowCallback(
+            qcflow_callback = MlflowCallback(
                 log_every_epoch=log_every_epoch,
                 log_every_n_steps=log_every_n_steps,
             )
-            _check_existing_mlflow_callback(callbacks)
-            callbacks.append(mlflow_callback)
+            _check_existing_qcflow_callback(callbacks)
+            callbacks.append(qcflow_callback)
             kwargs["callbacks"] = callbacks
             history = original(inst, *args, **kwargs)
 

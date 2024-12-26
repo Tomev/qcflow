@@ -1,6 +1,6 @@
 import { defineMessages, MessageDescriptor } from 'react-intl';
 import Utils from '../../common/utils/Utils';
-import { MLFLOW_SYSTEM_METRIC_PREFIX } from '../constants';
+import { QCFLOW_SYSTEM_METRIC_PREFIX } from '../constants';
 
 interface MetricHistoryEntry {
   key: string;
@@ -349,7 +349,7 @@ export const truncateChartMetricString = (fullStr: string, strLen: number) => {
   return fullStr.substr(0, frontChars) + separator + fullStr.substr(fullStr.length - backChars);
 };
 
-const systemMetricPrefix = new RegExp(`^${MLFLOW_SYSTEM_METRIC_PREFIX}`);
+const systemMetricPrefix = new RegExp(`^${QCFLOW_SYSTEM_METRIC_PREFIX}`);
 export const normalizeChartMetricKey = (metricKey: string) => metricKey.replace(systemMetricPrefix, '');
 
 export const isSystemMetricKey = (metricKey: string) => metricKey.match(systemMetricPrefix);

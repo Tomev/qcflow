@@ -70,7 +70,7 @@ INGEST_STEP = format_help_string(
 )
 
 INGEST_USER_CODE = format_help_string(
-    """\"\"\"\nsteps/ingest.py defines customizable logic for parsing arbitrary dataset formats (i.e. formats that are not natively parsed by MLflow Recipes) via the `load_file_as_dataframe` function. Note that the Parquet, Delta, and Spark SQL dataset formats are natively parsed by MLflow Recipes, and you do not need to define custom logic for parsing them. An example `load_file_as_dataframe` implementation is displayed below (note that a different function name or module can be specified via the 'loader_method' attribute of the 'data' section in recipe.yaml).\n\"\"\"\n
+    """\"\"\"\nsteps/ingest.py defines customizable logic for parsing arbitrary dataset formats (i.e. formats that are not natively parsed by QCFlow Recipes) via the `load_file_as_dataframe` function. Note that the Parquet, Delta, and Spark SQL dataset formats are natively parsed by QCFlow Recipes, and you do not need to define custom logic for parsing them. An example `load_file_as_dataframe` implementation is displayed below (note that a different function name or module can be specified via the 'loader_method' attribute of the 'data' section in recipe.yaml).\n\"\"\"\n
 def load_file_as_dataframe(
     file_path: str,
     file_format: str,
@@ -78,7 +78,7 @@ def load_file_as_dataframe(
     \"\"\"
     Load content from the specified dataset file as a Pandas DataFrame.
 
-    This method is used to load dataset types that are not natively  managed by MLflow Recipes (datasets that are not in Parquet, Delta Table, or Spark SQL Table format). This method is called once for each file in the dataset, and MLflow Recipes automatically combines the resulting DataFrames together.
+    This method is used to load dataset types that are not natively  managed by QCFlow Recipes (datasets that are not in Parquet, Delta Table, or Spark SQL Table format). This method is called once for each file in the dataset, and QCFlow Recipes automatically combines the resulting DataFrames together.
 
     :param file_path: The path to the dataset file.
     :param file_format: The file format string, such as "csv".
@@ -156,7 +156,7 @@ TRANSFORMED_TRAINING_AND_VALIDATION_DATA = format_help_string(
 )
 
 TRAIN_STEP = format_help_string(
-    """The 'train' step uses the transformed training dataset produced by 'transform' to fit an estimator with the type and parameters defined in `steps/train.py` (and referred to by the 'estimator_method' attribute of the 'train' step definition in recipe.yaml). The estimator is then joined with the fitted transformer output from the 'transform' step to create a model pipeline. Finally, this model pipeline is evaluated against the transformed training and validation datasets to produce performance metrics; custom metrics are computed according to definitions in `steps/custom_metrics.py` and the 'function' attributes of entries in the 'custom' subsection of the 'metrics' section in recipe.yaml. The model pipeline and its associated parameters, performance metrics, and lineage information are logged to MLflow Tracking, producing an MLflow Run. An example recipe.yaml 'train' step definition is shown below, as well as an example custom metric definition.
+    """The 'train' step uses the transformed training dataset produced by 'transform' to fit an estimator with the type and parameters defined in `steps/train.py` (and referred to by the 'estimator_method' attribute of the 'train' step definition in recipe.yaml). The estimator is then joined with the fitted transformer output from the 'transform' step to create a model pipeline. Finally, this model pipeline is evaluated against the transformed training and validation datasets to produce performance metrics; custom metrics are computed according to definitions in `steps/custom_metrics.py` and the 'function' attributes of entries in the 'custom' subsection of the 'metrics' section in recipe.yaml. The model pipeline and its associated parameters, performance metrics, and lineage information are logged to QCFlow Tracking, producing an QCFlow Run. An example recipe.yaml 'train' step definition is shown below, as well as an example custom metric definition.
 
 steps:
   train:
@@ -183,8 +183,8 @@ FITTED_MODEL = format_help_string(
     "The model pipeline produced by fitting the estimator defined in `steps/train.py` on the training dataset and preceding it with the fitted transformer output by the 'transform' step."
 )
 
-MLFLOW_RUN = format_help_string(
-    "The MLflow Tracking Run containing the model pipeline & its parameters, model performance metrics on the training & validation datasets, and lineage information about the current recipe execution. The downstream 'evaluate' step logs performance metrics and model explanations from the test dataset to this MLflow Run."
+QCFLOW_RUN = format_help_string(
+    "The QCFlow Tracking Run containing the model pipeline & its parameters, model performance metrics on the training & validation datasets, and lineage information about the current recipe execution. The downstream 'evaluate' step logs performance metrics and model explanations from the test dataset to this QCFlow Run."
 )
 
 PREDICTED_TRAINING_DATA = format_help_string(
@@ -213,14 +213,14 @@ def weighted_mean_squared_error(
                     - ``"prediction"``: Predictions produced by submitting input data to the model.
                     - ``"target"``: Ground truth values corresponding to the input data.
 
-    :param builtin_metrics: A dictionary containing the built-in metrics that are calculated automatically during model evaluation. The keys are the names of the metrics and the values are the scalar values of the metrics. For more information, see https://mlflow.org/docs/latest/python_api/mlflow.html#mlflow.evaluate.
+    :param builtin_metrics: A dictionary containing the built-in metrics that are calculated automatically during model evaluation. The keys are the names of the metrics and the values are the scalar values of the metrics. For more information, see https://qcflow.org/docs/latest/python_api/qcflow.html#qcflow.evaluate.
     :return: A single-entry dictionary containing the MSE metric. The key is the metric names and the value is the scalar metric value. Note that custom metric functions can return dictionaries with multiple metric entries as well.
     \"\"\"
 """
 )
 
 EVALUATE_STEP = format_help_string(
-    """The 'evaluate' step evaluates the model pipeline produced by the 'train' step on the test dataset output from the 'split' step, producing performance metrics and model explanations. Performance metrics are compared against configured thresholds to compute a 'model_validation_status', which indicates whether or not a model is good enough to be registered to the MLflow Model Registry by the subsequent 'register' step. Custom performance metrics are computed according to definitions in `steps/custom_metrics.py` and the 'function' attributes of entries in the 'custom' subsection of the 'metrics' section in recipe.yaml. Model performance thresholds are defined in the 'validation_criteria' section of the 'evaluate' step definition in recipe.yaml. Model performance metrics and explanations are logged to MLflow Tracking using the same MLflow Run produced by the 'train' step. An example recipe.yaml 'evaluate' step definition is shown below, as well as an example custom metric definition.
+    """The 'evaluate' step evaluates the model pipeline produced by the 'train' step on the test dataset output from the 'split' step, producing performance metrics and model explanations. Performance metrics are compared against configured thresholds to compute a 'model_validation_status', which indicates whether or not a model is good enough to be registered to the QCFlow Model Registry by the subsequent 'register' step. Custom performance metrics are computed according to definitions in `steps/custom_metrics.py` and the 'function' attributes of entries in the 'custom' subsection of the 'metrics' section in recipe.yaml. Model performance thresholds are defined in the 'validation_criteria' section of the 'evaluate' step definition in recipe.yaml. Model performance metrics and explanations are logged to QCFlow Tracking using the same QCFlow Run produced by the 'train' step. An example recipe.yaml 'evaluate' step definition is shown below, as well as an example custom metric definition.
 
 evaluate:
   validation_criteria:
@@ -237,7 +237,7 @@ custom_metrics:
 )
 
 MODEL_VALIDATION_STATUS = format_help_string(
-    """Boolean status indicating whether or not the model meets the performance criteria for registration to the MLflow Model Registry. Performance criteria are defined in the 'validation_criteria' section of the 'evaluate' step definition in recipe.yaml, as shown in the example below. The subsequent 'register' step checks the model validation status, and, if it is 'VALIDATED', creates a new model version in the Model Registry corresponding to the trained model pipeline.
+    """Boolean status indicating whether or not the model meets the performance criteria for registration to the QCFlow Model Registry. Performance criteria are defined in the 'validation_criteria' section of the 'evaluate' step definition in recipe.yaml, as shown in the example below. The subsequent 'register' step checks the model validation status, and, if it is 'VALIDATED', creates a new model version in the Model Registry corresponding to the trained model pipeline.
 
 evaluate:
   validation_criteria:
@@ -251,7 +251,7 @@ evaluate:
 )
 
 REGISTER_STEP = format_help_string(
-    """The 'register' step checks the 'model_validation_status' output of the preceding 'evaluate' step and, if model validation was successful (as indicated by the 'VALIDATED' status), registers the model pipeline produced by the 'train' step to the MLflow Model Registry. If the 'model_validation_status' does not indicate that the model passed validation checks (i.e. its value is 'REJECTED'), the model pipeline is not registered to the MLflow Model Registry. This validation status check can be disabled by specifying 'allow_non_validated_model: true' in the 'register' step definition of recipe.yaml, in which case the model pipeline is always registered with the MLflow Model Registry when the 'register' step is executed. If the model pipeline is registered to the MLflow Model Registry, a 'registered_model_version' is produced containing the model name (as configured by the 'model_name' attribute of the 'register' step definition in recipe.yaml) and the model version. An example recipe.yaml 'register' step definition is shown below.
+    """The 'register' step checks the 'model_validation_status' output of the preceding 'evaluate' step and, if model validation was successful (as indicated by the 'VALIDATED' status), registers the model pipeline produced by the 'train' step to the QCFlow Model Registry. If the 'model_validation_status' does not indicate that the model passed validation checks (i.e. its value is 'REJECTED'), the model pipeline is not registered to the QCFlow Model Registry. This validation status check can be disabled by specifying 'allow_non_validated_model: true' in the 'register' step definition of recipe.yaml, in which case the model pipeline is always registered with the QCFlow Model Registry when the 'register' step is executed. If the model pipeline is registered to the QCFlow Model Registry, a 'registered_model_version' is produced containing the model name (as configured by the 'model_name' attribute of the 'register' step definition in recipe.yaml) and the model version. An example recipe.yaml 'register' step definition is shown below.
 
 register:
   allow_non_validated_model: true
@@ -283,5 +283,5 @@ SCORED_DATA = format_help_string(
 )
 
 REGISTERED_MODEL_VERSION = format_help_string(
-    "The Model Version in the MLflow Model Registry corresponding to the trained model. A Model Version is produced if the trained model meets the defined performance criteria for model registration or if `allow_non_validated_model: true` is specified in the 'register' step definition of recipe.yaml"
+    "The Model Version in the QCFlow Model Registry corresponding to the trained model. A Model Version is produced if the trained model meets the defined performance criteria for model registration or if `allow_non_validated_model: true` is specified in the 'register' step definition of recipe.yaml"
 )

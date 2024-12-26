@@ -1,8 +1,8 @@
-# Snapshot of MLflow DB models as of the 0.9.1 release, prior to the first database migration.
+# Snapshot of QCFlow DB models as of the 0.9.1 release, prior to the first database migration.
 # This file corresponds to the first database schema that we can reasonably expect users to be
 # running and exists to test that the oldest database schema can be brought up-to-date.
-# Copied from https://github.com/mlflow/mlflow/blob/v0.9.1/mlflow/store/dbmodels/models.py, with
-# modifications to substitute constants from MLflow with hard-coded values (e.g. replacing
+# Copied from https://github.com/qcflow/qcflow/blob/v0.9.1/qcflow/store/dbmodels/models.py, with
+# modifications to substitute constants from QCFlow with hard-coded values (e.g. replacing
 # SourceType.to_string(SourceType.NOTEBOOK) with the constant "NOTEBOOK").
 import time
 
@@ -39,7 +39,7 @@ RunStatusTypes = [
 
 class SqlExperiment(Base):
     """
-    DB model for :py:class:`mlflow.entities.Experiment`. These are recorded in ``experiment`` table.
+    DB model for :py:class:`qcflow.entities.Experiment`. These are recorded in ``experiment`` table.
     """
 
     __tablename__ = "experiments"
@@ -75,7 +75,7 @@ class SqlExperiment(Base):
 
 class SqlRun(Base):
     """
-    DB model for :py:class:`mlflow.entities.Run`. These are recorded in ``runs`` table.
+    DB model for :py:class:`qcflow.entities.Run`. These are recorded in ``runs`` table.
     """
 
     __tablename__ = "runs"
@@ -141,7 +141,7 @@ class SqlRun(Base):
     """
     experiment = relationship("SqlExperiment", backref=backref("runs", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlExperiment`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlExperiment`.
     """
 
     __table_args__ = (
@@ -154,7 +154,7 @@ class SqlRun(Base):
 
 class SqlTag(Base):
     """
-    DB model for :py:class:`mlflow.entities.RunTag`. These are recorded in ``tags`` table.
+    DB model for :py:class:`qcflow.entities.RunTag`. These are recorded in ``tags`` table.
     """
 
     __tablename__ = "tags"
@@ -173,7 +173,7 @@ class SqlTag(Base):
     """
     run = relationship("SqlRun", backref=backref("tags", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlRun`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlRun`.
     """
 
     __table_args__ = (PrimaryKeyConstraint("key", "run_uuid", name="tag_pk"),)
@@ -205,7 +205,7 @@ class SqlMetric(Base):
     """
     run = relationship("SqlRun", backref=backref("metrics", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlRun`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlRun`.
     """
 
     __table_args__ = (PrimaryKeyConstraint("key", "timestamp", "run_uuid", name="metric_pk"),)
@@ -232,7 +232,7 @@ class SqlParam(Base):
     """
     run = relationship("SqlRun", backref=backref("params", cascade="all"))
     """
-    SQLAlchemy relationship (many:one) with :py:class:`mlflow.store.dbmodels.models.SqlRun`.
+    SQLAlchemy relationship (many:one) with :py:class:`qcflow.store.dbmodels.models.SqlRun`.
     """
 
     __table_args__ = (PrimaryKeyConstraint("key", "run_uuid", name="param_pk"),)

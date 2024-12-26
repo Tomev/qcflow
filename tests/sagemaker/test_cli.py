@@ -7,14 +7,14 @@ import pytest
 from click.testing import CliRunner
 
 import docker
-import mlflow
-from mlflow.models.docker_utils import build_image_from_context
-from mlflow.sagemaker.cli import build_and_push_container
+import qcflow
+from qcflow.models.docker_utils import build_image_from_context
+from qcflow.sagemaker.cli import build_and_push_container
 
 from tests.pyfunc.docker.test_docker import assert_dockerfiles_equal
 
-_MLFLOW_ROOT = Path(mlflow.__file__).parent.parent
-_RESOURCE_DIR = os.path.join(_MLFLOW_ROOT, "tests", "resources", "dockerfile")
+_QCFLOW_ROOT = Path(qcflow.__file__).parent.parent
+_RESOURCE_DIR = os.path.join(_QCFLOW_ROOT, "tests", "resources", "dockerfile")
 _TEST_IMAGE_NAME = "test-sagemaker-image"
 
 _docker_client = docker.from_env()
@@ -38,13 +38,13 @@ def test_build_and_push_container(tmp_path, env_manager):
             raise RuntimeError("Docker image build failed.")
 
     with mock.patch(
-        "mlflow.models.docker_utils.build_image_from_context", side_effect=_build_image_with_copy
+        "qcflow.models.docker_utils.build_image_from_context", side_effect=_build_image_with_copy
     ):
         res = CliRunner().invoke(
             build_and_push_container,
             [
                 "--no-push",
-                "--mlflow-home",
+                "--qcflow-home",
                 ".",
                 "--env-manager",
                 env_manager,

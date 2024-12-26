@@ -13,7 +13,7 @@ import { ExperimentViewCopyArtifactLocation } from './ExperimentViewCopyArtifact
 import { LegacyTooltip } from '@databricks/design-system';
 import { InfoIcon } from '@databricks/design-system';
 import { Popover } from '@databricks/design-system';
-import { EXPERIMENT_PAGE_FEEDBACK_URL } from '@mlflow/mlflow/src/experiment-tracking/constants';
+import { EXPERIMENT_PAGE_FEEDBACK_URL } from '@qcflow/qcflow/src/experiment-tracking/constants';
 
 /**
  * Header for a single experiment page. Displays title, breadcrumbs and provides
@@ -52,7 +52,7 @@ export const ExperimentViewHeader = React.memo(
           href={feedbackFormUrl}
           target="_blank"
           rel="noreferrer"
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_header_experimentviewheaderv2.tsx_100"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_header_experimentviewheaderv2.tsx_100"
           css={{ marginLeft: theme.spacing.sm }}
           type="link"
           size="small"
@@ -124,7 +124,7 @@ export const ExperimentViewHeader = React.memo(
             <Button
               size="small"
               type="link"
-              componentId="mlflow.experiment_page.header.info_tooltip"
+              componentId="qcflow.experiment_page.header.info_tooltip"
               icon={<InfoIcon css={{ color: theme.colors.textSecondary }} />}
               data-testid="experiment-view-header-info-tooltip"
               aria-label="Info"
@@ -136,7 +136,7 @@ export const ExperimentViewHeader = React.memo(
     const getAddDescriptionButton = () => {
       return (
         <Button
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_header_experimentviewheaderv2.tsx_271"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_header_experimentviewheaderv2.tsx_271"
           size="small"
           onClick={() => {
             setEditing(true);

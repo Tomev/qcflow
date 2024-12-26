@@ -1,6 +1,6 @@
 #' @importFrom httpuv startDaemonizedServer
 #' @importFrom httpuv stopServer
-mlflow_port_available <- function(port) {
+qcflow_port_available <- function(port) {
   tryCatch({
     handle <- httpuv::startDaemonizedServer("127.0.0.1", port, list())
     httpuv::stopServer(handle)
@@ -11,16 +11,16 @@ mlflow_port_available <- function(port) {
 }
 
 #' @importFrom openssl rand_num
-mlflow_connect_port <- function() {
+qcflow_connect_port <- function() {
   port <- getOption(
-    "mlflow.port",
+    "qcflow.port",
     NULL
   )
 
-  retries <- getOption("mlflow.port.retries", 10)
+  retries <- getOption("qcflow.port.retries", 10)
   while (is.null(port) && retries > 0) {
     port <- floor(5000 + rand_num(1) * 1000)
-    if (!mlflow_port_available(port)) {
+    if (!qcflow_port_available(port)) {
       port <- NULL
     }
 
@@ -30,7 +30,7 @@ mlflow_connect_port <- function() {
   port
 }
 
-mlflow_cli_param <- function(args, param, value) {
+qcflow_cli_param <- function(args, param, value) {
   if (!is.null(value)) {
     args <- c(
       args,
@@ -42,9 +42,9 @@ mlflow_cli_param <- function(args, param, value) {
   args
 }
 
-#' Run MLflow Tracking Server
+#' Run QCFlow Tracking Server
 #'
-#' Wrapper for `mlflow server`.
+#' Wrapper for `qcflow server`.
 #'
 #' @param file_store The root of the backing file store for experiment and run data.
 #' @param default_artifact_root Local or S3 URI to store artifacts in, for newly created experiments.
@@ -54,58 +54,58 @@ mlflow_cli_param <- function(args, param, value) {
 #' @param static_prefix A prefix which will be prepended to the path of all static paths.
 #' @param serve_artifacts A flag specifying whether or not to enable artifact serving (default: FALSE).
 #' @export
-mlflow_server <- function(file_store = "mlruns", default_artifact_root = NULL,
+qcflow_server <- function(file_store = "mlruns", default_artifact_root = NULL,
                           host = "127.0.0.1", port = 5000, workers = NULL, static_prefix = NULL,
                           serve_artifacts = FALSE) {
   file_store <- fs::path_abs(file_store)
   if (.Platform$OS.type == "windows") file_store <- paste0("file://", file_store)
 
-  args <- mlflow_cli_param(list(), "--port", port) %>%
-    mlflow_cli_param("--backend-store-uri", file_store) %>%
-    mlflow_cli_param("--default-artifact-root", default_artifact_root) %>%
-    mlflow_cli_param("--host", host) %>%
-    mlflow_cli_param("--port", port) %>%
-    mlflow_cli_param("--static-prefix", static_prefix) %>%
+  args <- qcflow_cli_param(list(), "--port", port) %>%
+    qcflow_cli_param("--backend-store-uri", file_store) %>%
+    qcflow_cli_param("--default-artifact-root", default_artifact_root) %>%
+    qcflow_cli_param("--host", host) %>%
+    qcflow_cli_param("--port", port) %>%
+    qcflow_cli_param("--static-prefix", static_prefix) %>%
     append(if (serve_artifacts) "--serve-artifacts" else "--no-serve-artifacts")
 
   if (.Platform$OS.type != "windows") {
     workers <- workers %||% 4
-    args <- args %>% mlflow_cli_param("--workers", workers)
+    args <- args %>% qcflow_cli_param("--workers", workers)
   }
 
-  mlflow_verbose_message("MLflow starting: http://", host, ":", port)
+  qcflow_verbose_message("QCFlow starting: http://", host, ":", port)
 
   handle <- do.call(
-    "mlflow_cli",
+    "qcflow_cli",
     c(
       "server",
       args,
       list(
-        background = getOption("mlflow.ui.background", TRUE),
+        background = getOption("qcflow.ui.background", TRUE),
         client = NULL
       )
     )
   )
 
-  server_url <- getOption("mlflow.ui", paste(host, port, sep = ":"))
-  new_mlflow_server(server_url, handle, file_store = file_store)
+  server_url <- getOption("qcflow.ui", paste(host, port, sep = ":"))
+  new_qcflow_server(server_url, handle, file_store = file_store)
 }
 
-new_mlflow_server <- function(server_url, handle, ...) {
+new_qcflow_server <- function(server_url, handle, ...) {
   ms <- structure(
     list(
       server_url = if (startsWith(server_url, "http")) server_url else paste0("http://", server_url),
       handle = handle,
       ...
     ),
-    class = "mlflow_server"
+    class = "qcflow_server"
   )
   ms
 }
 
-mlflow_validate_server <- function(client) {
+qcflow_validate_server <- function(client) {
   wait_for(
-    function() mlflow_rest(
+    function() qcflow_rest(
       "experiments",
       "search",
       client = client,
@@ -114,15 +114,15 @@ mlflow_validate_server <- function(client) {
         max_results = 1
       )
     ),
-    getOption("mlflow.connect.wait", 10),
-    getOption("mlflow.connect.sleep", 1)
+    getOption("qcflow.connect.wait", 10),
+    getOption("qcflow.connect.sleep", 1)
   )
 }
 
-mlflow_register_local_server <- function(tracking_uri, local_server) {
+qcflow_register_local_server <- function(tracking_uri, local_server) {
   .globals$url_mapping[[tracking_uri]] <- local_server
 }
 
-mlflow_local_server <- function(tracking_uri) {
+qcflow_local_server <- function(tracking_uri) {
   .globals$url_mapping[[tracking_uri]]
 }

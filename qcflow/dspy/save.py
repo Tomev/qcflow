@@ -1,4 +1,4 @@
-"""Functions for saving DSPY models to MLflow."""
+"""Functions for saving DSPY models to QCFlow."""
 
 import os
 from pathlib import Path
@@ -7,42 +7,42 @@ from typing import Any, Optional, Union
 import cloudpickle
 import yaml
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.dspy.wrapper import DspyChatModelWrapper, DspyModelWrapper
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.models import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.dspy.wrapper import DspyChatModelWrapper, DspyModelWrapper
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.models import (
     Model,
     ModelInputExample,
     ModelSignature,
     infer_pip_requirements,
 )
-from mlflow.models.dependencies_schemas import _get_dependencies_schemas
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.rag_signatures import SIGNATURE_FOR_LLM_INFERENCE_TASK
-from mlflow.models.resources import Resource, _ResourceBuilder
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.tracing.provider import trace_disabled
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.utils.annotations import experimental
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.models.dependencies_schemas import _get_dependencies_schemas
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.rag_signatures import SIGNATURE_FOR_LLM_INFERENCE_TASK
+from qcflow.models.resources import Resource, _ResourceBuilder
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.tracing.provider import trace_disabled
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.utils.annotations import experimental
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "dspy"
 
@@ -53,7 +53,7 @@ _MODEL_DATA_PATH = "data"
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by Dspy flavor. Calls to
+        A list of default pip requirements for QCFlow Models produced by Dspy flavor. Calls to
         `save_model()` and `log_model()` produce a pip environment that, at minimum, contains these
         requirements.
     """
@@ -63,10 +63,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to `save_model()` and
+        The default Conda environment for QCFlow Models produced by calls to `save_model()` and
         `log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @experimental
@@ -78,7 +78,7 @@ def save_model(
     task: Optional[str] = None,
     model_config: Optional[dict[str, Any]] = None,
     code_paths: Optional[list[str]] = None,
-    mlflow_model: Optional[Model] = None,
+    qcflow_model: Optional[Model] = None,
     conda_env: Optional[Union[list[str], str]] = None,
     signature: Optional[ModelSignature] = None,
     input_example: Optional[ModelInputExample] = None,
@@ -91,16 +91,16 @@ def save_model(
     Save a Dspy model.
 
     This method saves a Dspy model along with metadata such as model signature and conda
-    environments to local file system. This method is called inside `mlflow.dspy.log_model()`.
+    environments to local file system. This method is called inside `qcflow.dspy.log_model()`.
 
     Args:
         model: an instance of `dspy.Module`. The Dspy model/module to be saved.
-        path: local path where the MLflow model is to be saved.
+        path: local path where the QCFlow model is to be saved.
         task: defaults to None. The task type of the model. Can only be `llm/v1/chat` or None for
             now.
         model_config: keyword arguments to be passed to the Dspy Module at instantiation.
         code_paths: {{ code_paths }}
-        mlflow_model: an instance of `mlflow.models.Model`, defaults to None. MLflow model
+        qcflow_model: an instance of `qcflow.models.Model`, defaults to None. QCFlow model
             configuration to which to add the Dspy model metadata. If None, a blank instance will
             be created.
         conda_env: {{ conda_env }}
@@ -115,7 +115,7 @@ def save_model(
 
     import dspy
 
-    from mlflow.transformers.llm_inference_utils import (
+    from qcflow.transformers.llm_inference_utils import (
         _LLM_INFERENCE_TASK_KEY,
         _METADATA_LLM_INFERENCE_TASK_KEY,
     )
@@ -129,29 +129,29 @@ def save_model(
             )
     if task and task not in SIGNATURE_FOR_LLM_INFERENCE_TASK:
         raise MlflowException(
-            "Invalid task: {task} at `mlflow.dspy.save_model()` call. The task must be None or one "
+            "Invalid task: {task} at `qcflow.dspy.save_model()` call. The task must be None or one "
             f"of: {list(SIGNATURE_FOR_LLM_INFERENCE_TASK.keys())}",
             error_code=INVALID_PARAMETER_VALUE,
         )
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     saved_example = None
     if input_example is not None:
         path = os.path.abspath(path)
         _validate_and_prepare_target_save_path(path)
-        saved_example = _save_example(mlflow_model, input_example, path)
+        saved_example = _save_example(qcflow_model, input_example, path)
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     with _get_dependencies_schemas() as dependencies_schemas:
         schema = dependencies_schemas.to_dict()
         if schema is not None:
-            if mlflow_model.metadata is None:
-                mlflow_model.metadata = {}
-            mlflow_model.metadata.update(schema)
+            if qcflow_model.metadata is None:
+                qcflow_model.metadata = {}
+            qcflow_model.metadata.update(schema)
 
     model_data_subpath = _MODEL_DATA_PATH
     # Construct new data folder in existing path.
@@ -181,33 +181,33 @@ def save_model(
     }
 
     if task:
-        if mlflow_model.signature is None:
-            mlflow_model.signature = SIGNATURE_FOR_LLM_INFERENCE_TASK[task]
+        if qcflow_model.signature is None:
+            qcflow_model.signature = SIGNATURE_FOR_LLM_INFERENCE_TASK[task]
         flavor_options.update({_LLM_INFERENCE_TASK_KEY: task})
-        if mlflow_model.metadata:
-            mlflow_model.metadata[_METADATA_LLM_INFERENCE_TASK_KEY] = task
+        if qcflow_model.metadata:
+            qcflow_model.metadata[_METADATA_LLM_INFERENCE_TASK_KEY] = task
         else:
-            mlflow_model.metadata = {_METADATA_LLM_INFERENCE_TASK_KEY: task}
+            qcflow_model.metadata = {_METADATA_LLM_INFERENCE_TASK_KEY: task}
 
-    if saved_example and mlflow_model.signature is None:
+    if saved_example and qcflow_model.signature is None:
         signature = _infer_signature_from_input_example(saved_example, wrapped_dspy_model)
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    # Add flavor info to `mlflow_model`.
-    mlflow_model.add_flavor(FLAVOR_NAME, code=code_dir_subpath, **flavor_options)
-    # Add loader_module, data and env data to `mlflow_model`.
+    # Add flavor info to `qcflow_model`.
+    qcflow_model.add_flavor(FLAVOR_NAME, code=code_dir_subpath, **flavor_options)
+    # Add loader_module, data and env data to `qcflow_model`.
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.dspy",
+        qcflow_model,
+        loader_module="qcflow.dspy",
         code=code_dir_subpath,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
     )
 
-    # Add model file size to `mlflow_model`.
+    # Add model file size to `qcflow_model`.
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
+        qcflow_model.model_size_bytes = size
 
     # Add resources if specified.
     if resources is not None:
@@ -216,16 +216,16 @@ def save_model(
         else:
             serialized_resource = _ResourceBuilder.from_resources(resources)
 
-        mlflow_model.resources = serialized_resource
+        qcflow_model.resources = serialized_resource
 
-    # Save mlflow_model to path/MLmodel.
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    # Save qcflow_model to path/MLmodel.
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
             inferred_reqs = infer_pip_requirements(path, FLAVOR_NAME, fallback=default_reqs)
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
         else:
@@ -271,10 +271,10 @@ def log_model(
     resources: Optional[Union[str, Path, list[Resource]]] = None,
 ):
     """
-    Log a Dspy model along with metadata to MLflow.
+    Log a Dspy model along with metadata to QCFlow.
 
     This method saves a Dspy model along with metadata such as model signature and conda
-    environments to MLflow.
+    environments to QCFlow.
 
     Args:
         dspy_model: an instance of `dspy.Module`. The Dspy model to be saved.
@@ -290,7 +290,7 @@ def log_model(
             `registered_model_name`, also create a registered model if one with the given name does
             not exist.
         await_registration_for: defaults to
-            `mlflow.tracking._model_registry.DEFAULT_AWAIT_MAX_SLEEP_SECONDS`. Number of
+            `qcflow.tracking._model_registry.DEFAULT_AWAIT_MAX_SLEEP_SECONDS`. Number of
             seconds to wait for the model version to finish being created and is in ``READY``
             status. By default, the function waits for five minutes. Specify 0 or None to skip
             waiting.
@@ -305,9 +305,9 @@ def log_model(
         :caption: Example
 
         import dspy
-        import mlflow
-        from mlflow.models import ModelSignature
-        from mlflow.types.schema import ColSpec, Schema
+        import qcflow
+        from qcflow.models import ModelSignature
+        from qcflow.types.schema import ColSpec, Schema
 
         # Set up the LM.
         lm = dspy.LM(model="openai/gpt-4o-mini", max_tokens=250)
@@ -325,16 +325,16 @@ def log_model(
 
         dspy_model = CoT()
 
-        mlflow.set_tracking_uri("http://127.0.0.1:5000")
-        mlflow.set_experiment("test-dspy-logging")
+        qcflow.set_tracking_uri("http://127.0.0.1:5000")
+        qcflow.set_experiment("test-dspy-logging")
 
-        from mlflow.dspy import log_model
+        from qcflow.dspy import log_model
 
         input_schema = Schema([ColSpec("string")])
         output_schema = Schema([ColSpec("string")])
         signature = ModelSignature(inputs=input_schema, outputs=output_schema)
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             log_model(
                 dspy_model,
                 "model",
@@ -344,7 +344,7 @@ def log_model(
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.dspy,
+        flavor=qcflow.dspy,
         model=dspy_model,
         task=task,
         model_config=model_config,

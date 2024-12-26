@@ -1,9 +1,9 @@
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.lifecycle_stage import LifecycleStage
-from mlflow.entities.run_status import RunStatus
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.protos.service_pb2 import RunInfo as ProtoRunInfo
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.lifecycle_stage import LifecycleStage
+from qcflow.entities.run_status import RunStatus
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.protos.service_pb2 import RunInfo as ProtoRunInfo
 
 
 def check_run_is_active(run_info):
@@ -116,7 +116,7 @@ class RunInfo(_MlflowObject):
     @searchable_attribute
     def status(self):
         """
-        One of the values in :py:class:`mlflow.entities.RunStatus`
+        One of the values in :py:class:`qcflow.entities.RunStatus`
         describing the status of the run.
         """
         return self._status
@@ -139,7 +139,7 @@ class RunInfo(_MlflowObject):
     @property
     def lifecycle_stage(self):
         """
-        One of the values in :py:class:`mlflow.entities.lifecycle_stage.LifecycleStage`
+        One of the values in :py:class:`qcflow.entities.lifecycle_stage.LifecycleStage`
         describing the lifecycle stage of the run.
         """
         return self._lifecycle_stage

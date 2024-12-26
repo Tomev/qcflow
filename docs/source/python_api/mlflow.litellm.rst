@@ -1,7 +1,7 @@
-mlflow.litellm
+qcflow.litellm
 ==============
 
-.. automodule:: mlflow.litellm
+.. automodule:: qcflow.litellm
     :members:
     :undoc-members:
     :show-inheritance:

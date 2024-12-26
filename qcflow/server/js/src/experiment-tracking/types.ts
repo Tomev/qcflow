@@ -338,7 +338,7 @@ export enum RunLoggedArtifactType {
 }
 
 /**
- * Shape of the contents of "mlflow.loggedArtifacts" tag
+ * Shape of the contents of "qcflow.loggedArtifacts" tag
  */
 export type RunLoggedArtifactsDeclaration = {
   path: string;

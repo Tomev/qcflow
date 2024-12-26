@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from packaging.version import Version
 
-from dev.update_mlflow_versions import (
+from dev.update_qcflow_versions import (
     get_current_py_version,
     replace_java,
     replace_java_pom_xml,
@@ -17,39 +17,39 @@ from dev.update_mlflow_versions import (
 
 # { filename: expected lines changed }
 _JAVA_FILES = {
-    "mlflow/java/scoring/src/main/java/org/mlflow/sagemaker/ScoringServer.java": {
+    "qcflow/java/scoring/src/main/java/org/qcflow/sagemaker/ScoringServer.java": {
         175: '      response.getWriter().print("{new_version}");',
     },
-    "mlflow/java/scoring/src/test/java/org/mlflow/ScoringServerTest.java": {
+    "qcflow/java/scoring/src/test/java/org/qcflow/ScoringServerTest.java": {
         81: '    Assert.assertEquals("{new_version}", responseBody);',
     },
 }
 
 _JAVA_XML_FILES = {
-    "mlflow/java/pom.xml": {
+    "qcflow/java/pom.xml": {
         6: "  <version>{new_version}</version>",
-        62: "    <mlflow-version>{new_version}</mlflow-version>",
+        62: "    <qcflow-version>{new_version}</qcflow-version>",
     },
-    "mlflow/java/scoring/pom.xml": {
+    "qcflow/java/scoring/pom.xml": {
         8: "    <version>{new_version}</version>",
     },
-    "mlflow/java/client/pom.xml": {
+    "qcflow/java/client/pom.xml": {
         8: "    <version>{new_version}</version>",
     },
-    "mlflow/java/spark/pom.xml": {
+    "qcflow/java/spark/pom.xml": {
         4: "  <version>{new_version}</version>",
         19: "    <version>{new_version}</version>",
     },
 }
 
 _JS_FILES = {
-    "mlflow/server/js/src/common/constants.tsx": {
+    "qcflow/server/js/src/common/constants.tsx": {
         12: "export const Version = '{new_version}';",
     }
 }
 
 _PYTHON_FILES = {
-    "mlflow/version.py": {
+    "qcflow/version.py": {
         4: 'VERSION = "{new_version}"',
     }
 }
@@ -63,12 +63,12 @@ _PYPROJECT_TOML_FILES = {
     },
     "pyproject.release.toml": {
         7: 'version = "{new_version}"',
-        25: '  "mlflow-skinny=={new_version}",',
+        25: '  "qcflow-skinny=={new_version}",',
     },
 }
 
 _R_FILES = {
-    "mlflow/R/mlflow/DESCRIPTION": {
+    "qcflow/R/qcflow/DESCRIPTION": {
         4: "Version: {new_version}",
     }
 }
@@ -121,7 +121,7 @@ def copy_and_run_change_func(monkeypatch, tmp_path, paths_to_copy, replace_func,
         (replace_r, _R_FILES, _NEW_PY_VERSION, _NEW_PY_VERSION),
     ],
 )
-def test_update_mlflow_versions(
+def test_update_qcflow_versions(
     monkeypatch, tmp_path, replace_func, expect_dict, new_py_version, expected_new_version
 ):
     paths_to_change = [Path(filename) for filename in expect_dict]
@@ -129,7 +129,7 @@ def test_update_mlflow_versions(
         monkeypatch,
         tmp_path,
         # always copy version.py since we need it in get_current_py_version()
-        paths_to_change + [Path("mlflow/version.py")],
+        paths_to_change + [Path("qcflow/version.py")],
         replace_func,
         new_py_version,
     )

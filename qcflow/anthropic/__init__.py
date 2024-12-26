@@ -1,6 +1,6 @@
-from mlflow.anthropic.autolog import patched_class_call
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import autologging_integration, safe_patch
+from qcflow.anthropic.autolog import patched_class_call
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import autologging_integration, safe_patch
 
 FLAVOR_NAME = "anthropic"
 
@@ -13,14 +13,14 @@ def autolog(
     silent: bool = False,
 ):
     """
-    Enables (or disables) and configures autologging from Anthropic to MLflow.
+    Enables (or disables) and configures autologging from Anthropic to QCFlow.
     Only synchronous calls are supported. Asynchnorous APIs and streaming are not recorded.
 
     Args:
         log_traces: If ``True``, traces are logged for Anthropic models.
             If ``False``, no traces are collected during inference. Default to ``True``.
         disable: If ``True``, disables the Anthropic autologging. Default to ``False``.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during Anthropic
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during Anthropic
             autologging. If ``False``, show all events and warnings.
     """
     from anthropic.resources import Messages

@@ -33,7 +33,7 @@ import {
   type RunsMetricsSingleTraceTooltipData,
 } from './RunsMetricsLinePlot';
 import { RunsMultipleTracesTooltipBody } from './RunsMultipleTracesTooltipBody';
-import { shouldEnableRelativeTimeDateAxis } from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+import { shouldEnableRelativeTimeDateAxis } from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 import { customMetricBehaviorDefs } from '../../experiment-page/utils/customMetricBehaviorUtils';
 
 interface RunsChartsContextMenuContentDataType {
@@ -315,7 +315,7 @@ export const RunsChartsTooltipBody = ({
         </div>
         {!isHovering && (
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_runscomparetooltipbody.tsx_259"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_runscomparetooltipbody.tsx_259"
             size="small"
             onClick={closeContextMenu}
             icon={<CloseIcon />}
@@ -349,7 +349,7 @@ export const RunsChartsTooltipBody = ({
             placement="bottom"
           >
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_runscomparetooltipbody.tsx_282"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_runscomparetooltipbody.tsx_282"
               size="small"
               onClick={() => {
                 onTogglePin(runUuid);
@@ -370,7 +370,7 @@ export const RunsChartsTooltipBody = ({
             placement="bottom"
           >
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_runscomparetooltipbody.tsx_302"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_runscomparetooltipbody.tsx_302"
               data-testid="experiment-view-compare-runs-tooltip-visibility-button"
               size="small"
               onClick={() => {

@@ -16,22 +16,22 @@ from langchain_core.outputs import (
 from langchain_core.runnables import RunnableSequence
 from tenacity import RetryCallState
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.entities import Document as MlflowDocument
-from mlflow.entities import LiveSpan, SpanEvent, SpanStatus, SpanStatusCode, SpanType
-from mlflow.exceptions import MlflowException
-from mlflow.langchain.utils.chat import (
+import qcflow
+from qcflow import MlflowClient
+from qcflow.entities import Document as MlflowDocument
+from qcflow.entities import LiveSpan, SpanEvent, SpanStatus, SpanStatusCode, SpanType
+from qcflow.exceptions import MlflowException
+from qcflow.langchain.utils.chat import (
     convert_lc_generation_to_chat_message,
     convert_lc_message_to_chat_message,
 )
-from mlflow.pyfunc.context import Context, maybe_set_prediction_context
-from mlflow.tracing.constant import SpanAttributeKey
-from mlflow.tracing.provider import detach_span_from_context, set_span_in_context
-from mlflow.tracing.utils import set_span_chat_messages
-from mlflow.tracing.utils.token import SpanWithToken
-from mlflow.types.chat import ChatMessage
-from mlflow.utils.autologging_utils import ExceptionSafeAbstractClass
+from qcflow.pyfunc.context import Context, maybe_set_prediction_context
+from qcflow.tracing.constant import SpanAttributeKey
+from qcflow.tracing.provider import detach_span_from_context, set_span_in_context
+from qcflow.tracing.utils import set_span_chat_messages
+from qcflow.tracing.utils.token import SpanWithToken
+from qcflow.types.chat import ChatMessage
+from qcflow.utils.autologging_utils import ExceptionSafeAbstractClass
 
 _logger = logging.getLogger(__name__)
 # Vector Search index column names
@@ -97,7 +97,7 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
         # NB: The tracer can handle multiple traces in parallel under multi-threading scenarios.
         # DO NOT use instance variables to manage the state of single trace.
         super().__init__()
-        self._mlflow_client = MlflowClient()
+        self._qcflow_client = MlflowClient()
         # run_id: (LiveSpan, OTel token)
         self._run_span_mapping: dict[str, SpanWithToken] = {}
         self._prediction_context = prediction_context
@@ -117,11 +117,11 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
         inputs: Optional[Union[str, dict[str, Any]]] = None,
         attributes: Optional[dict[str, Any]] = None,
     ) -> LiveSpan:
-        """Start MLflow Span (or Trace if it is root component)"""
+        """Start QCFlow Span (or Trace if it is root component)"""
         with maybe_set_prediction_context(self._prediction_context):
             parent = self._get_parent_span(parent_run_id)
             if parent:
-                span = self._mlflow_client.start_span(
+                span = self._qcflow_client.start_span(
                     name=span_name,
                     request_id=parent.request_id,
                     parent_id=parent.span_id,
@@ -136,7 +136,7 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
                     if self._prediction_context
                     else None
                 )
-                span = self._mlflow_client.start_trace(
+                span = self._qcflow_client.start_trace(
                     name=span_name,
                     span_type=span_type,
                     inputs=inputs,
@@ -156,7 +156,7 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
         2. If parent_run_id is provided, get the corresponding span from the run -> span mapping
         3. If none of the above, return None
         """
-        if active_span := mlflow.get_current_active_span():
+        if active_span := qcflow.get_current_active_span():
             return active_span
         elif parent_run_id:
             return self._get_span_by_run_id(parent_run_id)
@@ -170,10 +170,10 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
         attributes=None,
         status=SpanStatus(SpanStatusCode.OK),
     ):
-        """Close MLflow Span (or Trace if it is root component)"""
+        """Close QCFlow Span (or Trace if it is root component)"""
         try:
             with maybe_set_prediction_context(self._prediction_context):
-                self._mlflow_client.end_span(
+                self._qcflow_client.end_span(
                     request_id=span.request_id,
                     span_id=span.span_id,
                     outputs=outputs,
@@ -231,12 +231,12 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
             attributes=kwargs,
         )
 
-        mlflow_messages = [
+        qcflow_messages = [
             convert_lc_message_to_chat_message(msg)
             for message_list in messages
             for msg in message_list
         ]
-        set_span_chat_messages(span, mlflow_messages)
+        set_span_chat_messages(span, qcflow_messages)
 
     def on_llm_start(
         self,
@@ -263,8 +263,8 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
             attributes=kwargs,
         )
 
-        mlflow_messages = [ChatMessage(role="user", content=prompt) for prompt in prompts]
-        set_span_chat_messages(span, mlflow_messages)
+        qcflow_messages = [ChatMessage(role="user", content=prompt) for prompt in prompts]
+        set_span_chat_messages(span, qcflow_messages)
 
     def on_llm_new_token(
         self,
@@ -485,7 +485,7 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
             documents = [MlflowDocument.from_langchain_document(doc) for doc in documents]
         except Exception as e:
             _logger.debug(
-                f"Failed to convert LangChain Document to MLflow Document: {e}",
+                f"Failed to convert LangChain Document to QCFlow Document: {e}",
                 exc_info=True,
             )
         self._end_span(

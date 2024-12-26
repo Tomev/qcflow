@@ -3,13 +3,13 @@ from unittest import mock
 
 import pytest
 
-import mlflow.tracking.context.registry
-from mlflow.tracking.context.databricks_job_context import DatabricksJobRunContext
-from mlflow.tracking.context.databricks_notebook_context import DatabricksNotebookRunContext
-from mlflow.tracking.context.databricks_repo_context import DatabricksRepoRunContext
-from mlflow.tracking.context.default_context import DefaultRunContext
-from mlflow.tracking.context.git_context import GitRunContext
-from mlflow.tracking.context.registry import RunContextProviderRegistry, resolve_tags
+import qcflow.tracking.context.registry
+from qcflow.tracking.context.databricks_job_context import DatabricksJobRunContext
+from qcflow.tracking.context.databricks_notebook_context import DatabricksNotebookRunContext
+from qcflow.tracking.context.databricks_repo_context import DatabricksRepoRunContext
+from qcflow.tracking.context.default_context import DefaultRunContext
+from qcflow.tracking.context.git_context import GitRunContext
+from qcflow.tracking.context.registry import RunContextProviderRegistry, resolve_tags
 
 
 def test_run_context_provider_registry_register():
@@ -27,14 +27,14 @@ def test_run_context_provider_registry_register_entrypoints():
     mock_entrypoint.load.return_value = provider_class
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         registry = RunContextProviderRegistry()
         registry.register_entrypoints()
 
     assert set(registry) == {provider_class.return_value}
     mock_entrypoint.load.assert_called_once_with()
-    mock_get_group_all.assert_called_once_with("mlflow.run_context_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.run_context_provider")
 
 
 @pytest.mark.parametrize(
@@ -45,7 +45,7 @@ def test_run_context_provider_registry_register_entrypoints_handles_exception(ex
     mock_entrypoint.load.side_effect = exception
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         registry = RunContextProviderRegistry()
         # Check that the raised warning contains the message from the original exception
@@ -53,13 +53,13 @@ def test_run_context_provider_registry_register_entrypoints_handles_exception(ex
             registry.register_entrypoints()
 
     mock_entrypoint.load.assert_called_once_with()
-    mock_get_group_all.assert_called_once_with("mlflow.run_context_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.run_context_provider")
 
 
 def _currently_registered_run_context_provider_classes():
     return {
         provider.__class__
-        for provider in mlflow.tracking.context.registry._run_context_provider_registry
+        for provider in qcflow.tracking.context.registry._run_context_provider_registry
     }
 
 
@@ -82,23 +82,23 @@ def test_registry_instance_loads_entrypoints():
     mock_entrypoint.load.return_value = MockRunContext
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         # Entrypoints are registered at import time, so we need to reload the module to register the
         # entrypoint given by the mocked entrypoints.get_group_all
-        reload(mlflow.tracking.context.registry)
+        reload(qcflow.tracking.context.registry)
 
     assert MockRunContext in _currently_registered_run_context_provider_classes()
-    mock_get_group_all.assert_called_once_with("mlflow.run_context_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.run_context_provider")
 
 
 def test_run_context_provider_registry_with_installed_plugin(tmp_path, monkeypatch):
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
     monkeypatch.chdir(tmp_path)
 
-    reload(mlflow.tracking.context.registry)
+    reload(qcflow.tracking.context.registry)
 
-    from mlflow_test_plugin.run_context_provider import PluginRunContextProvider
+    from qcflow_test_plugin.run_context_provider import PluginRunContextProvider
 
     assert PluginRunContextProvider in _currently_registered_run_context_provider_classes()
 
@@ -133,7 +133,7 @@ def mock_run_context_providers():
 
     providers = [base_provider, skipped_provider, exception_provider, override_provider]
 
-    with mock.patch("mlflow.tracking.context.registry._run_context_provider_registry", providers):
+    with mock.patch("qcflow.tracking.context.registry._run_context_provider_registry", providers):
         yield
 
     skipped_provider.tags.assert_not_called()

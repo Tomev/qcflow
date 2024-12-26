@@ -7,11 +7,11 @@
 #' @param description Description for the registered model (Optional).
 #' @template roxlate-client
 #' @export
-mlflow_create_registered_model <- function(name, tags = NULL,
+qcflow_create_registered_model <- function(name, tags = NULL,
                                            description = NULL, client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "registered-models",
     "create",
     client = client,
@@ -34,10 +34,10 @@ mlflow_create_registered_model <- function(name, tags = NULL,
 #' @param name The name of the model to retrieve.
 #' @template roxlate-client
 #' @export
-mlflow_get_registered_model <- function(name, client = NULL) {
+qcflow_get_registered_model <- function(name, client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "registered-models",
     "get",
     client = client,
@@ -57,10 +57,10 @@ mlflow_get_registered_model <- function(name, client = NULL) {
 #' @param new_name The new name for the model.
 #' @template roxlate-client
 #' @export
-mlflow_rename_registered_model <- function(name, new_name, client = NULL) {
+qcflow_rename_registered_model <- function(name, new_name, client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "registered-models",
     "rename",
     client = client,
@@ -83,10 +83,10 @@ mlflow_rename_registered_model <- function(name, new_name, client = NULL) {
 #' @param description The updated description for this registered model.
 #' @template roxlate-client
 #' @export
-mlflow_update_registered_model <- function(name, description, client = NULL) {
+qcflow_update_registered_model <- function(name, description, client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "registered-models",
     "update",
     client = client,
@@ -108,10 +108,10 @@ mlflow_update_registered_model <- function(name, description, client = NULL) {
 #' @param name The name of the model to delete
 #' @template roxlate-client
 #' @export
-mlflow_delete_registered_model <- function(name, client = NULL) {
+qcflow_delete_registered_model <- function(name, client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "registered-models",
     "delete",
     client = client,
@@ -134,14 +134,14 @@ mlflow_delete_registered_model <- function(name, client = NULL) {
 #' @param order_by List of registered model properties to order by. Example: "name".
 #' @template roxlate-client
 #' @export
-mlflow_search_registered_models <- function(filter = NULL,
+qcflow_search_registered_models <- function(filter = NULL,
                                             max_results = 100,
                                             order_by = list(),
                                             page_token = NULL,
                                             client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "registered-models",
     "search",
     client = client,
@@ -170,10 +170,10 @@ mlflow_search_registered_models <- function(filter = NULL,
 #'   latest versions for ALL_STAGES.
 #' @template roxlate-client
 #' @export
-mlflow_get_latest_versions <- function(name, stages = list(), client = NULL) {
+qcflow_get_latest_versions <- function(name, stages = list(), client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "registered-models",
     "get-latest-versions",
     client = client,
@@ -192,20 +192,20 @@ mlflow_get_latest_versions <- function(name, stages = list(), client = NULL) {
 #'
 #' @param name Register model under this name.
 #' @param source URI indicating the location of the model artifacts.
-#' @param run_id MLflow run ID for correlation, if `source` was generated
-#'   by an experiment run in MLflow Tracking.
+#' @param run_id QCFlow run ID for correlation, if `source` was generated
+#'   by an experiment run in QCFlow Tracking.
 #' @param tags Additional metadata.
-#' @param run_link MLflow run link - This is the exact link of the run that
+#' @param run_link QCFlow run link - This is the exact link of the run that
 #'   generated this model version.
 #' @param description Description for model version.
 #' @template roxlate-client
 #' @export
-mlflow_create_model_version <- function(name, source, run_id = NULL,
+qcflow_create_model_version <- function(name, source, run_id = NULL,
                                         tags = NULL, run_link = NULL,
                                         description = NULL, client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "model-versions",
     "create",
     client = client,
@@ -229,10 +229,10 @@ mlflow_create_model_version <- function(name, source, run_id = NULL,
 #' @param version Model version number.
 #' @template roxlate-client
 #' @export
-mlflow_get_model_version <- function(name, version, client = NULL) {
+qcflow_get_model_version <- function(name, version, client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "model-versions",
     "get",
     client = client,
@@ -256,11 +256,11 @@ mlflow_get_model_version <- function(name, version, client = NULL) {
 #' @param description Description of this model version.
 #' @template roxlate-client
 #' @export
-mlflow_update_model_version <- function(name, version, description,
+qcflow_update_model_version <- function(name, version, description,
                                         client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "model-versions",
     "update",
     client = client,
@@ -282,10 +282,10 @@ mlflow_update_model_version <- function(name, version, description,
 #' @param version Model version number.
 #' @template roxlate-client
 #' @export
-mlflow_delete_model_version <- function(name, version, client = NULL) {
+qcflow_delete_model_version <- function(name, version, client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "model-versions",
     "delete",
     client = client,
@@ -308,12 +308,12 @@ mlflow_delete_model_version <- function(name, version, client = NULL) {
 #' @param archive_existing_versions (Optional)
 #' @template roxlate-client
 #' @export
-mlflow_transition_model_version_stage <- function(name, version, stage,
+qcflow_transition_model_version_stage <- function(name, version, stage,
                                                   archive_existing_versions = FALSE,
                                                   client = NULL) {
   client <- resolve_client(client)
 
-  response <- mlflow_rest(
+  response <- qcflow_rest(
     "model-versions",
     "transition-stage",
     client = client,
@@ -343,7 +343,7 @@ mlflow_transition_model_version_stage <- function(name, version, stage,
 #' @param stage Registered model stage.
 #' @template roxlate-client
 #' @export
-mlflow_set_model_version_tag <- function(name, version = NULL, key = NULL, value = NULL, stage = NULL, client = NULL) {
+qcflow_set_model_version_tag <- function(name, version = NULL, key = NULL, value = NULL, stage = NULL, client = NULL) {
     if (!is.null(version) && !is.null(stage)) {
         stop("version and stage cannot be set together",
             call. = FALSE
@@ -359,7 +359,7 @@ mlflow_set_model_version_tag <- function(name, version = NULL, key = NULL, value
     client <- resolve_client(client)
 
     if (!is.null(stage)) {
-        latest_versions <- mlflow_get_latest_versions(name = name, stages = list(stage))
+        latest_versions <- qcflow_get_latest_versions(name = name, stages = list(stage))
         if (is.null(latest_versions)) {
             stop(sprintf("Could not find any model version for %s stage", stage),
                 call. = FALSE
@@ -368,7 +368,7 @@ mlflow_set_model_version_tag <- function(name, version = NULL, key = NULL, value
         version <- latest_versions[[1]]$version
     }
 
-    response <- mlflow_rest(
+    response <- qcflow_rest(
         "model-versions", "set-tag",
         client = client, verb = "POST",
         data = list(

@@ -3,8 +3,8 @@ from unittest import mock
 
 import pytest
 
-from mlflow.deployments import get_deploy_client
-from mlflow.exceptions import MlflowException
+from qcflow.deployments import get_deploy_client
+from qcflow.exceptions import MlflowException
 
 
 @pytest.fixture(autouse=True)

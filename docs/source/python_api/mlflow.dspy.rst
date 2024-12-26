@@ -1,7 +1,7 @@
-mlflow.dspy
+qcflow.dspy
 ==================
 
-.. automodule:: mlflow.dspy
+.. automodule:: qcflow.dspy
     :members:
     :undoc-members:
     :show-inheritance:

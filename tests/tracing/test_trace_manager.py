@@ -2,8 +2,8 @@ import time
 from threading import Thread
 from typing import Optional
 
-from mlflow.entities import LiveSpan, Span, Trace
-from mlflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.entities import LiveSpan, Span, Trace
+from qcflow.tracing.trace_manager import InMemoryTraceManager
 
 from tests.tracing.helper import create_mock_otel_span, create_test_trace_info
 
@@ -104,7 +104,7 @@ def test_add_and_pop_span_thread_safety():
 def test_traces_buffer_expires_after_ttl(monkeypatch):
     # Clear singleton instance to patch TTL
     InMemoryTraceManager._instance = None
-    monkeypatch.setenv("MLFLOW_TRACE_BUFFER_TTL_SECONDS", "1")
+    monkeypatch.setenv("QCFLOW_TRACE_BUFFER_TTL_SECONDS", "1")
 
     trace_manager = InMemoryTraceManager.get_instance()
     request_id_1 = "tr-1"
@@ -127,7 +127,7 @@ def test_traces_buffer_expires_after_ttl(monkeypatch):
 def test_traces_buffer_max_size_limit(monkeypatch):
     # Clear singleton instance to patch buffer size
     InMemoryTraceManager._instance = None
-    monkeypatch.setenv("MLFLOW_TRACE_BUFFER_MAX_SIZE", "1")
+    monkeypatch.setenv("QCFLOW_TRACE_BUFFER_MAX_SIZE", "1")
 
     trace_manager = InMemoryTraceManager.get_instance()
     request_id_1 = "tr-1"

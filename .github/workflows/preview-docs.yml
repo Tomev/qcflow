@@ -5,7 +5,7 @@ on:
 
 jobs:
   main:
-    if: github.repository == 'mlflow/mlflow'
+    if: github.repository == 'qcflow/qcflow'
     runs-on: ubuntu-latest
     permissions:
       statuses: read # preview_docs.py checks PR statuses

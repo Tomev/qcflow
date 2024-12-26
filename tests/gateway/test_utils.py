@@ -1,7 +1,7 @@
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.utils import (
     SearchRoutesToken,
     _is_valid_uri,
     assemble_uri_path,
@@ -87,7 +87,7 @@ def test_assemble_uri_path(paths, expected):
 
 
 def test_set_gateway_uri(monkeypatch):
-    monkeypatch.setattr("mlflow.gateway.utils._gateway_uri", None)
+    monkeypatch.setattr("qcflow.gateway.utils._gateway_uri", None)
 
     valid_uri = "http://localhost"
     set_gateway_uri(valid_uri)
@@ -99,17 +99,17 @@ def test_set_gateway_uri(monkeypatch):
 
 
 def test_get_gateway_uri(monkeypatch):
-    monkeypatch.setattr("mlflow.gateway.utils._gateway_uri", None)
-    monkeypatch.delenv("MLFLOW_GATEWAY_URI", raising=False)
+    monkeypatch.setattr("qcflow.gateway.utils._gateway_uri", None)
+    monkeypatch.delenv("QCFLOW_GATEWAY_URI", raising=False)
 
     with pytest.raises(MlflowException, match="No Gateway server uri has been set"):
         get_gateway_uri()
 
     valid_uri = "http://localhost"
-    monkeypatch.setattr("mlflow.gateway.utils._gateway_uri", valid_uri)
+    monkeypatch.setattr("qcflow.gateway.utils._gateway_uri", valid_uri)
     assert get_gateway_uri() == valid_uri
 
-    monkeypatch.delenv("MLFLOW_GATEWAY_URI", raising=False)
+    monkeypatch.delenv("QCFLOW_GATEWAY_URI", raising=False)
     set_gateway_uri(valid_uri)
     assert get_gateway_uri() == valid_uri
 

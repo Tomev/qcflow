@@ -1,5 +1,5 @@
 import { gql, NetworkStatus } from '@apollo/client';
-import { useQuery } from '@mlflow/mlflow/src/common/utils/graphQLHooks';
+import { useQuery } from '@qcflow/qcflow/src/common/utils/graphQLHooks';
 import { EXPERIMENT_RUNS_METRIC_AUTO_REFRESH_INTERVAL } from '../../../utils/MetricsUtils';
 import { groupBy, keyBy } from 'lodash';
 import { useEffect, useMemo } from 'react';
@@ -10,8 +10,8 @@ import { useIntl } from 'react-intl';
 
 const GET_METRIC_HISTORY_BULK_INTERVAL = gql`
   query GetMetricHistoryBulkInterval($data: MlflowGetMetricHistoryBulkIntervalInput!)
-  @component(name: "MLflow.ExperimentRunTracking") {
-    mlflowGetMetricHistoryBulkInterval(input: $data) {
+  @component(name: "QCFlow.ExperimentRunTracking") {
+    qcflowGetMetricHistoryBulkInterval(input: $data) {
       __typename
       metrics {
         timestamp
@@ -51,7 +51,7 @@ export const useSampledMetricHistoryGraphQL = ({
       notifyOnNetworkStatusChange: true,
       pollInterval: autoRefreshEnabled ? EXPERIMENT_RUNS_METRIC_AUTO_REFRESH_INTERVAL : undefined,
       onCompleted(data) {
-        if (data.mlflowGetMetricHistoryBulkInterval?.apiError?.code === 'RESOURCE_DOES_NOT_EXIST') {
+        if (data.qcflowGetMetricHistoryBulkInterval?.apiError?.code === 'RESOURCE_DOES_NOT_EXIST') {
           Utils.displayGlobalErrorNotification(
             intl.formatMessage({
               defaultMessage: 'Requested resource does not exist',
@@ -59,8 +59,8 @@ export const useSampledMetricHistoryGraphQL = ({
                 'Error message displayed when a requested run does not exist while fetching sampled metric data',
             }),
           );
-        } else if (data.mlflowGetMetricHistoryBulkInterval?.apiError?.message) {
-          Utils.logErrorAndNotifyUser(new Error(data.mlflowGetMetricHistoryBulkInterval.apiError.message));
+        } else if (data.qcflowGetMetricHistoryBulkInterval?.apiError?.message) {
+          Utils.logErrorAndNotifyUser(new Error(data.qcflowGetMetricHistoryBulkInterval.apiError.message));
         }
       },
       variables: {
@@ -85,7 +85,7 @@ export const useSampledMetricHistoryGraphQL = ({
 
   const resultsByRunUuid = useMemo<Record<string, SampledMetricsByRun>>(() => {
     if (data) {
-      const metrics = data?.mlflowGetMetricHistoryBulkInterval?.metrics;
+      const metrics = data?.qcflowGetMetricHistoryBulkInterval?.metrics;
       const metricsByRunId = groupBy(metrics, 'runId');
 
       // Transform the data into the already existing format
@@ -119,6 +119,6 @@ export const useSampledMetricHistoryGraphQL = ({
     isRefreshing,
     refresh: refetch,
     error,
-    apiError: data?.mlflowGetMetricHistoryBulkInterval?.apiError,
+    apiError: data?.qcflowGetMetricHistoryBulkInterval?.apiError,
   };
 };

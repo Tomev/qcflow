@@ -1,7 +1,7 @@
-mlflow.langchain
+qcflow.langchain
 ==================
 
-.. automodule:: mlflow.langchain
+.. automodule:: qcflow.langchain
     :members:
     :undoc-members:
     :show-inheritance:

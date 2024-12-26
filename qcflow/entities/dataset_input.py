@@ -1,9 +1,9 @@
 from typing import Optional
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.dataset import Dataset
-from mlflow.entities.input_tag import InputTag
-from mlflow.protos.service_pb2 import DatasetInput as ProtoDatasetInput
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.dataset import Dataset
+from qcflow.entities.input_tag import InputTag
+from qcflow.protos.service_pb2 import DatasetInput as ProtoDatasetInput
 
 
 class DatasetInput(_MlflowObject):

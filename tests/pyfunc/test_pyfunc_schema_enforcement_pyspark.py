@@ -19,10 +19,10 @@ from pyspark.sql.types import (
 )
 from pyspark.testing import assertDataFrameEqual
 
-from mlflow.exceptions import MlflowException
-from mlflow.models.utils import _enforce_schema
-from mlflow.types import ColSpec, DataType, Schema
-from mlflow.types.schema import Array, Object, Property
+from qcflow.exceptions import MlflowException
+from qcflow.models.utils import _enforce_schema
+from qcflow.types import ColSpec, DataType, Schema
+from qcflow.types.schema import Array, Object, Property
 
 
 @pytest.fixture(scope="module")

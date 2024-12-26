@@ -1,13 +1,13 @@
 from abc import ABCMeta, abstractmethod
 
-from mlflow.utils.annotations import developer_stable
+from qcflow.utils.annotations import developer_stable
 
 
 @developer_stable
 class FlavorBackend:
     """
     Abstract class for Flavor Backend.
-    This class defines the API interface for local model deployment of MLflow model flavors.
+    This class defines the API interface for local model deployment of QCFlow model flavors.
     """
 
     __metaclass__ = ABCMeta
@@ -18,11 +18,11 @@ class FlavorBackend:
     @abstractmethod
     def predict(self, model_uri, input_path, output_path, content_type):
         """
-        Generate predictions using a saved MLflow model referenced by the given URI.
+        Generate predictions using a saved QCFlow model referenced by the given URI.
         Input and output are read from and written to a file or stdin / stdout.
 
         Args:
-            model_uri: URI pointing to the MLflow model to be used for scoring.
+            model_uri: URI pointing to the QCFlow model to be used for scoring.
             input_path: Path to the file with input data. If not specified, data is read from
                         stdin.
             output_path: Path to the file with output predictions. If not specified, data is
@@ -43,10 +43,10 @@ class FlavorBackend:
         stderr=None,
     ):
         """
-        Serve the specified MLflow model locally.
+        Serve the specified QCFlow model locally.
 
         Args:
-            model_uri: URI pointing to the MLflow model to be used for scoring.
+            model_uri: URI pointing to the QCFlow model to be used for scoring.
             port: Port to use for the model deployment.
             host: Host to use for the model deployment. Defaults to ``localhost``.
             timeout: Timeout in seconds to serve a request. Defaults to 60.
@@ -67,12 +67,12 @@ class FlavorBackend:
 
     @abstractmethod
     def build_image(
-        self, model_uri, image_name, install_mlflow, mlflow_home, enable_mlserver, base_image=None
+        self, model_uri, image_name, install_qcflow, qcflow_home, enable_mlserver, base_image=None
     ): ...
 
     @abstractmethod
     def generate_dockerfile(
-        self, model_uri, output_path, install_mlflow, mlflow_home, enable_mlserver, base_image=None
+        self, model_uri, output_path, install_qcflow, qcflow_home, enable_mlserver, base_image=None
     ): ...
 
     @abstractmethod

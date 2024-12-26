@@ -2,8 +2,8 @@ from unittest import mock
 
 import pytest
 
-from mlflow.deployments import get_deploy_client
-from mlflow.deployments.mlflow import MlflowDeploymentClient
+from qcflow.deployments import get_deploy_client
+from qcflow.deployments.qcflow import MlflowDeploymentClient
 
 
 def test_get_deploy_client():

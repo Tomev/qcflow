@@ -18,8 +18,8 @@ import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
 import { RegisteredModelTag } from '../sdk/ModelRegistryMessages';
 import { Provider } from 'react-redux';
-import { mountWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
-import { renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react17';
+import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
+import { renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react17';
 import { DesignSystemProvider } from '@databricks/design-system';
 describe('ModelView', () => {
   let wrapper: any;
@@ -130,7 +130,7 @@ describe('ModelView', () => {
     const mockUpdatePageTitle = jest.fn();
     Utils.updatePageTitle = mockUpdatePageTitle;
     wrapper = createComponentInstance(minimalProps);
-    expect(mockUpdatePageTitle.mock.calls[0][0]).toBe('Model A - MLflow Model');
+    expect(mockUpdatePageTitle.mock.calls[0][0]).toBe('Model A - QCFlow Model');
   });
   test('should disable dropdown delete menu item when model has active versions', () => {
     const props = {

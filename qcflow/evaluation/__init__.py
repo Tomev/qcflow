@@ -1,7 +1,7 @@
-from mlflow.entities.assessment_source import AssessmentSource, AssessmentSourceType
-from mlflow.evaluation.assessment import Assessment
-from mlflow.evaluation.evaluation import Evaluation
-from mlflow.evaluation.fluent import log_evaluations
+from qcflow.entities.assessment_source import AssessmentSource, AssessmentSourceType
+from qcflow.evaluation.assessment import Assessment
+from qcflow.evaluation.evaluation import Evaluation
+from qcflow.evaluation.fluent import log_evaluations
 
 __all__ = [
     "Assessment",

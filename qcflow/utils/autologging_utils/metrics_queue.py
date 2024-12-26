@@ -1,8 +1,8 @@
 import concurrent.futures
 from threading import RLock
 
-from mlflow.entities import Metric
-from mlflow.tracking.client import MlflowClient
+from qcflow.entities import Metric
+from qcflow.tracking.client import MlflowClient
 
 _metrics_queue_lock = RLock()
 _metrics_queue = []
@@ -22,7 +22,7 @@ def _assoc_list_to_map(lst):
 
 
 def flush_metrics_queue():
-    """Flush the metric queue and log contents in batches to MLflow.
+    """Flush the metric queue and log contents in batches to QCFlow.
 
     Queue is divided into batches according to run id.
     """
@@ -61,7 +61,7 @@ def add_to_metrics_queue(key, value, step, time, run_id):
         value: float, the metrics value.
         step: int, the step of current metric.
         time: int, the timestamp of current metric.
-        run_id: string, the run id of the associated mlflow run.
+        run_id: string, the run id of the associated qcflow run.
     """
     met = Metric(key=key, value=value, timestamp=time, step=step)
     _metrics_queue.append((run_id, met))

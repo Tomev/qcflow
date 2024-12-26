@@ -42,7 +42,7 @@ const getTestExperiment = async (isCompressed: boolean) => {
     : testSerializedShareViewState;
   return {
     experimentId: 'experiment_1',
-    tags: [{ key: `mlflow.sharedViewState.${testSerializedStateHash}`, value: tagValue }],
+    tags: [{ key: `qcflow.sharedViewState.${testSerializedStateHash}`, value: tagValue }],
   } as ExperimentEntity;
 };
 
@@ -137,7 +137,7 @@ describe('useSharedExperimentViewState', () => {
 
       const brokenExperiment = {
         ...testExperiment,
-        tags: [{ key: `mlflow.sharedViewState.${testSerializedStateHash}`, value: 'broken' }],
+        tags: [{ key: `qcflow.sharedViewState.${testSerializedStateHash}`, value: 'broken' }],
       } as ExperimentEntity;
 
       const { result } = renderHookWithIntl(() => useSharedExperimentViewState(uiStateSetterMock, brokenExperiment));

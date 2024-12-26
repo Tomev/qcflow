@@ -1,9 +1,9 @@
-from mlflow.exceptions import MlflowException
-from mlflow.protos import databricks_pb2
-from mlflow.tracking.client import MlflowClient
-from mlflow.tracking.default_experiment.abstract_context import DefaultExperimentProvider
-from mlflow.utils import databricks_utils
-from mlflow.utils.mlflow_tags import MLFLOW_EXPERIMENT_SOURCE_ID, MLFLOW_EXPERIMENT_SOURCE_TYPE
+from qcflow.exceptions import MlflowException
+from qcflow.protos import databricks_pb2
+from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.default_experiment.abstract_context import DefaultExperimentProvider
+from qcflow.utils import databricks_utils
+from qcflow.utils.qcflow_tags import QCFLOW_EXPERIMENT_SOURCE_ID, QCFLOW_EXPERIMENT_SOURCE_TYPE
 
 
 class DatabricksNotebookExperimentProvider(DefaultExperimentProvider):
@@ -19,11 +19,11 @@ class DatabricksNotebookExperimentProvider(DefaultExperimentProvider):
         source_notebook_id = databricks_utils.get_notebook_id()
         source_notebook_name = databricks_utils.get_notebook_path()
         tags = {
-            MLFLOW_EXPERIMENT_SOURCE_ID: source_notebook_id,
+            QCFLOW_EXPERIMENT_SOURCE_ID: source_notebook_id,
         }
 
         if databricks_utils.is_in_databricks_repo_notebook():
-            tags[MLFLOW_EXPERIMENT_SOURCE_TYPE] = "REPO_NOTEBOOK"
+            tags[QCFLOW_EXPERIMENT_SOURCE_TYPE] = "REPO_NOTEBOOK"
 
         # With the presence of the source id, the following is a get or create in which it will
         # return the corresponding experiment if one exists for the repo notebook.

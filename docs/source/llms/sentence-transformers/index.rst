@@ -1,4 +1,4 @@
-MLflow Sentence-Transformers Flavor
+QCFlow Sentence-Transformers Flavor
 ===================================
 
 .. attention::
@@ -36,8 +36,8 @@ Let's take a look at a very basic representation of how the Sentence-Transformer
 
    Sentence-Transformers Model Architecture Overview
 
-Integrating Sentence-Transformers with MLflow, a platform dedicated to streamlining the entire machine learning lifecycle, enhances the experiment tracking and deployment 
-capabilities for these specialized NLP models. MLflow's support for Sentence-Transformers enables practitioners to effectively manage experiments, track different model versions, 
+Integrating Sentence-Transformers with QCFlow, a platform dedicated to streamlining the entire machine learning lifecycle, enhances the experiment tracking and deployment 
+capabilities for these specialized NLP models. QCFlow's support for Sentence-Transformers enables practitioners to effectively manage experiments, track different model versions, 
 and deploy models for various NLP tasks with ease.
 
 Sentence-Transformers offers:
@@ -47,26 +47,26 @@ Sentence-Transformers offers:
 - **Ease of Use**: Simplified API, making it accessible for both NLP experts and newcomers.
 - **Custom Training and Fine-Tuning**: Flexibility to fine-tune models on specific datasets or train new models from scratch for tailored NLP solutions.
 
-With MLflow's Sentence-Transformers flavor, users benefit from:
+With QCFlow's Sentence-Transformers flavor, users benefit from:
 
 - **Streamlined Experiment Tracking**: Easily log parameters, metrics, and sentence embedding models during the training and fine-tuning process.
 - **Hassle-Free Deployment**: Deploy sentence embedding models for various applications with straightforward API calls.
 - **Broad Model Compatibility**: Support for a range of sentence embedding models from the Sentence-Transformers library, ensuring access to the latest in embedding technology.
 
-Whether you're working on semantic text similarity, clustering, or information retrieval, MLflow's integration with Sentence-Transformers provides a robust and efficient 
+Whether you're working on semantic text similarity, clustering, or information retrieval, QCFlow's integration with Sentence-Transformers provides a robust and efficient 
 pathway for incorporating advanced sentence-level understanding into your applications.
 
 Features
 --------
 
-With MLflow's Sentence-Transformers flavor, users can:
+With QCFlow's Sentence-Transformers flavor, users can:
 
-- **Save** and **log** Sentence-Transformer models within MLflow with the respective APIs: :py:func:`mlflow.sentence_transformers.save_model` and :py:func:`mlflow.sentence_transformers.log_model`.
+- **Save** and **log** Sentence-Transformer models within QCFlow with the respective APIs: :py:func:`qcflow.sentence_transformers.save_model` and :py:func:`qcflow.sentence_transformers.log_model`.
 - Track detailed experiments, including **parameters**, **metrics**, and **artifacts** associated with fine tuning runs.
 - `Deploy <../../deployment/index.html>`_ sentence embedding models for practical applications.
-- Utilize the :py:class:`mlflow.pyfunc.PythonModel` flavor for generic Python function inference, enabling complex and powerful custom ML solutions.
+- Utilize the :py:class:`qcflow.pyfunc.PythonModel` flavor for generic Python function inference, enabling complex and powerful custom ML solutions.
 
-What can you do with Sentence Transformers and MLflow?
+What can you do with Sentence Transformers and QCFlow?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 One of the more powerful applications that can be built with these tools is a semantic search engine. By using readily available open source 
@@ -80,22 +80,22 @@ An example high-level architecture for such an application stack is shown below:
    :width: 90%
    :align: center
 
-   A basic architecture for a semantic search engine built with Sentence Transformers and MLflow
+   A basic architecture for a semantic search engine built with Sentence Transformers and QCFlow
 
 
 Deployment Made Easy
 ^^^^^^^^^^^^^^^^^^^^
 
-Once a model is trained, it needs to be deployed for inference. MLflow's integration with Sentence Transformers simplifies this by providing 
-functions such as :py:func:`mlflow.sentence_transformers.load_model` and :py:func:`mlflow.pyfunc.load_model`, which allow for easy model serving.
-You can read more about `deploying models with MLflow <../../deployment/index.html>`_, find further information on 
-`using the deployments API <../../cli.html#mlflow-deployments>`_, and `starting a local model serving endpoint <../../cli.html#mlflow-models-serve>`_ to get a 
-deeper understanding of the deployment options that MLflow has available.
+Once a model is trained, it needs to be deployed for inference. QCFlow's integration with Sentence Transformers simplifies this by providing 
+functions such as :py:func:`qcflow.sentence_transformers.load_model` and :py:func:`qcflow.pyfunc.load_model`, which allow for easy model serving.
+You can read more about `deploying models with QCFlow <../../deployment/index.html>`_, find further information on 
+`using the deployments API <../../cli.html#qcflow-deployments>`_, and `starting a local model serving endpoint <../../cli.html#qcflow-models-serve>`_ to get a 
+deeper understanding of the deployment options that QCFlow has available.
 
-Getting Started with the MLflow Sentence Transformers Flavor - Tutorials and Guides
+Getting Started with the QCFlow Sentence Transformers Flavor - Tutorials and Guides
 -----------------------------------------------------------------------------------
 
-Below, you will find a number of guides that focus on different ways that you can leverage the power of the `sentence-transformers` library, leveraging MLflow's 
+Below, you will find a number of guides that focus on different ways that you can leverage the power of the `sentence-transformers` library, leveraging QCFlow's 
 APIs for tracking and inference capabilities. 
 
 
@@ -121,7 +121,7 @@ Introductory Tutorial
                         Sentence Transformers Quickstart
                     </div>
                     <p>
-                        Learn the very basics of using the Sentence Transformers package with MLflow to generate sentence embeddings from a logged model in 
+                        Learn the very basics of using the Sentence Transformers package with QCFlow to generate sentence embeddings from a logged model in 
                         both native and generic Python function formats.
                     </p>
                 </a>
@@ -173,7 +173,7 @@ Advanced Tutorials
 `Detailed Documentation <guide/index.html>`_
 --------------------------------------------
 
-To learn more about the details of the MLflow flavor for sentence transformers, delve into the comprehensive guide below.
+To learn more about the details of the QCFlow flavor for sentence transformers, delve into the comprehensive guide below.
 
 .. raw:: html
 

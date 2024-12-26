@@ -19,7 +19,7 @@ import { Provider } from 'react-redux';
 import { mockRunInfo } from '../../experiment-tracking/utils/test-utils/ReduxStoreFixtures';
 import TrackingRouters from '../../experiment-tracking/routes';
 import { ModelRegistryRoutes } from '../routes';
-import { mountWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 import { DesignSystemContainer } from '../../common/components/DesignSystemContainer';
 import { Services } from '../services';
 import { shouldShowModelsNextUI } from '../../common/utils/FeatureUtils';
@@ -129,7 +129,7 @@ describe('ModelVersionView', () => {
   });
   test('run link renders if set', () => {
     const runLink =
-      'https://other.mlflow.hosted.instance.com/experiments/18722387/runs/d2c09dbd056c4d9c9289b854f491be10';
+      'https://other.qcflow.hosted.instance.com/experiments/18722387/runs/d2c09dbd056c4d9c9289b854f491be10';
     const modelVersion = mockModelVersionDetailed(
       'Model A',
       1,
@@ -176,7 +176,7 @@ describe('ModelVersionView', () => {
     const mockUpdatePageTitle = jest.fn();
     Utils.updatePageTitle = mockUpdatePageTitle;
     wrapper = createComponentInstance(minimalProps);
-    expect(mockUpdatePageTitle.mock.calls[0][0]).toBe('Model A v1 - MLflow Model');
+    expect(mockUpdatePageTitle.mock.calls[0][0]).toBe('Model A v1 - QCFlow Model');
   });
   test('should tags rendered in the UI', () => {
     wrapper = createComponentInstance(minimalProps);

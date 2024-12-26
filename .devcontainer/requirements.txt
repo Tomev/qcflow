@@ -86,7 +86,7 @@ click==8.1.7
     #   sphinx-click
     #   typer
     #   uvicorn
-clint @ git+https://github.com/mlflow/mlflow.git#subdirectory=dev/clint
+clint @ git+https://github.com/qcflow/qcflow.git#subdirectory=dev/clint
     # via -r lint-requirements.txt
 cloudpickle==3.1.0
     # via

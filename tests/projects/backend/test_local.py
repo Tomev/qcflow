@@ -1,15 +1,15 @@
 import os
 from unittest import mock
 
-from mlflow.projects.backend.local import _get_docker_artifact_storage_cmd_and_envs
+from qcflow.projects.backend.local import _get_docker_artifact_storage_cmd_and_envs
 
 
 def test_docker_s3_artifact_cmd_and_envs_from_env(monkeypatch):
     mock_env = {
         "AWS_SECRET_ACCESS_KEY": "mock_secret",
         "AWS_ACCESS_KEY_ID": "mock_access_key",
-        "MLFLOW_S3_ENDPOINT_URL": "mock_endpoint",
-        "MLFLOW_S3_IGNORE_TLS": "false",
+        "QCFLOW_S3_ENDPOINT_URL": "mock_endpoint",
+        "QCFLOW_S3_IGNORE_TLS": "false",
     }
     monkeypatch.setenvs(mock_env)
     with mock.patch("posixpath.exists", return_value=False):
@@ -23,8 +23,8 @@ def test_docker_s3_artifact_cmd_and_envs_from_home(monkeypatch):
         [
             "AWS_SECRET_ACCESS_KEY",
             "AWS_ACCESS_KEY_ID",
-            "MLFLOW_S3_ENDPOINT_URL",
-            "MLFLOW_S3_IGNORE_TLS",
+            "QCFLOW_S3_ENDPOINT_URL",
+            "QCFLOW_S3_IGNORE_TLS",
         ],
         raising=False,
     )
@@ -63,9 +63,9 @@ def test_docker_gcs_artifact_cmd_and_envs_from_home(monkeypatch):
 
 def test_docker_hdfs_artifact_cmd_and_envs_from_home(monkeypatch):
     mock_env = {
-        "MLFLOW_KERBEROS_TICKET_CACHE": "/mock_ticket_cache",
-        "MLFLOW_KERBEROS_USER": "mock_krb_user",
-        "MLFLOW_PYARROW_EXTRA_CONF": "mock_pyarrow_extra_conf",
+        "QCFLOW_KERBEROS_TICKET_CACHE": "/mock_ticket_cache",
+        "QCFLOW_KERBEROS_USER": "mock_krb_user",
+        "QCFLOW_PYARROW_EXTRA_CONF": "mock_pyarrow_extra_conf",
     }
     hdfs_uri = "hdfs://host:8020/path"
     monkeypatch.setenvs(mock_env)
@@ -76,7 +76,7 @@ def test_docker_hdfs_artifact_cmd_and_envs_from_home(monkeypatch):
 
 def test_docker_local_artifact_cmd_and_envs():
     host_path_expected = os.path.abspath("./mlruns")
-    container_path_expected = "/mlflow/projects/code/mlruns"
+    container_path_expected = "/qcflow/projects/code/mlruns"
     cmds, envs = _get_docker_artifact_storage_cmd_and_envs("file:./mlruns")
     assert cmds == ["-v", f"{host_path_expected}:{container_path_expected}"]
     assert envs == {}

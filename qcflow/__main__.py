@@ -1,3 +1,3 @@
-from mlflow.cli import cli
+from qcflow.cli import cli
 
 cli.main()

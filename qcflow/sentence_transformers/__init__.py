@@ -9,50 +9,50 @@ import pandas as pd
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature, infer_pip_requirements
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.transformers.llm_inference_utils import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature, infer_pip_requirements
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.transformers.llm_inference_utils import (
     _LLM_INFERENCE_TASK_EMBEDDING,
     _LLM_V1_EMBEDDING_INPUT_KEY,
     postprocess_output_for_llm_v1_embedding_task,
 )
-from mlflow.types.llm import (
+from qcflow.types.llm import (
     EMBEDDING_MODEL_INPUT_SCHEMA,
     EMBEDDING_MODEL_OUTPUT_SCHEMA,
 )
-from mlflow.types.schema import ColSpec, Schema, TensorSpec
-from mlflow.utils.annotations import experimental
-from mlflow.utils.docstring_utils import (
+from qcflow.types.schema import ColSpec, Schema, TensorSpec
+from qcflow.utils.annotations import experimental
+from qcflow.utils.docstring_utils import (
     LOG_MODEL_PARAM_DOCS,
     docstring_version_compatibility_warning,
     format_docstring,
 )
-from mlflow.utils.environment import (
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _download_artifact_from_uri,
     _get_flavor_configuration_from_uri,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "sentence_transformers"
 _TRANSFORMER_SOURCE_MODEL_NAME_KEY = "source_model_name"
@@ -75,7 +75,7 @@ def get_default_pip_requirements() -> list[str]:
     Retrieves the set of minimal dependencies for the ``sentence_transformers`` flavor.
 
     Returns:
-        A list of default pip requirements for MLflow Models that have been produced with the
+        A list of default pip requirements for QCFlow Models that have been produced with the
         ``sentence-transformers`` flavor. Calls to :py:func:`save_model()` and
         :py:func:`log_model()` produce a pip environment that contain these
         requirements at a minimum.
@@ -88,10 +88,10 @@ def get_default_pip_requirements() -> list[str]:
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced with the
+        The default Conda environment for QCFlow Models produced with the
         ``sentence_transformers`` flavor.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @experimental
@@ -123,7 +123,7 @@ def save_model(
     task: Optional[str] = None,
     inference_config: Optional[dict[str, Any]] = None,
     code_paths: Optional[list[str]] = None,
-    mlflow_model: Optional[Model] = None,
+    qcflow_model: Optional[Model] = None,
     signature: Optional[ModelSignature] = None,
     input_example: Optional[ModelInputExample] = None,
     pip_requirements: Optional[Union[list[str], str]] = None,
@@ -136,7 +136,7 @@ def save_model(
     .. note::
 
         Saving Sentence Transformers models with custom code (i.e. models that require
-        ``trust_remote_code=True``) is supported in MLflow 2.12.0 and above.
+        ``trust_remote_code=True``) is supported in QCFlow 2.12.0 and above.
 
 
     Save a trained ``sentence-transformers`` model to a path on the local file system.
@@ -144,7 +144,7 @@ def save_model(
     Args:
         model: A trained ``sentence-transformers`` model.
         path: Local path destination for the serialized model to be saved.
-        task: MLflow inference task type for ``sentence-transformers`` model. Candidate task type
+        task: QCFlow inference task type for ``sentence-transformers`` model. Candidate task type
             is `llm/v1/embeddings`.
         inference_config:
             A dict of valid inference parameters that can be applied to a ``sentence-transformer``
@@ -152,18 +152,18 @@ def save_model(
             These arguments are used exclusively for the case of loading the model as a ``pyfunc``
             Model or for use in Spark.
             These values are not applied to a returned model from a call to
-            ``mlflow.sentence_transformers.load_model()``
+            ``qcflow.sentence_transformers.load_model()``
         code_paths: {{ code_paths }}
-        mlflow_model: An MLflow model object that specifies the flavor that this model is being
+        qcflow_model: An QCFlow model object that specifies the flavor that this model is being
             added to.
-        signature: an instance of the :py:class:`ModelSignature <mlflow.models.ModelSignature>`
+        signature: an instance of the :py:class:`ModelSignature <qcflow.models.ModelSignature>`
             class that describes the model's inputs and outputs. If not specified but an
             ``input_example`` is supplied, a signature will be automatically inferred
             based on the supplied input example and model. If both ``signature`` and
             ``input_example`` are not specified or the automatic signature inference
             fails, a default signature will be adopted. To prevent a signature from being
             adopted, set ``signature`` to ``False``. To manually infer a model signature,
-            call :py:func:`infer_signature() <mlflow.models.infer_signature>` on datasets
+            call :py:func:`infer_signature() <qcflow.models.infer_signature>` on datasets
             with valid model inputs and valid model outputs.
         input_example: {{ input_example }}
         pip_requirements: {{ pip_requirements }}
@@ -183,10 +183,10 @@ def save_model(
 
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, str(path))
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     saved_example = _save_example(
-        mlflow_model, input_example, path, no_conversion=example_no_conversion
+        qcflow_model, input_example, path, no_conversion=example_no_conversion
     )
 
     if task is not None:
@@ -202,19 +202,19 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
     model_config = None
     if task is not None:
-        mlflow_model.metadata = _verify_task_and_update_metadata(task, mlflow_model.metadata)
+        qcflow_model.metadata = _verify_task_and_update_metadata(task, qcflow_model.metadata)
         model_config = {"task": _LLM_INFERENCE_TASK_EMBEDDING}
 
     model.save(str(model_data_path))
 
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.sentence_transformers",
+        qcflow_model,
+        loader_module="qcflow.sentence_transformers",
         data=SENTENCE_TRANSFORMERS_DATA_PATH,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
@@ -222,15 +222,15 @@ def save_model(
         code=code_dir_subpath,
     )
 
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         sentence_transformers_version=sentence_transformers.__version__,
         code=code_dir_subpath,
         **_get_transformers_model_metadata(model),
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(str(path.joinpath(MLMODEL_FILE_NAME)))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(str(path.joinpath(MLMODEL_FILE_NAME)))
 
     if inference_config:
         path.joinpath(_INFERENCE_CONFIG_PATH).write_text(json.dumps(inference_config))
@@ -322,26 +322,26 @@ def log_model(
     .. note::
 
         Logging Sentence Transformers models with custom code (i.e. models that require
-        ``trust_remote_code=True``) is supported in MLflow 2.12.0 and above.
+        ``trust_remote_code=True``) is supported in QCFlow 2.12.0 and above.
 
-    Log a ``sentence_transformers`` model as an MLflow artifact for the current run.
+    Log a ``sentence_transformers`` model as an QCFlow artifact for the current run.
 
     .. code-block:: python
 
         # An example of using log_model for a sentence-transformers model and architecture:
 
         from sentence_transformers import SentenceTransformer
-        import mlflow
+        import qcflow
 
         model = SentenceTransformer("all-MiniLM-L6-v2")
-        data = "MLflow is awesome!"
-        signature = mlflow.models.infer_signature(
+        data = "QCFlow is awesome!"
+        signature = qcflow.models.infer_signature(
             model_input=data,
             model_output=model.encode(data),
         )
 
-        with mlflow.start_run():
-            mlflow.sentence_transformers.log_model(
+        with qcflow.start_run():
+            qcflow.sentence_transformers.log_model(
                 model=model,
                 artifact_path="sbert_model",
                 signature=signature,
@@ -353,7 +353,7 @@ def log_model(
     Args:
         model: A trained ``sentence-transformers`` model.
         artifact_path: Local path destination for the serialized model to be saved.
-        task: MLflow inference task type for ``sentence-transformers`` model. Candidate task type
+        task: QCFlow inference task type for ``sentence-transformers`` model. Candidate task type
             is `llm/v1/embeddings`.
         inference_config:
             A dict of valid overrides that can be applied to a ``sentence-transformer`` model
@@ -361,20 +361,20 @@ def log_model(
             These arguments are used exclusively for the case of loading the model as a ``pyfunc``
             Model or for use in Spark.
             These values are not applied to a returned model from a call to
-            ``mlflow.sentence_transformers.load_model()``
+            ``qcflow.sentence_transformers.load_model()``
         code_paths: {{ code_paths }}
         registered_model_name: This argument may change or be removed in a
             future release without warning. If given, create a model
             version under ``registered_model_name``, also creating a
             registered model if one with the given name does not exist.
-        signature: an instance of the :py:class:`ModelSignature <mlflow.models.ModelSignature>`
+        signature: an instance of the :py:class:`ModelSignature <qcflow.models.ModelSignature>`
             class that describes the model's inputs and outputs. If not specified but an
             ``input_example`` is supplied, a signature will be automatically inferred
             based on the supplied input example and model. If both ``signature`` and
             ``input_example`` are not specified or the automatic signature inference
             fails, a default signature will be adopted. To prevent a signature from being
             adopted, set ``signature`` to ``False``. To manually infer a model signature,
-            call :py:func:`infer_signature() <mlflow.models.infer_signature>` on datasets
+            call :py:func:`infer_signature() <qcflow.models.infer_signature>` on datasets
             with valid model inputs and valid model outputs.
         input_example: {{ input_example }}
         await_registration_for: Number of seconds to wait for the model version to finish
@@ -391,7 +391,7 @@ def log_model(
 
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.sentence_transformers,
+        flavor=qcflow.sentence_transformers,
         registered_model_name=registered_model_name,
         await_registration_for=await_registration_for,
         metadata=metadata,
@@ -426,7 +426,7 @@ def _load_pyfunc(path, model_config: Optional[dict[str, Any]] = None):  # noqa: 
     Load PyFunc implementation for SentenceTransformer. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``sentence_transformer`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``sentence_transformer`` flavor.
     """
     import sentence_transformers
 
@@ -444,16 +444,16 @@ def load_model(model_uri: str, dst_path: Optional[str] = None):
     Load a ``sentence_transformers`` object from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to utilize for downloading the model artifact.
             This directory must already exist if provided. If unspecified, a local output

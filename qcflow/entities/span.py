@@ -9,13 +9,13 @@ from opentelemetry.sdk.trace import ReadableSpan as OTelReadableSpan
 from opentelemetry.trace import NonRecordingSpan, SpanContext, TraceFlags
 from opentelemetry.trace import Span as OTelSpan
 
-import mlflow
-from mlflow.entities.span_event import SpanEvent
-from mlflow.entities.span_status import SpanStatus, SpanStatusCode
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.tracing.constant import SpanAttributeKey
-from mlflow.tracing.utils import (
+import qcflow
+from qcflow.entities.span_event import SpanEvent
+from qcflow.entities.span_status import SpanStatus, SpanStatusCode
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.tracing.constant import SpanAttributeKey
+from qcflow.tracing.utils import (
     TraceJSONEncoder,
     build_otel_context,
     decode_id,
@@ -44,13 +44,13 @@ class SpanType:
     UNKNOWN = "UNKNOWN"
 
 
-def create_mlflow_span(
+def create_qcflow_span(
     otel_span: Any, request_id: str, span_type: Optional[str] = None
 ) -> Union["Span", "LiveSpan", "NoOpSpan"]:
     """
     Factory function to create a span object.
 
-    When creating a MLflow span object from the OpenTelemetry span, the factory function
+    When creating a QCFlow span object from the OpenTelemetry span, the factory function
     should always be used to ensure the correct span object is created.
     """
     if not otel_span or isinstance(otel_span, NonRecordingSpan):
@@ -76,7 +76,7 @@ class Span:
 
     This Span class represents immutable span data that is already finished and persisted.
     The "live" span that is being created and updated during the application runtime is
-    represented by the :py:class:`LiveSpan <mlflow.entities.LiveSpan>` subclass.
+    represented by the :py:class:`LiveSpan <qcflow.entities.LiveSpan>` subclass.
     """
 
     def __init__(self, otel_span: OTelReadableSpan):
@@ -267,7 +267,7 @@ class Span:
 
 class LiveSpan(Span):
     """
-    A "live" version of the :py:class:`Span <mlflow.entities.Span>` class.
+    A "live" version of the :py:class:`Span <qcflow.entities.Span>` class.
 
     The live spans are those being created and updated during the application runtime.
     When users start a new span using the tracing APIs within their code, this live span
@@ -337,9 +337,9 @@ class LiveSpan(Span):
 
         Args:
             status: The status of the span. This can be a
-                :py:class:`SpanStatus <mlflow.entities.SpanStatus>` object or a string representing
+                :py:class:`SpanStatus <qcflow.entities.SpanStatus>` object or a string representing
                 of the status code defined in
-                :py:class:`SpanStatusCode <mlflow.entities.SpanStatusCode>`
+                :py:class:`SpanStatusCode <qcflow.entities.SpanStatusCode>`
                 e.g. ``"OK"``, ``"ERROR"``.
         """
         if isinstance(status, str):
@@ -361,7 +361,7 @@ class LiveSpan(Span):
 
         Args:
             event: The event to add to the span. This should be a
-                :py:class:`SpanEvent <mlflow.entities.SpanEvent>` object.
+                :py:class:`SpanEvent <qcflow.entities.SpanEvent>` object.
         """
         self._span.add_event(event.name, event.attributes, event.timestamp)
 
@@ -377,7 +377,7 @@ class LiveSpan(Span):
         """
         # NB: In OpenTelemetry, status code remains UNSET if not explicitly set
         # by the user. However, there is not way to set the status when using
-        # @mlflow.trace decorator. Therefore, we just automatically set the status
+        # @qcflow.trace decorator. Therefore, we just automatically set the status
         # to OK if it is not ERROR.
         if self.status.status_code != SpanStatusCode.ERROR:
             self.set_status(SpanStatus(SpanStatusCode.OK))
@@ -427,14 +427,14 @@ class LiveSpan(Span):
 
         :meta private:
         """
-        from mlflow.tracing.trace_manager import InMemoryTraceManager
+        from qcflow.tracing.trace_manager import InMemoryTraceManager
 
         trace_manager = InMemoryTraceManager.get_instance()
         request_id = request_id or span.request_id
         parent_span = trace_manager.get_span_from_id(request_id, parent_span_id)
 
         # Create a new span with the same name, parent, and start time
-        otel_span = mlflow.tracing.provider.start_detached_span(
+        otel_span = qcflow.tracing.provider.start_detached_span(
             name=span.name,
             parent=parent_span._span if parent_span else None,
             start_time_ns=span.start_time_ns,
@@ -468,14 +468,14 @@ class LiveSpan(Span):
         return clone_span
 
 
-NO_OP_SPAN_REQUEST_ID = "MLFLOW_NO_OP_SPAN_REQUEST_ID"
+NO_OP_SPAN_REQUEST_ID = "QCFLOW_NO_OP_SPAN_REQUEST_ID"
 
 
 class NoOpSpan(Span):
     """
     No-op implementation of the Span interface.
 
-    This instance should be returned from the mlflow.start_span context manager when span
+    This instance should be returned from the qcflow.start_span context manager when span
     creation fails. This class should have exactly the same interface as the Span so that
     user's setter calls do not raise runtime errors.
 
@@ -483,7 +483,7 @@ class NoOpSpan(Span):
 
     .. code-block:: python
 
-        with mlflow.start_span("span_name") as span:
+        with qcflow.start_span("span_name") as span:
             # Even if the span creation fails, the following calls should pass.
             span.set_inputs({"x": 1})
             # Do something
@@ -559,7 +559,7 @@ class _SpanAttributesRegistry:
     """
     A utility class to manage the span attributes.
 
-    In MLflow users can add arbitrary key-value pairs to the span attributes, however,
+    In QCFlow users can add arbitrary key-value pairs to the span attributes, however,
     OpenTelemetry only allows a limited set of types to be stored in the attribute values.
     Therefore, we serialize all values into JSON string before storing them in the span.
     This class provides simple getter and setter methods to interact with the span attributes
@@ -580,7 +580,7 @@ class _SpanAttributesRegistry:
             except Exception as e:
                 _logger.warning(
                     f"Failed to get value for key {key}, make sure you set the attribute "
-                    f"on mlflow Span class instead of directly to the OpenTelemetry span. {e}"
+                    f"on qcflow Span class instead of directly to the OpenTelemetry span. {e}"
                 )
 
     def set(self, key: str, value: Any):

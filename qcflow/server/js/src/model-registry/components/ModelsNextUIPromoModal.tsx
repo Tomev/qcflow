@@ -13,7 +13,7 @@ export const ModelsNextUIPromoModal = ({
   onTryItNow: () => void;
 }) => (
   <Modal
-    componentId="codegen_mlflow_app_src_model-registry_components_modelsnextuipromomodal.tsx_15"
+    componentId="codegen_qcflow_app_src_model-registry_components_modelsnextuipromomodal.tsx_15"
     visible={visible}
     title={
       <FormattedMessage
@@ -25,7 +25,7 @@ export const ModelsNextUIPromoModal = ({
     footer={
       <>
         <Button
-          componentId="codegen_mlflow_app_src_model-registry_components_modelsnextuipromomodal.tsx_26"
+          componentId="codegen_qcflow_app_src_model-registry_components_modelsnextuipromomodal.tsx_26"
           href={modelStagesMigrationGuideLink}
           rel="noopener"
           target="_blank"
@@ -36,7 +36,7 @@ export const ModelsNextUIPromoModal = ({
           />
         </Button>
         <Button
-          componentId="codegen_mlflow_app_src_model-registry_components_modelsnextuipromomodal.tsx_32"
+          componentId="codegen_qcflow_app_src_model-registry_components_modelsnextuipromomodal.tsx_32"
           type="primary"
           onClick={onTryItNow}
         >

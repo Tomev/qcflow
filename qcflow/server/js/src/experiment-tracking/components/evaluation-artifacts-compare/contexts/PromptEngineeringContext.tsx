@@ -157,8 +157,8 @@ export const PromptEngineeringContextProvider = ({
 
           const wrappedMessage = intl.formatMessage(
             {
-              defaultMessage: 'MLflow deployment returned the following error: "{errorMessage}"',
-              description: 'Experiment page > MLflow deployment error message',
+              defaultMessage: 'QCFlow deployment returned the following error: "{errorMessage}"',
+              description: 'Experiment page > QCFlow deployment error message',
             },
             {
               errorMessage,

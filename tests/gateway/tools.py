@@ -18,11 +18,11 @@ import uvicorn
 import yaml
 from sentence_transformers import SentenceTransformer
 
-import mlflow
-from mlflow.deployments.server import app
-from mlflow.gateway.utils import kill_child_processes
+import qcflow
+from qcflow.deployments.server import app
+from qcflow.gateway.utils import kill_child_processes
 
-from tests.helper_functions import _get_mlflow_home, _start_scoring_proc, get_safe_port
+from tests.helper_functions import _get_qcflow_home, _start_scoring_proc, get_safe_port
 
 
 class Gateway:
@@ -35,7 +35,7 @@ class Gateway:
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "gateway",
                 "start",
                 "--config-path",
@@ -243,12 +243,12 @@ def log_sentence_transformers_model():
     model = SentenceTransformer("all-MiniLM-L6-v2")
     artifact_path = "gen_model"
 
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(
             model,
             artifact_path,
         )
-        return mlflow.get_artifact_uri(artifact_path)
+        return qcflow.get_artifact_uri(artifact_path)
 
 
 def log_completions_transformers_model():
@@ -260,39 +260,39 @@ def log_completions_transformers_model():
 
     inference_params = {"top_k": 1}
 
-    signature = mlflow.models.infer_signature(
+    signature = qcflow.models.infer_signature(
         ["test1 [MASK]", "[MASK] test2"],
-        mlflow.transformers.generate_signature_output(pipe, ["test3 [MASK]"]),
+        qcflow.transformers.generate_signature_output(pipe, ["test3 [MASK]"]),
         inference_params,
     )
 
     artifact_path = "mask_model"
 
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             pipe,
             artifact_path,
             signature=signature,
         )
-        return mlflow.get_artifact_uri(artifact_path)
+        return qcflow.get_artifact_uri(artifact_path)
 
 
-def start_mlflow_server(port, model_uri):
+def start_qcflow_server(port, model_uri):
     server_url = f"http://127.0.0.1:{port}"
 
     env = dict(os.environ)
     env.update(LC_ALL="en_US.UTF-8", LANG="en_US.UTF-8")
-    env.update(MLFLOW_TRACKING_URI=mlflow.get_tracking_uri())
-    env.update(MLFLOW_HOME=_get_mlflow_home())
+    env.update(QCFLOW_TRACKING_URI=qcflow.get_tracking_uri())
+    env.update(QCFLOW_HOME=_get_qcflow_home())
     scoring_cmd = [
-        "mlflow",
+        "qcflow",
         "models",
         "serve",
         "-m",
         model_uri,
         "-p",
         str(port),
-        "--install-mlflow",
+        "--install-qcflow",
         "--no-conda",
     ]
 
@@ -308,11 +308,11 @@ def start_mlflow_server(port, model_uri):
         except Exception:
             pass
     if ping_status is None or ping_status.status_code != 200:
-        raise Exception("Could not start mlflow serving instance.")
+        raise Exception("Could not start qcflow serving instance.")
 
     return ServerInfo(pid=server_pid, url=server_url)
 
 
-def stop_mlflow_server(server_pid):
+def stop_qcflow_server(server_pid):
     process_group = os.getpgid(server_pid.pid)
     os.killpg(process_group, signal.SIGTERM)

@@ -41,7 +41,7 @@ describe('FetchUtils', () => {
     });
     it('cookies from static service are parsed correctly', () => {
       expect(
-        getDefaultHeadersFromCookies(`a=b; mlflow-request-header-My-CSRF=1; mlflow-request-header-Hello=World; c=d`),
+        getDefaultHeadersFromCookies(`a=b; qcflow-request-header-My-CSRF=1; qcflow-request-header-Hello=World; c=d`),
       ).toEqual({ 'My-CSRF': '1', Hello: 'World' });
     });
   });

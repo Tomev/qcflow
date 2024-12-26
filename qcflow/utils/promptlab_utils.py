@@ -4,12 +4,12 @@ import tempfile
 import time
 from datetime import datetime
 
-from mlflow.entities.param import Param
-from mlflow.entities.run_status import RunStatus
-from mlflow.entities.run_tag import RunTag
-from mlflow.utils.file_utils import make_containing_dirs, write_to
-from mlflow.utils.mlflow_tags import MLFLOW_LOGGED_ARTIFACTS, MLFLOW_RUN_SOURCE_TYPE
-from mlflow.version import VERSION as __version__
+from qcflow.entities.param import Param
+from qcflow.entities.run_status import RunStatus
+from qcflow.entities.run_tag import RunTag
+from qcflow.utils.file_utils import make_containing_dirs, write_to
+from qcflow.utils.qcflow_tags import QCFLOW_LOGGED_ARTIFACTS, QCFLOW_RUN_SOURCE_TYPE
+from qcflow.version import VERSION as __version__
 
 
 def create_eval_results_json(prompt_parameters, model_input, model_output_parameters, model_output):
@@ -36,7 +36,7 @@ def _create_promptlab_run_impl(
     model_input: str,
     model_output_parameters: list[Param],
     model_output: str,
-    mlflow_version: str,
+    qcflow_version: str,
     user_id: str,
     start_time: str,
 ):
@@ -63,16 +63,16 @@ def _create_promptlab_run_impl(
 
         tags_to_log = [
             RunTag(
-                MLFLOW_LOGGED_ARTIFACTS,
+                QCFLOW_LOGGED_ARTIFACTS,
                 json.dumps([{"path": "eval_results_table.json", "type": "table"}]),
             ),
-            RunTag(MLFLOW_RUN_SOURCE_TYPE, "PROMPT_ENGINEERING"),
+            RunTag(QCFLOW_RUN_SOURCE_TYPE, "PROMPT_ENGINEERING"),
         ]
 
         store.log_batch(run_id, [], parameters_to_log, tags_to_log)
 
         # log model
-        from mlflow.models import Model
+        from qcflow.models import Model
 
         artifact_dir = store.get_run(run_id).info.artifact_uri
 
@@ -85,8 +85,8 @@ def _create_promptlab_run_impl(
         store.record_logged_model(run_id, promptlab_model)
 
         try:
-            from mlflow.models.signature import ModelSignature
-            from mlflow.types.schema import ColSpec, DataType, Schema
+            from qcflow.models.signature import ModelSignature
+            from qcflow.types.schema import ColSpec, DataType, Schema
         except ImportError:
             signature = None
         else:
@@ -97,19 +97,19 @@ def _create_promptlab_run_impl(
                 outputs=Schema(outputs_colspecs),
             )
 
-        from mlflow.promptlab import save_model
-        from mlflow.server.handlers import (
-            _get_artifact_repo_mlflow_artifacts,
+        from qcflow.promptlab import save_model
+        from qcflow.server.handlers import (
+            _get_artifact_repo_qcflow_artifacts,
             _get_proxied_run_artifact_destination_path,
             _is_servable_proxied_run_artifact_root,
         )
 
         # write artifact files
-        from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
+        from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 
         with tempfile.TemporaryDirectory() as local_dir:
             save_model(
-                mlflow_model=promptlab_model,
+                qcflow_model=promptlab_model,
                 path=os.path.join(local_dir, "model"),
                 signature=signature,
                 input_example={"inputs": [param.value for param in prompt_parameters]},
@@ -117,7 +117,7 @@ def _create_promptlab_run_impl(
                 prompt_parameters=prompt_parameters,
                 model_parameters=model_parameters,
                 model_route=model_route,
-                pip_requirements=[f"mlflow[gateway]=={__version__}"],
+                pip_requirements=[f"qcflow[gateway]=={__version__}"],
             )
 
             eval_results_json = create_eval_results_json(
@@ -128,7 +128,7 @@ def _create_promptlab_run_impl(
             write_to(eval_results_json_file_path, eval_results_json)
 
             if _is_servable_proxied_run_artifact_root(run.info.artifact_uri):
-                artifact_repo = _get_artifact_repo_mlflow_artifacts()
+                artifact_repo = _get_artifact_repo_qcflow_artifacts()
                 artifact_path = _get_proxied_run_artifact_destination_path(
                     proxied_artifact_root=run.info.artifact_uri,
                 )

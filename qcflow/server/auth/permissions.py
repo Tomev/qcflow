@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from mlflow import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
 @dataclass

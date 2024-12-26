@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Union
 
-from mlflow.data.dataset_source import DatasetSource
+from qcflow.data.dataset_source import DatasetSource
 
 if TYPE_CHECKING:
     import datasets
 
 
 class HuggingFaceDatasetSource(DatasetSource):
-    """Represents the source of a Hugging Face dataset used in MLflow Tracking."""
+    """Represents the source of a Hugging Face dataset used in QCFlow Tracking."""
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class HuggingFaceDatasetSource(DatasetSource):
         Arguments in `__init__` match arguments of the same name in
         [`datasets.load_dataset()`](https://huggingface.co/docs/datasets/v2.14.5/en/package_reference/loading_methods#datasets.load_dataset).
         The only exception is `config_name` matches `name` in `datasets.load_dataset()`, because
-        we need to differentiate from `mlflow.data.Dataset` `name` attribute.
+        we need to differentiate from `qcflow.data.Dataset` `name` attribute.
 
         Args:
             path: The path of the Hugging Face dataset, if it is a dataset from HuggingFace hub,

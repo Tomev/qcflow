@@ -1,4 +1,4 @@
-package org.mlflow.tracking.creds;
+package org.qcflow.tracking.creds;
 
 /** Provides a dynamic, refreshable set of MlflowHostCreds. */
 public interface MlflowHostCredsProvider {

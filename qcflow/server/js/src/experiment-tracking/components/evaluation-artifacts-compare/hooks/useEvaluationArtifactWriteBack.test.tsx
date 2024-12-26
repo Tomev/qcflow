@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event-14';
 import promiseMiddleware from 'redux-promise-middleware';
 import thunk from 'redux-thunk';
 
-import { renderWithIntl, act, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react17';
+import { renderWithIntl, act, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react17';
 import { EvaluationDataReduxState } from '../../../reducers/EvaluationDataReducer';
 import { useEvaluationArtifactWriteBack } from './useEvaluationArtifactWriteBack';
 import {
@@ -13,7 +13,7 @@ import {
   discardPendingEvaluationData,
 } from '../../../actions/PromptEngineeringActions';
 import { uploadArtifactApi } from '../../../actions';
-import { MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME } from '../../../constants';
+import { QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME } from '../../../constants';
 import Utils from '../../../../common/utils/Utils';
 import { fulfilled } from '../../../../common/utils/ActionUtils';
 
@@ -97,25 +97,25 @@ describe('useEvaluationArtifactWriteBack + writeBackEvaluationArtifacts action',
     mountHook({
       evaluationArtifactsByRunUuid: {
         run_1: {
-          [MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME]: {
+          [QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME]: {
             columns: ['question', 'answer'],
             entries: [],
             rawArtifactFile: {
               columns: ['question', 'answer'],
               data: [['existing_question', 'existing_answer']],
             },
-            path: MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
+            path: QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
           },
         },
         run_2: {
-          [MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME]: {
+          [QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME]: {
             columns: ['question', 'answer'],
             entries: [],
             rawArtifactFile: {
               columns: ['question', 'answer'],
               data: [],
             },
-            path: MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
+            path: QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
           },
         },
       },
@@ -127,7 +127,7 @@ describe('useEvaluationArtifactWriteBack + writeBackEvaluationArtifacts action',
 
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
 
-    expect(uploadArtifactApi).toBeCalledWith('run_1', MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME, {
+    expect(uploadArtifactApi).toBeCalledWith('run_1', QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME, {
       columns: ['question', 'answer'],
       data: [
         ['new_question', 'new_answer'],
@@ -135,7 +135,7 @@ describe('useEvaluationArtifactWriteBack + writeBackEvaluationArtifacts action',
       ],
     });
 
-    expect(uploadArtifactApi).toBeCalledWith('run_2', MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME, {
+    expect(uploadArtifactApi).toBeCalledWith('run_2', QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME, {
       columns: ['question', 'answer'],
       data: [['new_question', 'new_answer']],
     });
@@ -143,7 +143,7 @@ describe('useEvaluationArtifactWriteBack + writeBackEvaluationArtifacts action',
     expect(mockStore.getActions()).toContainEqual(
       expect.objectContaining({
         meta: {
-          artifactPath: MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
+          artifactPath: QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
           runUuidsToUpdate: ['run_1', 'run_2'],
         },
         payload: [
@@ -155,7 +155,7 @@ describe('useEvaluationArtifactWriteBack + writeBackEvaluationArtifacts action',
                 { answer: 'new_answer', question: 'new_question' },
                 { answer: 'existing_answer', question: 'existing_question' },
               ],
-              path: MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
+              path: QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
               rawArtifactFile: {
                 columns: ['question', 'answer'],
                 data: [
@@ -171,7 +171,7 @@ describe('useEvaluationArtifactWriteBack + writeBackEvaluationArtifacts action',
               columns: ['question', 'answer'],
               // Only new entry for run 2
               entries: [{ answer: 'new_answer', question: 'new_question' }],
-              path: MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
+              path: QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
               rawArtifactFile: {
                 columns: ['question', 'answer'],
                 data: [['new_question', 'new_answer']],

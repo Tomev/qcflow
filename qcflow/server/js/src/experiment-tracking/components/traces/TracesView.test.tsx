@@ -5,7 +5,7 @@ import { TracesView, TRACE_AUTO_REFRESH_INTERVAL } from './TracesView';
 import { MlflowService } from '../../sdk/MlflowService';
 import { KeyValueEntity } from '../../types';
 import { ModelTraceInfo } from '@databricks/web-shared/model-trace-explorer';
-import { MemoryRouter } from '@mlflow/mlflow/src/common/utils/RoutingUtils';
+import { MemoryRouter } from '@qcflow/qcflow/src/common/utils/RoutingUtils';
 
 jest.setTimeout(90000); // increase timeout
 

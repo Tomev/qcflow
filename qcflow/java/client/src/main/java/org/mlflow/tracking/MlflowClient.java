@@ -1,13 +1,13 @@
-package org.mlflow.tracking;
+package org.qcflow.tracking;
 
 import com.google.common.collect.Lists;
 import org.apache.http.client.utils.URIBuilder;
-import org.mlflow.artifacts.ArtifactRepository;
-import org.mlflow.artifacts.ArtifactRepositoryFactory;
-import org.mlflow.artifacts.CliBasedArtifactRepository;
-import org.mlflow.api.proto.ModelRegistry.*;
-import org.mlflow.api.proto.Service.*;
-import org.mlflow.tracking.creds.*;
+import org.qcflow.artifacts.ArtifactRepository;
+import org.qcflow.artifacts.ArtifactRepositoryFactory;
+import org.qcflow.artifacts.CliBasedArtifactRepository;
+import org.qcflow.api.proto.ModelRegistry.*;
+import org.qcflow.api.proto.Service.*;
+import org.qcflow.tracking.creds.*;
 
 import java.io.Closeable;
 import java.io.File;
@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Client to an MLflow Tracking Sever.
+ * Client to an QCFlow Tracking Sever.
  */
 public class MlflowClient implements Serializable, Closeable {
   protected static final String DEFAULT_EXPERIMENT_ID = "0";
@@ -32,7 +32,7 @@ public class MlflowClient implements Serializable, Closeable {
   private final MlflowHttpCaller httpCaller;
   private final MlflowHostCredsProvider hostCredsProvider;
 
-  /** Return a default client based on the MLFLOW_TRACKING_URI environment variable. */
+  /** Return a default client based on the QCFLOW_TRACKING_URI environment variable. */
   public MlflowClient() {
     this(getDefaultTrackingUri());
   }
@@ -103,7 +103,7 @@ public class MlflowClient implements Serializable, Closeable {
     request.setExperimentId(experimentId);
     request.setStartTime(System.currentTimeMillis());
     // userId is deprecated and will be removed in a future release.
-    // It should be set as the `mlflow.user` tag instead.
+    // It should be set as the `qcflow.user` tag instead.
     String username = System.getProperty("user.name");
     if (username != null) {
       request.setUserId(System.getProperty("user.name"));
@@ -116,7 +116,7 @@ public class MlflowClient implements Serializable, Closeable {
    * invoked as follows:
    *
    *   <pre>
-   *   import org.mlflow.api.proto.Service.CreateRun;
+   *   import org.qcflow.api.proto.Service.CreateRun;
    *   CreateRun.Builder request = CreateRun.newBuilder();
    *   request.setExperimentId(experimentId);
    *   request.setSourceVersion("my-version");
@@ -147,7 +147,7 @@ public class MlflowClient implements Serializable, Closeable {
    *
    * @param experimentIds List of experiment IDs.
    * @param searchFilter SQL compatible search query string. Format of this query string is
-   *                     similar to that specified on MLflow UI.
+   *                     similar to that specified on QCFlow UI.
    *                     Example : "params.model = 'LogisticRegression' and metrics.acc = 0.9"
    *                     If null, the result will be equivalent to having an empty search filter.
    *
@@ -165,7 +165,7 @@ public class MlflowClient implements Serializable, Closeable {
    *
    * @param experimentIds List of experiment IDs.
    * @param searchFilter SQL compatible search query string. Format of this query string is
-   *                     similar to that specified on MLflow UI.
+   *                     similar to that specified on QCFlow UI.
    *                     Example : "params.model = 'LogisticRegression' and metrics.acc != 0.9"
    *                     If null, the result will be equivalent to having an empty search filter.
    * @param runViewType ViewType for expected runs. One of (ACTIVE_ONLY, DELETED_ONLY, ALL)
@@ -185,7 +185,7 @@ public class MlflowClient implements Serializable, Closeable {
    *
    * @param experimentIds List of experiment IDs.
    * @param searchFilter SQL compatible search query string. Format of this query string is
-   *                     similar to that specified on MLflow UI.
+   *                     similar to that specified on QCFlow UI.
    *                     Example : "params.model = 'LogisticRegression' and metrics.acc != 0.9"
    *                     If null, the result will be equivalent to having an empty search filter.
    * @param runViewType ViewType for expected runs. One of (ACTIVE_ONLY, DELETED_ONLY, ALL)
@@ -207,7 +207,7 @@ public class MlflowClient implements Serializable, Closeable {
    *
    * @param experimentIds List of experiment IDs.
    * @param searchFilter SQL compatible search query string. Format of this query string is
-   *                     similar to that specified on MLflow UI.
+   *                     similar to that specified on QCFlow UI.
    *                     Example : "params.model = 'LogisticRegression' and metrics.acc != 0.9"
    *                     If null, the result will be equivalent to having an empty search filter.
    * @param runViewType ViewType for expected runs. One of (ACTIVE_ONLY, DELETED_ONLY, ALL)
@@ -230,7 +230,7 @@ public class MlflowClient implements Serializable, Closeable {
    *
    * @param experimentIds List of experiment IDs.
    * @param searchFilter SQL compatible search query string. Format of this query string is
-   *                     similar to that specified on MLflow UI.
+   *                     similar to that specified on QCFlow UI.
    *                     Example : "params.model = 'LogisticRegression' and metrics.acc != 0.9"
    *                     If null, the result will be equivalent to having an empty search filter.
    * @param runViewType ViewType for expected runs. One of (ACTIVE_ONLY, DELETED_ONLY, ALL)
@@ -403,7 +403,7 @@ public class MlflowClient implements Serializable, Closeable {
    * fields of CreateExperiment, and can be invoked as follows:
    *
    *   <pre>
-   *   import org.mlflow.api.proto.Service.CreateExperiment;
+   *   import org.qcflow.api.proto.Service.CreateExperiment;
    *   CreateExperiment.Builder request = CreateExperiment.newBuilder();
    *   request.setName(name);
    *   request.setArtifactLocation(artifactLocation);
@@ -582,14 +582,14 @@ public class MlflowClient implements Serializable, Closeable {
   }
 
   /**
-   * Return the tracking URI from MLFLOW_TRACKING_URI or throws if not available.
+   * Return the tracking URI from QCFLOW_TRACKING_URI or throws if not available.
    * This is used as the body of the no-argument constructor, as constructors must first call
    * this().
    */
   private static String getDefaultTrackingUri() {
-    String defaultTrackingUri = System.getenv("MLFLOW_TRACKING_URI");
+    String defaultTrackingUri = System.getenv("QCFLOW_TRACKING_URI");
     if (defaultTrackingUri == null) {
-      throw new IllegalStateException("Default client requires MLFLOW_TRACKING_URI is set." +
+      throw new IllegalStateException("Default client requires QCFLOW_TRACKING_URI is set." +
         " Use fromTrackingUri() instead.");
     }
     return defaultTrackingUri;
@@ -634,7 +634,7 @@ public class MlflowClient implements Serializable, Closeable {
    *   listArtifacts(runId) // returns "localModel"
    *   </pre>
    *
-   * @param runId Run ID of an existing MLflow run.
+   * @param runId Run ID of an existing QCFlow run.
    * @param localFile File or directory to upload. Must exist.
    */
   public void logArtifact(String runId, File localFile) {
@@ -658,7 +658,7 @@ public class MlflowClient implements Serializable, Closeable {
    * (i.e., the localModel file is now available in model/localModel).
    * If logging a directory, the directory is renamed to artifactPath.
    *
-   * @param runId Run ID of an existing MLflow run.
+   * @param runId Run ID of an existing QCFlow run.
    * @param localFile File or directory to upload. Must exist.
    * @param artifactPath Artifact path relative to the run's root directory. Should NOT
    *                     start with a /.
@@ -681,7 +681,7 @@ public class MlflowClient implements Serializable, Closeable {
    *   listArtifacts(runId) // returns "file1" and "file2"
    *   </pre>
    *
-   * @param runId Run ID of an existing MLflow run.
+   * @param runId Run ID of an existing QCFlow run.
    * @param localDir Directory to upload. Must exist, and must be a directory (not a simple file).
    */
   public void logArtifacts(String runId, File localDir) {
@@ -699,7 +699,7 @@ public class MlflowClient implements Serializable, Closeable {
    *
    * (i.e., the contents of the local directory are now available in model/).
    *
-   * @param runId Run ID of an existing MLflow run.
+   * @param runId Run ID of an existing QCFlow run.
    * @param localDir Directory to upload. Must exist, and must be a directory (not a simple file).
    * @param artifactPath Artifact path relative to the run's root directory. Should NOT
    *                     start with a /.
@@ -712,7 +712,7 @@ public class MlflowClient implements Serializable, Closeable {
    * List the artifacts immediately under the run's root artifact directory. This does not
    * recursively list; instead, it will return FileInfos with isDir=true where further
    * listing may be done.
-   * @param runId Run ID of an existing MLflow run.
+   * @param runId Run ID of an existing QCFlow run.
    */
   public List<FileInfo> listArtifacts(String runId) {
     return getArtifactRepository(runId).listArtifacts();
@@ -722,7 +722,7 @@ public class MlflowClient implements Serializable, Closeable {
    * List the artifacts immediately under the given artifactPath within the run's root artifact
    * directory. This does not recursively list; instead, it will return FileInfos with isDir=true
    * where further listing may be done.
-   * @param runId Run ID of an existing MLflow run.
+   * @param runId Run ID of an existing QCFlow run.
    * @param artifactPath Artifact path relative to the run's root directory. Should NOT
    *                     start with a /.
    */
@@ -734,7 +734,7 @@ public class MlflowClient implements Serializable, Closeable {
    * Return a local directory containing *all* artifacts within the run's artifact directory.
    * Note that this will download the entire directory path, and so may be expensive if
    * the directory has a lot of data.
-   * @param runId Run ID of an existing MLflow run.
+   * @param runId Run ID of an existing QCFlow run.
    */
   public File downloadArtifacts(String runId) {
     return getArtifactRepository(runId).downloadArtifacts();
@@ -753,7 +753,7 @@ public class MlflowClient implements Serializable, Closeable {
    * Note that this will download the entire subdirectory path, and so may be expensive if
    * the subdirectory has a lot of data.
    *
-   * @param runId Run ID of an existing MLflow run.
+   * @param runId Run ID of an existing QCFlow run.
    * @param artifactPath Artifact path relative to the run's root directory. Should NOT
    *                     start with a /.
    */
@@ -762,8 +762,8 @@ public class MlflowClient implements Serializable, Closeable {
   }
 
   /**
-   * @param runId Run ID of an existing MLflow run.
-   * @return ArtifactRepository, capable of uploading and downloading MLflow artifacts.
+   * @param runId Run ID of an existing QCFlow run.
+   * @return ArtifactRepository, capable of uploading and downloading QCFlow artifacts.
    */
   private ArtifactRepository getArtifactRepository(String runId) {
     URI baseArtifactUri = URI.create(getRun(runId).getInfo().getArtifactUri());
@@ -780,7 +780,7 @@ public class MlflowClient implements Serializable, Closeable {
    * The current available stages are: [None, Staging, Production, Archived].
    *
    *    <pre>
-   *        import org.mlflow.api.proto.ModelRegistry.ModelVersion;
+   *        import org.qcflow.api.proto.ModelRegistry.ModelVersion;
    *        List{@code <ModelVersion>} detailsList = getLatestVersions("model");
    *
    *        for (ModelVersion details : detailsList) {
@@ -793,7 +793,7 @@ public class MlflowClient implements Serializable, Closeable {
    *    </pre>
    *
    * @param modelName The name of the model
-   * @return A collection of {@link org.mlflow.api.proto.ModelRegistry.ModelVersion}
+   * @return A collection of {@link org.qcflow.api.proto.ModelRegistry.ModelVersion}
    */
   public List<ModelVersion> getLatestVersions(String modelName) {
       return getLatestVersions(modelName, Collections.emptyList());
@@ -804,7 +804,7 @@ public class MlflowClient implements Serializable, Closeable {
    * The current available stages are: [None, Staging, Production, Archived].
    *
    *    <pre>
-   *        import org.mlflow.api.proto.ModelRegistry.ModelVersion;
+   *        import org.qcflow.api.proto.ModelRegistry.ModelVersion;
    *        List{@code <ModelVersion>} detailsList =
    *          getLatestVersions("model", Lists.newArrayList{@code <String>}("Staging"));
    *
@@ -820,7 +820,7 @@ public class MlflowClient implements Serializable, Closeable {
    * @param modelName The name of the model
    * @param stages A list of stages
    * @return The latest model version
-   *         {@link org.mlflow.api.proto.ModelRegistry.ModelVersion}
+   *         {@link org.qcflow.api.proto.ModelRegistry.ModelVersion}
    */
   public List<ModelVersion> getLatestVersions(String modelName, Iterable<String> stages) {
     String json = sendGet(mapper.makeGetLatestVersion(modelName, stages));
@@ -831,14 +831,14 @@ public class MlflowClient implements Serializable, Closeable {
   /**
    *
    *   <pre>
-   *       import org.mlflow.api.proto.ModelRegistry.ModelVersion;
+   *       import org.qcflow.api.proto.ModelRegistry.ModelVersion;
    *       ModelVersion modelVersion = getModelVersion("model", "version");
    *   </pre>
    *
    * @param modelName Name of the containing registered model. *
    * @param version Version number as a string of the model version.
    * @return a single model version
-   *        {@link org.mlflow.api.proto.ModelRegistry.ModelVersion}
+   *        {@link org.qcflow.api.proto.ModelRegistry.ModelVersion}
    */
   public ModelVersion getModelVersion(String modelName, String version) {
     String json = sendGet(mapper.makeGetModelVersion(modelName, version));
@@ -849,12 +849,12 @@ public class MlflowClient implements Serializable, Closeable {
   /**
    *  Returns a RegisteredModel from the model registry for the given model name.
    *   <pre>
-   *       import org.mlflow.api.proto.ModelRegistry.RegisteredModel;
+   *       import org.qcflow.api.proto.ModelRegistry.RegisteredModel;
    *       RegisteredModel registeredModel = getRegisteredModel("model");
    *   </pre>
    *
    * @param modelName Name of the containing registered model. *
-   * @return a registered model {@link org.mlflow.api.proto.ModelRegistry.RegisteredModel}
+   * @return a registered model {@link org.qcflow.api.proto.ModelRegistry.RegisteredModel}
    */
   public RegisteredModel getRegisteredModel(String modelName) {
     String json = sendGet(mapper.makeGetRegisteredModel(modelName));

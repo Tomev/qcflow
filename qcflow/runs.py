@@ -6,11 +6,11 @@ import json
 
 import click
 
-from mlflow.entities import ViewType
-from mlflow.environment_variables import MLFLOW_EXPERIMENT_ID
-from mlflow.tracking import _get_store
-from mlflow.utils.string_utils import _create_table
-from mlflow.utils.time import conv_longdate_to_str
+from qcflow.entities import ViewType
+from qcflow.environment_variables import QCFLOW_EXPERIMENT_ID
+from qcflow.tracking import _get_store
+from qcflow.utils.string_utils import _create_table
+from qcflow.utils.time import conv_longdate_to_str
 
 RUN_ID = click.option("--run-id", type=click.STRING, required=True)
 
@@ -19,14 +19,14 @@ RUN_ID = click.option("--run-id", type=click.STRING, required=True)
 def commands():
     """
     Manage runs. To manage runs of experiments associated with a tracking server, set the
-    MLFLOW_TRACKING_URI environment variable to the URL of the desired server.
+    QCFLOW_TRACKING_URI environment variable to the URL of the desired server.
     """
 
 
 @commands.command("list")
 @click.option(
     "--experiment-id",
-    envvar=MLFLOW_EXPERIMENT_ID.name,
+    envvar=QCFLOW_EXPERIMENT_ID.name,
     type=click.STRING,
     help="Specify the experiment ID for list of runs.",
     required=True,

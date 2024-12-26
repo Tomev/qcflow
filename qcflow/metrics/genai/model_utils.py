@@ -5,18 +5,18 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 import requests
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 if TYPE_CHECKING:
-    from mlflow.gateway.providers import BaseProvider
+    from qcflow.gateway.providers import BaseProvider
 
 _logger = logging.getLogger(__name__)
 
 
 def get_endpoint_type(endpoint_uri: str) -> Optional[str]:
     """
-    Get the type of the endpoint if it is MLflow deployment
+    Get the type of the endpoint if it is QCFlow deployment
     endpoint. For other endpoints e.g. OpenAI, or if the
     endpoint does not specify type, return None.
     """
@@ -27,7 +27,7 @@ def get_endpoint_type(endpoint_uri: str) -> Optional[str]:
 
     from pydantic import BaseModel
 
-    from mlflow.deployments import get_deploy_client
+    from qcflow.deployments import get_deploy_client
 
     client = get_deploy_client()
 
@@ -62,7 +62,7 @@ def score_model_on_payload(
         raise NotImplementedError
 
     # Import here to avoid loading gateway module at the top level
-    from mlflow.gateway.provider_registry import is_supported_provider
+    from qcflow.gateway.provider_registry import is_supported_provider
 
     if is_supported_provider(prefix):
         return _call_llm_provider_api(
@@ -96,7 +96,7 @@ is set correctly and the input payload is valid.\n
 
 
 def _is_supported_llm_provider(schema: str) -> bool:
-    from mlflow.gateway.provider_registry import provider_registry
+    from qcflow.gateway.provider_registry import provider_registry
 
     return schema in provider_registry.keys()
 
@@ -112,7 +112,7 @@ def _call_llm_provider_api(
     """
     Invoke chat endpoint of various LLM providers.
 
-    Under the hood, this function uses the MLflow Gateway to transform the input/output data
+    Under the hood, this function uses the QCFlow Gateway to transform the input/output data
     for different LLM providers.
 
     Args:
@@ -124,8 +124,8 @@ def _call_llm_provider_api(
         proxy_url: Proxy URL to be used for the judge model. If not specified, the default
             URL for the LLM provider will be used.
     """
-    from mlflow.gateway.config import Provider
-    from mlflow.gateway.schemas import chat
+    from qcflow.gateway.config import Provider
+    from qcflow.gateway.schemas import chat
 
     provider = _get_provider_instance(provider_name, model)
 
@@ -175,7 +175,7 @@ def _call_llm_provider_api(
 
 def _get_provider_instance(provider: str, model: str) -> "BaseProvider":
     """Get the provider instance for the given provider name and the model name."""
-    from mlflow.gateway.config import Provider, RouteConfig
+    from qcflow.gateway.config import Provider, RouteConfig
 
     def _get_route_config(config):
         return RouteConfig(
@@ -188,11 +188,11 @@ def _get_provider_instance(provider: str, model: str) -> "BaseProvider":
             },
         )
 
-    # NB: Not all LLM providers in MLflow Gateway are supported here. We can add
+    # NB: Not all LLM providers in QCFlow Gateway are supported here. We can add
     # new ones as requested, as long as the provider support chat endpoints.
     if provider == Provider.OPENAI:
-        from mlflow.gateway.providers.openai import OpenAIConfig, OpenAIProvider
-        from mlflow.openai import _get_api_config, _OAITokenHolder
+        from qcflow.gateway.providers.openai import OpenAIConfig, OpenAIProvider
+        from qcflow.openai import _get_api_config, _OAITokenHolder
 
         api_config = _get_api_config()
         api_token = _OAITokenHolder(api_config.api_type)
@@ -209,14 +209,14 @@ def _get_provider_instance(provider: str, model: str) -> "BaseProvider":
         return OpenAIProvider(_get_route_config(config))
 
     elif provider == Provider.ANTHROPIC:
-        from mlflow.gateway.providers.anthropic import AnthropicConfig, AnthropicProvider
+        from qcflow.gateway.providers.anthropic import AnthropicConfig, AnthropicProvider
 
         config = AnthropicConfig(anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"))
         return AnthropicProvider(_get_route_config(config))
 
     elif provider in [Provider.AMAZON_BEDROCK, Provider.BEDROCK]:
-        from mlflow.gateway.config import AWSIdAndKey, AWSRole
-        from mlflow.gateway.providers.bedrock import AmazonBedrockConfig, AmazonBedrockProvider
+        from qcflow.gateway.config import AWSIdAndKey, AWSRole
+        from qcflow.gateway.providers.bedrock import AmazonBedrockConfig, AmazonBedrockProvider
 
         if aws_role_arn := os.environ.get("AWS_ROLE_ARN"):
             aws_config = AWSRole(
@@ -236,19 +236,19 @@ def _get_provider_instance(provider: str, model: str) -> "BaseProvider":
     # # Cohere provider implementation seems to be broken and does not work with
     # # their latest APIs. Uncomment once the provider implementation is fixed.
     # elif provider == Provider.COHERE:
-    #     from mlflow.gateway.providers.cohere import CohereConfig, CohereProvider
+    #     from qcflow.gateway.providers.cohere import CohereConfig, CohereProvider
 
     #     config = CohereConfig(cohere_api_key=os.environ.get("COHERE_API_KEY"))
     #     return CohereProvider(_get_route_config(config))
 
     elif provider == Provider.MISTRAL:
-        from mlflow.gateway.providers.mistral import MistralConfig, MistralProvider
+        from qcflow.gateway.providers.mistral import MistralConfig, MistralProvider
 
         config = MistralConfig(mistral_api_key=os.environ.get("MISTRAL_API_KEY"))
         return MistralProvider(_get_route_config(config))
 
     elif provider == Provider.TOGETHERAI:
-        from mlflow.gateway.providers.togetherai import TogetherAIConfig, TogetherAIProvider
+        from qcflow.gateway.providers.togetherai import TogetherAIConfig, TogetherAIProvider
 
         config = TogetherAIConfig(togetherai_api_key=os.environ.get("TOGETHERAI_API_KEY"))
         return TogetherAIProvider(_get_route_config(config))
@@ -286,17 +286,17 @@ def call_deployments_api(
     Args:
         deployment_uri: The URI of the deployment endpoint.
         input_data: The input string or dictionary to send to the endpoint.
-            - If it is a string, MLflow tries to construct the payload based on the endpoint type.
-            - If it is a dictionary, MLflow directly sends it to the endpoint.
+            - If it is a string, QCFlow tries to construct the payload based on the endpoint type.
+            - If it is a dictionary, QCFlow directly sends it to the endpoint.
         eval_parameters: The evaluation parameters to send to the endpoint.
         endpoint_type: The type of the endpoint. If specified, must be 'llm/v1/completions'
-            or 'llm/v1/chat'. If not specified, MLflow tries to get the endpoint type
+            or 'llm/v1/chat'. If not specified, QCFlow tries to get the endpoint type
             from the endpoint, and if not found, directly sends the payload to the endpoint.
 
     Returns:
         The unpacked response from the endpoint.
     """
-    from mlflow.deployments import get_deploy_client
+    from qcflow.deployments import get_deploy_client
 
     client = get_deploy_client()
 
@@ -323,7 +323,7 @@ def call_deployments_api(
 
 
 def _call_gateway_api(gateway_uri, payload, eval_parameters):
-    from mlflow.gateway import get_route, query
+    from qcflow.gateway import get_route, query
 
     route_info = get_route(gateway_uri).dict()
     if route_info["endpoint_type"] == "llm/v1/completions":

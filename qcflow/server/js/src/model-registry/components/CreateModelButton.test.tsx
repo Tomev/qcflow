@@ -12,7 +12,7 @@ import promiseMiddleware from 'redux-promise-middleware';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from '../../common/utils/RoutingUtils';
 import { CreateModelButton } from './CreateModelButton';
-import { renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import userEvent from '@testing-library/user-event-14';
 
 const minimalProps = {};
@@ -21,7 +21,7 @@ const mockStore = configureStore([thunk, promiseMiddleware()]);
 const minimalStore = mockStore({});
 
 const buttonDataTestId = 'create-model-button';
-const inputModelDataTestId = 'mlflow-input-modal';
+const inputModelDataTestId = 'qcflow-input-modal';
 
 describe('CreateModelButton', () => {
   test('should render with minimal props and store without exploding', () => {

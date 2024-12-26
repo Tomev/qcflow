@@ -1,6 +1,6 @@
 import urllib.parse
 
-from mlflow.store.tracking.file_store import FileStore
+from qcflow.store.tracking.file_store import FileStore
 
 
 class PluginFileStore(FileStore):

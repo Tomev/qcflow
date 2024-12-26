@@ -100,7 +100,7 @@ export const getSampledMetricHistoryBulkAction =
     );
 
     const request = fetchEndpoint({
-      relativeUrl: `ajax-api/2.0/mlflow/metrics/get-history-bulk-interval?${queryParams}`,
+      relativeUrl: `ajax-api/2.0/qcflow/metrics/get-history-bulk-interval?${queryParams}`,
       success: jsonBigIntResponseParser,
     });
 

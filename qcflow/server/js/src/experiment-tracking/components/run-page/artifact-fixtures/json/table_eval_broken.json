@@ -4,7 +4,7 @@
     "company_goal",
     "prompt",
     "output",
-    "MLFLOW_model",
-    "MLFLOW_route_type",
-    "MLFLOW_latency"
+    "QCFLOW_model",
+    "QCFLOW_route_type",
+    "QCFLOW_latency"
   BROKEN

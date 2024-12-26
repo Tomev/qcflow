@@ -2,9 +2,9 @@ import json
 import os
 import posixpath
 
-from mlflow.entities import FileInfo
-from mlflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
-from mlflow.protos.databricks_filesystem_service_pb2 import (
+from qcflow.entities import FileInfo
+from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
+from qcflow.protos.databricks_filesystem_service_pb2 import (
     CreateDownloadUrlRequest,
     CreateDownloadUrlResponse,
     CreateUploadUrlRequest,
@@ -12,12 +12,12 @@ from mlflow.protos.databricks_filesystem_service_pb2 import (
     FilesystemService,
     ListDirectoryResponse,
 )
-from mlflow.store.artifact.artifact_repo import _retry_with_new_creds
-from mlflow.store.artifact.cloud_artifact_repo import CloudArtifactRepository
-from mlflow.utils.file_utils import download_file_using_http_uri
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.request_utils import augmented_raise_for_status, cloud_storage_http_request
-from mlflow.utils.rest_utils import (
+from qcflow.store.artifact.artifact_repo import _retry_with_new_creds
+from qcflow.store.artifact.cloud_artifact_repo import CloudArtifactRepository
+from qcflow.utils.file_utils import download_file_using_http_uri
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.request_utils import augmented_raise_for_status, cloud_storage_http_request
+from qcflow.utils.rest_utils import (
     _REST_API_PATH_PREFIX,
     call_endpoint,
     extract_api_info_for_service,

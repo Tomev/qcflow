@@ -31,7 +31,7 @@ def get_commits(branch: str):
                 "--shallow-since=3 months ago",
                 "--branch",
                 branch,
-                "https://github.com/mlflow/mlflow.git",
+                "https://github.com/qcflow/qcflow.git",
                 tmpdir,
             ],
         )
@@ -65,7 +65,7 @@ def is_closed(pr):
 
 def fetch_patch_prs(version):
     """
-    Fetch PRs labeled with `v{version}` from the MLflow repository.
+    Fetch PRs labeled with `v{version}` from the QCFlow repository.
     """
     label = f"v{version}"
     per_page = 100
@@ -73,7 +73,7 @@ def fetch_patch_prs(version):
     pulls = []
     while True:
         response = requests.get(
-            f'https://api.github.com/search/issues?q=is:pr+repo:mlflow/mlflow+label:"{label}"&per_page={per_page}&page={page}',
+            f'https://api.github.com/search/issues?q=is:pr+repo:qcflow/qcflow+label:"{label}"&per_page={per_page}&page={page}',
         )
         response.raise_for_status()
         data = response.json()
@@ -103,7 +103,7 @@ def main(version, dry_run):
         click.echo(f"The following patch PRs are not cherry-picked to {release_branch}:")
         for idx, pr_num in enumerate(sorted(not_cherry_picked)):
             merged = patch_prs[pr_num]
-            url = f"https://github.com/mlflow/mlflow/pull/{pr_num} (merged: {merged})"
+            url = f"https://github.com/qcflow/qcflow/pull/{pr_num} (merged: {merged})"
             line = f"  {idx + 1}. {url}"
             if not merged:
                 line = click.style(line, fg="red")

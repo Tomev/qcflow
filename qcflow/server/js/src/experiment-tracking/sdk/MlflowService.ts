@@ -48,93 +48,93 @@ type GetCredentialsForLoggedModelArtifactReadResult = {
     };
   }[];
 };
-const searchRunsPath = () => 'ajax-api/2.0/mlflow/runs/search';
+const searchRunsPath = () => 'ajax-api/2.0/qcflow/runs/search';
 
 export class MlflowService {
   /**
-   * Create a mlflow experiment
+   * Create a qcflow experiment
    */
-  static createExperiment = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/experiments/create', data });
+  static createExperiment = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/experiments/create', data });
 
   /**
-   * Delete a mlflow experiment
+   * Delete a qcflow experiment
    */
-  static deleteExperiment = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/experiments/delete', data });
+  static deleteExperiment = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/experiments/delete', data });
 
   /**
-   * Update a mlflow experiment
+   * Update a qcflow experiment
    */
-  static updateExperiment = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/experiments/update', data });
+  static updateExperiment = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/experiments/update', data });
 
   /**
-   * Search mlflow experiments
+   * Search qcflow experiments
    */
   static searchExperiments = (data: any) =>
-    getBigIntJson({ relativeUrl: 'ajax-api/2.0/mlflow/experiments/search', data }).then(
+    getBigIntJson({ relativeUrl: 'ajax-api/2.0/qcflow/experiments/search', data }).then(
       transformSearchExperimentsResponse,
     );
 
   /**
-   * Get mlflow experiment
+   * Get qcflow experiment
    */
   static getExperiment = (data: any) =>
-    getBigIntJson({ relativeUrl: 'ajax-api/2.0/mlflow/experiments/get', data }).then(transformGetExperimentResponse);
+    getBigIntJson({ relativeUrl: 'ajax-api/2.0/qcflow/experiments/get', data }).then(transformGetExperimentResponse);
 
   /**
-   * Get mlflow experiment by name
+   * Get qcflow experiment by name
    */
   static getExperimentByName = (data: any) =>
-    getBigIntJson({ relativeUrl: 'ajax-api/2.0/mlflow/experiments/get-by-name', data }).then(
+    getBigIntJson({ relativeUrl: 'ajax-api/2.0/qcflow/experiments/get-by-name', data }).then(
       transformGetExperimentResponse,
     );
 
   /**
-   * Create a mlflow experiment run
+   * Create a qcflow experiment run
    */
   static createRun = (data: CreateRunApiRequest) =>
-    postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/create', data }) as Promise<{
+    postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/create', data }) as Promise<{
       run: { info: RunInfoEntity };
     }>;
 
   /**
-   * Delete a mlflow experiment run
+   * Delete a qcflow experiment run
    */
-  static deleteRun = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/delete', data });
+  static deleteRun = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/delete', data });
 
   /**
    * Search datasets used in experiments
    */
   static searchDatasets = (data: any) =>
-    postJson({ relativeUrl: 'ajax-api/2.0/mlflow/experiments/search-datasets', data });
+    postJson({ relativeUrl: 'ajax-api/2.0/qcflow/experiments/search-datasets', data });
 
   /**
-   * Restore a mlflow experiment run
+   * Restore a qcflow experiment run
    */
-  static restoreRun = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/restore', data });
+  static restoreRun = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/restore', data });
 
   /**
-   * Update a mlflow experiment run
+   * Update a qcflow experiment run
    */
-  static updateRun = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/update', data });
+  static updateRun = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/update', data });
 
   /**
-   * Log mlflow experiment run metric
+   * Log qcflow experiment run metric
    */
-  static logMetric = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/log-metric', data });
+  static logMetric = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/log-metric', data });
 
   /**
-   * Log mlflow experiment run parameter
+   * Log qcflow experiment run parameter
    */
-  static logParam = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/log-parameter', data });
+  static logParam = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/log-parameter', data });
 
   /**
-   * Get mlflow experiment run
+   * Get qcflow experiment run
    */
   static getRun = (data: any) =>
-    getBigIntJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/get', data }).then(transformGetRunResponse);
+    getBigIntJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/get', data }).then(transformGetRunResponse);
 
   /**
-   * Search mlflow experiment runs
+   * Search qcflow experiment runs
    */
   static searchRuns = (data: any) =>
     postJson({ relativeUrl: searchRunsPath(), data }).then(transformSearchRunsResponse);
@@ -142,14 +142,14 @@ export class MlflowService {
   /**
    * List model artifacts
    */
-  static listArtifacts = (data: any) => getBigIntJson({ relativeUrl: 'ajax-api/2.0/mlflow/artifacts/list', data });
+  static listArtifacts = (data: any) => getBigIntJson({ relativeUrl: 'ajax-api/2.0/qcflow/artifacts/list', data });
 
   /**
    * List model artifacts for logged models
    */
   static listArtifactsLoggedModel = ({ loggedModelId, path }: { loggedModelId: string; path: string }) =>
     getBigIntJson({
-      relativeUrl: `ajax-api/2.0/mlflow/logged-models/${loggedModelId}/artifacts/directories`,
+      relativeUrl: `ajax-api/2.0/qcflow/logged-models/${loggedModelId}/artifacts/directories`,
       data: path ? { artifact_directory_path: path } : {},
     });
 
@@ -161,7 +161,7 @@ export class MlflowService {
     path: string;
   }) =>
     postBigIntJson({
-      relativeUrl: `ajax-api/2.0/mlflow/logged-models/${loggedModelId}/artifacts/credentials-for-download`,
+      relativeUrl: `ajax-api/2.0/qcflow/logged-models/${loggedModelId}/artifacts/credentials-for-download`,
       data: {
         paths: [path],
       },
@@ -171,23 +171,23 @@ export class MlflowService {
    * Get metric history
    */
   static getMetricHistory = (data: any) =>
-    getBigIntJson({ relativeUrl: 'ajax-api/2.0/mlflow/metrics/get-history', data });
+    getBigIntJson({ relativeUrl: 'ajax-api/2.0/qcflow/metrics/get-history', data });
 
   /**
-   * Set mlflow experiment run tag
+   * Set qcflow experiment run tag
    */
-  static setTag = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/set-tag', data });
+  static setTag = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/set-tag', data });
 
   /**
-   * Delete mlflow experiment run tag
+   * Delete qcflow experiment run tag
    */
-  static deleteTag = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/delete-tag', data });
+  static deleteTag = (data: any) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/delete-tag', data });
 
   /**
-   * Set mlflow experiment tag
+   * Set qcflow experiment tag
    */
   static setExperimentTag = (data: any) =>
-    postJson({ relativeUrl: 'ajax-api/2.0/mlflow/experiments/set-experiment-tag', data });
+    postJson({ relativeUrl: 'ajax-api/2.0/qcflow/experiments/set-experiment-tag', data });
 
   /**
    * Create prompt engineering run
@@ -201,19 +201,19 @@ export class MlflowService {
     model_parameters: { key: string; value: string | number | undefined }[];
     model_output_parameters: { key: string; value: string | number }[];
     model_output: string;
-  }) => postJson({ relativeUrl: 'ajax-api/2.0/mlflow/runs/create-promptlab-run', data });
+  }) => postJson({ relativeUrl: 'ajax-api/2.0/qcflow/runs/create-promptlab-run', data });
 
   /**
    * Proxy post request to gateway server
    */
   static gatewayProxyPost = (data: { gateway_path: string; json_data: any }, error?: any) =>
-    postJson({ relativeUrl: 'ajax-api/2.0/mlflow/gateway-proxy', data, error });
+    postJson({ relativeUrl: 'ajax-api/2.0/qcflow/gateway-proxy', data, error });
 
   /**
    * Proxy get request to gateway server
    */
   static gatewayProxyGet = (data: { gateway_path: string; json_data?: any }) =>
-    getJson({ relativeUrl: 'ajax-api/2.0/mlflow/gateway-proxy', data });
+    getJson({ relativeUrl: 'ajax-api/2.0/qcflow/gateway-proxy', data });
 
   /**
    * Traces API: get traces list
@@ -241,7 +241,7 @@ export class MlflowService {
     );
 
     return fetchEndpoint({
-      relativeUrl: `ajax-api/2.0/mlflow/traces?${queryString}`,
+      relativeUrl: `ajax-api/2.0/qcflow/traces?${queryString}`,
     }) as Promise<GetExperimentTracesResponse>;
   };
 
@@ -251,7 +251,7 @@ export class MlflowService {
     };
 
     return getJson({
-      relativeUrl: `ajax-api/2.0/mlflow/traces/${requestId}/info`,
+      relativeUrl: `ajax-api/2.0/qcflow/traces/${requestId}/info`,
     }) as Promise<GetExperimentTraceInfoResponse>;
   };
 
@@ -260,7 +260,7 @@ export class MlflowService {
    */
   static getExperimentTraceData = <T = ModelTraceData>(traceRequestId: string) => {
     return getJson({
-      relativeUrl: `ajax-api/2.0/mlflow/get-trace-artifact`,
+      relativeUrl: `ajax-api/2.0/qcflow/get-trace-artifact`,
       data: {
         request_id: traceRequestId,
       },
@@ -272,7 +272,7 @@ export class MlflowService {
    */
   static setExperimentTraceTag = (traceRequestId: string, key: string, value: string) =>
     patchJson({
-      relativeUrl: `ajax-api/2.0/mlflow/traces/${traceRequestId}/tags`,
+      relativeUrl: `ajax-api/2.0/qcflow/traces/${traceRequestId}/tags`,
       data: {
         key,
         value,
@@ -284,7 +284,7 @@ export class MlflowService {
    */
   static deleteExperimentTraceTag = (traceRequestId: string, key: string) =>
     deleteJson({
-      relativeUrl: `ajax-api/2.0/mlflow/traces/${traceRequestId}/tags`,
+      relativeUrl: `ajax-api/2.0/qcflow/traces/${traceRequestId}/tags`,
       data: {
         key,
       },
@@ -292,7 +292,7 @@ export class MlflowService {
 
   static deleteTraces = (experimentId: string, traceRequestIds: string[]) =>
     postJson({
-      relativeUrl: `ajax-api/2.0/mlflow/traces/delete-traces`,
+      relativeUrl: `ajax-api/2.0/qcflow/traces/delete-traces`,
       data: {
         experiment_id: experimentId,
         request_ids: traceRequestIds,

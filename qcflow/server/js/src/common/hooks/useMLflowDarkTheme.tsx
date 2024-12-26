@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 // bundled JS needs to read this key in order to enable dark mode
 const databricksDarkModePrefLocalStorageKey = 'databricks-dark-mode-pref';
-const darkModePrefLocalStorageKey = '_mlflow_dark_mode_toggle_enabled';
+const darkModePrefLocalStorageKey = '_qcflow_dark_mode_toggle_enabled';
 const darkModeBodyClassName = 'dark-mode';
 
 // CSS attributes to be applied when dark mode is enabled. Affects inputs and other form elements.
@@ -13,10 +13,10 @@ const DarkModeStylesComponent = () => <Global styles={darkModeCSSStyles} />;
 
 /**
  * This hook is used to toggle the dark mode for the entire app.
- * Used in open source MLflow.
+ * Used in open source QCFlow.
  * Returns a boolean value with the current state, setter function, and a component to be rendered in the root of the app.
  */
-export const useMLflowDarkTheme = (): [boolean, React.Dispatch<React.SetStateAction<boolean>>, React.ComponentType] => {
+export const useQCFlowDarkTheme = (): [boolean, React.Dispatch<React.SetStateAction<boolean>>, React.ComponentType] => {
   const [isDarkTheme, setIsDarkTheme] = useState(() => {
     // If the user has explicitly set a preference, use that.
     const darkModePref = localStorage.getItem(darkModePrefLocalStorageKey);

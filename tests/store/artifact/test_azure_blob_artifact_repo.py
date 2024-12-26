@@ -7,11 +7,11 @@ from unittest import mock
 import pytest
 from azure.storage.blob import BlobPrefix, BlobProperties, BlobServiceClient
 
-from mlflow.entities.multipart_upload import MultipartUploadPart
-from mlflow.exceptions import MlflowException, MlflowTraceDataCorrupted
-from mlflow.store.artifact.artifact_repo import try_read_trace_data
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
+from qcflow.entities.multipart_upload import MultipartUploadPart
+from qcflow.exceptions import MlflowException, MlflowTraceDataCorrupted
+from qcflow.store.artifact.artifact_repo import try_read_trace_data
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
 
 TEST_ROOT_PATH = "some/path"
 TEST_BLOB_CONTAINER_ROOT = "wasbs://container@account.blob.core.windows.net/"
@@ -405,7 +405,7 @@ def test_trace_data(mock_client, tmp_path):
     trace_data_path.write_text("invalid data")
     with (
         mock.patch(
-            "mlflow.store.artifact.artifact_repo.try_read_trace_data",
+            "qcflow.store.artifact.artifact_repo.try_read_trace_data",
             side_effect=lambda x: try_read_trace_data(trace_data_path),
         ),
         pytest.raises(MlflowTraceDataCorrupted, match=r"Trace data is corrupted for path="),
@@ -415,7 +415,7 @@ def test_trace_data(mock_client, tmp_path):
     mock_trace_data = {"spans": [], "request": {"test": 1}, "response": {"test": 2}}
     trace_data_path.write_text(json.dumps(mock_trace_data))
     with mock.patch(
-        "mlflow.store.artifact.artifact_repo.try_read_trace_data",
+        "qcflow.store.artifact.artifact_repo.try_read_trace_data",
         side_effect=lambda x: try_read_trace_data(trace_data_path),
     ):
         assert repo.download_trace_data() == mock_trace_data

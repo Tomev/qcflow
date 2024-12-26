@@ -297,7 +297,7 @@ export const TracesViewTable = React.memo(
                 values={{
                   button: (chunks: any) => (
                     <Typography.Link
-                      componentId="codegen_mlflow_app_src_experiment-tracking_components_traces_tracesviewtable.tsx_289"
+                      componentId="codegen_qcflow_app_src_experiment-tracking_components_traces_tracesviewtable.tsx_289"
                       onClick={onResetFilters}
                     >
                       {chunks}
@@ -360,7 +360,7 @@ export const TracesViewTable = React.memo(
           {table.getLeafHeaders().map((header) => {
             return (
               <TableHeader
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_traces_tracesviewtable.tsx_365"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_traces_tracesviewtable.tsx_365"
                 key={header.id}
                 css={(header.column.columnDef as TracesColumnDef).meta?.styles}
                 sortable={header.column.getCanSort()}

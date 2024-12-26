@@ -1,6 +1,6 @@
 import pytest
 
-from mlflow.entities import RunStatus
+from qcflow.entities import RunStatus
 
 
 def test_all_status_covered():

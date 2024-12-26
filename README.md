@@ -1,8 +1,8 @@
 # QCFlow: A Quantum Computations Tracking Platform
 
-[![Apache 2 License](https://img.shields.io/badge/license-Apache%202-brightgreen.svg?style=for-the-badge&logo=apache)](https://github.com/mlflow/mlflow/blob/master/LICENSE.txt)
+[![Apache 2 License](https://img.shields.io/badge/license-Apache%202-brightgreen.svg?style=for-the-badge&logo=apache)](https://github.com/qcflow/qcflow/blob/master/LICENSE.txt)
 
-QCFlow is an open-source platform, repurposed from [MLFlow](https://github.com/mlflow) to assist quantum computing practitioners and teams in handling the challenges of quantum computing projects tracking. QCFlow focuses on the complete process of quantum computations, ensuring that each phase is manageable, traceable, and reproducible.
+QCFlow is an open-source platform, repurposed from [MLFlow](https://github.com/qcflow) to assist quantum computing practitioners and teams in handling the challenges of quantum computing projects tracking. QCFlow focuses on the complete process of quantum computations, ensuring that each phase is manageable, traceable, and reproducible.
 
 ---
 
@@ -35,33 +35,33 @@ Official documentation for QCFlow can be found at [here](link). The coumentation
 
 ### Experiment Tracking ([Doc](link))
 
-The following examples trains a simple regression model with scikit-learn, while enabling MLflow's [autologging](https://mlflow.org/docs/latest/tracking/autolog.html) feature for experiment tracking.
+The following examples trains a simple regression model with scikit-learn, while enabling QCFlow's [autologging](https://qcflow.org/docs/latest/tracking/autolog.html) feature for experiment tracking.
 
 TODO TR: Can I do something similar for `qiskit`?
 
 ```python
-import mlflow
+import qcflow
 
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_diabetes
 from sklearn.ensemble import RandomForestRegressor
 
-# Enable MLflow's automatic experiment tracking for scikit-learn
-mlflow.sklearn.autolog()
+# Enable QCFlow's automatic experiment tracking for scikit-learn
+qcflow.sklearn.autolog()
 
 # Load the training dataset
 db = load_diabetes()
 X_train, X_test, y_train, y_test = train_test_split(db.data, db.target)
 
 rf = RandomForestRegressor(n_estimators=100, max_depth=6, max_features=3)
-# MLflow triggers logging automatically upon model fitting
+# QCFlow triggers logging automatically upon model fitting
 rf.fit(X_train, y_train)
 ```
 
-Once the above code finishes, run the following command in a separate terminal and access the MLflow UI via the printed URL. An MLflow **Run** should be automatically created, which tracks the training dataset, hyper parameters, performance metrics, the trained model, dependencies, and even more.
+Once the above code finishes, run the following command in a separate terminal and access the QCFlow UI via the printed URL. An QCFlow **Run** should be automatically created, which tracks the training dataset, hyper parameters, performance metrics, the trained model, dependencies, and even more.
 
 ```
-mlflow ui
+qcflow ui
 ```
 
 ### Evaluating Models ([Doc](...))
@@ -73,33 +73,33 @@ TR TODO: Can I set automatic evaluations of some inequalities violations?
 The following example runs automatic evaluation for question-answering tasks with several built-in metrics.
 
 ```python
-import mlflow
+import qcflow
 import pandas as pd
 
 # Evaluation set contains (1) input question (2) model outputs (3) ground truth
 df = pd.DataFrame(
     {
-        "inputs": ["What is MLflow?", "What is Spark?"],
+        "inputs": ["What is QCFlow?", "What is Spark?"],
         "outputs": [
-            "MLflow is an innovative fully self-driving airship powered by AI.",
+            "QCFlow is an innovative fully self-driving airship powered by AI.",
             "Sparks is an American pop and rock duo formed in Los Angeles.",
         ],
         "ground_truth": [
-            "MLflow is an open-source platform for managing the end-to-end machine learning (ML) "
+            "QCFlow is an open-source platform for managing the end-to-end machine learning (ML) "
             "lifecycle.",
             "Apache Spark is an open-source, distributed computing system designed for big data "
             "processing and analytics.",
         ],
     }
 )
-eval_dataset = mlflow.data.from_pandas(
+eval_dataset = qcflow.data.from_pandas(
     df, predictions="outputs", targets="ground_truth"
 )
 
-# Start an MLflow Run to record the evaluation results to
-with mlflow.start_run(run_name="evaluate_qa"):
+# Start an QCFlow Run to record the evaluation results to
+with qcflow.start_run(run_name="evaluate_qa"):
     # Run automatic evaluation with a set of built-in metrics for question-answering models
-    results = mlflow.evaluate(
+    results = qcflow.evaluate(
         data=eval_dataset,
         model_type="question-answering",
     )
@@ -114,13 +114,13 @@ TBD
 ## Contributing
 
 We happily welcome contributions to QCFlow! Please see our
-[contribution guide](CONTRIBUTING.md) to learn more about contributing to MLflow.
+[contribution guide](CONTRIBUTING.md) to learn more about contributing to QCFlow.
 
 ## Core Members
 
 QCFlow is currently maintained by [me](https://github.com/Tomev).
 
-MLflow, the basis of QCFlow, is currently maintained by the following core members with significant contributions from hundreds of exceptionally talented community members.
+QCFlow, the basis of QCFlow, is currently maintained by the following core members with significant contributions from hundreds of exceptionally talented community members.
 
 - [Ben Wilson](https://github.com/BenWilson2)
 - [Corey Zumar](https://github.com/dbczumar)

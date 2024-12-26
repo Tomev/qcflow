@@ -10,9 +10,9 @@ import numpy as np
 import pandas as pd
 from packaging.version import Version
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos import facet_feature_statistics_pb2
-from mlflow.recipes.cards import histogram_generator
+from qcflow.exceptions import MlflowException
+from qcflow.protos import facet_feature_statistics_pb2
+from qcflow.recipes.cards import histogram_generator
 
 # Number of categorical strings values to be rendered as part of the histogram
 HISTOGRAM_CATEGORICAL_LEVELS_COUNT = 100

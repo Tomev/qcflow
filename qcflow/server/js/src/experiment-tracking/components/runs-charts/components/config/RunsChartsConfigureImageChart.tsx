@@ -12,7 +12,7 @@ import { useImageSliderStepMarks } from '../../hooks/useImageSliderStepMarks';
 import { RunsChartsRunData } from '../RunsCharts.common';
 import { Slider } from 'antd';
 import { useDesignSystemTheme } from '@databricks/design-system';
-import { LineSmoothSlider } from '@mlflow/mlflow/src/experiment-tracking/components/LineSmoothSlider';
+import { LineSmoothSlider } from '@qcflow/qcflow/src/experiment-tracking/components/LineSmoothSlider';
 
 export const RunsChartsConfigureImageChart = ({
   previewData,
@@ -81,7 +81,7 @@ export const RunsChartsConfigureImageChart = ({
         })}
       >
         <DialogCombobox
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigureimagechart.tsx_84"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigureimagechart.tsx_84"
           value={state.imageKeys}
           label="Images"
           multiSelect

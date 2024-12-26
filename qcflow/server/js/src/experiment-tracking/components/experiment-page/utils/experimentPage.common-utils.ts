@@ -8,14 +8,14 @@ import type { RunsChartsRunData } from '../../runs-charts/components/RunsCharts.
 export const EXPERIMENT_FIELD_PREFIX_PARAM = '$$$param$$$';
 export const EXPERIMENT_FIELD_PREFIX_METRIC = '$$$metric$$$';
 export const EXPERIMENT_FIELD_PREFIX_TAG = '$$$tag$$$';
-export const EXPERIMENT_PARENT_ID_TAG = 'mlflow.parentRunId';
-export const EXPERIMENT_LOG_MODEL_HISTORY_TAG = 'mlflow.log-model.history';
+export const EXPERIMENT_PARENT_ID_TAG = 'qcflow.parentRunId';
+export const EXPERIMENT_LOG_MODEL_HISTORY_TAG = 'qcflow.log-model.history';
 export const EXPERIMENT_RUNS_TABLE_ROW_HEIGHT = 32;
 
-const MLFLOW_NOTEBOOK_TYPE = 'NOTEBOOK';
-const MLFLOW_EXPERIMENT_TYPE = 'MLFLOW_EXPERIMENT';
+const QCFLOW_NOTEBOOK_TYPE = 'NOTEBOOK';
+const QCFLOW_EXPERIMENT_TYPE = 'QCFLOW_EXPERIMENT';
 
-const EXPERIMENT_TYPE_TAG = 'mlflow.experimentType';
+const EXPERIMENT_TYPE_TAG = 'qcflow.experimentType';
 
 /**
  * Function that gets the experiment type for a given experiment object
@@ -31,16 +31,16 @@ export const getExperimentType = (experiment: ExperimentEntity) => {
 const hasExperimentType = (experiment: ExperimentEntity, type: string) => getExperimentType(experiment) === type;
 
 /**
- * Function returns true if the experiment is of default ("MLFLOW_EXPERIMENT") type
+ * Function returns true if the experiment is of default ("QCFLOW_EXPERIMENT") type
  */
 export const isExperimentTypeDefault = (experiment: ExperimentEntity) =>
-  hasExperimentType(experiment, MLFLOW_EXPERIMENT_TYPE);
+  hasExperimentType(experiment, QCFLOW_EXPERIMENT_TYPE);
 
 /**
  * Function returns true if the experiment is of notebook type
  */
 export const isExperimentTypeNotebook = (experiment: ExperimentEntity) =>
-  hasExperimentType(experiment, MLFLOW_NOTEBOOK_TYPE);
+  hasExperimentType(experiment, QCFLOW_NOTEBOOK_TYPE);
 
 /**
  * Function that checks if experiment's allowed actions include

@@ -44,12 +44,12 @@ const Selector = ({
   const intl = useIntl();
   return (
     <SimpleSelect
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_comparerunbox.tsx_46"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_comparerunbox.tsx_46"
       id={id}
       css={{ width: '100%', marginBottom: '16px' }}
       placeholder={intl.formatMessage({
         defaultMessage: 'Select parameter or metric',
-        description: 'Placeholder text for parameter/metric selector in box plot comparison in MLflow',
+        description: 'Placeholder text for parameter/metric selector in box plot comparison in QCFlow',
       })}
       onChange={({ target }) => {
         const { value } = target;
@@ -181,7 +181,7 @@ export const CompareRunBox = ({ runInfos, metricLists, paramLists }: Props) => {
             <FormUI.Label htmlFor="x-axis-selector">
               <FormattedMessage
                 defaultMessage="X-axis:"
-                description="Label text for X-axis in box plot comparison in MLflow"
+                description="Label text for X-axis in box plot comparison in QCFlow"
               />
             </FormUI.Label>
           </div>
@@ -191,7 +191,7 @@ export const CompareRunBox = ({ runInfos, metricLists, paramLists }: Props) => {
             <FormUI.Label htmlFor="y-axis-selector">
               <FormattedMessage
                 defaultMessage="Y-axis:"
-                description="Label text for Y-axis in box plot comparison in MLflow"
+                description="Label text for Y-axis in box plot comparison in QCFlow"
               />
             </FormUI.Label>
           </div>

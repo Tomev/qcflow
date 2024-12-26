@@ -70,15 +70,15 @@ if [[ ! -z $req_files ]]; then
   retry-with-backoff pip install $req_files
 fi
 
-# Install `mlflow-test-plugin` without dependencies
-pip install --no-dependencies tests/resources/mlflow-test-plugin
+# Install `qcflow-test-plugin` without dependencies
+pip install --no-dependencies tests/resources/qcflow-test-plugin
 
 # Print current environment info
 pip install aiohttp
-which mlflow
+which qcflow
 
-# Print mlflow version
-mlflow --version
+# Print qcflow version
+qcflow --version
 
 # Turn off trace output & exit-on-errors
 set +ex

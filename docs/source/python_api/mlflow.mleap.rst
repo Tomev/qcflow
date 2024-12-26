@@ -1,7 +1,7 @@
-mlflow.mleap
+qcflow.mleap
 ==============
 
-.. automodule:: mlflow.mleap
+.. automodule:: qcflow.mleap
     :members:
     :undoc-members:
     :show-inheritance:

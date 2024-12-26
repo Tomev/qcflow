@@ -1,18 +1,18 @@
 context("Model Registry")
 
 get_mock_client <- function() {
-  client <- new_mlflow_client_impl(
+  client <- new_qcflow_client_impl(
     get_host_creds = function() {
-      new_mlflow_host_creds(host = "localhost")
+      new_qcflow_host_creds(host = "localhost")
     }
   )
 
   return(client)
 }
 
-test_that("mlflow can register a model", {
-  with_mock(.env = "mlflow",
-            mlflow_rest = function(...) {
+test_that("qcflow can register a model", {
+  with_mock(.env = "qcflow",
+            qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2], collapse = "/") == "registered-models/create")
 
@@ -29,7 +29,7 @@ test_that("mlflow can register a model", {
       ))
     }, {
       mock_client <- get_mock_client()
-      registered_model <- mlflow_create_registered_model("test_model", client = mock_client)
+      registered_model <- qcflow_create_registered_model("test_model", client = mock_client)
 
       expect_true("name" %in% names(registered_model))
       expect_true("creation_timestamp" %in% names(registered_model))
@@ -38,10 +38,10 @@ test_that("mlflow can register a model", {
     })
 })
 
-test_that("mlflow can register a model with tags and description", {
+test_that("qcflow can register a model with tags and description", {
   with_mock(
-    .env = "mlflow",
-    mlflow_rest = function(...) {
+    .env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2], collapse = "/") == "registered-models/create")
 
@@ -64,7 +64,7 @@ test_that("mlflow can register a model with tags and description", {
     }, {
       mock_client <- get_mock_client()
 
-      registered_model <- mlflow_create_registered_model(
+      registered_model <- qcflow_create_registered_model(
           "test_model",
           tags = list(list(key = "creator", value = "Donald Duck")),
           description = "Some test model",
@@ -75,9 +75,9 @@ test_that("mlflow can register a model with tags and description", {
   )
 })
 
-test_that("mlflow can get a registered model", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can get a registered model", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2], collapse = "/") == "registered-models/get")
       expect_equal(args$verb, "GET")
@@ -88,13 +88,13 @@ test_that("mlflow can get a registered model", {
     }, {
       mock_client <- get_mock_client()
 
-      mlflow_get_registered_model("test_model", client = mock_client)
+      qcflow_get_registered_model("test_model", client = mock_client)
   })
 })
 
-test_that("mlflow can rename a registered model", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can rename a registered model", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_equal(paste(args[1:2], collapse = "/"), "registered-models/rename")
       expect_equal(args$verb, "POST")
@@ -106,14 +106,14 @@ test_that("mlflow can rename a registered model", {
       ))
     }, {
       mock_client <- get_mock_client()
-      mlflow_rename_registered_model("old_model_name", "new_model_name",
+      qcflow_rename_registered_model("old_model_name", "new_model_name",
                                      client = mock_client)
   })
 })
 
-test_that("mlflow can update a model", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can update a model", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_equal(paste(args[1:2], collapse = "/"), "registered-models/update")
       expect_equal(args$verb, "PATCH")
@@ -126,27 +126,27 @@ test_that("mlflow can update a model", {
       ))
     }, {
       mock_client <- get_mock_client()
-      mlflow_update_registered_model("test_model", "New Description",
+      qcflow_update_registered_model("test_model", "New Description",
                                      client = mock_client)
   })
 })
 
-test_that("mlflow can delete a model", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can delete a model", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_equivalent(paste(args[1:2], collapse = "/"), "registered-models/delete")
       expect_equal(args$data$name, "test_model")
   }, {
     mock_client <- get_mock_client()
 
-    mlflow_delete_registered_model("test_model", client = mock_client)
+    qcflow_delete_registered_model("test_model", client = mock_client)
   })
 })
 
-test_that("mlflow can retrieve a list of registered models without args", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can retrieve a list of registered models without args", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2], collapse = "/") == "registered-models/search")
       expect_equal(args$verb, "POST")
@@ -157,14 +157,14 @@ test_that("mlflow can retrieve a list of registered models without args", {
       ))
     }, {
       mock_client <- get_mock_client()
-      search_result <- mlflow_search_registered_models(client = mock_client)
+      search_result <- qcflow_search_registered_models(client = mock_client)
       expect_null(search_result$next_page_token)
   })
 })
 
-test_that("mlflow can retrieve a list of registered models with args", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can retrieve a list of registered models with args", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2], collapse = "/") == "registered-models/search")
       expect_equal(args$verb, "POST")
@@ -188,7 +188,7 @@ test_that("mlflow can retrieve a list of registered models with args", {
       ))
     }, {
       mock_client <- get_mock_client()
-      search_result <- mlflow_search_registered_models(filter = "name LIKE '%foo'",
+      search_result <- qcflow_search_registered_models(filter = "name LIKE '%foo'",
                                                        max_results = 5,
                                                        order_by = list(
                                                          "name ASC", "last_updated_timestamp"
@@ -207,9 +207,9 @@ test_that("mlflow can retrieve a list of registered models with args", {
   })
 })
 
-test_that("mlflow can retrieve a list of model versions", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can retrieve a list of model versions", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2],
                   collapse = "/") == "registered-models/get-latest-versions")
@@ -218,13 +218,13 @@ test_that("mlflow can retrieve a list of model versions", {
       return(list(model_versions = list()))
     }, {
       mock_client <- get_mock_client()
-      mlflow_get_latest_versions(name = "mymodel", client = mock_client)
+      qcflow_get_latest_versions(name = "mymodel", client = mock_client)
   })
 })
 
-test_that("mlflow can retrieve a list of model versions for given stages", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can retrieve a list of model versions for given stages", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2],
                   collapse = "/") == "registered-models/get-latest-versions")
@@ -232,15 +232,15 @@ test_that("mlflow can retrieve a list of model versions for given stages", {
       return(list(model_versions = list()))
     }, {
       mock_client <- get_mock_client()
-      mlflow_get_latest_versions(name = "mymodel",
+      qcflow_get_latest_versions(name = "mymodel",
                                  stages=list("Production", "Archived"),
                                  client = mock_client)
   })
 })
 
-test_that("mlflow can create a model version", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can create a model version", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2],
                   collapse = "/") == "model-versions/create")
@@ -252,15 +252,15 @@ test_that("mlflow can create a model version", {
       )))
     }, {
       mock_client <- get_mock_client()
-      mlflow_create_model_version(name = "mymodel",
+      qcflow_create_model_version(name = "mymodel",
                                  source="test_uri",
                                  client = mock_client)
   })
 })
 
-test_that("mlflow can get a model version", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can get a model version", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2],
                   collapse = "/") == "model-versions/get")
@@ -272,15 +272,15 @@ test_that("mlflow can get a model version", {
       )))
     }, {
       mock_client <- get_mock_client()
-      mlflow_get_model_version(name = "mymodel",
+      qcflow_get_model_version(name = "mymodel",
                                version = 1,
                                client = mock_client)
   })
 })
 
-test_that("mlflow can update a model version", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can update a model version", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2],
                         collapse = "/") == "model-versions/update")
@@ -292,16 +292,16 @@ test_that("mlflow can update a model version", {
       )))
     }, {
       mock_client <- get_mock_client()
-      mlflow_update_model_version(name = "mymodel",
+      qcflow_update_model_version(name = "mymodel",
                                   version = 1,
                                   description = "New Description",
                                   client = mock_client)
   })
 })
 
-test_that("mlflow can delete a model version", {
-  with_mock(.env = "mlflow",
-            mlflow_rest = function(...) {
+test_that("qcflow can delete a model version", {
+  with_mock(.env = "qcflow",
+            qcflow_rest = function(...) {
               args <- list(...)
               expect_true(paste(args[1:2],
                                 collapse = "/") == "model-versions/delete")
@@ -313,15 +313,15 @@ test_that("mlflow can delete a model version", {
               )))
             }, {
               mock_client <- get_mock_client()
-              mlflow_delete_model_version(name = "mymodel",
+              qcflow_delete_model_version(name = "mymodel",
                                        version = 1,
                                        client = mock_client)
             })
 })
 
-test_that("mlflow can transition a model", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can transition a model", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2],
                   collapse = "/") == "model-versions/transition-stage")
@@ -333,16 +333,16 @@ test_that("mlflow can transition a model", {
       )))
     }, {
       mock_client <- get_mock_client()
-      mlflow_transition_model_version_stage(name = "mymodel",
+      qcflow_transition_model_version_stage(name = "mymodel",
                                             version = 1,
                                             stage = "Production",
                                             client = mock_client)
   })
 })
 
-test_that("mlflow can set model version tag", {
-  with_mock(.env = "mlflow",
-    mlflow_rest = function(...) {
+test_that("qcflow can set model version tag", {
+  with_mock(.env = "qcflow",
+    qcflow_rest = function(...) {
       args <- list(...)
       expect_true(paste(args[1:2],
                   collapse = "/") == "model-versions/set-tag")
@@ -354,7 +354,7 @@ test_that("mlflow can set model version tag", {
       )))
     }, {
       mock_client <- get_mock_client()
-      mlflow_set_model_version_tag(name = "mymodel",
+      qcflow_set_model_version_tag(name = "mymodel",
                                    version = 1,
                                    key = "test_key",
                                    value = "test_value",

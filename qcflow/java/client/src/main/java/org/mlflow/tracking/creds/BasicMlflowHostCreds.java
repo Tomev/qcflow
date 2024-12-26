@@ -1,6 +1,6 @@
-package org.mlflow.tracking.creds;
+package org.qcflow.tracking.creds;
 
-/** A static hostname and optional credentials to talk to an MLflow server. */
+/** A static hostname and optional credentials to talk to an QCFlow server. */
 public class BasicMlflowHostCreds implements MlflowHostCreds, MlflowHostCredsProvider {
   private String host;
   private String username;

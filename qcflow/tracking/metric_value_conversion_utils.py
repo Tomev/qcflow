@@ -1,6 +1,6 @@
 import sys
 
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
 
 
 def _is_module_imported(module_name: str) -> bool:

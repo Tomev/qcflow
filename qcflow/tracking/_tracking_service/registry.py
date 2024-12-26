@@ -1,7 +1,7 @@
 import threading
 from functools import lru_cache
 
-from mlflow.tracking.registry import StoreRegistry
+from qcflow.tracking.registry import StoreRegistry
 
 _building_store_lock = threading.Lock()
 
@@ -12,7 +12,7 @@ class TrackingStoreRegistry(StoreRegistry):
     This class allows the registration of a function or class to provide an
     implementation for a given scheme of `store_uri` through the `register`
     methods. Implementations declared though the entrypoints
-    `mlflow.tracking_store` group can be automatically registered through the
+    `qcflow.tracking_store` group can be automatically registered through the
     `register_entrypoints` method.
 
     When instantiating a store through the `get_store` method, the scheme of
@@ -22,7 +22,7 @@ class TrackingStoreRegistry(StoreRegistry):
     """
 
     def __init__(self):
-        super().__init__("mlflow.tracking_store")
+        super().__init__("qcflow.tracking_store")
 
     def get_store(self, store_uri=None, artifact_uri=None):
         """Get a store from the registry based on the scheme of store_uri
@@ -35,11 +35,11 @@ class TrackingStoreRegistry(StoreRegistry):
                 implementation.
 
         Returns:
-            An instance of `mlflow.store.tracking.AbstractStore` that fulfills the store URI
+            An instance of `qcflow.store.tracking.AbstractStore` that fulfills the store URI
             requirements.
 
         """
-        from mlflow.tracking._tracking_service import utils
+        from qcflow.tracking._tracking_service import utils
 
         resolved_store_uri = utils._resolve_tracking_uri(store_uri)
         return self._get_store_with_resolved_uri(resolved_store_uri, artifact_uri)

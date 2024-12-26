@@ -81,7 +81,7 @@
   },
   "+iY2p8" : {
     "defaultMessage" : "カスタム",
-    "description" : "Header for custom tracing tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for custom tracing tab in the QCFlow Tracing quickstart guide"
   },
   "+qRrHK" : {
     "defaultMessage" : "エンティティの詳細",
@@ -201,7 +201,7 @@
   },
   "/v6KuF" : {
     "defaultMessage" : "{code}関数を呼び出すと、LlamaIndexクエリーのトレースが自動的にログに記録されます。例：",
-    "description" : "Description of how to log traces for the LlamaIndex package using MLflow autologging. This message is followed by a code example."
+    "description" : "Description of how to log traces for the LlamaIndex package using QCFlow autologging. This message is followed by a code example."
   },
   "/vyrNO" : {
     "defaultMessage" : "キャンセル",
@@ -217,7 +217,7 @@
   },
   "0ElvS9" : {
     "defaultMessage" : "Y軸:",
-    "description" : "Label text for y-axis in contour plot comparison in MLflow"
+    "description" : "Label text for y-axis in contour plot comparison in QCFlow"
   },
   "0FuFzX" : {
     "defaultMessage" : "キャンセル済",
@@ -273,7 +273,7 @@
   },
   "0gGMZm" : {
     "defaultMessage" : "名前",
-    "description" : "Default text for name placeholder in editable tags table form in MLflow"
+    "description" : "Default text for name placeholder in editable tags table form in QCFlow"
   },
   "0gIYIc" : {
     "defaultMessage" : "指数平滑移動平均に基づき点の間の線を「平滑化」します。ロギングの頻度が高い場合は、平滑化することで全体的な傾向が分かりやすくなります。",
@@ -281,7 +281,7 @@
   },
   "0ja5l/" : {
     "defaultMessage" : "タグがありません。",
-    "description" : "Text for no tags found in editable form table in MLflow"
+    "description" : "Text for no tags found in editable form table in QCFlow"
   },
   "0je5+r" : {
     "defaultMessage" : "プロバイダー",
@@ -317,7 +317,7 @@
   },
   "1/M8+x" : {
     "defaultMessage" : "X軸:",
-    "description" : "Label text for x-axis in scatter plot comparison in MLflow"
+    "description" : "Label text for x-axis in scatter plot comparison in QCFlow"
   },
   "137bhH" : {
     "defaultMessage" : "最小",
@@ -329,7 +329,7 @@
   },
   "16BvfJ" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}年前}}",
-    "description" : "Text for time in years since given date for MLflow views"
+    "description" : "Text for time in years since given date for QCFlow views"
   },
   "16HcXN" : {
     "defaultMessage" : "モデルの訓練に失敗",
@@ -341,7 +341,7 @@
   },
   "17k196" : {
     "defaultMessage" : "キャンセル",
-    "description" : "Text for the cancel button in an editable note in MLflow"
+    "description" : "Text for the cancel button in an editable note in QCFlow"
   },
   "18/UVG" : {
     "defaultMessage" : "上記のコントロールを使用して、テーブルを含むアーティファクトを1つ以上選択してください。",
@@ -664,7 +664,7 @@
     "description" : "Learn more tooltip link to learn more on how to search models"
   },
   "3geT+I" : {
-    "defaultMessage" : "MLflowのランのファイル出力を保存するためにlog artifact APIを使用してください。",
+    "defaultMessage" : "QCFlowのランのファイル出力を保存するためにlog artifact APIを使用してください。",
     "description" : "Information in the empty state explaining how one could log artifacts output files for the experiment runs"
   },
   "3kBS89" : {
@@ -796,11 +796,11 @@
   },
   "4idqpX" : {
     "defaultMessage" : "追加",
-    "description" : "Add button text in editable tags table view in MLflow"
+    "description" : "Add button text in editable tags table view in QCFlow"
   },
   "4jGMiw" : {
     "defaultMessage" : "不明なエラーが発生しました。",
-    "description" : "Error message for uncaught errors in mlflow"
+    "description" : "Error message for uncaught errors in qcflow"
   },
   "4jePgO" : {
     "defaultMessage" : "最終書き込み日",
@@ -864,7 +864,7 @@
   },
   "5GCYzy" : {
     "defaultMessage" : "エクスペリメントラン - Databricks",
-    "description" : "Title on a page used to manage MLflow experiments runs"
+    "description" : "Title on a page used to manage QCFlow experiments runs"
   },
   "5IH6UY" : {
     "defaultMessage" : "インスタンスプロファイル",
@@ -888,7 +888,7 @@
   },
   "5ZAXeS" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}か月前}}",
-    "description" : "Text for time in months since given date for MLflow views"
+    "description" : "Text for time in months since given date for QCFlow views"
   },
   "5a8Jqp" : {
     "defaultMessage" : "イベント",
@@ -972,7 +972,7 @@
   },
   "656rRX" : {
     "defaultMessage" : "<link>ホームページ</link>に戻ります。",
-    "description" : "Default error message for error views in MLflow"
+    "description" : "Default error message for error views in QCFlow"
   },
   "66y+x5" : {
     "defaultMessage" : "入力したキーワードが無効です",
@@ -1116,7 +1116,7 @@
   },
   "7/urtn" : {
     "defaultMessage" : "{code}関数を呼び出すと、LangChain起動またはLangGraph起動のトレースが自動的にログに記録されます。例：",
-    "description" : "Description of how to log traces for the LangChain/LangGraph package using MLflow autologging. This message is followed by a code example."
+    "description" : "Description of how to log traces for the LangChain/LangGraph package using QCFlow autologging. This message is followed by a code example."
   },
   "71dHIO" : {
     "defaultMessage" : "クラシックML",
@@ -1156,7 +1156,7 @@
   },
   "79dD5F" : {
     "defaultMessage" : "ノートの送信中にエラーが発生しました。",
-    "description" : "Error message text when saving an editable note in MLflow"
+    "description" : "Error message text when saving an editable note in QCFlow"
   },
   "7CVkgZ" : {
     "defaultMessage" : "ソース",
@@ -1196,7 +1196,7 @@
   },
   "7UncLb" : {
     "defaultMessage" : "LlamaIndex",
-    "description" : "Header for LlamaIndex tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for LlamaIndex tab in the QCFlow Tracing quickstart guide"
   },
   "7WkP1e" : {
     "defaultMessage" : "削除",
@@ -1208,7 +1208,7 @@
   },
   "7jsqqe" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}分前}}",
-    "description" : "Text for time in minutes since given date for MLflow views"
+    "description" : "Text for time in minutes since given date for QCFlow views"
   },
   "7kUi8J" : {
     "defaultMessage" : "期間:",
@@ -1248,7 +1248,7 @@
   },
   "7zNDHj" : {
     "defaultMessage" : "パラメーター:",
-    "description" : "Label text for parameters in parallel coordinates plot in MLflow"
+    "description" : "Label text for parameters in parallel coordinates plot in QCFlow"
   },
   "8+t65I" : {
     "defaultMessage" : "エンドポイントは、保留中の更新が進行している間は、編集できません。",
@@ -1268,7 +1268,7 @@
   },
   "81DxPY" : {
     "defaultMessage" : "等高線図は3個以上のユニークなメトリクスまたはパラメータでランのグループを比較した場合にのみ表示されます。等高線図を使用して可視化するために、より多くのメトリクスまたはパラメータを実行ジョブに記録します。",
-    "description" : "Text explanation when contour plot is disabled in comparison pages\n              in MLflow"
+    "description" : "Text explanation when contour plot is disabled in comparison pages\n              in QCFlow"
   },
   "88l+j9" : {
     "defaultMessage" : "モデルバージョン{versionNum}を削除してもよろしいですか？この操作は元に戻せません。",
@@ -1308,7 +1308,7 @@
   },
   "8XbTnl" : {
     "defaultMessage" : "値",
-    "description" : "Default text for value placeholder in editable tags table form in MLflow"
+    "description" : "Default text for value placeholder in editable tags table form in QCFlow"
   },
   "8XrJnT" : {
     "defaultMessage" : "セクションを削除",
@@ -1352,7 +1352,7 @@
   },
   "8xji5J" : {
     "defaultMessage" : "X軸:",
-    "description" : "Label text for X-axis in box plot comparison in MLflow"
+    "description" : "Label text for X-axis in box plot comparison in QCFlow"
   },
   "8zQ+7f" : {
     "defaultMessage" : "カスタム加重パス",
@@ -1376,7 +1376,7 @@
   },
   "93iLUV" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}秒前}}",
-    "description" : "Text for time in seconds since given date for MLflow views"
+    "description" : "Text for time in seconds since given date for QCFlow views"
   },
   "97hGxL" : {
     "defaultMessage" : "キャンセル",
@@ -1436,7 +1436,7 @@
   },
   "9dX4XQ" : {
     "defaultMessage" : "パラメーターまたはメトリクスを選択",
-    "description" : "Placeholder text for parameter/metric selector in box plot comparison in MLflow"
+    "description" : "Placeholder text for parameter/metric selector in box plot comparison in QCFlow"
   },
   "9fVZg8" : {
     "defaultMessage" : "削除",
@@ -1904,7 +1904,7 @@
   },
   "E7mv3b" : {
     "defaultMessage" : "保存",
-    "description" : "Text for saving changes on rows in editable form table in MLflow"
+    "description" : "Text for saving changes on rows in editable form table in QCFlow"
   },
   "E85LX0" : {
     "defaultMessage" : "Unity Catalog",
@@ -1932,7 +1932,7 @@
   },
   "EKyt+3" : {
     "defaultMessage" : "メトリクス:",
-    "description" : "Label text for metrics in parallel coordinates plot in MLflow"
+    "description" : "Label text for metrics in parallel coordinates plot in QCFlow"
   },
   "EN0lUA" : {
     "defaultMessage" : "列",
@@ -2287,7 +2287,7 @@
   },
   "Hk0RSH" : {
     "defaultMessage" : "Y軸:",
-    "description" : "Label text for Y-axis in box plot comparison in MLflow"
+    "description" : "Label text for Y-axis in box plot comparison in QCFlow"
   },
   "Hq/vjk" : {
     "defaultMessage" : "すべて",
@@ -2391,7 +2391,7 @@
   },
   "IXPpwQ" : {
     "defaultMessage" : "404: リソースが見つかりません",
-    "description" : "Generic 404 user-friendly error for the MLflow UI"
+    "description" : "Generic 404 user-friendly error for the QCFlow UI"
   },
   "IYOTHY" : {
     "defaultMessage" : "トークン/秒",
@@ -3059,7 +3059,7 @@
   },
   "OzyPl3" : {
     "defaultMessage" : "パラメータを選択してください",
-    "description" : "Placeholder text for parameters in parallel coordinates plot in MLflow"
+    "description" : "Placeholder text for parameters in parallel coordinates plot in QCFlow"
   },
   "P3U72f" : {
     "defaultMessage" : "親のラン",
@@ -3139,7 +3139,7 @@
   },
   "PRe/8y" : {
     "defaultMessage" : "なし",
-    "description" : "Default text for no content in an editable note in MLflow"
+    "description" : "Default text for no content in an editable note in QCFlow"
   },
   "PWk6rC" : {
     "defaultMessage" : "確認",
@@ -3274,7 +3274,7 @@
     "description" : "Text content for the online store table time to live metadata field in seconds."
   },
   "Qr828b" : {
-    "defaultMessage" : "MLflowランデータをすべてダウンロードするには、Databricksノートブックでこのコードスニペットを実行します",
+    "defaultMessage" : "QCFlowランデータをすべてダウンロードするには、Databricksノートブックでこのコードスニペットを実行します",
     "description" : "Here is the description on where to run the following code snippet"
   },
   "Qsgg+9" : {
@@ -3451,7 +3451,7 @@
   },
   "Shv28w" : {
     "defaultMessage" : "保存",
-    "description" : "Default text for save button on editable notes in MLflow"
+    "description" : "Default text for save button on editable notes in QCFlow"
   },
   "SnpuUi" : {
     "defaultMessage" : "p99 - {modelName}",
@@ -3475,7 +3475,7 @@
   },
   "SzvvXl" : {
     "defaultMessage" : "送信できませんでした",
-    "description" : "Message text for failing to save changes in editable note in MLflow"
+    "description" : "Message text for failing to save changes in editable note in QCFlow"
   },
   "SzwKe5" : {
     "defaultMessage" : "Databricks Runtime 13.1以上を実行中で、<link>Unity Catalog</link>にアクセス可能なクラスターで以下のスニペットを実行します。まず、Pythonの次の依存関係をインストールします:",
@@ -3623,7 +3623,7 @@
   },
   "U3btBc" : {
     "defaultMessage" : "例：",
-    "description" : "Text header for examples of mlflow search syntax"
+    "description" : "Text header for examples of qcflow search syntax"
   },
   "U4s/77" : {
     "defaultMessage" : "表示数を増やす",
@@ -3646,7 +3646,7 @@
     "description" : "Text for activity description under confirmation modal for model\n               version stage transition"
   },
   "UEDu0c" : {
-    "defaultMessage" : "MLflowのUIは自動的にアクティブなランのメトリクス履歴を取得し、{interval}秒間隔でメトリクスプロットを更新します。",
+    "defaultMessage" : "QCFlowのUIは自動的にアクティブなランのメトリクス履歴を取得し、{interval}秒間隔でメトリクスプロットを更新します。",
     "description" : "Helpful tooltip message to explain the automatic metrics plot update"
   },
   "UEESlL" : {
@@ -3659,14 +3659,14 @@
   },
   "UGAKJp" : {
     "defaultMessage" : "X軸:",
-    "description" : "Label text for x-axis in contour plot comparison in MLflow"
+    "description" : "Label text for x-axis in contour plot comparison in QCFlow"
   },
   "UI4Th/" : {
     "defaultMessage" : "ログを取得するモデルはありません。",
     "description" : "Text for logs on the endpoint page when no served models are available"
   },
   "UNziH3" : {
-    "defaultMessage" : "AutoMLで生成されたノートブックをMLflowアーティファクトとして保存できるようになりました。<link>こちら</link>をクリックして詳細を表示。",
+    "defaultMessage" : "AutoMLで生成されたノートブックをQCFlowアーティファクトとして保存できるようになりました。<link>こちら</link>をクリックして詳細を表示。",
     "description" : "Text informing the user of the new AutoML behaviour for trial notebooks"
   },
   "USGj9l" : {
@@ -3746,7 +3746,7 @@
     "description" : "Error message when the artifact is unable to load. This message is displayed in the open source ML flow only"
   },
   "V5cjvM" : {
-    "defaultMessage" : "MLflowモデルを別の登録済みモデルにコピーして、環境間で単純なモデルのプロモートを行います。より成熟した製品グレードのユースケースでは、モデルの自動学習ワークフローをセットアップして、管理された環境でモデルを構築することをお勧めします。<link>詳細を表示</link>",
+    "defaultMessage" : "QCFlowモデルを別の登録済みモデルにコピーして、環境間で単純なモデルのプロモートを行います。より成熟した製品グレードのユースケースでは、モデルの自動学習ワークフローをセットアップして、管理された環境でモデルを構築することをお勧めします。<link>詳細を表示</link>",
     "description" : "Model registry > OSS Promote model modal > description paragraph body"
   },
   "V9FtFz" : {
@@ -3830,7 +3830,7 @@
     "description" : "Text for the HTTP/HF location link in the experiment run dataset drawer"
   },
   "VwFPMZ" : {
-    "defaultMessage" : "<modelServingDocLink>モデルサービングエンドポイント</modelServingDocLink>を作成し、REST APIインターフェイスでのモデルを提供します。2024年1月まで<legacyLink>レガシータイプのMLflowモデルサービング</legacyLink>も使用できます。有効にするには、<button>こちらのリンク</button>をクリックしてください。",
+    "defaultMessage" : "<modelServingDocLink>モデルサービングエンドポイント</modelServingDocLink>を作成し、REST APIインターフェイスでのモデルを提供します。2024年1月まで<legacyLink>レガシータイプのQCFlowモデルサービング</legacyLink>も使用できます。有効にするには、<button>こちらのリンク</button>をクリックしてください。",
     "description" : "Link to allow enabling of serving V1 when endpoints UI is available"
   },
   "Vz5kN2" : {
@@ -3863,7 +3863,7 @@
   },
   "WJF+wY" : {
     "defaultMessage" : "Z軸:",
-    "description" : "Label text for z-axis in contour plot comparison in MLflow"
+    "description" : "Label text for z-axis in contour plot comparison in QCFlow"
   },
   "WL3e0K" : {
     "defaultMessage" : "拒否",
@@ -3874,8 +3874,8 @@
     "description" : "Label for the model version of the endpoint"
   },
   "WNz02j" : {
-    "defaultMessage" : "より複雑なユースケースに対応するために、MLflow はトレースの動作を制御するために使用できる詳細なAPIも提供しています。詳細については、MLflow Tracing用のFluent APIとクライアントAPIに関する<a>公式ドキュメント</a>を参照してください。",
-    "description" : "Explanation of alternative APIs for custom tracing in MLflow. The link leads to the MLflow documentation for the user to learn more."
+    "defaultMessage" : "より複雑なユースケースに対応するために、QCFlow はトレースの動作を制御するために使用できる詳細なAPIも提供しています。詳細については、QCFlow Tracing用のFluent APIとクライアントAPIに関する<a>公式ドキュメント</a>を参照してください。",
+    "description" : "Explanation of alternative APIs for custom tracing in QCFlow. The link leads to the QCFlow documentation for the user to learn more."
   },
   "WP1pyQ" : {
     "defaultMessage" : "作成者",
@@ -3910,7 +3910,7 @@
     "description" : "Title text for the producer schedule column."
   },
   "Wd8Tga" : {
-    "defaultMessage" : "スキーマがありません。モデルを使って入力と出力スキーマを含める方法については、<link>MLflowドキュメント</link>を参照してください。",
+    "defaultMessage" : "スキーマがありません。モデルを使って入力と出力スキーマを含める方法については、<link>QCFlowドキュメント</link>を参照してください。",
     "description" : "Text for schema table when no schema exists in the model version\n                     page"
   },
   "WeAgwI" : {
@@ -4342,7 +4342,7 @@
     "description" : "Experiment page > artifact compare view > empty state for no tables selected > title"
   },
   "ZvhaDE" : {
-    "defaultMessage" : "このエンドポイントのいずれのモデルも、ログにサンプルが記録されていません。MLflowでモデルをログに記録するときに、モデル入力データのサンプルをモデルと共に保存できます。",
+    "defaultMessage" : "このエンドポイントのいずれのモデルも、ログにサンプルが記録されていません。QCFlowでモデルをログに記録するときに、モデル入力データのサンプルをモデルと共に保存できます。",
     "description" : "Popover text informing the user that none of the models behind the endpoint was not logged with an example"
   },
   "Zvy44L" : {
@@ -4399,7 +4399,7 @@
   },
   "aIP7Kb" : {
     "defaultMessage" : "キャンセル",
-    "description" : "Cancel button text for confirmation pop-up to delete a tag from\n                     table in MLflow"
+    "description" : "Cancel button text for confirmation pop-up to delete a tag from\n                     table in QCFlow"
   },
   "aJvfWR" : {
     "defaultMessage" : "最も頻度の低いラベル (<code>{leastFrequentLabel}</code>) と最も頻度の高いラベル (<code>{mostFrequentLabel}</code>) の比率は<code>{ratio}</code>です。",
@@ -4415,7 +4415,7 @@
   },
   "aOW396" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}時間前}}",
-    "description" : "Text for time in hours since given date for MLflow views"
+    "description" : "Text for time in hours since given date for QCFlow views"
   },
   "aQdzaE" : {
     "defaultMessage" : "Python",
@@ -4487,7 +4487,7 @@
   },
   "aseJdC" : {
     "defaultMessage" : "LangChain / LangGraph",
-    "description" : "Header for LangChain / LangGraph tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for LangChain / LangGraph tab in the QCFlow Tracing quickstart guide"
   },
   "at1Htb" : {
     "defaultMessage" : "コンテナのURI",
@@ -4543,7 +4543,7 @@
   },
   "bHuphj" : {
     "defaultMessage" : "以下のドキュメントではpyfuncモデルフレーバーを使ってバッチ用またはリアルタイムスコアリング用にこのモデルをカスタマイズし、実装する方法について説明しています。",
-    "description" : "Subtext heading for a list of documents that describe how to customize the model using the mlflow.pyfunc module"
+    "description" : "Subtext heading for a list of documents that describe how to customize the model using the qcflow.pyfunc module"
   },
   "bIZ/La" : {
     "defaultMessage" : "AutoMLは「Null」を代入しました。",
@@ -4619,7 +4619,7 @@
   },
   "c0slEY" : {
     "defaultMessage" : "個々の実行をクリックすると、それに関連付けられているすべてのモデルが表示されます。",
-    "description" : "MLflow experiment detail page > runs table > tooltip on ML \"Models\" column header"
+    "description" : "QCFlow experiment detail page > runs table > tooltip on ML \"Models\" column header"
   },
   "c4FXGL" : {
     "defaultMessage" : "レート制限（エンドポイントごと）",
@@ -4647,7 +4647,7 @@
   },
   "cBDYla" : {
     "defaultMessage" : "操作",
-    "description" : "Column title for actions column in editable form table in MLflow"
+    "description" : "Column title for actions column in editable form table in QCFlow"
   },
   "cCK0QF" : {
     "defaultMessage" : "スループットが高いかレイテンシーが低いワークロードに推奨されます。詳しくは、<link>こちら</link>をご覧ください。",
@@ -4667,7 +4667,7 @@
   },
   "cI+F/q" : {
     "defaultMessage" : "名前",
-    "description" : "Column title for name column in editable tags table view in MLflow"
+    "description" : "Column title for name column in editable tags table view in QCFlow"
   },
   "cJKERI" : {
     "defaultMessage" : "Databricksの地域の詳細を表示"
@@ -4822,7 +4822,7 @@
   },
   "ddAFCW" : {
     "defaultMessage" : "500: 内部サーバーエラー",
-    "description" : "Generic 500 user-friendly error for the MLflow UI"
+    "description" : "Generic 500 user-friendly error for the QCFlow UI"
   },
   "diywSK" : {
     "defaultMessage" : "最小",
@@ -4854,7 +4854,7 @@
   },
   "dwTTNK" : {
     "defaultMessage" : "移動してもよろしいですか？保存されていないテキストの変更点は失われます。",
-    "description" : "Prompt text for navigating away before saving changes in editable note in MLflow"
+    "description" : "Prompt text for navigating away before saving changes in editable note in QCFlow"
   },
   "dy570e" : {
     "defaultMessage" : "{numEvals}件中{numPassing}件が合格",
@@ -4930,7 +4930,7 @@
   },
   "eNUbaN" : {
     "defaultMessage" : "Y軸:",
-    "description" : "Label text for y-axis in scatter plot comparison in MLflow"
+    "description" : "Label text for y-axis in scatter plot comparison in QCFlow"
   },
   "eOxs/C" : {
     "defaultMessage" : "パラメータ",
@@ -5078,7 +5078,7 @@
   },
   "fZPf0W" : {
     "defaultMessage" : "色を反転:",
-    "description" : "Label text for reverse color toggle in contour plot comparison\n                      in MLflow"
+    "description" : "Label text for reverse color toggle in contour plot comparison\n                      in QCFlow"
   },
   "faLIN+" : {
     "defaultMessage" : "タイムスタンプ",
@@ -5262,7 +5262,7 @@
   },
   "gVxisd" : {
     "defaultMessage" : "タグ「{value}」は既に存在します。",
-    "description" : "Validation message for tags that already exist in tags table in MLflow"
+    "description" : "Validation message for tags that already exist in tags table in QCFlow"
   },
   "gZPEDj" : {
     "defaultMessage" : "このフィールドは必須です。",
@@ -5442,7 +5442,7 @@
   },
   "i/pJvo" : {
     "defaultMessage" : "{code}関数を呼び出すと、AutoGen conversationsのトレースが自動的にログに記録されます。例：",
-    "description" : "Description of how to log traces for the AutoGen package using MLflow autologging. This message is followed by a code example."
+    "description" : "Description of how to log traces for the AutoGen package using QCFlow autologging. This message is followed by a code example."
   },
   "i1ovHH" : {
     "defaultMessage" : "特徴量テーブル、特徴量、データソースでフィルタリング...",
@@ -5541,7 +5541,7 @@
     "description" : "Experiment page > traces table > status label > error"
   },
   "ijp0dl" : {
-    "defaultMessage" : "入力サンプルのログ方法についての詳細は、<link>MLflowドキュメント</link>を参照してください。",
+    "defaultMessage" : "入力サンプルのログ方法についての詳細は、<link>QCFlowドキュメント</link>を参照してください。",
     "description" : "Message letting users know where they can find information on request format"
   },
   "ik5/Dn" : {
@@ -5613,8 +5613,8 @@
     "description" : "Experiment page > gateway error message"
   },
   "jLvmck" : {
-    "defaultMessage" : "{isRun, select, true {このタブには、このランに記録されたすべてのトレースが表示されます。MLflowは多数の一般的な生成AIフレームワークの自動トレースをサポートしています。以下の手順に従って、最初のトレースをログに記録してください。MLflow Tracingの詳細については、<a>MLflowのドキュメント</a>を参照してください。} other {このタブには、このエクスペリメントに記録されたすべてのトレースが表示されます。MLflowは多数の一般的な生成AIフレームワークの自動トレースをサポートしています。以下の手順に従って、最初のトレースをログに記録してください。MLflowトレースの詳細については、<a>MLflowのドキュメント</a>を参照してください。}}",
-    "description" : "Message that explains the function of the 'Traces' tab in the MLflow UI.This message is followed by a tutorial explaining how to get started with MLflow Tracing."
+    "defaultMessage" : "{isRun, select, true {このタブには、このランに記録されたすべてのトレースが表示されます。QCFlowは多数の一般的な生成AIフレームワークの自動トレースをサポートしています。以下の手順に従って、最初のトレースをログに記録してください。QCFlow Tracingの詳細については、<a>QCFlowのドキュメント</a>を参照してください。} other {このタブには、このエクスペリメントに記録されたすべてのトレースが表示されます。QCFlowは多数の一般的な生成AIフレームワークの自動トレースをサポートしています。以下の手順に従って、最初のトレースをログに記録してください。QCFlowトレースの詳細については、<a>QCFlowのドキュメント</a>を参照してください。}}",
+    "description" : "Message that explains the function of the 'Traces' tab in the QCFlow UI.This message is followed by a tutorial explaining how to get started with QCFlow Tracing."
   },
   "jMUqD1" : {
     "defaultMessage" : "安全性",
@@ -6074,7 +6074,7 @@
   },
   "n4m7x9" : {
     "defaultMessage" : "OpenAI",
-    "description" : "Header for OpenAI tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for OpenAI tab in the QCFlow Tracing quickstart guide"
   },
   "n7IWOP" : {
     "defaultMessage" : "AutoMLは列をドロップしました。",
@@ -6118,7 +6118,7 @@
   },
   "nPqKse" : {
     "defaultMessage" : "AutoGen",
-    "description" : "Header for AutoGen tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for AutoGen tab in the QCFlow Tracing quickstart guide"
   },
   "nQoUED" : {
     "defaultMessage" : "ステップ",
@@ -6213,8 +6213,8 @@
     "description" : "Dropdown text to display columns names that could to be rendered for the experiment runs table"
   },
   "nyHcAz" : {
-    "defaultMessage" : "MLflowデプロイメントが次のエラーを返しました：「{errorMessage}」",
-    "description" : "Experiment page > MLflow deployment error message"
+    "defaultMessage" : "QCFlowデプロイメントが次のエラーを返しました：「{errorMessage}」",
+    "description" : "Experiment page > QCFlow deployment error message"
   },
   "o1BTcp" : {
     "defaultMessage" : "二項分類が検出されましたが、正のラベルが指定されていません",
@@ -6238,7 +6238,7 @@
   },
   "oBKd1E" : {
     "defaultMessage" : "値",
-    "description" : "Column title for value column in editable tags table view in MLflow"
+    "description" : "Column title for value column in editable tags table view in QCFlow"
   },
   "oBWHq0" : {
     "defaultMessage" : "停止",
@@ -6269,7 +6269,7 @@
     "description" : "Label for the rename run button above the experiment runs table"
   },
   "oWxLy4" : {
-    "defaultMessage" : "現在のランの{artifactUri}に保存されているアーティファクトのリストを作成できません。MLflow UIに表示できるのは、標準DBFSディレクトリに保存されているアーティファクトのみです (DBFSにマウントされる外部のストレージ場所は表示できません)。",
+    "defaultMessage" : "現在のランの{artifactUri}に保存されているアーティファクトのリストを作成できません。QCFlow UIに表示できるのは、標準DBFSディレクトリに保存されているアーティファクトのみです (DBFSにマウントされる外部のストレージ場所は表示できません)。",
     "description" : "Error message when the artifact is unable to load. This message is displayed for databricks users only"
   },
   "oY+vPi" : {
@@ -6305,7 +6305,7 @@
   },
   "okQ1oB" : {
     "defaultMessage" : "新規エクスペリメントの名前を入力してください。",
-    "description" : "Error message for name requirement in create experiment for MLflow"
+    "description" : "Error message for name requirement in create experiment for QCFlow"
   },
   "oqBCfB" : {
     "defaultMessage" : "最新のModel Registry UIを使用すると、<b>モデルエイリアス</b>を使用して特定のモデルバージョンを自由自在に参照し、特定の環境での展開を合理化できます。<b>モデルタグ</b>を使用して、展開前チェックのステータスなどのメタデータでモデルのバージョンに注釈を付けます。",
@@ -6365,7 +6365,7 @@
   },
   "pBUaAK" : {
     "defaultMessage" : "このタグを削除してもよろしいですか？",
-    "description" : "Title text for confirmation pop-up to delete a tag from table\n                     in MLflow"
+    "description" : "Title text for confirmation pop-up to delete a tag from table\n                     in QCFlow"
   },
   "pEpexK" : {
     "defaultMessage" : "フィルタをクリア",
@@ -6429,7 +6429,7 @@
   },
   "peyOdH" : {
     "defaultMessage" : "キャンセル",
-    "description" : "Text for canceling changes on rows in editable form table in MLflow"
+    "description" : "Text for canceling changes on rows in editable form table in QCFlow"
   },
   "pfyUes" : {
     "defaultMessage" : "詳細を表示",
@@ -6621,7 +6621,7 @@
   },
   "r5JI+N" : {
     "defaultMessage" : "メトリクスを選択してください",
-    "description" : "Placeholder text for metrics in parallel coordinates plot in MLflow"
+    "description" : "Placeholder text for metrics in parallel coordinates plot in QCFlow"
   },
   "rAJDzz" : {
     "defaultMessage" : "既存の{currentStage}モデルバージョンを{archivedStage}に移行",
@@ -6861,7 +6861,7 @@
   },
   "smtq2M" : {
     "defaultMessage" : "{code}関数を呼び出すと、OpenAIのAPI呼び出しのトレースが自動的にログに記録されます。例：",
-    "description" : "Description of how to log traces for the OpenAI package using MLflow autologging. This message is followed by a code example."
+    "description" : "Description of how to log traces for the OpenAI package using QCFlow autologging. This message is followed by a code example."
   },
   "sqO940" : {
     "defaultMessage" : "{numEvals}件中{numMissing}件の値が欠損",
@@ -6873,7 +6873,7 @@
   },
   "ss//L4" : {
     "defaultMessage" : "{subMessage}、<link>ホームページ</link>に戻ります。",
-    "description" : "Default error message for error views in MLflow"
+    "description" : "Default error message for error views in QCFlow"
   },
   "swGuWh" : {
     "defaultMessage" : "入力テーブル",
@@ -6905,7 +6905,7 @@
   },
   "tLb7+M" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}日前}}",
-    "description" : "Text for time in days since given date for MLflow views"
+    "description" : "Text for time in days since given date for QCFlow views"
   },
   "tNySO0" : {
     "defaultMessage" : "サービングエンドポイントにデプロイする前に、次のコードを実行して、サンプルペイロードでモデル推論が機能することを確認してください",
@@ -7017,7 +7017,7 @@
   },
   "ubGTUL" : {
     "defaultMessage" : "名前が必要です。",
-    "description" : "Error message for name requirement in editable tags table view in MLflow"
+    "description" : "Error message for name requirement in editable tags table view in QCFlow"
   },
   "ubeHow" : {
     "defaultMessage" : "入力",
@@ -7032,7 +7032,7 @@
     "description" : "Text describing a medium severity AutoML warning"
   },
   "ufamzi" : {
-    "defaultMessage" : "{runs}MLflowランの比較",
+    "defaultMessage" : "{runs}QCFlowランの比較",
     "description" : "Page title for the compare runs page"
   },
   "ugm2f6" : {
@@ -7169,7 +7169,7 @@
   },
   "vlxeiA" : {
     "defaultMessage" : "確認",
-    "description" : "OK button text for confirmation pop-up to delete a tag from table\n                     in MLflow"
+    "description" : "OK button text for confirmation pop-up to delete a tag from table\n                     in QCFlow"
   },
   "voq99T" : {
     "defaultMessage" : "エンドポイント",
@@ -7472,7 +7472,7 @@
   },
   "yTwAJ4" : {
     "defaultMessage" : "独自のトレースを手動でインストルメント化する場合、{code}関数デコレータを使用するのが最も便利な方法です。この方法では関数の入力と出力がトレースに記録されます。例：",
-    "description" : "Description of how to log custom code traces using MLflow. This message is followed by a code example."
+    "description" : "Description of how to log custom code traces using QCFlow. This message is followed by a code example."
   },
   "yZC/dK" : {
     "defaultMessage" : "Unity Catalogモデル",
@@ -7539,8 +7539,8 @@
     "description" : "Label for upload failed state of a experiment logged model"
   },
   "z2Gyuw" : {
-    "defaultMessage" : "MLflowモデル",
-    "description" : "Heading text for mlflow model artifact"
+    "defaultMessage" : "QCFlowモデル",
+    "description" : "Heading text for qcflow model artifact"
   },
   "z9UqPZ" : {
     "defaultMessage" : "説明",

@@ -81,7 +81,7 @@
   },
   "+iY2p8" : {
     "defaultMessage" : "사용자 지정",
-    "description" : "Header for custom tracing tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for custom tracing tab in the QCFlow Tracing quickstart guide"
   },
   "+qRrHK" : {
     "defaultMessage" : "엔터티 세부 정보",
@@ -201,7 +201,7 @@
   },
   "/v6KuF" : {
     "defaultMessage" : "{code} 함수를 호출하여 LlamaIndex 쿼리에 대한 추적을 자동으로 기록합니다.  예:",
-    "description" : "Description of how to log traces for the LlamaIndex package using MLflow autologging. This message is followed by a code example."
+    "description" : "Description of how to log traces for the LlamaIndex package using QCFlow autologging. This message is followed by a code example."
   },
   "/vyrNO" : {
     "defaultMessage" : "취소",
@@ -217,7 +217,7 @@
   },
   "0ElvS9" : {
     "defaultMessage" : "Y축:",
-    "description" : "Label text for y-axis in contour plot comparison in MLflow"
+    "description" : "Label text for y-axis in contour plot comparison in QCFlow"
   },
   "0FuFzX" : {
     "defaultMessage" : "취소됨",
@@ -273,7 +273,7 @@
   },
   "0gGMZm" : {
     "defaultMessage" : "이름",
-    "description" : "Default text for name placeholder in editable tags table form in MLflow"
+    "description" : "Default text for name placeholder in editable tags table form in QCFlow"
   },
   "0gIYIc" : {
     "defaultMessage" : "지수 이동 평균을 기반으로 점 사이의 선을 \"매끄럽게\" 만듭니다. 스무딩은 log하는 빈도가 높을 때 전체 추세를 표시하는 데 유용할 수 있습니다.",
@@ -281,7 +281,7 @@
   },
   "0ja5l/" : {
     "defaultMessage" : "태그를 찾을 수 없습니다.",
-    "description" : "Text for no tags found in editable form table in MLflow"
+    "description" : "Text for no tags found in editable form table in QCFlow"
   },
   "0je5+r" : {
     "defaultMessage" : "공급자",
@@ -317,7 +317,7 @@
   },
   "1/M8+x" : {
     "defaultMessage" : "X축:",
-    "description" : "Label text for x-axis in scatter plot comparison in MLflow"
+    "description" : "Label text for x-axis in scatter plot comparison in QCFlow"
   },
   "137bhH" : {
     "defaultMessage" : "최소",
@@ -329,7 +329,7 @@
   },
   "16BvfJ" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}년 전}}",
-    "description" : "Text for time in years since given date for MLflow views"
+    "description" : "Text for time in years since given date for QCFlow views"
   },
   "16HcXN" : {
     "defaultMessage" : "모델 훈련 실패",
@@ -341,7 +341,7 @@
   },
   "17k196" : {
     "defaultMessage" : "취소",
-    "description" : "Text for the cancel button in an editable note in MLflow"
+    "description" : "Text for the cancel button in an editable note in QCFlow"
   },
   "18/UVG" : {
     "defaultMessage" : "위의 컨트롤을 사용하여 테이블을 포함하는 아티팩트를 하나 이상 선택합니다.",
@@ -664,7 +664,7 @@
     "description" : "Learn more tooltip link to learn more on how to search models"
   },
   "3geT+I" : {
-    "defaultMessage" : "Log 아티팩트 API를 사용하여 MLflow 실행의 파일 출력을 저장합니다.",
+    "defaultMessage" : "Log 아티팩트 API를 사용하여 QCFlow 실행의 파일 출력을 저장합니다.",
     "description" : "Information in the empty state explaining how one could log artifacts output files for the experiment runs"
   },
   "3kBS89" : {
@@ -796,11 +796,11 @@
   },
   "4idqpX" : {
     "defaultMessage" : "추가",
-    "description" : "Add button text in editable tags table view in MLflow"
+    "description" : "Add button text in editable tags table view in QCFlow"
   },
   "4jGMiw" : {
     "defaultMessage" : "알 수 없는 오류가 발생했습니다.",
-    "description" : "Error message for uncaught errors in mlflow"
+    "description" : "Error message for uncaught errors in qcflow"
   },
   "4jePgO" : {
     "defaultMessage" : "마지막 작성",
@@ -864,7 +864,7 @@
   },
   "5GCYzy" : {
     "defaultMessage" : "Experiment 실행 - Databricks",
-    "description" : "Title on a page used to manage MLflow experiments runs"
+    "description" : "Title on a page used to manage QCFlow experiments runs"
   },
   "5IH6UY" : {
     "defaultMessage" : "인스턴스 프로필",
@@ -888,7 +888,7 @@
   },
   "5ZAXeS" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}개월 전}}",
-    "description" : "Text for time in months since given date for MLflow views"
+    "description" : "Text for time in months since given date for QCFlow views"
   },
   "5a8Jqp" : {
     "defaultMessage" : "이벤트",
@@ -972,7 +972,7 @@
   },
   "656rRX" : {
     "defaultMessage" : "<link>홈 페이지</link>로 돌아갑니다.",
-    "description" : "Default error message for error views in MLflow"
+    "description" : "Default error message for error views in QCFlow"
   },
   "66y+x5" : {
     "defaultMessage" : "입력에 유효하지 않은 키워드",
@@ -1116,7 +1116,7 @@
   },
   "7/urtn" : {
     "defaultMessage" : "{code} 함수를 호출하여 LangChain 또는 LangGraph 호출에 대한 추적을 자동으로 기록합니다.  예:",
-    "description" : "Description of how to log traces for the LangChain/LangGraph package using MLflow autologging. This message is followed by a code example."
+    "description" : "Description of how to log traces for the LangChain/LangGraph package using QCFlow autologging. This message is followed by a code example."
   },
   "71dHIO" : {
     "defaultMessage" : "클래식 ML",
@@ -1156,7 +1156,7 @@
   },
   "79dD5F" : {
     "defaultMessage" : "노트를 제출하는 중에 오류가 발생했습니다.",
-    "description" : "Error message text when saving an editable note in MLflow"
+    "description" : "Error message text when saving an editable note in QCFlow"
   },
   "7CVkgZ" : {
     "defaultMessage" : "소스",
@@ -1196,7 +1196,7 @@
   },
   "7UncLb" : {
     "defaultMessage" : "LlamaIndex",
-    "description" : "Header for LlamaIndex tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for LlamaIndex tab in the QCFlow Tracing quickstart guide"
   },
   "7WkP1e" : {
     "defaultMessage" : "삭제",
@@ -1208,7 +1208,7 @@
   },
   "7jsqqe" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}분 전}}",
-    "description" : "Text for time in minutes since given date for MLflow views"
+    "description" : "Text for time in minutes since given date for QCFlow views"
   },
   "7kUi8J" : {
     "defaultMessage" : "기간:",
@@ -1248,7 +1248,7 @@
   },
   "7zNDHj" : {
     "defaultMessage" : "매개변수:",
-    "description" : "Label text for parameters in parallel coordinates plot in MLflow"
+    "description" : "Label text for parameters in parallel coordinates plot in QCFlow"
   },
   "8+t65I" : {
     "defaultMessage" : "보류 중인 업데이트가 진행 중일 때는 Endpoint를 편집할 수 없습니다.",
@@ -1268,7 +1268,7 @@
   },
   "81DxPY" : {
     "defaultMessage" : "등고선 플롯은 3개 이상의 고유한 메트릭 또는 매개 변수가 있는 실행 그룹을 비교할 때만 렌더링할 수 있습니다. 등고선 플롯을 사용하여 시각화하려면 실행에 더 많은 메트릭 또는 매개 변수를 Log합니다.",
-    "description" : "Text explanation when contour plot is disabled in comparison pages\n              in MLflow"
+    "description" : "Text explanation when contour plot is disabled in comparison pages\n              in QCFlow"
   },
   "88l+j9" : {
     "defaultMessage" : "{versionNum} 모델 버전을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
@@ -1308,7 +1308,7 @@
   },
   "8XbTnl" : {
     "defaultMessage" : "값",
-    "description" : "Default text for value placeholder in editable tags table form in MLflow"
+    "description" : "Default text for value placeholder in editable tags table form in QCFlow"
   },
   "8XrJnT" : {
     "defaultMessage" : "섹션 삭제",
@@ -1352,7 +1352,7 @@
   },
   "8xji5J" : {
     "defaultMessage" : "X축:",
-    "description" : "Label text for X-axis in box plot comparison in MLflow"
+    "description" : "Label text for X-axis in box plot comparison in QCFlow"
   },
   "8zQ+7f" : {
     "defaultMessage" : "사용자 지정 가중치 경로",
@@ -1376,7 +1376,7 @@
   },
   "93iLUV" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}초 전}}",
-    "description" : "Text for time in seconds since given date for MLflow views"
+    "description" : "Text for time in seconds since given date for QCFlow views"
   },
   "97hGxL" : {
     "defaultMessage" : "취소",
@@ -1436,7 +1436,7 @@
   },
   "9dX4XQ" : {
     "defaultMessage" : "parameter 또는 메트릭 선택",
-    "description" : "Placeholder text for parameter/metric selector in box plot comparison in MLflow"
+    "description" : "Placeholder text for parameter/metric selector in box plot comparison in QCFlow"
   },
   "9fVZg8" : {
     "defaultMessage" : "삭제",
@@ -1904,7 +1904,7 @@
   },
   "E7mv3b" : {
     "defaultMessage" : "저장",
-    "description" : "Text for saving changes on rows in editable form table in MLflow"
+    "description" : "Text for saving changes on rows in editable form table in QCFlow"
   },
   "E85LX0" : {
     "defaultMessage" : "Unity Catalog",
@@ -1932,7 +1932,7 @@
   },
   "EKyt+3" : {
     "defaultMessage" : "메트릭:",
-    "description" : "Label text for metrics in parallel coordinates plot in MLflow"
+    "description" : "Label text for metrics in parallel coordinates plot in QCFlow"
   },
   "EN0lUA" : {
     "defaultMessage" : "열",
@@ -2287,7 +2287,7 @@
   },
   "Hk0RSH" : {
     "defaultMessage" : "Y축:",
-    "description" : "Label text for Y-axis in box plot comparison in MLflow"
+    "description" : "Label text for Y-axis in box plot comparison in QCFlow"
   },
   "Hq/vjk" : {
     "defaultMessage" : "모두",
@@ -2391,7 +2391,7 @@
   },
   "IXPpwQ" : {
     "defaultMessage" : "404: 리소스를 찾을 수 없음",
-    "description" : "Generic 404 user-friendly error for the MLflow UI"
+    "description" : "Generic 404 user-friendly error for the QCFlow UI"
   },
   "IYOTHY" : {
     "defaultMessage" : "토큰/초",
@@ -3059,7 +3059,7 @@
   },
   "OzyPl3" : {
     "defaultMessage" : "매개 변수를 선택하세요",
-    "description" : "Placeholder text for parameters in parallel coordinates plot in MLflow"
+    "description" : "Placeholder text for parameters in parallel coordinates plot in QCFlow"
   },
   "P3U72f" : {
     "defaultMessage" : "상위 실행",
@@ -3139,7 +3139,7 @@
   },
   "PRe/8y" : {
     "defaultMessage" : "없음",
-    "description" : "Default text for no content in an editable note in MLflow"
+    "description" : "Default text for no content in an editable note in QCFlow"
   },
   "PWk6rC" : {
     "defaultMessage" : "확인",
@@ -3451,7 +3451,7 @@
   },
   "Shv28w" : {
     "defaultMessage" : "저장",
-    "description" : "Default text for save button on editable notes in MLflow"
+    "description" : "Default text for save button on editable notes in QCFlow"
   },
   "SnpuUi" : {
     "defaultMessage" : "p99 - {modelName}",
@@ -3475,7 +3475,7 @@
   },
   "SzvvXl" : {
     "defaultMessage" : "제출 실패",
-    "description" : "Message text for failing to save changes in editable note in MLflow"
+    "description" : "Message text for failing to save changes in editable note in QCFlow"
   },
   "SzwKe5" : {
     "defaultMessage" : "<link>Unity Catalog</link>에 액세스할 수 있는 Databricks Runtime 13.1 이상을 실행하는 cluster에서 아래 스니펫을 실행합니다. 먼저 Python 종속성을 설치합니다:",
@@ -3623,7 +3623,7 @@
   },
   "U3btBc" : {
     "defaultMessage" : "예:",
-    "description" : "Text header for examples of mlflow search syntax"
+    "description" : "Text header for examples of qcflow search syntax"
   },
   "U4s/77" : {
     "defaultMessage" : "자세히 표시",
@@ -3646,7 +3646,7 @@
     "description" : "Text for activity description under confirmation modal for model\n               version stage transition"
   },
   "UEDu0c" : {
-    "defaultMessage" : "MLflow UI는 활성 실행에 대한 메트릭 기록을 자동으로 가져오고 메트릭 그래프를 {interval}초 간격으로 업데이트합니다.",
+    "defaultMessage" : "QCFlow UI는 활성 실행에 대한 메트릭 기록을 자동으로 가져오고 메트릭 그래프를 {interval}초 간격으로 업데이트합니다.",
     "description" : "Helpful tooltip message to explain the automatic metrics plot update"
   },
   "UEESlL" : {
@@ -3659,14 +3659,14 @@
   },
   "UGAKJp" : {
     "defaultMessage" : "X축:",
-    "description" : "Label text for x-axis in contour plot comparison in MLflow"
+    "description" : "Label text for x-axis in contour plot comparison in QCFlow"
   },
   "UI4Th/" : {
     "defaultMessage" : "Logs를 가져올 모델이 없습니다.",
     "description" : "Text for logs on the endpoint page when no served models are available"
   },
   "UNziH3" : {
-    "defaultMessage" : "이제 AutoML 생성 노트북이 MLflow 아티팩트로 저장됩니다. 자세히 알아보려면 <link>여기</link>를 클릭하세요.",
+    "defaultMessage" : "이제 AutoML 생성 노트북이 QCFlow 아티팩트로 저장됩니다. 자세히 알아보려면 <link>여기</link>를 클릭하세요.",
     "description" : "Text informing the user of the new AutoML behaviour for trial notebooks"
   },
   "USGj9l" : {
@@ -3746,7 +3746,7 @@
     "description" : "Error message when the artifact is unable to load. This message is displayed in the open source ML flow only"
   },
   "V5cjvM" : {
-    "defaultMessage" : "MLflow 모델을 다른 등록된 모델에 복사하여 여러 환경에서 간단하게 모델을 프로모션할 수 있습니다. 더 성숙한 프로덕션급 설정을 위해서는 자동화된 모델 트레이닝 워크플로를 설정하여 통제된 환경에서 모델을 생성하는 것이 좋습니다. <link>더 알아보기</link>",
+    "defaultMessage" : "QCFlow 모델을 다른 등록된 모델에 복사하여 여러 환경에서 간단하게 모델을 프로모션할 수 있습니다. 더 성숙한 프로덕션급 설정을 위해서는 자동화된 모델 트레이닝 워크플로를 설정하여 통제된 환경에서 모델을 생성하는 것이 좋습니다. <link>더 알아보기</link>",
     "description" : "Model registry > OSS Promote model modal > description paragraph body"
   },
   "V9FtFz" : {
@@ -3830,7 +3830,7 @@
     "description" : "Text for the HTTP/HF location link in the experiment run dataset drawer"
   },
   "VwFPMZ" : {
-    "defaultMessage" : "<modelServingDocLink>모델 서빙 Endpoint</modelServingDocLink>를 생성하여 REST API 인터페이스 뒤에서 모델을 서빙하세요. 2024년 1월까지 <legacyLink>레거시 MLflow 모델 서빙</legacyLink>을 계속 사용할 수 있습니다. 활성화하려면 <button>이 Link</button>를 클릭하세요.",
+    "defaultMessage" : "<modelServingDocLink>모델 서빙 Endpoint</modelServingDocLink>를 생성하여 REST API 인터페이스 뒤에서 모델을 서빙하세요. 2024년 1월까지 <legacyLink>레거시 QCFlow 모델 서빙</legacyLink>을 계속 사용할 수 있습니다. 활성화하려면 <button>이 Link</button>를 클릭하세요.",
     "description" : "Link to allow enabling of serving V1 when endpoints UI is available"
   },
   "Vz5kN2" : {
@@ -3863,7 +3863,7 @@
   },
   "WJF+wY" : {
     "defaultMessage" : "Z축:",
-    "description" : "Label text for z-axis in contour plot comparison in MLflow"
+    "description" : "Label text for z-axis in contour plot comparison in QCFlow"
   },
   "WL3e0K" : {
     "defaultMessage" : "거부",
@@ -3874,8 +3874,8 @@
     "description" : "Label for the model version of the endpoint"
   },
   "WNz02j" : {
-    "defaultMessage" : "보다 복잡한 사용 사례의 경우 MLflow는 추적 동작을 제어하는 데 사용할 수 있는 세분화된 API도 제공합니다. 자세한 내용은 MLflow 추적용 플루언트 및 클라이언트 API에 대한 <a>공식 문서</a>를 참조하세요.",
-    "description" : "Explanation of alternative APIs for custom tracing in MLflow. The link leads to the MLflow documentation for the user to learn more."
+    "defaultMessage" : "보다 복잡한 사용 사례의 경우 QCFlow는 추적 동작을 제어하는 데 사용할 수 있는 세분화된 API도 제공합니다. 자세한 내용은 QCFlow 추적용 플루언트 및 클라이언트 API에 대한 <a>공식 문서</a>를 참조하세요.",
+    "description" : "Explanation of alternative APIs for custom tracing in QCFlow. The link leads to the QCFlow documentation for the user to learn more."
   },
   "WP1pyQ" : {
     "defaultMessage" : "만든 사람",
@@ -3910,7 +3910,7 @@
     "description" : "Title text for the producer schedule column."
   },
   "Wd8Tga" : {
-    "defaultMessage" : "스키마가 없습니다. 모델에 입력 및 출력 스키마를 포함하는 방법은 <link>MLflow 문서</link>를 참조하세요.",
+    "defaultMessage" : "스키마가 없습니다. 모델에 입력 및 출력 스키마를 포함하는 방법은 <link>QCFlow 문서</link>를 참조하세요.",
     "description" : "Text for schema table when no schema exists in the model version\n                     page"
   },
   "WeAgwI" : {
@@ -4342,7 +4342,7 @@
     "description" : "Experiment page > artifact compare view > empty state for no tables selected > title"
   },
   "ZvhaDE" : {
-    "defaultMessage" : "이 Endpoint 뒤에 있는 모델 중 어느 것도 예제와 함께 Log되지 않았습니다. MLflow로 모델을 로깅할 때 모델 입력 데이터의 예제를 모델과 함께 저장할 수 있습니다.",
+    "defaultMessage" : "이 Endpoint 뒤에 있는 모델 중 어느 것도 예제와 함께 Log되지 않았습니다. QCFlow로 모델을 로깅할 때 모델 입력 데이터의 예제를 모델과 함께 저장할 수 있습니다.",
     "description" : "Popover text informing the user that none of the models behind the endpoint was not logged with an example"
   },
   "Zvy44L" : {
@@ -4399,7 +4399,7 @@
   },
   "aIP7Kb" : {
     "defaultMessage" : "취소",
-    "description" : "Cancel button text for confirmation pop-up to delete a tag from\n                     table in MLflow"
+    "description" : "Cancel button text for confirmation pop-up to delete a tag from\n                     table in QCFlow"
   },
   "aJvfWR" : {
     "defaultMessage" : "가장 빈도가 낮은 레이블(<code>{leastFrequentLabel}</code>)과 가장 빈도가 높은 레이블(<code>{mostFrequentLabel}</code>)의 비율은 <code>{ratio}</code>입니다.",
@@ -4415,7 +4415,7 @@
   },
   "aOW396" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}시간 전}}",
-    "description" : "Text for time in hours since given date for MLflow views"
+    "description" : "Text for time in hours since given date for QCFlow views"
   },
   "aQdzaE" : {
     "defaultMessage" : "Python",
@@ -4487,7 +4487,7 @@
   },
   "aseJdC" : {
     "defaultMessage" : "LangChain / LangGraph",
-    "description" : "Header for LangChain / LangGraph tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for LangChain / LangGraph tab in the QCFlow Tracing quickstart guide"
   },
   "at1Htb" : {
     "defaultMessage" : "컨테이너 URI",
@@ -4543,7 +4543,7 @@
   },
   "bHuphj" : {
     "defaultMessage" : "아래 문서를 참조하여 이 모델을 수정하는 방법과 pyfunc 모델 버전을 사용해 Batch 또는 실시간 스코어용으로 배포하는 방법을 알아보세요.",
-    "description" : "Subtext heading for a list of documents that describe how to customize the model using the mlflow.pyfunc module"
+    "description" : "Subtext heading for a list of documents that describe how to customize the model using the qcflow.pyfunc module"
   },
   "bIZ/La" : {
     "defaultMessage" : "AutoML이 null 값을 결측값 대체하였습니다.",
@@ -4619,7 +4619,7 @@
   },
   "c0slEY" : {
     "defaultMessage" : "개별 실행을 클릭하면 관련된 모든 모델을 볼 수 있습니다",
-    "description" : "MLflow experiment detail page > runs table > tooltip on ML \"Models\" column header"
+    "description" : "QCFlow experiment detail page > runs table > tooltip on ML \"Models\" column header"
   },
   "c4FXGL" : {
     "defaultMessage" : "속도 제한(Endpoint당)",
@@ -4647,7 +4647,7 @@
   },
   "cBDYla" : {
     "defaultMessage" : "작업",
-    "description" : "Column title for actions column in editable form table in MLflow"
+    "description" : "Column title for actions column in editable form table in QCFlow"
   },
   "cCK0QF" : {
     "defaultMessage" : "throughput이 많거나 지연 시간이 짧은 워크로드에 권장됩니다. 자세한 내용은 <link>여기</link>를 참조하세요.",
@@ -4667,7 +4667,7 @@
   },
   "cI+F/q" : {
     "defaultMessage" : "이름",
-    "description" : "Column title for name column in editable tags table view in MLflow"
+    "description" : "Column title for name column in editable tags table view in QCFlow"
   },
   "cJKERI" : {
     "defaultMessage" : "Databricks의 지리적 위치에 대해 더 알아보기"
@@ -4822,7 +4822,7 @@
   },
   "ddAFCW" : {
     "defaultMessage" : "500: 내부 서버 오류",
-    "description" : "Generic 500 user-friendly error for the MLflow UI"
+    "description" : "Generic 500 user-friendly error for the QCFlow UI"
   },
   "diywSK" : {
     "defaultMessage" : "최소",
@@ -4854,7 +4854,7 @@
   },
   "dwTTNK" : {
     "defaultMessage" : "다른 곳으로 이동하시겠습니까? 보류 중인 텍스트 변경 사항은 손실됩니다.",
-    "description" : "Prompt text for navigating away before saving changes in editable note in MLflow"
+    "description" : "Prompt text for navigating away before saving changes in editable note in QCFlow"
   },
   "dy570e" : {
     "defaultMessage" : "{numPassing}/{numEvals} 통과",
@@ -4930,7 +4930,7 @@
   },
   "eNUbaN" : {
     "defaultMessage" : "Y축:",
-    "description" : "Label text for y-axis in scatter plot comparison in MLflow"
+    "description" : "Label text for y-axis in scatter plot comparison in QCFlow"
   },
   "eOxs/C" : {
     "defaultMessage" : "매개 변수",
@@ -5078,7 +5078,7 @@
   },
   "fZPf0W" : {
     "defaultMessage" : "반전색:",
-    "description" : "Label text for reverse color toggle in contour plot comparison\n                      in MLflow"
+    "description" : "Label text for reverse color toggle in contour plot comparison\n                      in QCFlow"
   },
   "faLIN+" : {
     "defaultMessage" : "Timestamp",
@@ -5262,7 +5262,7 @@
   },
   "gVxisd" : {
     "defaultMessage" : "\"{value}\" 태그가 이미 있습니다.",
-    "description" : "Validation message for tags that already exist in tags table in MLflow"
+    "description" : "Validation message for tags that already exist in tags table in QCFlow"
   },
   "gZPEDj" : {
     "defaultMessage" : "이 필드는 필수입니다.",
@@ -5442,7 +5442,7 @@
   },
   "i/pJvo" : {
     "defaultMessage" : "{code} 함수를 호출하여 AutoGen 대화 추적을 자동으로 기록합니다.  예:",
-    "description" : "Description of how to log traces for the AutoGen package using MLflow autologging. This message is followed by a code example."
+    "description" : "Description of how to log traces for the AutoGen package using QCFlow autologging. This message is followed by a code example."
   },
   "i1ovHH" : {
     "defaultMessage" : "기능 테이블, 기능 또는 데이터 소스로 필터링...",
@@ -5541,7 +5541,7 @@
     "description" : "Experiment page > traces table > status label > error"
   },
   "ijp0dl" : {
-    "defaultMessage" : "입력 예제를 기록하는 방법에 대한 자세한 내용은 <link>MLflow 설명서</link>를 참조하세요.",
+    "defaultMessage" : "입력 예제를 기록하는 방법에 대한 자세한 내용은 <link>QCFlow 설명서</link>를 참조하세요.",
     "description" : "Message letting users know where they can find information on request format"
   },
   "ik5/Dn" : {
@@ -5613,8 +5613,8 @@
     "description" : "Experiment page > gateway error message"
   },
   "jLvmck" : {
-    "defaultMessage" : "{isRun, select, true {이 탭에는 이 실행에 기록된 모든 추적이 표시됩니다.  MLflow는 많은 인기 있는 생성형 AI 프레임워크에 대한 자동 추적을 지원합니다.  첫 번째 추적을 기록하려면 아래 단계를 따르세요.  MLflow 추적에 대한 자세한 내용은 <a>MLflow 설명서</a>를 참조하세요.} other {이 탭에는 이 실험에 기록된 모든 추적이 표시됩니다.  MLflow는 많은 인기 있는 생성형 AI 프레임워크에 대한 자동 추적을 지원합니다.  첫 번째 추적을 기록하려면 아래 단계를 따르세요.  MLflow 추적에 대한 자세한 내용은 <a>MLflow 설명서</a>를 참조하세요.}}",
-    "description" : "Message that explains the function of the 'Traces' tab in the MLflow UI.This message is followed by a tutorial explaining how to get started with MLflow Tracing."
+    "defaultMessage" : "{isRun, select, true {이 탭에는 이 실행에 기록된 모든 추적이 표시됩니다.  QCFlow는 많은 인기 있는 생성형 AI 프레임워크에 대한 자동 추적을 지원합니다.  첫 번째 추적을 기록하려면 아래 단계를 따르세요.  QCFlow 추적에 대한 자세한 내용은 <a>QCFlow 설명서</a>를 참조하세요.} other {이 탭에는 이 실험에 기록된 모든 추적이 표시됩니다.  QCFlow는 많은 인기 있는 생성형 AI 프레임워크에 대한 자동 추적을 지원합니다.  첫 번째 추적을 기록하려면 아래 단계를 따르세요.  QCFlow 추적에 대한 자세한 내용은 <a>QCFlow 설명서</a>를 참조하세요.}}",
+    "description" : "Message that explains the function of the 'Traces' tab in the QCFlow UI.This message is followed by a tutorial explaining how to get started with QCFlow Tracing."
   },
   "jMUqD1" : {
     "defaultMessage" : "안전",
@@ -6074,7 +6074,7 @@
   },
   "n4m7x9" : {
     "defaultMessage" : "OpenAI",
-    "description" : "Header for OpenAI tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for OpenAI tab in the QCFlow Tracing quickstart guide"
   },
   "n7IWOP" : {
     "defaultMessage" : "AutoML에서 열을 삭제했습니다.",
@@ -6118,7 +6118,7 @@
   },
   "nPqKse" : {
     "defaultMessage" : "AutoGen",
-    "description" : "Header for AutoGen tab in the MLflow Tracing quickstart guide"
+    "description" : "Header for AutoGen tab in the QCFlow Tracing quickstart guide"
   },
   "nQoUED" : {
     "defaultMessage" : "단계",
@@ -6213,8 +6213,8 @@
     "description" : "Dropdown text to display columns names that could to be rendered for the experiment runs table"
   },
   "nyHcAz" : {
-    "defaultMessage" : "MLflow 배포에서 ''{errorMessage}' 오류를 반환했습니다.",
-    "description" : "Experiment page > MLflow deployment error message"
+    "defaultMessage" : "QCFlow 배포에서 ''{errorMessage}' 오류를 반환했습니다.",
+    "description" : "Experiment page > QCFlow deployment error message"
   },
   "o1BTcp" : {
     "defaultMessage" : "이진 분류가 탐지되었지만 양의 레이블이 지정되지 않았습니다.",
@@ -6238,7 +6238,7 @@
   },
   "oBKd1E" : {
     "defaultMessage" : "값",
-    "description" : "Column title for value column in editable tags table view in MLflow"
+    "description" : "Column title for value column in editable tags table view in QCFlow"
   },
   "oBWHq0" : {
     "defaultMessage" : "중지",
@@ -6269,7 +6269,7 @@
     "description" : "Label for the rename run button above the experiment runs table"
   },
   "oWxLy4" : {
-    "defaultMessage" : "현재 실행에 대해 {artifactUri}에 저장된 아티팩트를 나열할 수 없습니다. 표준 DBFS 디렉터리에 저장된 아티팩트만 MLflow UI에서 볼 수 있습니다(DBFS에 마운트된 외부 저장소 위치는 볼 수 없음).",
+    "defaultMessage" : "현재 실행에 대해 {artifactUri}에 저장된 아티팩트를 나열할 수 없습니다. 표준 DBFS 디렉터리에 저장된 아티팩트만 QCFlow UI에서 볼 수 있습니다(DBFS에 마운트된 외부 저장소 위치는 볼 수 없음).",
     "description" : "Error message when the artifact is unable to load. This message is displayed for databricks users only"
   },
   "oY+vPi" : {
@@ -6305,7 +6305,7 @@
   },
   "okQ1oB" : {
     "defaultMessage" : "새 Experiment의 새 이름을 입력하세요.",
-    "description" : "Error message for name requirement in create experiment for MLflow"
+    "description" : "Error message for name requirement in create experiment for QCFlow"
   },
   "oqBCfB" : {
     "defaultMessage" : "최신 모델 레지스트리 UI를 사용하면 <b>모델 별칭</b>을 통해 특정 모델 버전을 유연하게 참조함으로써 주어진 환경에서 배포 과정을 간소화할 수 있습니다. 또한, <b>모델 태그</b>를 활용하여 배포 전 확인 상태 등의 메타데이터로 모델 버전에 주석을 달 수 있습니다.",
@@ -6365,7 +6365,7 @@
   },
   "pBUaAK" : {
     "defaultMessage" : "이 태그를 삭제하시겠습니까?",
-    "description" : "Title text for confirmation pop-up to delete a tag from table\n                     in MLflow"
+    "description" : "Title text for confirmation pop-up to delete a tag from table\n                     in QCFlow"
   },
   "pEpexK" : {
     "defaultMessage" : "필터 지우기",
@@ -6429,7 +6429,7 @@
   },
   "peyOdH" : {
     "defaultMessage" : "취소",
-    "description" : "Text for canceling changes on rows in editable form table in MLflow"
+    "description" : "Text for canceling changes on rows in editable form table in QCFlow"
   },
   "pfyUes" : {
     "defaultMessage" : "자세히 보기",
@@ -6621,7 +6621,7 @@
   },
   "r5JI+N" : {
     "defaultMessage" : "메트릭을 선택하세요",
-    "description" : "Placeholder text for metrics in parallel coordinates plot in MLflow"
+    "description" : "Placeholder text for metrics in parallel coordinates plot in QCFlow"
   },
   "rAJDzz" : {
     "defaultMessage" : "기존 {currentStage} 모델 버전을 {archivedStage}(으)로 전환",
@@ -6861,7 +6861,7 @@
   },
   "smtq2M" : {
     "defaultMessage" : "{code} 함수를 호출하여 OpenAI API 호출에 대한 추적을 자동으로 기록합니다. 예:",
-    "description" : "Description of how to log traces for the OpenAI package using MLflow autologging. This message is followed by a code example."
+    "description" : "Description of how to log traces for the OpenAI package using QCFlow autologging. This message is followed by a code example."
   },
   "sqO940" : {
     "defaultMessage" : "{numMissing}/{numEvals}개 값 누락",
@@ -6873,7 +6873,7 @@
   },
   "ss//L4" : {
     "defaultMessage" : "{subMessage}, <link>홈 페이지</link>로 돌아갑니다.",
-    "description" : "Default error message for error views in MLflow"
+    "description" : "Default error message for error views in QCFlow"
   },
   "swGuWh" : {
     "defaultMessage" : "입력 테이블",
@@ -6905,7 +6905,7 @@
   },
   "tLb7+M" : {
     "defaultMessage" : "{timeSince, plural, other {{timeSince,number}일 전}}",
-    "description" : "Text for time in days since given date for MLflow views"
+    "description" : "Text for time in days since given date for QCFlow views"
   },
   "tNySO0" : {
     "defaultMessage" : "다음 코드를 실행하여 Endpoint에 배포하기 전에 예제 페이로드에서 모델 유추가 작동하는지 확인합니다",
@@ -7017,7 +7017,7 @@
   },
   "ubGTUL" : {
     "defaultMessage" : "이름이 필요합니다.",
-    "description" : "Error message for name requirement in editable tags table view in MLflow"
+    "description" : "Error message for name requirement in editable tags table view in QCFlow"
   },
   "ubeHow" : {
     "defaultMessage" : "입력",
@@ -7032,7 +7032,7 @@
     "description" : "Text describing a medium severity AutoML warning"
   },
   "ufamzi" : {
-    "defaultMessage" : "{runs} MLflow 실행 비교",
+    "defaultMessage" : "{runs} QCFlow 실행 비교",
     "description" : "Page title for the compare runs page"
   },
   "ugm2f6" : {
@@ -7169,7 +7169,7 @@
   },
   "vlxeiA" : {
     "defaultMessage" : "확인",
-    "description" : "OK button text for confirmation pop-up to delete a tag from table\n                     in MLflow"
+    "description" : "OK button text for confirmation pop-up to delete a tag from table\n                     in QCFlow"
   },
   "voq99T" : {
     "defaultMessage" : "Endpoint",
@@ -7472,7 +7472,7 @@
   },
   "yTwAJ4" : {
     "defaultMessage" : "추적을 수동으로 계측할 수 있는 가장 편리한 방법은 {code} 함수 데코레이터를 사용하는 것입니다. 이렇게 하면 함수의 입력과 출력이 추적에서 캡처됩니다. 예:",
-    "description" : "Description of how to log custom code traces using MLflow. This message is followed by a code example."
+    "description" : "Description of how to log custom code traces using QCFlow. This message is followed by a code example."
   },
   "yZC/dK" : {
     "defaultMessage" : "Unity Catalog 모델",
@@ -7539,8 +7539,8 @@
     "description" : "Label for upload failed state of a experiment logged model"
   },
   "z2Gyuw" : {
-    "defaultMessage" : "MLflow 모델",
-    "description" : "Heading text for mlflow model artifact"
+    "defaultMessage" : "QCFlow 모델",
+    "description" : "Heading text for qcflow model artifact"
   },
   "z9UqPZ" : {
     "defaultMessage" : "설명",

@@ -1,11 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 mlruns
-^mlflow-model$
+^qcflow-model$
 packrat
 ^\.run-tests\.R$
 ^\.create-test-env\.R$
-^\.install-mlflow-r\.R$
+^\.install-qcflow-r\.R$
 ^\.spark-version$
 ^\.dump-r-dependencies\.R$
 ^README.Rmd$
@@ -13,7 +13,7 @@ packrat
 ^model$
 ^r-dependencies.txt$
 document.R
-Reference_Manual_mlflow.md
+Reference_Manual_qcflow.md
 .lintr
 ^man-roxygen/
 ^internal/

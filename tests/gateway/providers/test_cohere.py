@@ -5,11 +5,11 @@ from aiohttp import ClientTimeout
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 
-from mlflow.gateway.config import RouteConfig
-from mlflow.gateway.constants import MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.cohere import CohereProvider
-from mlflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.config import RouteConfig
+from qcflow.gateway.constants import QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.cohere import CohereProvider
+from qcflow.gateway.schemas import chat, completions, embeddings
 
 from tests.gateway.tools import MockAsyncResponse, MockAsyncStreamingResponse
 
@@ -106,7 +106,7 @@ async def test_chat():
                 "message": "Message 3",
                 "temperature": 1.25,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -142,7 +142,7 @@ async def test_chat_with_system_messages():
                 "preamble_override": "System Message 1\nSystem Message 2",
                 "temperature": 1.25,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -244,7 +244,7 @@ async def test_chat_stream():
                 "temperature": 1.25,
                 "stream": True,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -314,7 +314,7 @@ async def test_completions():
                 "stop_sequences": ["foobar"],
                 "temperature": 0.0,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -415,7 +415,7 @@ async def test_completions_stream():
                 "temperature": 0.0,
                 "stream": True,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 

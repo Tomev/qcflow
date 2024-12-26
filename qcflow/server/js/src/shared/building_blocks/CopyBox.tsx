@@ -16,7 +16,7 @@ type Props = {
 export const CopyBox = ({ copyText }: Props) => (
   <div css={{ display: 'flex', gap: 4 }}>
     <Input
-      componentId="codegen_mlflow_app_src_shared_building_blocks_copybox.tsx_18"
+      componentId="codegen_qcflow_app_src_shared_building_blocks_copybox.tsx_18"
       readOnly
       value={copyText}
       data-test-id="copy-box"

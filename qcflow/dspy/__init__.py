@@ -1,6 +1,6 @@
-from mlflow.dspy.autolog import autolog
-from mlflow.dspy.load import _load_pyfunc, load_model
-from mlflow.dspy.save import (
+from qcflow.dspy.autolog import autolog
+from qcflow.dspy.load import _load_pyfunc, load_model
+from qcflow.dspy.save import (
     get_default_conda_env,
     get_default_pip_requirements,
     log_model,

@@ -1,13 +1,13 @@
 import pytest
 from pydantic import ValidationError
 
-import mlflow
-from mlflow.entities import LiveSpan
-from mlflow.entities.span import SpanType
-from mlflow.exceptions import MlflowTracingException
-from mlflow.tracing import set_span_chat_messages, set_span_chat_tools
-from mlflow.tracing.constant import SpanAttributeKey
-from mlflow.tracing.utils import (
+import qcflow
+from qcflow.entities import LiveSpan
+from qcflow.entities.span import SpanType
+from qcflow.exceptions import MlflowTracingException
+from qcflow.tracing import set_span_chat_messages, set_span_chat_tools
+from qcflow.tracing.constant import SpanAttributeKey
+from qcflow.tracing.utils import (
     deduplicate_span_names_in_place,
     encode_span_id,
     maybe_get_request_id,
@@ -41,9 +41,9 @@ def test_maybe_get_request_id():
     assert maybe_get_request_id(is_evaluate=True) is None
 
     try:
-        from mlflow.pyfunc.context import Context, set_prediction_context
+        from qcflow.pyfunc.context import Context, set_prediction_context
     except ImportError:
-        pytest.skip("Skipping the rest of tests as mlflow.pyfunc module is not available.")
+        pytest.skip("Skipping the rest of tests as qcflow.pyfunc module is not available.")
 
     with set_prediction_context(Context(request_id="eval", is_evaluate=True)):
         assert maybe_get_request_id(is_evaluate=True) == "eval"
@@ -93,16 +93,16 @@ def test_set_span_chat_messages_and_tools():
         }
     ]
 
-    @mlflow.trace(span_type=SpanType.CHAT_MODEL)
+    @qcflow.trace(span_type=SpanType.CHAT_MODEL)
     def dummy_call(messages, tools):
-        span = mlflow.get_current_active_span()
+        span = qcflow.get_current_active_span()
         set_span_chat_messages(span, messages)
         set_span_chat_tools(span, tools)
         return None
 
     dummy_call(messages, tools)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     span = trace.data.spans[0]
     assert span.get_attribute(SpanAttributeKey.CHAT_MESSAGES) == messages
     assert span.get_attribute(SpanAttributeKey.CHAT_TOOLS) == tools
@@ -111,9 +111,9 @@ def test_set_span_chat_messages_and_tools():
 def test_set_chat_messages_validation():
     messages = [{"invalid_field": "user", "content": "hello"}]
 
-    @mlflow.trace(span_type=SpanType.CHAT_MODEL)
+    @qcflow.trace(span_type=SpanType.CHAT_MODEL)
     def dummy_call(messages):
-        span = mlflow.get_current_active_span()
+        span = qcflow.get_current_active_span()
         set_span_chat_messages(span, messages)
         return None
 
@@ -131,9 +131,9 @@ def test_set_chat_tools_validation():
         }
     ]
 
-    @mlflow.trace(span_type=SpanType.CHAT_MODEL)
+    @qcflow.trace(span_type=SpanType.CHAT_MODEL)
     def dummy_call(tools):
-        span = mlflow.get_current_active_span()
+        span = qcflow.get_current_active_span()
         set_span_chat_tools(span, tools)
         return None
 

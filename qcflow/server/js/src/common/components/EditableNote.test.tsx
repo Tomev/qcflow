@@ -1,6 +1,6 @@
 import React from 'react';
 import { EditableNote, EditableNoteImpl } from './EditableNote';
-import { renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import userEvent from '@testing-library/user-event-14';
 
 // Mock the Prompt component here. Otherwise, whenever we try to modify the note view's text

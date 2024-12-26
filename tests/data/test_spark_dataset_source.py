@@ -3,9 +3,9 @@ import json
 import pandas as pd
 import pytest
 
-from mlflow.data.dataset_source_registry import get_dataset_source_from_json
-from mlflow.data.spark_dataset_source import SparkDatasetSource
-from mlflow.exceptions import MlflowException
+from qcflow.data.dataset_source_registry import get_dataset_source_from_json
+from qcflow.data.spark_dataset_source import SparkDatasetSource
+from qcflow.exceptions import MlflowException
 
 
 @pytest.fixture(scope="module")

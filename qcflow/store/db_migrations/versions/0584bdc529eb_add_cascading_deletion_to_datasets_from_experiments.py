@@ -8,8 +8,8 @@ Create Date: 2024-11-11 15:27:53.189685
 from alembic import op
 import sqlalchemy as sa
 
-from mlflow.exceptions import MlflowException
-from mlflow.store.tracking.dbmodels.models import SqlDataset, SqlExperiment
+from qcflow.exceptions import MlflowException
+from qcflow.store.tracking.dbmodels.models import SqlDataset, SqlExperiment
 
 
 # revision identifiers, used by Alembic.

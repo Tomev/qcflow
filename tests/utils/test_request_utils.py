@@ -4,27 +4,27 @@ from unittest import mock
 
 import pytest
 
-from mlflow.utils import request_utils
+from qcflow.utils import request_utils
 
 
-def test_request_utils_does_not_import_mlflow(tmp_path):
+def test_request_utils_does_not_import_qcflow(tmp_path):
     file_content = f"""
 import importlib.util
 import os
 import sys
 
 file_path = r"{request_utils.__file__}"
-module_name = "mlflow.utils.request_utils"
+module_name = "qcflow.utils.request_utils"
 
 spec = importlib.util.spec_from_file_location(module_name, file_path)
 module = importlib.util.module_from_spec(spec)
 sys.modules[module_name] = module
 spec.loader.exec_module(module)
 
-assert "mlflow" not in sys.modules
-assert "mlflow.utils.request_utils" in sys.modules
+assert "qcflow" not in sys.modules
+assert "qcflow.utils.request_utils" in sys.modules
 """
-    test_file = tmp_path.joinpath("test_request_utils_does_not_import_mlflow.py")
+    test_file = tmp_path.joinpath("test_request_utils_does_not_import_qcflow.py")
     test_file.write_text(file_content)
 
     subprocess.run([sys.executable, str(test_file)], check=True)
@@ -62,7 +62,7 @@ def test_download_chunk_incomplete_read(tmp_path):
 
 @pytest.mark.parametrize("env_value", ["0", "false", "False", "FALSE"])
 def test_redirects_disabled_if_env_var_set(monkeypatch, env_value):
-    monkeypatch.setenv("MLFLOW_ALLOW_HTTP_REDIRECTS", env_value)
+    monkeypatch.setenv("QCFLOW_ALLOW_HTTP_REDIRECTS", env_value)
 
     with mock.patch("requests.Session.request") as mock_request:
         mock_request.return_value.status_code = 302
@@ -81,7 +81,7 @@ def test_redirects_disabled_if_env_var_set(monkeypatch, env_value):
 
 @pytest.mark.parametrize("env_value", ["1", "true", "True", "TRUE"])
 def test_redirects_enabled_if_env_var_set(monkeypatch, env_value):
-    monkeypatch.setenv("MLFLOW_ALLOW_HTTP_REDIRECTS", env_value)
+    monkeypatch.setenv("QCFLOW_ALLOW_HTTP_REDIRECTS", env_value)
 
     with mock.patch("requests.Session.request") as mock_request:
         mock_request.return_value.status_code = 302
@@ -103,7 +103,7 @@ def test_redirects_enabled_if_env_var_set(monkeypatch, env_value):
 
 @pytest.mark.parametrize("env_value", ["0", "false", "False", "FALSE"])
 def test_redirect_kwarg_overrides_env_value_false(monkeypatch, env_value):
-    monkeypatch.setenv("MLFLOW_ALLOW_HTTP_REDIRECTS", env_value)
+    monkeypatch.setenv("QCFLOW_ALLOW_HTTP_REDIRECTS", env_value)
 
     with mock.patch("requests.Session.request") as mock_request:
         mock_request.return_value.status_code = 302
@@ -124,7 +124,7 @@ def test_redirect_kwarg_overrides_env_value_false(monkeypatch, env_value):
 
 @pytest.mark.parametrize("env_value", ["1", "true", "True", "TRUE"])
 def test_redirect_kwarg_overrides_env_value_true(monkeypatch, env_value):
-    monkeypatch.setenv("MLFLOW_ALLOW_HTTP_REDIRECTS", env_value)
+    monkeypatch.setenv("QCFLOW_ALLOW_HTTP_REDIRECTS", env_value)
 
     with mock.patch("requests.Session.request") as mock_request:
         mock_request.return_value.status_code = 302

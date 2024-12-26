@@ -2,10 +2,10 @@ import logging
 
 import click
 
-from mlflow.artifacts import download_artifacts as _download_artifacts
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.tracking import _get_store
-from mlflow.utils.proto_json_utils import message_to_json
+from qcflow.artifacts import download_artifacts as _download_artifacts
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.tracking import _get_store
+from qcflow.utils.proto_json_utils import message_to_json
 
 _logger = logging.getLogger(__name__)
 
@@ -13,9 +13,9 @@ _logger = logging.getLogger(__name__)
 @click.group("artifacts")
 def commands():
     """
-    Upload, list, and download artifacts from an MLflow artifact repository.
+    Upload, list, and download artifacts from an QCFlow artifact repository.
 
-    To manage artifacts for a run associated with a tracking server, set the MLFLOW_TRACKING_URI
+    To manage artifacts for a run associated with a tracking server, set the QCFLOW_TRACKING_URI
     environment variable to the URL of the desired server.
     """
 
@@ -123,9 +123,9 @@ def download_artifacts(run_id, artifact_path, artifact_uri, dst_path):
 
     Either ``--artifact-uri`` or ``--run-id`` must be provided.
     """
-    # Preserve preexisting behavior in MLflow <= 1.24.0 where specifying `artifact_uri` and
+    # Preserve preexisting behavior in QCFlow <= 1.24.0 where specifying `artifact_uri` and
     # `artifact_path` together did not throw an exception (unlike
-    # `mlflow.artifacts.download_artifacts()`) and instead used `artifact_uri` while ignoring
+    # `qcflow.artifacts.download_artifacts()`) and instead used `artifact_uri` while ignoring
     # `run_id` and `artifact_path`
     if artifact_uri is not None:
         run_id = None

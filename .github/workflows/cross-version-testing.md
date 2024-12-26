@@ -2,19 +2,19 @@
 
 ## What is cross version testing?
 
-Cross version testing is a testing strategy to ensure ML integrations in MLflow such as
-`mlflow.sklearn` work properly with their associated packages across various versions.
+Cross version testing is a testing strategy to ensure ML integrations in QCFlow such as
+`qcflow.sklearn` work properly with their associated packages across various versions.
 
 ## Key files
 
 | File (relative path from the root)              | Role                                                           |
 | :---------------------------------------------- | :------------------------------------------------------------- |
-| [`mlflow/ml-package-versions.yml`][]            | Define which versions to test for each ML package.             |
+| [`qcflow/ml-package-versions.yml`][]            | Define which versions to test for each ML package.             |
 | [`dev/set_matrix.py`][]                         | Generate a test matrix from `ml-package-versions.yml`.         |
 | [`dev/update_ml_package_versions.py`][]         | Update `ml-package-versions.yml` when releasing a new version. |
 | [`.github/workflows/cross-version-tests.yml`][] | Define a Github Actions workflow for cross version testing.    |
 
-[`mlflow/ml-package-versions.yml`]: ../../mlflow/ml-package-versions.yml
+[`qcflow/ml-package-versions.yml`]: ../../qcflow/ml-package-versions.yml
 [`dev/set_matrix.py`]: ../../dev/set_matrix.py
 [`dev/update_ml_package_versions.py`]: ../../dev/update_ml_package_versions.py
 [`.github/workflows/cross-version-tests.yml`]: ./cross-version-tests.yml
@@ -50,10 +50,10 @@ sklearn:
     requirements:
       ">= 0.24.0": ["xgboost"]
 
-    # [Required] `minimum` specifies the minimum supported version for the latest release of MLflow.
+    # [Required] `minimum` specifies the minimum supported version for the latest release of QCFlow.
     minimum: "0.20.3"
 
-    # [Required] `maximum` specifies the maximum supported version for the latest release of MLflow.
+    # [Required] `maximum` specifies the maximum supported version for the latest release of QCFlow.
     maximum: "1.0"
 
     # [Optional] `unsupported` specifies a list of versions that should NOT be supported due to
@@ -115,7 +115,7 @@ the previous section:
 ## Why do we run tests against development versions?
 
 In cross-version testing, we run daily tests against both publicly available and pre-release
-development versions for all dependent libraries that are used by MLflow.
+development versions for all dependent libraries that are used by QCFlow.
 This section explains why.
 
 ### Without dev version test
@@ -124,9 +124,9 @@ First, let's take a look at what would happen **without** dev version test.
 
 ```
   |
-  ├─ XGBoost merges a change on the master branch that breaks MLflow's XGBoost integration.
+  ├─ XGBoost merges a change on the master branch that breaks QCFlow's XGBoost integration.
   |
-  ├─ MLflow 1.20.0 release date
+  ├─ QCFlow 1.20.0 release date
   |
   ├─ XGBoost 1.5.0 release date
   ├─ ❌ We notice the change here and might need to make a patch release if it's critical.
@@ -136,7 +136,7 @@ time
 ```
 
 - We didn't notice the change until after XGBoost 1.5.0 was released.
-- MLflow 1.20.0 doesn't work with XGBoost 1.5.0.
+- QCFlow 1.20.0 doesn't work with XGBoost 1.5.0.
 
 ### With dev version test
 
@@ -144,10 +144,10 @@ Then, let's take a look at what would happen **with** dev version test.
 
 ```
   |
-  ├─ XGBoost merges a change on the master branch that breaks MLflow's XGBoost integration.
+  ├─ XGBoost merges a change on the master branch that breaks QCFlow's XGBoost integration.
   ├─ ✅ Tests for the XGBoost integration fail -> We can notice the change and apply a fix for it.
   |
-  ├─ MLflow 1.20.0 release date
+  ├─ QCFlow 1.20.0 release date
   |
   ├─ XGBoost 1.5.0 release date
   |
@@ -155,19 +155,19 @@ Then, let's take a look at what would happen **with** dev version test.
 time
 ```
 
-- We can notice the change **before XGBoost 1.5.0 is released** and apply a fix for it **before releasing MLflow 1.20.0**.
-- MLflow 1.20.0 works with XGBoost 1.5.0.
+- We can notice the change **before XGBoost 1.5.0 is released** and apply a fix for it **before releasing QCFlow 1.20.0**.
+- QCFlow 1.20.0 works with XGBoost 1.5.0.
 
 ## When do we run cross version tests?
 
 1. Daily at 7:00 UTC using a cron scheduler.
    [README on the repository root](../../README.md) has a badge ([![badge-img][]][badge-target]) that indicates the status of the most recent cron run.
 2. When a PR that affects the ML integrations is created. Note we only run tests relevant to
-   the affected ML integrations. For example, a PR that affects files in `mlflow/sklearn` triggers
+   the affected ML integrations. For example, a PR that affects files in `qcflow/sklearn` triggers
    cross version tests for `sklearn`.
 
-[badge-img]: https://github.com/mlflow/mlflow/workflows/Cross%20version%20tests/badge.svg?event=schedule
-[badge-target]: https://github.com/mlflow/mlflow/actions?query=workflow%3ACross%2Bversion%2Btests+event%3Aschedule
+[badge-img]: https://github.com/qcflow/qcflow/workflows/Cross%20version%20tests/badge.svg?event=schedule
+[badge-target]: https://github.com/qcflow/qcflow/actions?query=workflow%3ACross%2Bversion%2Btests+event%3Aschedule
 
 ## How to run cross version test for dev versions on a pull request
 
@@ -187,7 +187,7 @@ See also:
 
 The `cross-version-tests.yml` workflow can be run manually without creating a pull request.
 
-1. Open https://github.com/mlflow/mlflow/actions/workflows/cross-version-tests.yml.
+1. Open https://github.com/qcflow/qcflow/actions/workflows/cross-version-tests.yml.
 2. Click `Run workflow`.
 3. Fill in the input parameters.
 4. Click `Run workflow` at the bottom of the parameter input form.

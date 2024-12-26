@@ -2,20 +2,20 @@ import os
 import shutil
 from typing import Any
 
-from mlflow.store.artifact.artifact_repo import (
+from qcflow.store.artifact.artifact_repo import (
     ArtifactRepository,
     try_read_trace_data,
     verify_artifact_path,
 )
-from mlflow.tracing.artifact_utils import TRACE_DATA_FILE_NAME
-from mlflow.utils.file_utils import (
+from qcflow.tracing.artifact_utils import TRACE_DATA_FILE_NAME
+from qcflow.utils.file_utils import (
     get_file_info,
     list_all,
     local_file_uri_to_path,
     mkdir,
     relative_path_to_artifact_path,
 )
-from mlflow.utils.uri import validate_path_is_safe
+from qcflow.utils.uri import validate_path_is_safe
 
 
 class LocalArtifactRepository(ArtifactRepository):

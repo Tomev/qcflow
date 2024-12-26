@@ -8,32 +8,32 @@ import urllib.parse
 import zipfile
 from io import BytesIO
 
-from mlflow import tracking
-from mlflow.entities import Param, SourceType
-from mlflow.environment_variables import MLFLOW_EXPERIMENT_ID, MLFLOW_RUN_ID, MLFLOW_TRACKING_URI
-from mlflow.exceptions import ExecutionException
-from mlflow.projects import _project_spec
-from mlflow.tracking import fluent
-from mlflow.tracking.context.default_context import _get_user
-from mlflow.utils.git_utils import get_git_commit, get_git_repo_url
-from mlflow.utils.mlflow_tags import (
-    LEGACY_MLFLOW_GIT_BRANCH_NAME,
-    LEGACY_MLFLOW_GIT_REPO_URL,
-    MLFLOW_GIT_BRANCH,
-    MLFLOW_GIT_COMMIT,
-    MLFLOW_GIT_REPO_URL,
-    MLFLOW_PARENT_RUN_ID,
-    MLFLOW_PROJECT_ENTRY_POINT,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
-    MLFLOW_USER,
+from qcflow import tracking
+from qcflow.entities import Param, SourceType
+from qcflow.environment_variables import QCFLOW_EXPERIMENT_ID, QCFLOW_RUN_ID, QCFLOW_TRACKING_URI
+from qcflow.exceptions import ExecutionException
+from qcflow.projects import _project_spec
+from qcflow.tracking import fluent
+from qcflow.tracking.context.default_context import _get_user
+from qcflow.utils.git_utils import get_git_commit, get_git_repo_url
+from qcflow.utils.qcflow_tags import (
+    LEGACY_QCFLOW_GIT_BRANCH_NAME,
+    LEGACY_QCFLOW_GIT_REPO_URL,
+    QCFLOW_GIT_BRANCH,
+    QCFLOW_GIT_COMMIT,
+    QCFLOW_GIT_REPO_URL,
+    QCFLOW_PARENT_RUN_ID,
+    QCFLOW_PROJECT_ENTRY_POINT,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
+    QCFLOW_USER,
 )
-from mlflow.utils.rest_utils import augmented_raise_for_status
+from qcflow.utils.rest_utils import augmented_raise_for_status
 
 _FILE_URI_REGEX = re.compile(r"^file://.+")
 _ZIP_URI_REGEX = re.compile(r".+\.zip$")
-MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG = "_mlflow_local_backend_run_id"
-MLFLOW_DOCKER_WORKDIR_PATH = "/mlflow/projects/code/"
+QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG = "_qcflow_local_backend_run_id"
+QCFLOW_DOCKER_WORKDIR_PATH = "/qcflow/projects/code/"
 
 PROJECT_ENV_MANAGER = "ENV_MANAGER"
 PROJECT_SYNCHRONOUS = "SYNCHRONOUS"
@@ -240,9 +240,9 @@ def _fetch_zip_repo(uri):
     import requests
 
     # TODO (dbczumar): Replace HTTP resolution via ``requests.get`` with an invocation of
-    # ```mlflow.data.download_uri()`` when the API supports the same set of available stores as
+    # ```qcflow.data.download_uri()`` when the API supports the same set of available stores as
     # the artifact repository (Azure, FTP, etc). See the following issue:
-    # https://github.com/mlflow/mlflow/issues/763.
+    # https://github.com/qcflow/qcflow/issues/763.
     response = requests.get(uri)
     try:
         augmented_raise_for_status(response)
@@ -260,7 +260,7 @@ def get_or_create_run(run_id, uri, experiment_id, work_dir, version, entry_point
 
 def _create_run(uri, experiment_id, work_dir, version, entry_point, parameters):
     """
-    Create a ``Run`` against the current MLflow tracking server, logging metadata (e.g. the URI,
+    Create a ``Run`` against the current QCFlow tracking server, logging metadata (e.g. the URI,
     entry point, and parameters of the project) about the run. Return an ``ActiveRun`` that can be
     used to report additional data about the run (metrics/params) to the tracking server.
     """
@@ -273,25 +273,25 @@ def _create_run(uri, experiment_id, work_dir, version, entry_point, parameters):
     parent_run_id = existing_run.info.run_id if existing_run else None
 
     tags = {
-        MLFLOW_USER: _get_user(),
-        MLFLOW_SOURCE_NAME: source_name,
-        MLFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.PROJECT),
-        MLFLOW_PROJECT_ENTRY_POINT: entry_point,
+        QCFLOW_USER: _get_user(),
+        QCFLOW_SOURCE_NAME: source_name,
+        QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.PROJECT),
+        QCFLOW_PROJECT_ENTRY_POINT: entry_point,
     }
     if source_version is not None:
-        tags[MLFLOW_GIT_COMMIT] = source_version
+        tags[QCFLOW_GIT_COMMIT] = source_version
     if parent_run_id is not None:
-        tags[MLFLOW_PARENT_RUN_ID] = parent_run_id
+        tags[QCFLOW_PARENT_RUN_ID] = parent_run_id
 
     repo_url = get_git_repo_url(work_dir)
     if repo_url is not None:
-        tags[MLFLOW_GIT_REPO_URL] = repo_url
-        tags[LEGACY_MLFLOW_GIT_REPO_URL] = repo_url
+        tags[QCFLOW_GIT_REPO_URL] = repo_url
+        tags[LEGACY_QCFLOW_GIT_REPO_URL] = repo_url
 
     # Add branch name tag if a branch is specified through -version
     if _is_valid_branch_name(work_dir, version):
-        tags[MLFLOW_GIT_BRANCH] = version
-        tags[LEGACY_MLFLOW_GIT_BRANCH_NAME] = version
+        tags[QCFLOW_GIT_BRANCH] = version
+        tags[LEGACY_QCFLOW_GIT_BRANCH_NAME] = version
     active_run = tracking.MlflowClient().create_run(experiment_id=experiment_id, tags=tags)
 
     project = _project_spec.load_project(work_dir)
@@ -337,10 +337,10 @@ def get_entry_point_command(project, entry_point, parameters, storage_dir):
 def get_run_env_vars(run_id, experiment_id):
     """
     Returns a dictionary of environment variable key-value pairs to set in subprocess launched
-    to run MLflow projects.
+    to run QCFlow projects.
     """
     return {
-        MLFLOW_RUN_ID.name: run_id,
-        MLFLOW_TRACKING_URI.name: tracking.get_tracking_uri(),
-        MLFLOW_EXPERIMENT_ID.name: str(experiment_id),
+        QCFLOW_RUN_ID.name: run_id,
+        QCFLOW_TRACKING_URI.name: tracking.get_tracking_uri(),
+        QCFLOW_EXPERIMENT_ID.name: str(experiment_id),
     }

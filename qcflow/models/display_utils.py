@@ -1,9 +1,9 @@
 import jinja2
 
-from mlflow.models.model import ModelInfo
-from mlflow.models.signature import ModelSignature
-from mlflow.types import schema
-from mlflow.utils import databricks_utils
+from qcflow.models.model import ModelInfo
+from qcflow.models.signature import ModelSignature
+from qcflow.types import schema
+from qcflow.utils import databricks_utils
 
 
 def _is_input_agent_compatible(inputs: schema.Schema) -> bool:
@@ -104,13 +104,13 @@ def should_render_agent_eval_template(signature: ModelSignature) -> bool:
 
 
 def maybe_render_agent_eval_recipe(model_info: ModelInfo) -> None:
-    # For safety, we wrap in try/catch to make sure we don't break `mlflow.*.log_model`.
+    # For safety, we wrap in try/catch to make sure we don't break `qcflow.*.log_model`.
     try:
         if not should_render_agent_eval_template(model_info.signature):
             return
         # Create a Jinja2 environment and load the template
         env = jinja2.Environment(
-            loader=jinja2.PackageLoader("mlflow.models", "resources"),
+            loader=jinja2.PackageLoader("qcflow.models", "resources"),
             autoescape=jinja2.select_autoescape(["html"]),
         )
         pip_install_command = """%pip install -U databricks-agents

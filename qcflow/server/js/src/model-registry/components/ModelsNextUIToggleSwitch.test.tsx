@@ -1,5 +1,5 @@
 import userEvent from '@testing-library/user-event-14';
-import { renderWithIntl, act, screen, within } from '@mlflow/mlflow/src/common/utils/TestUtils.react17';
+import { renderWithIntl, act, screen, within } from '@qcflow/qcflow/src/common/utils/TestUtils.react17';
 import { useNextModelsUIContext, withNextModelsUIContext } from '../hooks/useNextModelsUI';
 import { ModelsNextUIToggleSwitch } from './ModelsNextUIToggleSwitch';
 

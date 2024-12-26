@@ -1,23 +1,23 @@
 #' Read Command-Line Parameter
 #'
-#' Reads a command-line parameter passed to an MLflow project
-#' MLflow allows you to define named, typed input parameters to your R scripts via the mlflow_param
+#' Reads a command-line parameter passed to an QCFlow project
+#' QCFlow allows you to define named, typed input parameters to your R scripts via the qcflow_param
 #' API. This is useful for experimentation, e.g. tracking multiple invocations of the same script
 #' with different parameters.
 #'
 #' @examples
 #' \dontrun{
-#' # This parametrized script trains a GBM model on the Iris dataset and can be run as an MLflow
+#' # This parametrized script trains a GBM model on the Iris dataset and can be run as an QCFlow
 #' # project. You can run this script (assuming it's saved at /some/directory/params_example.R)
 #' # with custom parameters via:
-#' # mlflow_run(entry_point = "params_example.R", uri = "/some/directory",
+#' # qcflow_run(entry_point = "params_example.R", uri = "/some/directory",
 #' #   parameters = list(num_trees = 200, learning_rate = 0.1))
 #' install.packages("gbm")
-#' library(mlflow)
+#' library(qcflow)
 #' library(gbm)
 #' # define and read input parameters
-#' num_trees <- mlflow_param(name = "num_trees", default = 200, type = "integer")
-#' lr <- mlflow_param(name = "learning_rate", default = 0.1, type = "numeric")
+#' num_trees <- qcflow_param(name = "num_trees", default = 200, type = "integer")
+#' lr <- qcflow_param(name = "learning_rate", default = 0.1, type = "numeric")
 #' # use params to fit a model
 #' ir.adaboost <- gbm(Species ~., data=iris, n.trees=num_trees, shrinkage=lr)
 #' }
@@ -31,7 +31,7 @@
 #'
 #' @import forge
 #' @export
-mlflow_param <- function(name, default = NULL, type = NULL, description = NULL) {
+qcflow_param <- function(name, default = NULL, type = NULL, description = NULL) {
   target_type <- forge::cast_choice(
     type,
     c("numeric", "integer", "string"),

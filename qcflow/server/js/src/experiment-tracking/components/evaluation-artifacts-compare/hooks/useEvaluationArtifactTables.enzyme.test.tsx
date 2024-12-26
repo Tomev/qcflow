@@ -1,7 +1,7 @@
 import { mount } from 'enzyme';
 import { useEvaluationArtifactTables } from './useEvaluationArtifactTables';
 import { RunRowType } from '../../experiment-page/utils/experimentPage.row-types';
-import { MLFLOW_LOGGED_ARTIFACTS_TAG } from '../../../constants';
+import { QCFLOW_LOGGED_ARTIFACTS_TAG } from '../../../constants';
 
 describe('useEvaluationArtifactTables', () => {
   const mountTestComponent = (comparedRuns: RunRowType[]) => {
@@ -35,8 +35,8 @@ describe('useEvaluationArtifactTables', () => {
     ({
       runUuid,
       tags: {
-        [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-          key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+        [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+          key: QCFLOW_LOGGED_ARTIFACTS_TAG,
           value: artifactsDeclaration,
         },
       },
@@ -116,8 +116,8 @@ describe('useEvaluationArtifactTables', () => {
       {
         runUuid: 'run_empty',
         tags: {
-          [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-            key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+          [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+            key: QCFLOW_LOGGED_ARTIFACTS_TAG,
             value: '[{"type":"unknownType","path":"/file.json"}]',
           },
         },
@@ -135,8 +135,8 @@ describe('useEvaluationArtifactTables', () => {
       {
         runUuid: 'run_1',
         tags: {
-          [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-            key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+          [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+            key: QCFLOW_LOGGED_ARTIFACTS_TAG,
             value: '[{"type":"table","path":"/table1.json"},{"type":"table","path":"/table1.json"}]',
           },
         },
@@ -159,8 +159,8 @@ describe('useEvaluationArtifactTables', () => {
         {
           runUuid: 'run_empty',
           tags: {
-            [MLFLOW_LOGGED_ARTIFACTS_TAG]: {
-              key: MLFLOW_LOGGED_ARTIFACTS_TAG,
+            [QCFLOW_LOGGED_ARTIFACTS_TAG]: {
+              key: QCFLOW_LOGGED_ARTIFACTS_TAG,
               value: '[[malformedData[[[[[{{',
             },
           },

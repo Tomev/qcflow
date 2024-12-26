@@ -15,7 +15,7 @@ import MetricChartsAccordion, { METRIC_CHART_SECTION_HEADER_SIZE } from '../../.
 import { RunsChartsSectionHeader } from './RunsChartsSectionHeader';
 import { RunsChartsSection } from './RunsChartsSection';
 import { useCallback, useMemo } from 'react';
-import { getUUID } from '@mlflow/mlflow/src/common/utils/ActionUtils';
+import { getUUID } from '@qcflow/qcflow/src/common/utils/ActionUtils';
 import { useState } from 'react';
 import { Button, PlusIcon } from '@databricks/design-system';
 import { FormattedMessage } from 'react-intl';
@@ -445,7 +445,7 @@ export const RunsChartsSectionAccordion = ({
       {!isSearching && (
         <div>
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_sections_runscomparesectionaccordion.tsx_405"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_sections_runscomparesectionaccordion.tsx_405"
             block
             onClick={appendSection}
             icon={<PlusIcon />}

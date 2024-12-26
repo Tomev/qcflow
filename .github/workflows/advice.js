@@ -31,19 +31,19 @@ module.exports = async ({ context, github }) => {
 
   const title = "&#x1F6E0 DevTools &#x1F6E0";
   if (body && !body.includes(title)) {
-    const codespacesBadge = `[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/${user.login}/mlflow/pull/${issue_number}?quickstart=1)`;
+    const codespacesBadge = `[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/${user.login}/qcflow/pull/${issue_number}?quickstart=1)`;
     const newSection = `
 <details><summary>${title}</summary>
 <p>
 
 ${codespacesBadge}
 
-#### Install mlflow from this PR
+#### Install qcflow from this PR
 
 \`\`\`
 # Use \`%sh\` to run this command on Databricks
-OPTIONS=$(if pip freeze | grep -q 'mlflow @ git+https://github.com/mlflow/mlflow.git'; then echo '--force-reinstall --no-deps'; fi)
-pip install $OPTIONS git+https://github.com/mlflow/mlflow.git@refs/pull/${issue_number}/merge
+OPTIONS=$(if pip freeze | grep -q 'qcflow @ git+https://github.com/qcflow/qcflow.git'; then echo '--force-reinstall --no-deps'; fi)
+pip install $OPTIONS git+https://github.com/qcflow/qcflow.git@refs/pull/${issue_number}/merge
 \`\`\`
 
 #### Checkout with GitHub CLI
@@ -69,7 +69,7 @@ gh pr checkout ${issue_number}
       "#### &#x26a0; DCO check\n\n" +
         "The DCO check failed. " +
         `Please sign off your commit(s) by following the instructions [here](${dcoCheck.html_url}). ` +
-        "See https://github.com/mlflow/mlflow/blob/master/CONTRIBUTING.md#sign-your-work for more " +
+        "See https://github.com/qcflow/qcflow/blob/master/CONTRIBUTING.md#sign-your-work for more " +
         "details."
     );
   }
@@ -86,8 +86,8 @@ gh pr checkout ${issue_number}
   if (!(body || "").includes("How should the PR be classified in the release notes?")) {
     messages.push(
       "#### &#x26a0; Invalid PR template\n\n" +
-        "This PR does not appear to have been filed using the MLflow PR template. " +
-        "Please copy the PR template from [here](https://raw.githubusercontent.com/mlflow/mlflow/master/.github/pull_request_template.md) " +
+        "This PR does not appear to have been filed using the QCFlow PR template. " +
+        "Please copy the PR template from [here](https://raw.githubusercontent.com/qcflow/qcflow/master/.github/pull_request_template.md) " +
         "and fill it out."
     );
   }

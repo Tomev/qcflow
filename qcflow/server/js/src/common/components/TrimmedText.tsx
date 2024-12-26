@@ -33,7 +33,7 @@ export const TrimmedText = ({ text, maxSize, className, allowShowMore = false, d
       {showMore ? text : trimmedText}
       {allowShowMore && (
         <Button
-          componentId="codegen_mlflow_app_src_common_components_trimmedtext.tsx_30"
+          componentId="codegen_qcflow_app_src_common_components_trimmedtext.tsx_30"
           type="link"
           onClick={() => setShowMore(!showMore)}
           size="small"

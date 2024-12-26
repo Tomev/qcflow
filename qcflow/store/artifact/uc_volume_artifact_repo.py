@@ -3,18 +3,18 @@ import posixpath
 from pathlib import Path
 from typing import Optional
 
-import mlflow.utils.databricks_utils
-from mlflow.entities import FileInfo
-from mlflow.environment_variables import MLFLOW_ENABLE_UC_VOLUME_FUSE_ARTIFACT_REPO
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from mlflow.utils.databricks_utils import get_databricks_host_creds
-from mlflow.utils.file_utils import relative_path_to_artifact_path
-from mlflow.utils.request_utils import augmented_raise_for_status
-from mlflow.utils.rest_utils import http_request
-from mlflow.utils.uri import (
+import qcflow.utils.databricks_utils
+from qcflow.entities import FileInfo
+from qcflow.environment_variables import QCFLOW_ENABLE_UC_VOLUME_FUSE_ARTIFACT_REPO
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.utils.databricks_utils import get_databricks_host_creds
+from qcflow.utils.file_utils import relative_path_to_artifact_path
+from qcflow.utils.request_utils import augmented_raise_for_status
+from qcflow.utils.rest_utils import http_request
+from qcflow.utils.uri import (
     get_databricks_profile_uri_from_artifact_uri,
     is_databricks_model_registry_artifacts_uri,
     is_valid_uc_volumes_uri,
@@ -52,7 +52,7 @@ class UCVolumesArtifactRepository(ArtifactRepository):
         self.root_path = "/" + strip_scheme(self.artifact_uri).strip("/")
         self.databricks_profile_uri = (
             get_databricks_profile_uri_from_artifact_uri(artifact_uri)
-            or mlflow.tracking.get_tracking_uri()
+            or qcflow.tracking.get_tracking_uri()
         )
 
     def _relative_to_root(self, path):
@@ -219,8 +219,8 @@ def uc_volume_artifact_repo_factory(artifact_uri):
     artifact_uri = artifact_uri.rstrip("/")
     db_profile_uri = get_databricks_profile_uri_from_artifact_uri(artifact_uri)
     if (
-        mlflow.utils.databricks_utils.is_uc_volume_fuse_available()
-        and MLFLOW_ENABLE_UC_VOLUME_FUSE_ARTIFACT_REPO.get()
+        qcflow.utils.databricks_utils.is_uc_volume_fuse_available()
+        and QCFLOW_ENABLE_UC_VOLUME_FUSE_ARTIFACT_REPO.get()
         and not is_databricks_model_registry_artifacts_uri(artifact_uri)
         and (db_profile_uri is None or db_profile_uri == "databricks")
     ):

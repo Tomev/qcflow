@@ -12,12 +12,12 @@ import pyspark.sql.types as T
 import pytest
 from scipy.sparse import csc_matrix, csr_matrix
 
-from mlflow.exceptions import MlflowException
-from mlflow.models import rag_signatures
-from mlflow.models.utils import _enforce_tensor_spec
-from mlflow.pyfunc import _parse_spark_datatype
-from mlflow.types import DataType
-from mlflow.types.schema import (
+from qcflow.exceptions import MlflowException
+from qcflow.models import rag_signatures
+from qcflow.models.utils import _enforce_tensor_spec
+from qcflow.pyfunc import _parse_spark_datatype
+from qcflow.types import DataType
+from qcflow.types.schema import (
     AnyType,
     Array,
     ColSpec,
@@ -29,7 +29,7 @@ from mlflow.types.schema import (
     TensorSpec,
     convert_dataclass_to_schema,
 )
-from mlflow.types.utils import (
+from qcflow.types.utils import (
     MULTIPLE_TYPES_ERROR_MSG,
     _get_tensor_shape,
     _infer_colspec_type,
@@ -80,7 +80,7 @@ def test_tensor_spec():
         TensorSpec(np.dtype("float64"), np.array([-1, 2, 3]), "b")
     with pytest.raises(
         MlflowException,
-        match="MLflow does not support size information in flexible numpy data types",
+        match="QCFlow does not support size information in flexible numpy data types",
     ):
         TensorSpec(np.dtype("<U10"), (-1,), "b")
 
@@ -567,8 +567,8 @@ def test_all_numpy_dtypes():
     # str_
     for dtype in str_:
         test_dtype(np.array(["m", "l", "f", "l", "o", "w"], dtype=dtype), dtype)
-        test_dtype(np.array(["mlflow"], dtype=dtype), dtype)
-        test_dtype(np.array(["mlflow is the best"], dtype=dtype), dtype)
+        test_dtype(np.array(["qcflow"], dtype=dtype), dtype)
+        test_dtype(np.array(["qcflow is the best"], dtype=dtype), dtype)
     # Explicitly giving size information for flexible dtype str_
     test_dtype(np.array(["a", "bc", "def"], dtype="U16"), "str")
     test_dtype(np.array(["a", "bc", "def"], dtype="U16"), "U")
@@ -1700,7 +1700,7 @@ def test_schema_inference_on_lists(data, data_type):
 
 def test_schema_inference_with_empty_lists():
     # If (non-nested) empty list is passed, should be inferred as string for backward compatibility
-    # with version 2.7.1: https://github.com/mlflow/mlflow/blob/v2.7.1/mlflow/types/utils.py#L150
+    # with version 2.7.1: https://github.com/qcflow/qcflow/blob/v2.7.1/qcflow/types/utils.py#L150
     data = []
     assert _infer_schema(data) == Schema([ColSpec(DataType.string)])
 
@@ -1931,7 +1931,7 @@ def test_convert_dataclass_to_schema_invalid():
                             "index": 0,
                             "message": {
                                 "role": "assistant",
-                                "content": "MLflow",
+                                "content": "QCFlow",
                             },
                             "finish_reason": None,
                         }
@@ -2007,7 +2007,7 @@ def test_convert_dataclass_to_schema_invalid():
                             "usage_metadata": None,
                         },
                         {
-                            "content": "Who owns MLflow?",
+                            "content": "Who owns QCFlow?",
                             "additional_kwargs": {},
                             "response_metadata": {},
                             "type": "human",

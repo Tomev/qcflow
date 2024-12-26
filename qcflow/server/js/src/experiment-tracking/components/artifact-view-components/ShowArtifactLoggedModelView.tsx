@@ -113,14 +113,14 @@ export class ShowArtifactLoggedModelViewImpl extends Component<Props, State> {
 
   sparkDataFrameCodeText(modelPath: any) {
     return (
-      `import mlflow\n` +
+      `import qcflow\n` +
       `from pyspark.sql.functions import struct, col\n` +
       `logged_model = '${modelPath}'\n\n` +
       `# ${this.props.intl.formatMessage({
         defaultMessage: 'Load model as a Spark UDF. Override result_type if the model does not return double values.',
         description: 'Code comment which states how to load model using spark UDF',
       })}\n` +
-      `loaded_model = mlflow.pyfunc.spark_udf(spark, model_uri=logged_model)\n\n` +
+      `loaded_model = qcflow.pyfunc.spark_udf(spark, model_uri=logged_model)\n\n` +
       `# ${this.props.intl.formatMessage({
         defaultMessage: 'Predict on a Spark DataFrame.',
         description: 'Code comment which states on how we can predict using spark DataFrame',
@@ -131,25 +131,25 @@ export class ShowArtifactLoggedModelViewImpl extends Component<Props, State> {
 
   loadModelCodeText(modelPath: any, flavor: any) {
     return (
-      `import mlflow\n` +
+      `import qcflow\n` +
       `logged_model = '${modelPath}'\n\n` +
       `# ${this.props.intl.formatMessage({
         defaultMessage: 'Load model',
         description: 'Code comment which states how to load the model',
       })}\n` +
-      `loaded_model = mlflow.${flavor}.load_model(logged_model)\n`
+      `loaded_model = qcflow.${flavor}.load_model(logged_model)\n`
     );
   }
 
   pandasDataFrameCodeText(modelPath: any) {
     return (
-      `import mlflow\n` +
+      `import qcflow\n` +
       `logged_model = '${modelPath}'\n\n` +
       `# ${this.props.intl.formatMessage({
         defaultMessage: 'Load model as a PyFuncModel.',
         description: 'Code comment which states how to load model using PyFuncModel',
       })}\n` +
-      `loaded_model = mlflow.pyfunc.load_model(logged_model)\n\n` +
+      `loaded_model = qcflow.pyfunc.load_model(logged_model)\n\n` +
       `# ${this.props.intl.formatMessage({
         defaultMessage: 'Predict on a Pandas DataFrame.',
         description: 'Code comment which states on how we can predict using pandas DataFrame',
@@ -159,15 +159,15 @@ export class ShowArtifactLoggedModelViewImpl extends Component<Props, State> {
     );
   }
 
-  mlflowSparkCodeText(modelPath: any) {
+  qcflowSparkCodeText(modelPath: any) {
     return (
-      `import mlflow\n` +
+      `import qcflow\n` +
       `logged_model = '${modelPath}'\n\n` +
       `# ${this.props.intl.formatMessage({
         defaultMessage: 'Load model',
         description: 'Code comment which states how to load a SparkML model',
       })}\n` +
-      `loaded_model = mlflow.spark.load_model(logged_model)\n\n` +
+      `loaded_model = qcflow.spark.load_model(logged_model)\n\n` +
       `# ${this.props.intl.formatMessage({
         defaultMessage: 'Perform inference via model.transform()',
         description: 'Code comment which states how we can perform SparkML inference',
@@ -178,11 +178,11 @@ export class ShowArtifactLoggedModelViewImpl extends Component<Props, State> {
 
   validateModelForServingText(modelPath: any, servingInput?: string) {
     if (servingInput) {
-      return `from mlflow.models import validate_serving_input
+      return `from qcflow.models import validate_serving_input
 
 model_uri = '${modelPath}'
 
-# The model is logged with an input example. MLflow converts
+# The model is logged with an input example. QCFlow converts
 # it into the serving payload format for the deployed model endpoint,
 # and saves it to 'serving_input_payload.json'
 serving_payload = """${servingInput}"""
@@ -190,13 +190,13 @@ serving_payload = """${servingInput}"""
 # Validate the serving payload works on the model
 validate_serving_input(model_uri, serving_payload)`;
     } else {
-      return `from mlflow.models import validate_serving_input
+      return `from qcflow.models import validate_serving_input
 
 model_uri = '${modelPath}'
 
 # The logged model does not contain an input_example.
 # Manually generate a serving payload to verify your model prior to deployment.
-from mlflow.models import convert_input_example_to_serving_input
+from qcflow.models import convert_input_example_to_serving_input
 
 # Define INPUT_EXAMPLE via assignment with your own input example to the model
 # A valid input example is a data instance suitable for pyfunc prediction
@@ -233,11 +233,11 @@ validate_serving_input(model_uri, serving_payload)`;
               // eslint-disable-next-line max-len
               defaultMessage="See the documents below to learn how to customize this model and deploy it for batch or real-time scoring using the pyfunc model flavor."
               // eslint-disable-next-line max-len
-              description="Subtext heading for a list of documents that describe how to customize the model using the mlflow.pyfunc module"
+              description="Subtext heading for a list of documents that describe how to customize the model using the qcflow.pyfunc module"
             />
             <ul>
               <li>
-                <a href={PyfuncDocUrl}>API reference for the mlflow.pyfunc module</a>
+                <a href={PyfuncDocUrl}>API reference for the qcflow.pyfunc module</a>
               </li>
               <li>
                 <a href={CustomPyfuncModelsDocUrl}>Creating custom Pyfunc models</a>
@@ -264,7 +264,7 @@ validate_serving_input(model_uri, serving_payload)`;
   }
 
   renderPyfuncCodeSnippet() {
-    if (this.state.loader_module === 'mlflow.spark') {
+    if (this.state.loader_module === 'qcflow.spark') {
       return this.renderMlflowSparkCodeSnippet();
     }
     const { runUuid, path } = this.props;
@@ -307,7 +307,7 @@ validate_serving_input(model_uri, serving_payload)`;
         </Title>
         <div className="artifact-logged-model-view-code-content">
           {this.renderPandasDataFramePrediction(modelPath)}
-          <ShowArtifactCodeSnippet code={this.mlflowSparkCodeText(modelPath)} />
+          <ShowArtifactCodeSnippet code={this.qcflowSparkCodeText(modelPath)} />
         </div>
       </>
     );
@@ -370,7 +370,7 @@ validate_serving_input(model_uri, serving_payload)`;
               style={{ marginTop: 16, marginBottom: 16, marginLeft: 16 }}
             >
               <Title level={2}>
-                <FormattedMessage defaultMessage="MLflow Model" description="Heading text for mlflow model artifact" />
+                <FormattedMessage defaultMessage="QCFlow Model" description="Heading text for qcflow model artifact" />
               </Title>
               {this.state.flavor === 'pyfunc' ? (
                 <FormattedMessage

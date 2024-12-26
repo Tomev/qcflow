@@ -2,7 +2,7 @@ import configparser
 from pathlib import Path
 from typing import NamedTuple
 
-from mlflow.environment_variables import MLFLOW_AUTH_CONFIG_PATH
+from qcflow.environment_variables import QCFLOW_AUTH_CONFIG_PATH
 
 
 class AuthConfig(NamedTuple):
@@ -15,7 +15,7 @@ class AuthConfig(NamedTuple):
 
 def _get_auth_config_path() -> str:
     return (
-        MLFLOW_AUTH_CONFIG_PATH.get() or Path(__file__).parent.joinpath("basic_auth.ini").resolve()
+        QCFLOW_AUTH_CONFIG_PATH.get() or Path(__file__).parent.joinpath("basic_auth.ini").resolve()
     )
 
 
@@ -24,11 +24,11 @@ def read_auth_config() -> AuthConfig:
     config = configparser.ConfigParser()
     config.read(config_path)
     return AuthConfig(
-        default_permission=config["mlflow"]["default_permission"],
-        database_uri=config["mlflow"]["database_uri"],
-        admin_username=config["mlflow"]["admin_username"],
-        admin_password=config["mlflow"]["admin_password"],
-        authorization_function=config["mlflow"].get(
-            "authorization_function", "mlflow.server.auth:authenticate_request_basic_auth"
+        default_permission=config["qcflow"]["default_permission"],
+        database_uri=config["qcflow"]["database_uri"],
+        admin_username=config["qcflow"]["admin_username"],
+        admin_password=config["qcflow"]["admin_password"],
+        authorization_function=config["qcflow"].get(
+            "authorization_function", "qcflow.server.auth:authenticate_request_basic_auth"
         ),
     )

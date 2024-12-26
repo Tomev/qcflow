@@ -9,9 +9,9 @@ import types
 from flask import Flask, Response, send_from_directory
 from packaging.version import Version
 
-from mlflow.exceptions import MlflowException
-from mlflow.server import handlers
-from mlflow.server.handlers import (
+from qcflow.exceptions import MlflowException
+from qcflow.server import handlers
+from qcflow.server.handlers import (
     STATIC_PREFIX_ENV_VAR,
     _add_static_prefix,
     create_promptlab_run_handler,
@@ -24,20 +24,20 @@ from mlflow.server.handlers import (
     search_datasets_handler,
     upload_artifact_handler,
 )
-from mlflow.utils.os import is_windows
-from mlflow.utils.plugins import get_entry_points
-from mlflow.utils.process import _exec_cmd
-from mlflow.version import VERSION
+from qcflow.utils.os import is_windows
+from qcflow.utils.plugins import get_entry_points
+from qcflow.utils.process import _exec_cmd
+from qcflow.version import VERSION
 
 # NB: These are internal environment variables used for communication between
 # the cli and the forked gunicorn processes.
-BACKEND_STORE_URI_ENV_VAR = "_MLFLOW_SERVER_FILE_STORE"
-REGISTRY_STORE_URI_ENV_VAR = "_MLFLOW_SERVER_REGISTRY_STORE"
-ARTIFACT_ROOT_ENV_VAR = "_MLFLOW_SERVER_ARTIFACT_ROOT"
-ARTIFACTS_DESTINATION_ENV_VAR = "_MLFLOW_SERVER_ARTIFACT_DESTINATION"
+BACKEND_STORE_URI_ENV_VAR = "_QCFLOW_SERVER_FILE_STORE"
+REGISTRY_STORE_URI_ENV_VAR = "_QCFLOW_SERVER_REGISTRY_STORE"
+ARTIFACT_ROOT_ENV_VAR = "_QCFLOW_SERVER_ARTIFACT_ROOT"
+ARTIFACTS_DESTINATION_ENV_VAR = "_QCFLOW_SERVER_ARTIFACT_DESTINATION"
 PROMETHEUS_EXPORTER_ENV_VAR = "prometheus_multiproc_dir"
-SERVE_ARTIFACTS_ENV_VAR = "_MLFLOW_SERVER_SERVE_ARTIFACTS"
-ARTIFACTS_ONLY_ENV_VAR = "_MLFLOW_SERVER_ARTIFACTS_ONLY"
+SERVE_ARTIFACTS_ENV_VAR = "_QCFLOW_SERVER_SERVE_ARTIFACTS"
+ARTIFACTS_ONLY_ENV_VAR = "_QCFLOW_SERVER_ARTIFACTS_ONLY"
 
 REL_STATIC_DIR = "js/build"
 
@@ -49,7 +49,7 @@ for http_path, handler, methods in handlers.get_endpoints():
     app.add_url_rule(http_path, handler.__name__, handler, methods=methods)
 
 if os.getenv(PROMETHEUS_EXPORTER_ENV_VAR):
-    from mlflow.server.prometheus_exporter import activate_prometheus_exporter
+    from qcflow.server.prometheus_exporter import activate_prometheus_exporter
 
     prometheus_metrics_path = os.getenv(PROMETHEUS_EXPORTER_ENV_VAR)
     if not os.path.exists(prometheus_metrics_path):
@@ -63,7 +63,7 @@ def health():
     return "OK", 200
 
 
-# Provide an endpoint to query the version of mlflow running on the server
+# Provide an endpoint to query the version of qcflow running on the server
 @app.route("/version")
 def version():
     return VERSION, 200
@@ -82,35 +82,35 @@ def serve_model_version_artifact():
 
 
 # Serve the "metrics/get-history-bulk" route.
-@app.route(_add_static_prefix("/ajax-api/2.0/mlflow/metrics/get-history-bulk"))
+@app.route(_add_static_prefix("/ajax-api/2.0/qcflow/metrics/get-history-bulk"))
 def serve_get_metric_history_bulk():
     return get_metric_history_bulk_handler()
 
 
 # Serve the "metrics/get-history-bulk-interval" route.
-@app.route(_add_static_prefix("/ajax-api/2.0/mlflow/metrics/get-history-bulk-interval"))
+@app.route(_add_static_prefix("/ajax-api/2.0/qcflow/metrics/get-history-bulk-interval"))
 def serve_get_metric_history_bulk_interval():
     return get_metric_history_bulk_interval_handler()
 
 
 # Serve the "experiments/search-datasets" route.
-@app.route(_add_static_prefix("/ajax-api/2.0/mlflow/experiments/search-datasets"), methods=["POST"])
+@app.route(_add_static_prefix("/ajax-api/2.0/qcflow/experiments/search-datasets"), methods=["POST"])
 def serve_search_datasets():
     return search_datasets_handler()
 
 
 # Serve the "runs/create-promptlab-run" route.
-@app.route(_add_static_prefix("/ajax-api/2.0/mlflow/runs/create-promptlab-run"), methods=["POST"])
+@app.route(_add_static_prefix("/ajax-api/2.0/qcflow/runs/create-promptlab-run"), methods=["POST"])
 def serve_create_promptlab_run():
     return create_promptlab_run_handler()
 
 
-@app.route(_add_static_prefix("/ajax-api/2.0/mlflow/gateway-proxy"), methods=["POST", "GET"])
+@app.route(_add_static_prefix("/ajax-api/2.0/qcflow/gateway-proxy"), methods=["POST", "GET"])
 def serve_gateway_proxy():
     return gateway_proxy_handler()
 
 
-@app.route(_add_static_prefix("/ajax-api/2.0/mlflow/upload-artifact"), methods=["POST"])
+@app.route(_add_static_prefix("/ajax-api/2.0/qcflow/upload-artifact"), methods=["POST"])
 def serve_upload_artifact():
     return upload_artifact_handler()
 
@@ -118,7 +118,7 @@ def serve_upload_artifact():
 # Serve the "/get-trace-artifact" route to allow frontend to fetch trace artifacts
 # and render them in the Trace UI. The request body should contain the request_id
 # of the trace.
-@app.route(_add_static_prefix("/ajax-api/2.0/mlflow/get-trace-artifact"), methods=["GET"])
+@app.route(_add_static_prefix("/ajax-api/2.0/qcflow/get-trace-artifact"), methods=["GET"])
 def serve_get_trace_artifact():
     return get_trace_artifact_handler()
 
@@ -142,24 +142,24 @@ def serve():
 
     text = textwrap.dedent(
         """
-    Unable to display MLflow UI - landing page (index.html) not found.
+    Unable to display QCFlow UI - landing page (index.html) not found.
 
-    You are very likely running the MLflow server using a source installation of the Python MLflow
+    You are very likely running the QCFlow server using a source installation of the Python QCFlow
     package.
 
-    If you are a developer making MLflow source code changes and intentionally running a source
-    installation of MLflow, you can view the UI by running the Javascript dev server:
-    https://github.com/mlflow/mlflow/blob/master/CONTRIBUTING.md#running-the-javascript-dev-server
+    If you are a developer making QCFlow source code changes and intentionally running a source
+    installation of QCFlow, you can view the UI by running the Javascript dev server:
+    https://github.com/qcflow/qcflow/blob/master/CONTRIBUTING.md#running-the-javascript-dev-server
 
-    Otherwise, uninstall MLflow via 'pip uninstall mlflow', reinstall an official MLflow release
-    from PyPI via 'pip install mlflow', and rerun the MLflow server.
+    Otherwise, uninstall QCFlow via 'pip uninstall qcflow', reinstall an official QCFlow release
+    from PyPI via 'pip install qcflow', and rerun the QCFlow server.
     """
     )
     return Response(text, mimetype="text/plain")
 
 
 def _find_app(app_name: str) -> str:
-    apps = get_entry_points("mlflow.app")
+    apps = get_entry_points("qcflow.app")
     for app in apps:
         if app.name == app_name:
             return app.value
@@ -174,7 +174,7 @@ def _is_factory(app: str) -> bool:
     Returns True if the given app is a factory function, False otherwise.
 
     Args:
-        app: The app to check, e.g. "mlflow.server.app:app
+        app: The app to check, e.g. "qcflow.server.app:app
     """
     module, obj_name = app.rsplit(":", 1)
     mod = importlib.import_module(module)
@@ -194,7 +194,7 @@ def get_app_client(app_name: str, *args, **kwargs):
     Returns:
         An app client instance.
     """
-    clients = get_entry_points("mlflow.app.client")
+    clients = get_entry_points("qcflow.app.client")
     for client in clients:
         if client.name == app_name:
             cls = client.load()
@@ -214,7 +214,7 @@ def _build_waitress_command(waitress_opts, host, port, app_name, is_factory):
         *opts,
         f"--host={host}",
         f"--port={port}",
-        "--ident=mlflow",
+        "--ident=qcflow",
         *(["--call"] if is_factory else []),
         app_name,
     ]
@@ -253,7 +253,7 @@ def _run_server(  # noqa: D417
     app_name=None,
 ):
     """
-    Run the MLflow server, wrapping it in gunicorn or waitress on windows
+    Run the QCFlow server, wrapping it in gunicorn or waitress on windows
 
     Args:
         static_prefix: If set, the index.html asset will be served from the path static_prefix.

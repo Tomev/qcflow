@@ -1,5 +1,5 @@
 """
-The ``mlflow.projects`` module provides an API for running MLflow projects locally or remotely.
+The ``qcflow.projects`` module provides an API for running QCFlow projects locally or remotely.
 """
 
 import json
@@ -8,15 +8,15 @@ import os
 
 import yaml
 
-import mlflow.projects.databricks
-import mlflow.utils.uri
-from mlflow import tracking
-from mlflow.entities import RunStatus
-from mlflow.exceptions import ExecutionException, MlflowException
-from mlflow.projects.backend import loader
-from mlflow.projects.submitted_run import SubmittedRun
-from mlflow.projects.utils import (
-    MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG,
+import qcflow.projects.databricks
+import qcflow.utils.uri
+from qcflow import tracking
+from qcflow.entities import RunStatus
+from qcflow.exceptions import ExecutionException, MlflowException
+from qcflow.projects.backend import loader
+from qcflow.projects.submitted_run import SubmittedRun
+from qcflow.projects.utils import (
+    QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG,
     PROJECT_BUILD_IMAGE,
     PROJECT_DOCKER_ARGS,
     PROJECT_DOCKER_AUTH,
@@ -29,13 +29,13 @@ from mlflow.projects.utils import (
     get_run_env_vars,
     load_project,
 )
-from mlflow.tracking.fluent import _get_experiment_id
-from mlflow.utils import env_manager as _EnvManager
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DOCKER_IMAGE_ID,
-    MLFLOW_PROJECT_BACKEND,
-    MLFLOW_PROJECT_ENV,
-    MLFLOW_RUN_NAME,
+from qcflow.tracking.fluent import _get_experiment_id
+from qcflow.utils import env_manager as _EnvManager
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DOCKER_IMAGE_ID,
+    QCFLOW_PROJECT_BACKEND,
+    QCFLOW_PROJECT_ENV,
+    QCFLOW_RUN_NAME,
 )
 
 _logger = logging.getLogger(__name__)
@@ -117,10 +117,10 @@ def _run(
                 experiment_id,
             )
             tracking.MlflowClient().set_tag(
-                submitted_run.run_id, MLFLOW_PROJECT_BACKEND, backend_name
+                submitted_run.run_id, QCFLOW_PROJECT_BACKEND, backend_name
             )
             if run_name is not None:
-                tracking.MlflowClient().set_tag(submitted_run.run_id, MLFLOW_RUN_NAME, run_name)
+                tracking.MlflowClient().set_tag(submitted_run.run_id, QCFLOW_RUN_NAME, run_name)
             return submitted_run
 
     work_dir = fetch_and_validate_project(uri, version, entry_point, parameters)
@@ -132,13 +132,13 @@ def _run(
     )
 
     if run_name is not None:
-        tracking.MlflowClient().set_tag(active_run.info.run_id, MLFLOW_RUN_NAME, run_name)
+        tracking.MlflowClient().set_tag(active_run.info.run_id, QCFLOW_RUN_NAME, run_name)
 
     if backend_name == "databricks":
         tracking.MlflowClient().set_tag(
-            active_run.info.run_id, MLFLOW_PROJECT_BACKEND, "databricks"
+            active_run.info.run_id, QCFLOW_PROJECT_BACKEND, "databricks"
         )
-        from mlflow.projects.databricks import run_databricks, run_databricks_spark_job
+        from qcflow.projects.databricks import run_databricks, run_databricks_spark_job
 
         if project.databricks_spark_job_spec is not None:
             return run_databricks_spark_job(
@@ -164,16 +164,16 @@ def _run(
         )
 
     elif backend_name == "kubernetes":
-        from mlflow.projects import kubernetes as kb
-        from mlflow.projects.docker import (
+        from qcflow.projects import kubernetes as kb
+        from qcflow.projects.docker import (
             build_docker_image,
             validate_docker_env,
             validate_docker_installation,
         )
 
-        tracking.MlflowClient().set_tag(active_run.info.run_id, MLFLOW_PROJECT_ENV, "docker")
+        tracking.MlflowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "docker")
         tracking.MlflowClient().set_tag(
-            active_run.info.run_id, MLFLOW_PROJECT_BACKEND, "kubernetes"
+            active_run.info.run_id, QCFLOW_PROJECT_BACKEND, "kubernetes"
         )
         validate_docker_env(project)
         validate_docker_installation()
@@ -188,7 +188,7 @@ def _run(
         )
         image_digest = kb.push_image_to_registry(image.tags[0])
         tracking.MlflowClient().set_tag(
-            active_run.info.run_id, MLFLOW_DOCKER_IMAGE_ID, image_digest
+            active_run.info.run_id, QCFLOW_DOCKER_IMAGE_ID, image_digest
         )
         return kb.run_kubernetes_job(
             project.name,
@@ -203,7 +203,7 @@ def _run(
             kube_config["kube-job-template"],
         )
 
-    supported_backends = ["databricks", "kubernetes"] + list(loader.MLFLOW_BACKENDS.keys())
+    supported_backends = ["databricks", "kubernetes"] + list(loader.QCFLOW_BACKENDS.keys())
     raise ExecutionException(
         f"Got unsupported execution mode {backend_name}. Supported values: {supported_backends}"
     )
@@ -228,9 +228,9 @@ def run(
     docker_auth=None,
 ):
     """
-    Run an MLflow project. The project can be local or stored at a Git URI.
+    Run an QCFlow project. The project can be local or stored at a Git URI.
 
-    MLflow provides built-in support for running projects locally or remotely on a Databricks or
+    QCFlow provides built-in support for running projects locally or remotely on a Databricks or
     Kubernetes cluster. You can also run projects against other targets by installing an appropriate
     third-party plugin. See `Community Plugins <../plugins.html#community-plugins>`_ for more
     information.
@@ -239,12 +239,12 @@ def run(
     <../projects.html#building-multistep-workflows>`_.
 
     Raises:
-        :py:class:`mlflow.exceptions.ExecutionException` If a run launched in blocking mode
+        :py:class:`qcflow.exceptions.ExecutionException` If a run launched in blocking mode
             is unsuccessful.
 
     Args:
         uri: URI of project to run. A local filesystem path
-            or a Git repository URI (e.g. https://github.com/mlflow/mlflow-example)
+            or a Git repository URI (e.g. https://github.com/qcflow/qcflow-example)
             pointing to a project directory containing an MLproject file.
         entry_point: Entry point to run within the project. If no entry point with the specified
             name is found, runs the project file ``entry_point`` as a script,
@@ -255,18 +255,18 @@ def run(
         docker_args: Arguments (dictionary) for the docker command.
         experiment_name: Name of experiment under which to launch the run.
         experiment_id: ID of experiment under which to launch the run.
-        backend: Execution backend for the run: MLflow provides built-in support for "local",
+        backend: Execution backend for the run: QCFlow provides built-in support for "local",
             "databricks", and "kubernetes" (experimental) backends. If running against
             Databricks, will run against a Databricks workspace determined as follows:
             if a Databricks tracking URI of the form ``databricks://profile`` has been set
-            (e.g. by setting the MLFLOW_TRACKING_URI environment variable), will run
+            (e.g. by setting the QCFLOW_TRACKING_URI environment variable), will run
             against the workspace specified by <profile>. Otherwise, runs against the
             workspace specified by the default Databricks CLI profile.
         backend_config: A dictionary, or a path to a JSON file (must end in '.json'), which will
             be passed as config to the backend. The exact content which should be
             provided is different for each execution backend and is documented
-            at https://www.mlflow.org/docs/latest/projects.html.
-        storage_dir: Used only if ``backend`` is "local". MLflow downloads artifacts from
+            at https://www.qcflow.org/docs/latest/projects.html.
+        storage_dir: Used only if ``backend`` is "local". QCFlow downloads artifacts from
             distributed URIs passed to parameters of type ``path`` to subdirectories of
             ``storage_dir``.
         synchronous: Whether to block while waiting for a run to complete. Defaults to True.
@@ -276,11 +276,11 @@ def run(
             asynchronous runs launched via this method will be terminated. If
             ``synchronous`` is True and the run fails, the current process will
             error out as well.
-        run_id: Note: this argument is used internally by the MLflow project APIs and should
+        run_id: Note: this argument is used internally by the QCFlow project APIs and should
             not be specified. If specified, the run ID will be used instead of
             creating a new run.
-        run_name: The name to give the MLflow Run associated with the project execution.
-            If ``None``, the MLflow Run name is left unset.
+        run_name: The name to give the QCFlow Run associated with the project execution.
+            If ``None``, the QCFlow Run name is left unset.
         env_manager: Specify an environment manager to create a new environment for the run and
             install project dependencies within that environment. The following values
             are supported:
@@ -289,7 +289,7 @@ def run(
             - virtualenv: use virtualenv (and pyenv for Python version management)
             - conda: use conda
 
-            If unspecified, MLflow automatically determines the environment manager to
+            If unspecified, QCFlow automatically determines the environment manager to
             use by inspecting files in the project directory. For example, if
             ``python_env.yaml`` is present, virtualenv will be used.
         build_image: Whether to build a new docker image of the project or to reuse an existing
@@ -300,20 +300,20 @@ def run(
             for available options.
 
     Returns:
-        :py:class:`mlflow.projects.SubmittedRun` exposing information (e.g. run ID)
+        :py:class:`qcflow.projects.SubmittedRun` exposing information (e.g. run ID)
         about the launched run.
 
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        project_uri = "https://github.com/mlflow/mlflow-example"
+        project_uri = "https://github.com/qcflow/qcflow-example"
         params = {"alpha": 0.5, "l1_ratio": 0.01}
 
-        # Run MLflow project and create a reproducible conda environment
+        # Run QCFlow project and create a reproducible conda environment
         # on a local host
-        mlflow.run(project_uri, parameters=params)
+        qcflow.run(project_uri, parameters=params)
 
     .. code-block:: text
         :caption: Output
@@ -324,7 +324,7 @@ def run(
         RMSE: 0.788347345611717
         MAE: 0.6155576449938276
         R2: 0.19729662005412607
-        ... mlflow.projects: === Run (ID '6a5109febe5e4a549461e149590d0a7c') succeeded ===
+        ... qcflow.projects: === Run (ID '6a5109febe5e4a549461e149590d0a7c') succeeded ===
     """
     backend_config_dict = backend_config if backend_config is not None else {}
     if (
@@ -346,9 +346,9 @@ def run(
         _EnvManager.validate(env_manager)
 
     if backend == "databricks":
-        mlflow.projects.databricks.before_run_validations(mlflow.get_tracking_uri(), backend_config)
+        qcflow.projects.databricks.before_run_validations(qcflow.get_tracking_uri(), backend_config)
     elif backend == "local" and run_id is not None:
-        backend_config_dict[MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG] = run_id
+        backend_config_dict[QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG] = run_id
 
     experiment_id = _resolve_experiment_id(
         experiment_name=experiment_name, experiment_id=experiment_id

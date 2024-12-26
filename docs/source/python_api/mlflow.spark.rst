@@ -1,7 +1,7 @@
-mlflow.spark
+qcflow.spark
 ===============
 
-.. automodule:: mlflow.spark
+.. automodule:: qcflow.spark
     :members:
     :undoc-members:
     :show-inheritance:

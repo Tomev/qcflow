@@ -17,7 +17,7 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from pyspark.sql import SparkSession
 
-from mlflow.tracing.provider import trace_disabled
+from qcflow.tracing.provider import trace_disabled
 
 from tests.helper_functions import start_mock_openai_server
 

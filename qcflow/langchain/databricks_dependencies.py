@@ -6,7 +6,7 @@ from typing import Any, Generator, Optional
 
 from packaging import version
 
-from mlflow.models.resources import (
+from qcflow.models.resources import (
     DatabricksFunction,
     DatabricksServingEndpoint,
     DatabricksSQLWarehouse,
@@ -394,7 +394,7 @@ def _detect_databricks_dependencies(lc_model, log_errors_as_warnings=True) -> li
     support. Only RetrievalQA, StuffDocumentsChain, ReduceDocumentsChain, RefineDocumentsChain,
     MapRerankDocumentsChain, MapReduceDocumentsChain, BaseConversationalRetrievalChain are
     supported. If you need to support a custom chain, you need to monkey patch
-    the function mlflow.langchain.databricks_dependencies._extract_dependency_list_from_lc_model().
+    the function qcflow.langchain.databricks_dependencies._extract_dependency_list_from_lc_model().
 
     For an LCEL chain, all the langchain_core.runnables.RunnableSerializable nodes will be
     traversed.

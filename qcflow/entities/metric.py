@@ -1,8 +1,8 @@
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.protos.service_pb2 import Metric as ProtoMetric
-from mlflow.protos.service_pb2 import MetricWithRunId as ProtoMetricWithRunId
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.protos.service_pb2 import Metric as ProtoMetric
+from qcflow.protos.service_pb2 import MetricWithRunId as ProtoMetricWithRunId
 
 
 class Metric(_MlflowObject):

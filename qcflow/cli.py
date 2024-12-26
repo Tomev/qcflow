@@ -10,26 +10,26 @@ from datetime import timedelta
 import click
 from click import UsageError
 
-import mlflow.db
-import mlflow.deployments.cli
-import mlflow.experiments
-import mlflow.runs
-import mlflow.store.artifact.cli
-from mlflow import projects, version
-from mlflow.entities import ViewType
-from mlflow.entities.lifecycle_stage import LifecycleStage
-from mlflow.environment_variables import MLFLOW_EXPERIMENT_ID, MLFLOW_EXPERIMENT_NAME
-from mlflow.exceptions import InvalidUrlException, MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.tracking import DEFAULT_ARTIFACTS_URI, DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH
-from mlflow.tracking import _get_store
-from mlflow.utils import cli_args
-from mlflow.utils.logging_utils import eprint
-from mlflow.utils.os import is_windows
-from mlflow.utils.plugins import get_entry_points
-from mlflow.utils.process import ShellCommandException
-from mlflow.utils.server_cli_utils import (
+import qcflow.db
+import qcflow.deployments.cli
+import qcflow.experiments
+import qcflow.runs
+import qcflow.store.artifact.cli
+from qcflow import projects, version
+from qcflow.entities import ViewType
+from qcflow.entities.lifecycle_stage import LifecycleStage
+from qcflow.environment_variables import QCFLOW_EXPERIMENT_ID, QCFLOW_EXPERIMENT_NAME
+from qcflow.exceptions import InvalidUrlException, MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.tracking import DEFAULT_ARTIFACTS_URI, DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH
+from qcflow.tracking import _get_store
+from qcflow.utils import cli_args
+from qcflow.utils.logging_utils import eprint
+from qcflow.utils.os import is_windows
+from qcflow.utils.plugins import get_entry_points
+from qcflow.utils.process import ShellCommandException
+from qcflow.utils.server_cli_utils import (
     artifacts_only_config_validation,
     resolve_default_artifact_root,
 )
@@ -39,7 +39,7 @@ _logger = logging.getLogger(__name__)
 
 class AliasedGroup(click.Group):
     def get_command(self, ctx, cmd_name):
-        # `mlflow ui` is an alias for `mlflow server`
+        # `qcflow ui` is an alias for `qcflow server`
         cmd_name = "server" if cmd_name == "ui" else cmd_name
         return super().get_command(ctx, cmd_name)
 
@@ -88,13 +88,13 @@ def cli():
 )
 @click.option(
     "--experiment-name",
-    envvar=MLFLOW_EXPERIMENT_NAME.name,
+    envvar=QCFLOW_EXPERIMENT_NAME.name,
     help="Name of the experiment under which to launch the run. If not "
     "specified, 'experiment-id' option will be used to launch run.",
 )
 @click.option(
     "--experiment-id",
-    envvar=MLFLOW_EXPERIMENT_ID.name,
+    envvar=QCFLOW_EXPERIMENT_ID.name,
     type=click.STRING,
     help="ID of the experiment under which to launch the run.",
 )
@@ -108,7 +108,7 @@ def cli():
     "kubernetes (experimental). Defaults to 'local'. If running against "
     "Databricks, will run against a Databricks workspace determined as follows: "
     "if a Databricks tracking URI of the form 'databricks://profile' has been set "
-    "(e.g. by setting the MLFLOW_TRACKING_URI environment variable), will run "
+    "(e.g. by setting the QCFLOW_TRACKING_URI environment variable), will run "
     "against the workspace specified by <profile>. Otherwise, runs against the "
     "workspace specified by the default Databricks CLI profile. See "
     "https://github.com/databricks/databricks-cli for more info on configuring a "
@@ -121,28 +121,28 @@ def cli():
     help="Path to JSON file (must end in '.json') or JSON string which will be passed "
     "as config to the backend. The exact content which should be "
     "provided is different for each execution backend and is documented "
-    "at https://www.mlflow.org/docs/latest/projects.html.",
+    "at https://www.qcflow.org/docs/latest/projects.html.",
 )
 @cli_args.ENV_MANAGER_PROJECTS
 @click.option(
     "--storage-dir",
-    envvar="MLFLOW_TMP_DIR",
+    envvar="QCFLOW_TMP_DIR",
     help="Only valid when ``backend`` is local. "
-    "MLflow downloads artifacts from distributed URIs passed to parameters of "
+    "QCFlow downloads artifacts from distributed URIs passed to parameters of "
     "type 'path' to subdirectories of storage_dir.",
 )
 @click.option(
     "--run-id",
     metavar="RUN_ID",
     help="If specified, the given run ID will be used instead of creating a new run. "
-    "Note: this argument is used internally by the MLflow project APIs "
+    "Note: this argument is used internally by the QCFlow project APIs "
     "and should not be specified.",
 )
 @click.option(
     "--run-name",
     metavar="RUN_NAME",
-    help="The name to give the MLflow Run associated with the project execution. If not specified, "
-    "the MLflow Run name is left unset.",
+    help="The name to give the QCFlow Run associated with the project execution. If not specified, "
+    "the QCFlow Run name is left unset.",
 )
 @click.option(
     "--build-image",
@@ -172,7 +172,7 @@ def run(
     build_image,
 ):
     """
-    Run an MLflow project from the given URI.
+    Run an QCFlow project from the given URI.
 
     For local runs, the run will block until it completes.
     Otherwise, the project will run asynchronously.
@@ -279,7 +279,7 @@ def _validate_static_prefix(ctx, param, value):
 @cli.command()
 @click.option(
     "--backend-store-uri",
-    envvar="MLFLOW_BACKEND_STORE_URI",
+    envvar="QCFLOW_BACKEND_STORE_URI",
     metavar="PATH",
     default=DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH,
     help="URI to which to persist experiment and run data. Acceptable URIs are "
@@ -290,7 +290,7 @@ def _validate_static_prefix(ctx, param, value):
 )
 @click.option(
     "--registry-store-uri",
-    envvar="MLFLOW_REGISTRY_STORE_URI",
+    envvar="QCFLOW_REGISTRY_STORE_URI",
     metavar="URI",
     default=None,
     help="URI to which to persist registered models. Acceptable URIs are "
@@ -299,13 +299,13 @@ def _validate_static_prefix(ctx, param, value):
 )
 @click.option(
     "--default-artifact-root",
-    envvar="MLFLOW_DEFAULT_ARTIFACT_ROOT",
+    envvar="QCFLOW_DEFAULT_ARTIFACT_ROOT",
     metavar="URI",
     default=None,
     help="Directory in which to store artifacts for any new experiments created. For tracking "
     "server backends that rely on SQL, this option is required in order to store artifacts. "
     "Note that this flag does not impact already-created experiments with any previous "
-    "configuration of an MLflow server instance. "
+    "configuration of an QCFlow server instance. "
     f"By default, data will be logged to the {DEFAULT_ARTIFACTS_URI} uri proxy if "
     "the --serve-artifacts option is enabled. Otherwise, the default location will "
     f"be {DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH}.",
@@ -313,11 +313,11 @@ def _validate_static_prefix(ctx, param, value):
 @cli_args.SERVE_ARTIFACTS
 @click.option(
     "--artifacts-only",
-    envvar="MLFLOW_ARTIFACTS_ONLY",
+    envvar="QCFLOW_ARTIFACTS_ONLY",
     is_flag=True,
     default=False,
-    help="If specified, configures the mlflow server to be used only for proxied artifact serving. "
-    "With this mode enabled, functionality of the mlflow tracking service (e.g. run creation, "
+    help="If specified, configures the qcflow server to be used only for proxied artifact serving. "
+    "With this mode enabled, functionality of the qcflow tracking service (e.g. run creation, "
     "metric logging, and parameter logging) is disabled. The server will only expose "
     "endpoints for uploading, downloading, and listing artifacts. "
     "Default: False",
@@ -328,14 +328,14 @@ def _validate_static_prefix(ctx, param, value):
 @cli_args.WORKERS
 @click.option(
     "--static-prefix",
-    envvar="MLFLOW_STATIC_PREFIX",
+    envvar="QCFLOW_STATIC_PREFIX",
     default=None,
     callback=_validate_static_prefix,
     help="A prefix which will be prepended to the path of all static paths.",
 )
 @click.option(
     "--gunicorn-opts",
-    envvar="MLFLOW_GUNICORN_OPTS",
+    envvar="QCFLOW_GUNICORN_OPTS",
     default=None,
     help="Additional command line options forwarded to gunicorn processes.",
 )
@@ -344,7 +344,7 @@ def _validate_static_prefix(ctx, param, value):
 )
 @click.option(
     "--expose-prometheus",
-    envvar="MLFLOW_EXPOSE_PROMETHEUS",
+    envvar="QCFLOW_EXPOSE_PROMETHEUS",
     default=None,
     help="Path to the directory where metrics will be stored. If the directory "
     "doesn't exist, it will be created. "
@@ -353,11 +353,11 @@ def _validate_static_prefix(ctx, param, value):
 @click.option(
     "--app-name",
     default=None,
-    type=click.Choice([e.name for e in get_entry_points("mlflow.app")]),
+    type=click.Choice([e.name for e in get_entry_points("qcflow.app")]),
     show_default=True,
     help=(
         "Application name to be used for the tracking server. "
-        "If not specified, 'mlflow.server:app' will be used."
+        "If not specified, 'qcflow.server:app' will be used."
     ),
 )
 @click.option(
@@ -390,15 +390,15 @@ def server(
     dev,
 ):
     """
-    Run the MLflow tracking server.
+    Run the QCFlow tracking server.
 
     The server listens on http://localhost:5000 by default and only accepts connections
     from the local machine. To let the server accept connections from other machines, you will need
     to pass ``--host 0.0.0.0`` to listen on all network interfaces
     (or a specific interface address).
     """
-    from mlflow.server import _run_server
-    from mlflow.server.handlers import initialize_backend_stores
+    from qcflow.server import _run_server
+    from qcflow.server.handlers import initialize_backend_stores
 
     if dev and is_windows():
         raise click.UsageError("'--dev' is not supported on Windows.")
@@ -447,7 +447,7 @@ def server(
             app_name,
         )
     except ShellCommandException:
-        eprint("Running the mlflow server failed. Please see the logs above for details.")
+        eprint("Running the qcflow server failed. Please see the logs above for details.")
         sys.exit(1)
 
 
@@ -471,14 +471,14 @@ def server(
 )
 @click.option(
     "--artifacts-destination",
-    envvar="MLFLOW_ARTIFACTS_DESTINATION",
+    envvar="QCFLOW_ARTIFACTS_DESTINATION",
     metavar="URI",
     default=None,
     help=(
         "The base artifact location from which to resolve artifact upload/download/list requests "
         "(e.g. 's3://my-bucket'). This option only applies when the tracking server is configured "
         "to stream artifacts and the experiment's artifact root location is http or "
-        "mlflow-artifacts URI. Otherwise, the default artifact location will be used."
+        "qcflow-artifacts URI. Otherwise, the default artifact location will be used."
     ),
 )
 @click.option(
@@ -504,13 +504,13 @@ def gc(older_than, backend_store_uri, artifacts_destination, run_ids, experiment
 
     .. attention::
 
-        If you are running an MLflow tracking server with artifact proxying enabled,
-        you **must** set the ``MLFLOW_TRACKING_URI`` environment variable before running
+        If you are running an QCFlow tracking server with artifact proxying enabled,
+        you **must** set the ``QCFLOW_TRACKING_URI`` environment variable before running
         this command. Otherwise, the ``gc`` command will not be able to resolve
         artifact URIs and will not be able to delete the associated artifacts.
 
     """
-    from mlflow.utils.time import get_current_time_millis
+    from qcflow.utils.time import get_current_time_millis
 
     backend_store = _get_store(backend_store_uri, artifacts_destination)
     skip_experiments = False
@@ -651,54 +651,54 @@ def gc(older_than, backend_store_uri, artifacts_destination, run_ids, experiment
             click.echo(f"Experiment with ID {experiment_id} has been permanently deleted.")
 
 
-@cli.command(short_help="Prints out useful information for debugging issues with MLflow.")
+@cli.command(short_help="Prints out useful information for debugging issues with QCFlow.")
 @click.option(
     "--mask-envs",
     is_flag=True,
     help=(
         "If set (the default behavior without setting this flag is not to obfuscate information), "
-        'mask the MLflow environment variable values (e.g. `"MLFLOW_ENV_VAR": "***"`) '
+        'mask the QCFlow environment variable values (e.g. `"QCFLOW_ENV_VAR": "***"`) '
         "in the output to prevent leaking sensitive information."
     ),
 )
 def doctor(mask_envs):
-    mlflow.doctor(mask_envs)
+    qcflow.doctor(mask_envs)
 
 
-cli.add_command(mlflow.deployments.cli.commands)
-cli.add_command(mlflow.experiments.commands)
-cli.add_command(mlflow.store.artifact.cli.commands)
-cli.add_command(mlflow.runs.commands)
-cli.add_command(mlflow.db.commands)
+cli.add_command(qcflow.deployments.cli.commands)
+cli.add_command(qcflow.experiments.commands)
+cli.add_command(qcflow.store.artifact.cli.commands)
+cli.add_command(qcflow.runs.commands)
+cli.add_command(qcflow.db.commands)
 
 # We are conditional loading these commands since the skinny client does
-# not support them due to the pandas and numpy dependencies of MLflow Models
+# not support them due to the pandas and numpy dependencies of QCFlow Models
 try:
-    import mlflow.models.cli
+    import qcflow.models.cli
 
-    cli.add_command(mlflow.models.cli.commands)
+    cli.add_command(qcflow.models.cli.commands)
 except ImportError:
     pass
 
 try:
-    import mlflow.recipes.cli
+    import qcflow.recipes.cli
 
-    cli.add_command(mlflow.recipes.cli.commands)
+    cli.add_command(qcflow.recipes.cli.commands)
 except ImportError:
     pass
 
 try:
-    import mlflow.sagemaker.cli
+    import qcflow.sagemaker.cli
 
-    cli.add_command(mlflow.sagemaker.cli.commands)
+    cli.add_command(qcflow.sagemaker.cli.commands)
 except ImportError:
     pass
 
 
 with contextlib.suppress(ImportError):
-    import mlflow.gateway.cli
+    import qcflow.gateway.cli
 
-    cli.add_command(mlflow.gateway.cli.commands)
+    cli.add_command(qcflow.gateway.cli.commands)
 
 
 if __name__ == "__main__":

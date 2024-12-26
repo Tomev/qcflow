@@ -5,27 +5,27 @@ from typing import Any, Optional, Union
 
 import numpy as np
 
-from mlflow.data.dataset import Dataset
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.data.digest_utils import (
+from qcflow.data.dataset import Dataset
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.data.digest_utils import (
     MAX_ROWS,
     compute_numpy_digest,
     get_normalized_md5_digest,
 )
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
-from mlflow.data.schema import TensorDatasetSchema
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
-from mlflow.types.schema import Schema
-from mlflow.types.utils import _infer_schema
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
+from qcflow.data.schema import TensorDatasetSchema
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
+from qcflow.types.schema import Schema
+from qcflow.types.utils import _infer_schema
 
 _logger = logging.getLogger(__name__)
 
 
 class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
     """
-    Represents a TensorFlow dataset for use with MLflow Tracking.
+    Represents a TensorFlow dataset for use with QCFlow Tracking.
     """
 
     def __init__(
@@ -206,7 +206,7 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
     @cached_property
     def schema(self) -> Optional[TensorDatasetSchema]:
         """
-        An MLflow TensorSpec schema representing the tensor dataset
+        An QCFlow TensorSpec schema representing the tensor dataset
         """
         try:
             features_schema = TensorFlowDataset._get_tf_object_schema(self._features)
@@ -270,7 +270,7 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
             )
         return _infer_schema(
             {
-                # MLflow Schemas currently require each tensor to have a name, if more than
+                # QCFlow Schemas currently require each tensor to have a name, if more than
                 # one tensor is defined. Accordingly, use the index as the name
                 str(i): data_element
                 for i, data_element in enumerate(numpy_data)
@@ -280,14 +280,14 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
     def to_pyfunc(self) -> PyFuncInputsOutputs:
         """
         Converts the dataset to a collection of pyfunc inputs and outputs for model
-        evaluation. Required for use with mlflow.evaluate().
+        evaluation. Required for use with qcflow.evaluate().
         """
         return PyFuncInputsOutputs(self._features, self._targets)
 
     def to_evaluation_dataset(self, path=None, feature_names=None) -> EvaluationDataset:
         """
         Converts the dataset to an EvaluationDataset for model evaluation. Only supported if the
-        dataset is a Tensor. Required for use with mlflow.evaluate().
+        dataset is a Tensor. Required for use with qcflow.evaluate().
         """
         import tensorflow as tf
 
@@ -329,9 +329,9 @@ def from_tensorflow(
         digest: A dataset digest (hash). If unspecified, a digest is computed
             automatically.
     """
-    from mlflow.data.code_dataset_source import CodeDatasetSource
-    from mlflow.data.dataset_source_registry import resolve_dataset_source
-    from mlflow.tracking.context import registry
+    from qcflow.data.code_dataset_source import CodeDatasetSource
+    from qcflow.data.dataset_source_registry import resolve_dataset_source
+    from qcflow.tracking.context import registry
 
     if source is not None:
         if isinstance(source, DatasetSource):

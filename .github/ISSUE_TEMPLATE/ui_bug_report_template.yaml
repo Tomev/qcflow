@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for submitting an issue. Please refer to our [issue policy](https://www.github.com/mlflow/mlflow/blob/master/ISSUE_POLICY.md) for additional information about bug reports. For help with debugging your code, please refer to [Stack Overflow](https://stackoverflow.com/questions/tagged/mlflow).
+        Thank you for submitting an issue. Please refer to our [issue policy](https://www.github.com/qcflow/qcflow/blob/master/ISSUE_POLICY.md) for additional information about bug reports. For help with debugging your code, please refer to [Stack Overflow](https://stackoverflow.com/questions/tagged/qcflow).
         #### Please fill in this UI bug report template to ensure a timely and thorough response.
 
     validations:
@@ -17,8 +17,8 @@ body:
     validations:
       required: true
     attributes:
-      label: MLflow version
-      description: MLflow version (run `mlflow --version`) or commit SHA if you have MLflow installed from source (run `pip freeze | grep mlflow`).
+      label: QCFlow version
+      description: QCFlow version (run `qcflow --version`) or commit SHA if you have QCFlow installed from source (run `pip freeze | grep qcflow`).
 
   - type: textarea
     validations:
@@ -55,11 +55,11 @@ body:
         Please provide code to generate data required to reproduce the bug.
       placeholder: |
         ```python
-        import mlflow
+        import qcflow
 
-        with mlflow.start_run():
-            mlflow.log_param("p", 0)
-            mlflow.log_metric("m", 1)
+        with qcflow.start_run():
+            qcflow.log_param("p", 0)
+            qcflow.log_metric("m", 1)
         ```
 
   - type: textarea
@@ -73,7 +73,7 @@ body:
         - Firefox: [Firefox DevTools User Docs](https://firefox-source-docs.mozilla.org/devtools-user/index.html)
         - Edge: [Overview of DevTools](https://docs.microsoft.com/en-us/microsoft-edge/devtools-guide-chromium/overview)
 
-        ![console-panel](https://github.com/mlflow/mlflow/blob/master/.github/ISSUE_TEMPLATE/images/console-panel.png?raw=true)
+        ![console-panel](https://github.com/qcflow/qcflow/blob/master/.github/ISSUE_TEMPLATE/images/console-panel.png?raw=true)
         <p align="center">Console panel on Chrome</P>
       placeholder: |
         ```
@@ -91,12 +91,12 @@ body:
       description: |
         If the network panel in your browser's DevTools contain failed requests (displayed in red) relevant to the bug as shown in the screenshot below, please provide them as text (preferred) or a screenshot.
 
-        ![network-panel](https://github.com/mlflow/mlflow/blob/master/.github/ISSUE_TEMPLATE/images/network-panel.png?raw=true)
+        ![network-panel](https://github.com/qcflow/qcflow/blob/master/.github/ISSUE_TEMPLATE/images/network-panel.png?raw=true)
         <p align="center">Network panel on Chrome</P>
       placeholder: |
         ```
         # Request URL
-        http://localhost:5000/ajax-api/2.0/preview/mlflow/xxx/yyy
+        http://localhost:5000/ajax-api/2.0/preview/qcflow/xxx/yyy
 
         # Status Code
         400

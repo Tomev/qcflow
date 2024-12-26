@@ -1,4 +1,4 @@
-MLflow LlamaIndex Flavor
+QCFlow LlamaIndex Flavor
 ========================
 
 .. attention::
@@ -15,30 +15,30 @@ by providing efficient indexing and retrieval mechanisms, making it easier to bu
 and other AI-driven applications that require integration of external knowledge.
 
 .. figure:: ../../_static/images/llms/llama-index/llama-index-gateway.png
-    :alt: Overview of LlamaIndex and MLflow integration
+    :alt: Overview of LlamaIndex and QCFlow integration
     :width: 70%
     :align: center
 
 
-Why use LlamaIndex with MLflow?
+Why use LlamaIndex with QCFlow?
 -------------------------------
 
-The integration of the LlamaIndex library with MLflow provides a seamless experience for managing and deploying LlamaIndex engines. The following are some of the key benefits of using LlamaIndex with MLflow:
+The integration of the LlamaIndex library with QCFlow provides a seamless experience for managing and deploying LlamaIndex engines. The following are some of the key benefits of using LlamaIndex with QCFlow:
 
-* `MLflow Tracking <../../tracking.html>`_ allows you to track your indices within MLflow and manage the many moving parts that comprise your LlamaIndex project, such as prompts, LLMs, workflows, tools, global configurations, and more.
+* `QCFlow Tracking <../../tracking.html>`_ allows you to track your indices within QCFlow and manage the many moving parts that comprise your LlamaIndex project, such as prompts, LLMs, workflows, tools, global configurations, and more.
 
-* `MLflow Model <../../models.html>`_ packages your LlamaIndex index/engine/workflows with all its dependency versions, input and output interfaces, and other essential metadata. This allows you to deploy your LlamaIndex models for inference with ease, knowing that the environment is consistent across different stages of the ML lifecycle.
+* `QCFlow Model <../../models.html>`_ packages your LlamaIndex index/engine/workflows with all its dependency versions, input and output interfaces, and other essential metadata. This allows you to deploy your LlamaIndex models for inference with ease, knowing that the environment is consistent across different stages of the ML lifecycle.
 
-* `MLflow Evaluate <../llm-evaluate/index.html>`_ provides native capabilities within MLflow to evaluate GenAI applications. This capability facilitates the efficient assessment of inference results from your LlamaIndex models, ensuring robust performance analytics and facilitating quick iterations.
+* `QCFlow Evaluate <../llm-evaluate/index.html>`_ provides native capabilities within QCFlow to evaluate GenAI applications. This capability facilitates the efficient assessment of inference results from your LlamaIndex models, ensuring robust performance analytics and facilitating quick iterations.
 
-* `MLflow Tracing <../tracing/index.html>`_ is a powerful observability tool for monitoring and debugging what happens inside the LlamaIndex models, helping you identify potential bottlenecks or issues quickly. With its powerful automatic logging capability, you can instrument your LlamaIndex application without needing to add any code apart from running a single command.
+* `QCFlow Tracing <../tracing/index.html>`_ is a powerful observability tool for monitoring and debugging what happens inside the LlamaIndex models, helping you identify potential bottlenecks or issues quickly. With its powerful automatic logging capability, you can instrument your LlamaIndex application without needing to add any code apart from running a single command.
 
 
 
 Getting Started
 ---------------
 
-In these introductory tutorials, you will learn the most fundamental components of LlamaIndex and how to leverage the integration with MLflow to bring better maintainability and observability to your LlamaIndex applications.
+In these introductory tutorials, you will learn the most fundamental components of LlamaIndex and how to leverage the integration with QCFlow to bring better maintainability and observability to your LlamaIndex applications.
 
 .. raw:: html
 
@@ -47,20 +47,20 @@ In these introductory tutorials, you will learn the most fundamental components 
             <div class="simple-card">
                 <a href="notebooks/llama_index_workflow_tutorial.html">
                     <div class="header">
-                        LlamaIndex Workflows with MLflow
+                        LlamaIndex Workflows with QCFlow
                     </div>
                     <p>
-                        Get started with MLflow and LLamaIndex by building a simple agentic Workflow. Learn how to log and load the Workflow for inference, as well as enable tracing for observability.
+                        Get started with QCFlow and LLamaIndex by building a simple agentic Workflow. Learn how to log and load the Workflow for inference, as well as enable tracing for observability.
                     </p>
                 </a>
             </div>
             <div class="simple-card">
                 <a href="notebooks/llama_index_quickstart.html">
                     <div class="header">
-                        Building Index with MLflow
+                        Building Index with QCFlow
                     </div>
                     <p>
-                        Get started with MLflow and LlamaIndex by exploring the simplest possible index configuration of a VectorStoreIndex.
+                        Get started with QCFlow and LlamaIndex by exploring the simplest possible index configuration of a VectorStoreIndex.
                     </p>
                 </a>
             </div>
@@ -80,19 +80,19 @@ Concepts
 
 .. note::
 
-    Workflow integration is only available in LlamaIndex >= 0.11.0 and MLflow >= 2.17.0.
+    Workflow integration is only available in LlamaIndex >= 0.11.0 and QCFlow >= 2.17.0.
 
 ``Workflow`` 🆕
 ^^^^^^^^^^^^^^^
 
 The ``Workflow`` is LlamaIndex's event-driven orchestration framework. It is designed
 as a flexible and interpretable framework for building arbitrary LLM applications such as an agent, a RAG flow, a data extraction pipeline, etc.
-MLflow supports tracking, evaluating, and tracing the ``Workflow`` objects, which makes them more observable and maintainable.
+QCFlow supports tracking, evaluating, and tracing the ``Workflow`` objects, which makes them more observable and maintainable.
 
 ``Index``
 ^^^^^^^^^
 
-The ``Index`` object is a collection of documents that are indexed for fast information retrieval, providing capabilities for applications such as Retrieval-Augmented Generation (RAG) and Agents. The ``Index`` object can be logged directly to an MLflow run and loaded back for use as an inference engine.
+The ``Index`` object is a collection of documents that are indexed for fast information retrieval, providing capabilities for applications such as Retrieval-Augmented Generation (RAG) and Agents. The ``Index`` object can be logged directly to an QCFlow run and loaded back for use as an inference engine.
 
 
 ``Engine``
@@ -106,7 +106,7 @@ query and returns a response based on the index. The ``ChatEngine`` is designed 
 ^^^^^^^^^^^^
 
 The ``Settings`` object is a global service context that bundles commonly used resources throughout the
-LlamaIndex application. It includes settings such as the LLM model, embedding model, callbacks, and more. When logging a LlamaIndex index/engine/workflow, MLflow tracks 
+LlamaIndex application. It includes settings such as the LLM model, embedding model, callbacks, and more. When logging a LlamaIndex index/engine/workflow, QCFlow tracks 
 the state of the ``Settings`` object so that you can easily reproduce the same result when loading the model back for inference (note that some objects like API keys, non-serializable objects, etc., are not tracked).
 
 
@@ -117,13 +117,13 @@ Usage
     :maxdepth: 2
 
 
-Saving and Loading Index in MLflow Experiment
+Saving and Loading Index in QCFlow Experiment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Creating an Index
 ~~~~~~~~~~~~~~~~~
 
-The ``index`` object is the centerpiece of the LlamaIndex and MLflow integration. With LlamaIndex, you can create an index from a collection of documents or external vector stores. The following code creates a sample index from Paul Graham's essay data available within the LlamaIndex repository.
+The ``index`` object is the centerpiece of the LlamaIndex and QCFlow integration. With LlamaIndex, you can create an index from a collection of documents or external vector stores. The following code creates a sample index from Paul Graham's essay data available within the LlamaIndex repository.
 
 .. code-block:: shell
 
@@ -137,10 +137,10 @@ The ``index`` object is the centerpiece of the LlamaIndex and MLflow integration
     documents = SimpleDirectoryReader("data").load_data()
     index = VectorStoreIndex.from_documents(documents)
 
-Logging the Index to MLflow
+Logging the Index to QCFlow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can log the ``index`` object to the MLflow experiment using the :py:func:`mlflow.llama_index.log_model` function.
+You can log the ``index`` object to the QCFlow experiment using the :py:func:`qcflow.llama_index.log_model` function.
 
 One key step here is to specify the ``engine_type`` parameter. The choice of engine type does not affect the index itself,
 but dictates the interface of how you query the index when you load it back for inference.
@@ -150,16 +150,16 @@ but dictates the interface of how you query the index when you load it back for 
 3. Retriever (``engine_type="retriever"``) is a lower-level component that returns the top-k relevant documents matching the query.
 
 
-The following code is an example of logging an index to MLflow with the ``chat`` engine type.
+The following code is an example of logging an index to QCFlow with the ``chat`` engine type.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    mlflow.set_experiment("llama-index-demo")
+    qcflow.set_experiment("llama-index-demo")
 
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             index,
             artifact_path="index",
             engine_type="chat",
@@ -174,25 +174,25 @@ The following code is an example of logging an index to MLflow with the ``chat``
     logging method. See the `How to log an index with external vector stores <#how-to-log-and-load-an-index-with-external-vector-stores>`_ for more details.
 
 .. figure:: ../../_static/images/llms/llama-index/llama-index-artifacts.png
-    :alt: MLflow artifacts for the LlamaIndex index
+    :alt: QCFlow artifacts for the LlamaIndex index
     :width: 80%
     :align: center
 
 .. tip::
 
-    Under the hood, MLflow calls ``as_query_engine()`` / ``as_chat_engine()`` / ``as_retriever()`` method on the index object to convert it to the respective engine instance.
+    Under the hood, QCFlow calls ``as_query_engine()`` / ``as_chat_engine()`` / ``as_retriever()`` method on the index object to convert it to the respective engine instance.
 
 Loading the Index Back for inference
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The saved index can be loaded back for inference using the :py:func:`mlflow.pyfunc.load_model` function. This function
-gives an MLflow Python Model backed by the LlamaIndex engine, with the engine type specified during logging.
+The saved index can be loaded back for inference using the :py:func:`qcflow.pyfunc.load_model` function. This function
+gives an QCFlow Python Model backed by the LlamaIndex engine, with the engine type specified during logging.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     response = model.predict("What was the first program the author wrote?")
     print(response)
@@ -206,31 +206,31 @@ gives an MLflow Python Model backed by the LlamaIndex engine, with the engine ty
 
 .. tip::
 
-    To load the index itself back instead of the engine, use the :py:func:`mlflow.llama_index.load_model` function.
+    To load the index itself back instead of the engine, use the :py:func:`qcflow.llama_index.load_model` function.
 
     .. code-block:: python
 
-        index = mlflow.llama_index.load_model("runs:/<run_id>/index")
+        index = qcflow.llama_index.load_model("runs:/<run_id>/index")
 
 
 Enable Tracing
 ^^^^^^^^^^^^^^
 
-You can enable tracing for your LlamaIndex code by calling the :py:func:`mlflow.llama_index.autolog` function. MLflow automatically logs the input and output of the LlamaIndex execution to the active MLflow experiment, providing you with a detailed view of the model's behavior.
+You can enable tracing for your LlamaIndex code by calling the :py:func:`qcflow.llama_index.autolog` function. QCFlow automatically logs the input and output of the LlamaIndex execution to the active QCFlow experiment, providing you with a detailed view of the model's behavior.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    mlflow.llama_index.autolog()
+    qcflow.llama_index.autolog()
 
     chat_engine = index.as_chat_engine()
     response = chat_engine.chat("What was the first program the author wrote?")
 
-Then you can navigate to the MLflow UI, select the experiment, and open the "Traces" tab to find the logged trace for the prediction made by the engine. It is impressive to see how the chat engine coordinates and executes a number of tasks to answer your question!
+Then you can navigate to the QCFlow UI, select the experiment, and open the "Traces" tab to find the logged trace for the prediction made by the engine. It is impressive to see how the chat engine coordinates and executes a number of tasks to answer your question!
 
 .. figure:: ../../_static/images/llms/llama-index/llama-index-trace.png
-    :alt: Trace view in MLflow UI
+    :alt: Trace view in QCFlow UI
     :width: 80%
     :align: center
 
@@ -238,7 +238,7 @@ You can disable tracing by running the same function with the ``disable`` parame
 
 .. code-block:: python
 
-    mlflow.llama_index.autolog(disable=True)
+    qcflow.llama_index.autolog(disable=True)
 
 
 .. note::
@@ -254,7 +254,7 @@ FAQ
 How to log and load an index with external vector stores?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If your index uses the default ``SimpleVectorStore``, you can log the index directly to MLflow using the :py:func:`mlflow.llama_index.log_model` function. MLflow persists the in-memory index data (embedded documents) to MLflow artifact store, which allows loading the index back with the same data without re-indexing the documents.
+If your index uses the default ``SimpleVectorStore``, you can log the index directly to QCFlow using the :py:func:`qcflow.llama_index.log_model` function. QCFlow persists the in-memory index data (embedded documents) to QCFlow artifact store, which allows loading the index back with the same data without re-indexing the documents.
 
 However, when the index uses external vector stores like ``DatabricksVectorSearch`` and ``QdrantVectorStore``, the index data is stored remotely and they do not support local serialization. Thereby, you cannot log the index with these stores directly. For such cases, you can use the `Model-from-Code <../../../models.html#models-from-code>`_ logging that provides more control over the index saving process and allow you to use the external vector store.
 
@@ -280,30 +280,30 @@ To use model-from-code logging, you first need to create a separate Python file 
     vector_store = QdrantVectorStore(client=client, collection_name="my_collection")
     index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
 
-    # IMPORTANT: call set_model() method to tell MLflow to log this index
-    mlflow.models.set_model(index)
+    # IMPORTANT: call set_model() method to tell QCFlow to log this index
+    qcflow.models.set_model(index)
 
 .. blacken-docs:on
 
-Then you can log the index by passing the Python file path to the :py:func:`mlflow.llama_index.log_model` function. The global `Settings <https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/>`_ object is saved normally as part of the model.
+Then you can log the index by passing the Python file path to the :py:func:`qcflow.llama_index.log_model` function. The global `Settings <https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/>`_ object is saved normally as part of the model.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             "index.py",
             artifact_path="index",
             engine_type="query",
         )
 
-The logged index can be loaded back using the :py:func:`mlflow.llama_index.load_model` or :py:func:`mlflow.pyfunc.load_model` function, in the same way as with the local index.
+The logged index can be loaded back using the :py:func:`qcflow.llama_index.load_model` or :py:func:`qcflow.pyfunc.load_model` function, in the same way as with the local index.
 
 .. code-block:: python
 
-    index = mlflow.llama_index.load_model(model_info.model_uri)
-    index.as_query_engine().query("What is MLflow?")
+    index = qcflow.llama_index.load_model(model_info.model_uri)
+    index.as_query_engine().query("What is QCFlow?")
 
 .. note::
 
@@ -314,35 +314,35 @@ The logged index can be loaded back using the :py:func:`mlflow.llama_index.load_
 How to log and load a LlamaIndex Workflow?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Mlflow supports logging and loading a LlamaIndex Workflow via the `Model-from-Code <../../../models.html#models-from-code>`_ feature. For a detailed example of logging and loading a LlamaIndex Workflow, see the `LlamaIndex Workflows with MLflow <notebooks/llama_index_workflow_tutorial.html>`_ notebook.
+Mlflow supports logging and loading a LlamaIndex Workflow via the `Model-from-Code <../../../models.html#models-from-code>`_ feature. For a detailed example of logging and loading a LlamaIndex Workflow, see the `LlamaIndex Workflows with QCFlow <notebooks/llama_index_workflow_tutorial.html>`_ notebook.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             "/path/to/workflow.py",
             artifact_path="model",
-            input_example={"input": "What is MLflow?"},
+            input_example={"input": "What is QCFlow?"},
         )
 
-The logged workflow can be loaded back using the :py:func:`mlflow.llama_index.load_model` or :py:func:`mlflow.pyfunc.load_model` function.
+The logged workflow can be loaded back using the :py:func:`qcflow.llama_index.load_model` or :py:func:`qcflow.pyfunc.load_model` function.
 
 .. code-block:: python
 
-    # Use mlflow.llama_index.load_model to load the workflow object as is
-    workflow = mlflow.llama_index.load_model(model_info.model_uri)
-    await workflow.run(input="What is MLflow?")
+    # Use qcflow.llama_index.load_model to load the workflow object as is
+    workflow = qcflow.llama_index.load_model(model_info.model_uri)
+    await workflow.run(input="What is QCFlow?")
 
-    # Use mlflow.pyfunc.load_model to load the workflow as a MLflow Pyfunc Model
+    # Use qcflow.pyfunc.load_model to load the workflow as a QCFlow Pyfunc Model
     # with standard inference APIs for deployment and evaluation.
-    pyfunc = mlflow.pyfunc.load_model(model_info.model_uri)
-    pyfunc.predict({"input": "What is MLflow?"})
+    pyfunc = qcflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc.predict({"input": "What is QCFlow?"})
 
 .. warning::
 
-    The MLflow PyFunc Model does not support async inference. When you load the workflow with :py:func:`mlflow.pyfunc.load_model`, the ``predict`` method becomes **synchronous** and will block until the workflow execution is completed. This also applies when deploying the logged LlamaIndex workflow to a production endpoint using `MLflow Deployment <https://mlflow.org/docs/latest/deployment/index.html>`_ or Databricks `Model Serving <https://docs.databricks.com/en/machine-learning/model-serving/index.html>`_.
+    The QCFlow PyFunc Model does not support async inference. When you load the workflow with :py:func:`qcflow.pyfunc.load_model`, the ``predict`` method becomes **synchronous** and will block until the workflow execution is completed. This also applies when deploying the logged LlamaIndex workflow to a production endpoint using `QCFlow Deployment <https://qcflow.org/docs/latest/deployment/index.html>`_ or Databricks `Model Serving <https://docs.databricks.com/en/machine-learning/model-serving/index.html>`_.
 
 
 I have an index logged with ``query`` engine type. Can I load it back a ``chat`` engine?
@@ -355,20 +355,20 @@ different engine types.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
     # Log the index with the query engine type first
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             index,
             artifact_path="index-query",
             engine_type="query",
         )
 
     # Load the index back and re-log it with the chat engine type
-    index = mlflow.llama_index.load_model(model_info.model_uri)
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    index = qcflow.llama_index.load_model(model_info.model_uri)
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             index,
             artifact_path="index-chat",
             # Specify the chat engine type this time
@@ -385,20 +385,20 @@ Alternatively, you can leverage their standard inference APIs on the loaded Llam
 How to use different LLMs for inference with the loaded engine?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When saving the index to MLflow, it persists the global `Settings <https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/>`_ object as a part of the model. This object contains settings such as LLM and embedding
+When saving the index to QCFlow, it persists the global `Settings <https://docs.llamaindex.ai/en/stable/module_guides/supporting_modules/settings/>`_ object as a part of the model. This object contains settings such as LLM and embedding
 models to be used by engines.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     from llama_index.core import Settings
     from llama_index.llms.openai import OpenAI
 
     Settings.llm = OpenAI("gpt-4o-mini")
 
-    # MLflow saves GPT-4o-Mini as the LLM to use for inference
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    # QCFlow saves GPT-4o-Mini as the LLM to use for inference
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             index, artifact_path="index", engine_type="chat"
         )
 
@@ -408,10 +408,10 @@ However, sometimes you may want to use a different LLM for inference. In such ca
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
     # Load the index back
-    loaded_index = mlflow.llama_index.load_model(model_info.model_uri)
+    loaded_index = qcflow.llama_index.load_model(model_info.model_uri)
 
     assert Settings.llm.model == "gpt-4o-mini"
 

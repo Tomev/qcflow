@@ -6,14 +6,14 @@ import dspy.teleprompt
 import pytest
 from dspy.utils.dummies import DSPDummyLM, dummy_rm
 
-import mlflow
-from mlflow.models import Model, ModelSignature
-from mlflow.types.schema import ColSpec, Schema
+import qcflow
+from qcflow.models import Model, ModelSignature
+from qcflow.types.schema import ColSpec, Schema
 
 from tests.helper_functions import (
     _assert_pip_requirements,
     _compare_logged_code_paths,
-    _mlflow_major_version_string,
+    _qcflow_major_version_string,
     expect_status_code,
     pyfunc_serve_and_score_model,
 )
@@ -39,15 +39,15 @@ def test_basic_save():
     dspy_model = CoT()
     dspy.settings.configure(lm=dspy.OpenAI(model="gpt-4o-mini", max_tokens=250))
 
-    with mlflow.start_run() as run:
-        mlflow.dspy.log_model(dspy_model, "model")
+    with qcflow.start_run() as run:
+        qcflow.dspy.log_model(dspy_model, "model")
 
     # Clear the lm setting to test the loading logic.
     dspy.settings.configure(lm=None)
 
     model_path = "model"
     model_url = f"runs:/{run.info.run_id}/{model_path}"
-    loaded_model = mlflow.dspy.load_model(model_url)
+    loaded_model = qcflow.dspy.load_model(model_url)
 
     # Check that the global settings is popped back.
     assert dspy.settings.lm.kwargs["model"] == "gpt-4o-mini"
@@ -78,15 +78,15 @@ def test_save_compiled_model():
     optimizer = dspy.teleprompt.BootstrapFewShot(metric=dummy_metric)
     optimized_cot = optimizer.compile(dspy_model, trainset=trainset)
 
-    with mlflow.start_run() as run:
-        mlflow.dspy.log_model(optimized_cot, "model")
+    with qcflow.start_run() as run:
+        qcflow.dspy.log_model(optimized_cot, "model")
 
     # Clear the lm setting to test the loading logic.
     dspy.settings.configure(lm=None)
 
     model_path = "model"
     model_url = f"runs:/{run.info.run_id}/{model_path}"
-    loaded_model = mlflow.dspy.load_model(model_url)
+    loaded_model = qcflow.dspy.load_model(model_url)
 
     assert isinstance(loaded_model, CoT)
     assert loaded_model.prog.predictors()[0].demos == optimized_cot.prog.predictors()[0].demos
@@ -136,8 +136,8 @@ def test_dspy_save_preserves_object_state():
     optimizer = dspy.teleprompt.BootstrapFewShot(metric=dummy_metric)
     optimized_cot = optimizer.compile(dspy_model, trainset=trainset)
 
-    with mlflow.start_run() as run:
-        mlflow.dspy.log_model(optimized_cot, "model")
+    with qcflow.start_run() as run:
+        qcflow.dspy.log_model(optimized_cot, "model")
 
     original_settings = dict(dspy.settings.config)
     original_settings["traces"] = None
@@ -158,7 +158,7 @@ def test_dspy_save_preserves_object_state():
     )
     expect_status_code(response, 200)
 
-    loaded_model = mlflow.dspy.load_model(model_url)
+    loaded_model = qcflow.dspy.load_model(model_url)
     assert isinstance(loaded_model, RAG)
     assert loaded_model.retrieve is not None
     assert (
@@ -195,11 +195,11 @@ def test_load_logged_model_in_native_dspy():
     lm = DSPDummyLM(answers=random_answers)
     dspy.settings.configure(lm=lm)
 
-    with mlflow.start_run() as run:
-        mlflow.dspy.log_model(dspy_model, "model")
+    with qcflow.start_run() as run:
+        qcflow.dspy.log_model(dspy_model, "model")
     model_path = "model"
     model_url = f"runs:/{run.info.run_id}/{model_path}"
-    loaded_dspy_model = mlflow.dspy.load_model(model_url)
+    loaded_dspy_model = qcflow.dspy.load_model(model_url)
 
     assert isinstance(loaded_dspy_model, CoT)
     assert loaded_dspy_model.prog.predictors()[0].demos == dspy_model.prog.predictors()[0].demos
@@ -226,14 +226,14 @@ def test_serving_logged_model():
     signature = ModelSignature(inputs=input_schema, outputs=output_schema)
 
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.dspy.log_model(
+    with qcflow.start_run():
+        qcflow.dspy.log_model(
             dspy_model,
             artifact_path,
             signature=signature,
             input_example=input_examples,
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
     # Clear the lm setting to test the loading logic.
     dspy.settings.configure(lm=None)
 
@@ -273,14 +273,14 @@ def test_save_chat_model_with_string_output():
     input_examples = {"messages": [{"role": "user", "content": "What is 2 + 2?"}]}
 
     artifact_path = "model"
-    with mlflow.start_run():
-        model_info = mlflow.dspy.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.dspy.log_model(
             dspy_model,
             artifact_path,
             task="llm/v1/chat",
             input_example=input_examples,
         )
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_info.model_uri)
     response = loaded_pyfunc.predict(input_examples)
 
     assert "choices" in response
@@ -308,14 +308,14 @@ def test_serve_chat_model():
     input_examples = {"messages": [{"role": "user", "content": "What is 2 + 2?"}]}
 
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.dspy.log_model(
+    with qcflow.start_run():
+        qcflow.dspy.log_model(
             dspy_model,
             artifact_path,
             task="llm/v1/chat",
             input_example=input_examples,
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
     # Clear the lm setting to test the loading logic.
     dspy.settings.configure(lm=None)
 
@@ -342,25 +342,25 @@ def test_code_paths_is_used():
     artifact_path = "model"
     dspy_model = CoT()
     with (
-        mlflow.start_run(),
-        mock.patch("mlflow.dspy.load._add_code_from_conf_to_system_path") as add_mock,
+        qcflow.start_run(),
+        mock.patch("qcflow.dspy.load._add_code_from_conf_to_system_path") as add_mock,
     ):
-        mlflow.dspy.log_model(dspy_model, artifact_path, code_paths=[__file__])
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        qcflow.dspy.log_model(dspy_model, artifact_path, code_paths=[__file__])
+        model_uri = qcflow.get_artifact_uri(artifact_path)
         _compare_logged_code_paths(__file__, model_uri, "dspy")
-        mlflow.dspy.load_model(model_uri)
+        qcflow.dspy.load_model(model_uri)
         add_mock.assert_called()
 
 
 def test_additional_pip_requirements():
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
     artifact_path = "model"
     dspy_model = CoT()
-    with mlflow.start_run():
-        mlflow.dspy.log_model(dspy_model, artifact_path, extra_pip_requirements=["dummy"])
+    with qcflow.start_run():
+        qcflow.dspy.log_model(dspy_model, artifact_path, extra_pip_requirements=["dummy"])
 
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, "dummy"]
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, "dummy"]
         )
 
 
@@ -369,10 +369,10 @@ def test_infer_signature_from_input_examples():
     dspy_model = CoT()
     random_answers = ["4", "6", "8", "10"]
     dspy.settings.configure(lm=DSPDummyLM(answers=random_answers))
-    with mlflow.start_run():
-        mlflow.dspy.log_model(dspy_model, artifact_path, input_example="what is 2 + 2?")
+    with qcflow.start_run():
+        qcflow.dspy.log_model(dspy_model, artifact_path, input_example="what is 2 + 2?")
 
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
         loaded_model = Model.load(model_uri)
         assert loaded_model.signature.inputs == Schema([ColSpec("string")])
         assert loaded_model.signature.outputs == Schema(

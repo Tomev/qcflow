@@ -3,12 +3,12 @@ import os
 
 import cloudpickle
 
-from mlflow.models import Model
-from mlflow.models.dependencies_schemas import _get_dependencies_schema_from_model
-from mlflow.tracing.provider import trace_disabled
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.annotations import experimental
-from mlflow.utils.model_utils import (
+from qcflow.models import Model
+from qcflow.models.dependencies_schemas import _get_dependencies_schema_from_model
+from qcflow.tracing.provider import trace_disabled
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.annotations import experimental
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
 )
@@ -22,7 +22,7 @@ def _set_tracer_context(model_path, callbacks):
     """
     Set dependency schemas from the saved model metadata to the tracer's prediction context.
     """
-    from mlflow.dspy.callback import MlflowCallback
+    from qcflow.dspy.callback import MlflowCallback
 
     tracer = next((cb for cb in callbacks if isinstance(cb, MlflowCallback)), None)
     if tracer is None:
@@ -60,16 +60,16 @@ def load_model(model_uri, dst_path=None):
     This function will also set the global dspy settings `dspy.settings` by the saved settings.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to utilize for downloading the model artifact.
             This directory must already exist if provided. If unspecified, a local output

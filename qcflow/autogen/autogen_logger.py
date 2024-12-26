@@ -10,13 +10,13 @@ from autogen import Agent, ConversableAgent
 from autogen.logger.base_logger import BaseLogger
 from openai.types.chat import ChatCompletion
 
-from mlflow import MlflowClient
-from mlflow.entities.span import NoOpSpan, Span, SpanType
-from mlflow.entities.span_event import SpanEvent
-from mlflow.entities.span_status import SpanStatus, SpanStatusCode
-from mlflow.tracing.utils import capture_function_input_args
-from mlflow.utils.autologging_utils import autologging_is_disabled
-from mlflow.utils.autologging_utils.safety import safe_patch
+from qcflow import MlflowClient
+from qcflow.entities.span import NoOpSpan, Span, SpanType
+from qcflow.entities.span_event import SpanEvent
+from qcflow.entities.span_status import SpanStatus, SpanStatusCode
+from qcflow.tracing.utils import capture_function_input_args
+from qcflow.utils.autologging_utils import autologging_is_disabled
+from qcflow.utils.autologging_utils.safety import safe_patch
 
 # For GroupChat, a single "received_message" events are passed around multiple
 # internal layers and thus too verbose if we show them all. Therefore we ignore

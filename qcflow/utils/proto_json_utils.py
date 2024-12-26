@@ -12,7 +12,7 @@ from typing import Any, Optional
 from google.protobuf.descriptor import FieldDescriptor
 from google.protobuf.json_format import MessageToJson, ParseDict
 
-from mlflow.exceptions import MlflowException
+from qcflow.exceptions import MlflowException
 
 _PROTOBUF_INT64_FIELDS = [
     FieldDescriptor.TYPE_INT64,
@@ -22,7 +22,7 @@ _PROTOBUF_INT64_FIELDS = [
     FieldDescriptor.TYPE_SINT64,
 ]
 
-from mlflow.protos.databricks_pb2 import BAD_REQUEST
+from qcflow.protos.databricks_pb2 import BAD_REQUEST
 
 
 def _mark_int64_fields_for_proto_maps(proto_map, value_field_type):
@@ -125,14 +125,14 @@ def message_to_json(message):
 
 def _stringify_all_experiment_ids(x):
     """Converts experiment_id fields which are defined as ints into strings in the given json.
-    This is necessary for backwards- and forwards-compatibility with MLflow clients/servers
-    running MLflow 0.9.0 and below, as experiment_id was changed from an int to a string.
+    This is necessary for backwards- and forwards-compatibility with QCFlow clients/servers
+    running QCFlow 0.9.0 and below, as experiment_id was changed from an int to a string.
     To note, the Python JSON serializer is happy to auto-convert strings into ints (so a
     server or client that sees the new format is fine), but is unwilling to convert ints
     to strings. Therefore, we need to manually perform this conversion.
 
-    This code can be removed after MLflow 1.0, after users have given reasonable time to
-    upgrade clients and servers to MLflow 0.9.1+.
+    This code can be removed after QCFlow 1.0, after users have given reasonable time to
+    upgrade clients and servers to QCFlow 0.9.1+.
     """
     if isinstance(x, dict):
         items = x.items()
@@ -213,8 +213,8 @@ class MlflowFailedTypeConversion(MlflowInvalidInputException):
 def cast_df_types_according_to_schema(pdf, schema):
     import numpy as np
 
-    from mlflow.models.utils import _enforce_array, _enforce_map, _enforce_object
-    from mlflow.types.schema import AnyType, Array, DataType, Map, Object
+    from qcflow.models.utils import _enforce_array, _enforce_map, _enforce_object
+    from qcflow.types.schema import AnyType, Array, DataType, Map, Object
 
     actual_cols = set(pdf.columns)
     if schema.has_input_names():
@@ -276,7 +276,7 @@ def dataframe_from_parsed_json(decoded_input, pandas_orient, schema=None):
     Args:
         decoded_input: Parsed json - either a list or a dictionary.
         pandas_orient: pandas data frame convention used to store the data.
-        schema: MLflow schema used when parsing the data.
+        schema: QCFlow schema used when parsing the data.
 
     Returns:
         pandas.DataFrame.
@@ -340,7 +340,7 @@ def dataframe_from_raw_json(path_or_str, schema=None, pandas_orient: str = "spli
 
     Args:
         path_or_str: Path to a json file or a json string.
-        schema: MLflow schema used when parsing the data.
+        schema: QCFlow schema used when parsing the data.
         pandas_orient: pandas data frame convention used to store the data.
 
     Returns:
@@ -389,8 +389,8 @@ def convert_data_type(data, spec):
     """
     import numpy as np
 
-    from mlflow.models.utils import _enforce_array, _enforce_map, _enforce_object
-    from mlflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, TensorSpec
+    from qcflow.models.utils import _enforce_array, _enforce_map, _enforce_object
+    from qcflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, TensorSpec
 
     try:
         if spec is None:
@@ -480,7 +480,7 @@ def _cast_schema_type(input_data, schema=None):
 def parse_instances_data(data, schema=None):
     import numpy as np
 
-    from mlflow.types.schema import Array
+    from qcflow.types.schema import Array
 
     if "instances" not in data:
         raise MlflowInvalidInputException("Expecting data to have `instances` as key.")
@@ -535,7 +535,7 @@ def parse_inputs_data(inputs_data_or_path, schema=None):
 
     Args:
         inputs_data_or_path: A json-serializable object or path to a json file
-        schema: data schema to cast to. Be of type `mlflow.types.Schema`.
+        schema: data schema to cast to. Be of type `qcflow.types.Schema`.
     """
     if isinstance(inputs_data_or_path, str) and os.path.exists(inputs_data_or_path):
         with open(inputs_data_or_path) as handle:
@@ -551,7 +551,7 @@ def parse_tf_serving_input(inp_dict, schema=None):
         inp_dict: A dict deserialized from a JSON string formatted as described in TF's
             serving API doc
             (https://www.tensorflow.org/tfx/serving/api_rest#request_format_2)
-        schema: MLflow schema used when parsing the data.
+        schema: QCFlow schema used when parsing the data.
     """
 
     if "signature_name" in inp_dict:

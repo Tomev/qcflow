@@ -39,7 +39,7 @@ import { Table } from 'antd';
 
 import { RunColorPill } from '../../../experiment-page/components/RunColorPill';
 import { Resizable, ResizableProps } from 'react-resizable';
-import { useElementHeight } from '@mlflow/mlflow/src/common/utils/useElementHeight';
+import { useElementHeight } from '@qcflow/qcflow/src/common/utils/useElementHeight';
 
 const HEADING_COLUMN_ID = 'headingColumn';
 const DEFAULT_COLUMN_WIDTH = 200;
@@ -106,7 +106,7 @@ const customExpandIcon = (props: {
         onClick={(e) => {
           props.onExpand(props.record, e);
         }}
-        componentId="mlflow.charts.difference_chart_expand_button"
+        componentId="qcflow.charts.difference_chart_expand_button"
         // The margin is required to align the expand icon in the button
         style={{ float: 'left', margin: '-2px 4px -2px 0px' }}
         size="small"
@@ -423,7 +423,7 @@ export const DifferenceViewPlotV2 = ({
               {runData.displayName}
               {isBaseline && (
                 <Tag
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_charts_differenceviewplotv2.tsx_427"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_charts_differenceviewplotv2.tsx_427"
                   css={{ margin: 0 }}
                 >
                   <FormattedMessage
@@ -466,7 +466,7 @@ export const DifferenceViewPlotV2 = ({
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
               <DropdownMenu.Item
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_charts_differenceviewplotv2.tsx_467"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_charts_differenceviewplotv2.tsx_467"
                 onClick={() => updateBaselineColumnUuid(runData.uuid)}
               >
                 <FormattedMessage

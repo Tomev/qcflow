@@ -1,10 +1,10 @@
-import Utils from '@mlflow/mlflow/src/common/utils/Utils';
-import { listImagesApi } from '@mlflow/mlflow/src/experiment-tracking/actions';
-import { EXPERIMENT_RUNS_IMAGE_AUTO_REFRESH_INTERVAL } from '@mlflow/mlflow/src/experiment-tracking/constants';
+import Utils from '@qcflow/qcflow/src/common/utils/Utils';
+import { listImagesApi } from '@qcflow/qcflow/src/experiment-tracking/actions';
+import { EXPERIMENT_RUNS_IMAGE_AUTO_REFRESH_INTERVAL } from '@qcflow/qcflow/src/experiment-tracking/constants';
 import { useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { ThunkDispatch } from '@mlflow/mlflow/src/redux-types';
-import { NUM_RUNS_TO_SUPPORT_FOR_LOG_IMAGE } from '@mlflow/mlflow/src/experiment-tracking/constants';
+import { ThunkDispatch } from '@qcflow/qcflow/src/redux-types';
+import { NUM_RUNS_TO_SUPPORT_FOR_LOG_IMAGE } from '@qcflow/qcflow/src/experiment-tracking/constants';
 
 export const usePopulateImagesByRunUuid = ({
   runUuids,
@@ -24,7 +24,7 @@ export const usePopulateImagesByRunUuid = ({
   /**
    * The criteria to populate images for a run is
    * 1. The run is not hidden
-   * 2. The run includes the mlflow.loggedImage tag
+   * 2. The run includes the qcflow.loggedImage tag
    * 3. The run's image is not already populated
    */
   // We need to use a serialized version of runUuids to avoid re-triggering the effect when using an array.

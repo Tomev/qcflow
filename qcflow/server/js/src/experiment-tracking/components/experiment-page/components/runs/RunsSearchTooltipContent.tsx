@@ -22,7 +22,7 @@ export const RunsSearchTooltipContent = () => {
         }}
       />
       <br />
-      <FormattedMessage defaultMessage="Examples:" description="Text header for examples of mlflow search syntax" />
+      <FormattedMessage defaultMessage="Examples:" description="Text header for examples of qcflow search syntax" />
       <br />
       {'• metrics.rmse >= 0.8'}
       <br />
@@ -32,7 +32,7 @@ export const RunsSearchTooltipContent = () => {
       <br />
       • attributes.run_name = 'my run'
       <br />
-      • tags.`mlflow.user` = 'myUser'
+      • tags.`qcflow.user` = 'myUser'
       <br />
       {"• metric.f1_score > 0.9 AND params.model = 'tree'"}
       <br />

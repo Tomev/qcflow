@@ -6,10 +6,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
-from mlflow.utils.annotations import experimental
+from qcflow.utils.annotations import experimental
 
 if TYPE_CHECKING:
-    from mlflow.models.model import Model
+    from qcflow.models.model import Model
 
 _logger = logging.getLogger(__name__)
 
@@ -33,8 +33,8 @@ def set_retriever_schema(
 ):
     """
     After defining your vector store in a Python file or notebook, call
-    set_retriever_schema() so that, when MLflow retrieves documents during
-    model inference, MLflow can interpret the fields in each retrieved document and
+    set_retriever_schema() so that, when QCFlow retrieves documents during
+    model inference, QCFlow can interpret the fields in each retrieved document and
     determine which fields correspond to the document text, document URI, etc.
 
     Args:
@@ -48,7 +48,7 @@ def set_retriever_schema(
     .. code-block:: Python
             :caption: Example
 
-            from mlflow.models import set_retriever_schema
+            from qcflow.models import set_retriever_schema
 
             set_retriever_schema(
                 primary_key="chunk_id",

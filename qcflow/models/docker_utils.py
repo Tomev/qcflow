@@ -3,10 +3,10 @@ from subprocess import Popen
 from typing import Optional, Union
 from urllib.parse import urlparse
 
-from mlflow.environment_variables import MLFLOW_DOCKER_OPENJDK_VERSION
-from mlflow.utils import env_manager as em
-from mlflow.utils.file_utils import _copy_project
-from mlflow.version import VERSION
+from qcflow.environment_variables import QCFLOW_DOCKER_OPENJDK_VERSION
+from qcflow.utils import env_manager as em
+from qcflow.utils.file_utils import _copy_project
+from qcflow.version import VERSION
 
 UBUNTU_BASE_IMAGE = "ubuntu:20.04"
 PYTHON_SLIM_BASE_IMAGE = "python:{version}-slim"
@@ -29,27 +29,27 @@ RUN apt install -y python3.9 python3.9-distutils \
 RUN pip install virtualenv
 """  # noqa: E501
 
-_DOCKERFILE_TEMPLATE = """# Build an image that can serve mlflow models.
+_DOCKERFILE_TEMPLATE = """# Build an image that can serve qcflow models.
 FROM {base_image}
 
 {setup_python_venv}
 
 {setup_java}
 
-WORKDIR /opt/mlflow
+WORKDIR /opt/qcflow
 
-{install_mlflow}
+{install_qcflow}
 
 {install_model_and_deps}
 
-ENV MLFLOW_DISABLE_ENV_CREATION={disable_env_creation}
+ENV QCFLOW_DISABLE_ENV_CREATION={disable_env_creation}
 ENV ENABLE_MLSERVER={enable_mlserver}
 ENV GUNICORN_CMD_ARGS="--timeout 60 -k gevent"
 
 # granting read/write access and conditional execution authority to all child directories
 # and files to allow for deployment to AWS Sagemaker Serverless Endpoints
 # (see https://docs.aws.amazon.com/sagemaker/latest/dg/serverless-endpoints.html)
-RUN chmod o+rwX /opt/mlflow/
+RUN chmod o+rwX /opt/qcflow/
 
 # clean up apt cache to reduce image size
 RUN rm -rf /var/lib/apt/lists/*
@@ -71,18 +71,18 @@ def generate_dockerfile(
     model_install_steps: Optional[str],
     entrypoint: str,
     env_manager: Union[em.CONDA, em.LOCAL, em.VIRTUALENV],
-    mlflow_home: Optional[str] = None,
+    qcflow_home: Optional[str] = None,
     enable_mlserver: bool = False,
     disable_env_creation_at_runtime: bool = True,
 ):
     """
     Generates a Dockerfile that can be used to build a docker image, that serves ML model
-    stored and tracked in MLflow.
+    stored and tracked in QCFlow.
     """
 
     setup_java_steps = ""
     setup_python_venv_steps = ""
-    install_mlflow_steps = _pip_mlflow_install_step(output_dir, mlflow_home)
+    install_qcflow_steps = _pip_qcflow_install_step(output_dir, qcflow_home)
 
     if base_image.startswith("python:"):
         setup_python_venv_steps = (
@@ -99,14 +99,14 @@ def generate_dockerfile(
             SETUP_MINICONDA if env_manager == em.CONDA else SETUP_PYENV_AND_VIRTUALENV
         )
 
-        jdk_ver = MLFLOW_DOCKER_OPENJDK_VERSION.get()
+        jdk_ver = QCFLOW_DOCKER_OPENJDK_VERSION.get()
         setup_java_steps = (
             "# Setup Java\n"
             f"RUN apt-get install -y --no-install-recommends openjdk-{jdk_ver}-jdk maven\n"
             f"ENV JAVA_HOME=/usr/lib/jvm/java-{jdk_ver}-openjdk-amd64"
         )
 
-        install_mlflow_steps += "\n\n" + _java_mlflow_install_step(mlflow_home)
+        install_qcflow_steps += "\n\n" + _java_qcflow_install_step(qcflow_home)
 
     with open(os.path.join(output_dir, "Dockerfile"), "w") as f:
         f.write(
@@ -114,7 +114,7 @@ def generate_dockerfile(
                 base_image=base_image,
                 setup_python_venv=setup_python_venv_steps,
                 setup_java=setup_java_steps,
-                install_mlflow=install_mlflow_steps,
+                install_qcflow=install_qcflow_steps,
                 install_model_and_deps=model_install_steps,
                 entrypoint=entrypoint,
                 enable_mlserver=enable_mlserver,
@@ -123,29 +123,29 @@ def generate_dockerfile(
         )
 
 
-def _java_mlflow_install_step(mlflow_home):
+def _java_qcflow_install_step(qcflow_home):
     maven_proxy = _get_maven_proxy()
-    if mlflow_home:
+    if qcflow_home:
         return (
-            "# Install Java mlflow-scoring from local source\n"
-            "RUN cd /opt/mlflow/mlflow/java/scoring && "
+            "# Install Java qcflow-scoring from local source\n"
+            "RUN cd /opt/qcflow/qcflow/java/scoring && "
             f"mvn --batch-mode package -DskipTests {maven_proxy} && "
             "mkdir -p /opt/java/jars && "
-            "mv /opt/mlflow/mlflow/java/scoring/target/"
-            "mlflow-scoring-*-with-dependencies.jar /opt/java/jars\n"
+            "mv /opt/qcflow/qcflow/java/scoring/target/"
+            "qcflow-scoring-*-with-dependencies.jar /opt/java/jars\n"
         )
     else:
         return (
-            "# Install Java mlflow-scoring from Maven Central\n"
+            "# Install Java qcflow-scoring from Maven Central\n"
             "RUN mvn"
             " --batch-mode dependency:copy"
-            f" -Dartifact=org.mlflow:mlflow-scoring:{VERSION}:pom"
+            f" -Dartifact=org.qcflow:qcflow-scoring:{VERSION}:pom"
             f" -DoutputDirectory=/opt/java {maven_proxy}\n"
             "RUN mvn"
             " --batch-mode dependency:copy"
-            f" -Dartifact=org.mlflow:mlflow-scoring:{VERSION}:jar"
+            f" -Dartifact=org.qcflow:qcflow-scoring:{VERSION}:jar"
             f" -DoutputDirectory=/opt/java/jars {maven_proxy}\n"
-            f"RUN cp /opt/java/mlflow-scoring-{VERSION}.pom /opt/java/pom.xml\n"
+            f"RUN cp /opt/java/qcflow-scoring-{VERSION}.pom /opt/java/pom.xml\n"
             "RUN cd /opt/java && mvn "
             "--batch-mode dependency:copy-dependencies "
             f"-DoutputDirectory=/opt/java/jars {maven_proxy}\n"
@@ -189,22 +189,22 @@ def _get_maven_proxy():
     )
 
 
-def _pip_mlflow_install_step(dockerfile_context_dir, mlflow_home):
+def _pip_qcflow_install_step(dockerfile_context_dir, qcflow_home):
     """
-    Get docker build commands for installing MLflow given a Docker context dir and optional source
+    Get docker build commands for installing QCFlow given a Docker context dir and optional source
     directory
     """
-    if mlflow_home:
-        mlflow_dir = _copy_project(
-            src_path=os.path.abspath(mlflow_home), dst_path=dockerfile_context_dir
+    if qcflow_home:
+        qcflow_dir = _copy_project(
+            src_path=os.path.abspath(qcflow_home), dst_path=dockerfile_context_dir
         )
         return (
-            "# Install MLflow from local source\n"
-            f"COPY {mlflow_dir} /opt/mlflow\n"
-            "RUN pip install /opt/mlflow"
+            "# Install QCFlow from local source\n"
+            f"COPY {qcflow_dir} /opt/qcflow\n"
+            "RUN pip install /opt/qcflow"
         )
     else:
-        return f"# Install MLflow\nRUN pip install mlflow=={VERSION}"
+        return f"# Install QCFlow\nRUN pip install qcflow=={VERSION}"
 
 
 def build_image_from_context(context_dir: str, image_name: str):

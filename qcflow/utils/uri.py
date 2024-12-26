@@ -6,14 +6,14 @@ import urllib.parse
 import uuid
 from typing import Any
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.db.db_types import DATABASE_ENGINES
-from mlflow.utils.os import is_windows
-from mlflow.utils.validation import _validate_db_type_string
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.db.db_types import DATABASE_ENGINES
+from qcflow.utils.os import is_windows
+from qcflow.utils.validation import _validate_db_type_string
 
 _INVALID_DB_URI_MSG = (
-    "Please refer to https://mlflow.org/docs/latest/tracking.html#storage for "
+    "Please refer to https://qcflow.org/docs/latest/tracking.html#storage for "
     "format specifications."
 )
 
@@ -31,8 +31,8 @@ def is_local_uri(uri, is_tracking_or_registry_uri=True):
 
     Args:
         uri: The URI.
-        is_tracking_or_registry_uri: Whether or not the specified URI is an MLflow Tracking or
-            MLflow Model Registry URI. Examples of other URIs are MLflow artifact URIs,
+        is_tracking_or_registry_uri: Whether or not the specified URI is an QCFlow Tracking or
+            QCFlow Model Registry URI. Examples of other URIs are QCFlow artifact URIs,
             filesystem paths, etc.
     """
     if uri == "databricks" and is_tracking_or_registry_uri:
@@ -365,13 +365,13 @@ def _join_posixpaths_and_append_absolute_suffixes(prefix_path, suffix_path):
 
 
 def is_databricks_acled_artifacts_uri(artifact_uri):
-    _ACLED_ARTIFACT_URI = "databricks/mlflow-tracking/"
+    _ACLED_ARTIFACT_URI = "databricks/qcflow-tracking/"
     artifact_uri_path = extract_and_normalize_path(artifact_uri)
     return artifact_uri_path.startswith(_ACLED_ARTIFACT_URI)
 
 
 def is_databricks_model_registry_artifacts_uri(artifact_uri):
-    _MODEL_REGISTRY_ARTIFACT_URI = "databricks/mlflow-registry/"
+    _MODEL_REGISTRY_ARTIFACT_URI = "databricks/qcflow-registry/"
     artifact_uri_path = extract_and_normalize_path(artifact_uri)
     return artifact_uri_path.startswith(_MODEL_REGISTRY_ARTIFACT_URI)
 
@@ -400,7 +400,7 @@ def dbfs_hdfs_uri_to_fuse_path(dbfs_uri):
 
     """
     if not is_valid_dbfs_uri(dbfs_uri) and dbfs_uri == posixpath.abspath(dbfs_uri):
-        # Convert posixpaths (e.g. "/tmp/mlflow") to DBFS URIs by adding "dbfs:/" as a prefix
+        # Convert posixpaths (e.g. "/tmp/qcflow") to DBFS URIs by adding "dbfs:/" as a prefix
         dbfs_uri = "dbfs:" + dbfs_uri
     if not dbfs_uri.startswith(_DBFS_HDFS_URI_PREFIX):
         raise MlflowException(
@@ -422,7 +422,7 @@ def resolve_uri_if_local(local_uri):
     Returns:
         a fully-formed absolute uri path or an absolute filesystem path
     """
-    from mlflow.utils.file_utils import local_file_uri_to_path
+    from qcflow.utils.file_utils import local_file_uri_to_path
 
     if local_uri is not None and is_local_uri(local_uri):
         scheme = get_uri_scheme(local_uri)
@@ -475,7 +475,7 @@ def validate_path_is_safe(path):
         not contain .. to navigate to parent dir in path
         not be an absolute path
     """
-    from mlflow.utils.file_utils import local_file_uri_to_path
+    from qcflow.utils.file_utils import local_file_uri_to_path
 
     # We must decode path before validating it
     path = _decode(path)

@@ -2,13 +2,13 @@ import logging
 import os
 import posixpath
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.utils.autologging_utils import (
     ExceptionSafeAbstractClass,
 )
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.mlflow_tags import LATEST_CHECKPOINT_ARTIFACT_TAG_KEY
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.qcflow_tags import LATEST_CHECKPOINT_ARTIFACT_TAG_KEY
 
 _logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ _WEIGHT_ONLY_CHECKPOINT_SUFFIX = ".weights"
 
 
 class MlflowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
-    """Callback base class for automatic model checkpointing to MLflow.
+    """Callback base class for automatic model checkpointing to QCFlow.
 
     You must implement "save_checkpoint" method to save the model as the checkpoint file.
     and you must call `check_and_save_checkpoint_if_needed` method in relevant
@@ -67,7 +67,7 @@ class MlflowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
         self.save_freq = save_freq
         self.last_monitor_value = None
 
-        self.mlflow_tracking_uri = mlflow.get_tracking_uri()
+        self.qcflow_tracking_uri = qcflow.get_tracking_uri()
 
         if self.save_best_only:
             if self.monitor is None:
@@ -96,10 +96,10 @@ class MlflowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
 
     def check_and_save_checkpoint_if_needed(self, current_epoch, global_step, metric_dict):
         # For distributed model training, trainer workers need to use the driver process
-        # mlflow_tracking_uri.
-        # Note that `self.mlflow_tracking_uri` value is assigned in the driver process
+        # qcflow_tracking_uri.
+        # Note that `self.qcflow_tracking_uri` value is assigned in the driver process
         # then it is pickled to trainer workers.
-        mlflow.set_tracking_uri(self.mlflow_tracking_uri)
+        qcflow.set_tracking_uri(self.qcflow_tracking_uri)
 
         if self.save_best_only:
             if self.monitor not in metric_dict:
@@ -149,12 +149,12 @@ class MlflowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
             checkpoint_metrics_filename = _CHECKPOINT_METRIC_FILENAME
             checkpoint_artifact_dir = f"{_CHECKPOINT_DIR}/{sub_dir_name}"
 
-        mlflow.set_tag(
+        qcflow.set_tag(
             LATEST_CHECKPOINT_ARTIFACT_TAG_KEY,
             f"{checkpoint_artifact_dir}/{checkpoint_model_filename}",
         )
 
-        mlflow.log_dict(
+        qcflow.log_dict(
             {**metric_dict, "epoch": current_epoch, "global_step": global_step},
             f"{checkpoint_artifact_dir}/{checkpoint_metrics_filename}",
         )
@@ -162,17 +162,17 @@ class MlflowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
         with TempDir() as tmp_dir:
             tmp_model_save_path = os.path.join(tmp_dir.path(), checkpoint_model_filename)
             self.save_checkpoint(tmp_model_save_path)
-            mlflow.log_artifact(tmp_model_save_path, checkpoint_artifact_dir)
+            qcflow.log_artifact(tmp_model_save_path, checkpoint_artifact_dir)
 
 
 def download_checkpoint_artifact(run_id=None, epoch=None, global_step=None, dst_path=None):
-    from mlflow.client import MlflowClient
-    from mlflow.utils.mlflow_tags import LATEST_CHECKPOINT_ARTIFACT_TAG_KEY
+    from qcflow.client import MlflowClient
+    from qcflow.utils.qcflow_tags import LATEST_CHECKPOINT_ARTIFACT_TAG_KEY
 
     client = MlflowClient()
 
     if run_id is None:
-        run = mlflow.active_run()
+        run = qcflow.active_run()
         if run is None:
             raise MlflowException(
                 "There is no active run, please provide the 'run_id' argument for "

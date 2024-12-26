@@ -41,19 +41,19 @@ export const TracesViewTableNoTracesQuickstart = ({
         <FormattedMessage
           defaultMessage={
             'This tab displays all the traces logged to this {isRun, select, true {run} other {experiment}}. ' +
-            'MLflow supports automatic tracing for many popular generative AI frameworks. Follow the steps below to log ' +
-            'your first trace. For more information about MLflow Tracing, visit the <a>MLflow documentation</a>.'
+            'QCFlow supports automatic tracing for many popular generative AI frameworks. Follow the steps below to log ' +
+            'your first trace. For more information about QCFlow Tracing, visit the <a>QCFlow documentation</a>.'
           }
           description={
-            "Message that explains the function of the 'Traces' tab in the MLflow UI." +
-            'This message is followed by a tutorial explaining how to get started with MLflow Tracing.'
+            "Message that explains the function of the 'Traces' tab in the QCFlow UI." +
+            'This message is followed by a tutorial explaining how to get started with QCFlow Tracing.'
           }
           values={{
             isRun: !isNil(runUuid),
             a: (text: string) => (
               <Typography.Link
                 componentId={`${baseComponentId}.traces_table.quickstart_docs_link`}
-                href="https://mlflow.org/docs/latest/llms/tracing/index.html"
+                href="https://qcflow.org/docs/latest/llms/tracing/index.html"
                 openInNewTab
               >
                 {text}
@@ -67,31 +67,31 @@ export const TracesViewTableNoTracesQuickstart = ({
           <Tabs.Trigger value="langchain">
             <FormattedMessage
               defaultMessage="LangChain / LangGraph"
-              description="Header for LangChain / LangGraph tab in the MLflow Tracing quickstart guide"
+              description="Header for LangChain / LangGraph tab in the QCFlow Tracing quickstart guide"
             />
           </Tabs.Trigger>
           <Tabs.Trigger value="llama-index">
             <FormattedMessage
               defaultMessage="LlamaIndex"
-              description="Header for LlamaIndex tab in the MLflow Tracing quickstart guide"
+              description="Header for LlamaIndex tab in the QCFlow Tracing quickstart guide"
             />
           </Tabs.Trigger>
           <Tabs.Trigger value="autogen">
             <FormattedMessage
               defaultMessage="AutoGen"
-              description="Header for AutoGen tab in the MLflow Tracing quickstart guide"
+              description="Header for AutoGen tab in the QCFlow Tracing quickstart guide"
             />
           </Tabs.Trigger>
           <Tabs.Trigger value="openai">
             <FormattedMessage
               defaultMessage="OpenAI"
-              description="Header for OpenAI tab in the MLflow Tracing quickstart guide"
+              description="Header for OpenAI tab in the QCFlow Tracing quickstart guide"
             />
           </Tabs.Trigger>
           <Tabs.Trigger value="custom">
             <FormattedMessage
               defaultMessage="Custom"
-              description="Header for custom tracing tab in the MLflow Tracing quickstart guide"
+              description="Header for custom tracing tab in the QCFlow Tracing quickstart guide"
             />
           </Tabs.Trigger>
         </Tabs.List>

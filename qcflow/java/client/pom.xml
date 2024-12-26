@@ -3,18 +3,18 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.mlflow</groupId>
-    <artifactId>mlflow-parent</artifactId>
+    <groupId>org.qcflow</groupId>
+    <artifactId>qcflow-parent</artifactId>
     <version>2.19.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>mlflow-client</artifactId>
+  <artifactId>qcflow-client</artifactId>
   <packaging>jar</packaging>
-  <name>MLflow Tracking API</name>
-  <url>http://mlflow.org</url>
+  <name>QCFlow Tracking API</name>
+  <url>http://qcflow.org</url>
   <properties>
-    <mlflow.shade.packageName>org.mlflow_project</mlflow.shade.packageName>
+    <qcflow.shade.packageName>org.qcflow_project</qcflow.shade.packageName>
   </properties>
 
   <dependencies>
@@ -72,11 +72,11 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <sourcepath>${project.basedir}/src/main/java</sourcepath>
-          <excludePackageNames>com.databricks.api.proto.databricks:org.mlflow.scalapb_interface:org.mlflow.tracking.samples:org.mlflow.artifacts</excludePackageNames>
+          <excludePackageNames>com.databricks.api.proto.databricks:org.qcflow.scalapb_interface:org.qcflow.tracking.samples:org.qcflow.artifacts</excludePackageNames>
           <groups>
             <group>
               <title>Tracking API</title>
-              <packages>org.mlflow.tracking:org.mlflow.tracking.*</packages>
+              <packages>org.qcflow.tracking:org.qcflow.tracking.*</packages>
             </group>
           </groups>
         </configuration>
@@ -113,24 +113,24 @@
           <relocations>
             <relocation>
               <pattern>com.google</pattern>
-              <shadedPattern>${mlflow.shade.packageName}.google</shadedPattern>
+              <shadedPattern>${qcflow.shade.packageName}.google</shadedPattern>
             </relocation>
             <relocation>
               <pattern>org.apache.commons</pattern>
-              <shadedPattern>${mlflow.shade.packageName}.apachecommons</shadedPattern>
+              <shadedPattern>${qcflow.shade.packageName}.apachecommons</shadedPattern>
             </relocation>
             <relocation>
               <pattern>org.apache.http</pattern>
-              <shadedPattern>${mlflow.shade.packageName}.apachehttp</shadedPattern>
+              <shadedPattern>${qcflow.shade.packageName}.apachehttp</shadedPattern>
             </relocation>
             <relocation>
               <!-- We have to move this package as it conflicts with other Databricks jars. -->
               <pattern>com.databricks.api.proto.databricks</pattern>
-              <shadedPattern>${mlflow.shade.packageName}.databricks</shadedPattern>
+              <shadedPattern>${qcflow.shade.packageName}.databricks</shadedPattern>
             </relocation>
             <relocation>
               <pattern>org.ini4j</pattern>
-              <shadedPattern>${mlflow.shade.packageName}.ini4j</shadedPattern>
+              <shadedPattern>${qcflow.shade.packageName}.ini4j</shadedPattern>
             </relocation>
           </relocations>
           <transformers>

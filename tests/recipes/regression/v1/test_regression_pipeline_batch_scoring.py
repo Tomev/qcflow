@@ -5,11 +5,11 @@ import time
 import pandas as pd
 import pytest
 
-import mlflow
-from mlflow.recipes.regression.v1.recipe import RegressionRecipe
-from mlflow.recipes.utils.execution import get_or_create_base_execution_directory
+import qcflow
+from qcflow.recipes.regression.v1.recipe import RegressionRecipe
+from qcflow.recipes.utils.execution import get_or_create_base_execution_directory
 
-from tests.recipes.helper_functions import RECIPE_EXAMPLE_PATH_FROM_MLFLOW_ROOT, chdir
+from tests.recipes.helper_functions import RECIPE_EXAMPLE_PATH_FROM_QCFLOW_ROOT, chdir
 
 _STEP_NAMES = ["ingest_scoring", "predict"]
 
@@ -18,8 +18,8 @@ _STEP_NAMES = ["ingest_scoring", "predict"]
 # DAG in this set up function and then assert various expected results in the tests.
 @pytest.fixture(scope="module", autouse=True)
 def run_batch_scoring():
-    mlflow_repo_root_directory = pathlib.Path(mlflow.__file__).parent.parent
-    recipe_example_path = mlflow_repo_root_directory / RECIPE_EXAMPLE_PATH_FROM_MLFLOW_ROOT
+    qcflow_repo_root_directory = pathlib.Path(qcflow.__file__).parent.parent
+    recipe_example_path = qcflow_repo_root_directory / RECIPE_EXAMPLE_PATH_FROM_QCFLOW_ROOT
     with chdir(recipe_example_path):
         r = RegressionRecipe(recipe_root_path=recipe_example_path, profile="local")
         r.run("register")

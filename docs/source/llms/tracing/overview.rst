@@ -4,11 +4,11 @@ Tracing Concepts
 In this guide, you can learn about what tracing is as it applies to Generative AI (GenAI) applications and what the main components of tracing are. 
 
 .. figure:: ../../_static/images/llms/tracing/tracing-top.gif
-    :alt: MLflow Tracing
+    :alt: QCFlow Tracing
     :width: 80%
     :align: center
 
-A good companion to the explanations in this guide is the `Tracing Schema <./tracing-schema.html>`_ guide which will show how MLflow Tracing constructs the 
+A good companion to the explanations in this guide is the `Tracing Schema <./tracing-schema.html>`_ guide which will show how QCFlow Tracing constructs the 
 concepts discussed here.
 
 What is tracing?
@@ -136,7 +136,7 @@ Diagnosing correctness issues with responses in such a system without these 5 cr
 creates a challenging scenario to debug, improve, or refine such an application. When considering performance tuning for responsiveness or cost, not having the visibility into latencies for each of these 
 steps presents an entirely different challenge that would require the configuration and manual instrumentation of each of these services. 
 
-Getting Started with Tracing in MLflow
+Getting Started with Tracing in QCFlow
 --------------------------------------
 
-To learn how to utilize tracing in MLflow, see the `MLflow Tracing Guide <./index.html>`_.
+To learn how to utilize tracing in QCFlow, see the `QCFlow Tracing Guide <./index.html>`_.

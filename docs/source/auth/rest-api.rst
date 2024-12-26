@@ -2,18 +2,18 @@
 .. _auth-rest-api:
 
 ==============================
-MLflow Authentication REST API
+QCFlow Authentication REST API
 ==============================
 
 
-The MLflow Authentication REST API allows you to create, get, update and delete users, 
+The QCFlow Authentication REST API allows you to create, get, update and delete users, 
 experiment permissions and registered model permissions.
-The API is hosted under the ``/api`` route on the MLflow tracking server. For example, to list
+The API is hosted under the ``/api`` route on the QCFlow tracking server. For example, to list
 experiments on a tracking server hosted at ``http://localhost:5000``, access
-``http://localhost:5000/api/2.0/mlflow/users/create``.
+``http://localhost:5000/api/2.0/qcflow/users/create``.
 
 .. important::
-    The MLflow REST API requires content type ``application/json`` for all POST requests.
+    The QCFlow REST API requires content type ``application/json`` for all POST requests.
 
 .. contents:: Table of Contents
     :local:
@@ -21,7 +21,7 @@ experiments on a tracking server hosted at ``http://localhost:5000``, access
 
 ===========================
 
-.. _mlflowAuthServiceCreateUser:
+.. _qcflowAuthServiceCreateUser:
 
 Create User
 ===========
@@ -29,10 +29,10 @@ Create User
 +-----------------------------+-------------+
 |          Endpoint           | HTTP Method |
 +=============================+=============+
-| ``2.0/mlflow/users/create`` | ``POST``    |
+| ``2.0/qcflow/users/create`` | ``POST``    |
 +-----------------------------+-------------+
 
-.. _mlflowCreateUser:
+.. _qcflowCreateUser:
 
 Request Structure
 -----------------
@@ -45,7 +45,7 @@ Request Structure
 | password   | ``STRING`` | Password.   |
 +------------+------------+-------------+
 
-.. _mlflowCreateUserResponse:
+.. _qcflowCreateUserResponse:
 
 Response Structure
 ------------------
@@ -53,12 +53,12 @@ Response Structure
 +------------+-------------------+----------------+
 | Field Name |       Type        |  Description   |
 +============+===================+================+
-| user       | :ref:`mlflowUser` | A user object. |
+| user       | :ref:`qcflowUser` | A user object. |
 +------------+-------------------+----------------+
 
 ===========================
 
-.. _mlflowAuthServiceGetUser:
+.. _qcflowAuthServiceGetUser:
 
 Get User
 ========
@@ -66,10 +66,10 @@ Get User
 +--------------------------+-------------+
 |         Endpoint         | HTTP Method |
 +==========================+=============+
-| ``2.0/mlflow/users/get`` | ``GET``     |
+| ``2.0/qcflow/users/get`` | ``GET``     |
 +--------------------------+-------------+
 
-.. _mlflowGetUser:
+.. _qcflowGetUser:
 
 Request Structure
 -----------------
@@ -80,7 +80,7 @@ Request Structure
 | username   | ``STRING`` | Username.   |
 +------------+------------+-------------+
 
-.. _mlflowGetUserResponse:
+.. _qcflowGetUserResponse:
 
 Response Structure
 ------------------
@@ -88,12 +88,12 @@ Response Structure
 +------------+-------------------+----------------+
 | Field Name |       Type        |  Description   |
 +============+===================+================+
-| user       | :ref:`mlflowUser` | A user object. |
+| user       | :ref:`qcflowUser` | A user object. |
 +------------+-------------------+----------------+
 
 ===========================
 
-.. _mlflowAuthServiceUpdateUserPassword:
+.. _qcflowAuthServiceUpdateUserPassword:
 
 Update User Password
 ====================
@@ -101,10 +101,10 @@ Update User Password
 +--------------------------------------+-------------+
 |               Endpoint               | HTTP Method |
 +======================================+=============+
-| ``2.0/mlflow/users/update-password`` | ``PATCH``   |
+| ``2.0/qcflow/users/update-password`` | ``PATCH``   |
 +--------------------------------------+-------------+
 
-.. _mlflowUpdateUserPassword:
+.. _qcflowUpdateUserPassword:
 
 Request Structure
 -----------------
@@ -119,7 +119,7 @@ Request Structure
 
 ===========================
 
-.. _mlflowAuthServiceUpdateUserAdmin:
+.. _qcflowAuthServiceUpdateUserAdmin:
 
 Update User Admin
 =================
@@ -127,10 +127,10 @@ Update User Admin
 +-----------------------------------+-------------+
 |             Endpoint              | HTTP Method |
 +===================================+=============+
-| ``2.0/mlflow/users/update-admin`` | ``PATCH``   |
+| ``2.0/qcflow/users/update-admin`` | ``PATCH``   |
 +-----------------------------------+-------------+
 
-.. _mlflowUpdateUserAdmin:
+.. _qcflowUpdateUserAdmin:
 
 Request Structure
 -----------------
@@ -145,7 +145,7 @@ Request Structure
 
 ===========================
 
-.. _mlflowAuthServiceDeleteUser:
+.. _qcflowAuthServiceDeleteUser:
 
 Delete User
 ===========
@@ -153,10 +153,10 @@ Delete User
 +-----------------------------+-------------+
 |          Endpoint           | HTTP Method |
 +=============================+=============+
-| ``2.0/mlflow/users/delete`` | ``DELETE``  |
+| ``2.0/qcflow/users/delete`` | ``DELETE``  |
 +-----------------------------+-------------+
 
-.. _mlflowDeleteUser:
+.. _qcflowDeleteUser:
 
 Request Structure
 -----------------
@@ -169,7 +169,7 @@ Request Structure
 
 ===========================
 
-.. _mlflowAuthServiceCreateExperimentPermission:
+.. _qcflowAuthServiceCreateExperimentPermission:
 
 Create Experiment Permission
 ============================
@@ -177,10 +177,10 @@ Create Experiment Permission
 +-----------------------------------------------+-------------+
 |                   Endpoint                    | HTTP Method |
 +===============================================+=============+
-| ``2.0/mlflow/experiments/permissions/create`` | ``POST``    |
+| ``2.0/qcflow/experiments/permissions/create`` | ``POST``    |
 +-----------------------------------------------+-------------+
 
-.. _mlflowCreateExperimentPermission:
+.. _qcflowCreateExperimentPermission:
 
 Request Structure
 -----------------
@@ -192,10 +192,10 @@ Request Structure
 +---------------+-------------------------+----------------------+
 | username      | ``STRING``              | Username.            |
 +---------------+-------------------------+----------------------+
-| permission    | :ref:`mlflowPermission` | Permission to grant. |
+| permission    | :ref:`qcflowPermission` | Permission to grant. |
 +---------------+-------------------------+----------------------+
 
-.. _mlflowCreateExperimentPermissionResponse:
+.. _qcflowCreateExperimentPermissionResponse:
 
 Response Structure
 ------------------
@@ -203,12 +203,12 @@ Response Structure
 +-----------------------+-----------------------------------+----------------------------------+
 |      Field Name       |               Type                |           Description            |
 +=======================+===================================+==================================+
-| experiment_permission | :ref:`mlflowExperimentPermission` | An experiment permission object. |
+| experiment_permission | :ref:`qcflowExperimentPermission` | An experiment permission object. |
 +-----------------------+-----------------------------------+----------------------------------+
 
 ===========================
 
-.. _mlflowAuthServiceGetExperimentPermission:
+.. _qcflowAuthServiceGetExperimentPermission:
 
 Get Experiment Permission
 =========================
@@ -216,10 +216,10 @@ Get Experiment Permission
 +--------------------------------------------+-------------+
 |                  Endpoint                  | HTTP Method |
 +============================================+=============+
-| ``2.0/mlflow/experiments/permissions/get`` | ``GET``     |
+| ``2.0/qcflow/experiments/permissions/get`` | ``GET``     |
 +--------------------------------------------+-------------+
 
-.. _mlflowGetExperimentPermission:
+.. _qcflowGetExperimentPermission:
 
 Request Structure
 -----------------
@@ -232,7 +232,7 @@ Request Structure
 | username      | ``STRING`` | Username.      |
 +---------------+------------+----------------+
 
-.. _mlflowGetExperimentPermissionResponse:
+.. _qcflowGetExperimentPermissionResponse:
 
 Response Structure
 ------------------
@@ -240,12 +240,12 @@ Response Structure
 +-----------------------+-----------------------------------+----------------------------------+
 |      Field Name       |               Type                |           Description            |
 +=======================+===================================+==================================+
-| experiment_permission | :ref:`mlflowExperimentPermission` | An experiment permission object. |
+| experiment_permission | :ref:`qcflowExperimentPermission` | An experiment permission object. |
 +-----------------------+-----------------------------------+----------------------------------+
 
 ===========================
 
-.. _mlflowAuthServiceUpdateExperimentPermission:
+.. _qcflowAuthServiceUpdateExperimentPermission:
 
 Update Experiment Permission
 ============================
@@ -253,10 +253,10 @@ Update Experiment Permission
 +-----------------------------------------------+-------------+
 |                   Endpoint                    | HTTP Method |
 +===============================================+=============+
-| ``2.0/mlflow/experiments/permissions/update`` | ``PATCH``   |
+| ``2.0/qcflow/experiments/permissions/update`` | ``PATCH``   |
 +-----------------------------------------------+-------------+
 
-.. _mlflowUpdateExperimentPermission:
+.. _qcflowUpdateExperimentPermission:
 
 Request Structure
 -----------------
@@ -268,12 +268,12 @@ Request Structure
 +---------------+-------------------------+--------------------------+
 | username      | ``STRING``              | Username.                |
 +---------------+-------------------------+--------------------------+
-| permission    | :ref:`mlflowPermission` | New permission to grant. |
+| permission    | :ref:`qcflowPermission` | New permission to grant. |
 +---------------+-------------------------+--------------------------+
 
 ===========================
 
-.. _mlflowAuthServiceDeleteExperimentPermission:
+.. _qcflowAuthServiceDeleteExperimentPermission:
 
 Delete Experiment Permission
 ============================
@@ -281,10 +281,10 @@ Delete Experiment Permission
 +-----------------------------------------------+-------------+
 |                   Endpoint                    | HTTP Method |
 +===============================================+=============+
-| ``2.0/mlflow/experiments/permissions/delete`` | ``DELETE``  |
+| ``2.0/qcflow/experiments/permissions/delete`` | ``DELETE``  |
 +-----------------------------------------------+-------------+
 
-.. _mlflowDeleteExperimentPermission:
+.. _qcflowDeleteExperimentPermission:
 
 Request Structure
 -----------------
@@ -299,7 +299,7 @@ Request Structure
 
 ===========================
 
-.. _mlflowAuthServiceCreateRegisteredModelPermission:
+.. _qcflowAuthServiceCreateRegisteredModelPermission:
 
 Create Registered Model Permission
 ==================================
@@ -307,10 +307,10 @@ Create Registered Model Permission
 +-----------------------------------------------------+-------------+
 |                      Endpoint                       | HTTP Method |
 +=====================================================+=============+
-| ``2.0/mlflow/registered-models/permissions/create`` | ``CREATE``  |
+| ``2.0/qcflow/registered-models/permissions/create`` | ``CREATE``  |
 +-----------------------------------------------------+-------------+
 
-.. _mlflowCreateRegisteredModelPermission:
+.. _qcflowCreateRegisteredModelPermission:
 
 Request Structure
 -----------------
@@ -322,10 +322,10 @@ Request Structure
 +------------+-------------------------+------------------------+
 | username   | ``STRING``              | Username.              |
 +------------+-------------------------+------------------------+
-| permission | :ref:`mlflowPermission` | Permission to grant.   |
+| permission | :ref:`qcflowPermission` | Permission to grant.   |
 +------------+-------------------------+------------------------+
 
-.. _mlflowCreateRegisteredModelPermissionResponse:
+.. _qcflowCreateRegisteredModelPermissionResponse:
 
 Response Structure
 ------------------
@@ -333,12 +333,12 @@ Response Structure
 +-----------------------------+----------------------------------------+---------------------------------------+
 |         Field Name          |                  Type                  |              Description              |
 +=============================+========================================+=======================================+
-| registered_model_permission | :ref:`mlflowRegisteredModelPermission` | A registered model permission object. |
+| registered_model_permission | :ref:`qcflowRegisteredModelPermission` | A registered model permission object. |
 +-----------------------------+----------------------------------------+---------------------------------------+
 
 ===========================
 
-.. _mlflowAuthServiceGetRegisteredModelPermission:
+.. _qcflowAuthServiceGetRegisteredModelPermission:
 
 Get Registered Model Permission
 ===============================
@@ -346,10 +346,10 @@ Get Registered Model Permission
 +--------------------------------------------------+-------------+
 |                     Endpoint                     | HTTP Method |
 +==================================================+=============+
-| ``2.0/mlflow/registered-models/permissions/get`` | ``GET``     |
+| ``2.0/qcflow/registered-models/permissions/get`` | ``GET``     |
 +--------------------------------------------------+-------------+
 
-.. _mlflowGetRegisteredModelPermission:
+.. _qcflowGetRegisteredModelPermission:
 
 Request Structure
 -----------------
@@ -362,7 +362,7 @@ Request Structure
 | username   | ``STRING`` | Username.              |
 +------------+------------+------------------------+
 
-.. _mlflowGetRegisteredModelPermissionResponse:
+.. _qcflowGetRegisteredModelPermissionResponse:
 
 Response Structure
 ------------------
@@ -370,12 +370,12 @@ Response Structure
 +-----------------------------+----------------------------------------+---------------------------------------+
 |         Field Name          |                  Type                  |              Description              |
 +=============================+========================================+=======================================+
-| registered_model_permission | :ref:`mlflowRegisteredModelPermission` | A registered model permission object. |
+| registered_model_permission | :ref:`qcflowRegisteredModelPermission` | A registered model permission object. |
 +-----------------------------+----------------------------------------+---------------------------------------+
 
 ===========================
 
-.. _mlflowAuthServiceUpdateRegisteredModelPermission:
+.. _qcflowAuthServiceUpdateRegisteredModelPermission:
 
 Update Registered Model Permission
 ==================================
@@ -383,10 +383,10 @@ Update Registered Model Permission
 +-----------------------------------------------------+-------------+
 |                      Endpoint                       | HTTP Method |
 +=====================================================+=============+
-| ``2.0/mlflow/registered-models/permissions/update`` | ``PATCH``   |
+| ``2.0/qcflow/registered-models/permissions/update`` | ``PATCH``   |
 +-----------------------------------------------------+-------------+
 
-.. _mlflowUpdateRegisteredModelPermission:
+.. _qcflowUpdateRegisteredModelPermission:
 
 Request Structure
 -----------------
@@ -398,12 +398,12 @@ Request Structure
 +------------+-------------------------+--------------------------+
 | username   | ``STRING``              | Username.                |
 +------------+-------------------------+--------------------------+
-| permission | :ref:`mlflowPermission` | New permission to grant. |
+| permission | :ref:`qcflowPermission` | New permission to grant. |
 +------------+-------------------------+--------------------------+
 
 ===========================
 
-.. _mlflowAuthServiceDeleteRegisteredModelPermission:
+.. _qcflowAuthServiceDeleteRegisteredModelPermission:
 
 Delete Registered Model Permission
 ==================================
@@ -411,10 +411,10 @@ Delete Registered Model Permission
 +-----------------------------------------------------+-------------+
 |                      Endpoint                       | HTTP Method |
 +=====================================================+=============+
-| ``2.0/mlflow/registered-models/permissions/delete`` | ``DELETE``  |
+| ``2.0/qcflow/registered-models/permissions/delete`` | ``DELETE``  |
 +-----------------------------------------------------+-------------+
 
-.. _mlflowDeleteRegisteredModelPermission:
+.. _qcflowDeleteRegisteredModelPermission:
 
 Request Structure
 -----------------
@@ -434,7 +434,7 @@ Data Structures
 ===============
 
 
-.. _mlflowUser:
+.. _qcflowUser:
 
 User
 ----
@@ -448,12 +448,12 @@ User
 +------------------------------+----------------------------------------------------+------------------------------------------------------------------+
 | is_admin                     | ``BOOLEAN``                                        | Whether the user is an admin.                                    |
 +------------------------------+----------------------------------------------------+------------------------------------------------------------------+
-| experiment_permissions       | An array of :ref:`mlflowExperimentPermission`      | All experiment permissions explicitly granted to the user.       |
+| experiment_permissions       | An array of :ref:`qcflowExperimentPermission`      | All experiment permissions explicitly granted to the user.       |
 +------------------------------+----------------------------------------------------+------------------------------------------------------------------+
-| registered_model_permissions | An array of :ref:`mlflowRegisteredModelPermission` | All registered model permissions explicitly granted to the user. |
+| registered_model_permissions | An array of :ref:`qcflowRegisteredModelPermission` | All registered model permissions explicitly granted to the user. |
 +------------------------------+----------------------------------------------------+------------------------------------------------------------------+
 
-.. _mlflowPermission:
+.. _qcflowPermission:
 
 Permission
 ----------
@@ -472,7 +472,7 @@ Permission of a user to an experiment or a registered model.
 | NO_PERMISSIONS | No permissions.                      |
 +----------------+--------------------------------------+
 
-.. _mlflowExperimentPermission:
+.. _qcflowExperimentPermission:
 
 ExperimentPermission
 --------------------
@@ -484,10 +484,10 @@ ExperimentPermission
 +---------------+-------------------------+---------------------+
 | user_id       | ``STRING``              | User id.            |
 +---------------+-------------------------+---------------------+
-| permission    | :ref:`mlflowPermission` | Permission granted. |
+| permission    | :ref:`qcflowPermission` | Permission granted. |
 +---------------+-------------------------+---------------------+
 
-.. _mlflowRegisteredModelPermission:
+.. _qcflowRegisteredModelPermission:
 
 RegisteredModelPermission
 -------------------------
@@ -499,5 +499,5 @@ RegisteredModelPermission
 +------------+-------------------------+------------------------+
 | user_id    | ``STRING``              | User id.               |
 +------------+-------------------------+------------------------+
-| permission | :ref:`mlflowPermission` | Permission granted.    |
+| permission | :ref:`qcflowPermission` | Permission granted.    |
 +------------+-------------------------+------------------------+

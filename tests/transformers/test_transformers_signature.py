@@ -4,14 +4,14 @@ from unittest import mock
 
 import pytest
 
-from mlflow.models.signature import ModelSignature
-from mlflow.transformers import _try_import_conversational_pipeline
-from mlflow.transformers.signature import (
+from qcflow.models.signature import ModelSignature
+from qcflow.transformers import _try_import_conversational_pipeline
+from qcflow.transformers.signature import (
     _TEXT2TEXT_SIGNATURE,
     format_input_example_for_special_cases,
     infer_or_get_default_signature,
 )
-from mlflow.types.schema import ColSpec, DataType, Schema
+from qcflow.types.schema import ColSpec, DataType, Schema
 
 
 @pytest.mark.parametrize(
@@ -150,14 +150,14 @@ def test_signature_inference(pipeline_name, example, expected_signature, request
 
 
 def test_infer_signature_timeout_then_fall_back_to_default(text_generation_pipeline, monkeypatch):
-    monkeypatch.setenv("MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT", "1")  # Set timeout to 1 second
+    monkeypatch.setenv("QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT", "1")  # Set timeout to 1 second
 
     # Mock _TransformersWrapper.predict to simulate a long-running prediction
     def _slow_predict(*args, **kwargs):
         time.sleep(10)
         return 0
 
-    with mock.patch("mlflow.transformers._TransformersWrapper.predict", side_effect=_slow_predict):
+    with mock.patch("qcflow.transformers._TransformersWrapper.predict", side_effect=_slow_predict):
         signature = infer_or_get_default_signature(text_generation_pipeline, example=["test"])
 
     assert signature == _TEXT2TEXT_SIGNATURE
@@ -165,7 +165,7 @@ def test_infer_signature_timeout_then_fall_back_to_default(text_generation_pipel
 
 def test_infer_signature_prediction_error_then_fall_back_to_default(text_generation_pipeline):
     with mock.patch(
-        "mlflow.transformers._TransformersWrapper.predict", side_effect=ValueError("Error")
+        "qcflow.transformers._TransformersWrapper.predict", side_effect=ValueError("Error")
     ):
         signature = infer_or_get_default_signature(text_generation_pipeline, example=["test"])
 

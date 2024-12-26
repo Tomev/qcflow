@@ -26,7 +26,7 @@ const InputTooltip = ({ baseComponentId }: { baseComponentId: string }) => {
 
   return (
     <Popover.Root
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_traces_tracesviewcontrols.tsx_28"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_traces_tracesviewcontrols.tsx_28"
       modal={false}
     >
       <Popover.Trigger asChild>
@@ -52,7 +52,7 @@ const InputTooltip = ({ baseComponentId }: { baseComponentId: string }) => {
             values={{ whereBold: <b>WHERE</b> }}
           />
         </Typography.Paragraph>
-        <FormattedMessage defaultMessage="Examples:" description="Text header for examples of mlflow search syntax" />
+        <FormattedMessage defaultMessage="Examples:" description="Text header for examples of qcflow search syntax" />
         <ul>
           <li>
             <code>tags.some_tag = "abc"</code>

@@ -1,18 +1,18 @@
-"""Keras 3 callback to log information to MLflow."""
+"""Keras 3 callback to log information to QCFlow."""
 
 import keras
 
-from mlflow import log_metrics, log_params, log_text
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import ExceptionSafeClass
+from qcflow import log_metrics, log_params, log_text
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import ExceptionSafeClass
 
 
 @experimental
 class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
-    """Callback for logging Keras metrics/params/model/... to MLflow.
+    """Callback for logging Keras metrics/params/model/... to QCFlow.
 
     This callback logs model metadata at training begins, and logs training metrics every epoch or
-    every n steps (defined by the user) to MLflow.
+    every n steps (defined by the user) to QCFlow.
 
     Args:
         log_every_epoch: bool, defaults to True. If True, log metrics every epoch. If False,
@@ -24,7 +24,7 @@ class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
         :caption: Example
 
         import keras
-        import mlflow
+        import qcflow
         import numpy as np
 
         # Prepare data for a 2-class classification.
@@ -42,13 +42,13 @@ class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
             optimizer=keras.optimizers.Adam(0.001),
             metrics=[keras.metrics.SparseCategoricalAccuracy()],
         )
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(
                 data,
                 label,
                 batch_size=4,
                 epochs=2,
-                callbacks=[mlflow.keras.MlflowCallback()],
+                callbacks=[qcflow.keras.MlflowCallback()],
             )
     """
 

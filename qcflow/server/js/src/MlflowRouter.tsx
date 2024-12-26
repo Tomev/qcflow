@@ -13,12 +13,12 @@ import { getRouteDefs as getCommonRouteDefs } from './common/route-defs';
 import { useInitializeExperimentRunColors } from './experiment-tracking/components/experiment-page/hooks/useExperimentRunColor';
 
 /**
- * This is the MLflow default entry/landing route.
+ * This is the QCFlow default entry/landing route.
  */
 const landingRoute = {
   path: '/',
   element: createLazyRouteElement(() => import('./experiment-tracking/components/HomePage')),
-  pageId: 'mlflow.experiments.list',
+  pageId: 'qcflow.experiments.list',
 };
 
 export const MlflowRouter = ({

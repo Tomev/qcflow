@@ -1,15 +1,15 @@
-from mlflow.entities.model_registry._model_registry_entity import _ModelRegistryEntity
-from mlflow.entities.model_registry.model_version import ModelVersion
-from mlflow.entities.model_registry.registered_model_alias import RegisteredModelAlias
-from mlflow.entities.model_registry.registered_model_tag import RegisteredModelTag
-from mlflow.protos.model_registry_pb2 import RegisteredModel as ProtoRegisteredModel
-from mlflow.protos.model_registry_pb2 import RegisteredModelAlias as ProtoRegisteredModelAlias
-from mlflow.protos.model_registry_pb2 import RegisteredModelTag as ProtoRegisteredModelTag
+from qcflow.entities.model_registry._model_registry_entity import _ModelRegistryEntity
+from qcflow.entities.model_registry.model_version import ModelVersion
+from qcflow.entities.model_registry.registered_model_alias import RegisteredModelAlias
+from qcflow.entities.model_registry.registered_model_tag import RegisteredModelTag
+from qcflow.protos.model_registry_pb2 import RegisteredModel as ProtoRegisteredModel
+from qcflow.protos.model_registry_pb2 import RegisteredModelAlias as ProtoRegisteredModelAlias
+from qcflow.protos.model_registry_pb2 import RegisteredModelTag as ProtoRegisteredModelTag
 
 
 class RegisteredModel(_ModelRegistryEntity):
     """
-    MLflow entity for Registered Model.
+    QCFlow entity for Registered Model.
     """
 
     def __init__(
@@ -68,7 +68,7 @@ class RegisteredModel(_ModelRegistryEntity):
 
     @property
     def latest_versions(self):
-        """List of the latest :py:class:`mlflow.entities.model_registry.ModelVersion` instances
+        """List of the latest :py:class:`qcflow.entities.model_registry.ModelVersion` instances
         for each stage.
         """
         return self._latest_version
@@ -101,7 +101,7 @@ class RegisteredModel(_ModelRegistryEntity):
     # proto mappers
     @classmethod
     def from_proto(cls, proto):
-        # input: mlflow.protos.model_registry_pb2.RegisteredModel
+        # input: qcflow.protos.model_registry_pb2.RegisteredModel
         # returns RegisteredModel entity
         registered_model = cls(
             proto.name,
@@ -117,7 +117,7 @@ class RegisteredModel(_ModelRegistryEntity):
         return registered_model
 
     def to_proto(self):
-        # returns mlflow.protos.model_registry_pb2.RegisteredModel
+        # returns qcflow.protos.model_registry_pb2.RegisteredModel
         rmd = ProtoRegisteredModel()
         rmd.name = self.name
         if self.creation_timestamp is not None:

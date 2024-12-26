@@ -1,5 +1,5 @@
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.protos.service_pb2 import TraceStatus as ProtoTraceStatus
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.protos.service_pb2 import TraceStatus as ProtoTraceStatus
 
 
 def test_trace_status_from_proto():

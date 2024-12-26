@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { shallowWithInjectIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { shallowWithInjectIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 import { RenameRunModalWithIntl } from './RenameRunModal';
 import { GenericInputModal } from './GenericInputModal';
 

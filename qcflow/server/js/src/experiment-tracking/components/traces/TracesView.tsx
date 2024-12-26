@@ -73,7 +73,7 @@ export const TracesView = ({
     setRowSelection({});
   }, [fetchPrevPage]);
 
-  const baseComponentId = runUuid ? `mlflow.run.traces` : `mlflow.experiment_page.traces`;
+  const baseComponentId = runUuid ? `qcflow.run.traces` : `qcflow.experiment_page.traces`;
 
   // auto-refresh traces
   useEffect(() => {

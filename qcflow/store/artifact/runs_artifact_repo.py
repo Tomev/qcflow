@@ -1,8 +1,8 @@
 import urllib.parse
 
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.utils.uri import (
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.utils.uri import (
     add_databricks_profile_info_to_artifact_uri,
     get_databricks_profile_uri_from_artifact_uri,
 )
@@ -20,7 +20,7 @@ class RunsArtifactRepository(ArtifactRepository):
     """
 
     def __init__(self, artifact_uri):
-        from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
+        from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 
         super().__init__(artifact_uri)
         uri = RunsArtifactRepository.get_underlying_uri(artifact_uri)
@@ -32,7 +32,7 @@ class RunsArtifactRepository(ArtifactRepository):
 
     @staticmethod
     def get_underlying_uri(runs_uri):
-        from mlflow.tracking.artifact_utils import get_artifact_uri
+        from qcflow.tracking.artifact_utils import get_artifact_uri
 
         (run_id, artifact_path) = RunsArtifactRepository.parse_runs_uri(runs_uri)
         tracking_uri = get_databricks_profile_uri_from_artifact_uri(runs_uri)

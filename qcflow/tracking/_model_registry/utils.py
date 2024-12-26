@@ -1,38 +1,38 @@
 from functools import partial
 
-from mlflow.environment_variables import MLFLOW_REGISTRY_URI
-from mlflow.store.db.db_types import DATABASE_ENGINES
-from mlflow.store.model_registry.databricks_workspace_model_registry_rest_store import (
+from qcflow.environment_variables import QCFLOW_REGISTRY_URI
+from qcflow.store.db.db_types import DATABASE_ENGINES
+from qcflow.store.model_registry.databricks_workspace_model_registry_rest_store import (
     DatabricksWorkspaceModelRegistryRestStore,
 )
-from mlflow.store.model_registry.file_store import FileStore
-from mlflow.store.model_registry.rest_store import RestStore
-from mlflow.tracking._model_registry.registry import ModelRegistryStoreRegistry
-from mlflow.tracking._tracking_service.utils import (
+from qcflow.store.model_registry.file_store import FileStore
+from qcflow.store.model_registry.rest_store import RestStore
+from qcflow.tracking._model_registry.registry import ModelRegistryStoreRegistry
+from qcflow.tracking._tracking_service.utils import (
     _resolve_tracking_uri,
     get_tracking_uri,
 )
-from mlflow.utils._spark_utils import _get_active_spark_session
-from mlflow.utils.credentials import get_default_host_creds
-from mlflow.utils.databricks_utils import (
+from qcflow.utils._spark_utils import _get_active_spark_session
+from qcflow.utils.credentials import get_default_host_creds
+from qcflow.utils.databricks_utils import (
     get_databricks_host_creds,
     is_in_databricks_serverless_runtime,
     warn_on_deprecated_cross_workspace_registry_uri,
 )
-from mlflow.utils.uri import _DATABRICKS_UNITY_CATALOG_SCHEME, _OSS_UNITY_CATALOG_SCHEME
+from qcflow.utils.uri import _DATABRICKS_UNITY_CATALOG_SCHEME, _OSS_UNITY_CATALOG_SCHEME
 
 # NOTE: in contrast to tracking, we do not support the following ways to specify
 # the model registry URI:
-#  - via environment variables like MLFLOW_TRACKING_URI, MLFLOW_TRACKING_USERNAME, ...
+#  - via environment variables like QCFLOW_TRACKING_URI, QCFLOW_TRACKING_USERNAME, ...
 # We do support specifying it
 #  - via the ``model_registry_uri`` parameter when creating an ``MlflowClient`` or
 #    ``ModelRegistryClient``.
-#  - via a utility method ``mlflow.set_registry_uri``
+#  - via a utility method ``qcflow.set_registry_uri``
 #  - by not specifying anything: in this case we assume the model registry store URI is
 #    the same as the tracking store URI. This means Tracking and Model Registry are
 #    backed by the same backend DB/Rest server. However, note that we access them via
-#    different ``Store`` classes (e.g. ``mlflow.store.tracking.SQLAlchemyStore`` &
-#    ``mlflow.store.model_registry.SQLAlchemyStore``).
+#    different ``Store`` classes (e.g. ``qcflow.store.tracking.SQLAlchemyStore`` &
+#    ``qcflow.store.model_registry.SQLAlchemyStore``).
 # This means the following combinations are not supported:
 #  - Tracking RestStore & Model Registry RestStore that use different credentials.
 
@@ -58,10 +58,10 @@ def set_registry_uri(uri: str) -> None:
 
         # Set model registry uri, fetch the set uri, and compare
         # it with the tracking uri. They should be different
-        mlflow.set_registry_uri("sqlite:////tmp/registry.db")
-        mr_uri = mlflow.get_registry_uri()
+        qcflow.set_registry_uri("sqlite:////tmp/registry.db")
+        mr_uri = qcflow.get_registry_uri()
         print(f"Current registry uri: {mr_uri}")
-        tracking_uri = mlflow.get_tracking_uri()
+        tracking_uri = qcflow.get_tracking_uri()
         print(f"Current tracking uri: {tracking_uri}")
 
         # They should be different
@@ -77,9 +77,9 @@ def set_registry_uri(uri: str) -> None:
     global _registry_uri
     _registry_uri = uri
     if uri:
-        # Set 'MLFLOW_REGISTRY_URI' environment variable
+        # Set 'QCFLOW_REGISTRY_URI' environment variable
         # so that subprocess can inherit it.
-        MLFLOW_REGISTRY_URI.set(_registry_uri)
+        QCFLOW_REGISTRY_URI.set(_registry_uri)
 
 
 def _get_registry_uri_from_spark_session():
@@ -91,13 +91,13 @@ def _get_registry_uri_from_spark_session():
         # Connected to Serverless
         return "databricks-uc"
 
-    return session.conf.get("spark.mlflow.modelRegistryUri", None)
+    return session.conf.get("spark.qcflow.modelRegistryUri", None)
 
 
 def _get_registry_uri_from_context():
     if _registry_uri is not None:
         return _registry_uri
-    elif (uri := MLFLOW_REGISTRY_URI.get()) or (uri := _get_registry_uri_from_spark_session()):
+    elif (uri := QCFLOW_REGISTRY_URI.get()) or (uri := _get_registry_uri_from_spark_session()):
         return uri
     return _registry_uri
 
@@ -111,11 +111,11 @@ def get_registry_uri() -> str:
     .. code-block:: python
 
         # Get the current model registry uri
-        mr_uri = mlflow.get_registry_uri()
+        mr_uri = qcflow.get_registry_uri()
         print(f"Current model registry uri: {mr_uri}")
 
         # Get the current tracking uri
-        tracking_uri = mlflow.get_tracking_uri()
+        tracking_uri = qcflow.get_tracking_uri()
         print(f"Current tracking uri: {tracking_uri}")
 
         # They should be the same
@@ -135,7 +135,7 @@ def _resolve_registry_uri(registry_uri=None, tracking_uri=None):
 
 
 def _get_sqlalchemy_store(store_uri):
-    from mlflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
+    from qcflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
 
     return SqlAlchemyStore(store_uri)
 
@@ -160,8 +160,8 @@ def _get_file_store(store_uri, **_):
 
 def _get_store_registry():
     global _model_registry_store_registry
-    from mlflow.store._unity_catalog.registry.rest_store import UcModelRegistryStore
-    from mlflow.store._unity_catalog.registry.uc_oss_rest_store import UnityCatalogOssStore
+    from qcflow.store._unity_catalog.registry.rest_store import UcModelRegistryStore
+    from qcflow.store._unity_catalog.registry.uc_oss_rest_store import UnityCatalogOssStore
 
     if _model_registry_store_registry is not None:
         return _model_registry_store_registry

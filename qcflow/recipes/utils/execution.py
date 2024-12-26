@@ -5,13 +5,13 @@ import pathlib
 import re
 import shutil
 
-from mlflow.environment_variables import (
-    MLFLOW_RECIPES_EXECUTION_DIRECTORY,
-    MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME,
+from qcflow.environment_variables import (
+    QCFLOW_RECIPES_EXECUTION_DIRECTORY,
+    QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME,
 )
-from mlflow.recipes.step import BaseStep, StepStatus
-from mlflow.utils.file_utils import read_yaml, write_yaml
-from mlflow.utils.process import _exec_cmd
+from qcflow.recipes.step import BaseStep, StepStatus
+from qcflow.utils.file_utils import read_yaml, write_yaml
+from qcflow.utils.process import _exec_cmd
 
 _logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ def run_recipe_step(
     # should be isolated in different subprocesses
     make_env = {
         # Include target step name in the environment variable set
-        MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name: target_step.name,
+        QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name: target_step.name,
     }
     for step in recipe_steps:
         make_env.update(step.environment)
@@ -121,7 +121,7 @@ def clean_execution_state(recipe_root_path: str, recipe_steps: list[BaseStep]) -
     """
     Removes all execution state for the specified recipe steps from the associated execution
     directory on the local filesystem. This method does *not* remove other execution results, such
-    as content logged to MLflow Tracking.
+    as content logged to QCFlow Tracking.
 
     Args:
         recipe_root_path: The absolute path of the recipe root directory on the local
@@ -242,8 +242,8 @@ def get_or_create_base_execution_directory(recipe_root_path: str) -> str:
     )
 
     execution_dir_path = os.path.abspath(
-        MLFLOW_RECIPES_EXECUTION_DIRECTORY.get()
-        or os.path.join(os.path.expanduser("~"), ".mlflow", "recipes", execution_directory_basename)
+        QCFLOW_RECIPES_EXECUTION_DIRECTORY.get()
+        or os.path.join(os.path.expanduser("~"), ".qcflow", "recipes", execution_directory_basename)
     )
     os.makedirs(execution_dir_path, exist_ok=True)
     return execution_dir_path
@@ -288,7 +288,7 @@ def _get_step_output_directory_path(execution_directory_path: str, step_name: st
 
 
 class _ExecutionPlan:
-    _MSG_REGEX = r'^echo "Run MLflow Recipe step: (\w+)"\n$'
+    _MSG_REGEX = r'^echo "Run QCFlow Recipe step: (\w+)"\n$'
     _FORMAT_STEPS_CACHED = "%s: No changes. Skipping."
 
     def __init__(self, rule_name, output_lines_of_make: list[str], recipe_step_names: list[str]):
@@ -396,7 +396,7 @@ def _run_make(
 
 def _create_makefile(recipe_root_path, execution_directory_path, template) -> None:
     """
-    Creates a Makefile with a set of relevant MLflow Recipes targets for the specified recipe,
+    Creates a Makefile with a set of relevant QCFlow Recipes targets for the specified recipe,
     overwriting the preexisting Makefile if one exists. The Makefile is created in the specified
     execution directory.
 
@@ -425,7 +425,7 @@ def _create_makefile(recipe_root_path, execution_directory_path, template) -> No
             if not os.path.exists(required_file_path):
                 try:
                     with open(required_file_path, "w") as f:
-                        f.write("# Created by MLflow Pipelines\n")
+                        f.write("# Created by QCFlow Pipelines\n")
                 except OSError:
                     pass
             if not os.path.exists(required_file_path):
@@ -532,17 +532,17 @@ class _MakefilePathFormat:
 # valid Makefile
 _MAKEFILE_FORMAT_STRING = r"""
 # Define `ingest` as a target with no dependencies to ensure that it runs whenever a user explicitly
-# invokes the MLflow Recipes ingest step, allowing them to reingest data on-demand
+# invokes the QCFlow Recipes ingest step, allowing them to reingest data on-demand
 ingest:
 	cd {path:prp/} && \
-        python -c "from mlflow.recipes.steps.ingest import IngestStep; IngestStep.from_step_config_path(step_config_path='{path:exe/steps/ingest/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/ingest/outputs}')"
+        python -c "from qcflow.recipes.steps.ingest import IngestStep; IngestStep.from_step_config_path(step_config_path='{path:exe/steps/ingest/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/ingest/outputs}')"
 
 # Define a separate target for the ingested dataset that recursively invokes make with the `ingest`
 # target. Downstream steps depend on the ingested dataset target, rather than the `ingest` target,
 # ensuring that data is only ingested for downstream steps if it is not already present on the
 # local filesystem
 steps/ingest/outputs/dataset.parquet: steps/ingest/conf.yaml {path:prp/steps/ingest.py}
-	echo "Run MLflow Recipe step: ingest"
+	echo "Run QCFlow Recipe step: ingest"
 	$(MAKE) ingest
 
 split_objects = steps/split/outputs/train.parquet steps/split/outputs/validation.parquet steps/split/outputs/test.parquet
@@ -550,58 +550,58 @@ split_objects = steps/split/outputs/train.parquet steps/split/outputs/validation
 split: $(split_objects)
 
 steps/%/outputs/train.parquet steps/%/outputs/validation.parquet steps/%/outputs/test.parquet: {path:prp/steps/split.py} steps/ingest/outputs/dataset.parquet steps/split/conf.yaml
-	echo "Run MLflow Recipe step: split"
+	echo "Run QCFlow Recipe step: split"
 	cd {path:prp/} && \
-        python -c "from mlflow.recipes.steps.split import SplitStep; SplitStep.from_step_config_path(step_config_path='{path:exe/steps/split/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/split/outputs}')"
+        python -c "from qcflow.recipes.steps.split import SplitStep; SplitStep.from_step_config_path(step_config_path='{path:exe/steps/split/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/split/outputs}')"
 
 transform_objects = steps/transform/outputs/transformer.pkl steps/transform/outputs/transformed_training_data.parquet steps/transform/outputs/transformed_validation_data.parquet
 
 transform: $(transform_objects)
 
 steps/%/outputs/transformer.pkl steps/%/outputs/transformed_training_data.parquet steps/%/outputs/transformed_validation_data.parquet: {path:prp/steps/transform.py} steps/split/outputs/train.parquet steps/split/outputs/validation.parquet steps/transform/conf.yaml
-	echo "Run MLflow Recipe step: transform"
+	echo "Run QCFlow Recipe step: transform"
 	cd {path:prp/} && \
-        python -c "from mlflow.recipes.steps.transform import TransformStep; TransformStep.from_step_config_path(step_config_path='{path:exe/steps/transform/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/transform/outputs}')"
+        python -c "from qcflow.recipes.steps.transform import TransformStep; TransformStep.from_step_config_path(step_config_path='{path:exe/steps/transform/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/transform/outputs}')"
 
 train_objects = steps/train/outputs/model steps/train/outputs/run_id
 
 train: $(train_objects)
 
 steps/%/outputs/model steps/%/outputs/run_id: {path:prp/steps/train.py} {path:prp/steps/custom_metrics.py} steps/transform/outputs/transformed_training_data.parquet steps/transform/outputs/transformed_validation_data.parquet steps/split/outputs/train.parquet steps/split/outputs/validation.parquet steps/transform/outputs/transformer.pkl steps/train/conf.yaml
-	echo "Run MLflow Recipe step: train"
+	echo "Run QCFlow Recipe step: train"
 	cd {path:prp/} && \
-        python -c "from mlflow.recipes.steps.train import TrainStep; TrainStep.from_step_config_path(step_config_path='{path:exe/steps/train/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/train/outputs}')"
+        python -c "from qcflow.recipes.steps.train import TrainStep; TrainStep.from_step_config_path(step_config_path='{path:exe/steps/train/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/train/outputs}')"
 
 evaluate_objects = steps/evaluate/outputs/model_validation_status
 
 evaluate: $(evaluate_objects)
 
 steps/%/outputs/model_validation_status: {path:prp/steps/custom_metrics.py} steps/train/outputs/model steps/split/outputs/validation.parquet steps/split/outputs/test.parquet steps/train/outputs/run_id steps/evaluate/conf.yaml
-	echo "Run MLflow Recipe step: evaluate"
+	echo "Run QCFlow Recipe step: evaluate"
 	cd {path:prp/} && \
-        python -c "from mlflow.recipes.steps.evaluate import EvaluateStep; EvaluateStep.from_step_config_path(step_config_path='{path:exe/steps/evaluate/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/evaluate/outputs}')"
+        python -c "from qcflow.recipes.steps.evaluate import EvaluateStep; EvaluateStep.from_step_config_path(step_config_path='{path:exe/steps/evaluate/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/evaluate/outputs}')"
 
 register_objects = steps/register/outputs/registered_model_version.json
 
 register: $(register_objects)
 
 steps/%/outputs/registered_model_version.json: steps/train/outputs/run_id steps/register/conf.yaml steps/evaluate/outputs/model_validation_status
-	echo "Run MLflow Recipe step: register"
+	echo "Run QCFlow Recipe step: register"
 	cd {path:prp/} && \
-        python -c "from mlflow.recipes.steps.register import RegisterStep; RegisterStep.from_step_config_path(step_config_path='{path:exe/steps/register/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/register/outputs}')"
+        python -c "from qcflow.recipes.steps.register import RegisterStep; RegisterStep.from_step_config_path(step_config_path='{path:exe/steps/register/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/register/outputs}')"
 
 # Define `ingest_scoring` as a target with no dependencies to ensure that it runs whenever a user explicitly
-# invokes the MLflow Recipes ingest_scoring step, allowing them to reingest data on-demand
+# invokes the QCFlow Recipes ingest_scoring step, allowing them to reingest data on-demand
 ingest_scoring:
 	cd {path:prp/} && \
-        python -c "from mlflow.recipes.steps.ingest import IngestScoringStep; IngestScoringStep.from_step_config_path(step_config_path='{path:exe/steps/ingest_scoring/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/ingest_scoring/outputs}')"
+        python -c "from qcflow.recipes.steps.ingest import IngestScoringStep; IngestScoringStep.from_step_config_path(step_config_path='{path:exe/steps/ingest_scoring/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/ingest_scoring/outputs}')"
 
 # Define a separate target for the ingested dataset that recursively invokes make with the
 # `ingest_scoring` target. Downstream steps depend on the ingested dataset target, rather than the
 # `ingest_scoring` target, ensuring that data is only ingested for downstream steps if it is not
 # already present on the local filesystem
 steps/ingest_scoring/outputs/scoring-dataset.parquet: steps/ingest_scoring/conf.yaml {path:prp/steps/ingest.py}
-	echo "Run MLflow Recipe step: ingest_scoring"
+	echo "Run QCFlow Recipe step: ingest_scoring"
 	$(MAKE) ingest_scoring
 
 predict_objects = steps/predict/outputs/scored.parquet
@@ -609,9 +609,9 @@ predict_objects = steps/predict/outputs/scored.parquet
 predict: $(predict_objects)
 
 steps/predict/outputs/scored.parquet: steps/ingest_scoring/outputs/scoring-dataset.parquet steps/predict/conf.yaml
-	echo "Run MLflow Recipe step: predict"
+	echo "Run QCFlow Recipe step: predict"
 	cd {path:prp/} && \
-        python -c "from mlflow.recipes.steps.predict import PredictStep; PredictStep.from_step_config_path(step_config_path='{path:exe/steps/predict/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/predict/outputs}')"
+        python -c "from qcflow.recipes.steps.predict import PredictStep; PredictStep.from_step_config_path(step_config_path='{path:exe/steps/predict/conf.yaml}', recipe_root='{path:prp/}').run(output_directory='{path:exe/steps/predict/outputs}')"
 
 clean:
 	rm -rf $(split_objects) $(transform_objects) $(train_objects) $(evaluate_objects) $(predict_objects)

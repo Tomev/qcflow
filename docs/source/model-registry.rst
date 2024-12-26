@@ -1,12 +1,12 @@
 .. _registry:
 
 =====================
-MLflow Model Registry
+QCFlow Model Registry
 =====================
 
-The MLflow Model Registry component is a centralized model store, set of APIs, and UI, to
-collaboratively manage the full lifecycle of an MLflow Model. It provides model lineage (which
-MLflow experiment and run produced the model), model versioning, model aliasing, model tagging, and
+The QCFlow Model Registry component is a centralized model store, set of APIs, and UI, to
+collaboratively manage the full lifecycle of an QCFlow Model. It provides model lineage (which
+QCFlow experiment and run produced the model), model versioning, model aliasing, model tagging, and
 annotations.
 
 .. contents:: Table of Contents
@@ -16,13 +16,13 @@ annotations.
 Concepts
 ========
 
-The Model Registry introduces a few concepts that describe and facilitate the full lifecycle of an MLflow Model.
+The Model Registry introduces a few concepts that describe and facilitate the full lifecycle of an QCFlow Model.
 
 Model
-    An MLflow Model is created from an experiment or run that is logged with one of the model flavor’s ``mlflow.<model_flavor>.log_model()`` methods. Once logged, this model can then be registered with the Model Registry.
+    An QCFlow Model is created from an experiment or run that is logged with one of the model flavor’s ``qcflow.<model_flavor>.log_model()`` methods. Once logged, this model can then be registered with the Model Registry.
 
 Registered Model
-    An MLflow Model can be registered with the Model Registry. A registered model has a unique name, contains versions, aliases, tags, and other metadata.
+    An QCFlow Model can be registered with the Model Registry. A registered model has a unique name, contains versions, aliases, tags, and other metadata.
 
 Model Version
     Each registered model can have one or many versions. When a new model is added to the Model Registry, it is added as version 1. Each new model registered to the same model name increments the version number. Model versions have tags, which can be useful for tracking attributes of the model version (e.g. `pre_deploy_checks: "PASSED"`)
@@ -42,7 +42,7 @@ Annotations and Descriptions
 
 Model Registry Workflows
 ========================
-If running your own MLflow server, you must use a database-backed backend store in order to access
+If running your own QCFlow server, you must use a database-backed backend store in order to access
 the model registry via the UI or API. `See here <tracking/backend-stores.html>`_ for more information.
 
 Before you can add a model to the Model Registry, you must log it using the ``log_model`` methods
@@ -52,20 +52,20 @@ or delete the model in the Model Registry through the UI or the API.
 UI Workflow
 -----------
 
-This section demonstrates how to use the MLflow Model Registry UI to manage your MLflow models.
+This section demonstrates how to use the QCFlow Model Registry UI to manage your QCFlow models.
 
 Register a Model
 ^^^^^^^^^^^^^^^^
 
-Follow the steps below to register your MLflow model in the Model Registry.
+Follow the steps below to register your QCFlow model in the Model Registry.
 
-1. Open the details page for the MLflow Run containing the logged MLflow model you'd like to register. Select the model folder containing the intended MLflow model in the **Artifacts** section.
+1. Open the details page for the QCFlow Run containing the logged QCFlow model you'd like to register. Select the model folder containing the intended QCFlow model in the **Artifacts** section.
 
   .. figure:: _static/images/oss_registry_1_register.png
 
 2. Click the **Register Model** button, which will trigger a form to pop up.
 
-3. In the **Model** dropdown menu on the form, you can either select "Create New Model", which creates a new registered model with your MLflow model as its initial version, or select an existing registered model, which registers your model under it as a new version. The screenshot below demonstrates registering the MLflow model to a new registered model named ``"iris_model_testing"``.
+3. In the **Model** dropdown menu on the form, you can either select "Create New Model", which creates a new registered model with your QCFlow model as its initial version, or select an existing registered model, which registers your model under it as a new version. The screenshot below demonstrates registering the QCFlow model to a new registered model named ``"iris_model_testing"``.
  
   .. figure:: _static/images/oss_registry_2_dialog.png
 
@@ -78,7 +78,7 @@ After you've registered your models in the Model Registry, you can navigate to t
 
   .. figure:: _static/images/oss_registry_3_overview.png
 
-- Go to the **Artifacts** section of your MLflow Runs details page, click the model folder, and then click the model version at the top right to view the version created from that model.
+- Go to the **Artifacts** section of your QCFlow Runs details page, click the model folder, and then click the model version at the top right to view the version created from that model.
 
   .. figure:: _static/images/oss_registry_3b_version.png
 
@@ -97,18 +97,18 @@ To learn more about a specific model version, navigate to the details page for t
 
 .. figure:: _static/images/oss_registry_5_version.png
 
-In this page, you can inspect model version details like the model signature, MLflow source run, and creation timestamp. You can also view and configure the verion's aliases, tags, and description.
+In this page, you can inspect model version details like the model signature, QCFlow source run, and creation timestamp. You can also view and configure the verion's aliases, tags, and description.
 
 API Workflow
 ------------
 
-An alternative way to interact with Model Registry is using the :ref:`MLflow model flavor <python-api>` or :ref:`MLflow Client Tracking API <mlflow.tracking>` interface.
-In particular, you can register a model during an MLflow experiment run or after all your experiment runs.
+An alternative way to interact with Model Registry is using the :ref:`QCFlow model flavor <python-api>` or :ref:`QCFlow Client Tracking API <qcflow.tracking>` interface.
+In particular, you can register a model during an QCFlow experiment run or after all your experiment runs.
 
-Adding an MLflow Model to the Model Registry
+Adding an QCFlow Model to the Model Registry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are three programmatic ways to add a model to the registry. First, you can use the ``mlflow.<model_flavor>.log_model()`` method. For example, in your code:
+There are three programmatic ways to add a model to the registry. First, you can use the ``qcflow.<model_flavor>.log_model()`` method. For example, in your code:
 
 .. code-block:: python
 
@@ -117,11 +117,11 @@ There are three programmatic ways to add a model to the registry. First, you can
     from sklearn.metrics import mean_squared_error
     from sklearn.model_selection import train_test_split
 
-    import mlflow
-    import mlflow.sklearn
-    from mlflow.models import infer_signature
+    import qcflow
+    import qcflow.sklearn
+    from qcflow.models import infer_signature
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
@@ -134,12 +134,12 @@ There are three programmatic ways to add a model to the registry. First, you can
         y_pred = model.predict(X_test)
         signature = infer_signature(X_test, y_pred)
 
-        # Log parameters and metrics using the MLflow APIs
-        mlflow.log_params(params)
-        mlflow.log_metrics({"mse": mean_squared_error(y_test, y_pred)})
+        # Log parameters and metrics using the QCFlow APIs
+        qcflow.log_params(params)
+        qcflow.log_metrics({"mse": mean_squared_error(y_test, y_pred)})
 
         # Log the sklearn model and register as version 1
-        mlflow.sklearn.log_model(
+        qcflow.sklearn.log_model(
             sk_model=model,
             artifact_path="sklearn-model",
             signature=signature,
@@ -149,29 +149,29 @@ There are three programmatic ways to add a model to the registry. First, you can
 In the above code snippet, if a registered model with the name doesn’t exist, the method registers a new model and creates Version 1.
 If a registered model with the name exists, the method creates a new model version.
 
-The second way is to use the :func:`mlflow.register_model` method, after all your experiment runs complete and when you have decided which model is most suitable to add to the registry.
+The second way is to use the :func:`qcflow.register_model` method, after all your experiment runs complete and when you have decided which model is most suitable to add to the registry.
 For this method, you will need the ``run_id`` as part of the ``runs:URI`` argument.
 
 .. code-block:: python
 
-    result = mlflow.register_model(
+    result = qcflow.register_model(
         "runs:/d16076a3ec534311817565e6527539c0/sklearn-model", "sk-learn-random-forest-reg"
     )
 
-If a registered model with the name doesn’t exist, the method registers a new model, creates Version 1, and returns a ModelVersion MLflow object.
+If a registered model with the name doesn’t exist, the method registers a new model, creates Version 1, and returns a ModelVersion QCFlow object.
 If a registered model with the name exists, the method creates a new model version and returns the version object.
 
-And finally, you can use the :meth:`~mlflow.client.MlflowClient.create_registered_model` to create a new registered model. If the model name exists,
-this method will throw an :class:`~mlflow.exceptions.MlflowException` because creating a new registered model requires a unique name.
+And finally, you can use the :meth:`~qcflow.client.MlflowClient.create_registered_model` to create a new registered model. If the model name exists,
+this method will throw an :class:`~qcflow.exceptions.MlflowException` because creating a new registered model requires a unique name.
 
 .. code-block:: python
 
-   from mlflow import MlflowClient
+   from qcflow import MlflowClient
 
    client = MlflowClient()
    client.create_registered_model("sk-learn-random-forest-reg-model")
 
-The method above creates an empty registered model with no version associated. You can use :meth:`~mlflow.client.MlflowClient.create_model_version`
+The method above creates an empty registered model with no version associated. You can use :meth:`~qcflow.client.MlflowClient.create_model_version`
 as shown below to create a new version of the model.
 
 .. code-block:: python
@@ -187,16 +187,16 @@ as shown below to create a new version of the model.
 Databricks Unity Catalog Model Registry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To use Databricks unity catalog model registry, set MLflow registry URI to ``"databricks-uc"``, and set the two environmental variables ``"DATABRICKS_HOST"`` and ``"DATABRICKS_TOKEN"``. If you are using Databricks OAuth authentication, set the three environmental variables ``"DATABRICKS_HOST"``, ``"DATABRICKS_CLIENT_ID"`` and ``"DATABRICKS_CLIENT_SECRET"``. If you have configured your access auth within the ``'~/.databrickscfg'`` file, then you don't need to set above environmental variables. Instead, you can set the MLflow registry URI to ``"databricks-uc://{profile}"``, the ``'{profile}'`` part being the profile name in your ``'~/.databrickscfg'`` configuration file. For details of Databricks authentication types, please refer to `this document <https://docs.databricks.com/en/dev-tools/auth/index.html#unified-auth>`.
+To use Databricks unity catalog model registry, set QCFlow registry URI to ``"databricks-uc"``, and set the two environmental variables ``"DATABRICKS_HOST"`` and ``"DATABRICKS_TOKEN"``. If you are using Databricks OAuth authentication, set the three environmental variables ``"DATABRICKS_HOST"``, ``"DATABRICKS_CLIENT_ID"`` and ``"DATABRICKS_CLIENT_SECRET"``. If you have configured your access auth within the ``'~/.databrickscfg'`` file, then you don't need to set above environmental variables. Instead, you can set the QCFlow registry URI to ``"databricks-uc://{profile}"``, the ``'{profile}'`` part being the profile name in your ``'~/.databrickscfg'`` configuration file. For details of Databricks authentication types, please refer to `this document <https://docs.databricks.com/en/dev-tools/auth/index.html#unified-auth>`.
 
 **Use Databricks unity catalog model registry by Databricks shard token**
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import os
 
-    mlflow.set_registry_uri("databricks-uc")
+    qcflow.set_registry_uri("databricks-uc")
     os.environ["DATABRICKS_HOST"] = "<your Databricks shard URI>"
     os.environ["DATABRICKS_TOKEN"] = "<your Databricks shard access token>"
 
@@ -205,10 +205,10 @@ To use Databricks unity catalog model registry, set MLflow registry URI to ``"da
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import os
 
-    mlflow.set_registry_uri("databricks-uc")
+    qcflow.set_registry_uri("databricks-uc")
     os.environ["DATABRICKS_HOST"] = "<your Databricks shard URI>"
     os.environ["DATABRICKS_CLIENT_ID"] = "<your Databricks oauth client ID>"
     os.environ["DATABRICKS_CLIENT_SECRET"] = "<your Databricks oauth client secret>"
@@ -224,27 +224,27 @@ token = <your Databricks shard access token>
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import os
 
-    mlflow.set_registry_uri("databricks-uc://my-databricks-shard1")
+    qcflow.set_registry_uri("databricks-uc://my-databricks-shard1")
 
 
 OSS Unity Catalog Model Registry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To use an `OSS Unity Catalog <https://www.unitycatalog.io/>`_ server as your MLflow model registry, specify the UC server address in the MLflow registry URI in the format ``"uc:http://localhost:8080"``.  If your unity catalog server is configured to use authentication, set the environmental variable ``"MLFLOW_UC_OSS_TOKEN"``.
+To use an `OSS Unity Catalog <https://www.unitycatalog.io/>`_ server as your QCFlow model registry, specify the UC server address in the QCFlow registry URI in the format ``"uc:http://localhost:8080"``.  If your unity catalog server is configured to use authentication, set the environmental variable ``"QCFLOW_UC_OSS_TOKEN"``.
 
 **Use the OSS unity catalog model registry using a bearer token**
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import os
 
-    mlflow.set_registry_uri("uc:http://localhost:8080")
-    # Set this environment variable for MLflow to use your UC OSS token
-    os.environ["MLFLOW_UC_OSS_TOKEN"] = "<your OSS UC access token>"
+    qcflow.set_registry_uri("uc:http://localhost:8080")
+    # Set this environment variable for QCFlow to use your UC OSS token
+    os.environ["QCFLOW_UC_OSS_TOKEN"] = "<your OSS UC access token>"
 
 Deploy and Organize Models with Aliases and Tags
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -253,11 +253,11 @@ Model aliases and tags help you deploy and organize your models in the Model Reg
 
 **Set and delete aliases on models**
 
-To set, update, and delete aliases using the MLflow Client API, see the examples below:
+To set, update, and delete aliases using the QCFlow Client API, see the examples below:
 
 .. code-block:: python
 
-    from mlflow import MlflowClient
+    from qcflow import MlflowClient
 
     client = MlflowClient()
 
@@ -275,11 +275,11 @@ To set, update, and delete aliases using the MLflow Client API, see the examples
 
 **Set and delete tags on models**
 
-To set and delete tags using the MLflow Client API, see the examples below:
+To set and delete tags using the QCFlow Client API, see the examples below:
 
 .. code-block:: python
 
-    from mlflow import MlflowClient
+    from qcflow import MlflowClient
 
     client = MlflowClient()
 
@@ -295,13 +295,13 @@ To set and delete tags using the MLflow Client API, see the examples below:
     # Delete model version tag
     client.delete_model_version_tag("example-model", "1", "validation_status")
 
-For more details on alias and tag client APIs, see the :py:mod:`mlflow.client` API documentation.
+For more details on alias and tag client APIs, see the :py:mod:`qcflow.client` API documentation.
 
 
-Fetching an MLflow Model from the Model Registry
+Fetching an QCFlow Model from the Model Registry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After you have registered an MLflow model, you can fetch that model using ``mlflow.<model_flavor>.load_model()``, or more generally, :meth:`~mlflow.pyfunc.load_model`.
+After you have registered an QCFlow model, you can fetch that model using ``qcflow.<model_flavor>.load_model()``, or more generally, :meth:`~qcflow.pyfunc.load_model`.
 You can use the loaded model for one off predictions or in inference workloads such as batch inference.
 
 **Fetch a specific model version**
@@ -310,12 +310,12 @@ To fetch a specific model version, just supply that version number as part of th
 
 .. code-block:: python
 
-    import mlflow.pyfunc
+    import qcflow.pyfunc
 
     model_name = "sk-learn-random-forest-reg-model"
     model_version = 1
 
-    model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{model_version}")
+    model = qcflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{model_version}")
 
     model.predict(data)
 
@@ -325,55 +325,55 @@ To fetch a model version by alias, specify the model alias in the model URI, and
 
 .. code-block:: python
 
-    import mlflow.pyfunc
+    import qcflow.pyfunc
 
     model_name = "sk-learn-random-forest-reg-model"
     alias = "champion"
 
-    champion_version = mlflow.pyfunc.load_model(f"models:/{model_name}@{alias}")
+    champion_version = qcflow.pyfunc.load_model(f"models:/{model_name}@{alias}")
 
     champion_version.predict(data)
 
 Note that model alias assignments can be updated independently of your production code. If the ``champion`` alias in the snippet above is reassigned to a new model version in the Model Registry, the next execution of this snippet will automatically pick up the new model version. This allows you to decouple model deployments from your inference workloads.
 
-Serving an MLflow Model from Model Registry
+Serving an QCFlow Model from Model Registry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After you have registered an MLflow model, you can serve the model as a service on your host.
+After you have registered an QCFlow model, you can serve the model as a service on your host.
 
 .. code-block:: bash
 
     #!/usr/bin/env sh
 
     # Set environment variable for the tracking URL where the Model Registry resides
-    export MLFLOW_TRACKING_URI=http://localhost:5000
+    export QCFLOW_TRACKING_URI=http://localhost:5000
 
     # Serve the production model from the model registry
-    mlflow models serve -m "models:/sk-learn-random-forest-reg-model@champion"
+    qcflow models serve -m "models:/sk-learn-random-forest-reg-model@champion"
 
-Promoting an MLflow Model across environments
+Promoting an QCFlow Model across environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In mature DevOps and MLOps workflows, organizations use separate environments (typically, dev,
 staging, and prod) with access controls to enable quick development without compromising stability
-in production. In MLflow, you can use registered models and :ref:`MLflow Authentication <auth>` to
-express access-controlled environments for your MLflow models. For example, you can create registered
+in production. In QCFlow, you can use registered models and :ref:`QCFlow Authentication <auth>` to
+express access-controlled environments for your QCFlow models. For example, you can create registered
 models corresponding to each combination of environment and business problem (e.g.
 ``prod.ml_team.revenue_forecasting``, ``dev.ml_team.revenue_forecasting``) and configure permissions
-accordingly. As you iterate on MLflow models for your business problem, you can promote them
+accordingly. As you iterate on QCFlow models for your business problem, you can promote them
 through the various environments for continuous integration and deployment.
 
 For mature production-grade setups, we recommend setting up automated workflows that train and register
 models in each environment. To productionize the latest iteration on a business problem, promote your
 machine learning code across environments via source control and CI/CD systems.
 
-For simple model deployment use cases, you can register your trained MLflow Model to a dev environment
-registered model as the latest model version and then use :meth:`~mlflow.client.MlflowClient.copy_model_version`
+For simple model deployment use cases, you can register your trained QCFlow Model to a dev environment
+registered model as the latest model version and then use :meth:`~qcflow.client.MlflowClient.copy_model_version`
 to promote it across registered models.
 
 .. code-block:: python
 
-    from mlflow import MlflowClient
+    from qcflow import MlflowClient
 
     client = MlflowClient()
     client.copy_model_version(
@@ -390,10 +390,10 @@ to which the current model version will be copied.
 
 .. figure:: _static/images/oss_registry_6_version.png
 
-Adding or Updating an MLflow Model Descriptions
+Adding or Updating an QCFlow Model Descriptions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-At any point in a model’s lifecycle development, you can update a model version's description using :meth:`~mlflow.client.MlflowClient.update_model_version`.
+At any point in a model’s lifecycle development, you can update a model version's description using :meth:`~qcflow.client.MlflowClient.update_model_version`.
 
 .. code-block:: python
 
@@ -404,10 +404,10 @@ At any point in a model’s lifecycle development, you can update a model versio
         description="This model version is a scikit-learn random forest containing 100 decision trees",
     )
 
-Renaming an MLflow Model
+Renaming an QCFlow Model
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-As well as adding or updating a description of a specific version of the model, you can rename an existing registered model using :meth:`~mlflow.client.MlflowClient.rename_registered_model`.
+As well as adding or updating a description of a specific version of the model, you can rename an existing registered model using :meth:`~qcflow.client.MlflowClient.rename_registered_model`.
 
 .. code-block:: python
 
@@ -417,7 +417,7 @@ As well as adding or updating a description of a specific version of the model, 
         new_name="sk-learn-random-forest-reg-model-100",
     )
 
-Listing and Searching MLflow Models
+Listing and Searching QCFlow Models
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 You can fetch a list of registered models in the registry with a simple method.
 
@@ -441,7 +441,7 @@ This outputs:
         'name': 'sk-learn-random-forest-reg-model'}
 
 With hundreds of models, it can be cumbersome to peruse the results returned from this call. A more efficient approach would be to search for a specific model name and list its version
-details using :meth:`~mlflow.client.MlflowClient.search_model_versions` method
+details using :meth:`~qcflow.client.MlflowClient.search_model_versions` method
 and provide a filter string such as ``"name='sk-learn-random-forest-reg-model'"``
 
 .. code-block:: python
@@ -483,7 +483,7 @@ This outputs:
         "version": 2,
     }
 
-Deleting MLflow Models
+Deleting QCFlow Models
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. note::
@@ -505,14 +505,14 @@ You can either delete specific versions of a registered model or you can delete 
     client.delete_registered_model(name="sk-learn-random-forest-reg-model")
 
 While the above workflow API demonstrates interactions with the Model Registry, two exceptional cases require attention.
-One is when you have existing ML models saved from training without the use of MLflow. Serialized and persisted on disk
+One is when you have existing ML models saved from training without the use of QCFlow. Serialized and persisted on disk
 in sklearn's pickled format, you want to register this model with the Model Registry. The second is when you use
-an ML framework without a built-in MLflow model flavor support, for instance, `vaderSentiment,` and want to register the model.
+an ML framework without a built-in QCFlow model flavor support, for instance, `vaderSentiment,` and want to register the model.
 
 
-Registering a Model Saved Outside MLflow
+Registering a Model Saved Outside QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Not everyone will start their model training with MLflow. So you may have some models trained before the use of MLflow.
+Not everyone will start their model training with QCFlow. So you may have some models trained before the use of QCFlow.
 Instead of retraining the models, all you want to do is register your saved models with the Model Registry.
 
 This code snippet creates a sklearn model, which we assume that you had created and saved in native pickle format.
@@ -520,7 +520,7 @@ This code snippet creates a sklearn model, which we assume that you had created 
 
 .. note::
     The sklearn library and pickle versions with which the model was saved should be compatible with the
-    current MLflow supported built-in sklearn model flavor.
+    current QCFlow supported built-in sklearn model flavor.
 
 .. code-block:: python
 
@@ -583,8 +583,8 @@ register the loaded model with the Model Registry.
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.models import infer_signature
+    import qcflow
+    from qcflow.models import infer_signature
     import numpy as np
     from sklearn import datasets
 
@@ -596,11 +596,11 @@ register the loaded model with the Model Registry.
     diabetes_X = diabetes_X[:, np.newaxis, 2]
     signature = infer_signature(diabetes_X, diabetes_y)
 
-    # log and register the model using MLflow scikit-learn API
-    mlflow.set_tracking_uri("sqlite:///mlruns.db")
+    # log and register the model using QCFlow scikit-learn API
+    qcflow.set_tracking_uri("sqlite:///mlruns.db")
     reg_model_name = "SklearnLinearRegression"
     print("--")
-    mlflow.sklearn.log_model(
+    qcflow.sklearn.log_model(
         loaded_model,
         "sk_learn",
         serialization_format="cloudpickle",
@@ -612,17 +612,17 @@ register the loaded model with the Model Registry.
 
     --
     Successfully registered model 'SklearnLinearRegression'.
-    2021/04/02 16:30:57 INFO mlflow.tracking._model_registry.client: Waiting up to 300 seconds for model version to finish creation.
+    2021/04/02 16:30:57 INFO qcflow.tracking._model_registry.client: Waiting up to 300 seconds for model version to finish creation.
     Model name: SklearnLinearRegression, version 1
     Created version '1' of model 'SklearnLinearRegression'.
 
-Now, using MLflow fluent APIs, you reload the model from the Model Registry and score.
+Now, using QCFlow fluent APIs, you reload the model from the Model Registry and score.
 
 .. code-block:: python
 
     # load the model from the Model Registry and score
     model_uri = f"models:/{reg_model_name}/1"
-    loaded_model = mlflow.sklearn.load_model(model_uri)
+    loaded_model = qcflow.sklearn.load_model(model_uri)
     print("--")
 
     # Make predictions using the testing set
@@ -639,14 +639,14 @@ Now, using MLflow fluent APIs, you reload the model from the Model Registry and 
 
 Registering an Unsupported Machine Learning Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In some cases, you might use a machine learning framework without its built-in MLflow Model flavor support.
+In some cases, you might use a machine learning framework without its built-in QCFlow Model flavor support.
 For instance, the `vaderSentiment` library is a standard Natural Language Processing (NLP) library used
-for sentiment analysis. Since it lacks a built-in MLflow Model flavor, you cannot log or register the model
-using MLflow Model fluent APIs.
+for sentiment analysis. Since it lacks a built-in QCFlow Model flavor, you cannot log or register the model
+using QCFlow Model fluent APIs.
 
-To work around this problem, you can create an instance of a :py:mod:`mlflow.pyfunc` model flavor and embed your NLP model
+To work around this problem, you can create an instance of a :py:mod:`qcflow.pyfunc` model flavor and embed your NLP model
 inside it, allowing you to save, log or register the model. Once registered, load the model from the Model Registry
-and score using the :py:func:`predict <mlflow.pyfunc.PyFuncModel.predict>` function.
+and score using the :py:func:`predict <qcflow.pyfunc.PyFuncModel.predict>` function.
 
 The code sections below demonstrate how to create a ``PythonFuncModel`` class with a ``vaderSentiment`` model embedded in it,
 save, log, register, and load from the Model Registry and score.
@@ -660,7 +660,7 @@ save, log, register, and load from the Model Registry and score.
     import cloudpickle
     import pandas as pd
 
-    import mlflow.pyfunc
+    import qcflow.pyfunc
     from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
     #
@@ -692,7 +692,7 @@ save, log, register, and load from the Model Registry and score.
 
 
     # Define a class and extend from PythonModel
-    class SocialMediaAnalyserModel(mlflow.pyfunc.PythonModel):
+    class SocialMediaAnalyserModel(qcflow.pyfunc.PythonModel):
         def __init__(self):
             super().__init__()
             # embed your vader model instance
@@ -714,32 +714,32 @@ save, log, register, and load from the Model Registry and score.
     vader_model = SocialMediaAnalyserModel()
 
     # Set the tracking URI to use local SQLAlchemy db file and start the run
-    # Log MLflow entities and save the model
-    mlflow.set_tracking_uri("sqlite:///mlruns.db")
+    # Log QCFlow entities and save the model
+    qcflow.set_tracking_uri("sqlite:///mlruns.db")
 
     # Save the conda environment for this model.
     conda_env = {
         "channels": ["defaults", "conda-forge"],
         "dependencies": [f"python={PYTHON_VERSION}", "pip"],
         "pip": [
-            "mlflow",
+            "qcflow",
             f"cloudpickle=={cloudpickle.__version__}",
             "vaderSentiment==3.3.2",
         ],
-        "name": "mlflow-env",
+        "name": "qcflow-env",
     }
 
     # Save the model
-    with mlflow.start_run(run_name="Vader Sentiment Analysis") as run:
+    with qcflow.start_run(run_name="Vader Sentiment Analysis") as run:
         model_path = f"{model_path}-{run.info.run_uuid}"
-        mlflow.log_param("algorithm", "VADER")
-        mlflow.log_param("total_sentiments", len(INPUT_TEXTS))
-        mlflow.pyfunc.save_model(
+        qcflow.log_param("algorithm", "VADER")
+        qcflow.log_param("total_sentiments", len(INPUT_TEXTS))
+        qcflow.pyfunc.save_model(
             path=model_path, python_model=vader_model, conda_env=conda_env
         )
 
     # Use the saved model path to log and register into the model registry
-    mlflow.pyfunc.log_model(
+    qcflow.pyfunc.log_model(
         artifact_path=model_path,
         python_model=vader_model,
         registered_model_name=reg_model_name,
@@ -748,13 +748,13 @@ save, log, register, and load from the Model Registry and score.
 
     # Load the model from the model registry and score
     model_uri = f"models:/{reg_model_name}/1"
-    loaded_model = mlflow.pyfunc.load_model(model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_uri)
     score_model(loaded_model)
 
 .. code-block:: text
 
     Successfully registered model 'PyFuncVaderSentiments'.
-    2021/04/05 10:34:15 INFO mlflow.tracking._model_registry.client: Waiting up to 300 seconds for model version to finish creation.
+    2021/04/05 10:34:15 INFO qcflow.tracking._model_registry.client: Waiting up to 300 seconds for model version to finish creation.
     Created version '1' of model 'PyFuncVaderSentiments'.
 
     <This is a bad movie. You don't want to see it! :-)> -- {'neg': 0.307, 'neu': 0.552, 'pos': 0.141, 'compound': -0.4047}
@@ -769,9 +769,9 @@ Deprecated: Using Model Stages
 
 .. warning:: Model Stages are deprecated and will be removed in a future major release. To learn more about this deprecation, see our :ref:`migration guide<migrating-from-stages>` below.
 
-See the sections below on using Model Stages in the MLflow Model Registry.
+See the sections below on using Model Stages in the QCFlow Model Registry.
 
-**Transitioning an MLflow Model’s Stage**
+**Transitioning an QCFlow Model’s Stage**
 
 Over the course of the model’s lifecycle, a model evolves—from development to staging to production.
 You can transition a registered model to one of the stages: **Staging**, **Production** or **Archived**.
@@ -791,16 +791,16 @@ To fetch a model version by stage, simply provide the model stage as part of the
 
 .. code-block:: python
 
-    import mlflow.pyfunc
+    import qcflow.pyfunc
 
     model_name = "sk-learn-random-forest-reg-model"
     stage = "Staging"
 
-    model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{stage}")
+    model = qcflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{stage}")
 
     model.predict(data)
 
-**Archiving an MLflow Model**
+**Archiving an QCFlow Model**
 
 You can move models versions out of a **Production** stage into an **Archived** stage.
 At a later point, if that archived model is not needed, you can delete it.
@@ -818,14 +818,14 @@ At a later point, if that archived model is not needed, you can delete it.
 Migrating from Stages
 =====================
 
-As of MLflow 2.9.0, Model Stages have been deprecated and will be removed in a future major release. This is the culmination of extensive feedback on the inflexibility of model stages for expressing MLOps workflows, from which we developed and introduced of new tools for managing and deploying models in the MLflow Model Registry. Learn more below.
+As of QCFlow 2.9.0, Model Stages have been deprecated and will be removed in a future major release. This is the culmination of extensive feedback on the inflexibility of model stages for expressing MLOps workflows, from which we developed and introduced of new tools for managing and deploying models in the QCFlow Model Registry. Learn more below.
 
 New model deployment tools
 --------------------------
 
-Model stages were used to express the lifecycle of MLflow Models for productionization and deployment. Users transitioned model versions through four fixed stages (from **none**, to **staging**, to **production**, and then to **archived**) as they proposed, validated, deployed, and deprecated models for their ML use-cases. In doing so, model registry stages provided labeling and aliasing functionality for the model versions, by denoting the status of a model version in the UI and providing named references to model versions in the code (e.g. ``/Staging`` in the model URI). Model registry stages were also used to denote the environment that the model is in, though it was not possible to set up access controls for them.
+Model stages were used to express the lifecycle of QCFlow Models for productionization and deployment. Users transitioned model versions through four fixed stages (from **none**, to **staging**, to **production**, and then to **archived**) as they proposed, validated, deployed, and deprecated models for their ML use-cases. In doing so, model registry stages provided labeling and aliasing functionality for the model versions, by denoting the status of a model version in the UI and providing named references to model versions in the code (e.g. ``/Staging`` in the model URI). Model registry stages were also used to denote the environment that the model is in, though it was not possible to set up access controls for them.
 
-To replace and improve upon stages, we elevated **model version tags** in the UI and introduced **model version aliases** to provide flexible and powerful ways to label and alias MLflow models in the Model Registry. We also made it possible to **set up separate environments** for your models and configure access controls for each environment.
+To replace and improve upon stages, we elevated **model version tags** in the UI and introduced **model version aliases** to provide flexible and powerful ways to label and alias QCFlow models in the Model Registry. We also made it possible to **set up separate environments** for your models and configure access controls for each environment.
 
 **Model version tags**
 
@@ -833,11 +833,11 @@ Model version tags can be used to annotate model versions with their status. For
 
 **Model version aliases**
 
-Model version aliases provide a flexible way to create named references for particular model versions, and are useful for identifying which model version(s) are deployed within an environment. For example, setting a **champion** alias on a model version enables you to fetch the model version by that alias via the :meth:`~mlflow.client.MlflowClient.get_model_version_by_alias` client API or the model URI ``models:/<registered model name>@champion``. Aliases can be reassigned to new model versions via the UI and client API. Unlike model registry stages, more than one alias can be applied to any given model version, allowing for easier A/B testing and model rollout.
+Model version aliases provide a flexible way to create named references for particular model versions, and are useful for identifying which model version(s) are deployed within an environment. For example, setting a **champion** alias on a model version enables you to fetch the model version by that alias via the :meth:`~qcflow.client.MlflowClient.get_model_version_by_alias` client API or the model URI ``models:/<registered model name>@champion``. Aliases can be reassigned to new model versions via the UI and client API. Unlike model registry stages, more than one alias can be applied to any given model version, allowing for easier A/B testing and model rollout.
 
 **Set up separate environments for models**
 
-In mature DevOps and MLOps workflows, organizations use separate environments (typically, dev, staging, and prod) with access controls to enable quick development without compromising stability in production. With :ref:`MLflow Authentication <auth>`, you can use registered models to express access-controlled environments for your MLflow models. For example, you can create registered models corresponding to each combination of environment and business problem (e.g. ``prod.ml_team.revenue_forecasting``, ``dev.ml_team.revenue_forecasting``) and configure permissions accordingly. Automate model retraining against your production registered models, or for simple model deployment use cases, use :meth:`~mlflow.client.MlflowClient.copy_model_version` to promote model versions across registered models.
+In mature DevOps and MLOps workflows, organizations use separate environments (typically, dev, staging, and prod) with access controls to enable quick development without compromising stability in production. With :ref:`QCFlow Authentication <auth>`, you can use registered models to express access-controlled environments for your QCFlow models. For example, you can create registered models corresponding to each combination of environment and business problem (e.g. ``prod.ml_team.revenue_forecasting``, ``dev.ml_team.revenue_forecasting``) and configure permissions accordingly. Automate model retraining against your production registered models, or for simple model deployment use cases, use :meth:`~qcflow.client.MlflowClient.copy_model_version` to promote model versions across registered models.
 
 Migrating models away from stages
 ---------------------------------
@@ -850,13 +850,13 @@ To set up separate environments and permissions for your model versions, create 
 
 * Given a base name for your model’s use-case, e.g. ``revenue_forecasting``, set up various registered models corresponding to your environments with different prefixes.
 * For example, if you want three separate dev, staging, and production environments, you can set up ``dev.ml_team.revenue_forecasting``, ``staging.ml_team.revenue_forecasting``, and ``prod.ml_team.revenue_forecasting`` registered models.
-* Use :ref:`MLflow Authentication <auth>` to grant appropriate permissions on these models.
+* Use :ref:`QCFlow Authentication <auth>` to grant appropriate permissions on these models.
 
 **Transition models across environments**
 
 Once you have registered models set up for each environment, you can build your MLOps workflows on top of them.
 
-* For simple model promotion use cases, you can first register your MLflow models under the dev registered model and then promote models across environments using the :meth:`~mlflow.client.MlflowClient.copy_model_version` client API.
+* For simple model promotion use cases, you can first register your QCFlow models under the dev registered model and then promote models across environments using the :meth:`~qcflow.client.MlflowClient.copy_model_version` client API.
 * For more mature production-grade setups, we recommend promoting your ML code (including model training code, inference code, and ML infrastructure as code) across environments. This eliminates the need to transition models across environments. Dev ML code is experimental and in a dev environment, hence targeting the dev registered model. Before merging developed ML code into your source code repository, your CI stages the code in a staging environment for integration testing (targeting the staging registered model). Post-merge, the ML code is deployed to production for automated retraining (targeting the prod registered model). Such setups enable safe and robust CI/CD of ML systems - including not just model training, but also feature engineering, model monitoring, and automated retraining.
 
 **Model aliasing**
@@ -869,9 +869,9 @@ To specify (via named references) which model version to deploy to serve traffic
 
 .. code-block:: python
 
-    from mlflow import MlflowClient
+    from qcflow import MlflowClient
 
-    # Initialize an MLflow Client
+    # Initialize an QCFlow Client
     client = MlflowClient()
 
 

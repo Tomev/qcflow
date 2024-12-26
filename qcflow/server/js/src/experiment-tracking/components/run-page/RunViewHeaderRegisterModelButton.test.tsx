@@ -1,6 +1,6 @@
-import { MemoryRouter, createMLflowRoutePath } from '../../../common/utils/RoutingUtils';
+import { MemoryRouter, createQCFlowRoutePath } from '../../../common/utils/RoutingUtils';
 import { MockedReduxStoreProvider } from '../../../common/utils/TestUtils';
-import { renderWithIntl, act, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, act, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import Utils from '../../../common/utils/Utils';
 import { ReduxState } from '../../../redux-types';
 import { RunViewHeaderRegisterModelButton } from './RunViewHeaderRegisterModelButton';
@@ -103,7 +103,7 @@ describe('RunViewHeaderRegisterModelButton', () => {
     expect(screen.queryByRole('button', { name: 'Register model' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Model registered' })).toHaveAttribute(
       'href',
-      createMLflowRoutePath('/models/test-model/versions/7'),
+      createQCFlowRoutePath('/models/test-model/versions/7'),
     );
   });
 

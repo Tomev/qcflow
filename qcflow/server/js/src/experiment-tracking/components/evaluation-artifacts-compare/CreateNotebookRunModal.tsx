@@ -24,15 +24,15 @@ export const CreateNotebookRunModal = ({ isOpen, closeModal, experimentId }: Pro
   const { theme } = useDesignSystemTheme();
 
   const classical_ml_text = `
-import mlflow
+import qcflow
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_diabetes
 from sklearn.ensemble import RandomForestRegressor
 
 # set the experiment id
-mlflow.set_experiment(experiment_id="${experimentId}")
+qcflow.set_experiment(experiment_id="${experimentId}")
 
-mlflow.autolog()
+qcflow.autolog()
 db = load_diabetes()
 
 X_train, X_test, y_train, y_test = train_test_split(db.data, db.target)
@@ -46,7 +46,7 @@ predictions = rf.predict(X_test)
 `.trimStart();
 
   const llm_text = `
-import mlflow
+import qcflow
 import openai
 
 # you must set the OPENAI_API_KEY environment variable
@@ -55,7 +55,7 @@ assert (
 ), "Please set the OPENAI_API_KEY environment variable."
 
 # set the experiment id
-mlflow.set_experiment(experiment_id="${experimentId}")
+qcflow.set_experiment(experiment_id="${experimentId}")
 
 system_prompt = (
   "The following is a conversation with an AI assistant."
@@ -63,12 +63,12 @@ system_prompt = (
 )
 
 # start a run
-mlflow.start_run()
-mlflow.log_param("system_prompt", system_prompt)
+qcflow.start_run()
+qcflow.log_param("system_prompt", system_prompt)
 
 # Create a question answering model using prompt engineering
-# with OpenAI. Log the model to MLflow Tracking
-logged_model = mlflow.openai.log_model(
+# with OpenAI. Log the model to QCFlow Tracking
+logged_model = qcflow.openai.log_model(
     model="gpt-4o-mini",
     task=openai.ChatCompletion,
     artifact_path="model",
@@ -82,18 +82,18 @@ logged_model = mlflow.openai.log_model(
 questions = pd.DataFrame(
     {
         "question": [
-            "How do you create a run with MLflow?",
-            "How do you log a model with MLflow?",
+            "How do you create a run with QCFlow?",
+            "How do you log a model with QCFlow?",
             "What is the capital of France?",
         ]
     }
 )
-mlflow.evaluate(
+qcflow.evaluate(
     model=logged_model.model_uri,
     model_type="question-answering",
     data=questions,
 )
-mlflow.end_run()
+qcflow.end_run()
 `.trimStart();
 
   const codeSnippetMessage = () => {
@@ -106,14 +106,14 @@ mlflow.end_run()
 
   return (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_createnotebookrunmodal.tsx_111"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_createnotebookrunmodal.tsx_111"
       visible={isOpen}
       onCancel={closeModal}
       onOk={closeModal}
       footer={
         <div css={{ display: 'flex', gap: theme.spacing.sm, justifyContent: 'flex-end' }}>
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_createnotebookrunmodal.tsx_117"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_createnotebookrunmodal.tsx_117"
             onClick={closeModal}
             type="primary"
           >

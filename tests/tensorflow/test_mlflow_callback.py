@@ -3,12 +3,12 @@ import pytest
 import tensorflow as tf
 from tensorflow import keras
 
-import mlflow
-from mlflow.tensorflow.callback import MlflowCallback
+import qcflow
+from qcflow.tensorflow.callback import MlflowCallback
 
 
 @pytest.mark.parametrize(("log_every_epoch", "log_every_n_steps"), [(True, None), (False, 1)])
-def test_tf_mlflow_callback(log_every_epoch, log_every_n_steps):
+def test_tf_qcflow_callback(log_every_epoch, log_every_n_steps):
     # Prepare data for a 2-class classification.
     data = tf.random.uniform([20, 28, 28, 3])
     label = tf.convert_to_tensor(np.random.randint(2, size=20))
@@ -27,8 +27,8 @@ def test_tf_mlflow_callback(log_every_epoch, log_every_n_steps):
         metrics=[keras.metrics.SparseCategoricalAccuracy()],
     )
 
-    with mlflow.start_run() as run:
-        mlflow_callback = MlflowCallback(
+    with qcflow.start_run() as run:
+        qcflow_callback = MlflowCallback(
             run=run,
             log_every_epoch=log_every_epoch,
             log_every_n_steps=log_every_n_steps,
@@ -41,13 +41,13 @@ def test_tf_mlflow_callback(log_every_epoch, log_every_n_steps):
             # Increase the epochs size so that logs
             # are flushed correctly
             epochs=5,
-            callbacks=[mlflow_callback],
+            callbacks=[qcflow_callback],
         )
 
-    client = mlflow.MlflowClient()
-    mlflow_run = client.get_run(run.info.run_id)
-    run_metrics = mlflow_run.data.metrics
-    model_info = mlflow_run.data.params
+    client = qcflow.MlflowClient()
+    qcflow_run = client.get_run(run.info.run_id)
+    run_metrics = qcflow_run.data.metrics
+    model_info = qcflow_run.data.params
 
     assert "loss" in run_metrics
     assert "sparse_categorical_accuracy" in run_metrics
@@ -56,4 +56,4 @@ def test_tf_mlflow_callback(log_every_epoch, log_every_n_steps):
 
 
 def test_old_callback_still_exists():
-    assert mlflow.tensorflow.MLflowCallback is mlflow.tensorflow.MlflowCallback
+    assert qcflow.tensorflow.QCFlowCallback is qcflow.tensorflow.MlflowCallback

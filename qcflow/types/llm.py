@@ -3,9 +3,9 @@ import uuid
 from dataclasses import asdict, dataclass, field, fields
 from typing import Any, Literal, Optional
 
-from mlflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, Property, Schema
+from qcflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, Property, Schema
 
-# TODO: Switch to pydantic in a future version of MLflow.
+# TODO: Switch to pydantic in a future version of QCFlow.
 #       For now, to prevent adding pydantic as a core dependency,
 #       we use dataclasses instead.
 #
@@ -402,7 +402,7 @@ class ChatParams(_BaseDataclass):
 
     .. warning::
 
-        In an upcoming MLflow release, default values for `temperature`, `n` and `stream` will be
+        In an upcoming QCFlow release, default values for `temperature`, `n` and `stream` will be
         removed. Please provide these values explicitly in your code if needed.
     """
 
@@ -492,7 +492,7 @@ class ChatCompletionRequest(ChatParams):
 
     .. warning::
 
-        In an upcoming MLflow release, default values for `temperature`, `n` and `stream` will be
+        In an upcoming QCFlow release, default values for `temperature`, `n` and `stream` will be
         removed. Please provide these values explicitly in your code if needed.
     """
 

@@ -8,7 +8,7 @@ should_enable_cran_incoming_checks <- function() {
     # https://github.com/wch/r-source/blob/4561aea946a75425ddcc8869cdb129ed5e27af97/src/library/tools/R/QC.R#L8005-L8008
     # This check needs to be disabled for a week after releasing a new version.
     cran_url <- getOption("repos")["CRAN"]
-    desc_url <- url(paste0(cran_url, "/web/packages/mlflow/DESCRIPTION"))
+    desc_url <- url(paste0(cran_url, "/web/packages/qcflow/DESCRIPTION"))
     field <- "Date/Publication"
     desc <- read.dcf(desc_url, fields = c(field))
     close(desc_url)
@@ -20,7 +20,7 @@ should_enable_cran_incoming_checks <- function() {
     }
 
     # Skip the release frequency check if the number of releases in the last 180 days exceeds 6.
-    url <- "https://crandb.r-pkg.org/mlflow/all"
+    url <- "https://crandb.r-pkg.org/qcflow/all"
     response <- httr::GET(url)
     json_data <- httr::content(response, "parsed")
     release_dates <- as.Date(sapply(json_data$timeline, function(x) substr(x, 1, 10)))

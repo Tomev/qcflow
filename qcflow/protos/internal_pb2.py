@@ -19,14 +19,14 @@ if Version(google.protobuf.__version__).major >= 5:
   from .scalapb import scalapb_pb2 as scalapb_dot_scalapb__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0einternal.proto\x12\x0fmlflow.internal\x1a\x15scalapb/scalapb.proto*\'\n\x0fInputVertexType\x12\x07\n\x03RUN\x10\x01\x12\x0b\n\x07\x44\x41TASET\x10\x02\x42#\n\x19org.mlflow.internal.proto\x90\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0einternal.proto\x12\x0fqcflow.internal\x1a\x15scalapb/scalapb.proto*\'\n\x0fInputVertexType\x12\x07\n\x03RUN\x10\x01\x12\x0b\n\x07\x44\x41TASET\x10\x02\x42#\n\x19org.qcflow.internal.proto\x90\x01\x01\xe2?\x02\x10\x01')
 
   _globals = globals()
   _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
   _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'internal_pb2', _globals)
   if not _descriptor._USE_C_DESCRIPTORS:
     _globals['DESCRIPTOR']._loaded_options = None
-    _globals['DESCRIPTOR']._serialized_options = b'\n\031org.mlflow.internal.proto\220\001\001\342?\002\020\001'
+    _globals['DESCRIPTOR']._serialized_options = b'\n\031org.qcflow.internal.proto\220\001\001\342?\002\020\001'
     _globals['_INPUTVERTEXTYPE']._serialized_start=58
     _globals['_INPUTVERTEXTYPE']._serialized_end=97
   # @@protoc_insertion_point(module_scope)
@@ -50,7 +50,7 @@ else:
   from .scalapb import scalapb_pb2 as scalapb_dot_scalapb__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0einternal.proto\x12\x0fmlflow.internal\x1a\x15scalapb/scalapb.proto*\'\n\x0fInputVertexType\x12\x07\n\x03RUN\x10\x01\x12\x0b\n\x07\x44\x41TASET\x10\x02\x42#\n\x19org.mlflow.internal.proto\x90\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0einternal.proto\x12\x0fqcflow.internal\x1a\x15scalapb/scalapb.proto*\'\n\x0fInputVertexType\x12\x07\n\x03RUN\x10\x01\x12\x0b\n\x07\x44\x41TASET\x10\x02\x42#\n\x19org.qcflow.internal.proto\x90\x01\x01\xe2?\x02\x10\x01')
 
   _INPUTVERTEXTYPE = DESCRIPTOR.enum_types_by_name['InputVertexType']
   InputVertexType = enum_type_wrapper.EnumTypeWrapper(_INPUTVERTEXTYPE)
@@ -61,7 +61,7 @@ else:
   if _descriptor._USE_C_DESCRIPTORS == False:
 
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b'\n\031org.mlflow.internal.proto\220\001\001\342?\002\020\001'
+    DESCRIPTOR._serialized_options = b'\n\031org.qcflow.internal.proto\220\001\001\342?\002\020\001'
     _INPUTVERTEXTYPE._serialized_start=58
     _INPUTVERTEXTYPE._serialized_end=97
   # @@protoc_insertion_point(module_scope)

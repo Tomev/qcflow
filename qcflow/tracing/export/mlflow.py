@@ -8,31 +8,31 @@ from typing import Callable, Optional, Sequence
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanExporter
 
-from mlflow.entities.trace import Trace
-from mlflow.environment_variables import MLFLOW_ENABLE_ASYNC_LOGGING
-from mlflow.tracing.constant import TraceTagKey
-from mlflow.tracing.display import get_display_handler
-from mlflow.tracing.display.display_handler import IPythonTraceDisplayHandler
-from mlflow.tracing.fluent import TRACE_BUFFER
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracing.utils import maybe_get_request_id
-from mlflow.tracking.client import MlflowClient
+from qcflow.entities.trace import Trace
+from qcflow.environment_variables import QCFLOW_ENABLE_ASYNC_LOGGING
+from qcflow.tracing.constant import TraceTagKey
+from qcflow.tracing.display import get_display_handler
+from qcflow.tracing.display.display_handler import IPythonTraceDisplayHandler
+from qcflow.tracing.fluent import TRACE_BUFFER
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracing.utils import maybe_get_request_id
+from qcflow.tracking.client import MlflowClient
 
 _logger = logging.getLogger(__name__)
 
 
 class MlflowSpanExporter(SpanExporter):
     """
-    An exporter implementation that logs the traces to MLflow.
+    An exporter implementation that logs the traces to QCFlow.
 
-    MLflow backend (will) only support logging the complete trace, not incremental updates
+    QCFlow backend (will) only support logging the complete trace, not incremental updates
     for spans, so this exporter is designed to aggregate the spans into traces in memory.
     Therefore, this only works within a single process application and not intended to work
     in a distributed environment. For the same reason, this exporter should only be used with
     SimpleSpanProcessor.
 
     If we want to support distributed tracing, we should first implement an incremental trace
-    logging in MLflow backend, then we can get rid of the in-memory trace aggregation.
+    logging in QCFlow backend, then we can get rid of the in-memory trace aggregation.
 
     :meta private:
     """
@@ -49,7 +49,7 @@ class MlflowSpanExporter(SpanExporter):
 
     def export(self, root_spans: Sequence[ReadableSpan]):
         """
-        Export the spans to MLflow backend.
+        Export the spans to QCFlow backend.
 
         Args:
             root_spans: A sequence of OpenTelemetry ReadableSpan objects to be exported.
@@ -73,32 +73,32 @@ class MlflowSpanExporter(SpanExporter):
 
             if not maybe_get_request_id(is_evaluate=True):
                 # Display the trace in the UI if the trace is not generated from within
-                # an MLflow model evaluation context
+                # an QCFlow model evaluation context
                 self._display_handler.display_traces([trace])
 
             self._log_trace(trace)
 
     def _log_trace(self, trace: Trace):
-        """Log the trace to MLflow backend."""
+        """Log the trace to QCFlow backend."""
         upload_tag_task = Task(
             handler=self._client._upload_trace_spans_as_tag,
             args=(trace.info, trace.data),
-            error_msg="Failed to log trace spans as tag to MLflow backend.",
+            error_msg="Failed to log trace spans as tag to QCFlow backend.",
         )
 
         upload_trace_data_task = Task(
             handler=self._client._upload_trace_data,
             args=(trace.info, trace.data),
-            error_msg="Failed to log trace to MLflow backend.",
+            error_msg="Failed to log trace to QCFlow backend.",
         )
 
         upload_ended_trace_info_task = Task(
             handler=self._client._upload_ended_trace_info,
             args=(trace.info,),
-            error_msg="Failed to log trace to MLflow backend.",
+            error_msg="Failed to log trace to QCFlow backend.",
         )
 
-        if MLFLOW_ENABLE_ASYNC_LOGGING.get():
+        if QCFLOW_ENABLE_ASYNC_LOGGING.get():
             self._async_queue.put(upload_tag_task)
             self._async_queue.put(upload_trace_data_task)
             self._async_queue.put(upload_ended_trace_info_task)
@@ -201,12 +201,12 @@ class AsyncTraceExportQueue:
         with self._lock:
             self._trace_logging_thread = threading.Thread(
                 target=self._logging_loop,
-                name="MLflowTraceLoggingLoop",
+                name="QCFlowTraceLoggingLoop",
                 daemon=True,
             )
             self._trace_logging_worker_threadpool = ThreadPoolExecutor(
                 max_workers=5,
-                thread_name_prefix="MLflowTraceLoggingWorkerPool",
+                thread_name_prefix="QCFlowTraceLoggingWorkerPool",
             )
             self._trace_logging_thread.start()
 

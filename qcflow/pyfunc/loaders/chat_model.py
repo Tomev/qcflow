@@ -2,14 +2,14 @@ import inspect
 import logging
 from typing import Any, Generator, Optional
 
-from mlflow.exceptions import MlflowException
-from mlflow.models.utils import _convert_llm_ndarray_to_list
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR
-from mlflow.pyfunc.model import (
+from qcflow.exceptions import MlflowException
+from qcflow.models.utils import _convert_llm_ndarray_to_list
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR
+from qcflow.pyfunc.model import (
     _load_context_model_and_signature,
 )
-from mlflow.types.llm import ChatCompletionChunk, ChatCompletionResponse, ChatMessage, ChatParams
-from mlflow.utils.annotations import experimental
+from qcflow.types.llm import ChatCompletionChunk, ChatCompletionResponse, ChatMessage, ChatParams
+from qcflow.utils.annotations import experimental
 
 _logger = logging.getLogger(__name__)
 

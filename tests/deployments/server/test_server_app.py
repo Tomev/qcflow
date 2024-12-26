@@ -3,13 +3,13 @@ from unittest import mock
 import pytest
 from fastapi.testclient import TestClient
 
-from mlflow.deployments.server.app import create_app_from_config, create_app_from_env
-from mlflow.deployments.server.constants import (
-    MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE,
-    MLFLOW_DEPLOYMENTS_ENDPOINTS_BASE,
+from qcflow.deployments.server.app import create_app_from_config, create_app_from_env
+from qcflow.deployments.server.constants import (
+    QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE,
+    QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.config import GatewayConfig
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.config import GatewayConfig
 
 from tests.gateway.tools import MockAsyncResponse
 
@@ -123,7 +123,7 @@ def test_docs(client: TestClient):
 
 
 def test_list_endpoints(client: TestClient):
-    response = client.get(MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE)
+    response = client.get(QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE)
     assert response.status_code == 200
     assert response.json()["endpoints"] == [
         {
@@ -150,7 +150,7 @@ def test_list_endpoints(client: TestClient):
 
 
 def test_get_endpoint(client: TestClient):
-    response = client.get(f"{MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE}chat-gpt4")
+    response = client.get(f"{QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE}chat-gpt4")
     assert response.status_code == 200
     assert response.json() == {
         "name": "chat-gpt4",
@@ -191,7 +191,7 @@ def test_dynamic_endpoint():
         "aiohttp.ClientSession.post", return_value=MockAsyncResponse(model_response)
     ) as mock_post:
         resp = client.post(
-            f"{MLFLOW_DEPLOYMENTS_ENDPOINTS_BASE}chat/invocations",
+            f"{QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE}chat/invocations",
             json={"messages": [{"role": "user", "content": "Tell me a joke"}]},
         )
         mock_post.assert_called_once()
@@ -226,7 +226,7 @@ def test_rate_limit():
         "aiohttp.ClientSession.post", return_value=MockAsyncResponse(model_response)
     ) as mock_post:
         resp = client.post(
-            f"{MLFLOW_DEPLOYMENTS_ENDPOINTS_BASE}chat/invocations",
+            f"{QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE}chat/invocations",
             json={"messages": [{"role": "user", "content": "Tell me a joke"}]},
         )
         mock_post.assert_called_once()
@@ -234,13 +234,13 @@ def test_rate_limit():
         assert resp.json() == test_response
         # second call
         resp = client.post(
-            f"{MLFLOW_DEPLOYMENTS_ENDPOINTS_BASE}chat/invocations",
+            f"{QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE}chat/invocations",
             json={"messages": [{"role": "user", "content": "Tell me a joke again"}]},
         )
         assert resp.status_code == 429
 
 
-def test_create_app_from_env_fails_if_MLFLOW_DEPLOYMENTS_CONFIG_is_not_set(monkeypatch):
-    monkeypatch.delenv("MLFLOW_DEPLOYMENTS_CONFIG", raising=False)
-    with pytest.raises(MlflowException, match="'MLFLOW_DEPLOYMENTS_CONFIG' is not set"):
+def test_create_app_from_env_fails_if_QCFLOW_DEPLOYMENTS_CONFIG_is_not_set(monkeypatch):
+    monkeypatch.delenv("QCFLOW_DEPLOYMENTS_CONFIG", raising=False)
+    with pytest.raises(MlflowException, match="'QCFLOW_DEPLOYMENTS_CONFIG' is not set"):
         create_app_from_env()

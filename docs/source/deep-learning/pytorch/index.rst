@@ -1,4 +1,4 @@
-MLflow PyTorch Flavor
+QCFlow PyTorch Flavor
 ======================
 
 
@@ -11,14 +11,14 @@ which provides a more pythonic development flow compared to static graph framewo
 efficient for large-scale data processing and neural network training. Due to its ease of use and robust
 community support, PyTorch has become a popular choice among researchers and developers in the AI field.
 
-MLflow has built-in support (we call it MLflow PyTorch flavor) for PyTorch workflow, at a high level
-in MLflow we provide a set of APIs for:
+QCFlow has built-in support (we call it QCFlow PyTorch flavor) for PyTorch workflow, at a high level
+in QCFlow we provide a set of APIs for:
 
 - **Simplified Experiment Tracking**: Log parameters, metrics, and models during model training.
-- **Experiments Management**: Store your PyTorch experiments in MLflow server, and you can view and share them from MLflow UI.
+- **Experiments Management**: Store your PyTorch experiments in QCFlow server, and you can view and share them from QCFlow UI.
 - **Effortless Deployment**: Deploy PyTorch models with simple API calls, catering to a variety of production environments.
 
-5 Minute Quick Start with the MLflow PyTorch Flavor
+5 Minute Quick Start with the QCFlow PyTorch Flavor
 ----------------------------------------------------
 
 .. raw:: html
@@ -28,10 +28,10 @@ in MLflow we provide a set of APIs for:
             <div class="simple-card">
                 <a href="quickstart/pytorch_quickstart.html">
                     <div class="header">
-                        Quickstart with MLflow PyTorch Flavor
+                        Quickstart with QCFlow PyTorch Flavor
                     </div>
                     <p>
-                        Learn how to leverage MLflow for tracking PyTorch experiments and models.
+                        Learn how to leverage QCFlow for tracking PyTorch experiments and models.
                     </p>
                 </a>
             </div>
@@ -45,19 +45,19 @@ in MLflow we provide a set of APIs for:
     quickstart/pytorch_quickstart.ipynb
 
 
-`Developer Guide of PyTorch with MLflow <guide/index.html>`_
+`Developer Guide of PyTorch with QCFlow <guide/index.html>`_
 -------------------------------------------------------------
 
-To learn more about the nuances of the ``pytorch`` flavor in MLflow, please read the developer guide. It will walk you
+To learn more about the nuances of the ``pytorch`` flavor in QCFlow, please read the developer guide. It will walk you
 through the following topics:
 
 .. raw:: html
 
     <a href="guide/index.html" class="download-btn">View the Developer Guide</a>
 
-- **Logging PyTorch Experiments with MLflow**: How to log PyTorch experiments to MLflow, including training metrics,
+- **Logging PyTorch Experiments with QCFlow**: How to log PyTorch experiments to QCFlow, including training metrics,
   model parameters, and training hyperparamers.
-- **Log Your PyTorch Models with MLflow**: How to log your PyTorch models with MLflow and how to load them back
+- **Log Your PyTorch Models with QCFlow**: How to log your PyTorch models with QCFlow and how to load them back
   for inference.
 
 

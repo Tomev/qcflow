@@ -3,11 +3,11 @@ from unittest import mock
 
 import pytest
 
-import mlflow.tracking.default_experiment.registry
-from mlflow.tracking.default_experiment.databricks_notebook_experiment_provider import (
+import qcflow.tracking.default_experiment.registry
+from qcflow.tracking.default_experiment.databricks_notebook_experiment_provider import (
     DatabricksNotebookExperimentProvider,
 )
-from mlflow.tracking.default_experiment.registry import (
+from qcflow.tracking.default_experiment.registry import (
     DefaultExperimentProviderRegistry,
     get_experiment_id,
 )
@@ -28,14 +28,14 @@ def test_default_experiment_provider_registry_register_entrypoints():
     mock_entrypoint.load.return_value = provider_class
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         registry = DefaultExperimentProviderRegistry()
         registry.register_entrypoints()
 
     assert set(registry) == {provider_class.return_value}
     mock_entrypoint.load.assert_called_once_with()
-    mock_get_group_all.assert_called_once_with("mlflow.default_experiment_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.default_experiment_provider")
 
 
 @pytest.mark.parametrize(
@@ -46,7 +46,7 @@ def test_default_experiment_provider_registry_register_entrypoints_handles_excep
     mock_entrypoint.load.side_effect = exception
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         registry = DefaultExperimentProviderRegistry()
         # Check that the raised warning contains the message from the original exception
@@ -54,14 +54,14 @@ def test_default_experiment_provider_registry_register_entrypoints_handles_excep
             registry.register_entrypoints()
 
     mock_entrypoint.load.assert_called_once_with()
-    mock_get_group_all.assert_called_once_with("mlflow.default_experiment_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.default_experiment_provider")
 
 
 def _currently_registered_default_experiment_provider_classes():
     return {
         provider.__class__
         for provider in (
-            mlflow.tracking.default_experiment.registry._default_experiment_provider_registry
+            qcflow.tracking.default_experiment.registry._default_experiment_provider_registry
         )
     }
 
@@ -81,23 +81,23 @@ def test_registry_instance_loads_entrypoints():
     mock_entrypoint.load.return_value = MockRunContext
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         # Entrypoints are registered at import time, so we need to reload the module to register the
         # entrypoint given by the mocked entrypoints.get_group_all
-        reload(mlflow.tracking.default_experiment.registry)
+        reload(qcflow.tracking.default_experiment.registry)
 
     assert MockRunContext in _currently_registered_default_experiment_provider_classes()
-    mock_get_group_all.assert_called_once_with("mlflow.default_experiment_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.default_experiment_provider")
 
 
 def test_default_experiment_provider_registry_with_installed_plugin(tmp_path, monkeypatch):
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
     monkeypatch.chdir(tmp_path)
 
-    reload(mlflow.tracking.default_experiment.registry)
+    reload(qcflow.tracking.default_experiment.registry)
 
-    from mlflow_test_plugin.default_experiment_provider import PluginDefaultExperimentProvider
+    from qcflow_test_plugin.default_experiment_provider import PluginDefaultExperimentProvider
 
     assert (
         PluginDefaultExperimentProvider
@@ -129,7 +129,7 @@ def mock_default_experiment_providers():
     providers = [base_provider, skipped_provider, exception_provider]
 
     with mock.patch(
-        "mlflow.tracking.default_experiment.registry._default_experiment_provider_registry",
+        "qcflow.tracking.default_experiment.registry._default_experiment_provider_registry",
         providers,
     ):
         yield
@@ -150,7 +150,7 @@ def mock_default_experiment_multiple_context_providers():
     providers = [base_provider, unused_provider]
 
     with mock.patch(
-        "mlflow.tracking.default_experiment.registry._default_experiment_provider_registry",
+        "qcflow.tracking.default_experiment.registry._default_experiment_provider_registry",
         providers,
     ):
         yield

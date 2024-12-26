@@ -7,11 +7,11 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import numpy as np
 import pandas as pd
 
-from mlflow.exceptions import MlflowException
-from mlflow.models import ModelSignature
-from mlflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
-from mlflow.transformers.flavor_config import FlavorKey
-from mlflow.types.llm import (
+from qcflow.exceptions import MlflowException
+from qcflow.models import ModelSignature
+from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
+from qcflow.transformers.flavor_config import FlavorKey
+from qcflow.types.llm import (
     CHAT_MODEL_INPUT_SCHEMA,
     CHAT_MODEL_OUTPUT_SCHEMA,
     COMPLETIONS_MODEL_INPUT_SCHEMA,
@@ -68,7 +68,7 @@ def infer_signature_from_llm_inference_task(
     inference_task: str, signature: Optional[ModelSignature] = None
 ) -> ModelSignature:
     """
-    Infers the signature according to the MLflow inference task.
+    Infers the signature according to the QCFlow inference task.
     Raises exception if a signature is given.
     """
     inferred_signature = _SIGNATURE_FOR_LLM_INFERENCE_TASK[inference_task]
@@ -76,7 +76,7 @@ def infer_signature_from_llm_inference_task(
     if signature is not None and signature != inferred_signature:
         raise MlflowException(
             f"When `task` is specified as `{inference_task}`, the signature would "
-            "be set by MLflow. Please do not set the signature."
+            "be set by QCFlow. Please do not set the signature."
         )
     return inferred_signature
 
@@ -109,7 +109,7 @@ def preprocess_llm_inference_input(
     flavor_config: Optional[dict[str, Any]] = None,
 ) -> tuple[list[Any], dict[str, Any]]:
     """
-    When a MLflow inference task is given, return updated `data` and `params` that
+    When a QCFlow inference task is given, return updated `data` and `params` that
     - Extract the parameters from the input data (from the first row if passed multiple rows)
     - Replace OpenAI specific parameters with Hugging Face specific parameters, in particular
       - `max_tokens` with `max_new_tokens`
@@ -213,7 +213,7 @@ def postprocess_output_for_llm_inference_task(
     inference_task,
 ):
     """
-    Wrap output data with usage information according to the MLflow inference task.
+    Wrap output data with usage information according to the QCFlow inference task.
 
     Example:
         .. code-block:: python
@@ -252,7 +252,7 @@ def postprocess_output_for_llm_inference_task(
         pipeline: The pipeline object used for inference.
         flavor_config: The flavor configuration dictionary for the model.
         model_config: The model configuration dictionary used for inference.
-        inference_task: The MLflow inference task.
+        inference_task: The QCFlow inference task.
 
     Returns:
         List of dictionaries containing the output text and usage information for each input prompt.
@@ -425,7 +425,7 @@ def postprocess_output_for_llm_v1_embedding_task(
 
     Examples:
         .. code-block:: python
-            input_prompt = ["hello world and hello mlflow"]
+            input_prompt = ["hello world and hello qcflow"]
             output_embedding = [0.47137904, 0.4669448, ..., 0.69726706]
             output_dicts = postprocess_output_for_llm_v1_embedding_task(
                 input_prompt, output_embedding

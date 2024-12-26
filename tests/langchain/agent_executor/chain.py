@@ -9,7 +9,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema.messages import BaseMessage
 from langchain.schema.runnable import RunnableLambda
 
-from mlflow.models import ModelConfig, set_model
+from qcflow.models import ModelConfig, set_model
 
 base_config = ModelConfig(development_config="tests/langchain/agent_executor/config.yml")
 

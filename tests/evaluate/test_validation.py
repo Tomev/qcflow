@@ -3,16 +3,16 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.models.evaluation import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.models.evaluation import (
     EvaluationResult,
     MetricThreshold,
     ModelEvaluator,
     evaluate,
 )
-from mlflow.models.evaluation.evaluator_registry import _model_evaluation_registry
-from mlflow.models.evaluation.validation import (
+from qcflow.models.evaluation.evaluator_registry import _model_evaluation_registry
+from qcflow.models.evaluation.validation import (
     MetricThresholdClassException,
     ModelValidationFailedException,
     _MetricValidationResult,
@@ -114,7 +114,7 @@ def faulty_baseline_model_param_test_spec(request):
 
         - validation_thresholds: A dictionary mapping scalar metric names to
           MetricThreshold(threshold=0.2, greater_is_better=True).
-        - baseline_model: Value for the `baseline_model` param passed into mlflow.evaluate().
+        - baseline_model: Value for the `baseline_model` param passed into qcflow.evaluate().
         - expected_failure_message: Expected failure message.
     """
     if request.param == "min_relative_change_present":
@@ -163,7 +163,7 @@ def faulty_baseline_model_param_test_spec(request):
 )
 def test_validation_faulty_validation_thresholds(validation_thresholds):
     with pytest.raises(MlflowException, match="The validation thresholds argument"):
-        mlflow.validate_evaluation_results(
+        qcflow.validate_evaluation_results(
             candidate_result={},
             baseline_result={},
             validation_thresholds=validation_thresholds,
@@ -305,7 +305,7 @@ def test_validation_value_threshold_should_fail(
         ModelValidationFailedException,
         match=message_separator.join(map(str, list(expected_validation_results.values()))),
     ):
-        mlflow.validate_evaluation_results(
+        qcflow.validate_evaluation_results(
             candidate_result=candidate_result,
             baseline_result=None,
             validation_thresholds=validation_thresholds,
@@ -344,7 +344,7 @@ def test_validation_value_threshold_should_pass(
             evaluators="test_evaluator1",
         )
 
-    mlflow.validate_evaluation_results(
+    qcflow.validate_evaluation_results(
         candidate_result=candidate_result,
         baseline_result=None,
         validation_thresholds=validation_thresholds,
@@ -520,7 +520,7 @@ def test_validation_model_comparison_absolute_threshold_should_fail(
         ModelValidationFailedException,
         match=message_separator.join(map(str, list(expected_validation_results.values()))),
     ):
-        mlflow.validate_evaluation_results(
+        qcflow.validate_evaluation_results(
             candidate_result=candidate_result,
             baseline_result=baseline_result,
             validation_thresholds=validation_thresholds,
@@ -569,7 +569,7 @@ def test_validation_model_comparison_absolute_threshold_should_pass(
         mock_evaluate.return_value = EvaluationResult(metrics=baseline_model_metrics, artifacts={})
         baseline_result = evaluate(multiclass_logistic_regressor_model_uri, **common_kwargs)
 
-    mlflow.validate_evaluation_results(
+    qcflow.validate_evaluation_results(
         candidate_result=candidate_result,
         baseline_result=baseline_result,
         validation_thresholds=validation_thresholds,
@@ -766,7 +766,7 @@ def test_validation_model_comparison_relative_threshold_should_fail(
             ModelValidationFailedException,
             match=message_separator.join(map(str, list(expected_validation_results.values()))),
         ):
-            mlflow.validate_evaluation_results(
+            qcflow.validate_evaluation_results(
                 candidate_result=candidate_result,
                 baseline_result=baseline_result,
                 validation_thresholds=validation_thresholds,
@@ -816,7 +816,7 @@ def test_validation_model_comparison_relative_threshold_should_pass(
         mock_evaluate.return_value = EvaluationResult(metrics=baseline_model_metrics, artifacts={})
         baseline_result = evaluate(multiclass_logistic_regressor_model_uri, **common_kwargs)
 
-    mlflow.validate_evaluation_results(
+    qcflow.validate_evaluation_results(
         candidate_result=candidate_result,
         baseline_result=baseline_result,
         validation_thresholds=validation_thresholds,
@@ -899,7 +899,7 @@ def test_validation_multi_thresholds_should_fail(
         ModelValidationFailedException,
         match=message_separator.join(map(str, list(expected_validation_results.values()))),
     ):
-        mlflow.validate_evaluation_results(
+        qcflow.validate_evaluation_results(
             candidate_result=candidate_result,
             baseline_result=baseline_result,
             validation_thresholds=validation_thresholds,
@@ -910,17 +910,17 @@ def test_validation_thresholds_no_mock():
     targets = [0, 1, 1, 1]
     data = [[random.random()] for _ in targets]
 
-    class BaseModel(mlflow.pyfunc.PythonModel):
+    class BaseModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return len(model_input) * [0]
 
-    class CandidateModel(mlflow.pyfunc.PythonModel):
+    class CandidateModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return len(model_input) * [1]
 
-    with mlflow.start_run():
-        base = mlflow.pyfunc.log_model("base", python_model=BaseModel())
-        candidate = mlflow.pyfunc.log_model("candidate", python_model=CandidateModel())
+    with qcflow.start_run():
+        base = qcflow.pyfunc.log_model("base", python_model=BaseModel())
+        candidate = qcflow.pyfunc.log_model("candidate", python_model=CandidateModel())
 
         candidate_result = evaluate(
             candidate.model_uri,
@@ -936,7 +936,7 @@ def test_validation_thresholds_no_mock():
             targets=targets,
         )
 
-    mlflow.validate_evaluation_results(
+    qcflow.validate_evaluation_results(
         candidate_result=candidate_result,
         baseline_result=baseline_result,
         validation_thresholds={
@@ -952,7 +952,7 @@ def test_validation_thresholds_no_mock():
         ModelValidationFailedException,
         match="recall_score value threshold check failed",
     ):
-        mlflow.validate_evaluation_results(
+        qcflow.validate_evaluation_results(
             candidate_result=baseline_result,
             baseline_result=candidate_result,
             validation_thresholds={
@@ -966,25 +966,25 @@ def test_validation_thresholds_no_mock():
 
 
 def test_legacy_validation_within_evaluate():
-    # Test legacy validation within mlflow.evaluate(). This is deprecated
-    # in favor of the new mlflow.mlflow.validate_evaluation_results API but we
+    # Test legacy validation within qcflow.evaluate(). This is deprecated
+    # in favor of the new qcflow.qcflow.validate_evaluation_results API but we
     # keep backward compatibility until it is entirely removed.
     targets = [0, 1, 1, 1]
     data = [[random.random()] for _ in targets]
 
-    class BaseModel(mlflow.pyfunc.PythonModel):
+    class BaseModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return len(model_input) * [0]
 
-    class CandidateModel(mlflow.pyfunc.PythonModel):
+    class CandidateModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return len(model_input) * [1]
 
-    with mlflow.start_run():
-        base = mlflow.pyfunc.log_model("base", python_model=BaseModel())
-        candidate = mlflow.pyfunc.log_model("candidate", python_model=CandidateModel())
+    with qcflow.start_run():
+        base = qcflow.pyfunc.log_model("base", python_model=BaseModel())
+        candidate = qcflow.pyfunc.log_model("candidate", python_model=CandidateModel())
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         evaluate(
             candidate.model_uri,
             data=data,
@@ -1004,7 +1004,7 @@ def test_legacy_validation_within_evaluate():
         ModelValidationFailedException,
         match="recall_score value threshold check failed",
     ):
-        with mlflow.start_run():
+        with qcflow.start_run():
             evaluate(
                 base.model_uri,
                 data=data,

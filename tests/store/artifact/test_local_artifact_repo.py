@@ -5,9 +5,9 @@ import posixpath
 
 import pytest
 
-from mlflow.exceptions import MlflowException, MlflowTraceDataCorrupted, MlflowTraceDataNotFound
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from mlflow.utils.file_utils import TempDir
+from qcflow.exceptions import MlflowException, MlflowTraceDataCorrupted, MlflowTraceDataNotFound
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.utils.file_utils import TempDir
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def local_artifact_root(tmp_path):
 
 @pytest.fixture
 def local_artifact_repo(local_artifact_root):
-    from mlflow.utils.file_utils import path_to_local_file_uri
+    from qcflow.utils.file_utils import path_to_local_file_uri
 
     return LocalArtifactRepository(artifact_uri=path_to_local_file_uri(local_artifact_root))
 

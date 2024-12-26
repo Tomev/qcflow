@@ -19,12 +19,12 @@ import pandas as pd
 import pytest
 import requests
 
-import mlflow.experiments
-import mlflow.pyfunc
-from mlflow import MlflowClient
-from mlflow.artifacts import download_artifacts
-from mlflow.data.pandas_dataset import from_pandas
-from mlflow.entities import (
+import qcflow.experiments
+import qcflow.pyfunc
+from qcflow import MlflowClient
+from qcflow.artifacts import download_artifacts
+from qcflow.data.pandas_dataset import from_pandas
+from qcflow.entities import (
     Dataset,
     DatasetInput,
     InputTag,
@@ -34,28 +34,28 @@ from mlflow.entities import (
     RunTag,
     ViewType,
 )
-from mlflow.entities.trace_data import TraceData
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.exceptions import MlflowException, RestException
-from mlflow.models import Model
-from mlflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST, ErrorCode
-from mlflow.server.handlers import _get_sampled_steps_from_steps
-from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
-from mlflow.tracing.constant import TraceTagKey
-from mlflow.utils import mlflow_tags
-from mlflow.utils.file_utils import TempDir, path_to_local_file_uri
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATASET_CONTEXT,
-    MLFLOW_GIT_COMMIT,
-    MLFLOW_PARENT_RUN_ID,
-    MLFLOW_PROJECT_ENTRY_POINT,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
-    MLFLOW_USER,
+from qcflow.entities.trace_data import TraceData
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.exceptions import MlflowException, RestException
+from qcflow.models import Model
+from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST, ErrorCode
+from qcflow.server.handlers import _get_sampled_steps_from_steps
+from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
+from qcflow.tracing.constant import TraceTagKey
+from qcflow.utils import qcflow_tags
+from qcflow.utils.file_utils import TempDir, path_to_local_file_uri
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATASET_CONTEXT,
+    QCFLOW_GIT_COMMIT,
+    QCFLOW_PARENT_RUN_ID,
+    QCFLOW_PROJECT_ENTRY_POINT,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
+    QCFLOW_USER,
 )
-from mlflow.utils.os import is_windows
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.time import get_current_time_millis
+from qcflow.utils.os import is_windows
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.time import get_current_time_millis
 
 from tests.integration.utils import invoke_cli_runner
 from tests.tracking.integration_test_utils import (
@@ -67,8 +67,8 @@ _logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(params=["file", "sqlalchemy"])
-def mlflow_client(request, tmp_path):
-    """Provides an MLflow Tracking API client pointed at the local tracking server."""
+def qcflow_client(request, tmp_path):
+    """Provides an QCFlow Tracking API client pointed at the local tracking server."""
     if request.param == "file":
         backend_uri = tmp_path.joinpath("file").as_uri()
     elif request.param == "sqlalchemy":
@@ -82,12 +82,12 @@ def mlflow_client(request, tmp_path):
 
 
 @pytest.fixture
-def cli_env(mlflow_client):
-    """Provides an environment for the MLflow CLI pointed at the local tracking server."""
+def cli_env(qcflow_client):
+    """Provides an environment for the QCFlow CLI pointed at the local tracking server."""
     return {
         "LC_ALL": "en_US.UTF-8",
         "LANG": "en_US.UTF-8",
-        "MLFLOW_TRACKING_URI": mlflow_client.tracking_uri,
+        "QCFLOW_TRACKING_URI": qcflow_client.tracking_uri,
     }
 
 
@@ -95,11 +95,11 @@ def create_experiments(client, names):
     return [client.create_experiment(n) for n in names]
 
 
-def test_create_get_search_experiment(mlflow_client):
-    experiment_id = mlflow_client.create_experiment(
+def test_create_get_search_experiment(qcflow_client):
+    experiment_id = qcflow_client.create_experiment(
         "My Experiment", artifact_location="my_location", tags={"key1": "val1", "key2": "val2"}
     )
-    exp = mlflow_client.get_experiment(experiment_id)
+    exp = qcflow_client.get_experiment(experiment_id)
     assert exp.name == "My Experiment"
     if is_windows():
         assert exp.artifact_location == pathlib.Path.cwd().joinpath("my_location").as_uri()
@@ -109,27 +109,27 @@ def test_create_get_search_experiment(mlflow_client):
     assert exp.tags["key1"] == "val1"
     assert exp.tags["key2"] == "val2"
 
-    experiments = mlflow_client.search_experiments()
+    experiments = qcflow_client.search_experiments()
     assert {e.name for e in experiments} == {"My Experiment", "Default"}
-    mlflow_client.delete_experiment(experiment_id)
-    assert {e.name for e in mlflow_client.search_experiments()} == {"Default"}
-    assert {e.name for e in mlflow_client.search_experiments(view_type=ViewType.ACTIVE_ONLY)} == {
+    qcflow_client.delete_experiment(experiment_id)
+    assert {e.name for e in qcflow_client.search_experiments()} == {"Default"}
+    assert {e.name for e in qcflow_client.search_experiments(view_type=ViewType.ACTIVE_ONLY)} == {
         "Default"
     }
-    assert {e.name for e in mlflow_client.search_experiments(view_type=ViewType.DELETED_ONLY)} == {
+    assert {e.name for e in qcflow_client.search_experiments(view_type=ViewType.DELETED_ONLY)} == {
         "My Experiment"
     }
-    assert {e.name for e in mlflow_client.search_experiments(view_type=ViewType.ALL)} == {
+    assert {e.name for e in qcflow_client.search_experiments(view_type=ViewType.ALL)} == {
         "My Experiment",
         "Default",
     }
-    active_exps_paginated = mlflow_client.search_experiments(max_results=1)
+    active_exps_paginated = qcflow_client.search_experiments(max_results=1)
     assert {e.name for e in active_exps_paginated} == {"Default"}
     assert active_exps_paginated.token is None
 
-    all_exps_paginated = mlflow_client.search_experiments(max_results=1, view_type=ViewType.ALL)
+    all_exps_paginated = qcflow_client.search_experiments(max_results=1, view_type=ViewType.ALL)
     first_page_names = {e.name for e in all_exps_paginated}
-    all_exps_second_page = mlflow_client.search_experiments(
+    all_exps_second_page = qcflow_client.search_experiments(
         max_results=1, view_type=ViewType.ALL, page_token=all_exps_paginated.token
     )
     second_page_names = {e.name for e in all_exps_second_page}
@@ -138,11 +138,11 @@ def test_create_get_search_experiment(mlflow_client):
     assert first_page_names.union(second_page_names) == {"Default", "My Experiment"}
 
 
-def test_create_experiment_validation(mlflow_client):
+def test_create_experiment_validation(qcflow_client):
     def assert_bad_request(payload, expected_error_message):
         response = _send_rest_tracking_post_request(
-            mlflow_client.tracking_uri,
-            "/api/2.0/mlflow/experiments/create",
+            qcflow_client.tracking_uri,
+            "/api/2.0/qcflow/experiments/create",
             payload,
         )
         assert response.status_code == 400
@@ -173,58 +173,58 @@ def test_create_experiment_validation(mlflow_client):
     )
 
 
-def test_delete_restore_experiment(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("Deleterious")
-    assert mlflow_client.get_experiment(experiment_id).lifecycle_stage == "active"
-    mlflow_client.delete_experiment(experiment_id)
-    assert mlflow_client.get_experiment(experiment_id).lifecycle_stage == "deleted"
-    mlflow_client.restore_experiment(experiment_id)
-    assert mlflow_client.get_experiment(experiment_id).lifecycle_stage == "active"
+def test_delete_restore_experiment(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("Deleterious")
+    assert qcflow_client.get_experiment(experiment_id).lifecycle_stage == "active"
+    qcflow_client.delete_experiment(experiment_id)
+    assert qcflow_client.get_experiment(experiment_id).lifecycle_stage == "deleted"
+    qcflow_client.restore_experiment(experiment_id)
+    assert qcflow_client.get_experiment(experiment_id).lifecycle_stage == "active"
 
 
-def test_delete_restore_experiment_cli(mlflow_client, cli_env):
+def test_delete_restore_experiment_cli(qcflow_client, cli_env):
     experiment_name = "DeleteriousCLI"
     invoke_cli_runner(
-        mlflow.experiments.commands, ["create", "--experiment-name", experiment_name], env=cli_env
+        qcflow.experiments.commands, ["create", "--experiment-name", experiment_name], env=cli_env
     )
-    experiment_id = mlflow_client.get_experiment_by_name(experiment_name).experiment_id
-    assert mlflow_client.get_experiment(experiment_id).lifecycle_stage == "active"
+    experiment_id = qcflow_client.get_experiment_by_name(experiment_name).experiment_id
+    assert qcflow_client.get_experiment(experiment_id).lifecycle_stage == "active"
     invoke_cli_runner(
-        mlflow.experiments.commands, ["delete", "-x", str(experiment_id)], env=cli_env
+        qcflow.experiments.commands, ["delete", "-x", str(experiment_id)], env=cli_env
     )
-    assert mlflow_client.get_experiment(experiment_id).lifecycle_stage == "deleted"
+    assert qcflow_client.get_experiment(experiment_id).lifecycle_stage == "deleted"
     invoke_cli_runner(
-        mlflow.experiments.commands, ["restore", "-x", str(experiment_id)], env=cli_env
+        qcflow.experiments.commands, ["restore", "-x", str(experiment_id)], env=cli_env
     )
-    assert mlflow_client.get_experiment(experiment_id).lifecycle_stage == "active"
+    assert qcflow_client.get_experiment(experiment_id).lifecycle_stage == "active"
 
 
-def test_rename_experiment(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("BadName")
-    assert mlflow_client.get_experiment(experiment_id).name == "BadName"
-    mlflow_client.rename_experiment(experiment_id, "GoodName")
-    assert mlflow_client.get_experiment(experiment_id).name == "GoodName"
+def test_rename_experiment(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("BadName")
+    assert qcflow_client.get_experiment(experiment_id).name == "BadName"
+    qcflow_client.rename_experiment(experiment_id, "GoodName")
+    assert qcflow_client.get_experiment(experiment_id).name == "GoodName"
 
 
-def test_rename_experiment_cli(mlflow_client, cli_env):
+def test_rename_experiment_cli(qcflow_client, cli_env):
     bad_experiment_name = "CLIBadName"
     good_experiment_name = "CLIGoodName"
 
     invoke_cli_runner(
-        mlflow.experiments.commands, ["create", "-n", bad_experiment_name], env=cli_env
+        qcflow.experiments.commands, ["create", "-n", bad_experiment_name], env=cli_env
     )
-    experiment_id = mlflow_client.get_experiment_by_name(bad_experiment_name).experiment_id
-    assert mlflow_client.get_experiment(experiment_id).name == bad_experiment_name
+    experiment_id = qcflow_client.get_experiment_by_name(bad_experiment_name).experiment_id
+    assert qcflow_client.get_experiment(experiment_id).name == bad_experiment_name
     invoke_cli_runner(
-        mlflow.experiments.commands,
+        qcflow.experiments.commands,
         ["rename", "--experiment-id", str(experiment_id), "--new-name", good_experiment_name],
         env=cli_env,
     )
-    assert mlflow_client.get_experiment(experiment_id).name == good_experiment_name
+    assert qcflow_client.get_experiment(experiment_id).name == good_experiment_name
 
 
 @pytest.mark.parametrize("parent_run_id_kwarg", [None, "my-parent-id"])
-def test_create_run_all_args(mlflow_client, parent_run_id_kwarg):
+def test_create_run_all_args(qcflow_client, parent_run_id_kwarg):
     user = "username"
     source_name = "Hello"
     entry_point = "entry"
@@ -233,23 +233,23 @@ def test_create_run_all_args(mlflow_client, parent_run_id_kwarg):
         "start_time": 456,
         "run_name": "my name",
         "tags": {
-            MLFLOW_USER: user,
-            MLFLOW_SOURCE_TYPE: "LOCAL",
-            MLFLOW_SOURCE_NAME: source_name,
-            MLFLOW_PROJECT_ENTRY_POINT: entry_point,
-            MLFLOW_GIT_COMMIT: source_version,
-            MLFLOW_PARENT_RUN_ID: "7",
+            QCFLOW_USER: user,
+            QCFLOW_SOURCE_TYPE: "LOCAL",
+            QCFLOW_SOURCE_NAME: source_name,
+            QCFLOW_PROJECT_ENTRY_POINT: entry_point,
+            QCFLOW_GIT_COMMIT: source_version,
+            QCFLOW_PARENT_RUN_ID: "7",
             "my": "tag",
             "other": "tag",
         },
     }
-    experiment_id = mlflow_client.create_experiment(
+    experiment_id = qcflow_client.create_experiment(
         f"Run A Lot (parent_run_id={parent_run_id_kwarg})"
     )
-    created_run = mlflow_client.create_run(experiment_id, **create_run_kwargs)
+    created_run = qcflow_client.create_run(experiment_id, **create_run_kwargs)
     run_id = created_run.info.run_id
     _logger.info(f"Run id={run_id}")
-    fetched_run = mlflow_client.get_run(run_id)
+    fetched_run = qcflow_client.get_run(run_id)
     for run in [created_run, fetched_run]:
         assert run.info.run_id == run_id
         assert run.info.run_uuid == run_id
@@ -259,33 +259,33 @@ def test_create_run_all_args(mlflow_client, parent_run_id_kwarg):
         assert run.info.run_name == "my name"
         for tag in create_run_kwargs["tags"]:
             assert tag in run.data.tags
-        assert run.data.tags.get(MLFLOW_USER) == user
-        assert run.data.tags.get(MLFLOW_PARENT_RUN_ID) == parent_run_id_kwarg or "7"
-        assert [run.info for run in mlflow_client.search_runs([experiment_id])] == [run.info]
+        assert run.data.tags.get(QCFLOW_USER) == user
+        assert run.data.tags.get(QCFLOW_PARENT_RUN_ID) == parent_run_id_kwarg or "7"
+        assert [run.info for run in qcflow_client.search_runs([experiment_id])] == [run.info]
 
 
-def test_create_run_defaults(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("Run A Little")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_create_run_defaults(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("Run A Little")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
-    run = mlflow_client.get_run(run_id)
+    run = qcflow_client.get_run(run_id)
     assert run.info.run_id == run_id
     assert run.info.experiment_id == experiment_id
     assert run.info.user_id == "unknown"
 
 
-def test_log_metrics_params_tags(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("Oh My")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_log_metrics_params_tags(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("Oh My")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
-    mlflow_client.log_metric(run_id, key="metric", value=123.456, timestamp=789, step=2)
-    mlflow_client.log_metric(run_id, key="nan_metric", value=float("nan"))
-    mlflow_client.log_metric(run_id, key="inf_metric", value=float("inf"))
-    mlflow_client.log_metric(run_id, key="-inf_metric", value=-float("inf"))
-    mlflow_client.log_metric(run_id, key="stepless-metric", value=987.654, timestamp=321)
-    mlflow_client.log_param(run_id, "param", "value")
-    mlflow_client.set_tag(run_id, "taggity", "do-dah")
-    run = mlflow_client.get_run(run_id)
+    qcflow_client.log_metric(run_id, key="metric", value=123.456, timestamp=789, step=2)
+    qcflow_client.log_metric(run_id, key="nan_metric", value=float("nan"))
+    qcflow_client.log_metric(run_id, key="inf_metric", value=float("inf"))
+    qcflow_client.log_metric(run_id, key="-inf_metric", value=-float("inf"))
+    qcflow_client.log_metric(run_id, key="stepless-metric", value=987.654, timestamp=321)
+    qcflow_client.log_param(run_id, "param", "value")
+    qcflow_client.set_tag(run_id, "taggity", "do-dah")
+    run = qcflow_client.get_run(run_id)
     assert run.data.metrics.get("metric") == 123.456
     assert math.isnan(run.data.metrics.get("nan_metric"))
     assert run.data.metrics.get("inf_metric") >= 1.7976931348623157e308
@@ -293,14 +293,14 @@ def test_log_metrics_params_tags(mlflow_client):
     assert run.data.metrics.get("stepless-metric") == 987.654
     assert run.data.params.get("param") == "value"
     assert run.data.tags.get("taggity") == "do-dah"
-    metric_history0 = mlflow_client.get_metric_history(run_id, "metric")
+    metric_history0 = qcflow_client.get_metric_history(run_id, "metric")
     assert len(metric_history0) == 1
     metric0 = metric_history0[0]
     assert metric0.key == "metric"
     assert metric0.value == 123.456
     assert metric0.timestamp == 789
     assert metric0.step == 2
-    metric_history1 = mlflow_client.get_metric_history(run_id, "stepless-metric")
+    metric_history1 = qcflow_client.get_metric_history(run_id, "stepless-metric")
     assert len(metric_history1) == 1
     metric1 = metric_history1[0]
     assert metric1.key == "stepless-metric"
@@ -308,19 +308,19 @@ def test_log_metrics_params_tags(mlflow_client):
     assert metric1.timestamp == 321
     assert metric1.step == 0
 
-    metric_history = mlflow_client.get_metric_history(run_id, "a_test_accuracy")
+    metric_history = qcflow_client.get_metric_history(run_id, "a_test_accuracy")
     assert metric_history == []
 
 
-def test_log_metric_validation(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("metrics validation")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_log_metric_validation(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("metrics validation")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
     def assert_bad_request(payload, expected_error_message):
         response = _send_rest_tracking_post_request(
-            mlflow_client.tracking_uri,
-            "/api/2.0/mlflow/runs/log-metric",
+            qcflow_client.tracking_uri,
+            "/api/2.0/qcflow/runs/log-metric",
             payload,
         )
         assert response.status_code == 400
@@ -398,15 +398,15 @@ def test_log_metric_validation(mlflow_client):
     )
 
 
-def test_log_param_validation(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("params validation")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_log_param_validation(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("params validation")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
     def assert_bad_request(payload, expected_error_message):
         response = _send_rest_tracking_post_request(
-            mlflow_client.tracking_uri,
-            "/api/2.0/mlflow/runs/log-parameter",
+            qcflow_client.tracking_uri,
+            "/api/2.0/qcflow/runs/log-parameter",
             payload,
         )
         assert response.status_code == 400
@@ -430,53 +430,53 @@ def test_log_param_validation(mlflow_client):
     )
 
 
-def test_log_param_with_empty_string_as_value(mlflow_client):
-    experiment_id = mlflow_client.create_experiment(
+def test_log_param_with_empty_string_as_value(qcflow_client):
+    experiment_id = qcflow_client.create_experiment(
         test_log_param_with_empty_string_as_value.__name__
     )
-    created_run = mlflow_client.create_run(experiment_id)
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
-    mlflow_client.log_param(run_id, "param_key", "")
-    assert {"param_key": ""}.items() <= mlflow_client.get_run(run_id).data.params.items()
+    qcflow_client.log_param(run_id, "param_key", "")
+    assert {"param_key": ""}.items() <= qcflow_client.get_run(run_id).data.params.items()
 
 
-def test_set_tag_with_empty_string_as_value(mlflow_client):
-    experiment_id = mlflow_client.create_experiment(
+def test_set_tag_with_empty_string_as_value(qcflow_client):
+    experiment_id = qcflow_client.create_experiment(
         test_set_tag_with_empty_string_as_value.__name__
     )
-    created_run = mlflow_client.create_run(experiment_id)
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
-    mlflow_client.set_tag(run_id, "tag_key", "")
-    assert {"tag_key": ""}.items() <= mlflow_client.get_run(run_id).data.tags.items()
+    qcflow_client.set_tag(run_id, "tag_key", "")
+    assert {"tag_key": ""}.items() <= qcflow_client.get_run(run_id).data.tags.items()
 
 
-def test_log_batch_containing_params_and_tags_with_empty_string_values(mlflow_client):
-    experiment_id = mlflow_client.create_experiment(
+def test_log_batch_containing_params_and_tags_with_empty_string_values(qcflow_client):
+    experiment_id = qcflow_client.create_experiment(
         test_log_batch_containing_params_and_tags_with_empty_string_values.__name__
     )
-    created_run = mlflow_client.create_run(experiment_id)
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
-    mlflow_client.log_batch(
+    qcflow_client.log_batch(
         run_id=run_id,
         params=[Param("param_key", "")],
         tags=[RunTag("tag_key", "")],
     )
-    assert {"param_key": ""}.items() <= mlflow_client.get_run(run_id).data.params.items()
-    assert {"tag_key": ""}.items() <= mlflow_client.get_run(run_id).data.tags.items()
+    assert {"param_key": ""}.items() <= qcflow_client.get_run(run_id).data.params.items()
+    assert {"tag_key": ""}.items() <= qcflow_client.get_run(run_id).data.tags.items()
 
 
-def test_set_tag_validation(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("tags validation")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_set_tag_validation(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("tags validation")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
     def assert_bad_request(payload, expected_error_message):
         response = _send_rest_tracking_post_request(
-            mlflow_client.tracking_uri,
-            "/api/2.0/mlflow/runs/set-tag",
+            qcflow_client.tracking_uri,
+            "/api/2.0/qcflow/runs/set-tag",
             payload,
         )
         assert response.status_code == 400
@@ -508,8 +508,8 @@ def test_set_tag_validation(mlflow_client):
     )
 
     response = _send_rest_tracking_post_request(
-        mlflow_client.tracking_uri,
-        "/api/2.0/mlflow/runs/set-tag",
+        qcflow_client.tracking_uri,
+        "/api/2.0/qcflow/runs/set-tag",
         {
             "run_uuid": run_id,
             "key": "key",
@@ -519,9 +519,9 @@ def test_set_tag_validation(mlflow_client):
     assert response.status_code == 200
 
 
-def test_path_validation(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("tags validation")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_path_validation(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("tags validation")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
     invalid_path = "../path"
 
@@ -533,100 +533,100 @@ def test_path_validation(mlflow_client):
         }
 
     response = requests.get(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/artifacts/list",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/artifacts/list",
         params={"run_id": run_id, "path": invalid_path},
     )
     assert_response(response)
 
     response = requests.get(
-        f"{mlflow_client.tracking_uri}/get-artifact",
+        f"{qcflow_client.tracking_uri}/get-artifact",
         params={"run_id": run_id, "path": invalid_path},
     )
     assert_response(response)
 
     response = requests.get(
-        f"{mlflow_client.tracking_uri}//model-versions/get-artifact",
+        f"{qcflow_client.tracking_uri}//model-versions/get-artifact",
         params={"name": "model", "version": 1, "path": invalid_path},
     )
     assert_response(response)
 
 
-def test_set_experiment_tag(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("SetExperimentTagTest")
-    mlflow_client.set_experiment_tag(experiment_id, "dataset", "imagenet1K")
-    experiment = mlflow_client.get_experiment(experiment_id)
+def test_set_experiment_tag(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("SetExperimentTagTest")
+    qcflow_client.set_experiment_tag(experiment_id, "dataset", "imagenet1K")
+    experiment = qcflow_client.get_experiment(experiment_id)
     assert "dataset" in experiment.tags
     assert experiment.tags["dataset"] == "imagenet1K"
     # test that updating a tag works
-    mlflow_client.set_experiment_tag(experiment_id, "dataset", "birdbike")
-    experiment = mlflow_client.get_experiment(experiment_id)
+    qcflow_client.set_experiment_tag(experiment_id, "dataset", "birdbike")
+    experiment = qcflow_client.get_experiment(experiment_id)
     assert "dataset" in experiment.tags
     assert experiment.tags["dataset"] == "birdbike"
     # test that setting a tag on 1 experiment does not impact another experiment.
-    experiment_id_2 = mlflow_client.create_experiment("SetExperimentTagTest2")
-    experiment2 = mlflow_client.get_experiment(experiment_id_2)
+    experiment_id_2 = qcflow_client.create_experiment("SetExperimentTagTest2")
+    experiment2 = qcflow_client.get_experiment(experiment_id_2)
     assert len(experiment2.tags) == 0
     # test that setting a tag on different experiments maintain different values across experiments
-    mlflow_client.set_experiment_tag(experiment_id_2, "dataset", "birds200")
-    experiment = mlflow_client.get_experiment(experiment_id)
-    experiment2 = mlflow_client.get_experiment(experiment_id_2)
+    qcflow_client.set_experiment_tag(experiment_id_2, "dataset", "birds200")
+    experiment = qcflow_client.get_experiment(experiment_id)
+    experiment2 = qcflow_client.get_experiment(experiment_id_2)
     assert "dataset" in experiment.tags
     assert experiment.tags["dataset"] == "birdbike"
     assert "dataset" in experiment2.tags
     assert experiment2.tags["dataset"] == "birds200"
     # test can set multi-line tags
-    mlflow_client.set_experiment_tag(experiment_id, "multiline tag", "value2\nvalue2\nvalue2")
-    experiment = mlflow_client.get_experiment(experiment_id)
+    qcflow_client.set_experiment_tag(experiment_id, "multiline tag", "value2\nvalue2\nvalue2")
+    experiment = qcflow_client.get_experiment(experiment_id)
     assert "multiline tag" in experiment.tags
     assert experiment.tags["multiline tag"] == "value2\nvalue2\nvalue2"
 
 
-def test_set_experiment_tag_with_empty_string_as_value(mlflow_client):
-    experiment_id = mlflow_client.create_experiment(
+def test_set_experiment_tag_with_empty_string_as_value(qcflow_client):
+    experiment_id = qcflow_client.create_experiment(
         test_set_experiment_tag_with_empty_string_as_value.__name__
     )
-    mlflow_client.set_experiment_tag(experiment_id, "tag_key", "")
-    assert {"tag_key": ""}.items() <= mlflow_client.get_experiment(experiment_id).tags.items()
+    qcflow_client.set_experiment_tag(experiment_id, "tag_key", "")
+    assert {"tag_key": ""}.items() <= qcflow_client.get_experiment(experiment_id).tags.items()
 
 
-def test_delete_tag(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("DeleteTagExperiment")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_delete_tag(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("DeleteTagExperiment")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
-    mlflow_client.log_metric(run_id, key="metric", value=123.456, timestamp=789, step=2)
-    mlflow_client.log_metric(run_id, key="stepless-metric", value=987.654, timestamp=321)
-    mlflow_client.log_param(run_id, "param", "value")
-    mlflow_client.set_tag(run_id, "taggity", "do-dah")
-    run = mlflow_client.get_run(run_id)
+    qcflow_client.log_metric(run_id, key="metric", value=123.456, timestamp=789, step=2)
+    qcflow_client.log_metric(run_id, key="stepless-metric", value=987.654, timestamp=321)
+    qcflow_client.log_param(run_id, "param", "value")
+    qcflow_client.set_tag(run_id, "taggity", "do-dah")
+    run = qcflow_client.get_run(run_id)
     assert "taggity" in run.data.tags
     assert run.data.tags["taggity"] == "do-dah"
-    mlflow_client.delete_tag(run_id, "taggity")
-    run = mlflow_client.get_run(run_id)
+    qcflow_client.delete_tag(run_id, "taggity")
+    run = qcflow_client.get_run(run_id)
     assert "taggity" not in run.data.tags
     with pytest.raises(MlflowException, match=r"Run .+ not found"):
-        mlflow_client.delete_tag("fake_run_id", "taggity")
+        qcflow_client.delete_tag("fake_run_id", "taggity")
     with pytest.raises(MlflowException, match="No tag with name: fakeTag"):
-        mlflow_client.delete_tag(run_id, "fakeTag")
-    mlflow_client.delete_run(run_id)
+        qcflow_client.delete_tag(run_id, "fakeTag")
+    qcflow_client.delete_run(run_id)
     with pytest.raises(MlflowException, match=f"The run {run_id} must be in"):
-        mlflow_client.delete_tag(run_id, "taggity")
+        qcflow_client.delete_tag(run_id, "taggity")
 
 
-def test_log_batch(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("Batch em up")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_log_batch(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("Batch em up")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
-    mlflow_client.log_batch(
+    qcflow_client.log_batch(
         run_id=run_id,
         metrics=[Metric("metric", 123.456, 789, 3)],
         params=[Param("param", "value")],
         tags=[RunTag("taggity", "do-dah")],
     )
-    run = mlflow_client.get_run(run_id)
+    run = qcflow_client.get_run(run_id)
     assert run.data.metrics.get("metric") == 123.456
     assert run.data.params.get("param") == "value"
     assert run.data.tags.get("taggity") == "do-dah"
-    metric_history = mlflow_client.get_metric_history(run_id, "metric")
+    metric_history = qcflow_client.get_metric_history(run_id, "metric")
     assert len(metric_history) == 1
     metric = metric_history[0]
     assert metric.key == "metric"
@@ -635,15 +635,15 @@ def test_log_batch(mlflow_client):
     assert metric.step == 3
 
 
-def test_log_batch_validation(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("log_batch validation")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_log_batch_validation(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("log_batch validation")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
     def assert_bad_request(payload, expected_error_message):
         response = _send_rest_tracking_post_request(
-            mlflow_client.tracking_uri,
-            "/api/2.0/mlflow/runs/log-batch",
+            qcflow_client.tracking_uri,
+            "/api/2.0/qcflow/runs/log-batch",
             payload,
         )
         assert response.status_code == 400
@@ -666,8 +666,8 @@ def test_log_batch_validation(mlflow_client):
 
     ## Should 200 if timestamp provided but step is not
     response = _send_rest_tracking_post_request(
-        mlflow_client.tracking_uri,
-        "/api/2.0/mlflow/runs/log-batch",
+        qcflow_client.tracking_uri,
+        "/api/2.0/qcflow/runs/log-batch",
         {"run_id": run_id, "metrics": [{"key": "mae", "value": 2.5, "timestamp": 123456789}]},
     )
 
@@ -675,22 +675,22 @@ def test_log_batch_validation(mlflow_client):
 
 
 @pytest.mark.allow_infer_pip_requirements_fallback
-def test_log_model(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("Log models")
+def test_log_model(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("Log models")
     with TempDir(chdr=True):
         model_paths = [f"model/path/{i}" for i in range(3)]
-        mlflow.set_tracking_uri(mlflow_client.tracking_uri)
-        with mlflow.start_run(experiment_id=experiment_id) as run:
+        qcflow.set_tracking_uri(qcflow_client.tracking_uri)
+        with qcflow.start_run(experiment_id=experiment_id) as run:
             for i, m in enumerate(model_paths):
-                mlflow.pyfunc.log_model(m, loader_module="mlflow.pyfunc")
-                mlflow.pyfunc.save_model(
+                qcflow.pyfunc.log_model(m, loader_module="qcflow.pyfunc")
+                qcflow.pyfunc.save_model(
                     m,
-                    mlflow_model=Model(artifact_path=m, run_id=run.info.run_id),
-                    loader_module="mlflow.pyfunc",
+                    qcflow_model=Model(artifact_path=m, run_id=run.info.run_id),
+                    loader_module="qcflow.pyfunc",
                 )
                 model = Model.load(os.path.join(m, "MLmodel"))
-                run = mlflow.get_run(run.info.run_id)
-                tag = run.data.tags["mlflow.log-model.history"]
+                run = qcflow.get_run(run.info.run_id)
+                tag = run.data.tags["qcflow.log-model.history"]
                 models = json.loads(tag)
                 model.utc_time_created = models[i]["utc_time_created"]
 
@@ -705,36 +705,36 @@ def test_log_model(mlflow_client):
                     assert models[j]["artifact_path"] == model_paths[j]
 
 
-def test_set_terminated_defaults(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("Terminator 1")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_set_terminated_defaults(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("Terminator 1")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
-    assert mlflow_client.get_run(run_id).info.status == "RUNNING"
-    assert mlflow_client.get_run(run_id).info.end_time is None
-    mlflow_client.set_terminated(run_id)
-    assert mlflow_client.get_run(run_id).info.status == "FINISHED"
-    assert mlflow_client.get_run(run_id).info.end_time <= get_current_time_millis()
+    assert qcflow_client.get_run(run_id).info.status == "RUNNING"
+    assert qcflow_client.get_run(run_id).info.end_time is None
+    qcflow_client.set_terminated(run_id)
+    assert qcflow_client.get_run(run_id).info.status == "FINISHED"
+    assert qcflow_client.get_run(run_id).info.end_time <= get_current_time_millis()
 
 
-def test_set_terminated_status(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("Terminator 2")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_set_terminated_status(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("Terminator 2")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
-    assert mlflow_client.get_run(run_id).info.status == "RUNNING"
-    assert mlflow_client.get_run(run_id).info.end_time is None
-    mlflow_client.set_terminated(run_id, "FAILED")
-    assert mlflow_client.get_run(run_id).info.status == "FAILED"
-    assert mlflow_client.get_run(run_id).info.end_time <= get_current_time_millis()
+    assert qcflow_client.get_run(run_id).info.status == "RUNNING"
+    assert qcflow_client.get_run(run_id).info.end_time is None
+    qcflow_client.set_terminated(run_id, "FAILED")
+    assert qcflow_client.get_run(run_id).info.status == "FAILED"
+    assert qcflow_client.get_run(run_id).info.end_time <= get_current_time_millis()
 
 
-def test_artifacts(mlflow_client, tmp_path):
-    experiment_id = mlflow_client.create_experiment("Art In Fact")
-    experiment_info = mlflow_client.get_experiment(experiment_id)
+def test_artifacts(qcflow_client, tmp_path):
+    experiment_id = qcflow_client.create_experiment("Art In Fact")
+    experiment_info = qcflow_client.get_experiment(experiment_id)
     assert experiment_info.artifact_location.startswith(path_to_local_file_uri(str(tmp_path)))
     artifact_path = urllib.parse.urlparse(experiment_info.artifact_location).path
     assert posixpath.split(artifact_path)[-1] == experiment_id
 
-    created_run = mlflow_client.create_run(experiment_id)
+    created_run = qcflow_client.create_run(experiment_id)
     assert created_run.info.artifact_uri.startswith(experiment_info.artifact_location)
     run_id = created_run.info.run_id
     src_dir = tmp_path.joinpath("test_artifacts_src")
@@ -742,17 +742,17 @@ def test_artifacts(mlflow_client, tmp_path):
     src_file = os.path.join(src_dir, "my.file")
     with open(src_file, "w") as f:
         f.write("Hello, World!")
-    mlflow_client.log_artifact(run_id, src_file, None)
-    mlflow_client.log_artifacts(run_id, src_dir, "dir")
+    qcflow_client.log_artifact(run_id, src_file, None)
+    qcflow_client.log_artifacts(run_id, src_dir, "dir")
 
-    root_artifacts_list = mlflow_client.list_artifacts(run_id)
+    root_artifacts_list = qcflow_client.list_artifacts(run_id)
     assert {a.path for a in root_artifacts_list} == {"my.file", "dir"}
 
-    dir_artifacts_list = mlflow_client.list_artifacts(run_id, "dir")
+    dir_artifacts_list = qcflow_client.list_artifacts(run_id, "dir")
     assert {a.path for a in dir_artifacts_list} == {"dir/my.file"}
 
     all_artifacts = download_artifacts(
-        run_id=run_id, artifact_path=".", tracking_uri=mlflow_client.tracking_uri
+        run_id=run_id, artifact_path=".", tracking_uri=qcflow_client.tracking_uri
     )
     with open(f"{all_artifacts}/my.file") as f:
         assert f.read() == "Hello, World!"
@@ -760,57 +760,57 @@ def test_artifacts(mlflow_client, tmp_path):
         assert f.read() == "Hello, World!"
 
     dir_artifacts = download_artifacts(
-        run_id=run_id, artifact_path="dir", tracking_uri=mlflow_client.tracking_uri
+        run_id=run_id, artifact_path="dir", tracking_uri=qcflow_client.tracking_uri
     )
     with open(f"{dir_artifacts}/my.file") as f:
         assert f.read() == "Hello, World!"
 
 
-def test_search_pagination(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("search_pagination")
-    runs = [mlflow_client.create_run(experiment_id, start_time=1).info.run_id for _ in range(0, 10)]
+def test_search_pagination(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("search_pagination")
+    runs = [qcflow_client.create_run(experiment_id, start_time=1).info.run_id for _ in range(0, 10)]
     runs = sorted(runs)
-    result = mlflow_client.search_runs([experiment_id], max_results=4, page_token=None)
+    result = qcflow_client.search_runs([experiment_id], max_results=4, page_token=None)
     assert [r.info.run_id for r in result] == runs[0:4]
     assert result.token is not None
-    result = mlflow_client.search_runs([experiment_id], max_results=4, page_token=result.token)
+    result = qcflow_client.search_runs([experiment_id], max_results=4, page_token=result.token)
     assert [r.info.run_id for r in result] == runs[4:8]
     assert result.token is not None
-    result = mlflow_client.search_runs([experiment_id], max_results=4, page_token=result.token)
+    result = qcflow_client.search_runs([experiment_id], max_results=4, page_token=result.token)
     assert [r.info.run_id for r in result] == runs[8:]
     assert result.token is None
 
 
-def test_search_validation(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("search_validation")
+def test_search_validation(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("search_validation")
     with pytest.raises(
         MlflowException, match=r"Invalid value 123456789 for parameter 'max_results' supplied"
     ):
-        mlflow_client.search_runs([experiment_id], max_results=123456789)
+        qcflow_client.search_runs([experiment_id], max_results=123456789)
 
 
-def test_get_experiment_by_name(mlflow_client):
+def test_get_experiment_by_name(qcflow_client):
     name = "test_get_experiment_by_name"
-    experiment_id = mlflow_client.create_experiment(name)
-    res = mlflow_client.get_experiment_by_name(name)
+    experiment_id = qcflow_client.create_experiment(name)
+    res = qcflow_client.get_experiment_by_name(name)
     assert res.experiment_id == experiment_id
     assert res.name == name
-    assert mlflow_client.get_experiment_by_name("idontexist") is None
+    assert qcflow_client.get_experiment_by_name("idontexist") is None
 
 
-def test_get_experiment(mlflow_client):
+def test_get_experiment(qcflow_client):
     name = "test_get_experiment"
-    experiment_id = mlflow_client.create_experiment(name)
-    res = mlflow_client.get_experiment(experiment_id)
+    experiment_id = qcflow_client.create_experiment(name)
+    res = qcflow_client.get_experiment(experiment_id)
     assert res.experiment_id == experiment_id
     assert res.name == name
 
 
-def test_search_experiments(mlflow_client):
+def test_search_experiments(qcflow_client):
     # To ensure the default experiment and non-default experiments have different creation_time
     # for deterministic search results, send a request to the server and initialize the tracking
     # store.
-    assert mlflow_client.search_experiments()[0].name == "Default"
+    assert qcflow_client.search_experiments()[0].name == "Default"
 
     experiments = [
         ("a", {"key": "value"}),
@@ -823,45 +823,45 @@ def test_search_experiments(mlflow_client):
         # deterministic ordering based on last_update_time (creation_time due to no
         # mutation of experiment state)
         time.sleep(0.001)
-        experiment_ids.append(mlflow_client.create_experiment(name, tags=tags))
+        experiment_ids.append(qcflow_client.create_experiment(name, tags=tags))
 
     # filter_string
-    experiments = mlflow_client.search_experiments(filter_string="attribute.name = 'a'")
+    experiments = qcflow_client.search_experiments(filter_string="attribute.name = 'a'")
     assert [e.name for e in experiments] == ["a"]
-    experiments = mlflow_client.search_experiments(filter_string="attribute.name != 'a'")
+    experiments = qcflow_client.search_experiments(filter_string="attribute.name != 'a'")
     assert [e.name for e in experiments] == ["Abc", "ab", "Default"]
-    experiments = mlflow_client.search_experiments(filter_string="name LIKE 'a%'")
+    experiments = qcflow_client.search_experiments(filter_string="name LIKE 'a%'")
     assert [e.name for e in experiments] == ["ab", "a"]
-    experiments = mlflow_client.search_experiments(filter_string="tag.key = 'value'")
+    experiments = qcflow_client.search_experiments(filter_string="tag.key = 'value'")
     assert [e.name for e in experiments] == ["a"]
-    experiments = mlflow_client.search_experiments(filter_string="tag.key != 'value'")
+    experiments = qcflow_client.search_experiments(filter_string="tag.key != 'value'")
     assert [e.name for e in experiments] == ["ab"]
-    experiments = mlflow_client.search_experiments(filter_string="tag.key ILIKE '%alu%'")
+    experiments = qcflow_client.search_experiments(filter_string="tag.key ILIKE '%alu%'")
     assert [e.name for e in experiments] == ["ab", "a"]
 
     # order_by
-    experiments = mlflow_client.search_experiments(order_by=["name DESC"])
+    experiments = qcflow_client.search_experiments(order_by=["name DESC"])
     assert [e.name for e in experiments] == ["ab", "a", "Default", "Abc"]
 
     # max_results
-    experiments = mlflow_client.search_experiments(max_results=2)
+    experiments = qcflow_client.search_experiments(max_results=2)
     assert [e.name for e in experiments] == ["Abc", "ab"]
     # page_token
-    experiments = mlflow_client.search_experiments(page_token=experiments.token)
+    experiments = qcflow_client.search_experiments(page_token=experiments.token)
     assert [e.name for e in experiments] == ["a", "Default"]
 
     # view_type
     time.sleep(0.001)
-    mlflow_client.delete_experiment(experiment_ids[1])
-    experiments = mlflow_client.search_experiments(view_type=ViewType.ACTIVE_ONLY)
+    qcflow_client.delete_experiment(experiment_ids[1])
+    experiments = qcflow_client.search_experiments(view_type=ViewType.ACTIVE_ONLY)
     assert [e.name for e in experiments] == ["Abc", "a", "Default"]
-    experiments = mlflow_client.search_experiments(view_type=ViewType.DELETED_ONLY)
+    experiments = qcflow_client.search_experiments(view_type=ViewType.DELETED_ONLY)
     assert [e.name for e in experiments] == ["ab"]
-    experiments = mlflow_client.search_experiments(view_type=ViewType.ALL)
+    experiments = qcflow_client.search_experiments(view_type=ViewType.ALL)
     assert [e.name for e in experiments] == ["Abc", "ab", "a", "Default"]
 
 
-def test_get_metric_history_bulk_rejects_invalid_requests(mlflow_client):
+def test_get_metric_history_bulk_rejects_invalid_requests(qcflow_client):
     def assert_response(resp, message_part):
         assert resp.status_code == 400
         response_json = resp.json()
@@ -869,7 +869,7 @@ def test_get_metric_history_bulk_rejects_invalid_requests(mlflow_client):
         assert message_part in response_json.get("message", "")
 
     response_no_run_ids_field = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"metric_key": "key"},
     )
     assert_response(
@@ -878,7 +878,7 @@ def test_get_metric_history_bulk_rejects_invalid_requests(mlflow_client):
     )
 
     response_empty_run_ids = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"run_id": [], "metric_key": "key"},
     )
     assert_response(
@@ -887,7 +887,7 @@ def test_get_metric_history_bulk_rejects_invalid_requests(mlflow_client):
     )
 
     response_too_many_run_ids = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"run_id": [f"id_{i}" for i in range(1000)], "metric_key": "key"},
     )
     assert_response(
@@ -896,7 +896,7 @@ def test_get_metric_history_bulk_rejects_invalid_requests(mlflow_client):
     )
 
     response_no_metric_key_field = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"run_id": ["123"]},
     )
     assert_response(
@@ -905,13 +905,13 @@ def test_get_metric_history_bulk_rejects_invalid_requests(mlflow_client):
     )
 
 
-def test_get_metric_history_bulk_returns_expected_metrics_in_expected_order(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("get metric history bulk")
-    created_run1 = mlflow_client.create_run(experiment_id)
+def test_get_metric_history_bulk_returns_expected_metrics_in_expected_order(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("get metric history bulk")
+    created_run1 = qcflow_client.create_run(experiment_id)
     run_id1 = created_run1.info.run_id
-    created_run2 = mlflow_client.create_run(experiment_id)
+    created_run2 = qcflow_client.create_run(experiment_id)
     run_id2 = created_run2.info.run_id
-    created_run3 = mlflow_client.create_run(experiment_id)
+    created_run3 = qcflow_client.create_run(experiment_id)
     run_id3 = created_run3.info.run_id
 
     metricA_history = [
@@ -921,10 +921,10 @@ def test_get_metric_history_bulk_returns_expected_metrics_in_expected_order(mlfl
         {"key": "metricA", "timestamp": 2, "step": 3, "value": 12.0},
     ]
     for metric in metricA_history:
-        mlflow_client.log_metric(run_id1, **metric)
+        qcflow_client.log_metric(run_id1, **metric)
         metric_for_run2 = dict(metric)
         metric_for_run2["value"] += 1.0
-        mlflow_client.log_metric(run_id2, **metric_for_run2)
+        qcflow_client.log_metric(run_id2, **metric_for_run2)
 
     metricB_history = [
         {"key": "metricB", "timestamp": 7, "step": -2, "value": -100.0},
@@ -933,13 +933,13 @@ def test_get_metric_history_bulk_returns_expected_metrics_in_expected_order(mlfl
         {"key": "metricB", "timestamp": 9, "step": 1, "value": 12.0},
     ]
     for metric in metricB_history:
-        mlflow_client.log_metric(run_id1, **metric)
+        qcflow_client.log_metric(run_id1, **metric)
         metric_for_run2 = dict(metric)
         metric_for_run2["value"] += 1.0
-        mlflow_client.log_metric(run_id2, **metric_for_run2)
+        qcflow_client.log_metric(run_id2, **metric_for_run2)
 
     response_run1_metricA = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"run_id": [run_id1], "metric_key": "metricA"},
     )
     assert response_run1_metricA.status_code == 200
@@ -948,7 +948,7 @@ def test_get_metric_history_bulk_returns_expected_metrics_in_expected_order(mlfl
     ]
 
     response_run2_metricB = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"run_id": [run_id2], "metric_key": "metricB"},
     )
     assert response_run2_metricB.status_code == 200
@@ -957,7 +957,7 @@ def test_get_metric_history_bulk_returns_expected_metrics_in_expected_order(mlfl
     ]
 
     response_run1_run2_metricA = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"run_id": [run_id1, run_id2], "metric_key": "metricA"},
     )
     assert response_run1_run2_metricA.status_code == 200
@@ -971,7 +971,7 @@ def test_get_metric_history_bulk_returns_expected_metrics_in_expected_order(mlfl
     )
 
     response_run1_run2_run_3_metricB = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"run_id": [run_id1, run_id2, run_id3], "metric_key": "metricB"},
     )
     assert response_run1_run2_run_3_metricB.status_code == 200
@@ -985,9 +985,9 @@ def test_get_metric_history_bulk_returns_expected_metrics_in_expected_order(mlfl
     )
 
 
-def test_get_metric_history_bulk_respects_max_results(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("get metric history bulk")
-    run_id = mlflow_client.create_run(experiment_id).info.run_id
+def test_get_metric_history_bulk_respects_max_results(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("get metric history bulk")
+    run_id = qcflow_client.create_run(experiment_id).info.run_id
     max_results = 2
 
     metricA_history = [
@@ -997,10 +997,10 @@ def test_get_metric_history_bulk_respects_max_results(mlflow_client):
         {"key": "metricA", "timestamp": 2, "step": 3, "value": 12.0},
     ]
     for metric in metricA_history:
-        mlflow_client.log_metric(run_id, **metric)
+        qcflow_client.log_metric(run_id, **metric)
 
     response_limited = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk",
         params={"run_id": [run_id], "metric_key": "metricA", "max_results": max_results},
     )
     assert response_limited.status_code == 200
@@ -1010,7 +1010,7 @@ def test_get_metric_history_bulk_respects_max_results(mlflow_client):
 
 
 def test_get_metric_history_bulk_calls_optimized_impl_when_expected(tmp_path):
-    from mlflow.server.handlers import get_metric_history_bulk_handler
+    from qcflow.server.handlers import get_metric_history_bulk_handler
 
     path = path_to_local_file_uri(str(tmp_path.joinpath("sqlalchemy.db")))
     uri = ("sqlite://" if sys.platform == "win32" else "sqlite:////") + path[len("file://") :]
@@ -1032,7 +1032,7 @@ def test_get_metric_history_bulk_calls_optimized_impl_when_expected(tmp_path):
             return self.args_dict.get(key, default)
 
     with (
-        mock.patch("mlflow.server.handlers._get_tracking_store", return_value=mock_store),
+        mock.patch("qcflow.server.handlers._get_tracking_store", return_value=mock_store),
         flask_app.test_request_context() as mock_context,
     ):
         run_ids = [str(i) for i in range(10)]
@@ -1052,14 +1052,14 @@ def test_get_metric_history_bulk_calls_optimized_impl_when_expected(tmp_path):
         )
 
 
-def test_get_metric_history_bulk_interval_rejects_invalid_requests(mlflow_client):
+def test_get_metric_history_bulk_interval_rejects_invalid_requests(qcflow_client):
     def assert_response(resp, message_part):
         assert resp.status_code == 400
         response_json = resp.json()
         assert response_json.get("error_code") == "INVALID_PARAMETER_VALUE"
         assert message_part in response_json.get("message", "")
 
-    url = f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk-interval"
+    url = f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk-interval"
 
     assert_response(
         requests.get(url, params={"metric_key": "key"}),
@@ -1115,16 +1115,16 @@ def test_get_metric_history_bulk_interval_rejects_invalid_requests(mlflow_client
     )
 
 
-def test_get_metric_history_bulk_interval_respects_max_results(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("get metric history bulk")
-    run_id1 = mlflow_client.create_run(experiment_id).info.run_id
+def test_get_metric_history_bulk_interval_respects_max_results(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("get metric history bulk")
+    run_id1 = qcflow_client.create_run(experiment_id).info.run_id
     metric_history = [
         {"key": "metricA", "timestamp": 1, "step": i, "value": 10.0} for i in range(10)
     ]
     for metric in metric_history:
-        mlflow_client.log_metric(run_id1, **metric)
+        qcflow_client.log_metric(run_id1, **metric)
 
-    url = f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/metrics/get-history-bulk-interval"
+    url = f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/metrics/get-history-bulk-interval"
     response_limited = requests.get(
         url,
         params={"run_ids": [run_id1], "metric_key": "metricA", "max_results": 5},
@@ -1155,12 +1155,12 @@ def test_get_metric_history_bulk_interval_respects_max_results(mlflow_client):
     ]
 
     # multiple runs
-    run_id2 = mlflow_client.create_run(experiment_id).info.run_id
+    run_id2 = qcflow_client.create_run(experiment_id).info.run_id
     metric_history2 = [
         {"key": "metricA", "timestamp": 1, "step": i, "value": 10.0} for i in range(20)
     ]
     for metric in metric_history2:
-        mlflow_client.log_metric(run_id2, **metric)
+        qcflow_client.log_metric(run_id2, **metric)
     response_limited = requests.get(
         url,
         params={"run_ids": [run_id1, run_id2], "metric_key": "metricA", "max_results": 5},
@@ -1182,7 +1182,7 @@ def test_get_metric_history_bulk_interval_respects_max_results(mlflow_client):
         {"key": "metricA", "timestamp": 2, "step": i, "value": 10.0} for i in range(10)
     ]
     for metric in metric_history_timestamp2:
-        mlflow_client.log_metric(run_id1, **metric)
+        qcflow_client.log_metric(run_id1, **metric)
 
     response_limited = requests.get(
         url,
@@ -1216,7 +1216,7 @@ def test_get_sampled_steps_from_steps(min_step, max_step, max_results, nums, exp
     assert _get_sampled_steps_from_steps(min_step, max_step, max_results, nums) == expected
 
 
-def test_search_dataset_handler_rejects_invalid_requests(mlflow_client):
+def test_search_dataset_handler_rejects_invalid_requests(qcflow_client):
     def assert_response(resp, message_part):
         assert resp.status_code == 400
         response_json = resp.json()
@@ -1224,7 +1224,7 @@ def test_search_dataset_handler_rejects_invalid_requests(mlflow_client):
         assert message_part in response_json.get("message", "")
 
     response_no_experiment_id_field = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/experiments/search-datasets",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/experiments/search-datasets",
         json={},
     )
     assert_response(
@@ -1233,7 +1233,7 @@ def test_search_dataset_handler_rejects_invalid_requests(mlflow_client):
     )
 
     response_empty_experiment_id_field = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/experiments/search-datasets",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/experiments/search-datasets",
         json={"experiment_ids": []},
     )
     assert_response(
@@ -1242,7 +1242,7 @@ def test_search_dataset_handler_rejects_invalid_requests(mlflow_client):
     )
 
     response_too_many_experiment_ids = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/experiments/search-datasets",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/experiments/search-datasets",
         json={"experiment_ids": [f"id_{i}" for i in range(1000)]},
     )
     assert_response(
@@ -1251,9 +1251,9 @@ def test_search_dataset_handler_rejects_invalid_requests(mlflow_client):
     )
 
 
-def test_search_dataset_handler_returns_expected_results(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("log inputs test")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_search_dataset_handler_returns_expected_results(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("log inputs test")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
     dataset1 = Dataset(
@@ -1264,13 +1264,13 @@ def test_search_dataset_handler_returns_expected_results(mlflow_client):
     )
     dataset_inputs1 = [
         DatasetInput(
-            dataset=dataset1, tags=[InputTag(key=MLFLOW_DATASET_CONTEXT, value="training")]
+            dataset=dataset1, tags=[InputTag(key=QCFLOW_DATASET_CONTEXT, value="training")]
         )
     ]
-    mlflow_client.log_inputs(run_id, dataset_inputs1)
+    qcflow_client.log_inputs(run_id, dataset_inputs1)
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/experiments/search-datasets",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/experiments/search-datasets",
         json={"experiment_ids": [experiment_id]},
     )
     expected = {
@@ -1284,14 +1284,14 @@ def test_search_dataset_handler_returns_expected_results(mlflow_client):
     assert response.json().get("dataset_summaries") == [expected]
 
 
-def test_create_model_version_with_path_source(mlflow_client):
+def test_create_model_version_with_path_source(qcflow_client):
     name = "model"
-    mlflow_client.create_registered_model(name)
-    exp_id = mlflow_client.create_experiment("test")
-    run = mlflow_client.create_run(experiment_id=exp_id)
+    qcflow_client.create_registered_model(name)
+    exp_id = qcflow_client.create_experiment("test")
+    run = qcflow_client.create_run(experiment_id=exp_id)
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": run.info.artifact_uri[len("file://") :],
@@ -1302,7 +1302,7 @@ def test_create_model_version_with_path_source(mlflow_client):
 
     # run_id is not specified
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": run.info.artifact_uri[len("file://") :],
@@ -1313,7 +1313,7 @@ def test_create_model_version_with_path_source(mlflow_client):
 
     # run_id is specified but source is not in the run's artifact directory
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": "/tmp",
@@ -1324,14 +1324,14 @@ def test_create_model_version_with_path_source(mlflow_client):
     assert "To use a local path as a model version" in response.json()["message"]
 
 
-def test_create_model_version_with_non_local_source(mlflow_client):
+def test_create_model_version_with_non_local_source(qcflow_client):
     name = "model"
-    mlflow_client.create_registered_model(name)
-    exp_id = mlflow_client.create_experiment("test")
-    run = mlflow_client.create_run(experiment_id=exp_id)
+    qcflow_client.create_registered_model(name)
+    exp_id = qcflow_client.create_experiment("test")
+    run = qcflow_client.create_run(experiment_id=exp_id)
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": run.info.artifact_uri[len("file://") :],
@@ -1342,10 +1342,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
 
     # Test that remote uri's supplied as a source with absolute paths work fine
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts:/models",
+            "source": "qcflow-artifacts:/models",
             "run_id": run.info.run_id,
         },
     )
@@ -1353,10 +1353,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
 
     # A single trailing slash
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts:/models/",
+            "source": "qcflow-artifacts:/models/",
             "run_id": run.info.run_id,
         },
     )
@@ -1364,10 +1364,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
 
     # Multiple trailing slashes
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts:/models///",
+            "source": "qcflow-artifacts:/models///",
             "run_id": run.info.run_id,
         },
     )
@@ -1375,20 +1375,20 @@ def test_create_model_version_with_non_local_source(mlflow_client):
 
     # Multiple slashes
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts:/models/foo///bar",
+            "source": "qcflow-artifacts:/models/foo///bar",
             "run_id": run.info.run_id,
         },
     )
     assert response.status_code == 200
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts://host:9000/models",
+            "source": "qcflow-artifacts://host:9000/models",
             "run_id": run.info.run_id,
         },
     )
@@ -1396,10 +1396,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
 
     # Multiple dots
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts://host:9000/models/artifact/..../",
+            "source": "qcflow-artifacts://host:9000/models/artifact/..../",
             "run_id": run.info.run_id,
         },
     )
@@ -1407,10 +1407,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
 
     # Test that invalid remote uri's cannot be created
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts://host:9000/models/../../../",
+            "source": "qcflow-artifacts://host:9000/models/../../../",
             "run_id": run.info.run_id,
         },
     )
@@ -1418,7 +1418,7 @@ def test_create_model_version_with_non_local_source(mlflow_client):
     assert "If supplying a source as an http, https," in response.json()["message"]
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": "http://host:9000/models/../../../",
@@ -1429,10 +1429,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
     assert "If supplying a source as an http, https," in response.json()["message"]
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "https://host/api/2.0/mlflow-artifacts/artifacts/../../../",
+            "source": "https://host/api/2.0/qcflow-artifacts/artifacts/../../../",
             "run_id": run.info.run_id,
         },
     )
@@ -1440,10 +1440,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
     assert "If supplying a source as an http, https," in response.json()["message"]
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "s3a://my_bucket/api/2.0/mlflow-artifacts/artifacts/../../../",
+            "source": "s3a://my_bucket/api/2.0/qcflow-artifacts/artifacts/../../../",
             "run_id": run.info.run_id,
         },
     )
@@ -1451,10 +1451,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
     assert "If supplying a source as an http, https," in response.json()["message"]
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "ftp://host:8888/api/2.0/mlflow-artifacts/artifacts/../../../",
+            "source": "ftp://host:8888/api/2.0/qcflow-artifacts/artifacts/../../../",
             "run_id": run.info.run_id,
         },
     )
@@ -1462,10 +1462,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
     assert "If supplying a source as an http, https," in response.json()["message"]
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts://host:9000/models/..%2f..%2fartifacts",
+            "source": "qcflow-artifacts://host:9000/models/..%2f..%2fartifacts",
             "run_id": run.info.run_id,
         },
     )
@@ -1473,10 +1473,10 @@ def test_create_model_version_with_non_local_source(mlflow_client):
     assert "If supplying a source as an http, https," in response.json()["message"]
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
-            "source": "mlflow-artifacts://host:9000/models/artifact%00",
+            "source": "qcflow-artifacts://host:9000/models/artifact%00",
             "run_id": run.info.run_id,
         },
     )
@@ -1484,7 +1484,7 @@ def test_create_model_version_with_non_local_source(mlflow_client):
     assert "If supplying a source as an http, https," in response.json()["message"]
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": f"dbfs:/{run.info.run_id}/artifacts/a%3f/../../../../../../../../../../",
@@ -1495,14 +1495,14 @@ def test_create_model_version_with_non_local_source(mlflow_client):
     assert "Invalid model version source" in response.json()["message"]
 
 
-def test_create_model_version_with_file_uri(mlflow_client):
+def test_create_model_version_with_file_uri(qcflow_client):
     name = "test"
-    mlflow_client.create_registered_model(name)
-    exp_id = mlflow_client.create_experiment("test")
-    run = mlflow_client.create_run(experiment_id=exp_id)
+    qcflow_client.create_registered_model(name)
+    exp_id = qcflow_client.create_experiment("test")
+    run = qcflow_client.create_run(experiment_id=exp_id)
     assert run.info.artifact_uri.startswith("file://")
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": run.info.artifact_uri,
@@ -1512,7 +1512,7 @@ def test_create_model_version_with_file_uri(mlflow_client):
     assert response.status_code == 200
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": f"{run.info.artifact_uri}/model",
@@ -1522,7 +1522,7 @@ def test_create_model_version_with_file_uri(mlflow_client):
     assert response.status_code == 200
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": f"{run.info.artifact_uri}/.",
@@ -1532,7 +1532,7 @@ def test_create_model_version_with_file_uri(mlflow_client):
     assert response.status_code == 200
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": f"{run.info.artifact_uri}/model/..",
@@ -1543,7 +1543,7 @@ def test_create_model_version_with_file_uri(mlflow_client):
 
     # run_id is not specified
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": run.info.artifact_uri,
@@ -1554,7 +1554,7 @@ def test_create_model_version_with_file_uri(mlflow_client):
 
     # run_id is specified but source is not in the run's artifact directory
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": "file:///tmp",
@@ -1564,7 +1564,7 @@ def test_create_model_version_with_file_uri(mlflow_client):
     assert "To use a local path as a model version" in response.json()["message"]
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/api/2.0/mlflow/model-versions/create",
+        f"{qcflow_client.tracking_uri}/api/2.0/qcflow/model-versions/create",
         json={
             "name": name,
             "source": "file://123.456.789.123/path/to/source",
@@ -1575,28 +1575,28 @@ def test_create_model_version_with_file_uri(mlflow_client):
     assert "is not a valid remote uri" in response.json()["message"]
 
 
-def test_logging_model_with_local_artifact_uri(mlflow_client):
+def test_logging_model_with_local_artifact_uri(qcflow_client):
     from sklearn.linear_model import LogisticRegression
 
-    mlflow.set_tracking_uri(mlflow_client.tracking_uri)
-    with mlflow.start_run() as run:
+    qcflow.set_tracking_uri(qcflow_client.tracking_uri)
+    with qcflow.start_run() as run:
         assert run.info.artifact_uri.startswith("file://")
-        mlflow.sklearn.log_model(LogisticRegression(), "model", registered_model_name="rmn")
-        mlflow.pyfunc.load_model("models:/rmn/1")
+        qcflow.sklearn.log_model(LogisticRegression(), "model", registered_model_name="rmn")
+        qcflow.pyfunc.load_model("models:/rmn/1")
 
 
-def test_log_input(mlflow_client, tmp_path):
+def test_log_input(qcflow_client, tmp_path):
     df = pd.DataFrame([[1, 2, 3], [1, 2, 3]], columns=["a", "b", "c"])
     path = tmp_path / "temp.csv"
     df.to_csv(path)
     dataset = from_pandas(df, source=path)
 
-    mlflow.set_tracking_uri(mlflow_client.tracking_uri)
+    qcflow.set_tracking_uri(qcflow_client.tracking_uri)
 
-    with mlflow.start_run() as run:
-        mlflow.log_input(dataset, "train", {"foo": "baz"})
+    with qcflow.start_run() as run:
+        qcflow.log_input(dataset, "train", {"foo": "baz"})
 
-    dataset_inputs = mlflow_client.get_run(run.info.run_id).inputs.dataset_inputs
+    dataset_inputs = qcflow_client.get_run(run.info.run_id).inputs.dataset_inputs
 
     assert len(dataset_inputs) == 1
     assert dataset_inputs[0].dataset.name == "dataset"
@@ -1604,7 +1604,7 @@ def test_log_input(mlflow_client, tmp_path):
     assert dataset_inputs[0].dataset.source_type == "local"
     assert json.loads(dataset_inputs[0].dataset.source) == {"uri": str(path)}
     assert json.loads(dataset_inputs[0].dataset.schema) == {
-        "mlflow_colspec": [
+        "qcflow_colspec": [
             {"name": "a", "type": "long", "required": True},
             {"name": "b", "type": "long", "required": True},
             {"name": "c", "type": "long", "required": True},
@@ -1615,13 +1615,13 @@ def test_log_input(mlflow_client, tmp_path):
     assert len(dataset_inputs[0].tags) == 2
     assert dataset_inputs[0].tags[0].key == "foo"
     assert dataset_inputs[0].tags[0].value == "baz"
-    assert dataset_inputs[0].tags[1].key == mlflow_tags.MLFLOW_DATASET_CONTEXT
+    assert dataset_inputs[0].tags[1].key == qcflow_tags.QCFLOW_DATASET_CONTEXT
     assert dataset_inputs[0].tags[1].value == "train"
 
 
-def test_log_inputs(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("log inputs test")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_log_inputs(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("log inputs test")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
     dataset1 = Dataset(
@@ -1632,8 +1632,8 @@ def test_log_inputs(mlflow_client):
     )
     dataset_inputs1 = [DatasetInput(dataset=dataset1, tags=[InputTag(key="tag1", value="value1")])]
 
-    mlflow_client.log_inputs(run_id, dataset_inputs1)
-    run = mlflow_client.get_run(run_id)
+    qcflow_client.log_inputs(run_id, dataset_inputs1)
+    run = qcflow_client.get_run(run_id)
     assert len(run.inputs.dataset_inputs) == 1
 
     assert isinstance(run.inputs, RunInputs)
@@ -1648,15 +1648,15 @@ def test_log_inputs(mlflow_client):
     assert run.inputs.dataset_inputs[0].tags[0].value == "value1"
 
 
-def test_log_inputs_validation(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("log inputs validation")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_log_inputs_validation(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("log inputs validation")
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
 
     def assert_bad_request(payload, expected_error_message):
         response = _send_rest_tracking_post_request(
-            mlflow_client.tracking_uri,
-            "/api/2.0/mlflow/runs/log-inputs",
+            qcflow_client.tracking_uri,
+            "/api/2.0/qcflow/runs/log-inputs",
             payload,
         )
         assert response.status_code == 400
@@ -1686,18 +1686,18 @@ def test_log_inputs_validation(mlflow_client):
     )
 
 
-def test_update_run_name_without_changing_status(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("update run name")
-    created_run = mlflow_client.create_run(experiment_id)
-    mlflow_client.set_terminated(created_run.info.run_id, "FINISHED")
+def test_update_run_name_without_changing_status(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("update run name")
+    created_run = qcflow_client.create_run(experiment_id)
+    qcflow_client.set_terminated(created_run.info.run_id, "FINISHED")
 
-    mlflow_client.update_run(created_run.info.run_id, name="name_abc")
-    updated_run_info = mlflow_client.get_run(created_run.info.run_id).info
+    qcflow_client.update_run(created_run.info.run_id, name="name_abc")
+    updated_run_info = qcflow_client.get_run(created_run.info.run_id).info
     assert updated_run_info.run_name == "name_abc"
     assert updated_run_info.status == "FINISHED"
 
 
-def test_create_promptlab_run_handler_rejects_invalid_requests(mlflow_client):
+def test_create_promptlab_run_handler_rejects_invalid_requests(qcflow_client):
     def assert_response(resp, message_part):
         assert resp.status_code == 400
         response_json = resp.json()
@@ -1705,7 +1705,7 @@ def test_create_promptlab_run_handler_rejects_invalid_requests(mlflow_client):
         assert message_part in response_json.get("message", "")
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/runs/create-promptlab-run",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/runs/create-promptlab-run",
         json={},
     )
     assert_response(
@@ -1714,7 +1714,7 @@ def test_create_promptlab_run_handler_rejects_invalid_requests(mlflow_client):
     )
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/runs/create-promptlab-run",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/runs/create-promptlab-run",
         json={"experiment_id": "123"},
     )
     assert_response(
@@ -1723,7 +1723,7 @@ def test_create_promptlab_run_handler_rejects_invalid_requests(mlflow_client):
     )
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/runs/create-promptlab-run",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/runs/create-promptlab-run",
         json={"experiment_id": "123", "prompt_template": "my_prompt_template"},
     )
     assert_response(
@@ -1732,7 +1732,7 @@ def test_create_promptlab_run_handler_rejects_invalid_requests(mlflow_client):
     )
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/runs/create-promptlab-run",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/runs/create-promptlab-run",
         json={
             "experiment_id": "123",
             "prompt_template": "my_prompt_template",
@@ -1745,7 +1745,7 @@ def test_create_promptlab_run_handler_rejects_invalid_requests(mlflow_client):
     )
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/runs/create-promptlab-run",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/runs/create-promptlab-run",
         json={
             "experiment_id": "123",
             "prompt_template": "my_prompt_template",
@@ -1759,7 +1759,7 @@ def test_create_promptlab_run_handler_rejects_invalid_requests(mlflow_client):
     )
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/runs/create-promptlab-run",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/runs/create-promptlab-run",
         json={
             "experiment_id": "123",
             "prompt_template": "my_prompt_template",
@@ -1770,27 +1770,27 @@ def test_create_promptlab_run_handler_rejects_invalid_requests(mlflow_client):
     )
     assert_response(
         response,
-        "CreatePromptlabRun request must specify mlflow_version.",
+        "CreatePromptlabRun request must specify qcflow_version.",
     )
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/runs/create-promptlab-run",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/runs/create-promptlab-run",
         json={
             "experiment_id": "123",
             "prompt_template": "my_prompt_template",
             "prompt_parameters": [{"key": "my_key", "value": "my_value"}],
             "model_route": "my_route",
             "model_input": "my_input",
-            "mlflow_version": "1.0.0",
+            "qcflow_version": "1.0.0",
         },
     )
 
 
-def test_create_promptlab_run_handler_returns_expected_results(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("log inputs test")
+def test_create_promptlab_run_handler_returns_expected_results(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("log inputs test")
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/runs/create-promptlab-run",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/runs/create-promptlab-run",
         json={
             "experiment_id": experiment_id,
             "run_name": "my_run_name",
@@ -1801,7 +1801,7 @@ def test_create_promptlab_run_handler_returns_expected_results(mlflow_client):
             "model_input": "my_input",
             "model_output": "my_output",
             "model_output_parameters": [{"key": "latency", "value": "100"}],
-            "mlflow_version": "1.0.0",
+            "qcflow_version": "1.0.0",
             "user_id": "username",
             "start_time": 456,
         },
@@ -1821,15 +1821,15 @@ def test_create_promptlab_run_handler_returns_expected_results(mlflow_client):
     assert {"key": "temperature", "value": "0.1"} in run_json["run"]["data"]["params"]
 
     assert {
-        "key": "mlflow.loggedArtifacts",
+        "key": "qcflow.loggedArtifacts",
         "value": '[{"path": "eval_results_table.json", "type": "table"}]',
     } in run_json["run"]["data"]["tags"]
-    assert {"key": "mlflow.runSourceType", "value": "PROMPT_ENGINEERING"} in run_json["run"][
+    assert {"key": "qcflow.runSourceType", "value": "PROMPT_ENGINEERING"} in run_json["run"][
         "data"
     ]["tags"]
 
 
-def test_gateway_proxy_handler_rejects_invalid_requests(mlflow_client):
+def test_gateway_proxy_handler_rejects_invalid_requests(qcflow_client):
     def assert_response(resp, message_part):
         assert resp.status_code == 400
         response_json = resp.json()
@@ -1837,14 +1837,14 @@ def test_gateway_proxy_handler_rejects_invalid_requests(mlflow_client):
         assert message_part in response_json.get("message", "")
 
     with _init_server(
-        backend_uri=mlflow_client.tracking_uri,
-        root_artifact_uri=mlflow_client.tracking_uri,
-        extra_env={"MLFLOW_DEPLOYMENTS_TARGET": "http://localhost:5001"},
+        backend_uri=qcflow_client.tracking_uri,
+        root_artifact_uri=qcflow_client.tracking_uri,
+        extra_env={"QCFLOW_DEPLOYMENTS_TARGET": "http://localhost:5001"},
     ) as url:
         patched_client = MlflowClient(url)
 
         response = requests.post(
-            f"{patched_client.tracking_uri}/ajax-api/2.0/mlflow/gateway-proxy",
+            f"{patched_client.tracking_uri}/ajax-api/2.0/qcflow/gateway-proxy",
             json={},
         )
         assert_response(
@@ -1853,23 +1853,23 @@ def test_gateway_proxy_handler_rejects_invalid_requests(mlflow_client):
         )
 
 
-def test_upload_artifact_handler_rejects_invalid_requests(mlflow_client):
+def test_upload_artifact_handler_rejects_invalid_requests(qcflow_client):
     def assert_response(resp, message_part):
         assert resp.status_code == 400
         response_json = resp.json()
         assert response_json.get("error_code") == "INVALID_PARAMETER_VALUE"
         assert message_part in response_json.get("message", "")
 
-    experiment_id = mlflow_client.create_experiment("upload_artifacts_test")
-    created_run = mlflow_client.create_run(experiment_id)
+    experiment_id = qcflow_client.create_experiment("upload_artifacts_test")
+    created_run = qcflow_client.create_run(experiment_id)
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/upload-artifact", params={}
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/upload-artifact", params={}
     )
     assert_response(response, "Request must specify run_uuid.")
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/upload-artifact",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/upload-artifact",
         params={
             "run_uuid": created_run.info.run_id,
         },
@@ -1877,19 +1877,19 @@ def test_upload_artifact_handler_rejects_invalid_requests(mlflow_client):
     assert_response(response, "Request must specify path.")
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/upload-artifact",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/upload-artifact",
         params={"run_uuid": created_run.info.run_id, "path": ""},
     )
     assert_response(response, "Request must specify path.")
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/upload-artifact",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/upload-artifact",
         params={"run_uuid": created_run.info.run_id, "path": "../test.txt"},
     )
     assert_response(response, "Invalid path")
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/upload-artifact",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/upload-artifact",
         params={
             "run_uuid": created_run.info.run_id,
             "path": "test.txt",
@@ -1898,12 +1898,12 @@ def test_upload_artifact_handler_rejects_invalid_requests(mlflow_client):
     assert_response(response, "Request must specify data.")
 
 
-def test_upload_artifact_handler(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("upload_artifacts_test")
-    created_run = mlflow_client.create_run(experiment_id)
+def test_upload_artifact_handler(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("upload_artifacts_test")
+    created_run = qcflow_client.create_run(experiment_id)
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/upload-artifact",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/upload-artifact",
         params={
             "run_uuid": created_run.info.run_id,
             "path": "test.txt",
@@ -1913,7 +1913,7 @@ def test_upload_artifact_handler(mlflow_client):
     assert response.status_code == 200
 
     response = requests.get(
-        f"{mlflow_client.tracking_uri}/get-artifact",
+        f"{qcflow_client.tracking_uri}/get-artifact",
         params={
             "run_uuid": created_run.info.run_id,
             "path": "test.txt",
@@ -1923,9 +1923,9 @@ def test_upload_artifact_handler(mlflow_client):
     assert response.text == "hello world"
 
 
-def test_graphql_handler(mlflow_client):
+def test_graphql_handler(qcflow_client):
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/graphql",
+        f"{qcflow_client.tracking_uri}/graphql",
         json={
             "query": 'query testQuery {test(inputString: "abc") { output }}',
             "operationName": "testQuery",
@@ -1935,12 +1935,12 @@ def test_graphql_handler(mlflow_client):
     assert response.status_code == 200
 
 
-def test_get_experiment_graphql(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("GraphqlTest")
+def test_get_experiment_graphql(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("GraphqlTest")
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/graphql",
+        f"{qcflow_client.tracking_uri}/graphql",
         json={
-            "query": 'query testQuery {mlflowGetExperiment(input: {experimentId: "'
+            "query": 'query testQuery {qcflowGetExperiment(input: {experimentId: "'
             + experiment_id
             + '"}) { experiment { name } }}',
             "operationName": "testQuery",
@@ -1949,22 +1949,22 @@ def test_get_experiment_graphql(mlflow_client):
     )
     assert response.status_code == 200
     json = response.json()
-    assert json["data"]["mlflowGetExperiment"]["experiment"]["name"] == "GraphqlTest"
+    assert json["data"]["qcflowGetExperiment"]["experiment"]["name"] == "GraphqlTest"
 
 
-def test_get_run_and_experiment_graphql(mlflow_client):
+def test_get_run_and_experiment_graphql(qcflow_client):
     name = "GraphqlTest"
-    mlflow_client.create_registered_model(name)
-    experiment_id = mlflow_client.create_experiment(name)
-    created_run = mlflow_client.create_run(experiment_id)
+    qcflow_client.create_registered_model(name)
+    experiment_id = qcflow_client.create_experiment(name)
+    created_run = qcflow_client.create_run(experiment_id)
     run_id = created_run.info.run_id
-    mlflow_client.create_model_version("GraphqlTest", "runs:/graphql_test/model", run_id)
+    qcflow_client.create_model_version("GraphqlTest", "runs:/graphql_test/model", run_id)
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/graphql",
+        f"{qcflow_client.tracking_uri}/graphql",
         json={
             "query": f"""
                 query testQuery @component(name: "Test") {{
-                    mlflowGetRun(input: {{runId: "{run_id}"}}) {{
+                    qcflowGetRun(input: {{runId: "{run_id}"}}) {{
                         run {{
                             info {{
                                 status
@@ -1986,21 +1986,21 @@ def test_get_run_and_experiment_graphql(mlflow_client):
     assert response.status_code == 200
     json = response.json()
     assert json["errors"] is None
-    assert json["data"]["mlflowGetRun"]["run"]["info"]["status"] == created_run.info.status
-    assert json["data"]["mlflowGetRun"]["run"]["experiment"]["name"] == name
-    assert json["data"]["mlflowGetRun"]["run"]["modelVersions"][0]["name"] == name
+    assert json["data"]["qcflowGetRun"]["run"]["info"]["status"] == created_run.info.status
+    assert json["data"]["qcflowGetRun"]["run"]["experiment"]["name"] == name
+    assert json["data"]["qcflowGetRun"]["run"]["modelVersions"][0]["name"] == name
 
 
-def test_start_and_end_trace(mlflow_client):
-    experiment_id = mlflow_client.create_experiment("start end trace")
+def test_start_and_end_trace(qcflow_client):
+    experiment_id = qcflow_client.create_experiment("start end trace")
 
     # Trace CRUD APIs are not directly exposed as public API of MlflowClient,
     # so we use the underlying tracking client to test them.
-    client = mlflow_client._tracking_client
+    client = qcflow_client._tracking_client
 
-    # Helper function to remove auto-added system tags (mlflow.xxx) from testing
+    # Helper function to remove auto-added system tags (qcflow.xxx) from testing
     def _exclude_system_tags(tags: dict[str, str]):
-        return {k: v for k, v in tags.items() if not k.startswith("mlflow.")}
+        return {k: v for k, v in tags.items() if not k.startswith("qcflow.")}
 
     trace_info = client.start_trace(
         experiment_id=experiment_id,
@@ -2060,25 +2060,25 @@ def test_start_and_end_trace(mlflow_client):
     assert trace_info == client.get_trace_info(trace_info.request_id)
 
 
-def test_start_and_end_trace_non_string_name(mlflow_client):
+def test_start_and_end_trace_non_string_name(qcflow_client):
     # OpenTelemetry span can accept non-string name like 1234. However, it is problematic
     # when we use it as a trace name (which is set from a root span name) and log it to
-    # remote tracking server. Trace name is stored as mlflow.traceName tag and tag value
+    # remote tracking server. Trace name is stored as qcflow.traceName tag and tag value
     # can only be string, otherwise protobuf serialization will fail. Therefore, this test
     # verifies that non-string span name is correctly handled before sending to the server.
-    mlflow.set_tracking_uri(mlflow_client.tracking_uri)
-    exp_id = mlflow_client.create_experiment("non-string trace")
+    qcflow.set_tracking_uri(qcflow_client.tracking_uri)
+    exp_id = qcflow_client.create_experiment("non-string trace")
 
-    span = mlflow_client.start_trace(name=1234, experiment_id=exp_id)
-    child_span = mlflow_client.start_span(
+    span = qcflow_client.start_trace(name=1234, experiment_id=exp_id)
+    child_span = qcflow_client.start_span(
         name=None, request_id=span.request_id, parent_id=span.span_id
     )
-    mlflow_client.end_span(
+    qcflow_client.end_span(
         request_id=child_span.request_id, span_id=child_span.span_id, status="OK"
     )
-    mlflow_client.end_trace(request_id=span.request_id, status="OK")
+    qcflow_client.end_trace(request_id=span.request_id, status="OK")
 
-    traces = mlflow_client.search_traces(experiment_ids=[exp_id])
+    traces = qcflow_client.search_traces(experiment_ids=[exp_id])
     assert len(traces) == 1
     trace = traces[0]
     assert trace.info.tags[TraceTagKey.TRACE_NAME] == "1234"
@@ -2090,14 +2090,14 @@ def test_start_and_end_trace_non_string_name(mlflow_client):
     assert trace.data.spans[1].status.status_code == "OK"
 
 
-def test_search_traces(mlflow_client):
-    mlflow.set_tracking_uri(mlflow_client.tracking_uri)
-    experiment_id = mlflow_client.create_experiment("search traces")
+def test_search_traces(qcflow_client):
+    qcflow.set_tracking_uri(qcflow_client.tracking_uri)
+    experiment_id = qcflow_client.create_experiment("search traces")
 
     # Create test traces
     def _create_trace(name, status):
-        span = mlflow_client.start_trace(name=name, experiment_id=experiment_id)
-        mlflow_client.end_trace(request_id=span.request_id, status=status)
+        span = qcflow_client.start_trace(name=name, experiment_id=experiment_id)
+        qcflow_client.end_trace(request_id=span.request_id, status=status)
         return span.request_id
 
     request_id_1 = _create_trace(name="trace1", status=TraceStatus.OK)
@@ -2108,11 +2108,11 @@ def test_search_traces(mlflow_client):
         return [t.info.request_id for t in traces]
 
     # Validate search
-    traces = mlflow_client.search_traces(experiment_ids=[experiment_id])
+    traces = qcflow_client.search_traces(experiment_ids=[experiment_id])
     assert _get_request_ids(traces) == [request_id_3, request_id_2, request_id_1]
     assert traces.token is None
 
-    traces = mlflow_client.search_traces(
+    traces = qcflow_client.search_traces(
         experiment_ids=[experiment_id],
         filter_string="status = 'OK'",
         order_by=["timestamp ASC"],
@@ -2120,13 +2120,13 @@ def test_search_traces(mlflow_client):
     assert _get_request_ids(traces) == [request_id_1, request_id_2]
     assert traces.token is None
 
-    traces = mlflow_client.search_traces(
+    traces = qcflow_client.search_traces(
         experiment_ids=[experiment_id],
         max_results=2,
     )
     assert _get_request_ids(traces) == [request_id_3, request_id_2]
     assert traces.token is not None
-    traces = mlflow_client.search_traces(
+    traces = qcflow_client.search_traces(
         experiment_ids=[experiment_id],
         page_token=traces.token,
     )
@@ -2134,18 +2134,18 @@ def test_search_traces(mlflow_client):
     assert traces.token is None
 
 
-def test_delete_traces(mlflow_client):
-    mlflow.set_tracking_uri(mlflow_client.tracking_uri)
-    experiment_id = mlflow_client.create_experiment("delete traces")
+def test_delete_traces(qcflow_client):
+    qcflow.set_tracking_uri(qcflow_client.tracking_uri)
+    experiment_id = qcflow_client.create_experiment("delete traces")
 
     def _create_trace(name, status):
-        span = mlflow_client.start_trace(name=name, experiment_id=experiment_id)
-        mlflow_client.end_trace(request_id=span.request_id, status=status)
+        span = qcflow_client.start_trace(name=name, experiment_id=experiment_id)
+        qcflow_client.end_trace(request_id=span.request_id, status=status)
         return span.request_id
 
     def _is_trace_exists(request_id):
         try:
-            trace_info = mlflow_client._tracking_client.get_trace_info(request_id)
+            trace_info = qcflow_client._tracking_client.get_trace_info(request_id)
             return trace_info is not None
         except RestException as e:
             if e.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST):
@@ -2158,7 +2158,7 @@ def test_delete_traces(mlflow_client):
     assert _is_trace_exists(request_id_1)
     assert _is_trace_exists(request_id_2)
 
-    deleted_count = mlflow_client.delete_traces(experiment_id, max_timestamp_millis=int(1e15))
+    deleted_count = qcflow_client.delete_traces(experiment_id, max_timestamp_millis=int(1e15))
     assert deleted_count == 2
     assert not _is_trace_exists(request_id_1)
     assert not _is_trace_exists(request_id_2)
@@ -2168,7 +2168,7 @@ def test_delete_traces(mlflow_client):
     time.sleep(0.1)  # Add some time gap to avoid timestamp collision
     request_id_2 = _create_trace(name="trace2", status=TraceStatus.OK)
 
-    deleted_count = mlflow_client.delete_traces(
+    deleted_count = qcflow_client.delete_traces(
         experiment_id, max_traces=1, max_timestamp_millis=int(1e15)
     )
     assert deleted_count == 1
@@ -2182,18 +2182,18 @@ def test_delete_traces(mlflow_client):
     request_id_1 = _create_trace(name="trace1", status=TraceStatus.OK)
     request_id_2 = _create_trace(name="trace2", status=TraceStatus.OK)
 
-    deleted_count = mlflow_client.delete_traces(experiment_id, request_ids=[request_id_1])
+    deleted_count = qcflow_client.delete_traces(experiment_id, request_ids=[request_id_1])
     assert deleted_count == 1
     assert not _is_trace_exists(request_id_1)
     assert _is_trace_exists(request_id_2)
 
 
-def test_set_and_delete_trace_tag(mlflow_client):
-    mlflow.set_tracking_uri(mlflow_client.tracking_uri)
-    experiment_id = mlflow_client.create_experiment("set delete tag")
+def test_set_and_delete_trace_tag(qcflow_client):
+    qcflow.set_tracking_uri(qcflow_client.tracking_uri)
+    experiment_id = qcflow_client.create_experiment("set delete tag")
 
     # Create test trace
-    trace_info = mlflow_client._tracking_client.start_trace(
+    trace_info = qcflow_client._tracking_client.start_trace(
         experiment_id=experiment_id,
         timestamp_ms=1000,
         request_metadata={},
@@ -2204,28 +2204,28 @@ def test_set_and_delete_trace_tag(mlflow_client):
     )
 
     # Validate set tag
-    mlflow_client.set_trace_tag(trace_info.request_id, "tag1", "green")
-    trace_info = mlflow_client._tracking_client.get_trace_info(trace_info.request_id)
+    qcflow_client.set_trace_tag(trace_info.request_id, "tag1", "green")
+    trace_info = qcflow_client._tracking_client.get_trace_info(trace_info.request_id)
     assert trace_info.tags["tag1"] == "green"
 
     # Validate delete tag
-    mlflow_client.delete_trace_tag(trace_info.request_id, "tag2")
-    trace_info = mlflow_client._tracking_client.get_trace_info(trace_info.request_id)
+    qcflow_client.delete_trace_tag(trace_info.request_id, "tag2")
+    trace_info = qcflow_client._tracking_client.get_trace_info(trace_info.request_id)
     assert "tag2" not in trace_info.tags
 
 
-def test_get_trace_artifact_handler(mlflow_client):
-    mlflow.set_tracking_uri(mlflow_client.tracking_uri)
+def test_get_trace_artifact_handler(qcflow_client):
+    qcflow.set_tracking_uri(qcflow_client.tracking_uri)
 
-    experiment_id = mlflow_client.create_experiment("get trace artifact")
+    experiment_id = qcflow_client.create_experiment("get trace artifact")
 
-    span = mlflow_client.start_trace(name="test", experiment_id=experiment_id)
+    span = qcflow_client.start_trace(name="test", experiment_id=experiment_id)
     request_id = span.request_id
     span.set_attributes({"fruit": "apple"})
-    mlflow_client.end_trace(request_id=request_id)
+    qcflow_client.end_trace(request_id=request_id)
 
     response = requests.get(
-        f"{mlflow_client.tracking_uri}/ajax-api/2.0/mlflow/get-trace-artifact",
+        f"{qcflow_client.tracking_uri}/ajax-api/2.0/qcflow/get-trace-artifact",
         params={"request_id": request_id},
     )
     assert response.status_code == 200
@@ -2236,22 +2236,22 @@ def test_get_trace_artifact_handler(mlflow_client):
     assert trace_data.spans[0].to_dict() == span.to_dict()
 
 
-def test_get_metric_history_bulk_interval_graphql(mlflow_client):
+def test_get_metric_history_bulk_interval_graphql(qcflow_client):
     name = "GraphqlTest"
-    mlflow_client.create_registered_model(name)
-    experiment_id = mlflow_client.create_experiment(name)
-    created_run = mlflow_client.create_run(experiment_id)
+    qcflow_client.create_registered_model(name)
+    experiment_id = qcflow_client.create_experiment(name)
+    created_run = qcflow_client.create_run(experiment_id)
 
     metric_name = "metric_0"
     for i in range(10):
-        mlflow_client.log_metric(created_run.info.run_id, metric_name, i, step=i)
+        qcflow_client.log_metric(created_run.info.run_id, metric_name, i, step=i)
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/graphql",
+        f"{qcflow_client.tracking_uri}/graphql",
         json={
             "query": f"""
                 query testQuery {{
-                    mlflowGetMetricHistoryBulkInterval(input: {{
+                    qcflowGetMetricHistoryBulkInterval(input: {{
                         runIds: ["{created_run.info.run_id}"],
                         metricKey: "{metric_name}",
                     }}) {{
@@ -2271,22 +2271,22 @@ def test_get_metric_history_bulk_interval_graphql(mlflow_client):
     assert response.status_code == 200
     json = response.json()
     expected = [{"key": metric_name, "timestamp": mock.ANY, "value": i} for i in range(10)]
-    assert json["data"]["mlflowGetMetricHistoryBulkInterval"]["metrics"] == expected
+    assert json["data"]["qcflowGetMetricHistoryBulkInterval"]["metrics"] == expected
 
 
-def test_search_runs_graphql(mlflow_client):
+def test_search_runs_graphql(qcflow_client):
     name = "GraphqlTest"
-    mlflow_client.create_registered_model(name)
-    experiment_id = mlflow_client.create_experiment(name)
-    created_run_1 = mlflow_client.create_run(experiment_id)
-    created_run_2 = mlflow_client.create_run(experiment_id)
+    qcflow_client.create_registered_model(name)
+    experiment_id = qcflow_client.create_experiment(name)
+    created_run_1 = qcflow_client.create_run(experiment_id)
+    created_run_2 = qcflow_client.create_run(experiment_id)
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/graphql",
+        f"{qcflow_client.tracking_uri}/graphql",
         json={
             "query": f"""
                 mutation testMutation {{
-                    mlflowSearchRuns(input: {{ experimentIds: ["{experiment_id}"] }}) {{
+                    qcflowSearchRuns(input: {{ experimentIds: ["{experiment_id}"] }}) {{
                         runs {{
                             info {{
                                 runId
@@ -2306,20 +2306,20 @@ def test_search_runs_graphql(mlflow_client):
         {"info": {"runId": created_run_2.info.run_id}},
         {"info": {"runId": created_run_1.info.run_id}},
     ]
-    assert json["data"]["mlflowSearchRuns"]["runs"] == expected
+    assert json["data"]["qcflowSearchRuns"]["runs"] == expected
 
 
-def test_list_artifacts_graphql(mlflow_client, tmp_path):
+def test_list_artifacts_graphql(qcflow_client, tmp_path):
     name = "GraphqlTest"
-    experiment_id = mlflow_client.create_experiment(name)
-    created_run_id = mlflow_client.create_run(experiment_id).info.run_id
+    experiment_id = qcflow_client.create_experiment(name)
+    created_run_id = qcflow_client.create_run(experiment_id).info.run_id
     file_path = tmp_path / "test.txt"
     file_path.write_text("hello world")
-    mlflow_client.log_artifact(created_run_id, file_path.absolute().as_posix())
-    mlflow_client.log_artifact(created_run_id, file_path.absolute().as_posix(), "testDir")
+    qcflow_client.log_artifact(created_run_id, file_path.absolute().as_posix())
+    qcflow_client.log_artifact(created_run_id, file_path.absolute().as_posix(), "testDir")
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/graphql",
+        f"{qcflow_client.tracking_uri}/graphql",
         json={
             "query": f"""
                 fragment FilesFragment on MlflowListArtifactsResponse {{
@@ -2331,10 +2331,10 @@ def test_list_artifacts_graphql(mlflow_client, tmp_path):
                 }}
 
                 query testQuery {{
-                    file: mlflowListArtifacts(input: {{ runId: "{created_run_id}" }}) {{
+                    file: qcflowListArtifacts(input: {{ runId: "{created_run_id}" }}) {{
                         ...FilesFragment
                     }}
-                    subdir: mlflowListArtifacts(input: {{
+                    subdir: qcflowListArtifacts(input: {{
                         runId: "{created_run_id}",
                         path: "testDir",
                     }}) {{
@@ -2360,10 +2360,10 @@ def test_list_artifacts_graphql(mlflow_client, tmp_path):
     assert json["data"]["subdir"]["files"] == subdir_expected
 
 
-def test_search_datasets_graphql(mlflow_client):
+def test_search_datasets_graphql(qcflow_client):
     name = "GraphqlTest"
-    experiment_id = mlflow_client.create_experiment(name)
-    created_run_id = mlflow_client.create_run(experiment_id).info.run_id
+    experiment_id = qcflow_client.create_experiment(name)
+    created_run_id = qcflow_client.create_run(experiment_id).info.run_id
     dataset1 = Dataset(
         name="test-dataset-1",
         digest="12345",
@@ -2378,16 +2378,16 @@ def test_search_datasets_graphql(mlflow_client):
         source="test",
     )
     dataset_input2 = DatasetInput(
-        dataset=dataset2, tags=[InputTag(key=MLFLOW_DATASET_CONTEXT, value="training")]
+        dataset=dataset2, tags=[InputTag(key=QCFLOW_DATASET_CONTEXT, value="training")]
     )
-    mlflow_client.log_inputs(created_run_id, [dataset_input1, dataset_input2])
+    qcflow_client.log_inputs(created_run_id, [dataset_input1, dataset_input2])
 
     response = requests.post(
-        f"{mlflow_client.tracking_uri}/graphql",
+        f"{qcflow_client.tracking_uri}/graphql",
         json={
             "query": f"""
                 mutation testMutation {{
-                    mlflowSearchDatasets(input:{{experimentIds: ["{experiment_id}"]}}) {{
+                    qcflowSearchDatasets(input:{{experimentIds: ["{experiment_id}"]}}) {{
                         datasetSummaries {{
                             experimentId
                             name
@@ -2425,5 +2425,5 @@ def test_search_datasets_graphql(mlflow_client):
         ]
     )
     assert (
-        sort_dataset_summaries(json["data"]["mlflowSearchDatasets"]["datasetSummaries"]) == expected
+        sort_dataset_summaries(json["data"]["qcflowSearchDatasets"]["datasetSummaries"]) == expected
     )

@@ -1,5 +1,5 @@
 class SourceType:
-    """Enum for originating source of a :py:class:`mlflow.entities.Run`."""
+    """Enum for originating source of a :py:class:`qcflow.entities.Run`."""
 
     NOTEBOOK, JOB, PROJECT, LOCAL, UNKNOWN, RECIPE = range(1, 7)
 

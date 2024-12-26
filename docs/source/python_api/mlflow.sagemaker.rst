@@ -1,7 +1,7 @@
-mlflow.sagemaker
+qcflow.sagemaker
 ================
 
-.. automodule:: mlflow.sagemaker
+.. automodule:: qcflow.sagemaker
     :members:
     :undoc-members:
     :show-inheritance:

@@ -25,7 +25,7 @@ jobs:
   devcontainer:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: github.repository == 'mlflow/mlflow'
+    if: github.repository == 'qcflow/qcflow'
     permissions:
       packages: write # to push to ghcr.io
     strategy:
@@ -38,7 +38,7 @@ jobs:
       - name: Get image name
         id: image
         run: |
-          IMAGE_NAME=$(yq '.services.mlflow.image' .devcontainer/docker-compose.yml)
+          IMAGE_NAME=$(yq '.services.qcflow.image' .devcontainer/docker-compose.yml)
           echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
           echo "name=$IMAGE_NAME" >> $GITHUB_OUTPUT
       - name: Set up QEMU
@@ -66,7 +66,7 @@ jobs:
         run: |
           docker run \
           --rm \
-          -v $(pwd):/workspaces/mlflow \
+          -v $(pwd):/workspaces/qcflow \
           --platform linux/${{ matrix.arch }} \
           $IMAGE_NAME \
           bash -c "pip install --no-deps -e . && pytest tests/test_version.py"

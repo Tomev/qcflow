@@ -1,5 +1,5 @@
 """
-The ``mlflow.pyfunc.model`` module defines logic for saving and loading custom "python_function"
+The ``qcflow.pyfunc.model`` module defines logic for saving and loading custom "python_function"
 models with a user-defined ``PythonModel`` subclass.
 """
 
@@ -16,33 +16,33 @@ import cloudpickle
 import pandas as pd
 import yaml
 
-import mlflow.pyfunc
-import mlflow.utils
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model
-from mlflow.models.model import MLMODEL_FILE_NAME, MODEL_CODE_PATH
-from mlflow.models.rag_signatures import ChatCompletionRequest, SplitChatMessagesRequest
-from mlflow.models.signature import _extract_type_hints, _is_context_in_predict_function_signature
-from mlflow.models.utils import _load_model_code_path
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.pyfunc.utils.input_converter import _hydrate_dataclass
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types.llm import ChatCompletionChunk, ChatCompletionResponse, ChatMessage, ChatParams
-from mlflow.types.utils import _is_list_dict_str, _is_list_str
-from mlflow.utils.annotations import experimental
-from mlflow.utils.environment import (
+import qcflow.pyfunc
+import qcflow.utils
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model
+from qcflow.models.model import MLMODEL_FILE_NAME, MODEL_CODE_PATH
+from qcflow.models.rag_signatures import ChatCompletionRequest, SplitChatMessagesRequest
+from qcflow.models.signature import _extract_type_hints, _is_context_in_predict_function_signature
+from qcflow.models.utils import _load_model_code_path
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.pyfunc.utils.input_converter import _hydrate_dataclass
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types.llm import ChatCompletionChunk, ChatCompletionResponse, ChatMessage, ChatParams
+from qcflow.types.utils import _is_list_dict_str, _is_list_str
+from qcflow.utils.annotations import experimental
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
 )
-from mlflow.utils.file_utils import TempDir, get_total_file_size, write_to
-from mlflow.utils.model_utils import _get_flavor_configuration, _validate_infer_and_copy_code_paths
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.file_utils import TempDir, get_total_file_size, write_to
+from qcflow.utils.model_utils import _get_flavor_configuration, _validate_infer_and_copy_code_paths
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 CONFIG_KEY_ARTIFACTS = "artifacts"
 CONFIG_KEY_ARTIFACT_RELATIVE_PATH = "path"
@@ -63,7 +63,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor. Calls to
+        A list of default pip requirements for QCFlow Models produced by this flavor. Calls to
         :func:`save_model()` and :func:`log_model()` produce a pip environment that, at minimum,
         contains these requirements.
     """
@@ -73,12 +73,12 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
-        :func:`save_model() <mlflow.pyfunc.save_model>`
-        and :func:`log_model() <mlflow.pyfunc.log_model>` when a user-defined subclass of
+        The default Conda environment for QCFlow Models produced by calls to
+        :func:`save_model() <qcflow.pyfunc.save_model>`
+        and :func:`log_model() <qcflow.pyfunc.log_model>` when a user-defined subclass of
         :class:`PythonModel` is provided.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 def _log_warning_if_params_not_in_predict_signature(logger, params):
@@ -92,7 +92,7 @@ def _log_warning_if_params_not_in_predict_signature(logger, params):
 class PythonModel:
     """
     Represents a generic Python model that evaluates inputs and produces API-compatible outputs.
-    By subclassing :class:`~PythonModel`, users can create customized MLflow models with the
+    By subclassing :class:`~PythonModel`, users can create customized QCFlow models with the
     "python_function" ("pyfunc") flavor, leveraging custom inference logic and artifact
     dependencies.
     """
@@ -102,7 +102,7 @@ class PythonModel:
     def load_context(self, context):
         """
         Loads artifacts from the specified :class:`~PythonModelContext` that can be used by
-        :func:`~PythonModel.predict` when evaluating inputs. When loading an MLflow model with
+        :func:`~PythonModel.predict` when evaluating inputs. When loading an QCFlow model with
         :func:`~load_model`, this method is called as soon as the :class:`~PythonModel` is
         constructed.
 
@@ -134,7 +134,7 @@ class PythonModel:
             params: Additional parameters to pass to the model for inference.
 
         .. tip::
-            Since MLflow 2.20.0, `context` parameter can be removed from `predict` function
+            Since QCFlow 2.20.0, `context` parameter can be removed from `predict` function
             signature if it's not used. `def predict(self, model_input, params=None)` is valid.
         """
 
@@ -150,7 +150,7 @@ class PythonModel:
             params: Additional parameters to pass to the model for inference.
 
         .. tip::
-            Since MLflow 2.20.0, `context` parameter can be removed from `predict_stream` function
+            Since QCFlow 2.20.0, `context` parameter can be removed from `predict_stream` function
             signature if it's not used.
             `def predict_stream(self, model_input, params=None)` is valid.
         """
@@ -193,8 +193,8 @@ class PythonModelContext:
     """
     A collection of artifacts that a :class:`~PythonModel` can use when performing inference.
     :class:`~PythonModelContext` objects are created *implicitly* by the
-    :func:`save_model() <mlflow.pyfunc.save_model>` and
-    :func:`log_model() <mlflow.pyfunc.log_model>` persistence methods, using the contents specified
+    :func:`save_model() <qcflow.pyfunc.save_model>` and
+    :func:`log_model() <qcflow.pyfunc.log_model>` persistence methods, using the contents specified
     by the ``artifacts`` parameter of these methods.
     """
 
@@ -233,10 +233,10 @@ class ChatModel(PythonModel, metaclass=ABCMeta):
     """
     A subclass of :class:`~PythonModel` that makes it more convenient to implement models
     that are compatible with popular LLM chat APIs. By subclassing :class:`~ChatModel`,
-    users can create MLflow models with a ``predict()`` method that is more convenient
+    users can create QCFlow models with a ``predict()`` method that is more convenient
     for chat tasks than the generic :class:`~PythonModel` API. ChatModels automatically
     define input/output signatures and an input example, so manually specifying these values
-    when calling :func:`mlflow.pyfunc.save_model() <mlflow.pyfunc.save_model>` is not necessary.
+    when calling :func:`qcflow.pyfunc.save_model() <qcflow.pyfunc.save_model>` is not necessary.
 
     See the documentation of the ``predict()`` method below for details on that parameters and
     outputs that are expected by the ``ChatModel`` API.
@@ -252,21 +252,21 @@ class ChatModel(PythonModel, metaclass=ABCMeta):
         Args:
             context: A :class:`~PythonModelContext` instance containing artifacts that the model
                 can use to perform inference.
-            messages (List[:py:class:`ChatMessage <mlflow.types.llm.ChatMessage>`]):
-                A list of :py:class:`ChatMessage <mlflow.types.llm.ChatMessage>`
+            messages (List[:py:class:`ChatMessage <qcflow.types.llm.ChatMessage>`]):
+                A list of :py:class:`ChatMessage <qcflow.types.llm.ChatMessage>`
                 objects representing chat history.
-            params (:py:class:`ChatParams <mlflow.types.llm.ChatParams>`):
-                A :py:class:`ChatParams <mlflow.types.llm.ChatParams>` object
+            params (:py:class:`ChatParams <qcflow.types.llm.ChatParams>`):
+                A :py:class:`ChatParams <qcflow.types.llm.ChatParams>` object
                 containing various parameters used to modify model behavior during
                 inference.
 
         .. tip::
-            Since MLflow 2.20.0, `context` parameter can be removed from `predict` function
+            Since QCFlow 2.20.0, `context` parameter can be removed from `predict` function
             signature if it's not used.
             `def predict(self, messages: list[ChatMessage], params: ChatParams)` is valid.
 
         Returns:
-            A :py:class:`ChatCompletionResponse <mlflow.types.llm.ChatCompletionResponse>`
+            A :py:class:`ChatCompletionResponse <qcflow.types.llm.ChatCompletionResponse>`
             object containing the model's response(s), as well as other metadata.
         """
 
@@ -280,21 +280,21 @@ class ChatModel(PythonModel, metaclass=ABCMeta):
         Args:
             context: A :class:`~PythonModelContext` instance containing artifacts that the model
                 can use to perform inference.
-            messages (List[:py:class:`ChatMessage <mlflow.types.llm.ChatMessage>`]):
-                A list of :py:class:`ChatMessage <mlflow.types.llm.ChatMessage>`
+            messages (List[:py:class:`ChatMessage <qcflow.types.llm.ChatMessage>`]):
+                A list of :py:class:`ChatMessage <qcflow.types.llm.ChatMessage>`
                 objects representing chat history.
-            params (:py:class:`ChatParams <mlflow.types.llm.ChatParams>`):
-                A :py:class:`ChatParams <mlflow.types.llm.ChatParams>` object
+            params (:py:class:`ChatParams <qcflow.types.llm.ChatParams>`):
+                A :py:class:`ChatParams <qcflow.types.llm.ChatParams>` object
                 containing various parameters used to modify model behavior during
                 inference.
 
         .. tip::
-            Since MLflow 2.20.0, `context` parameter can be removed from `predict_stream` function
+            Since QCFlow 2.20.0, `context` parameter can be removed from `predict_stream` function
             signature if it's not used.
             `def predict_stream(self, messages: list[ChatMessage], params: ChatParams)` is valid.
 
         Returns:
-            A generator over :py:class:`ChatCompletionChunk <mlflow.types.llm.ChatCompletionChunk>`
+            A generator over :py:class:`ChatCompletionChunk <qcflow.types.llm.ChatCompletionChunk>`
             object containing the model's response(s), as well as other metadata.
         """
         raise NotImplementedError(
@@ -311,7 +311,7 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
     artifacts=None,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     pip_requirements=None,
     extra_pip_requirements=None,
     model_config=None,
@@ -340,7 +340,7 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
         code_paths: A list of local filesystem paths to Python file dependencies (or directories
             containing file dependencies). These files are *prepended* to the system path before the
             model is loaded.
-        mlflow_model: The model to which to add the ``mlflow.pyfunc`` flavor.
+        qcflow_model: The model to which to add the ``qcflow.pyfunc`` flavor.
         model_config: The model configuration for the flavor. Model configuration is available
             during model loading time.
 
@@ -354,11 +354,11 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
                 without warning.
 
         streamable: A boolean value indicating if the model supports streaming prediction,
-                    If None, MLflow will try to inspect if the model supports streaming
+                    If None, QCFlow will try to inspect if the model supports streaming
                     by checking if `predict_stream` method exists. Default None.
     """
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
 
     custom_model_config_kwargs = {
         CONFIG_KEY_CLOUDPICKLE_VERSION: cloudpickle.__version__,
@@ -377,7 +377,7 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
             raise MlflowException(
                 "Failed to serialize Python model. Please save the model into a python file "
                 "and use code-based logging method instead. See"
-                "https://mlflow.org/docs/latest/models.html#models-from-code for more information."
+                "https://qcflow.org/docs/latest/models.html#models-from-code for more information."
             ) from e
 
         custom_model_config_kwargs[CONFIG_KEY_PYTHON_MODEL] = saved_python_model_subpath
@@ -441,7 +441,7 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
         streamable = python_model.__class__.predict_stream != PythonModel.predict_stream
 
     if model_code_path:
-        loader_module = mlflow.pyfunc.loaders.code_model.__name__
+        loader_module = qcflow.pyfunc.loaders.code_model.__name__
     elif python_model:
         loader_module = _get_pyfunc_loader_module(python_model)
     else:
@@ -450,8 +450,8 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
             error_code=INVALID_PARAMETER_VALUE,
         )
 
-    mlflow.pyfunc.add_to_model(
-        model=mlflow_model,
+    qcflow.pyfunc.add_to_model(
+        model=qcflow_model,
         loader_module=loader_module,
         code=None,
         conda_env=_CONDA_ENV_FILE_NAME,
@@ -462,28 +462,28 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
         **custom_model_config_kwargs,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     saved_code_subpath = _validate_infer_and_copy_code_paths(
         code_paths,
         path,
         infer_code_paths,
-        mlflow.pyfunc.FLAVOR_NAME,
+        qcflow.pyfunc.FLAVOR_NAME,
     )
-    mlflow_model.flavors[mlflow.pyfunc.FLAVOR_NAME][mlflow.pyfunc.CODE] = saved_code_subpath
+    qcflow_model.flavors[qcflow.pyfunc.FLAVOR_NAME][qcflow.pyfunc.CODE] = saved_code_subpath
 
-    # `mlflow_model.code` is updated, re-generate `MLmodel` file.
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    # `qcflow_model.code` is updated, re-generate `MLmodel` file.
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
-                mlflow.pyfunc.FLAVOR_NAME,
+                qcflow.pyfunc.FLAVOR_NAME,
                 fallback=default_reqs,
             )
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
@@ -514,9 +514,9 @@ def _load_context_model_and_signature(
     model_path: str, model_config: Optional[dict[str, Any]] = None
 ):
     pyfunc_config = _get_flavor_configuration(
-        model_path=model_path, flavor_name=mlflow.pyfunc.FLAVOR_NAME
+        model_path=model_path, flavor_name=qcflow.pyfunc.FLAVOR_NAME
     )
-    signature = mlflow.models.Model.load(model_path).signature
+    signature = qcflow.models.Model.load(model_path).signature
 
     if MODEL_CODE_PATH in pyfunc_config:
         conf_model_code_path = pyfunc_config.get(MODEL_CODE_PATH)
@@ -528,7 +528,7 @@ def _load_context_model_and_signature(
     else:
         python_model_cloudpickle_version = pyfunc_config.get(CONFIG_KEY_CLOUDPICKLE_VERSION, None)
         if python_model_cloudpickle_version is None:
-            mlflow.pyfunc._logger.warning(
+            qcflow.pyfunc._logger.warning(
                 "The version of CloudPickle used to save the model could not be found in the "
                 "MLmodel configuration"
             )
@@ -536,7 +536,7 @@ def _load_context_model_and_signature(
             # CloudPickle does not have a well-defined cross-version compatibility policy. Micro
             # version releases have been known to cause incompatibilities. Therefore, we match on
             # the full library version
-            mlflow.pyfunc._logger.warning(
+            qcflow.pyfunc._logger.warning(
                 "The version of CloudPickle that was used to save the model, `CloudPickle %s`, "
                 "differs from the version of CloudPickle that is currently running, `CloudPickle "
                 "%s`, and may be incompatible",
@@ -695,14 +695,14 @@ class _PythonModelPyfuncWrapper:
 
 def _get_pyfunc_loader_module(python_model):
     if isinstance(python_model, ChatModel):
-        return mlflow.pyfunc.loaders.chat_model.__name__
+        return qcflow.pyfunc.loaders.chat_model.__name__
     return __name__
 
 
 class ModelFromDeploymentEndpoint(PythonModel):
     """
-    A PythonModel wrapper for invoking an MLflow Deployments endpoint.
-    This class is particularly used for running evaluation against an MLflow Deployments endpoint.
+    A PythonModel wrapper for invoking an QCFlow Deployments endpoint.
+    This class is particularly used for running evaluation against an QCFlow Deployments endpoint.
     """
 
     def __init__(self, endpoint, params):
@@ -740,7 +740,7 @@ class ModelFromDeploymentEndpoint(PythonModel):
             if len(model_input.columns) != 1:
                 raise MlflowException(
                     f"The number of input columns must be 1, but got {model_input.columns}. "
-                    "Multi-column input is not supported for evaluating an MLflow Deployments "
+                    "Multi-column input is not supported for evaluating an QCFlow Deployments "
                     "endpoint. Please include the input text or payload in a single column.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
@@ -752,13 +752,13 @@ class ModelFromDeploymentEndpoint(PythonModel):
             raise MlflowException(
                 f"Invalid input data type: {type(model_input)}. The input data must be either "
                 "a Pandas DataFrame, a dictionary, or a list of dictionaries containing the "
-                "request payloads for evaluating an MLflow Deployments endpoint.",
+                "request payloads for evaluating an QCFlow Deployments endpoint.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
 
     def _predict_single(self, data: Union[str, dict[str, Any]]) -> dict[str, Any]:
         """
-        Send a single prediction request to the MLflow Deployments endpoint.
+        Send a single prediction request to the QCFlow Deployments endpoint.
 
         Args:
             data: The single input data for prediction. If the input data is a string, we will
@@ -766,14 +766,14 @@ class ModelFromDeploymentEndpoint(PythonModel):
                 will directly use it as the request payload.
 
         Returns:
-            The prediction result from the MLflow Deployments endpoint as a dictionary.
+            The prediction result from the QCFlow Deployments endpoint as a dictionary.
         """
-        from mlflow.metrics.genai.model_utils import call_deployments_api, get_endpoint_type
+        from qcflow.metrics.genai.model_utils import call_deployments_api, get_endpoint_type
 
         endpoint_type = get_endpoint_type(f"endpoints:/{self.endpoint}")
 
         if isinstance(data, str):
-            # If the input payload is string, MLflow needs to construct the JSON
+            # If the input payload is string, QCFlow needs to construct the JSON
             # payload based on the endpoint type. If the endpoint type is not
             # set on the endpoint, we will default to chat format.
             endpoint_type = endpoint_type or "llm/v1/chat"
@@ -786,7 +786,7 @@ class ModelFromDeploymentEndpoint(PythonModel):
             raise MlflowException(
                 f"Invalid input data type: {type(data)}. The feature column of the evaluation "
                 "dataset must contain only strings or dictionaries containing the request "
-                "payload for evaluating an MLflow Deployments endpoint.",
+                "payload for evaluating an QCFlow Deployments endpoint.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         return prediction

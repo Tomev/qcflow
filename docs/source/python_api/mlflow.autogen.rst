@@ -1,7 +1,7 @@
-mlflow.autogen
+qcflow.autogen
 ==============
 
-.. automodule:: mlflow.autogen
+.. automodule:: qcflow.autogen
     :members:
     :undoc-members:
     :show-inheritance:

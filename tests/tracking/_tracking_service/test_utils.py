@@ -8,36 +8,36 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow.environment_variables import (
-    MLFLOW_TRACKING_INSECURE_TLS,
-    MLFLOW_TRACKING_PASSWORD,
-    MLFLOW_TRACKING_TOKEN,
-    MLFLOW_TRACKING_URI,
-    MLFLOW_TRACKING_USERNAME,
+import qcflow
+from qcflow.environment_variables import (
+    QCFLOW_TRACKING_INSECURE_TLS,
+    QCFLOW_TRACKING_PASSWORD,
+    QCFLOW_TRACKING_TOKEN,
+    QCFLOW_TRACKING_URI,
+    QCFLOW_TRACKING_USERNAME,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.store.db.db_types import DATABASE_ENGINES
-from mlflow.store.tracking.file_store import FileStore
-from mlflow.store.tracking.rest_store import RestStore
-from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
-from mlflow.tracking._tracking_service.registry import TrackingStoreRegistry
-from mlflow.tracking._tracking_service.utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.store.db.db_types import DATABASE_ENGINES
+from qcflow.store.tracking.file_store import FileStore
+from qcflow.store.tracking.rest_store import RestStore
+from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
+from qcflow.tracking._tracking_service.registry import TrackingStoreRegistry
+from qcflow.tracking._tracking_service.utils import (
     _get_store,
     _resolve_tracking_uri,
     get_tracking_uri,
     set_tracking_uri,
 )
-from mlflow.tracking.registry import UnsupportedModelRegistryStoreURIException
-from mlflow.utils.file_utils import path_to_local_file_uri
-from mlflow.utils.os import is_windows
+from qcflow.tracking.registry import UnsupportedModelRegistryStoreURIException
+from qcflow.utils.file_utils import path_to_local_file_uri
+from qcflow.utils.os import is_windows
 
 from tests.tracing.helper import get_tracer_tracking_uri
 
 # Disable mocking tracking URI here, as we want to test setting the tracking URI via
 # environment variable. See
 # http://doc.pytest.org/en/latest/skipping.html#skip-all-test-functions-of-a-class-or-module
-# and https://github.com/mlflow/mlflow/blob/master/CONTRIBUTING.md#writing-python-tests
+# and https://github.com/qcflow/qcflow/blob/master/CONTRIBUTING.md#writing-python-tests
 # for more information.
 pytestmark = pytest.mark.notrackingurimock
 
@@ -59,14 +59,14 @@ def test_get_store_file_store_from_arg(tmp_path, monkeypatch):
 @pytest.mark.parametrize("uri", ["other/path", "file:other/path"])
 def test_get_store_file_store_from_env(tmp_path, monkeypatch, uri):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, uri)
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, uri)
     store = _get_store()
     assert isinstance(store, FileStore)
     assert os.path.abspath(store.root_directory) == os.path.abspath("other/path")
 
 
 def test_get_store_basic_rest_store(monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, "https://my-tracking-server:5050")
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, "https://my-tracking-server:5050")
     store = _get_store()
     assert isinstance(store, RestStore)
     assert store.get_host_creds().host == "https://my-tracking-server:5050"
@@ -75,9 +75,9 @@ def test_get_store_basic_rest_store(monkeypatch):
 
 def test_get_store_rest_store_with_password(monkeypatch):
     for k, v in {
-        MLFLOW_TRACKING_URI.name: "https://my-tracking-server:5050",
-        MLFLOW_TRACKING_USERNAME.name: "Bob",
-        MLFLOW_TRACKING_PASSWORD.name: "Ross",
+        QCFLOW_TRACKING_URI.name: "https://my-tracking-server:5050",
+        QCFLOW_TRACKING_USERNAME.name: "Bob",
+        QCFLOW_TRACKING_PASSWORD.name: "Ross",
     }.items():
         monkeypatch.setenv(k, v)
 
@@ -90,8 +90,8 @@ def test_get_store_rest_store_with_password(monkeypatch):
 
 def test_get_store_rest_store_with_token(monkeypatch):
     for k, v in {
-        MLFLOW_TRACKING_URI.name: "https://my-tracking-server:5050",
-        MLFLOW_TRACKING_TOKEN.name: "my-token",
+        QCFLOW_TRACKING_URI.name: "https://my-tracking-server:5050",
+        QCFLOW_TRACKING_TOKEN.name: "my-token",
     }.items():
         monkeypatch.setenv(k, v)
 
@@ -102,8 +102,8 @@ def test_get_store_rest_store_with_token(monkeypatch):
 
 def test_get_store_rest_store_with_insecure(monkeypatch):
     for k, v in {
-        MLFLOW_TRACKING_URI.name: "https://my-tracking-server:5050",
-        MLFLOW_TRACKING_INSECURE_TLS.name: "true",
+        QCFLOW_TRACKING_URI.name: "https://my-tracking-server:5050",
+        QCFLOW_TRACKING_INSECURE_TLS.name: "true",
     }.items():
         monkeypatch.setenv(k, v)
     store = _get_store()
@@ -114,8 +114,8 @@ def test_get_store_rest_store_with_insecure(monkeypatch):
 def test_get_store_rest_store_with_no_insecure(monkeypatch):
     with monkeypatch.context() as m:
         for k, v in {
-            MLFLOW_TRACKING_URI.name: "https://my-tracking-server:5050",
-            MLFLOW_TRACKING_INSECURE_TLS.name: "false",
+            QCFLOW_TRACKING_URI.name: "https://my-tracking-server:5050",
+            QCFLOW_TRACKING_INSECURE_TLS.name: "false",
         }.items():
             m.setenv(k, v)
         store = _get_store()
@@ -124,7 +124,7 @@ def test_get_store_rest_store_with_no_insecure(monkeypatch):
 
     # By default, should not ignore verification.
     with monkeypatch.context() as m:
-        monkeypatch.setenv(MLFLOW_TRACKING_URI.name, "https://my-tracking-server:5050")
+        monkeypatch.setenv(QCFLOW_TRACKING_URI.name, "https://my-tracking-server:5050")
         store = _get_store()
         assert isinstance(store, RestStore)
         assert not store.get_host_creds().ignore_tls_verification
@@ -133,20 +133,20 @@ def test_get_store_rest_store_with_no_insecure(monkeypatch):
 @pytest.mark.parametrize("db_type", DATABASE_ENGINES)
 def test_get_store_sqlalchemy_store(tmp_path, monkeypatch, db_type):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.delenv("MLFLOW_SQLALCHEMYSTORE_POOLCLASS", raising=False)
+    monkeypatch.delenv("QCFLOW_SQLALCHEMYSTORE_POOLCLASS", raising=False)
     patch_create_engine = mock.patch("sqlalchemy.create_engine")
 
     uri = f"{db_type}://hostname/database"
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, uri)
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, uri)
     with (
         patch_create_engine as mock_create_engine,
-        mock.patch("mlflow.store.db.utils._verify_schema"),
-        mock.patch("mlflow.store.db.utils._initialize_tables"),
+        mock.patch("qcflow.store.db.utils._verify_schema"),
+        mock.patch("qcflow.store.db.utils._initialize_tables"),
         mock.patch(
             # In sqlalchemy 1.4.0, `SqlAlchemyStore.search_experiments`, which is called when
             # fetching the store, results in an error when called with a mocked sqlalchemy engine.
             # Accordingly, we mock `SqlAlchemyStore.search_experiments`
-            "mlflow.store.tracking.sqlalchemy_store.SqlAlchemyStore.search_experiments",
+            "qcflow.store.tracking.sqlalchemy_store.SqlAlchemyStore.search_experiments",
             return_value=[],
         ),
     ):
@@ -166,15 +166,15 @@ def test_get_store_sqlalchemy_store_with_artifact_uri(tmp_path, monkeypatch, db_
     monkeypatch.chdir(tmp_path)
     uri = f"{db_type}://hostname/database"
     artifact_uri = "file:artifact/path"
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, uri)
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, uri)
     with (
         mock.patch(
             "sqlalchemy.create_engine",
         ) as mock_create_engine,
-        mock.patch("mlflow.store.db.utils._verify_schema"),
-        mock.patch("mlflow.store.db.utils._initialize_tables"),
+        mock.patch("qcflow.store.db.utils._verify_schema"),
+        mock.patch("qcflow.store.db.utils._initialize_tables"),
         mock.patch(
-            "mlflow.store.tracking.sqlalchemy_store.SqlAlchemyStore.search_experiments",
+            "qcflow.store.tracking.sqlalchemy_store.SqlAlchemyStore.search_experiments",
             return_value=[],
         ),
     ):
@@ -193,7 +193,7 @@ def test_get_store_sqlalchemy_store_with_artifact_uri(tmp_path, monkeypatch, db_
 
 def test_get_store_databricks(monkeypatch):
     for k, v in {
-        MLFLOW_TRACKING_URI.name: "databricks",
+        QCFLOW_TRACKING_URI.name: "databricks",
         "DATABRICKS_HOST": "https://my-tracking-server",
         "DATABRICKS_TOKEN": "abcdef",
     }.items():
@@ -204,7 +204,7 @@ def test_get_store_databricks(monkeypatch):
 
 
 def test_get_store_databricks_profile(monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, "databricks://mycoolprofile")
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, "databricks://mycoolprofile")
     # It's kind of annoying to setup a profile, and we're not really trying to test
     # that anyway, so just check if we raise a relevant exception.
     store = _get_store()
@@ -214,7 +214,7 @@ def test_get_store_databricks_profile(monkeypatch):
 
 
 def test_get_store_caches_on_store_uri_and_artifact_uri(tmp_path):
-    registry = mlflow.tracking._tracking_service.utils._tracking_store_registry
+    registry = qcflow.tracking._tracking_service.utils._tracking_store_registry
 
     store_uri_1 = f"sqlite:///{tmp_path.joinpath('backend_store_1.db')}"
     store_uri_2 = f"sqlite:///{tmp_path.joinpath('backend_store_2.db')}"
@@ -239,11 +239,11 @@ def test_standard_store_registry_with_mocked_entrypoint():
     mock_entrypoint = mock.Mock()
     mock_entrypoint.name = "mock-scheme"
 
-    with mock.patch("mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]):
+    with mock.patch("qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]):
         # Entrypoints are registered at import time, so we need to reload the
         # module to register the entrypoint given by the mocked
         # entrypoints.get_group_all
-        reload(mlflow.tracking._tracking_service.utils)
+        reload(qcflow.tracking._tracking_service.utils)
 
         expected_standard_registry = {
             "",
@@ -258,22 +258,22 @@ def test_standard_store_registry_with_mocked_entrypoint():
             "mock-scheme",
         }
         assert expected_standard_registry.issubset(
-            mlflow.tracking._tracking_service.utils._tracking_store_registry._registry.keys()
+            qcflow.tracking._tracking_service.utils._tracking_store_registry._registry.keys()
         )
 
 
 def test_standard_store_registry_with_installed_plugin(tmp_path, monkeypatch):
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
     monkeypatch.chdir(tmp_path)
-    reload(mlflow.tracking._tracking_service.utils)
+    reload(qcflow.tracking._tracking_service.utils)
     assert (
-        "file-plugin" in mlflow.tracking._tracking_service.utils._tracking_store_registry._registry
+        "file-plugin" in qcflow.tracking._tracking_service.utils._tracking_store_registry._registry
     )
 
-    from mlflow_test_plugin.file_store import PluginFileStore
+    from qcflow_test_plugin.file_store import PluginFileStore
 
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, "file-plugin:test-path")
-    plugin_file_store = mlflow.tracking._tracking_service.utils._get_store()
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, "file-plugin:test-path")
+    plugin_file_store = qcflow.tracking._tracking_service.utils._get_store()
     assert isinstance(plugin_file_store, PluginFileStore)
     assert plugin_file_store.is_plugin
 
@@ -297,7 +297,7 @@ def test_plugin_registration_via_entrypoints():
     mock_entrypoint.name = "mock-scheme"
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         tracking_store = TrackingStoreRegistry()
         tracking_store.register_entrypoints()
@@ -305,7 +305,7 @@ def test_plugin_registration_via_entrypoints():
     assert tracking_store.get_store("mock-scheme://") == mock_plugin_function.return_value
 
     mock_plugin_function.assert_called_once_with(store_uri="mock-scheme://", artifact_uri=None)
-    mock_get_group_all.assert_called_once_with("mlflow.tracking_store")
+    mock_get_group_all.assert_called_once_with("qcflow.tracking_store")
 
 
 @pytest.mark.parametrize(
@@ -316,7 +316,7 @@ def test_handle_plugin_registration_failure_via_entrypoints(exception):
     mock_entrypoint.name = "mock-scheme"
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         tracking_store = TrackingStoreRegistry()
 
@@ -325,7 +325,7 @@ def test_handle_plugin_registration_failure_via_entrypoints(exception):
             tracking_store.register_entrypoints()
 
     mock_entrypoint.load.assert_called_once()
-    mock_get_group_all.assert_called_once_with("mlflow.tracking_store")
+    mock_get_group_all.assert_called_once_with("qcflow.tracking_store")
 
 
 def test_get_store_for_unregistered_scheme():
@@ -340,7 +340,7 @@ def test_get_store_for_unregistered_scheme():
 
 def test_resolve_tracking_uri_with_param():
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils.get_tracking_uri",
+        "qcflow.tracking._tracking_service.utils.get_tracking_uri",
         return_value="databricks://tracking_qoeirj",
     ):
         overriding_uri = "databricks://tracking_poiwerow"
@@ -349,7 +349,7 @@ def test_resolve_tracking_uri_with_param():
 
 def test_resolve_tracking_uri_with_no_param():
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils.get_tracking_uri",
+        "qcflow.tracking._tracking_service.utils.get_tracking_uri",
         return_value="databricks://tracking_zlkjdas",
     ):
         assert _resolve_tracking_uri() == "databricks://tracking_zlkjdas"
@@ -358,12 +358,12 @@ def test_resolve_tracking_uri_with_no_param():
 def test_store_object_can_be_serialized_by_pickle(tmp_path):
     """
     This test ensures a store object generated by `_get_store` can be serialized by pickle
-    to prevent issues such as https://github.com/mlflow/mlflow/issues/2954
+    to prevent issues such as https://github.com/qcflow/qcflow/issues/2954
     """
-    pickle.dump(_get_store(f"file:///{tmp_path.joinpath('mlflow')}"), io.BytesIO())
+    pickle.dump(_get_store(f"file:///{tmp_path.joinpath('qcflow')}"), io.BytesIO())
     pickle.dump(_get_store("databricks"), io.BytesIO())
     pickle.dump(_get_store("https://example.com"), io.BytesIO())
-    # pickle.dump(_get_store(f"sqlite:///{tmpdir.strpath}/mlflow.db"), io.BytesIO())
+    # pickle.dump(_get_store(f"sqlite:///{tmpdir.strpath}/qcflow.db"), io.BytesIO())
     # This throws `AttributeError: Can't pickle local object 'create_engine.<locals>.connect'`
 
 
@@ -373,13 +373,13 @@ def test_set_tracking_uri_with_path(tmp_path, monkeypatch, absolute):
     path = Path("foo/bar")
     if absolute:
         path = tmp_path / path
-    with mock.patch("mlflow.tracking._tracking_service.utils._tracking_uri", None):
+    with mock.patch("qcflow.tracking._tracking_service.utils._tracking_uri", None):
         set_tracking_uri(path)
         assert get_tracking_uri() == path.absolute().resolve().as_uri()
 
 
 def test_set_tracking_uri_update_trace_provider():
-    default_uri = mlflow.get_tracking_uri()
+    default_uri = qcflow.get_tracking_uri()
     try:
         assert get_tracer_tracking_uri() != "file:///tmp"
 
@@ -399,6 +399,6 @@ def test_get_store_raises_on_uc_uri(store_uri):
     with pytest.raises(
         MlflowException,
         match="Setting the tracking URI to a Unity Catalog backend is not "
-        "supported in the current version of the MLflow client",
+        "supported in the current version of the QCFlow client",
     ):
-        mlflow.tracking.MlflowClient()
+        qcflow.tracking.MlflowClient()

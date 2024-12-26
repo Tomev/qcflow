@@ -1,7 +1,7 @@
 import { CopyIcon, Typography, useDesignSystemTheme } from '@databricks/design-system';
 import { FormattedMessage } from 'react-intl';
 import { CodeSnippet } from '@databricks/web-shared/snippet';
-import { CopyButton } from '@mlflow/mlflow/src/shared/building_blocks/CopyButton';
+import { CopyButton } from '@qcflow/qcflow/src/shared/building_blocks/CopyButton';
 
 export const TraceTableAutogenQuickstartContent = ({
   baseComponentId,
@@ -14,10 +14,10 @@ export const TraceTableAutogenQuickstartContent = ({
 }) => {
   const { theme } = useDesignSystemTheme();
   const code = `import os
-import mlflow
+import qcflow
 from autogen import AssistantAgent, UserProxyAgent
-${experimentId ? `\nmlflow.set_experiment(experiment_id="${experimentId}")` : ''}
-mlflow.autogen.autolog()
+${experimentId ? `\nqcflow.set_experiment(experiment_id="${experimentId}")` : ''}
+qcflow.autogen.autolog()
 
 # Ensure that the "OPENAI_API_KEY" environment variable is set
 llm_config = {"model": "gpt-4o-mini", "api_key": os.environ["OPENAI_API_KEY"]}
@@ -26,17 +26,17 @@ user_proxy = UserProxyAgent("user_proxy", code_execution_config=False)
 
 # All intermediate executions within the chat session will be logged
 ${
-  runUuid ? `with mlflow.start_run():\n    ` : ''
-}user_proxy.initiate_chat(assistant, message="What is MLflow?", max_turns=1)`;
+  runUuid ? `with qcflow.start_run():\n    ` : ''
+}user_proxy.initiate_chat(assistant, message="What is QCFlow?", max_turns=1)`;
 
   return (
     <div>
       <Typography.Text>
         <FormattedMessage
           defaultMessage="Automatically log traces for AutoGen conversations by calling the {code} function. For example:"
-          description="Description of how to log traces for the AutoGen package using MLflow autologging. This message is followed by a code example."
+          description="Description of how to log traces for the AutoGen package using QCFlow autologging. This message is followed by a code example."
           values={{
-            code: <code>mlflow.autogen.autolog()</code>,
+            code: <code>qcflow.autogen.autolog()</code>,
           }}
         />
       </Typography.Text>

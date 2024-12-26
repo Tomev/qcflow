@@ -5,16 +5,16 @@ import pytest
 import sklearn
 from sklearn.linear_model import LinearRegression
 
-import mlflow.utils.requirements_utils
-from mlflow.exceptions import MlflowException
-from mlflow.pyfunc import get_model_dependencies
-from mlflow.utils import PYTHON_VERSION
+import qcflow.utils.requirements_utils
+from qcflow.exceptions import MlflowException
+from qcflow.pyfunc import get_model_dependencies
+from qcflow.utils import PYTHON_VERSION
 
 
 def test_get_model_dependencies_read_req_file(tmp_path):
     req_file = tmp_path / "requirements.txt"
     req_file_content = """
-mlflow
+qcflow
 cloudpickle==2.0.0
 scikit-learn==1.0.2"""
     req_file.write_text(req_file_content)
@@ -25,7 +25,7 @@ scikit-learn==1.0.2"""
     assert Path(get_model_dependencies(model_path, format="pip")).read_text() == req_file_content
 
     # Test getting pip dependencies will print instructions
-    with mock.patch("mlflow.pyfunc._logger.info") as mock_log_info:
+    with mock.patch("qcflow.pyfunc._logger.info") as mock_log_info:
         get_model_dependencies(model_path, format="pip")
         mock_log_info.assert_called_once_with(
             "To install the dependencies that were used to train the model, run the "
@@ -33,7 +33,7 @@ scikit-learn==1.0.2"""
         )
 
         mock_log_info.reset_mock()
-        with mock.patch("mlflow.pyfunc._is_in_ipython_notebook", return_value=True):
+        with mock.patch("qcflow.pyfunc._is_in_ipython_notebook", return_value=True):
             get_model_dependencies(model_path, format="pip")
             mock_log_info.assert_called_once_with(
                 "To install the dependencies that were used to train the model, run the "
@@ -52,7 +52,7 @@ artifact_path: model
 flavors:
   python_function:
     env: conda.yaml
-    loader_module: mlflow.sklearn
+    loader_module: qcflow.sklearn
     model_path: model.pkl
     python_version: {PYTHON_VERSION}
 model_uuid: 722a374a432f48f09ee85da92df13bca
@@ -65,7 +65,7 @@ flavors:
     env:
       conda: conda.yaml
       virtualenv: python_env.yaml
-    loader_module: mlflow.sklearn
+    loader_module: qcflow.sklearn
     model_path: model.pkl
     python_version: {PYTHON_VERSION}
 model_uuid: 722a374a432f48f09ee85da92df13bca
@@ -87,10 +87,10 @@ dependencies:
 - scikit-learn=0.22.0
 - tensorflow=2.0.0
 - pip:
-  - mlflow
+  - qcflow
   - cloudpickle==2.0.0
   - scikit-learn==1.0.1
-name: mlflow-env
+name: qcflow-env
 """
 
     conda_yml_file.write_text(conda_yml_file_content)
@@ -104,11 +104,11 @@ name: mlflow-env
     )
 
     # Test getting pip requirement file failed and fallback to extract pip section from conda.yaml
-    with mock.patch("mlflow.pyfunc._logger.warning") as mock_warning:
+    with mock.patch("qcflow.pyfunc._logger.warning") as mock_warning:
         pip_file_path = get_model_dependencies(model_path, format="pip")
         assert (
             Path(pip_file_path).read_text().strip()
-            == "mlflow\ncloudpickle==2.0.0\nscikit-learn==1.0.1"
+            == "qcflow\ncloudpickle==2.0.0\nscikit-learn==1.0.1"
         )
         mock_warning.assert_called_once_with(
             "The following conda dependencies have been excluded from the environment file: "
@@ -132,8 +132,8 @@ dependencies:
 
 
 def test_get_model_dependencies_with_model_version_uri():
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(LinearRegression(), "model", registered_model_name="linear")
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(LinearRegression(), "model", registered_model_name="linear")
 
     deps = get_model_dependencies("models:/linear/1", format="pip")
     assert f"scikit-learn=={sklearn.__version__}" in Path(deps).read_text()

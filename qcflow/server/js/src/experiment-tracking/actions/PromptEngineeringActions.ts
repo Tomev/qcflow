@@ -4,7 +4,7 @@ import Utils from '../../common/utils/Utils';
 import { AsyncAction, ReduxState, ThunkDispatch } from '../../redux-types';
 import { uploadArtifactApi } from '../actions';
 import { RunRowType } from '../components/experiment-page/utils/experimentPage.row-types';
-import { MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME } from '../constants';
+import { QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME } from '../constants';
 import { RawEvaluationArtifact, parseEvaluationTableArtifact } from '../sdk/EvaluationArtifactService';
 import {
   ModelGatewayQueryPayload,
@@ -64,7 +64,7 @@ const evaluatePromptTableValueUnified =
     // recently. Display relevant error in this scenario.
     const gatewayRoute = getState().modelGateway.modelGatewayRoutes[`${routeType}:${routeName}`];
     if (!gatewayRoute) {
-      const errorMessage = `MLflow deployment endpoint ${routeName} does not exist anymore!`;
+      const errorMessage = `QCFlow deployment endpoint ${routeName} does not exist anymore!`;
       Utils.logErrorAndNotifyUser(errorMessage);
       throw new Error(errorMessage);
     }
@@ -110,11 +110,11 @@ export const writeBackEvaluationArtifactsAction = () => async (dispatch: ThunkDi
     Object.entries(evaluationArtifactsByRunUuid)
       .filter(
         ([runUuid, artifactTableRecords]) =>
-          runUuidsToUpdate.includes(runUuid) && artifactTableRecords[MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME],
+          runUuidsToUpdate.includes(runUuid) && artifactTableRecords[QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME],
       )
       .map(([runUuid, artifactTableRecords]) => [
         runUuid,
-        artifactTableRecords[MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME],
+        artifactTableRecords[QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME],
       ]),
   );
 
@@ -146,9 +146,9 @@ export const writeBackEvaluationArtifactsAction = () => async (dispatch: ThunkDi
   });
 
   const promises = updatedArtifactFiles.map(({ runUuid, updatedArtifactFile }) =>
-    dispatch(uploadArtifactApi(runUuid, MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME, updatedArtifactFile)).then(() => {
+    dispatch(uploadArtifactApi(runUuid, QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME, updatedArtifactFile)).then(() => {
       const newEvaluationTable = parseEvaluationTableArtifact(
-        MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
+        QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME,
         updatedArtifactFile,
       );
       return { runUuid, newEvaluationTable };
@@ -158,7 +158,7 @@ export const writeBackEvaluationArtifactsAction = () => async (dispatch: ThunkDi
   return dispatch({
     type: 'WRITE_BACK_EVALUATION_ARTIFACTS',
     payload: Promise.all(promises),
-    meta: { runUuidsToUpdate, artifactPath: MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME },
+    meta: { runUuidsToUpdate, artifactPath: QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME },
   });
 };
 export const EVALUATE_ADD_INPUT_VALUES = 'EVALUATE_ADD_INPUT_VALUES';

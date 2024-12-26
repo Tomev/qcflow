@@ -1,5 +1,5 @@
 import { Button, PencilIcon, SpeechBubblePlusIcon, useDesignSystemTheme } from '@databricks/design-system';
-import { MLFLOW_INTERNAL_PREFIX } from '../../../common/utils/TagUtils';
+import { QCFLOW_INTERNAL_PREFIX } from '../../../common/utils/TagUtils';
 import { KeyValueTag } from '../../../common/components/KeyValueTag';
 
 export const TracesViewTableTagCell = ({
@@ -12,7 +12,7 @@ export const TracesViewTableTagCell = ({
   baseComponentId: string;
 }) => {
   const { theme } = useDesignSystemTheme();
-  const visibleTagList = tags?.filter(({ key }) => key && !key.startsWith(MLFLOW_INTERNAL_PREFIX)) || [];
+  const visibleTagList = tags?.filter(({ key }) => key && !key.startsWith(QCFLOW_INTERNAL_PREFIX)) || [];
   const containsTags = visibleTagList.length > 0;
   return (
     <div

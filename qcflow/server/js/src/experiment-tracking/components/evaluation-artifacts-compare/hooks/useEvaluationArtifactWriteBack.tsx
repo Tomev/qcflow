@@ -100,7 +100,7 @@ export const useEvaluationArtifactWriteBack = () => {
       )}
       <div css={{ display: 'flex', gap: theme.spacing.sm }}>
         <Button
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_hooks_useevaluationartifactwriteback.tsx_102"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_hooks_useevaluationartifactwriteback.tsx_102"
           disabled={isSyncingArtifacts}
           onClick={discard}
         >
@@ -112,7 +112,7 @@ export const useEvaluationArtifactWriteBack = () => {
         {/* Display "Save" button only if there are actual evaluated data to sync (don't allow to sync empty draft rows) */}
         {unsyncedDataEntriesCount > 0 && (
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_hooks_useevaluationartifactwriteback.tsx_110"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_hooks_useevaluationartifactwriteback.tsx_110"
             loading={isSyncingArtifacts}
             type="primary"
             onClick={synchronizeArtifactData}

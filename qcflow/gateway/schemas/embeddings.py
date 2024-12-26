@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
-from mlflow.gateway.base_models import RequestModel, ResponseModel
-from mlflow.utils import IS_PYDANTIC_V2_OR_NEWER
+from qcflow.gateway.base_models import RequestModel, ResponseModel
+from qcflow.utils import IS_PYDANTIC_V2_OR_NEWER
 
 _REQUEST_PAYLOAD_EXTRA_SCHEMA = {
     "example": {

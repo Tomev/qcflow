@@ -1,7 +1,7 @@
-mlflow.pyspark.ml
+qcflow.pyspark.ml
 =================
 
-.. automodule:: mlflow.pyspark.ml
+.. automodule:: qcflow.pyspark.ml
     :members:
     :undoc-members:
     :show-inheritance:

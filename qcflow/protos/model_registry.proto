@@ -1,11 +1,11 @@
 syntax = "proto2";
 
-package mlflow;
+package qcflow;
 
 import "scalapb/scalapb.proto";
 import "databricks.proto";
 
-option java_package = "org.mlflow.api.proto";
+option java_package = "org.qcflow.api.proto";
 option java_generate_equals_and_hash = true;
 option py_generic_services = true;
 option (scalapb.options) = {
@@ -18,7 +18,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/registered-models/create"
+        path: "/qcflow/registered-models/create"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -30,7 +30,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/registered-models/rename"
+        path: "/qcflow/registered-models/rename"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -42,7 +42,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "PATCH",
-        path: "/mlflow/registered-models/update"
+        path: "/qcflow/registered-models/update"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -54,7 +54,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/registered-models/delete"
+        path: "/qcflow/registered-models/delete"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -66,7 +66,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/registered-models/get"
+        path: "/qcflow/registered-models/get"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -78,7 +78,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/registered-models/search"
+        path: "/qcflow/registered-models/search"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -90,11 +90,11 @@ service ModelRegistryService {
     option(rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/registered-models/get-latest-versions"
+        path: "/qcflow/registered-models/get-latest-versions"
         since { major: 2, minor: 0 },
       }, {
         method: "GET",
-        path: "/mlflow/registered-models/get-latest-versions"
+        path: "/qcflow/registered-models/get-latest-versions"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -106,7 +106,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/model-versions/create"
+        path: "/qcflow/model-versions/create"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -118,7 +118,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "PATCH",
-        path: "/mlflow/model-versions/update"
+        path: "/qcflow/model-versions/update"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -130,7 +130,7 @@ service ModelRegistryService {
     option (rpc) = {
     endpoints: [{
         method: "POST",
-        path: "/mlflow/model-versions/transition-stage"
+        path: "/qcflow/model-versions/transition-stage"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -142,7 +142,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/model-versions/delete"
+        path: "/qcflow/model-versions/delete"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -154,7 +154,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/model-versions/get"
+        path: "/qcflow/model-versions/get"
         since { major: 2, minor: 0 },
       }],
       visibility:PUBLIC,
@@ -166,7 +166,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/model-versions/search"
+        path: "/qcflow/model-versions/search"
         since { major: 2, minor: 0 },
       }],
       visibility: PUBLIC,
@@ -179,7 +179,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/model-versions/get-download-uri"
+        path: "/qcflow/model-versions/get-download-uri"
         since { major: 2, minor: 0},
       }],
       visibility: PUBLIC,
@@ -191,7 +191,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/registered-models/set-tag"
+        path: "/qcflow/registered-models/set-tag"
         since { major: 2, minor: 0},
       }],
       visibility: PUBLIC,
@@ -203,7 +203,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/model-versions/set-tag"
+        path: "/qcflow/model-versions/set-tag"
         since { major: 2, minor: 0},
       }],
       visibility: PUBLIC,
@@ -215,7 +215,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/registered-models/delete-tag"
+        path: "/qcflow/registered-models/delete-tag"
         since { major: 2, minor: 0},
       }],
       visibility: PUBLIC,
@@ -227,7 +227,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/model-versions/delete-tag"
+        path: "/qcflow/model-versions/delete-tag"
         since { major: 2, minor: 0},
       }],
       visibility: PUBLIC,
@@ -239,7 +239,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "POST",
-        path: "/mlflow/registered-models/alias"
+        path: "/qcflow/registered-models/alias"
         since { major: 2, minor: 0},
       }],
       visibility: PUBLIC,
@@ -251,7 +251,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "DELETE",
-        path: "/mlflow/registered-models/alias"
+        path: "/qcflow/registered-models/alias"
         since { major: 2, minor: 0},
       }],
       visibility: PUBLIC,
@@ -263,7 +263,7 @@ service ModelRegistryService {
     option (rpc) = {
       endpoints: [{
         method: "GET",
-        path: "/mlflow/registered-models/alias"
+        path: "/qcflow/registered-models/alias"
         since { major: 2, minor: 0},
       }],
       visibility: PUBLIC,
@@ -336,8 +336,8 @@ message ModelVersion {
   // URI indicating the location of the source model artifacts, used when creating ``model_version``
   optional string source = 8;
 
-  // MLflow run ID used when creating ``model_version``, if ``source`` was generated by an
-  // experiment run stored in MLflow tracking server.
+  // QCFlow run ID used when creating ``model_version``, if ``source`` was generated by an
+  // experiment run stored in QCFlow tracking server.
   optional string run_id = 9;
 
   // Current status of ``model_version``
@@ -476,15 +476,15 @@ message CreateModelVersion {
   // URI indicating the location of the model artifacts.
   optional string source = 2 [(validate_required) = true];
 
-  // MLflow run ID for correlation, if ``source`` was generated by an experiment run in
-  // MLflow tracking server
+  // QCFlow run ID for correlation, if ``source`` was generated by an experiment run in
+  // QCFlow tracking server
   optional string run_id = 3;
 
   // Additional metadata for model version.
   repeated ModelVersionTag tags = 4;
 
-  // MLflow run link - this is the exact link of the run that generated this model version,
-  // potentially hosted at another instance of MLflow.
+  // QCFlow run link - this is the exact link of the run that generated this model version,
+  // potentially hosted at another instance of QCFlow.
   optional string run_link = 5;
 
   // Optional description for model version.

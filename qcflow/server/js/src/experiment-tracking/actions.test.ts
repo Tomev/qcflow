@@ -16,12 +16,12 @@ import {
   getParentRunTagName,
   searchRunsPayload,
 } from './actions';
-import { MLFLOW_LOGGED_ARTIFACTS_TAG } from './constants';
+import { QCFLOW_LOGGED_ARTIFACTS_TAG } from './constants';
 import { fetchEvaluationTableArtifact } from './sdk/EvaluationArtifactService';
 import { ViewType } from './sdk/MlflowEnums';
 import { MlflowService } from './sdk/MlflowService';
 import { RunLoggedArtifactType } from './types';
-import { getUUID } from '@mlflow/mlflow/src/common/utils/ActionUtils';
+import { getUUID } from '@qcflow/qcflow/src/common/utils/ActionUtils';
 
 jest.mock('./sdk/EvaluationArtifactService', () => ({
   fetchEvaluationTableArtifact: jest.fn(),

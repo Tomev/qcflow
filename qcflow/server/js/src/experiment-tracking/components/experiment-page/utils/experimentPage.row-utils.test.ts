@@ -51,14 +51,14 @@ const MOCK_RUN_DATA = [
     metrics: [{ key: 'met1', value: 222 }],
     tags: {
       testtag1: { key: 'testtag1', value: 'testval2' },
-      'mlflow.parentRunId': { key: 'mlflow.parentRunId', value: 'run1_1' },
+      'qcflow.parentRunId': { key: 'qcflow.parentRunId', value: 'run1_1' },
     },
   },
   {
     runInfo: { experimentId: '1', runUuid: 'run1_3' },
     tags: {
       testtag1: { key: 'testtag1', value: 'testval3' },
-      'mlflow.parentRunId': { key: 'mlflow.parentRunId', value: 'run1_1' },
+      'qcflow.parentRunId': { key: 'qcflow.parentRunId', value: 'run1_1' },
     },
   },
   {
@@ -71,7 +71,7 @@ const MOCK_RUN_DATA = [
       { key: 'p1', value: '1234' },
       { key: 'p2', value: '12345' },
     ],
-    tags: { 'mlflow.parentRunId': { key: 'mlflow.parentRunId', value: 'run1_2' } },
+    tags: { 'qcflow.parentRunId': { key: 'qcflow.parentRunId', value: 'run1_2' } },
   },
   {
     runInfo: { experimentId: '2', runUuid: 'run2_1' },
@@ -304,19 +304,19 @@ describe('ExperimentViewRuns row utils, nested and flat run hierarchies', () => 
         {
           runInfo: { experimentId: '1', runUuid: 'run1_2' },
           tags: {
-            'mlflow.parentRunId': { key: 'mlflow.parentRunId', value: 'run1_4' },
+            'qcflow.parentRunId': { key: 'qcflow.parentRunId', value: 'run1_4' },
           },
         },
         {
           runInfo: { experimentId: '1', runUuid: 'run1_3' },
           tags: {
-            'mlflow.parentRunId': { key: 'mlflow.parentRunId', value: 'run1_2' },
+            'qcflow.parentRunId': { key: 'qcflow.parentRunId', value: 'run1_2' },
           },
         },
         {
           runInfo: { experimentId: '1', runUuid: 'run1_4' },
           tags: {
-            'mlflow.parentRunId': { key: 'mlflow.parentRunId', value: 'run1_3' },
+            'qcflow.parentRunId': { key: 'qcflow.parentRunId', value: 'run1_3' },
           },
         },
       ] as any,
@@ -338,7 +338,7 @@ describe('ExperimentViewRuns row utils, nested and flat run hierarchies', () => 
         {
           runInfo: { experimentId: '1', runUuid: 'run1_2' },
           tags: {
-            'mlflow.parentRunId': { key: 'mlflow.parentRunId', value: 'run1_1' },
+            'qcflow.parentRunId': { key: 'qcflow.parentRunId', value: 'run1_1' },
           },
         },
         {
@@ -347,7 +347,7 @@ describe('ExperimentViewRuns row utils, nested and flat run hierarchies', () => 
         {
           runInfo: { experimentId: '1', runUuid: 'run1_4' },
           tags: {
-            'mlflow.parentRunId': { key: 'mlflow.parentRunId', value: 'run1_3' },
+            'qcflow.parentRunId': { key: 'qcflow.parentRunId', value: 'run1_3' },
           },
         },
       ] as any,

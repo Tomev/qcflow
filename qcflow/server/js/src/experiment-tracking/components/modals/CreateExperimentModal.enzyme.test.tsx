@@ -9,7 +9,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import { CreateExperimentModalImpl } from './CreateExperimentModal';
 import { GenericInputModal } from './GenericInputModal';
-import { createMLflowRoutePath } from '../../../common/utils/RoutingUtils';
+import { createQCFlowRoutePath } from '../../../common/utils/RoutingUtils';
 
 describe('CreateExperimentModal', () => {
   let wrapper: any;
@@ -46,7 +46,7 @@ describe('CreateExperimentModal', () => {
       artifactLocation: 'artifactLoc',
     });
 
-    expect(navigate).toBeCalledWith(createMLflowRoutePath('/experiments/fakeExpId'));
+    expect(navigate).toBeCalledWith(createQCFlowRoutePath('/experiments/fakeExpId'));
   });
   test('handleCreateExperiment does not perform redirection if API requests fail', async () => {
     const propsVals = [

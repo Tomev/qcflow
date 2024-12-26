@@ -312,7 +312,7 @@ describe('useExperimentRuns - integration test', () => {
     expect(searchRunsApi).toHaveBeenCalledTimes(2);
 
     // Change the sort order and rerender the hook
-    const searchFacetsWithSortByName = { ...testSearchFacets, orderByKey: 'tags.`mlflow.runName`' };
+    const searchFacetsWithSortByName = { ...testSearchFacets, orderByKey: 'tags.`qcflow.runName`' };
     await act(async () => {
       rerender({
         uiState: uiStateWithPinnedRuns,
@@ -327,7 +327,7 @@ describe('useExperimentRuns - integration test', () => {
       expect.objectContaining({
         experimentIds: ['test-experiment'],
         filter: undefined,
-        orderBy: ['tags.`mlflow.runName` DESC'],
+        orderBy: ['tags.`qcflow.runName` DESC'],
         pageToken: undefined,
         runViewType: 'ACTIVE_ONLY',
         runsPinned: ['run_2'],

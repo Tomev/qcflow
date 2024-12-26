@@ -1,11 +1,11 @@
 """
-.. _mlflow-classification-recipe:
+.. _qcflow-classification-recipe:
 
-The MLflow Classification Recipe is an MLflow Recipe for developing binary classification
+The QCFlow Classification Recipe is an QCFlow Recipe for developing binary classification
 models. Multiclass classifiers are currently not supported.
 The classification recipe is designed for developing models using scikit-learn and
 frameworks that integrate with scikit-learn, such as the ``XGBClassifier`` API from XGBoost.
-The `ClassificationRecipe API Documentation <https://github.com/mlflow/recipes-classification-template/blob/main/README.md>`
+The `ClassificationRecipe API Documentation <https://github.com/qcflow/recipes-classification-template/blob/main/README.md>`
 provides instructions for executing the recipe and inspecting its results.
 
 The training recipe contains the following sequential steps:
@@ -33,7 +33,7 @@ The recipe steps are defined as follows:
         .. note::
             `target_col` must have a cardinality of two and `positive_class` must be specified.
 
-   .. _mlflow-classification-recipe-split-step:
+   .. _qcflow-classification-recipe-split-step:
 
    - **split**
       - The **split** step splits the ingested dataset produced by the **ingest** step into
@@ -51,7 +51,7 @@ The recipe steps are defined as follows:
         transformed datasets that are used by subsequent steps for estimator training and model
         performance evaluation.
 
-   .. _mlflow-classification-recipe-train-step:
+   .. _qcflow-classification-recipe-train-step:
 
    - **train**
       - The **train** step uses the transformed training dataset output from the **transform**
@@ -61,8 +61,8 @@ The recipe steps are defined as follows:
         transformed training and validation datasets to compute performance metrics; custom
         metrics are computed according to definitions in |steps/custom_metrics.py| and the
         |'custom_metrics' section of recipe.yaml|. The model recipe and its associated parameters,
-        performance metrics, and lineage information are logged to MLflow Tracking, producing
-        an MLflow Run.
+        performance metrics, and lineage information are logged to QCFlow Tracking, producing
+        an QCFlow Run.
 
             .. note::
                 The **train** step supports hyperparameter tuning with hyperopt by adding
@@ -74,29 +74,29 @@ The recipe steps are defined as follows:
         the test dataset output from the **split** step, computing performance metrics and
         model explanations. Performance metrics are compared against configured thresholds to
         compute a ``model_validation_status``, which indicates whether or not a model is good
-        enough to be registered to the MLflow Model Registry by the subsequent **register**
+        enough to be registered to the QCFlow Model Registry by the subsequent **register**
         step. Custom performance metrics are computed according to definitions in
         |steps/custom_metrics.py| and the |'custom_metrics' section of recipe.yaml|. Model
         performance thresholds are defined in the
         |'validation_criteria' section of the 'evaluate' step definition in recipe.yaml|. Model
-        performance metrics and explanations are logged to the same MLflow Tracking Run used by
+        performance metrics and explanations are logged to the same QCFlow Tracking Run used by
         the **train** step.
 
    - **register**
       - The **register** step checks the ``model_validation_status`` output of the preceding
         **evaluate** step and, if model validation was successful
         (as indicated by the ``'VALIDATED'`` status), registers the model recipe created by
-        the **train** step to the MLflow Model Registry. If the ``model_validation_status`` does
+        the **train** step to the QCFlow Model Registry. If the ``model_validation_status`` does
         not indicate that the model passed validation checks (i.e. its value is ``'REJECTED'``),
-        the model recipe is not registered to the MLflow Model Registry.
-        If the model recipe is registered to the MLflow Model Registry, a
+        the model recipe is not registered to the QCFlow Model Registry.
+        If the model recipe is registered to the QCFlow Model Registry, a
         ``registered_model_version`` is produced containing the model name and the model version.
 
             .. note::
                 The model validation status check can be disabled by specifying
                 ``allow_non_validated_model: true`` in the
                 |'register' step definition of recipe.yaml|, in which case the model recipe is
-                always registered with the MLflow Model Registry when the **register** step is
+                always registered with the QCFlow Model Registry when the **register** step is
                 executed.
 
    - **ingest_scoring**
@@ -122,15 +122,15 @@ The recipe steps are defined as follows:
 import logging
 from typing import Any, Optional
 
-from mlflow.recipes.recipe import BaseRecipe
-from mlflow.recipes.step import BaseStep
-from mlflow.recipes.steps.evaluate import EvaluateStep
-from mlflow.recipes.steps.ingest import IngestScoringStep, IngestStep
-from mlflow.recipes.steps.predict import PredictStep
-from mlflow.recipes.steps.register import RegisterStep
-from mlflow.recipes.steps.split import SplitStep
-from mlflow.recipes.steps.train import TrainStep
-from mlflow.recipes.steps.transform import TransformStep
+from qcflow.recipes.recipe import BaseRecipe
+from qcflow.recipes.step import BaseStep
+from qcflow.recipes.steps.evaluate import EvaluateStep
+from qcflow.recipes.steps.ingest import IngestScoringStep, IngestStep
+from qcflow.recipes.steps.predict import PredictStep
+from qcflow.recipes.steps.register import RegisterStep
+from qcflow.recipes.steps.split import SplitStep
+from qcflow.recipes.steps.train import TrainStep
+from qcflow.recipes.steps.transform import TransformStep
 
 _logger = logging.getLogger(__name__)
 
@@ -152,7 +152,7 @@ class ClassificationRecipe(BaseRecipe):
         :caption: Example
 
         import os
-        from mlflow.recipes import Recipe
+        from qcflow.recipes import Recipe
 
         os.chdir("~/mlp-classification-template")
         classification_recipe = Recipe(profile="local")
@@ -235,13 +235,13 @@ class ClassificationRecipe(BaseRecipe):
                   performance metrics and model explanations. Then, compares performance
                   metrics against thresholds configured in the recipe's ``recipe.yaml``
                   configuration file to compute a ``model_validation_status``, which indicates
-                  whether or not the model is good enough to be registered to the MLflow Model
+                  whether or not the model is good enough to be registered to the QCFlow Model
                   Registry by the subsequent **register** step.
 
                 - ``"register"``: checks the ``model_validation_status`` output of the
                   preceding **evaluate** step and, if model validation was successful (as
                   indicated by the ``'VALIDATED'`` status), registers the model recipe
-                  created by the **train** step to the MLflow Model Registry.
+                  created by the **train** step to the QCFlow Model Registry.
 
                 - ``"predict"``: uses the ingested dataset for scoring created by the
                   **ingest_scoring** step and applies the specified model to the dataset.
@@ -250,7 +250,7 @@ class ClassificationRecipe(BaseRecipe):
           :caption: Example
 
           import os
-          from mlflow.recipes import Recipe
+          from qcflow.recipes import Recipe
 
           os.chdir("~/mlp-classification-template")
           classification_recipe = Recipe(profile="local")
@@ -295,20 +295,20 @@ class ClassificationRecipe(BaseRecipe):
                 - ``"transformed_validation_data"``: returns the transformed validation
                   dataset created in the **transform** step as a pandas DataFrame.
 
-                - ``"model"``: returns the MLflow Model recipe created in the **train**
-                  step as a :py:class:`PyFuncModel <mlflow.pyfunc.PyFuncModel>` instance.
+                - ``"model"``: returns the QCFlow Model recipe created in the **train**
+                  step as a :py:class:`PyFuncModel <qcflow.pyfunc.PyFuncModel>` instance.
 
                 - ``"transformer"``: returns the scikit-learn transformer created in the
                   **transform** step.
 
                 - ``"run"``: returns the
-                  :py:class:`MLflow Tracking Run <mlflow.entities.Run>` containing the
+                  :py:class:`QCFlow Tracking Run <qcflow.entities.Run>` containing the
                   model recipe created in the **train** step and its associated
                   parameters, as well as performance metrics and model explanations created
                   during the **train** and **evaluate** steps.
 
-                - ``"registered_model_version``": returns the MLflow Model Registry
-                  :py:class:`ModelVersion <mlflow.entities.model_registry.ModelVersion>`
+                - ``"registered_model_version``": returns the QCFlow Model Registry
+                  :py:class:`ModelVersion <qcflow.entities.model_registry.ModelVersion>`
                   created by the **register** step.
 
                 - ``"scored_data"``: returns the scored dataset created in the
@@ -334,7 +334,7 @@ class ClassificationRecipe(BaseRecipe):
 
         .. code-block:: python
           import os
-          from mlflow.recipes import Recipe
+          from qcflow.recipes import Recipe
 
           os.chdir("~/mlp-classification-template")
           classification_recipe = Recipe(profile="local")
@@ -366,7 +366,7 @@ class ClassificationRecipe(BaseRecipe):
 
             .. code-block:: python
               import os
-              from mlflow.recipes import Recipe
+              from qcflow.recipes import Recipe
 
               os.chdir("~/mlp-classification-template")
               classification_recipe = Recipe(profile="local")

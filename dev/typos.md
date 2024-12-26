@@ -72,5 +72,5 @@ you can extend the `extend-words` list in [`pyproject.toml`](../pyproject.toml).
 
 [tool.typos.default.extend-words]
 ...
-mflow = "mlflow"
+mflow = "qcflow"
 ```

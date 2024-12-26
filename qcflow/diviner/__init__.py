@@ -1,5 +1,5 @@
 """
-The ``mlflow.diviner`` module provides an API for logging, saving and loading ``diviner`` models.
+The ``qcflow.diviner`` module provides an API for logging, saving and loading ``diviner`` models.
 Diviner wraps several popular open source time series forecasting libraries in a unified API that
 permits training, back-testing cross validation, and forecasting inference for groups of related
 series.
@@ -8,7 +8,7 @@ This module exports groups of univariate ``diviner`` models in the following for
 Diviner format
     Serialized instance of a ``diviner`` model type using native diviner serializers.
     (e.g., "GroupedProphet" or "GroupedPmdarima")
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and for batch auditing
     of historical forecasts.
 
@@ -25,43 +25,43 @@ from typing import Any, Optional
 import pandas as pd
 import yaml
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.environment_variables import MLFLOW_DFS_TMP
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.environment_variables import QCFLOW_DFS_TMP
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import (
+from qcflow.utils.file_utils import (
     get_total_file_size,
     shutil_copytree_without_file_permissions,
     write_to,
 )
-from mlflow.utils.model_utils import (
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _get_flavor_configuration_from_uri,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
-from mlflow.utils.uri import dbfs_hdfs_uri_to_fuse_path, generate_tmp_dfs_path
+from qcflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.uri import dbfs_hdfs_uri_to_fuse_path, generate_tmp_dfs_path
 
 FLAVOR_NAME = "diviner"
 _MODEL_BINARY_KEY = "data"
@@ -76,7 +76,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced with the ``Diviner``
+        A list of default pip requirements for QCFlow Models produced with the ``Diviner``
         flavor. Calls to :py:func:`save_model()` and :py:func:`log_model()` produce a pip
         environment that, at a minimum, contains these requirements.
     """
@@ -86,10 +86,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced with the ``Diviner`` flavor
+        The default Conda environment for QCFlow Models produced with the ``Diviner`` flavor
         that is produced by calls to :py:func:`save_model()` and :py:func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
@@ -98,7 +98,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -114,17 +114,17 @@ def save_model(
         path: Local path destination for the serialized model is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` the flavor that this model is being added to.
-        signature: :py:class:`Model Signature <mlflow.models.ModelSignature>` describes model
-            input and output :py:class:`Schema <mlflow.types.Schema>`. The model
-            signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        qcflow_model: :py:mod:`qcflow.models.Model` the flavor that this model is being added to.
+        signature: :py:class:`Model Signature <qcflow.models.ModelSignature>` describes model
+            input and output :py:class:`Schema <qcflow.types.Schema>`. The model
+            signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 model = diviner.GroupedProphet().fit(data, ("region", "state"))
                 predictions = model.predict(prediction_config)
@@ -157,42 +157,42 @@ def save_model(
     # NB: When moving to native pathlib implementations, path encoding as string will not be needed.
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, str(path))
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, str(path))
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, str(path))
     if signature is None and saved_example is not None:
         wrapped_model = _DivinerModelWrapper(diviner_model)
         signature = _infer_signature_from_input_example(saved_example, wrapped_model)
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     fit_with_spark = _save_diviner_model(diviner_model, path, **kwargs)
     flavor_conf = {_SPARK_MODEL_INDICATOR: fit_with_spark}
 
     model_bin_kwargs = {_MODEL_BINARY_KEY: _MODEL_BINARY_FILE_NAME}
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.diviner",
+        qcflow_model,
+        loader_module="qcflow.diviner",
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
         **model_bin_kwargs,
     )
     flavor_conf.update({_MODEL_TYPE_KEY: diviner_model.__class__.__name__}, **model_bin_kwargs)
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME, diviner_version=diviner.__version__, code=code_dir_subpath, **flavor_conf
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(str(path.joinpath(MLMODEL_FILE_NAME)))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(str(path.joinpath(MLMODEL_FILE_NAME)))
 
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements()
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 str(path), FLAVOR_NAME, fallback=default_reqs
             )
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
@@ -229,7 +229,7 @@ def _save_diviner_model(diviner_model, path, **kwargs) -> bool:
     if getattr(diviner_model, "_fit_with_spark", False):
         # Validate that the path is a relative path early in order to fail fast prior to attempting
         # to write the (large) DataFrame to a tmp DFS path first and raise a path validation
-        # Exception within MLflow when attempting to copy the temporary write files from DFS to
+        # Exception within QCFlow when attempting to copy the temporary write files from DFS to
         # the file system path provided.
         if not os.path.isabs(path):
             raise MlflowException(
@@ -238,7 +238,7 @@ def _save_diviner_model(diviner_model, path, **kwargs) -> bool:
             )
 
         # Create a temporary DFS location to write the Spark DataFrame containing the models to.
-        tmp_path = generate_tmp_dfs_path(kwargs.get("dfs_tmpdir", MLFLOW_DFS_TMP.get()))
+        tmp_path = generate_tmp_dfs_path(kwargs.get("dfs_tmpdir", QCFLOW_DFS_TMP.get()))
 
         # Save the model Spark DataFrame to the temporary DFS location
         diviner_model._save_model_df_to_path(tmp_path, **kwargs)
@@ -265,7 +265,7 @@ def _load_model_fit_in_spark(local_model_path: str, flavor_conf, **kwargs):
     # the local file system path, which is handled within the Diviner APIs.
     import diviner
 
-    dfs_temp_directory = generate_tmp_dfs_path(kwargs.get("dfs_tmpdir", MLFLOW_DFS_TMP.get()))
+    dfs_temp_directory = generate_tmp_dfs_path(kwargs.get("dfs_tmpdir", QCFLOW_DFS_TMP.get()))
     dfs_fuse_directory = dbfs_hdfs_uri_to_fuse_path(dfs_temp_directory)
     os.makedirs(dfs_fuse_directory)
     shutil_copytree_without_file_permissions(src_dir=local_model_path, dst_dir=dfs_fuse_directory)
@@ -280,16 +280,16 @@ def load_model(model_uri, dst_path=None, **kwargs):
     """Load a ``Diviner`` object from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist if provided. If unspecified, a local output
@@ -365,7 +365,7 @@ def log_model(
     metadata=None,
     **kwargs,
 ):
-    """Log a ``Diviner`` object as an MLflow artifact for the current run.
+    """Log a ``Diviner`` object as an QCFlow artifact for the current run.
 
     Args:
         diviner_model: ``Diviner`` model that has been ``fit`` on a grouped temporal ``DataFrame``.
@@ -376,9 +376,9 @@ def log_model(
             future release without warning. If given, create a model
             version under ``registered_model_name``, also creating a
             registered model if one with the given name does not exist.
-        signature: :py:class:`Model Signature <mlflow.models.ModelSignature>` describes model
-            input and output :py:class:`Schema <mlflow.types.Schema>`. The model
-            signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        signature: :py:class:`Model Signature <qcflow.models.ModelSignature>` describes model
+            input and output :py:class:`Schema <qcflow.types.Schema>`. The model
+            signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
@@ -386,7 +386,7 @@ def log_model(
             .. code-block:: python
               :caption: Example
 
-              from mlflow.models import infer_signature
+              from qcflow.models import infer_signature
 
               auto_arima_obj = AutoARIMA(out_of_sample_size=60, maxiter=100)
               base_auto_arima = GroupedPmdarima(model_template=auto_arima_obj).fit(
@@ -407,7 +407,7 @@ def log_model(
         pip_requirements: {{ pip_requirements }}
         extra_pip_requirements: {{ extra_pip_requirements }}
         metadata: {{ metadata }}
-        kwargs: Additional arguments for :py:class:`mlflow.models.model.Model`
+        kwargs: Additional arguments for :py:class:`qcflow.models.model.Model`
             Additionally, for models that have been fit in Spark, the following supported
             configuration options are available to set.
             Current supported options:
@@ -420,13 +420,13 @@ def log_model(
             scheme.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
     """
 
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.diviner,
+        flavor=qcflow.diviner,
         registered_model_name=registered_model_name,
         diviner_model=diviner_model,
         conda_env=conda_env,
@@ -587,7 +587,7 @@ class _DivinerModelWrapper:
         else:
             raise MlflowException(
                 f"The Diviner model instance type '{type(self.diviner_model)}' is not supported "
-                f"in version {mlflow.__version__} of MLflow.",
+                f"in version {qcflow.__version__} of QCFlow.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
 

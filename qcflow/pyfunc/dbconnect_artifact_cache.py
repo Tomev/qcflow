@@ -3,8 +3,8 @@ import os
 import subprocess
 import tarfile
 
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
-from mlflow.utils.file_utils import get_or_create_tmp_dir
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.utils.file_utils import get_or_create_tmp_dir
 
 _CACHE_MAP_FILE_NAME = "db_connect_artifact_cache.json"
 

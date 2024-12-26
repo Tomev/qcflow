@@ -3,13 +3,13 @@ import logging
 
 import numpy as np
 
-from mlflow.environment_variables import MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT
-from mlflow.models.signature import ModelSignature, infer_signature
-from mlflow.models.utils import _contains_params
-from mlflow.types.schema import ColSpec, DataType, Schema, TensorSpec
-from mlflow.utils.annotations import deprecated
-from mlflow.utils.os import is_windows
-from mlflow.utils.timeout import MlflowTimeoutError, run_with_timeout
+from qcflow.environment_variables import QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT
+from qcflow.models.signature import ModelSignature, infer_signature
+from qcflow.models.utils import _contains_params
+from qcflow.types.schema import ColSpec, DataType, Schema, TensorSpec
+from qcflow.utils.annotations import deprecated
+from qcflow.utils.os import is_windows
+from qcflow.utils.timeout import MlflowTimeoutError, run_with_timeout
 
 _logger = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ def infer_or_get_default_signature(
 
     if example is not None and isinstance(pipeline, transformers.Pipeline):
         try:
-            timeout = MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT.get()
+            timeout = QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT.get()
             if timeout and is_windows():
                 timeout = None
                 _logger.warning(
@@ -110,7 +110,7 @@ def infer_or_get_default_signature(
                     "Attempted to generate a signature for the saved pipeline but prediction timed "
                     f"out after {timeout} seconds. Falling back to the default signature for the "
                     "pipeline. You can specify a signature manually or increase the timeout "
-                    f"by setting the environment variable {MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT}"
+                    f"by setting the environment variable {QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT}"
                 )
             else:
                 msg = (
@@ -144,7 +144,7 @@ def _infer_signature_with_example(
         _logger.info(
             "Running model prediction to infer the model output signature with a timeout "
             f"of {timeout} seconds. You can specify a different timeout by setting the "
-            f"environment variable {MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT}."
+            f"environment variable {QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT}."
         )
         with run_with_timeout(timeout):
             prediction = generate_signature_output(
@@ -175,12 +175,12 @@ def format_input_example_for_special_cases(input_example, pipeline):
 
 
 @deprecated(
-    alternative="the `input_example` parameter in mlflow.transformers.log_model", since="2.19.0"
+    alternative="the `input_example` parameter in qcflow.transformers.log_model", since="2.19.0"
 )
 def generate_signature_output(pipeline, data, model_config=None, flavor_config=None, params=None):
     # Lazy import to avoid circular dependencies. Ideally we should move _TransformersWrapper
     # out from __init__.py to avoid this.
-    from mlflow.transformers import _TransformersWrapper
+    from qcflow.transformers import _TransformersWrapper
 
     return _TransformersWrapper(
         pipeline=pipeline, model_config=model_config, flavor_config=flavor_config

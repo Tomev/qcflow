@@ -63,6 +63,6 @@ const DirectRunPageWithRouter = withRouterNext(
   })(DirectRunPageImpl),
 );
 
-export const DirectRunPage = withErrorBoundary(ErrorUtils.mlflowServices.RUN_TRACKING, DirectRunPageWithRouter);
+export const DirectRunPage = withErrorBoundary(ErrorUtils.qcflowServices.RUN_TRACKING, DirectRunPageWithRouter);
 
 export default DirectRunPage;

@@ -2,10 +2,10 @@ import hashlib
 import json
 from typing import Any, Optional
 
-from mlflow.data.dataset import Dataset
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.types import Schema
-from mlflow.utils.annotations import experimental
+from qcflow.data.dataset import Dataset
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.types import Schema
+from qcflow.utils.annotations import experimental
 
 
 @experimental
@@ -13,9 +13,9 @@ class MetaDataset(Dataset):
     """Dataset that only contains metadata.
 
     This class is used to represent a dataset that only contains metadata, which is useful when
-    users only want to log metadata to MLflow without logging the actual data. For example, users
+    users only want to log metadata to QCFlow without logging the actual data. For example, users
     build a custom dataset from a text file publicly hosted in the Internet, and they want to log
-    the text file's URL to MLflow for future tracking instead of the dataset itself.
+    the text file's URL to QCFlow for future tracking instead of the dataset itself.
 
     Args:
         source: dataset source of type `DatasetSource`, indicates where the data is from.
@@ -27,38 +27,38 @@ class MetaDataset(Dataset):
     .. code-block:: python
         :caption: Create a MetaDataset
 
-        import mlflow
+        import qcflow
 
-        mlflow.set_experiment("/test-mlflow-meta-dataset")
+        qcflow.set_experiment("/test-qcflow-meta-dataset")
 
-        source = mlflow.data.http_dataset_source.HTTPDatasetSource(
+        source = qcflow.data.http_dataset_source.HTTPDatasetSource(
             url="https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
         )
-        ds = mlflow.data.meta_dataset.MetaDataset(source)
+        ds = qcflow.data.meta_dataset.MetaDataset(source)
 
-        with mlflow.start_run() as run:
-            mlflow.log_input(ds)
+        with qcflow.start_run() as run:
+            qcflow.log_input(ds)
 
     .. code-block:: python
         :caption: Create a MetaDataset with schema
 
-        import mlflow
+        import qcflow
 
-        mlflow.set_experiment("/test-mlflow-meta-dataset")
+        qcflow.set_experiment("/test-qcflow-meta-dataset")
 
-        source = mlflow.data.http_dataset_source.HTTPDatasetSource(
+        source = qcflow.data.http_dataset_source.HTTPDatasetSource(
             url="https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
         )
         schema = Schema(
             [
-                ColSpec(type=mlflow.types.DataType.string, name="text"),
-                ColSpec(type=mlflow.types.DataType.integer, name="label"),
+                ColSpec(type=qcflow.types.DataType.string, name="text"),
+                ColSpec(type=qcflow.types.DataType.integer, name="label"),
             ]
         )
-        ds = mlflow.data.meta_dataset.MetaDataset(source, schema=schema)
+        ds = qcflow.data.meta_dataset.MetaDataset(source, schema=schema)
 
-        with mlflow.start_run() as run:
-            mlflow.log_input(ds)
+        with qcflow.start_run() as run:
+            qcflow.log_input(ds)
     """
 
     def __init__(
@@ -101,6 +101,6 @@ class MetaDataset(Dataset):
         """
         config = super().to_dict()
         if self.schema:
-            schema = json.dumps({"mlflow_colspec": self.schema.to_dict()}) if self.schema else None
+            schema = json.dumps({"qcflow_colspec": self.schema.to_dict()}) if self.schema else None
             config["schema"] = schema
         return config

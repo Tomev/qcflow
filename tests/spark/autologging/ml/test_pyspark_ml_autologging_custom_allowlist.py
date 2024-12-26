@@ -2,7 +2,7 @@ import os
 
 from pyspark.sql import SparkSession
 
-import mlflow
+import qcflow
 
 
 # Put this test in separate module because it require a spark context
@@ -15,31 +15,31 @@ def test_custom_log_model_allowlist(tmp_path):
 
     with (
         SparkSession.builder.config(
-            "spark.mlflow.pysparkml.autolog.logModelAllowlistFile", allowlist_file_path
+            "spark.qcflow.pysparkml.autolog.logModelAllowlistFile", allowlist_file_path
         )
         .master("local[*]")
         .getOrCreate()
     ):
-        mlflow.pyspark.ml.autolog()
-        assert mlflow.pyspark.ml._log_model_allowlist == {
+        qcflow.pyspark.ml.autolog()
+        assert qcflow.pyspark.ml._log_model_allowlist == {
             "pyspark.ml.regression.LinearRegressionModel",
             "pyspark.ml.classification.NaiveBayesModel",
         }
 
 
 def test_log_model_allowlist_from_url():
-    allowlist_file_path = "https://raw.githubusercontent.com/mlflow/mlflow/v1.26.0/mlflow/pyspark/ml/log_model_allowlist.txt"
+    allowlist_file_path = "https://raw.githubusercontent.com/qcflow/qcflow/v1.26.0/qcflow/pyspark/ml/log_model_allowlist.txt"
 
     with (
         SparkSession.builder.config(
-            "spark.mlflow.pysparkml.autolog.logModelAllowlistFile", allowlist_file_path
+            "spark.qcflow.pysparkml.autolog.logModelAllowlistFile", allowlist_file_path
         )
         .master("local[*]")
         .getOrCreate()
     ):
-        mlflow.pyspark.ml.autolog()
+        qcflow.pyspark.ml.autolog()
 
-        assert mlflow.pyspark.ml._log_model_allowlist == {
+        assert qcflow.pyspark.ml._log_model_allowlist == {
             "pyspark.ml.classification.LinearSVCModel",
             "pyspark.ml.classification.DecisionTreeClassificationModel",
             "pyspark.ml.classification.GBTClassificationModel",
@@ -85,5 +85,5 @@ def test_log_model_allowlist_as_autolog_argument():
             "pyspark.ml.classification.NaiveBayesModel",
             "pyspark.ml.feature.*",
         ]
-        mlflow.pyspark.ml.autolog(log_model_allowlist=allowlist)
-        assert mlflow.pyspark.ml._log_model_allowlist == set(allowlist)
+        qcflow.pyspark.ml.autolog(log_model_allowlist=allowlist)
+        assert qcflow.pyspark.ml._log_model_allowlist == set(allowlist)

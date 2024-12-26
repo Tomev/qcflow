@@ -1,8 +1,8 @@
 from typing import Optional
 
-from mlflow.gateway.base_models import RequestModel, ResponseModel
-from mlflow.types.chat import BaseRequestPayload
-from mlflow.utils import IS_PYDANTIC_V2_OR_NEWER
+from qcflow.gateway.base_models import RequestModel, ResponseModel
+from qcflow.types.chat import BaseRequestPayload
+from qcflow.utils import IS_PYDANTIC_V2_OR_NEWER
 
 _REQUEST_PAYLOAD_EXTRA_SCHEMA = {
     "example": {

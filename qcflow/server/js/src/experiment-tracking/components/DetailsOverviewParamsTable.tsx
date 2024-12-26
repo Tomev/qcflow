@@ -18,7 +18,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { ColumnDef, flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table';
 import { Interpolation, Theme } from '@emotion/react';
-import { ExpandedJSONValueCell } from '@mlflow/mlflow/src/common/components/ExpandableCell';
+import { ExpandedJSONValueCell } from '@qcflow/qcflow/src/common/components/ExpandableCell';
 
 type ParamsColumnDef = ColumnDef<KeyValueEntity> & {
   meta?: { styles?: Interpolation<Theme>; multiline?: boolean };
@@ -87,7 +87,7 @@ const ExpandableParamValueCell = ({
     <div css={{ display: 'flex', gap: theme.spacing.xs }}>
       {(isOverflowing || isExpanded) && (
         <Button
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewparamstable.tsx_74"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewparamstable.tsx_74"
           size="small"
           icon={isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
           onClick={() => toggleExpanded()}
@@ -202,7 +202,7 @@ export const DetailsOverviewParamsTable = ({ params }: { params: Record<string, 
       <>
         <div css={{ marginBottom: theme.spacing.sm }}>
           <Input
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewparamstable.tsx_213"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewparamstable.tsx_213"
             prefix={<SearchIcon />}
             placeholder={intl.formatMessage({
               defaultMessage: 'Search parameters',
@@ -233,7 +233,7 @@ export const DetailsOverviewParamsTable = ({ params }: { params: Record<string, 
           <TableRow isHeader>
             {table.getLeafHeaders().map((header, index) => (
               <TableHeader
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewparamstable.tsx_244"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewparamstable.tsx_244"
                 key={header.id}
                 resizable={header.column.getCanResize()}
                 resizeHandler={header.getResizeHandler()}

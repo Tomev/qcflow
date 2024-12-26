@@ -13,17 +13,17 @@ import sklearn.neighbors
 from packaging.version import Version
 from scipy.sparse import csc_matrix
 
-import mlflow
-from mlflow.models import Model, ModelSignature, infer_signature, set_model, validate_schema
-from mlflow.models.model import METADATA_FILES, SET_MODEL_ERROR
-from mlflow.models.resources import DatabricksServingEndpoint, DatabricksVectorSearchIndex
-from mlflow.models.utils import _read_example, _save_example
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types.schema import ColSpec, DataType, ParamSchema, ParamSpec, Schema, TensorSpec
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.model_utils import _validate_and_prepare_target_save_path
-from mlflow.utils.proto_json_utils import dataframe_from_raw_json
+import qcflow
+from qcflow.models import Model, ModelSignature, infer_signature, set_model, validate_schema
+from qcflow.models.model import METADATA_FILES, SET_MODEL_ERROR
+from qcflow.models.resources import DatabricksServingEndpoint, DatabricksVectorSearchIndex
+from qcflow.models.utils import _read_example, _save_example
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types.schema import ColSpec, DataType, ParamSchema, ParamSpec, Schema, TensorSpec
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.model_utils import _validate_and_prepare_target_save_path
+from qcflow.utils.proto_json_utils import dataframe_from_raw_json
 
 
 @pytest.fixture(scope="module")
@@ -109,23 +109,23 @@ def test_model_load_remote(tmp_path, mock_s3_bucket):
 
 class TestFlavor:
     @classmethod
-    def save_model(cls, path, mlflow_model, signature=None, input_example=None):
-        mlflow_model.flavors["flavor1"] = {"a": 1, "b": 2}
-        mlflow_model.flavors["flavor2"] = {"x": 1, "y": 2}
+    def save_model(cls, path, qcflow_model, signature=None, input_example=None):
+        qcflow_model.flavors["flavor1"] = {"a": 1, "b": 2}
+        qcflow_model.flavors["flavor2"] = {"x": 1, "y": 2}
         _validate_and_prepare_target_save_path(path)
         if signature is not None:
-            mlflow_model.signature = signature
+            qcflow_model.signature = signature
         if input_example is not None:
-            _save_example(mlflow_model, input_example, path)
-        mlflow_model.save(os.path.join(path, "MLmodel"))
+            _save_example(qcflow_model, input_example, path)
+        qcflow_model.save(os.path.join(path, "MLmodel"))
 
 
 def _log_model_with_signature_and_example(
     tmp_path, sig, input_example, metadata=None, resources=None
 ):
-    experiment_id = mlflow.create_experiment("test")
+    experiment_id = qcflow.create_experiment("test")
 
-    with mlflow.start_run(experiment_id=experiment_id) as run:
+    with qcflow.start_run(experiment_id=experiment_id) as run:
         Model.log(
             "some/path",
             TestFlavor,
@@ -171,7 +171,7 @@ def test_model_log():
         loaded_example = loaded_model.load_input_example(local_path)
         assert loaded_example == input_example
 
-        assert Version(loaded_model.mlflow_version) == Version(mlflow.version.VERSION)
+        assert Version(loaded_model.qcflow_version) == Version(qcflow.version.VERSION)
 
 
 def test_model_log_calls_maybe_render_agent_eval_recipe(tmp_path):
@@ -180,7 +180,7 @@ def test_model_log_calls_maybe_render_agent_eval_recipe(tmp_path):
         outputs=Schema([ColSpec(name=None, type="double")]),
     )
     input_example = {"x": 1, "y": 2}
-    with mock.patch("mlflow.models.display_utils.maybe_render_agent_eval_recipe") as render_mock:
+    with mock.patch("qcflow.models.display_utils.maybe_render_agent_eval_recipe") as render_mock:
         _log_model_with_signature_and_example(tmp_path, sig, input_example)
         render_mock.assert_called_once()
 
@@ -193,14 +193,14 @@ def test_model_info():
         )
         input_example = {"x": 1, "y": 2}
 
-        experiment_id = mlflow.create_experiment("test")
-        with mlflow.start_run(experiment_id=experiment_id) as run:
+        experiment_id = qcflow.create_experiment("test")
+        with qcflow.start_run(experiment_id=experiment_id) as run:
             model_info = Model.log(
                 "some/path", TestFlavor, signature=sig, input_example=input_example
             )
         model_uri = f"runs:/{run.info.run_id}/some/path"
 
-        model_info_fetched = mlflow.models.get_model_info(model_uri)
+        model_info_fetched = qcflow.models.get_model_info(model_uri)
         with pytest.warns(
             FutureWarning,
             match="Field signature_dict is deprecated since v1.28.1. Use signature instead",
@@ -236,13 +236,13 @@ def test_model_info():
         assert model_info.signature_dict == sig.to_dict()
         assert model_signature.to_dict() == sig.to_dict()
 
-        assert model_info.mlflow_version == loaded_model.mlflow_version
-        assert model_info_fetched.mlflow_version == loaded_model.mlflow_version
+        assert model_info.qcflow_version == loaded_model.qcflow_version
+        assert model_info_fetched.qcflow_version == loaded_model.qcflow_version
 
 
 def test_model_info_with_model_version(tmp_path):
-    experiment_id = mlflow.create_experiment("test", artifact_location=str(tmp_path))
-    with mlflow.start_run(experiment_id=experiment_id):
+    experiment_id = qcflow.create_experiment("test", artifact_location=str(tmp_path))
+    with qcflow.start_run(experiment_id=experiment_id):
         model_info = Model.log("some/path", TestFlavor, registered_model_name="model_abc")
         assert model_info.registered_model_version == 1
         model_info = Model.log("some/path", TestFlavor, registered_model_name="model_abc")
@@ -259,22 +259,22 @@ def test_model_metadata():
         assert loaded_model.metadata["metadata_key"] == "metadata_value"
 
 
-def test_load_model_without_mlflow_version():
+def test_load_model_without_qcflow_version():
     with TempDir(chdr=True) as tmp:
-        model = Model(artifact_path="some/path", run_id="1234", mlflow_version=None)
+        model = Model(artifact_path="some/path", run_id="1234", qcflow_version=None)
         path = tmp.path("model")
         with open(path, "w") as out:
             model.to_yaml(out)
         loaded_model = Model.load(path)
 
-        assert loaded_model.mlflow_version is None
+        assert loaded_model.qcflow_version is None
 
 
 def test_model_log_with_databricks_runtime():
     dbr_version = "8.3.x"
     with (
         TempDir(chdr=True) as tmp,
-        mock.patch("mlflow.models.model.get_databricks_runtime_version", return_value=dbr_version),
+        mock.patch("qcflow.models.model.get_databricks_runtime_version", return_value=dbr_version),
     ):
         sig = ModelSignature(
             inputs=Schema([ColSpec("integer", "x"), ColSpec("integer", "y")]),
@@ -481,7 +481,7 @@ def test_validate_schema(sklearn_knn_model, iris_data, tmp_path):
     sk_model_path = os.path.join(tmp_path, "sk_model")
     X, y = iris_data
     signature = infer_signature(X, y)
-    mlflow.sklearn.save_model(
+    qcflow.sklearn.save_model(
         sklearn_knn_model,
         sk_model_path,
         signature=signature,
@@ -489,13 +489,13 @@ def test_validate_schema(sklearn_knn_model, iris_data, tmp_path):
 
     validate_schema(X, signature.inputs)
     prediction = sklearn_knn_model.predict(X)
-    reloaded_model = mlflow.sklearn.load_model(sk_model_path)
+    reloaded_model = qcflow.sklearn.load_model(sk_model_path)
     np.testing.assert_array_equal(prediction, reloaded_model.predict(X))
     validate_schema(prediction, signature.outputs)
 
 
 def test_save_load_input_example_without_conversion(tmp_path):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
@@ -504,8 +504,8 @@ def test_save_load_input_example_without_conversion(tmp_path):
             {"role": "user", "content": "Hello!"},
         ]
     }
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=input_example,
@@ -524,12 +524,12 @@ def test_save_load_input_example_with_pydantic_model(tmp_path):
         role: str
         content: str
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input: Message, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=Message(role="user", content="Hello!"),
@@ -542,17 +542,17 @@ def test_save_load_input_example_with_pydantic_model(tmp_path):
 
 
 def test_model_saved_by_save_model_can_be_loaded(tmp_path, sklearn_knn_model):
-    mlflow.sklearn.save_model(sklearn_knn_model, tmp_path)
+    qcflow.sklearn.save_model(sklearn_knn_model, tmp_path)
     info = Model.load(tmp_path).get_model_info()
     assert info.run_id is None
     assert info.artifact_path is None
 
 
 def test_copy_metadata(mock_is_in_databricks, sklearn_knn_model):
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(sklearn_knn_model, "model")
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(sklearn_knn_model, "model")
 
-    artifact_path = mlflow.artifacts.download_artifacts(model_info.model_uri)
+    artifact_path = qcflow.artifacts.download_artifacts(model_info.model_uri)
     metadata_path = os.path.join(artifact_path, "metadata")
     # Metadata should be copied only in Databricks
     if mock_is_in_databricks.return_value:
@@ -564,15 +564,15 @@ def test_copy_metadata(mock_is_in_databricks, sklearn_knn_model):
 
 class LegacyTestFlavor:
     @classmethod
-    def save_model(cls, path, mlflow_model):
-        mlflow_model.flavors["flavor1"] = {"a": 1, "b": 2}
-        mlflow_model.flavors["flavor2"] = {"x": 1, "y": 2}
+    def save_model(cls, path, qcflow_model):
+        qcflow_model.flavors["flavor1"] = {"a": 1, "b": 2}
+        qcflow_model.flavors["flavor2"] = {"x": 1, "y": 2}
         _validate_and_prepare_target_save_path(path)
-        mlflow_model.save(os.path.join(path, "MLmodel"))
+        qcflow_model.save(os.path.join(path, "MLmodel"))
 
 
 def test_legacy_flavor(mock_is_in_databricks):
-    with mlflow.start_run():
+    with qcflow.start_run():
         model_info = Model.log("some/path", LegacyTestFlavor)
 
     artifact_path = _download_artifact_from_uri(model_info.model_uri)
@@ -586,12 +586,12 @@ def test_legacy_flavor(mock_is_in_databricks):
 
 
 def test_pyfunc_set_model():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return model_input
 
     set_model(MyModel())
-    assert isinstance(mlflow.models.model.__mlflow_model__, mlflow.pyfunc.PythonModel)
+    assert isinstance(qcflow.models.model.__qcflow_model__, qcflow.pyfunc.PythonModel)
 
 
 def test_langchain_set_model():
@@ -610,11 +610,11 @@ def test_langchain_set_model():
         set_model(model)
 
     create_openai_llmchain()
-    assert isinstance(mlflow.models.model.__mlflow_model__, LLMChain)
+    assert isinstance(qcflow.models.model.__qcflow_model__, LLMChain)
 
 
 def test_error_set_model(sklearn_knn_model):
-    with pytest.raises(mlflow.MlflowException, match=SET_MODEL_ERROR):
+    with pytest.raises(qcflow.MlflowException, match=SET_MODEL_ERROR):
         set_model(sklearn_knn_model)
 
 

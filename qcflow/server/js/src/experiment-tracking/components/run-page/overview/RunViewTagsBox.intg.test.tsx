@@ -1,7 +1,7 @@
 import userEvent from '@testing-library/user-event-14';
 
 import { MockedReduxStoreProvider } from '../../../../common/utils/TestUtils';
-import { renderWithIntl, fastFillInput, act, screen, within } from '@mlflow/mlflow/src/common/utils/TestUtils.react17';
+import { renderWithIntl, fastFillInput, act, screen, within } from '@qcflow/qcflow/src/common/utils/TestUtils.react17';
 import { setRunTagsBulkApi } from '../../../actions';
 import { KeyValueEntity } from '../../../types';
 import { RunViewTagsBox } from './RunViewTagsBox';
@@ -56,7 +56,7 @@ describe('RunViewTagsBox integration', () => {
       renderTestComponent([
         { key: 'existing_tag_1', value: 'val1' },
         { key: 'existing_tag_2', value: 'val2' },
-        { key: 'mlflow.existing_tag_3', value: 'val2' },
+        { key: 'qcflow.existing_tag_3', value: 'val2' },
       ] as any);
     });
 

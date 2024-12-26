@@ -8,20 +8,20 @@ from typing import Any, Iterator
 
 from packaging.version import Version
 
-import mlflow
-from mlflow import MlflowException
-from mlflow.entities import RunTag, SpanType
-from mlflow.entities.span_event import SpanEvent
-from mlflow.entities.span_status import SpanStatusCode
-from mlflow.ml_package_versions import _ML_PACKAGE_VERSIONS
-from mlflow.openai.utils.chat_schema import set_span_chat_attributes
-from mlflow.tracing.constant import TraceMetadataKey
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracking.context import registry as context_registry
-from mlflow.tracking.fluent import _get_experiment_id
-from mlflow.utils.autologging_utils import disable_autologging, get_autologging_config
-from mlflow.utils.autologging_utils.config import AutoLoggingConfig
-from mlflow.utils.autologging_utils.safety import _resolve_extra_tags
+import qcflow
+from qcflow import MlflowException
+from qcflow.entities import RunTag, SpanType
+from qcflow.entities.span_event import SpanEvent
+from qcflow.entities.span_status import SpanStatusCode
+from qcflow.ml_package_versions import _ML_PACKAGE_VERSIONS
+from qcflow.openai.utils.chat_schema import set_span_chat_attributes
+from qcflow.tracing.constant import TraceMetadataKey
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracking.context import registry as context_registry
+from qcflow.tracking.fluent import _get_experiment_id
+from qcflow.utils.autologging_utils import disable_autologging, get_autologging_config
+from qcflow.utils.autologging_utils.config import AutoLoggingConfig
+from qcflow.utils.autologging_utils.safety import _resolve_extra_tags
 
 MIN_REQ_VERSION = Version(_ML_PACKAGE_VERSIONS["openai"]["autologging"]["minimum"])
 MAX_REQ_VERSION = Version(_ML_PACKAGE_VERSIONS["openai"]["autologging"]["maximum"])
@@ -44,7 +44,7 @@ def _get_input_from_model(model, kwargs):
         if param := kwargs.get(param_name):
             return param
         input_example_exc = MlflowException(
-            "Inference function signature changes, please contact MLflow team to "
+            "Inference function signature changes, please contact QCFlow team to "
             "fix OpenAI autologging.",
         )
     else:
@@ -121,27 +121,27 @@ def patched_call(original, self, *args, **kwargs):
     from openai.types.chat.chat_completion_chunk import ChatCompletionChunk
     from openai.types.completion import Completion
 
-    config = AutoLoggingConfig.init(flavor_name=mlflow.openai.FLAVOR_NAME)
-    active_run = mlflow.active_run()
+    config = AutoLoggingConfig.init(flavor_name=qcflow.openai.FLAVOR_NAME)
+    active_run = qcflow.active_run()
 
     # Active run should always take precedence over the run_id stored in the model
-    run_id = active_run.info.run_id if active_run else getattr(self, "_mlflow_run_id", None)
+    run_id = active_run.info.run_id if active_run else getattr(self, "_qcflow_run_id", None)
 
-    mlflow_client = mlflow.MlflowClient()
+    qcflow_client = qcflow.MlflowClient()
     request_id = None
 
     # If optional artifacts logging are enabled e.g. log_models, we need to create a run
     if config.should_log_optional_artifacts():
         # include run context tags
         resolved_tags = context_registry.resolve_tags(config.extra_tags)
-        tags = _resolve_extra_tags(mlflow.openai.FLAVOR_NAME, resolved_tags)
+        tags = _resolve_extra_tags(qcflow.openai.FLAVOR_NAME, resolved_tags)
         if run_id is not None:
-            mlflow_client.log_batch(
+            qcflow_client.log_batch(
                 run_id=run_id,
                 tags=[RunTag(key, str(value)) for key, value in tags.items()],
             )
         else:
-            run = mlflow_client.create_run(
+            run = qcflow_client.create_run(
                 experiment_id=_get_experiment_id(),
                 tags=tags,
             )
@@ -152,8 +152,8 @@ def patched_call(original, self, *args, **kwargs):
         attributes = {k: v for k, v in kwargs.items() if k != "messages"}
 
         # If there is an active span, create a child span under it, otherwise create a new trace
-        if active_span := mlflow.get_current_active_span():
-            span = mlflow_client.start_span(
+        if active_span := qcflow.get_current_active_span():
+            span = qcflow_client.start_span(
                 name=self.__class__.__name__,
                 request_id=active_span.request_id,
                 parent_id=active_span.span_id,
@@ -162,7 +162,7 @@ def patched_call(original, self, *args, **kwargs):
                 attributes=attributes,
             )
         else:
-            span = mlflow_client.start_trace(
+            span = qcflow_client.start_trace(
                 name=self.__class__.__name__,
                 span_type=_get_span_type(self.__class__),
                 inputs=kwargs,
@@ -185,7 +185,7 @@ def patched_call(original, self, *args, **kwargs):
         if config.log_traces and request_id:
             try:
                 span.add_event(SpanEvent.from_exception(e))
-                mlflow_client.end_trace(request_id=request_id, status=SpanStatusCode.ERROR)
+                qcflow_client.end_trace(request_id=request_id, status=SpanStatusCode.ERROR)
             except Exception as inner_e:
                 _logger.warning(f"Encountered unexpected error when ending trace: {inner_e}")
         raise e
@@ -199,7 +199,7 @@ def patched_call(original, self, *args, **kwargs):
             chunks = []
             output = []
             for chunk in stream:
-                # `chunk.choices` can be empty: https://github.com/mlflow/mlflow/issues/13361
+                # `chunk.choices` can be empty: https://github.com/qcflow/qcflow/issues/13361
                 if isinstance(chunk, Completion) and chunk.choices:
                     output.append(chunk.choices[0].text or "")
                 elif isinstance(chunk, ChatCompletionChunk) and chunk.choices:
@@ -214,7 +214,7 @@ def patched_call(original, self, *args, **kwargs):
 
                     set_span_chat_attributes(span, kwargs, outputs)
 
-                    mlflow_client.end_trace(
+                    qcflow_client.end_trace(
                         request_id=request_id,
                         attributes={"events": chunk_dicts},
                         outputs=outputs,
@@ -228,16 +228,16 @@ def patched_call(original, self, *args, **kwargs):
             try:
                 set_span_chat_attributes(span, kwargs, result)
                 if span.parent_id is None:
-                    mlflow_client.end_trace(request_id=request_id, outputs=result)
+                    qcflow_client.end_trace(request_id=request_id, outputs=result)
                 else:
-                    mlflow_client.end_span(
+                    qcflow_client.end_span(
                         request_id=request_id, span_id=span.span_id, outputs=result
                     )
             except Exception as e:
                 _logger.warning(f"Encountered unexpected error when ending trace: {e}")
 
     input_example = None
-    if config.log_models and not hasattr(self, "_mlflow_model_logged"):
+    if config.log_models and not hasattr(self, "_qcflow_model_logged"):
         if config.log_input_examples:
             input_example = deepcopy(_get_input_from_model(self, kwargs))
             if not config.log_model_signatures:
@@ -248,17 +248,17 @@ def patched_call(original, self, *args, **kwargs):
                 )
 
         registered_model_name = get_autologging_config(
-            mlflow.openai.FLAVOR_NAME, "registered_model_name", None
+            qcflow.openai.FLAVOR_NAME, "registered_model_name", None
         )
         try:
-            task = mlflow.openai._get_task_name(self.__class__)
+            task = qcflow.openai._get_task_name(self.__class__)
             with disable_autologging():
                 # If the user is using `openai.OpenAI()` client,
                 # they do not need to set the "OPENAI_API_KEY" environment variable.
                 # This temporarily sets the API key as an environment variable
                 # so that the model can be logged.
                 with _set_api_key_env_var(self._client):
-                    mlflow.openai.log_model(
+                    qcflow.openai.log_model(
                         kwargs.get("model"),
                         task,
                         "model",
@@ -268,14 +268,14 @@ def patched_call(original, self, *args, **kwargs):
                     )
         except Exception as e:
             _logger.warning(f"Failed to log model due to error: {e}")
-        self._mlflow_model_logged = True
+        self._qcflow_model_logged = True
 
     # Even if the model is not logged, we keep a single run per model
-    self._mlflow_run_id = run_id
+    self._qcflow_run_id = run_id
 
     # Terminate the run if it is not managed by the user
     if run_id is not None and (active_run is None or active_run.info.run_id != run_id):
-        mlflow_client.set_terminated(run_id)
+        qcflow_client.set_terminated(run_id)
 
     return raw_result
 
@@ -301,11 +301,11 @@ def patched_agent_get_chat_completion(original, self, *args, **kwargs):
                 # NB: Swarm uses `func.__code__.co_varnames` to inspect if the provided
                 # tool function includes 'context_variables' parameter in the signature
                 # and ingest the global context variables if so. Wrapping the function
-                # with mlflow.trace() will break this.
+                # with qcflow.trace() will break this.
                 # The co_varnames is determined based on the local variables of the
                 # function, so we workaround this by declaring it here as a local variable.
                 context_variables = kwargs.get("context_variables", {})  # noqa: F841
-                return mlflow.trace(
+                return qcflow.trace(
                     fn,
                     name=f"{agent.name}.{fn.__name__}",
                     span_type=SpanType.TOOL,
@@ -313,22 +313,22 @@ def patched_agent_get_chat_completion(original, self, *args, **kwargs):
         else:
 
             def wrapper(*args, **kwargs):
-                return mlflow.trace(
+                return qcflow.trace(
                     fn,
                     name=f"{agent.name}.{fn.__name__}",
                     span_type=SpanType.TOOL,
                 )(*args, **kwargs)
 
         wrapped = functools.wraps(fn)(wrapper)
-        wrapped._is_mlflow_traced = True  # Marker to avoid double tracing
+        wrapped._is_qcflow_traced = True  # Marker to avoid double tracing
         return wrapped
 
     agent.functions = [
-        function_wrapper(fn) if not hasattr(fn, "_is_mlflow_traced") else fn
+        function_wrapper(fn) if not hasattr(fn, "_is_qcflow_traced") else fn
         for fn in agent.functions
     ]
 
-    traced_fn = mlflow.trace(
+    traced_fn = qcflow.trace(
         original, name=f"{agent.name}.get_chat_completion", span_type=SpanType.CHAIN
     )
     return traced_fn(self, *args, **kwargs)
@@ -338,5 +338,5 @@ def patched_swarm_run(original, self, *args, **kwargs):
     """
     Patched version of `run` method of the Swarm object.
     """
-    traced_fn = mlflow.trace(original, span_type=SpanType.AGENT)
+    traced_fn = qcflow.trace(original, span_type=SpanType.AGENT)
     return traced_fn(self, *args, **kwargs)

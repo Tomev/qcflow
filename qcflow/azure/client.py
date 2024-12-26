@@ -7,8 +7,8 @@ import logging
 import urllib
 from copy import deepcopy
 
-from mlflow.utils import rest_utils
-from mlflow.utils.file_utils import read_chunk
+from qcflow.utils import rest_utils
+from qcflow.utils.file_utils import read_chunk
 
 _logger = logging.getLogger(__name__)
 _PUT_BLOCK_HEADERS = {

@@ -10,7 +10,7 @@
  */
 export default class LocalStorageUtils {
   /**
-   * Protocol version of MLflow's local storage. Should be incremented on any breaking change in how
+   * Protocol version of QCFlow's local storage. Should be incremented on any breaking change in how
    * data persisted in local storage is used, to prevent old (invalid) cached data from being loaded
    * and breaking the application.
    */
@@ -73,7 +73,7 @@ class LocalStorageStore {
    * local storage.
    */
   withScopePrefix(key: any) {
-    return ['MLflowLocalStorage', LocalStorageUtils.version, this.scope, key].join('-');
+    return ['QCFlowLocalStorage', LocalStorageUtils.version, this.scope, key].join('-');
   }
 
   /** Save the specified key-value pair in local storage. */

@@ -1,9 +1,9 @@
-.. _mlflow.tracking:
+.. _qcflow.tracking:
 
-mlflow.client
+qcflow.client
 ===============
 
-.. automodule:: mlflow.client
+.. automodule:: qcflow.client
     :members:
     :undoc-members:
     :show-inheritance:

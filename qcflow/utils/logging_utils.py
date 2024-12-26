@@ -5,14 +5,14 @@ import re
 import sys
 
 # Logging format example:
-# 2018/11/20 12:36:37 INFO mlflow.sagemaker: Creating new SageMaker endpoint
+# 2018/11/20 12:36:37 INFO qcflow.sagemaker: Creating new SageMaker endpoint
 LOGGING_LINE_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
 LOGGING_DATETIME_FORMAT = "%Y/%m/%d %H:%M:%S"
 
 
 class MlflowLoggingStream:
     """
-    A Python stream for use with event logging APIs throughout MLflow (`eprint()`,
+    A Python stream for use with event logging APIs throughout QCFlow (`eprint()`,
     `logger.info()`, etc.). This stream wraps `sys.stderr`, forwarding `write()` and
     `flush()` calls to the stream referred to by `sys.stderr` at the time of the call.
     It also provides capabilities for disabling the stream to silence event logs.
@@ -38,24 +38,24 @@ class MlflowLoggingStream:
         self._enabled = value
 
 
-MLFLOW_LOGGING_STREAM = MlflowLoggingStream()
+QCFLOW_LOGGING_STREAM = MlflowLoggingStream()
 
 
 def disable_logging():
     """
-    Disables the `MlflowLoggingStream` used by event logging APIs throughout MLflow
+    Disables the `MlflowLoggingStream` used by event logging APIs throughout QCFlow
     (`eprint()`, `logger.info()`, etc), silencing all subsequent event logs.
     """
-    MLFLOW_LOGGING_STREAM.enabled = False
+    QCFLOW_LOGGING_STREAM.enabled = False
 
 
 def enable_logging():
     """
-    Enables the `MlflowLoggingStream` used by event logging APIs throughout MLflow
+    Enables the `MlflowLoggingStream` used by event logging APIs throughout QCFlow
     (`eprint()`, `logger.info()`, etc), emitting all subsequent event logs. This
     reverses the effects of `disable_logging()`.
     """
-    MLFLOW_LOGGING_STREAM.enabled = True
+    QCFLOW_LOGGING_STREAM.enabled = True
 
 
 class MlflowFormatter(logging.Formatter):
@@ -97,28 +97,28 @@ class MlflowFormatter(logging.Formatter):
         return f"\033[{code}m"
 
 
-def _configure_mlflow_loggers(root_module_name):
+def _configure_qcflow_loggers(root_module_name):
     logging.config.dictConfig(
         {
             "version": 1,
             "disable_existing_loggers": False,
             "formatters": {
-                "mlflow_formatter": {
+                "qcflow_formatter": {
                     "()": MlflowFormatter,
                     "format": LOGGING_LINE_FORMAT,
                     "datefmt": LOGGING_DATETIME_FORMAT,
                 },
             },
             "handlers": {
-                "mlflow_handler": {
-                    "formatter": "mlflow_formatter",
+                "qcflow_handler": {
+                    "formatter": "qcflow_formatter",
                     "class": "logging.StreamHandler",
-                    "stream": MLFLOW_LOGGING_STREAM,
+                    "stream": QCFLOW_LOGGING_STREAM,
                 },
             },
             "loggers": {
                 root_module_name: {
-                    "handlers": ["mlflow_handler"],
+                    "handlers": ["qcflow_handler"],
                     "level": "INFO",
                     "propagate": False,
                 },
@@ -128,7 +128,7 @@ def _configure_mlflow_loggers(root_module_name):
 
 
 def eprint(*args, **kwargs):
-    print(*args, file=MLFLOW_LOGGING_STREAM, **kwargs)
+    print(*args, file=QCFLOW_LOGGING_STREAM, **kwargs)
 
 
 class LoggerMessageFilter(logging.Filter):

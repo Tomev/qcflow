@@ -7,11 +7,11 @@ import pytest
 import requests
 from click.testing import CliRunner
 
-from mlflow.deployments import cli
+from qcflow.deployments import cli
 
 from tests.helper_functions import get_safe_port
 
-pytest.importorskip("mlflow.gateway")
+pytest.importorskip("qcflow.gateway")
 
 _TEST_CONFIG = """
 routes:
@@ -79,7 +79,7 @@ def test_start_server(tmp_path):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "deployments",
             "start-server",
             "--config-path",
@@ -106,7 +106,7 @@ def test_start_server_fail_on_windows(tmp_path):
     config.write_text(_TEST_CONFIG)
 
     runner = CliRunner()
-    with mock.patch("mlflow.deployments.cli.is_windows", return_value=True):
+    with mock.patch("qcflow.deployments.cli.is_windows", return_value=True):
         result = runner.invoke(cli.start_server, ["--config-path", config], catch_exceptions=True)
         assert result.exit_code == 1
-        assert "MLflow AI Gateway does not support Windows" in result.output
+        assert "QCFlow AI Gateway does not support Windows" in result.output

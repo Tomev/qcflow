@@ -9,7 +9,7 @@ import requests
 
 def fetch_changed_files(pr: str) -> list[str]:
     pr_num = pr.rsplit("/", 1)[-1]
-    url = f"https://api.github.com/repos/mlflow/mlflow/pulls/{pr_num}/files"
+    url = f"https://api.github.com/repos/qcflow/qcflow/pulls/{pr_num}/files"
     per_page = 100
     changed_files = []
     for page in range(1, 100):

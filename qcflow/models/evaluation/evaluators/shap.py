@@ -6,21 +6,21 @@ import numpy as np
 from packaging.version import Version
 from sklearn.pipeline import Pipeline as sk_Pipeline
 
-import mlflow
-from mlflow import MlflowException
-from mlflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
-from mlflow.models.evaluation.default_evaluator import (
+import qcflow
+from qcflow import MlflowException
+from qcflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
+from qcflow.models.evaluation.default_evaluator import (
     BuiltInEvaluator,
     _extract_predict_fn,
     _extract_raw_model,
     _get_dataframe_with_renamed_columns,
 )
-from mlflow.models.evaluation.evaluators.classifier import (
+from qcflow.models.evaluation.evaluators.classifier import (
     _is_continuous,
     _suppress_class_imbalance_errors,
 )
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.pyfunc import _ServedPyFuncModel
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.pyfunc import _ServedPyFuncModel
 
 _logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class ShapEvaluator(BuiltInEvaluator):
 
     def _evaluate(
         self,
-        model: Optional["mlflow.pyfunc.PyFuncModel"],
+        model: Optional["qcflow.pyfunc.PyFuncModel"],
         extra_metrics: list[EvaluationMetric],
         custom_artifacts=None,
         **kwargs,
@@ -63,7 +63,7 @@ class ShapEvaluator(BuiltInEvaluator):
             return
 
         model_loader_module, raw_model = _extract_raw_model(model)
-        if model_loader_module == "mlflow.spark":
+        if model_loader_module == "qcflow.spark":
             # TODO: Shap explainer need to manipulate on each feature values,
             #  but spark model input dataframe contains Vector type feature column
             #  which shap explainer does not support.
@@ -155,7 +155,7 @@ class ShapEvaluator(BuiltInEvaluator):
             if algorithm:
                 if algorithm == "kernel":
                     # We need to lazily import shap, so lazily import `_PatchedKernelExplainer`
-                    from mlflow.models.evaluation._shap_patch import _PatchedKernelExplainer
+                    from qcflow.models.evaluation._shap_patch import _PatchedKernelExplainer
 
                     kernel_link = self.evaluator_config.get(
                         "explainability_kernel_link", "identity"
@@ -219,7 +219,7 @@ class ShapEvaluator(BuiltInEvaluator):
             _logger.debug("", exc_info=True)
             return
         try:
-            mlflow.shap.log_explainer(explainer, artifact_path="explainer")
+            qcflow.shap.log_explainer(explainer, artifact_path="explainer")
         except Exception as e:
             # TODO: The explainer saver is buggy, if `get_underlying_model_flavor` return "unknown",
             #   then fallback to shap explainer saver, and shap explainer will call `model.save`

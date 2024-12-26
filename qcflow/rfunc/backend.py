@@ -4,10 +4,10 @@ import re
 import subprocess
 import sys
 
-from mlflow.exceptions import MlflowException
-from mlflow.models import FlavorBackend
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.string_utils import quote
+from qcflow.exceptions import MlflowException
+from qcflow.models import FlavorBackend
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.string_utils import quote
 
 _logger = logging.getLogger(__name__)
 
@@ -19,12 +19,12 @@ class RFuncBackend(FlavorBackend):
     """
 
     def build_image(
-        self, model_uri, image_name, install_mlflow, mlflow_home, enable_mlserver, base_image=None
+        self, model_uri, image_name, install_qcflow, qcflow_home, enable_mlserver, base_image=None
     ):
         pass
 
     def generate_dockerfile(
-        self, model_uri, output_path, install_mlflow, mlflow_home, enable_mlserver, base_image=None
+        self, model_uri, output_path, install_qcflow, qcflow_home, enable_mlserver, base_image=None
     ):
         pass
 
@@ -40,14 +40,14 @@ class RFuncBackend(FlavorBackend):
         extra_envs=None,
     ):
         """
-        Generate predictions using R model saved with MLflow.
+        Generate predictions using R model saved with QCFlow.
         Return the prediction results as a JSON.
         """
         if pip_requirements_override is not None:
             raise MlflowException("pip_requirements_override is not supported in the R backend.")
         model_path = _download_artifact_from_uri(model_uri)
         str_cmd = (
-            "mlflow:::mlflow_rfunc_predict(model_path = '{0}', input_path = {1}, "
+            "qcflow:::qcflow_rfunc_predict(model_path = '{0}', input_path = {1}, "
             "output_path = {2}, content_type = {3})"
         )
         command = str_cmd.format(
@@ -89,7 +89,7 @@ class RFuncBackend(FlavorBackend):
             raise Exception("RBackend does not support redirect stdout/stderr.")
 
         model_path = _download_artifact_from_uri(model_uri)
-        command = "mlflow::mlflow_rfunc_serve('{}', port = {}, host = '{}')".format(
+        command = "qcflow::qcflow_rfunc_serve('{}', port = {}, host = '{}')".format(
             quote(model_path), port, host
         )
         _execute(command)

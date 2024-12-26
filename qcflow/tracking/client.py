@@ -1,7 +1,7 @@
 """
-Internal package providing a Python CRUD interface to MLflow experiments, runs, registered models,
-and model versions. This is a lower level API than the :py:mod:`mlflow.tracking.fluent` module,
-and is exposed in the :py:mod:`mlflow.tracking` module.
+Internal package providing a Python CRUD interface to QCFlow experiments, runs, registered models,
+and model versions. This is a lower level API than the :py:mod:`qcflow.tracking.fluent` module,
+and is exposed in the :py:mod:`qcflow.tracking` module.
 """
 
 import contextlib
@@ -19,8 +19,8 @@ from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
 
 import yaml
 
-import mlflow
-from mlflow.entities import (
+import qcflow
+from qcflow.entities import (
     DatasetInput,
     Experiment,
     FileInfo,
@@ -36,57 +36,57 @@ from mlflow.entities import (
     TraceInfo,
     ViewType,
 )
-from mlflow.entities.model_registry import ModelVersion, RegisteredModel
-from mlflow.entities.model_registry.model_version_stages import ALL_STAGES
-from mlflow.entities.span import NO_OP_SPAN_REQUEST_ID, NoOpSpan, create_mlflow_span
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.environment_variables import MLFLOW_ENABLE_ASYNC_LOGGING
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.entities.model_registry import ModelVersion, RegisteredModel
+from qcflow.entities.model_registry.model_version_stages import ALL_STAGES
+from qcflow.entities.span import NO_OP_SPAN_REQUEST_ID, NoOpSpan, create_qcflow_span
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.environment_variables import QCFLOW_ENABLE_ASYNC_LOGGING
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     BAD_REQUEST,
     FEATURE_DISABLED,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.store.artifact.utils.models import (
+from qcflow.store.artifact.utils.models import (
     get_model_name_and_version,
 )
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry import (
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_DEFAULT,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
 )
-from mlflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT, SEARCH_TRACES_DEFAULT_MAX_RESULTS
-from mlflow.tracing.constant import (
+from qcflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT, SEARCH_TRACES_DEFAULT_MAX_RESULTS
+from qcflow.tracing.constant import (
     TRACE_REQUEST_ID_PREFIX,
     SpanAttributeKey,
     TraceTagKey,
 )
-from mlflow.tracing.display import get_display_handler
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracing.utils import exclude_immutable_tags, get_otel_attribute
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking._model_registry import utils as registry_utils
-from mlflow.tracking._model_registry.client import ModelRegistryClient
-from mlflow.tracking._tracking_service import utils
-from mlflow.tracking._tracking_service.client import TrackingServiceClient
-from mlflow.tracking.artifact_utils import _upload_artifacts_to_databricks
-from mlflow.tracking.multimedia import Image, compress_image_size, convert_to_pil_image
-from mlflow.tracking.registry import UnsupportedModelRegistryStoreURIException
-from mlflow.utils.annotations import deprecated, experimental
-from mlflow.utils.async_logging.run_operations import RunOperations
-from mlflow.utils.databricks_utils import (
+from qcflow.tracing.display import get_display_handler
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracing.utils import exclude_immutable_tags, get_otel_attribute
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking._model_registry import utils as registry_utils
+from qcflow.tracking._model_registry.client import ModelRegistryClient
+from qcflow.tracking._tracking_service import utils
+from qcflow.tracking._tracking_service.client import TrackingServiceClient
+from qcflow.tracking.artifact_utils import _upload_artifacts_to_databricks
+from qcflow.tracking.multimedia import Image, compress_image_size, convert_to_pil_image
+from qcflow.tracking.registry import UnsupportedModelRegistryStoreURIException
+from qcflow.utils.annotations import deprecated, experimental
+from qcflow.utils.async_logging.run_operations import RunOperations
+from qcflow.utils.databricks_utils import (
     get_databricks_run_url,
 )
-from mlflow.utils.logging_utils import eprint
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_LOGGED_ARTIFACTS,
-    MLFLOW_LOGGED_IMAGES,
-    MLFLOW_PARENT_RUN_ID,
+from qcflow.utils.logging_utils import eprint
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_LOGGED_ARTIFACTS,
+    QCFLOW_LOGGED_IMAGES,
+    QCFLOW_PARENT_RUN_ID,
 )
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.uri import is_databricks_unity_catalog_uri, is_databricks_uri
-from mlflow.utils.validation import (
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.uri import is_databricks_unity_catalog_uri, is_databricks_uri
+from qcflow.utils.validation import (
     _validate_model_alias_name,
     _validate_model_name,
     _validate_model_version,
@@ -105,15 +105,15 @@ _logger = logging.getLogger(__name__)
 
 _STAGES_DEPRECATION_WARNING = (
     "Model registry stages will be removed in a future major release. To learn more about the "
-    "deprecation of model registry stages, see our migration guide here: https://mlflow.org/docs/"
+    "deprecation of model registry stages, see our migration guide here: https://qcflow.org/docs/"
     "latest/model-registry.html#migrating-from-stages"
 )
 
 
 class MlflowClient:
     """
-    Client of an MLflow Tracking Server that creates and manages experiments and runs, and of an
-    MLflow Registry Server that creates and manages registered models and model versions. It's a
+    Client of an QCFlow Tracking Server that creates and manages experiments and runs, and of an
+    QCFlow Registry Server that creates and manages registered models and model versions. It's a
     thin wrapper around TrackingServiceClient and RegistryClient so there is a unified API but we
     can keep the implementation of the tracking and registry clients independent from each other.
     """
@@ -122,11 +122,11 @@ class MlflowClient:
         """
         Args:
             tracking_uri: Address of local or remote tracking server. If not provided, defaults
-                to the service set by ``mlflow.tracking.set_tracking_uri``. See
+                to the service set by ``qcflow.tracking.set_tracking_uri``. See
                 `Where Runs Get Recorded <../tracking.html#where-runs-get-recorded>`_
                 for more info.
             registry_uri: Address of local or remote model registry server. If not provided,
-                defaults to the service set by ``mlflow.tracking.set_registry_uri``. If
+                defaults to the service set by ``qcflow.tracking.set_registry_uri``. If
                 no such service was set, defaults to the tracking uri of the client.
         """
         final_tracking_uri = utils._resolve_tracking_uri(tracking_uri)
@@ -181,31 +181,31 @@ class MlflowClient:
 
     def get_run(self, run_id: str) -> Run:
         """
-        Fetch the run from backend store. The resulting :py:class:`Run <mlflow.entities.Run>`
-        contains a collection of run metadata -- :py:class:`RunInfo <mlflow.entities.RunInfo>`,
+        Fetch the run from backend store. The resulting :py:class:`Run <qcflow.entities.Run>`
+        contains a collection of run metadata -- :py:class:`RunInfo <qcflow.entities.RunInfo>`,
         as well as a collection of run parameters, tags, and metrics --
-        :py:class:`RunData <mlflow.entities.RunData>`. It also contains a collection of run
+        :py:class:`RunData <qcflow.entities.RunData>`. It also contains a collection of run
         inputs (experimental), including information about datasets used by the run --
-        :py:class:`RunInputs <mlflow.entities.RunInputs>`. In the case where multiple metrics with
-        the same key are logged for the run, the :py:class:`RunData <mlflow.entities.RunData>`
+        :py:class:`RunInputs <qcflow.entities.RunInputs>`. In the case where multiple metrics with
+        the same key are logged for the run, the :py:class:`RunData <qcflow.entities.RunData>`
         contains the most recently logged value at the largest step for each metric.
 
         Args:
             run_id: Unique identifier for the run.
 
         Returns:
-            A single :py:class:`mlflow.entities.Run` object, if the run exists. Otherwise,
+            A single :py:class:`qcflow.entities.Run` object, if the run exists. Otherwise,
             raises an exception.
 
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
-            with mlflow.start_run() as run:
-                mlflow.log_param("p", 0)
+            with qcflow.start_run() as run:
+                qcflow.log_param("p", 0)
 
             # The run has finished since we have exited the with block
             # Fetch the run
@@ -232,19 +232,19 @@ class MlflowClient:
             run_id: Unique identifier for the child run.
 
         Returns:
-            A single :py:class:`mlflow.entities.Run` object, if the parent run exists. Otherwise,
+            A single :py:class:`qcflow.entities.Run` object, if the parent run exists. Otherwise,
             returns None.
 
         .. code-block:: python
             :test:
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
             # Create nested runs
-            with mlflow.start_run():
-                with mlflow.start_run(nested=True) as child_run:
+            with qcflow.start_run():
+                with qcflow.start_run(nested=True) as child_run:
                     child_run_id = child_run.info.run_id
 
             client = MlflowClient()
@@ -261,7 +261,7 @@ class MlflowClient:
 
         """
         child_run = self._tracking_client.get_run(run_id)
-        parent_run_id = child_run.data.tags.get(MLFLOW_PARENT_RUN_ID)
+        parent_run_id = child_run.data.tags.get(QCFLOW_PARENT_RUN_ID)
         if parent_run_id is None:
             return None
         return self._tracking_client.get_run(parent_run_id)
@@ -274,12 +274,12 @@ class MlflowClient:
             key: Metric name within the run.
 
         Returns:
-            A list of :py:class:`mlflow.entities.Metric` entities if logged, else empty list.
+            A list of :py:class:`qcflow.entities.Metric` entities if logged, else empty list.
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_metric_info(history):
@@ -344,26 +344,26 @@ class MlflowClient:
         run_name: Optional[str] = None,
     ) -> Run:
         """
-        Create a :py:class:`mlflow.entities.Run` object that can be associated with
+        Create a :py:class:`qcflow.entities.Run` object that can be associated with
         metrics, parameters, artifacts, etc.
-        Unlike :py:func:`mlflow.projects.run`, creates objects but does not run code.
-        Unlike :py:func:`mlflow.start_run`, does not change the "active run" used by
-        :py:func:`mlflow.log_param`.
+        Unlike :py:func:`qcflow.projects.run`, creates objects but does not run code.
+        Unlike :py:func:`qcflow.start_run`, does not change the "active run" used by
+        :py:func:`qcflow.log_param`.
 
         Args:
             experiment_id: The string ID of the experiment to create a run in.
             start_time: If not provided, use the current timestamp.
             tags: A dictionary of key-value pairs that are converted into
-                :py:class:`mlflow.entities.RunTag` objects.
+                :py:class:`qcflow.entities.RunTag` objects.
             run_name: The name of this run.
 
         Returns:
-            :py:class:`mlflow.entities.Run` that was created.
+            :py:class:`qcflow.entities.Run` that was created.
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             # Create a run with a tag under the default experiment (whose id is '0').
             tags = {"engineering": "ML Platform"}
@@ -425,10 +425,10 @@ class MlflowClient:
         .. code-block:: python
             :test:
 
-            import mlflow
+            import qcflow
             import time
 
-            client = mlflow.MlflowClient()
+            client = qcflow.MlflowClient()
 
             # Delete all traces in the experiment
             client.delete_traces(
@@ -461,12 +461,12 @@ class MlflowClient:
             display: If ``True``, display the trace on the notebook.
 
         Returns:
-            The retrieved :py:class:`Trace <mlflow.entities.Trace>`.
+            The retrieved :py:class:`Trace <qcflow.entities.Trace>`.
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             client = MlflowClient()
             request_id = "12345678"
@@ -501,8 +501,8 @@ class MlflowClient:
                 the trace.
 
         Returns:
-            A :py:class:`PagedList <mlflow.store.entities.PagedList>` of
-            :py:class:`Trace <mlflow.entities.Trace>` objects that satisfy the search
+            A :py:class:`PagedList <qcflow.store.entities.PagedList>` of
+            :py:class:`Trace <qcflow.entities.Trace>` objects that satisfy the search
             expressions. If the underlying tracking store supports pagination, the token for the
             next page may be obtained via the ``token`` attribute of the returned object; however,
             some store implementations may not support pagination and thus the returned token would
@@ -534,8 +534,8 @@ class MlflowClient:
         Create a new trace object and start a root span under it.
 
         This is an imperative API to manually create a new span under a specific trace id and
-        parent span, unlike the higher-level APIs like :py:func:`@mlflow.trace <mlflow.trace>`
-        and :py:func:`with mlflow.start_span() <mlflow.start_span>`, which automatically manage
+        parent span, unlike the higher-level APIs like :py:func:`@qcflow.trace <qcflow.trace>`
+        and :py:func:`with qcflow.start_span() <qcflow.start_span>`, which automatically manage
         the span lifecycle and parent-child relationship. You only need to call this method
         when using the :py:func:`start_span() <start_span>` method of MlflowClient to create
         spans.
@@ -552,14 +552,14 @@ class MlflowClient:
             attributes: A dictionary of attributes to set on the root span of the trace.
             tags: A dictionary of tags to set on the trace.
             experiment_id: The ID of the experiment to create the trace in. If not provided,
-                MLflow will look for valid experiment in the following order: activated using
-                :py:func:`mlflow.set_experiment() <mlflow.set_experiment>`,
-                ``MLFLOW_EXPERIMENT_NAME`` environment variable, ``MLFLOW_EXPERIMENT_ID``
+                QCFlow will look for valid experiment in the following order: activated using
+                :py:func:`qcflow.set_experiment() <qcflow.set_experiment>`,
+                ``QCFLOW_EXPERIMENT_NAME`` environment variable, ``QCFLOW_EXPERIMENT_ID``
                 environment variable, or the default experiment as defined by the tracking server.
             start_time_ns: The start time of the trace in nanoseconds since the UNIX epoch.
 
         Returns:
-            An :py:class:`Span <mlflow.entities.Span>` object
+            An :py:class:`Span <qcflow.entities.Span>` object
             representing the root span of the trace.
 
         Example:
@@ -567,7 +567,7 @@ class MlflowClient:
         .. code-block:: python
             :test:
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             client = MlflowClient()
 
@@ -586,16 +586,16 @@ class MlflowClient:
         # Validate no active trace is set in the global context. If there is an active trace,
         # the span created by this method will be a child span under the active trace rather than
         # a root span of a new trace, which is not desired behavior.
-        if span := mlflow.get_current_active_span():
+        if span := qcflow.get_current_active_span():
             raise MlflowException(
                 f"Another trace is already set in the global context with ID {span.request_id}. "
                 "It appears that you have already started a trace using fluent APIs like "
-                "`@mlflow.trace()` or `with mlflow.start_span()`. However, it is not allowed "
+                "`@qcflow.trace()` or `with qcflow.start_span()`. However, it is not allowed "
                 "to call MlflowClient.start_trace() under an active trace created by fluent APIs "
                 "because it may lead to unexpected behavior. To resolve this issue, consider the "
                 "following options:\n"
                 " - To create a child span under the active trace, use "
-                "`with mlflow.start_span()` or `MlflowClient.start_span()` instead.\n"
+                "`with qcflow.start_span()` or `MlflowClient.start_span()` instead.\n"
                 " - To start multiple traces in parallel, avoid using fluent APIs "
                 "and create all traces using `MlflowClient.start_trace()`.",
                 error_code=BAD_REQUEST,
@@ -605,19 +605,19 @@ class MlflowClient:
             # Create new trace and a root span
             # Once OTel span is created, SpanProcessor.on_start is invoked
             # TraceInfo is created and logged into backend store inside on_start method
-            otel_span = mlflow.tracing.provider.start_detached_span(
+            otel_span = qcflow.tracing.provider.start_detached_span(
                 name, experiment_id=experiment_id, start_time_ns=start_time_ns
             )
             request_id = get_otel_attribute(otel_span, SpanAttributeKey.REQUEST_ID)
-            mlflow_span = create_mlflow_span(otel_span, request_id, span_type)
+            qcflow_span = create_qcflow_span(otel_span, request_id, span_type)
 
             # # If the span is a no-op span i.e. tracing is disabled, do nothing
-            if isinstance(mlflow_span, NoOpSpan):
-                return mlflow_span
+            if isinstance(qcflow_span, NoOpSpan):
+                return qcflow_span
 
             if inputs is not None:
-                mlflow_span.set_inputs(inputs)
-            mlflow_span.set_attributes(attributes or {})
+                qcflow_span.set_inputs(inputs)
+            qcflow_span.set_attributes(attributes or {})
 
             trace_manager = InMemoryTraceManager.get_instance()
             tags = exclude_immutable_tags(tags or {})
@@ -625,9 +625,9 @@ class MlflowClient:
             with trace_manager.get_trace(request_id) as trace:
                 trace.info.tags.update(tags)
             # Register new span in the in-memory trace manager
-            trace_manager.register_span(mlflow_span)
+            trace_manager.register_span(qcflow_span)
 
-            return mlflow_span
+            return qcflow_span
         except Exception as e:
             _logger.warning(
                 f"Failed to start trace {name}: {e}. "
@@ -659,9 +659,9 @@ class MlflowClient:
                 has attributes, the new attributes will be merged with the existing ones.
                 If the same key already exists, the new value will overwrite the old one.
             status: The status of the trace. This can be a
-                :py:class:`SpanStatus <mlflow.entities.SpanStatus>` object or a string
+                :py:class:`SpanStatus <qcflow.entities.SpanStatus>` object or a string
                 representing the status code defined in
-                :py:class:`SpanStatusCode <mlflow.entities.SpanStatusCode>`
+                :py:class:`SpanStatusCode <qcflow.entities.SpanStatusCode>`
                 e.g. ``"OK"``, ``"ERROR"``. The default status is OK.
             end_time_ns: The end time of the trace in nanoseconds since the UNIX epoch.
         """
@@ -729,7 +729,7 @@ class MlflowClient:
         return new_info.request_id
 
     def _upload_trace_spans_as_tag(self, trace_info: TraceInfo, trace_data: TraceData):
-        # When a trace is logged, we set a mlflow.traceSpans tag via SetTraceTag API
+        # When a trace is logged, we set a qcflow.traceSpans tag via SetTraceTag API
         # https://databricks.atlassian.net/browse/ML-40306
         parsed_spans = []
         for span in trace_data.spans:
@@ -768,8 +768,8 @@ class MlflowClient:
 
         This is an imperative API to manually create a new span under a specific trace id
         and parent span, unlike the higher-level APIs like
-        :py:func:`@mlflow.trace <mlflow.trace>` decorator and
-        :py:func:`with mlflow.start_span() <mlflow.start_span>` context manager, which
+        :py:func:`@qcflow.trace <qcflow.trace>` decorator and
+        :py:func:`with qcflow.start_span() <qcflow.start_span>` context manager, which
         automatically manage the span lifecycle and parent-child relationship.
 
         This API is useful for the case where the automatic context management is not
@@ -791,20 +791,20 @@ class MlflowClient:
 
             Instead of creating a root span with the :py:func:`start_trace() <start_trace>`
             method, you can also use this method within the context of a parent span created
-            by the fluent APIs like :py:func:`@mlflow.trace <mlflow.trace>` and
-            :py:func:`with mlflow.start_span() <mlflow.start_span>`, by passing its span
+            by the fluent APIs like :py:func:`@qcflow.trace <qcflow.trace>` and
+            :py:func:`with qcflow.start_span() <qcflow.start_span>`, by passing its span
             ids the parent. This flexibility allows you to use the imperative APIs in
             conjunction with the fluent APIs like below:
 
             .. code-block:: python
                 :test:
 
-                import mlflow
-                from mlflow import MlflowClient
+                import qcflow
+                from qcflow import MlflowClient
 
                 client = MlflowClient()
 
-                with mlflow.start_span("parent_span") as parent_span:
+                with qcflow.start_span("parent_span") as parent_span:
                     child_span = client.start_span(
                         name="child_span",
                         request_id=parent_span.request_id,
@@ -820,9 +820,9 @@ class MlflowClient:
 
             However, **the opposite does not work**. You cannot use the fluent APIs within
             the span created by this MlflowClient API. This is because the fluent APIs
-            fetches the current span from the managed context, which is not set by the MLflow
-            Client APIs. Once you create a span with the MLflow Client APIs, all children
-            spans must be created with the MLflow Client APIs. Please be cautious when using
+            fetches the current span from the managed context, which is not set by the QCFlow
+            Client APIs. Once you create a span with the QCFlow Client APIs, all children
+            spans must be created with the QCFlow Client APIs. Please be cautious when using
             this mixed approach, as it can lead to unexpected behavior if not used properly.
 
         Args:
@@ -830,23 +830,23 @@ class MlflowClient:
             request_id: The ID of the trace to attach the span to. This is synonym to
                 trace_id` in OpenTelemetry.
             parent_id: The ID of the parent span. The parent span can be a span created by
-                both fluent APIs like `with mlflow.start_span()`, and imperative APIs like this.
+                both fluent APIs like `with qcflow.start_span()`, and imperative APIs like this.
             span_type: The type of the span. Can be either a string or a
-                :py:class:`SpanType <mlflow.entities.SpanType>` enum value.
+                :py:class:`SpanType <qcflow.entities.SpanType>` enum value.
             inputs: Inputs to set on the span.
             attributes: A dictionary of attributes to set on the span.
             start_time_ns: The start time of the span in nano seconds since the UNIX epoch.
                 If not provided, the current time will be used.
 
         Returns:
-            An :py:class:`mlflow.entities.Span` object representing the span.
+            An :py:class:`qcflow.entities.Span` object representing the span.
 
         Example:
 
         .. code-block:: python
             :test:
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             client = MlflowClient()
 
@@ -880,7 +880,7 @@ class MlflowClient:
         if not parent_id:
             raise MlflowException(
                 "start_span() must be called with an explicit parent_id."
-                "If you haven't started any span yet, use MLflowClient().start_trace() "
+                "If you haven't started any span yet, use QCFlowClient().start_trace() "
                 "to start a new trace and root span.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -898,13 +898,13 @@ class MlflowClient:
             )
 
         try:
-            otel_span = mlflow.tracing.provider.start_detached_span(
+            otel_span = qcflow.tracing.provider.start_detached_span(
                 name=name,
                 parent=parent_span._span,
                 start_time_ns=start_time_ns,
             )
 
-            span = create_mlflow_span(otel_span, request_id, span_type)
+            span = create_qcflow_span(otel_span, request_id, span_type)
             span.set_attributes(attributes or {})
             if inputs is not None:
                 span.set_inputs(inputs)
@@ -938,9 +938,9 @@ class MlflowClient:
                 attributes, the new attributes will be merged with the existing ones. If the same
                 key already exists, the new value will overwrite the old one.
             status: The status of the span. This can be a
-                :py:class:`SpanStatus <mlflow.entities.SpanStatus>` object or a string
+                :py:class:`SpanStatus <qcflow.entities.SpanStatus>` object or a string
                 representing the status code defined in
-                :py:class:`SpanStatusCode <mlflow.entities.SpanStatusCode>`
+                :py:class:`SpanStatusCode <qcflow.entities.SpanStatusCode>`
                 e.g. ``"OK"``, ``"ERROR"``. The default status is OK.
             end_time_ns: The end time of the span in nano seconds since the UNIX epoch.
                 If not provided, the current time will be used.
@@ -990,7 +990,7 @@ class MlflowClient:
         Returns:
             The created TraceInfo object.
         """
-        # Some tags like mlflow.runName are immutable once logged in tracking server.
+        # Some tags like qcflow.runName are immutable once logged in tracking server.
         return self._tracking_client.start_trace(
             experiment_id=experiment_id,
             timestamp_ms=timestamp_ms,
@@ -1030,7 +1030,7 @@ class MlflowClient:
         .. code-block:: python
             :test:
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             client = MlflowClient()
 
@@ -1045,9 +1045,9 @@ class MlflowClient:
             value: The string value of the tag. Must be at most 250 characters long, otherwise
                 it will be truncated when stored.
         """
-        if key.startswith("mlflow."):
+        if key.startswith("qcflow."):
             raise MlflowException(
-                f"Tags starting with 'mlflow.' are reserved and cannot be set. "
+                f"Tags starting with 'qcflow.' are reserved and cannot be set. "
                 f"Attempted to set tag with key '{key}' on trace with ID '{request_id}'.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -1072,7 +1072,7 @@ class MlflowClient:
         .. code-block:: python
             :test:
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             client = MlflowClient()
 
@@ -1113,7 +1113,7 @@ class MlflowClient:
 
         Args:
             view_type: One of enum values ``ACTIVE_ONLY``, ``DELETED_ONLY``, or ``ALL``
-                defined in :py:class:`mlflow.entities.ViewType`.
+                defined in :py:class:`qcflow.entities.ViewType`.
             max_results: Maximum number of experiments desired. Certain server backend may apply
                 its own limit.
             filter_string: Filter query string (e.g., ``"name = 'my_experiment'"``), defaults to
@@ -1159,14 +1159,14 @@ class MlflowClient:
                 a ``search_experiments`` call.
 
         Returns:
-            A :py:class:`PagedList <mlflow.store.entities.PagedList>` of
-            :py:class:`Experiment <mlflow.entities.Experiment>` objects. The pagination token
+            A :py:class:`PagedList <qcflow.store.entities.PagedList>` of
+            :py:class:`Experiment <qcflow.entities.Experiment>` objects. The pagination token
             for the next page can be obtained via the ``token`` attribute of the object.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow
+            import qcflow
 
 
             def assert_experiment_names_equal(experiments, expected_names):
@@ -1174,8 +1174,8 @@ class MlflowClient:
                 assert actual_names == expected_names, (actual_names, expected_names)
 
 
-            mlflow.set_tracking_uri("sqlite:///:memory:")
-            client = mlflow.MlflowClient()
+            qcflow.set_tracking_uri("sqlite:///:memory:")
+            client = qcflow.MlflowClient()
 
             # Create experiments
             for name, tags in [
@@ -1225,12 +1225,12 @@ class MlflowClient:
             experiment_id: The experiment ID returned from ``create_experiment``.
 
         Returns:
-            :py:class:`mlflow.entities.Experiment`
+            :py:class:`qcflow.entities.Experiment`
 
         .. code-block:: python
           :caption: Example
 
-          from mlflow import MlflowClient
+          from qcflow import MlflowClient
 
           client = MlflowClient()
           exp_id = client.create_experiment("Experiment")
@@ -1259,13 +1259,13 @@ class MlflowClient:
             name: The experiment name, which is case sensitive.
 
         Returns:
-            An instance of :py:class:`mlflow.entities.Experiment`
+            An instance of :py:class:`qcflow.entities.Experiment`
             if an experiment with the specified name exists, otherwise None.
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             # Case-sensitive name
             client = MlflowClient()
@@ -1299,7 +1299,7 @@ class MlflowClient:
             artifact_location: The location to store run artifacts. If not provided, the server
                 picks anappropriate default.
             tags: A dictionary of key-value pairs that are converted into
-                :py:class:`mlflow.entities.ExperimentTag` objects, set as
+                :py:class:`qcflow.entities.ExperimentTag` objects, set as
                 experiment tags upon experiment creation.
 
         Returns:
@@ -1309,7 +1309,7 @@ class MlflowClient:
             :caption: Example
 
             from pathlib import Path
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             # Create an experiment with a name that is unique and case sensitive.
             client = MlflowClient()
@@ -1352,7 +1352,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             # Create an experiment with a name that is unique and case sensitive
             client = MlflowClient()
@@ -1385,7 +1385,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_experiment_info(experiment):
@@ -1434,7 +1434,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_experiment_info(experiment):
@@ -1500,17 +1500,17 @@ class MlflowClient:
             synchronous: *Experimental* If True, blocks until the metric is logged successfully.
                 If False, logs the metric asynchronously and returns a future representing the
                 logging operation. If None, read from environment variable
-                `MLFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
+                `QCFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
 
         Returns:
             When `synchronous=True` or None, returns None. When `synchronous=False`, returns an
-            :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance that
+            :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance that
             represents future for logging operation.
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_run_info(r):
@@ -1528,7 +1528,7 @@ class MlflowClient:
             print_run_info(run)
             print("--")
 
-            # Log the metric. Unlike mlflow.log_metric this method
+            # Log the metric. Unlike qcflow.log_metric this method
             # does not start a run if one does not exist. It will log
             # the metric for the run id in the backend store.
             client.log_metric(run.info.run_id, "m", 1.5)
@@ -1551,7 +1551,7 @@ class MlflowClient:
             status: FINISHED
         """
         synchronous = (
-            synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+            synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
         )
         return self._tracking_client.log_metric(
             run_id, key, value, timestamp, step, synchronous=synchronous
@@ -1575,17 +1575,17 @@ class MlflowClient:
             synchronous: *Experimental* If True, blocks until the metric is logged successfully.
                 If False, logs the metric asynchronously and returns a future representing the
                 logging operation. If None, read from environment variable
-                `MLFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
+                `QCFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
 
         Returns:
             When `synchronous=True` or None, returns parameter value. When `synchronous=False`,
-            returns an :py:class:`mlflow.utils.async_logging.run_operations.RunOperations`
+            returns an :py:class:`qcflow.utils.async_logging.run_operations.RunOperations`
             instance that represents future for logging operation.
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_run_info(r):
@@ -1602,7 +1602,7 @@ class MlflowClient:
             run = client.create_run(experiment_id)
             print_run_info(run)
             print("--")
-            # Log the parameter. Unlike mlflow.log_param this method
+            # Log the parameter. Unlike qcflow.log_param this method
             # does not start a run if one does not exist. It will log
             # the parameter in the backend store
             p_value = client.log_param(run.info.run_id, "p", 1)
@@ -1623,7 +1623,7 @@ class MlflowClient:
             status: FINISHED
         """
         synchronous = (
-            synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+            synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
         )
         if synchronous:
             self._tracking_client.log_param(run_id, key, value, synchronous=True)
@@ -1642,7 +1642,7 @@ class MlflowClient:
 
         .. code-block:: python
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             # Create an experiment and set its tag
             client = MlflowClient()
@@ -1678,17 +1678,17 @@ class MlflowClient:
             synchronous: *Experimental* If True, blocks until the metric is logged successfully.
                 If False, logs the metric asynchronously and returns a future representing the
                 logging operation. If None, read from environment variable
-                `MLFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
+                `QCFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
 
         Returns:
             When `synchronous=True` or None, returns None. When `synchronous=False`, returns an
-            `mlflow.utils.async_logging.run_operations.RunOperations` instance that represents
+            `qcflow.utils.async_logging.run_operations.RunOperations` instance that represents
             future for logging operation.
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_run_info(run):
@@ -1717,7 +1717,7 @@ class MlflowClient:
             Tags: {'nlp.framework': 'Spark NLP'}
         """
         synchronous = (
-            synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+            synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
         )
         return self._tracking_client.set_tag(run_id, key, value, synchronous=synchronous)
 
@@ -1731,7 +1731,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_run_info(run):
@@ -1779,7 +1779,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_run_info(run):
@@ -1833,14 +1833,14 @@ class MlflowClient:
             synchronous: *Experimental* If True, blocks until the metric is logged successfully.
                 If False, logs the metric asynchronously and returns a future representing the
                 logging operation. If None, read from environment variable
-                `MLFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
+                `QCFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
 
         Raises:
-            mlflow.MlflowException: If any errors occur.
+            qcflow.MlflowException: If any errors occur.
 
         Returns:
             When `synchronous=True` or None, returns None. When `synchronous=False`, returns an
-            :py:class:`mlflow.utils.async_logging.run_operations.RunOperations` instance that
+            :py:class:`qcflow.utils.async_logging.run_operations.RunOperations` instance that
             represents future for logging operation.
 
         .. code-block:: python
@@ -1848,8 +1848,8 @@ class MlflowClient:
 
             import time
 
-            from mlflow import MlflowClient
-            from mlflow.entities import Metric, Param, RunTag
+            from qcflow import MlflowClient
+            from qcflow.entities import Metric, Param, RunTag
 
 
             def print_run_info(r):
@@ -1860,7 +1860,7 @@ class MlflowClient:
                 print(f"status: {r.info.status}")
 
 
-            # Create MLflow entities and a run under the default experiment (whose id is '0').
+            # Create QCFlow entities and a run under the default experiment (whose id is '0').
             timestamp = int(time.time() * 1000)
             metrics = [Metric("m", 1.5, timestamp, 1)]
             params = [Param("p", "p")]
@@ -1889,7 +1889,7 @@ class MlflowClient:
 
         """
         synchronous = (
-            synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+            synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
         )
 
         # Stringify the values of the params
@@ -1909,10 +1909,10 @@ class MlflowClient:
 
         Args:
             run_id: String ID of the run.
-            datasets: List of :py:class:`mlflow.entities.DatasetInput` instances to log.
+            datasets: List of :py:class:`qcflow.entities.DatasetInput` instances to log.
 
         Raises:
-            mlflow.MlflowException: If any errors occur.
+            qcflow.MlflowException: If any errors occur.
         """
         self._tracking_client.log_inputs(run_id, datasets)
 
@@ -1930,7 +1930,7 @@ class MlflowClient:
             import tempfile
             from pathlib import Path
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             # Create a run under the default experiment (whose id is '0').
             client = MlflowClient()
@@ -2061,7 +2061,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             client = MlflowClient()
             run = client.create_run(experiment_id="0")
@@ -2095,7 +2095,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             client = MlflowClient()
             run = client.create_run(experiment_id="0")
@@ -2111,8 +2111,8 @@ class MlflowClient:
 
             # If the file extension doesn't exist or match any of [".json", ".yaml", ".yml"],
             # JSON format is used.
-            mlflow.log_dict(run_id, dictionary, "data")
-            mlflow.log_dict(run_id, dictionary, "data.txt")
+            qcflow.log_dict(run_id, dictionary, "data")
+            qcflow.log_dict(run_id, dictionary, "data.txt")
 
         """
         extension = os.path.splitext(artifact_file)[1]
@@ -2155,7 +2155,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Matplotlib Example
 
-            import mlflow
+            import qcflow
             import matplotlib.pyplot as plt
 
             fig, ax = plt.subplots()
@@ -2167,7 +2167,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Plotly Example
 
-            import mlflow
+            import qcflow
             from plotly import graph_objects as go
 
             fig = go.Figure(go.Scatter(x=[0, 1], y=[2, 3]))
@@ -2212,7 +2212,7 @@ class MlflowClient:
     def log_image(
         self,
         run_id: str,
-        image: Union["numpy.ndarray", "PIL.Image.Image", "mlflow.Image"],
+        image: Union["numpy.ndarray", "PIL.Image.Image", "qcflow.Image"],
         artifact_file: Optional[str] = None,
         key: Optional[str] = None,
         step: Optional[int] = None,
@@ -2220,7 +2220,7 @@ class MlflowClient:
         synchronous: Optional[bool] = None,
     ) -> None:
         """
-        Logs an image in MLflow, supporting two use cases:
+        Logs an image in QCFlow, supporting two use cases:
 
         1. Time-stepped image logging:
             Ideal for tracking changes or progressions through iterative processes (e.g.,
@@ -2244,7 +2244,7 @@ class MlflowClient:
             .. _PIL.Image.Image:
                 https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image
 
-            - :class:`mlflow.Image`: An MLflow wrapper around PIL image for convenient image
+            - :class:`qcflow.Image`: An QCFlow wrapper around PIL image for convenient image
               logging.
 
         Numpy array support
@@ -2283,68 +2283,68 @@ class MlflowClient:
             synchronous: *Experimental* If True, blocks until the metric is logged successfully.
                 If False, logs the metric asynchronously and returns a future representing the
                 logging operation. If None, read from environment variable
-                `MLFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
+                `QCFLOW_ENABLE_ASYNC_LOGGING`, which defaults to False if not set.
 
         .. code-block:: python
             :caption: Time-stepped image logging numpy example
 
-            import mlflow
+            import qcflow
             import numpy as np
 
             image = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
-            with mlflow.start_run() as run:
-                client = mlflow.MlflowClient()
+            with qcflow.start_run() as run:
+                client = qcflow.MlflowClient()
                 client.log_image(run.info.run_id, image, key="dogs", step=3)
 
         .. code-block:: python
             :caption: Time-stepped image logging pillow example
 
-            import mlflow
+            import qcflow
             from PIL import Image
 
             image = Image.new("RGB", (100, 100))
-            with mlflow.start_run() as run:
-                client = mlflow.MlflowClient()
+            with qcflow.start_run() as run:
+                client = qcflow.MlflowClient()
                 client.log_image(run.info.run_id, image, key="dogs", step=3)
 
         .. code-block:: python
-            :caption: Time-stepped image logging with mlflow.Image example
+            :caption: Time-stepped image logging with qcflow.Image example
 
-            import mlflow
+            import qcflow
             from PIL import Image
 
             # Saving an image to retrieve later.
             Image.new("RGB", (100, 100)).save("image.png")
 
-            image = mlflow.Image("image.png")
-            with mlflow.start_run() as run:
-                client = mlflow.MlflowClient()
+            image = qcflow.Image("image.png")
+            with qcflow.start_run() as run:
+                client = qcflow.MlflowClient()
                 client.log_image(run.info.run_id, image, key="dogs", step=3)
 
         .. code-block:: python
             :caption: Legacy artifact file image logging numpy example
 
-            import mlflow
+            import qcflow
             import numpy as np
 
             image = np.random.randint(0, 256, size=(100, 100, 3), dtype=np.uint8)
-            with mlflow.start_run() as run:
-                client = mlflow.MlflowClient()
+            with qcflow.start_run() as run:
+                client = qcflow.MlflowClient()
                 client.log_image(run.info.run_id, image, "image.png")
 
         .. code-block:: python
             :caption: Legacy artifact file image logging pillow example
 
-            import mlflow
+            import qcflow
             from PIL import Image
 
             image = Image.new("RGB", (100, 100))
-            with mlflow.start_run() as run:
-                client = mlflow.MlflowClient()
+            with qcflow.start_run() as run:
+                client = qcflow.MlflowClient()
                 client.log_image(run.info.run_id, image, "image.png")
         """
         synchronous = (
-            synchronous if synchronous is not None else not MLFLOW_ENABLE_ASYNC_LOGGING.get()
+            synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
         )
         if artifact_file is not None and any(arg is not None for arg in [key, step, timestamp]):
             raise TypeError(
@@ -2373,7 +2373,7 @@ class MlflowClient:
                 raise TypeError(
                     f"Unsupported image object type: {type(image)}. "
                     "`image` must be one of numpy.ndarray, "
-                    "PIL.Image.Image, and mlflow.Image."
+                    "PIL.Image.Image, and qcflow.Image."
                 )
 
         if artifact_file is not None:
@@ -2421,7 +2421,7 @@ class MlflowClient:
                 self._log_artifact_async_helper(run_id, compressed_image_filepath, compressed_image)
 
             # Log tag indicating that the run includes logged image
-            self.set_tag(run_id, MLFLOW_LOGGED_IMAGES, True, synchronous)
+            self.set_tag(run_id, QCFLOW_LOGGED_IMAGES, True, synchronous)
 
     def _check_artifact_file_string(self, artifact_file: str):
         """Check if the artifact_file contains any forbidden characters.
@@ -2452,7 +2452,7 @@ class MlflowClient:
         artifact_file: str,
     ) -> None:
         """
-        Log a table to MLflow Tracking as a JSON artifact. If the artifact_file already exists
+        Log a table to QCFlow Tracking as a JSON artifact. If the artifact_file already exists
         in the run, the data would be appended to the existing artifact_file.
 
         Args:
@@ -2465,15 +2465,15 @@ class MlflowClient:
             :test:
             :caption: Dictionary Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
             table_dict = {
-                "inputs": ["What is MLflow?", "What is Databricks?"],
-                "outputs": ["MLflow is ...", "Databricks is ..."],
+                "inputs": ["What is QCFlow?", "What is Databricks?"],
+                "outputs": ["QCFlow is ...", "Databricks is ..."],
                 "toxicity": [0.0, 0.0],
             }
-            with mlflow.start_run() as run:
+            with qcflow.start_run() as run:
                 client = MlflowClient()
                 client.log_table(
                     run.info.run_id, data=table_dict, artifact_file="qabot_eval_results.json"
@@ -2483,17 +2483,17 @@ class MlflowClient:
             :test:
             :caption: Pandas DF Example
 
-            import mlflow
+            import qcflow
             import pandas as pd
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             table_dict = {
-                "inputs": ["What is MLflow?", "What is Databricks?"],
-                "outputs": ["MLflow is ...", "Databricks is ..."],
+                "inputs": ["What is QCFlow?", "What is Databricks?"],
+                "outputs": ["QCFlow is ...", "Databricks is ..."],
                 "toxicity": [0.0, 0.0],
             }
             df = pd.DataFrame.from_dict(table_dict)
-            with mlflow.start_run() as run:
+            with qcflow.start_run() as run:
                 client = MlflowClient()
                 client.log_table(run.info.run_id, data=df, artifact_file="qabot_eval_results.json")
 
@@ -2501,17 +2501,17 @@ class MlflowClient:
             :test:
             :caption: Image Column Example
 
-            import mlflow
+            import qcflow
             import pandas as pd
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
-            image = mlflow.Image([[1, 2, 3]])
+            image = qcflow.Image([[1, 2, 3]])
             table_dict = {
                 "inputs": ["Show me a dog", "Show me a cat"],
                 "outputs": [image, image],
             }
             df = pd.DataFrame.from_dict(table_dict)
-            with mlflow.start_run() as run:
+            with qcflow.start_run() as run:
                 client = MlflowClient()
                 client.log_table(run.info.run_id, data=df, artifact_file="image_gen.json")
         """
@@ -2534,11 +2534,11 @@ class MlflowClient:
             try:
                 data = pd.DataFrame(data)
             # catch error `If using all scalar values, you must pass an index`
-            # for data like {"inputs": "What is MLflow?"}
+            # for data like {"inputs": "What is QCFlow?"}
             except ValueError:
                 data = pd.DataFrame([data])
 
-        # Check if the column is a `PIL.Image.Image` or `mlflow.Image` object
+        # Check if the column is a `PIL.Image.Image` or `qcflow.Image` object
         # and save filepath
         if len(data.select_dtypes(include=["object"]).columns) > 0:
 
@@ -2597,7 +2597,7 @@ class MlflowClient:
         artifacts = [f.path for f in self.list_artifacts(run_id, path=artifact_dir)]
         if artifact_file in artifacts:
             with tempfile.TemporaryDirectory() as tmpdir:
-                downloaded_artifact_path = mlflow.artifacts.download_artifacts(
+                downloaded_artifact_path = qcflow.artifacts.download_artifacts(
                     run_id=run_id, artifact_path=artifact_file, dst_path=tmpdir
                 )
                 existing_predictions = self._read_from_file(downloaded_artifact_path)
@@ -2619,14 +2619,14 @@ class MlflowClient:
         run = self.get_run(run_id)
 
         # Get the current value of the tag
-        current_tag_value = json.loads(run.data.tags.get(MLFLOW_LOGGED_ARTIFACTS, "[]"))
+        current_tag_value = json.loads(run.data.tags.get(QCFLOW_LOGGED_ARTIFACTS, "[]"))
         tag_value = {"path": artifact_file, "type": "table"}
 
         # Append the new tag value to the list if one doesn't exists
         if tag_value not in current_tag_value:
             current_tag_value.append(tag_value)
             # Set the tag with the updated list
-            self.set_tag(run_id, MLFLOW_LOGGED_ARTIFACTS, json.dumps(current_tag_value))
+            self.set_tag(run_id, QCFLOW_LOGGED_ARTIFACTS, json.dumps(current_tag_value))
 
     @experimental
     def load_table(
@@ -2637,7 +2637,7 @@ class MlflowClient:
         extra_columns: Optional[list[str]] = None,
     ) -> "pandas.DataFrame":
         """
-        Load a table from MLflow Tracking as a pandas.DataFrame. The table is loaded from the
+        Load a table from QCFlow Tracking as a pandas.DataFrame. The table is loaded from the
         specified artifact_file in the specified run_ids. The extra_columns are columns that
         are not in the table but are augmented with run information and added to the DataFrame.
 
@@ -2659,13 +2659,13 @@ class MlflowClient:
             :test:
             :caption: Example with passing run_ids
 
-            import mlflow
+            import qcflow
             import pandas as pd
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             table_dict = {
-                "inputs": ["What is MLflow?", "What is Databricks?"],
-                "outputs": ["MLflow is ...", "Databricks is ..."],
+                "inputs": ["What is QCFlow?", "What is Databricks?"],
+                "outputs": ["QCFlow is ...", "Databricks is ..."],
                 "toxicity": [0.0, 0.0],
             }
             df = pd.DataFrame.from_dict(table_dict)
@@ -2688,13 +2688,13 @@ class MlflowClient:
 
             # Loads the table with the specified name for all runs in the given
             # experiment and joins them together
-            import mlflow
+            import qcflow
             import pandas as pd
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             table_dict = {
-                "inputs": ["What is MLflow?", "What is Databricks?"],
-                "outputs": ["MLflow is ...", "Databricks is ..."],
+                "inputs": ["What is QCFlow?", "What is Databricks?"],
+                "outputs": ["QCFlow is ...", "Databricks is ..."],
                 "toxicity": [0.0, 0.0],
             }
             df = pd.DataFrame.from_dict(table_dict)
@@ -2714,12 +2714,12 @@ class MlflowClient:
         subset_tag_value = f'"path"%:%"{artifact_file}",%"type"%:%"table"'
 
         # Build the filter string
-        filter_string = f"tags.{MLFLOW_LOGGED_ARTIFACTS} LIKE '%{subset_tag_value}%'"
+        filter_string = f"tags.{QCFLOW_LOGGED_ARTIFACTS} LIKE '%{subset_tag_value}%'"
         if run_ids:
             list_run_ids = ",".join(map(repr, run_ids))
             filter_string += f" and attributes.run_id IN ({list_run_ids})"
 
-        runs = mlflow.search_runs(experiment_ids=[experiment_id], filter_string=filter_string)
+        runs = qcflow.search_runs(experiment_ids=[experiment_id], filter_string=filter_string)
         if run_ids and len(run_ids) != len(runs):
             _logger.warning(
                 "Not all runs have the specified table artifact. Some runs will be skipped."
@@ -2738,7 +2738,7 @@ class MlflowClient:
             ]
             if artifact_file in artifacts:
                 with tempfile.TemporaryDirectory() as tmpdir:
-                    downloaded_artifact_path = mlflow.artifacts.download_artifacts(
+                    downloaded_artifact_path = qcflow.artifacts.download_artifacts(
                         run_id=run_id,
                         artifact_path=artifact_file,
                         dst_path=tmpdir,
@@ -2773,14 +2773,14 @@ class MlflowClient:
                 "No runs found with the corresponding table artifact.", RESOURCE_DOES_NOT_EXIST
             )
 
-    def _record_logged_model(self, run_id, mlflow_model):
+    def _record_logged_model(self, run_id, qcflow_model):
         """Record logged model info with the tracking server.
 
         Args:
             run_id: run_id under which the model has been logged.
-            mlflow_model: Model info to be recorded.
+            qcflow_model: Model info to be recorded.
         """
-        self._tracking_client._record_logged_model(run_id, mlflow_model)
+        self._tracking_client._record_logged_model(run_id, qcflow_model)
 
     def list_artifacts(self, run_id: str, path=None) -> list[FileInfo]:
         """List the artifacts for a run.
@@ -2791,12 +2791,12 @@ class MlflowClient:
                 or the root artifact path.
 
         Returns:
-            List of :py:class:`mlflow.entities.FileInfo`
+            List of :py:class:`qcflow.entities.FileInfo`
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_artifact_info(artifact):
@@ -2859,16 +2859,16 @@ class MlflowClient:
             :caption: Example
 
             import os
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
             features = "rooms, zipcode, median_price, school_rating, transport"
             with open("features.txt", "w") as f:
                 f.write(features)
 
             # Log artifacts
-            with mlflow.start_run() as run:
-                mlflow.log_artifact("features.txt", artifact_path="features")
+            with qcflow.start_run() as run:
+                qcflow.log_artifact("features.txt", artifact_path="features")
 
             # Download artifacts
             client = MlflowClient()
@@ -2894,12 +2894,12 @@ class MlflowClient:
 
         Args:
             run_id: The ID of the run to terminate.
-            status: A string value of :py:class:`mlflow.entities.RunStatus`. Defaults to "FINISHED".
+            status: A string value of :py:class:`qcflow.entities.RunStatus`. Defaults to "FINISHED".
             end_time: If not provided, defaults to the current time.
 
         .. code-block:: python
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
 
             def print_run_info(r):
@@ -2943,7 +2943,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             # Create a run under the default experiment (whose id is '0').
             client = MlflowClient()
@@ -2974,7 +2974,7 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            from mlflow import MlflowClient
+            from qcflow import MlflowClient
 
             # Create a run under the default experiment (whose id is '0').
             client = MlflowClient()
@@ -3015,7 +3015,7 @@ class MlflowClient:
             experiment_ids: List of experiment IDs, or a single int or string id.
             filter_string: Filter query string, defaults to searching all runs.
             run_view_type: one of enum values ACTIVE_ONLY, DELETED_ONLY, or ALL runs
-                defined in :py:class:`mlflow.entities.ViewType`.
+                defined in :py:class:`qcflow.entities.ViewType`.
             max_results: Maximum number of runs desired.
             order_by: List of columns to order by (e.g., "metrics.rmse"). The ``order_by`` column
                 can contain an optional ``DESC`` or ``ASC`` value. The default is ``ASC``.
@@ -3024,17 +3024,17 @@ class MlflowClient:
                 a ``search_runs`` call.
 
         Returns:
-            A :py:class:`PagedList <mlflow.store.entities.PagedList>` of
-            :py:class:`Run <mlflow.entities.Run>` objects that satisfy the search expressions.
+            A :py:class:`PagedList <qcflow.store.entities.PagedList>` of
+            :py:class:`Run <qcflow.entities.Run>` objects that satisfy the search expressions.
             If the underlying tracking store supports pagination, the token for the next page may
             be obtained via the ``token`` attribute of the returned object.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
-            from mlflow.entities import ViewType
+            import qcflow
+            from qcflow import MlflowClient
+            from qcflow.entities import ViewType
 
 
             def print_run_info(runs):
@@ -3042,19 +3042,19 @@ class MlflowClient:
                     print(f"run_id: {r.info.run_id}")
                     print(f"lifecycle_stage: {r.info.lifecycle_stage}")
                     print(f"metrics: {r.data.metrics}")
-                    # Exclude mlflow system tags
-                    tags = {k: v for k, v in r.data.tags.items() if not k.startswith("mlflow.")}
+                    # Exclude qcflow system tags
+                    tags = {k: v for k, v in r.data.tags.items() if not k.startswith("qcflow.")}
                     print(f"tags: {tags}")
 
 
             # Create an experiment and log two runs with metrics and tags under the experiment
-            experiment_id = mlflow.create_experiment("Social NLP Experiments")
-            with mlflow.start_run(experiment_id=experiment_id) as run:
-                mlflow.log_metric("m", 1.55)
-                mlflow.set_tag("s.release", "1.1.0-RC")
-            with mlflow.start_run(experiment_id=experiment_id):
-                mlflow.log_metric("m", 2.50)
-                mlflow.set_tag("s.release", "1.2.0-GA")
+            experiment_id = qcflow.create_experiment("Social NLP Experiments")
+            with qcflow.start_run(experiment_id=experiment_id) as run:
+                qcflow.log_metric("m", 1.55)
+                qcflow.set_tag("s.release", "1.1.0-RC")
+            with qcflow.start_run(experiment_id=experiment_id):
+                qcflow.log_metric("m", 2.50)
+                qcflow.set_tag("s.release", "1.2.0-GA")
             # Search all runs under experiment id and order them by
             # descending value of the metric 'm'
             client = MlflowClient()
@@ -3105,18 +3105,18 @@ class MlflowClient:
         Args:
             name: Name of the new model. This is expected to be unique in the backend store.
             tags: A dictionary of key-value pairs that are converted into
-                :py:class:`mlflow.entities.model_registry.RegisteredModelTag` objects.
+                :py:class:`qcflow.entities.model_registry.RegisteredModelTag` objects.
             description: Description of the model.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.RegisteredModel`
+            A single object of :py:class:`qcflow.entities.model_registry.RegisteredModel`
             created by backend.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
 
             def print_registered_model_info(rm):
@@ -3129,7 +3129,7 @@ class MlflowClient:
             tags = {"nlp.framework": "Spark NLP"}
             desc = "This sentiment analysis model classifies the tone-happy, sad, angry."
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             client = MlflowClient()
             client.create_registered_model(name, tags, desc)
             print_registered_model_info(client.get_registered_model(name))
@@ -3152,13 +3152,13 @@ class MlflowClient:
             new_name: New proposed name for the registered model.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
 
             def print_registered_model_info(rm):
@@ -3172,7 +3172,7 @@ class MlflowClient:
             desc = "This sentiment analysis model classifies the tone-happy, sad, angry."
 
             # create a new registered model name
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             client = MlflowClient()
             client.create_registered_model(name, tags, desc)
             print_registered_model_info(client.get_registered_model(name))
@@ -3208,7 +3208,7 @@ class MlflowClient:
             description: (Optional) New description.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         .. code-block:: python
             :caption: Example
@@ -3223,7 +3223,7 @@ class MlflowClient:
             tags = {"nlp.framework": "Spark NLP"}
             desc = "This sentiment analysis model classifies the tone-happy, sad, angry."
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             client = MlflowClient()
             client.create_registered_model(name, tags, desc)
             print_registered_model_info(client.get_registered_model(name))
@@ -3263,8 +3263,8 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
 
             def print_registered_models_info(r_models):
@@ -3275,7 +3275,7 @@ class MlflowClient:
                     print(f"description: {rm.description}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             client = MlflowClient()
 
             # Register a couple of models with respective names, tags, and descriptions
@@ -3345,15 +3345,15 @@ class MlflowClient:
                 a ``search_registered_models`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.RegisteredModel` objects
+            A PagedList of :py:class:`qcflow.entities.model_registry.RegisteredModel` objects
             that satisfy the search expressions. The pagination token for the next page can be
             obtained via the ``token`` attribute of the object.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
             client = MlflowClient()
 
@@ -3411,13 +3411,13 @@ class MlflowClient:
             name: Name of the registered model to get.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
 
             def print_model_info(rm):
@@ -3430,7 +3430,7 @@ class MlflowClient:
             name = "SocialMediaTextAnalyzer"
             tags = {"nlp.framework": "Spark NLP"}
             desc = "This sentiment analysis model classifies the tone-happy, sad, angry."
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             client = MlflowClient()
             # Create and fetch the registered model
             client.create_registered_model(name, tags, desc)
@@ -3461,14 +3461,14 @@ class MlflowClient:
                 for ALL_STAGES.
 
         Returns:
-            List of :py:class:`mlflow.entities.model_registry.ModelVersion` objects.
+            List of :py:class:`qcflow.entities.model_registry.ModelVersion` objects.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -3481,21 +3481,21 @@ class MlflowClient:
                     print(f"current_stage: {m.current_stage}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
-            # Create two runs Log MLflow entities
-            with mlflow.start_run() as run1:
+            # Create two runs Log QCFlow entities
+            with qcflow.start_run() as run1:
                 params = {"n_estimators": 3, "random_state": 42}
                 rfr = RandomForestRegressor(**params).fit(X, y)
                 signature = infer_signature(X, rfr.predict(X))
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
-            with mlflow.start_run() as run2:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            with qcflow.start_run() as run2:
                 params = {"n_estimators": 6, "random_state": 42}
                 rfr = RandomForestRegressor(**params).fit(X, y)
                 signature = infer_signature(X, rfr.predict(X))
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
             # Register model name in the model registry
             name = "RandomForestRegression"
             client = MlflowClient()
@@ -3533,8 +3533,8 @@ class MlflowClient:
         .. code-block:: Python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
 
             def print_model_info(rm):
@@ -3545,7 +3545,7 @@ class MlflowClient:
 
             name = "SocialMediaTextAnalyzer"
             tags = {"nlp.framework1": "Spark NLP"}
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             client = MlflowClient()
 
             # Create registered model, set an additional tag, and fetch
@@ -3579,8 +3579,8 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
 
             def print_registered_models_info(r_models):
@@ -3590,7 +3590,7 @@ class MlflowClient:
                     print(f"tags: {rm.tags}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             client = MlflowClient()
 
             # Register a couple of models with respective names and tags
@@ -3694,40 +3694,40 @@ class MlflowClient:
                 run relative (e.g. ``runs:/<run_id>/<model_artifact_path>``), a model
                 registry URI (e.g. ``models:/<model_name>/<version>``), or other URIs
                 supported by the model registry backend (e.g. `"s3://my_bucket/my/model"`).
-            run_id: Run ID from MLflow tracking server that generated the model.
+            run_id: Run ID from QCFlow tracking server that generated the model.
             tags: A dictionary of key-value pairs that are converted into
-                :py:class:`mlflow.entities.model_registry.ModelVersionTag` objects.
-            run_link: Link to the run from an MLflow tracking server that generated this model.
+                :py:class:`qcflow.entities.model_registry.ModelVersionTag` objects.
+            run_link: Link to the run from an QCFlow tracking server that generated this model.
             description: Description of the version.
             await_creation_for: Number of seconds to wait for the model version to finish being
                 created and is in ``READY`` status. By default, the function
                 waits for five minutes. Specify 0 or None to skip waiting.
 
         Returns:
-            Single :py:class:`mlflow.entities.model_registry.ModelVersion` object created by
+            Single :py:class:`qcflow.entities.model_registry.ModelVersion` object created by
             backend.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             client = MlflowClient()
@@ -3774,15 +3774,15 @@ class MlflowClient:
                 registered model with this name does not exist, it will be created.
 
         Returns:
-            Single :py:class:`mlflow.entities.model_registry.ModelVersion` object representing
+            Single :py:class:`qcflow.entities.model_registry.ModelVersion` object representing
             the copied model version.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -3793,16 +3793,16 @@ class MlflowClient:
                 print(f"Source: {mv.source}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
 
             # Log a model
-            with mlflow.start_run() as run:
+            with qcflow.start_run() as run:
                 params = {"n_estimators": 3, "random_state": 42}
                 rfr = RandomForestRegressor(**params).fit(X, y)
                 signature = infer_signature(X, rfr.predict(X))
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Create source model version
             client = MlflowClient()
@@ -3858,14 +3858,14 @@ class MlflowClient:
             description: New description.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
          .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -3876,17 +3876,17 @@ class MlflowClient:
                 print(f"Description: {mv.description}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             client = MlflowClient()
@@ -3936,14 +3936,14 @@ class MlflowClient:
                 raised.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
          .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -3955,7 +3955,7 @@ class MlflowClient:
                 print(f"Stage: {mv.current_stage}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             desc = "A new version of the model using ensemble trees"
@@ -3963,10 +3963,10 @@ class MlflowClient:
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             client = MlflowClient()
@@ -4009,9 +4009,9 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -4024,23 +4024,23 @@ class MlflowClient:
                     print(f"current_stage: {m.current_stage}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
 
-            # Create two runs and log MLflow entities
-            with mlflow.start_run() as run1:
+            # Create two runs and log QCFlow entities
+            with qcflow.start_run() as run1:
                 params = {"n_estimators": 3, "random_state": 42}
                 rfr = RandomForestRegressor(**params).fit(X, y)
                 signature = infer_signature(X, rfr.predict(X))
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
-            with mlflow.start_run() as run2:
+            with qcflow.start_run() as run2:
                 params = {"n_estimators": 6, "random_state": 42}
                 rfr = RandomForestRegressor(**params).fit(X, y)
                 signature = infer_signature(X, rfr.predict(X))
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             name = "RandomForestRegression"
@@ -4094,33 +4094,33 @@ class MlflowClient:
             version: Version number as an integer of the model version.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
 
-            # Create two runs Log MLflow entities
-            with mlflow.start_run() as run1:
+            # Create two runs Log QCFlow entities
+            with qcflow.start_run() as run1:
                 params = {"n_estimators": 3, "random_state": 42}
                 rfr = RandomForestRegressor(**params).fit(X, y)
                 signature = infer_signature(X, rfr.predict(X))
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
-            with mlflow.start_run() as run2:
+            with qcflow.start_run() as run2:
                 params = {"n_estimators": 6, "random_state": 42}
                 rfr = RandomForestRegressor(**params).fit(X, y)
                 signature = infer_signature(X, rfr.predict(X))
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             name = "RandomForestRegression"
@@ -4164,23 +4164,23 @@ class MlflowClient:
 
         .. code-block:: python
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             client = MlflowClient()
@@ -4220,7 +4220,7 @@ class MlflowClient:
                 Identifiers
                   - ``name``: model name.
                   - ``source_path``: model version source path.
-                  - ``run_id``: The id of the mlflow run that generates the model version.
+                  - ``run_id``: The id of the qcflow run that generates the model version.
                   - ``tags.<tag_key>``: model version tag. If ``tag_key`` contains spaces, it must
                     be wrapped with backticks (e.g., ``"tags.`extra key`"``).
 
@@ -4241,15 +4241,15 @@ class MlflowClient:
                 a ``search_model_versions`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A PagedList of :py:class:`qcflow.entities.model_registry.ModelVersion`
             objects that satisfy the search expressions. The pagination token for the next
             page can be obtained via the ``token`` attribute of the object.
 
         .. code-block:: python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
+            import qcflow
+            from qcflow import MlflowClient
 
             client = MlflowClient()
 
@@ -4293,23 +4293,23 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             client = MlflowClient()
@@ -4352,9 +4352,9 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -4365,17 +4365,17 @@ class MlflowClient:
                 print(f"Tags: {mv.tags}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             client = MlflowClient()
@@ -4443,9 +4443,9 @@ class MlflowClient:
         .. code-block:: python
             :caption: Example
 
-            import mlflow.sklearn
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow.sklearn
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -4456,17 +4456,17 @@ class MlflowClient:
                 print(f"Tags: {mv.tags}")
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
             # Register model name in the model registry
             client = MlflowClient()
             client.create_registered_model(name)
@@ -4524,9 +4524,9 @@ class MlflowClient:
         .. code-block:: Python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -4544,17 +4544,17 @@ class MlflowClient:
                 print("Aliases: {}".format(mv.aliases))
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             client = MlflowClient()
@@ -4609,9 +4609,9 @@ class MlflowClient:
         .. code-block:: Python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -4629,17 +4629,17 @@ class MlflowClient:
                 print("Aliases: {}".format(mv.aliases))
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
 
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
 
             # Register model name in the model registry
             client = MlflowClient()
@@ -4703,14 +4703,14 @@ class MlflowClient:
             alias: Name of the alias.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
          .. code-block:: Python
             :caption: Example
 
-            import mlflow
-            from mlflow import MlflowClient
-            from mlflow.models import infer_signature
+            import qcflow
+            from qcflow import MlflowClient
+            from qcflow.models import infer_signature
             from sklearn.datasets import make_regression
             from sklearn.ensemble import RandomForestRegressor
 
@@ -4728,16 +4728,16 @@ class MlflowClient:
                 print("Aliases: {}".format(mv.aliases))
 
 
-            mlflow.set_tracking_uri("sqlite:///mlruns.db")
+            qcflow.set_tracking_uri("sqlite:///mlruns.db")
             params = {"n_estimators": 3, "random_state": 42}
             name = "RandomForestRegression"
             X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
-            # Log MLflow entities
-            with mlflow.start_run() as run:
-                mlflow.log_params(params)
-                mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            # Log QCFlow entities
+            with qcflow.start_run() as run:
+                qcflow.log_params(params)
+                qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
             # Register model name in the model registry
             client = MlflowClient()
             client.create_registered_model(name)

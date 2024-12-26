@@ -6,11 +6,11 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.ml_package_versions import FLAVOR_TO_MODULE_NAME
-from mlflow.utils import gorilla
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow import MlflowClient
+from qcflow.ml_package_versions import FLAVOR_TO_MODULE_NAME
+from qcflow.utils import gorilla
+from qcflow.utils.autologging_utils import (
     AUTOLOGGING_INTEGRATIONS,
     AutologgingEventLogger,
     BatchMetricsLogger,
@@ -23,8 +23,8 @@ from mlflow.utils.autologging_utils import (
     log_fn_args_as_params,
     resolve_input_example_and_signature,
 )
-from mlflow.utils.autologging_utils.safety import AutologgingSession, _wrap_patch
-from mlflow.utils.autologging_utils.versioning import (
+from qcflow.utils.autologging_utils.safety import AutologgingSession, _wrap_patch
+from qcflow.utils.autologging_utils.versioning import (
     _check_version_in_range,
     _is_pre_or_dev_release,
     _strip_dev_version_suffix,
@@ -84,9 +84,9 @@ three_default_test_args = [
 
 @pytest.fixture
 def start_run():
-    mlflow.start_run()
+    qcflow.start_run()
     yield
-    mlflow.end_run()
+    qcflow.end_run()
 
 
 def dummy_fn(arg1, arg2="value2", arg3="value3"):
@@ -111,7 +111,7 @@ log_test_args = [
 def test_log_fn_args_as_params(args, kwargs, expected, start_run):
     log_fn_args_as_params(dummy_fn, args, kwargs)
     client = MlflowClient()
-    params = client.get_run(mlflow.active_run().info.run_id).data.params
+    params = client.get_run(qcflow.active_run().info.run_id).data.params
     for arg, value in zip(["arg1", "arg2", "arg3"], expected):
         assert arg in params
         assert params[arg] == value
@@ -123,7 +123,7 @@ def test_log_fn_args_as_params_ignores_unwanted_parameters(
     args, kwargs, unlogged = ("arg1", {"arg2": "value"}, ["arg1", "arg2", "arg3"])
     log_fn_args_as_params(dummy_fn, args, kwargs, unlogged)
     client = MlflowClient()
-    params = client.get_run(mlflow.active_run().info.run_id).data.params
+    params = client.get_run(qcflow.active_run().info.run_id).data.params
     assert len(params.keys()) == 0
 
 
@@ -157,7 +157,7 @@ def test_wrap_patch_with_module():
     this_module = sys.modules[__name__]
 
     def new_sample_function(a, b):
-        """new mlflow.log_param"""
+        """new qcflow.log_param"""
         return a - b
 
     assert sample_function_to_patch(10, 5) == 15
@@ -259,7 +259,7 @@ def test_avoids_inferring_signature_if_not_needed(logger):
 
 
 def test_batch_metrics_logger_logs_all_metrics(start_run):
-    run_id = mlflow.active_run().info.run_id
+    run_id = qcflow.active_run().info.run_id
     with batch_metrics_logger(run_id) as metrics_logger:
         for i in range(100):
             metrics_logger.record_metrics({hex(i): i}, i)
@@ -271,23 +271,23 @@ def test_batch_metrics_logger_logs_all_metrics(start_run):
         assert metrics_on_run[hex(i)] == i
 
 
-def test_batch_metrics_logger_flush_logs_to_mlflow(start_run):
-    run_id = mlflow.active_run().info.run_id
+def test_batch_metrics_logger_flush_logs_to_qcflow(start_run):
+    run_id = qcflow.active_run().info.run_id
 
     # Need to patch _should_flush() to return False, so that we can manually flush the logger
     with mock.patch(
-        "mlflow.utils.autologging_utils.BatchMetricsLogger._should_flush", return_value=False
+        "qcflow.utils.autologging_utils.BatchMetricsLogger._should_flush", return_value=False
     ):
         metrics_logger = BatchMetricsLogger(run_id)
         metrics_logger.record_metrics({"my_metric": 10}, 5)
 
-        # Recorded metrics should not be logged to mlflow run before flushing BatchMetricsLogger
+        # Recorded metrics should not be logged to qcflow run before flushing BatchMetricsLogger
         metrics_on_run = MlflowClient().get_run(run_id).data.metrics
         assert "my_metric" not in metrics_on_run
 
         metrics_logger.flush()
 
-        # Recorded metric should be logged to mlflow run after flushing BatchMetricsLogger
+        # Recorded metric should be logged to qcflow run after flushing BatchMetricsLogger
         metrics_on_run = MlflowClient().get_run(run_id).data.metrics
         assert "my_metric" in metrics_on_run
         assert metrics_on_run["my_metric"] == 10
@@ -295,7 +295,7 @@ def test_batch_metrics_logger_flush_logs_to_mlflow(start_run):
 
 def test_batch_metrics_logger_runs_training_and_logging_in_correct_ratio(start_run):
     with mock.patch.object(MlflowClient, "log_batch") as log_batch_mock:
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
         with batch_metrics_logger(run_id) as metrics_logger:
             metrics_logger.record_metrics({"x": 1}, step=0)  # data doesn't matter
 
@@ -337,10 +337,10 @@ def test_batch_metrics_logger_runs_training_and_logging_in_correct_ratio(start_r
 
 def test_batch_metrics_logger_chunks_metrics_when_batch_logging(start_run):
     with mock.patch.object(MlflowClient, "log_batch") as log_batch_mock:
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
         with batch_metrics_logger(run_id) as metrics_logger:
             metrics_logger.record_metrics({hex(x): x for x in range(5000)}, step=0)
-            run_id = mlflow.active_run().info.run_id
+            run_id = qcflow.active_run().info.run_id
 
             for call_idx, call in enumerate(log_batch_mock.call_args_list):
                 _, kwargs = call
@@ -355,7 +355,7 @@ def test_batch_metrics_logger_chunks_metrics_when_batch_logging(start_run):
 
 def test_batch_metrics_logger_records_time_correctly(start_run):
     with mock.patch.object(MlflowClient, "log_batch", wraps=lambda *args, **kwargs: time.sleep(1)):
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
         with batch_metrics_logger(run_id) as metrics_logger:
             metrics_logger.record_metrics({"x": 1}, step=0)
 
@@ -373,7 +373,7 @@ def test_batch_metrics_logger_logs_timestamps_as_int_milliseconds(start_run):
         mock.patch.object(MlflowClient, "log_batch") as log_batch_mock,
         mock.patch("time.time", return_value=123.45678901234567890),
     ):
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
         with batch_metrics_logger(run_id) as metrics_logger:
             metrics_logger.record_metrics({"x": 1}, step=0)
 
@@ -483,7 +483,7 @@ def test_autologging_integration_makes_expected_event_logging_calls():
     assert len(logger.calls) == 1
     call = logger.calls[0]
     assert call.integration == "test_success"
-    # NB: In MLflow > 1.13.1, the `call_args` argument to `log_autolog_called` is deprecated.
+    # NB: In QCFlow > 1.13.1, the `call_args` argument to `log_autolog_called` is deprecated.
     # Positional arguments passed to `autolog()` should be forwarded to `log_autolog_called`
     # in keyword format
     assert call.call_args == ()
@@ -496,7 +496,7 @@ def test_autologging_integration_makes_expected_event_logging_calls():
     assert len(logger.calls) == 1
     call = logger.calls[0]
     assert call.integration == "test_failure"
-    # NB: In MLflow > 1.13.1, the `call_args` argument to `log_autolog_called` is deprecated.
+    # NB: In QCFlow > 1.13.1, the `call_args` argument to `log_autolog_called` is deprecated.
     # Positional arguments passed to `autolog()` should be forwarded to `log_autolog_called`
     # in keyword format
     assert call.call_args == ()
@@ -581,18 +581,18 @@ def test_autologging_disable_restores_behavior():
     model = LinearRegression()
 
     def is_autolog_on():
-        run = mlflow.start_run()
+        run = qcflow.start_run()
         model.fit(X, y)
-        mlflow.end_run()
+        qcflow.end_run()
         run = MlflowClient().get_run(run.info.run_id)
         return run.data.metrics and run.data.params
 
     # Turn on autologging
-    mlflow.sklearn.autolog()
+    qcflow.sklearn.autolog()
     assert is_autolog_on()
 
     # Turn off autologging within a context manager
-    with mlflow.utils.autologging_utils.disable_autologging():
+    with qcflow.utils.autologging_utils.disable_autologging():
         assert not is_autolog_on()
 
     # Autologging should be turned back on
@@ -600,7 +600,7 @@ def test_autologging_disable_restores_behavior():
 
     # The context manager should exit correctly even if an exception is raised
     with pytest.raises(Exception, match="test"):  # noqa PT012
-        with mlflow.utils.autologging_utils.disable_autologging():
+        with qcflow.utils.autologging_utils.disable_autologging():
             assert not is_autolog_on()
             raise Exception("test")
 
@@ -668,7 +668,7 @@ def test_autologging_event_logger_default_impl_warns_for_log_autolog_called_with
     with pytest.warns(DeprecationWarning, match="Received 1 positional arguments"):
         AutologgingEventLogger.get_logger().log_autolog_called(
             "test_integration",
-            # call_args is deprecated in MLflow > 1.13.1; specifying a non-empty
+            # call_args is deprecated in QCFlow > 1.13.1; specifying a non-empty
             # value for this parameter should emit a warning
             call_args=("a"),
             call_kwargs={"b": "c"},
@@ -746,7 +746,7 @@ def test_dev_version_pyspark_is_supported_in_databricks(flavor, module_version, 
     with mock.patch(module_name + ".__version__", module_version):
         # In Databricks
         with mock.patch(
-            "mlflow.utils.autologging_utils.versioning.is_in_databricks_runtime",
+            "qcflow.utils.autologging_utils.versioning.is_in_databricks_runtime",
             return_value=True,
         ) as mock_runtime:
             assert is_flavor_supported_for_associated_package_versions(flavor) == expected_result
@@ -757,11 +757,11 @@ def test_dev_version_pyspark_is_supported_in_databricks(flavor, module_version, 
 
 
 def test_disable_for_unsupported_versions_warning_sklearn_integration():
-    log_warn_fn_name = "mlflow.utils.autologging_utils._logger.warning"
-    log_info_fn_name = "mlflow.tracking.fluent._logger.info"
+    log_warn_fn_name = "qcflow.utils.autologging_utils._logger.warning"
+    log_info_fn_name = "qcflow.tracking.fluent._logger.info"
 
     def is_sklearn_warning_fired(log_warn_fn_args):
-        return "MLflow sklearn autologging is known to be compatible" in log_warn_fn_args[0][0]
+        return "QCFlow sklearn autologging is known to be compatible" in log_warn_fn_args[0][0]
 
     def is_sklearn_autolog_enabled_info_fired(log_info_fn_args):
         return (
@@ -775,7 +775,7 @@ def test_disable_for_unsupported_versions_warning_sklearn_integration():
             mock.patch(log_warn_fn_name) as log_warn_fn,
             mock.patch(log_info_fn_name) as log_info_fn,
         ):
-            mlflow.autolog(disable_for_unsupported_versions=True)
+            qcflow.autolog(disable_for_unsupported_versions=True)
             assert all(not is_sklearn_warning_fired(args) for args in log_warn_fn.call_args_list)
             assert any(
                 is_sklearn_autolog_enabled_info_fired(args) for args in log_info_fn.call_args_list
@@ -784,17 +784,17 @@ def test_disable_for_unsupported_versions_warning_sklearn_integration():
             mock.patch(log_warn_fn_name) as log_warn_fn,
             mock.patch(log_info_fn_name) as log_info_fn,
         ):
-            mlflow.autolog(disable_for_unsupported_versions=False)
+            qcflow.autolog(disable_for_unsupported_versions=False)
             assert all(not is_sklearn_warning_fired(args) for args in log_warn_fn.call_args_list)
             assert any(
                 is_sklearn_autolog_enabled_info_fired(args) for args in log_info_fn.call_args_list
             )
 
         with mock.patch(log_warn_fn_name) as log_warn_fn:
-            mlflow.sklearn.autolog(disable_for_unsupported_versions=True)
+            qcflow.sklearn.autolog(disable_for_unsupported_versions=True)
             log_warn_fn.assert_not_called()
         with mock.patch(log_warn_fn_name) as log_warn_fn:
-            mlflow.sklearn.autolog(disable_for_unsupported_versions=False)
+            qcflow.sklearn.autolog(disable_for_unsupported_versions=False)
             log_warn_fn.assert_not_called()
 
     with mock.patch("sklearn.__version__", "0.20.2"):
@@ -803,7 +803,7 @@ def test_disable_for_unsupported_versions_warning_sklearn_integration():
             mock.patch(log_warn_fn_name) as log_warn_fn,
             mock.patch(log_info_fn_name) as log_info_fn,
         ):
-            mlflow.autolog(disable_for_unsupported_versions=True)
+            qcflow.autolog(disable_for_unsupported_versions=True)
             assert all(not is_sklearn_warning_fired(args) for args in log_warn_fn.call_args_list)
             assert all(
                 not is_sklearn_autolog_enabled_info_fired(args)
@@ -813,16 +813,16 @@ def test_disable_for_unsupported_versions_warning_sklearn_integration():
             mock.patch(log_warn_fn_name) as log_warn_fn,
             mock.patch(log_info_fn_name) as log_info_fn,
         ):
-            mlflow.autolog(disable_for_unsupported_versions=False)
+            qcflow.autolog(disable_for_unsupported_versions=False)
             assert any(is_sklearn_warning_fired(args) for args in log_warn_fn.call_args_list)
             assert any(
                 is_sklearn_autolog_enabled_info_fired(args) for args in log_info_fn.call_args_list
             )
         with mock.patch(log_warn_fn_name) as log_warn_fn:
-            mlflow.sklearn.autolog(disable_for_unsupported_versions=True)
+            qcflow.sklearn.autolog(disable_for_unsupported_versions=True)
             log_warn_fn.assert_not_called()
         with mock.patch(log_warn_fn_name) as log_warn_fn:
-            mlflow.sklearn.autolog(disable_for_unsupported_versions=False)
+            qcflow.sklearn.autolog(disable_for_unsupported_versions=False)
             assert log_warn_fn.call_count == 1
             assert is_sklearn_warning_fired(log_warn_fn.call_args)
 
@@ -830,10 +830,10 @@ def test_disable_for_unsupported_versions_warning_sklearn_integration():
 def test_unsupported_versions_warning_should_not_shown_for_excluded_packages():
     with mock.patch("langchain.__version__", "100.200.300"):
         AUTOLOGGING_INTEGRATIONS.clear()
-        with mock.patch("mlflow.utils.autologging_utils._logger.warning") as log_warn_fn:
-            mlflow.langchain.autolog()
+        with mock.patch("qcflow.utils.autologging_utils._logger.warning") as log_warn_fn:
+            qcflow.langchain.autolog()
             assert len(log_warn_fn.call_args_list) == 0 or (
-                "MLflow langchain autologging is known to be compatible"
+                "QCFlow langchain autologging is known to be compatible"
                 not in log_warn_fn.call_args_list[0][0]
             )
 

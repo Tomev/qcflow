@@ -115,7 +115,7 @@ export interface MlflowDeploymentsEndpoint {
   model: ModelGatewayModelInfo;
 }
 
-export type ModelGatewayRouteType = 'mlflow_deployment_endpoint';
+export type ModelGatewayRouteType = 'qcflow_deployment_endpoint';
 
 export interface ModelGatewayRoute {
   type: ModelGatewayRouteType;
@@ -130,9 +130,9 @@ export interface ModelGatewayRoute {
    */
   task: ModelGatewayRouteTask;
   /**
-   * MLflow deployments URL of the endpoint
+   * QCFlow deployments URL of the endpoint
    */
-  mlflowDeployment?: MlflowDeploymentsEndpoint;
+  qcflowDeployment?: MlflowDeploymentsEndpoint;
 }
 
 export interface SearchMlflowDeploymentsModelRoutesResponse {
@@ -173,11 +173,11 @@ export class ModelGatewayService {
     }
   }
 
-  static queryMLflowDeploymentEndpointRoute = async (
+  static queryQCFlowDeploymentEndpointRoute = async (
     route: ModelGatewayRoute,
     data: ModelGatewayQueryPayload,
   ): Promise<any> => {
-    invariant(route.mlflowDeployment, 'Trying to call a MLflow deployment route without a deployment_url');
+    invariant(route.qcflowDeployment, 'Trying to call a QCFlow deployment route without a deployment_url');
     const { inputText } = data;
     const textPayload = ModelGatewayService.createEvaluationTextPayload(inputText, route.task);
     const processed_data = {
@@ -186,15 +186,15 @@ export class ModelGatewayService {
     };
 
     return MlflowService.gatewayProxyPost({
-      gateway_path: route.mlflowDeployment.endpoint_url.substring(1),
+      gateway_path: route.qcflowDeployment.endpoint_url.substring(1),
       json_data: processed_data,
     }) as Promise<ModelGatewayResponseType>;
   };
 
   static queryModelGatewayRoute = async (route: ModelGatewayRoute, payload: ModelGatewayQueryPayload) => {
-    if (route.type === 'mlflow_deployment_endpoint') {
-      invariant(route.mlflowDeployment, 'Trying to call a serving endpoint route without an endpoint');
-      const result = await this.queryMLflowDeploymentEndpointRoute(route, payload);
+    if (route.type === 'qcflow_deployment_endpoint') {
+      invariant(route.qcflowDeployment, 'Trying to call a serving endpoint route without an endpoint');
+      const result = await this.queryQCFlowDeploymentEndpointRoute(route, payload);
       return parseEndpointEvaluationResponse(result, route.task);
     }
 

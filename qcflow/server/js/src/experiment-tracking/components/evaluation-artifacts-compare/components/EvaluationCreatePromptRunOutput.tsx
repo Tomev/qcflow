@@ -62,7 +62,7 @@ export const EvaluationCreatePromptRunOutput = ({
         {PROMPTLAB_METADATA_COLUMN_LATENCY in evaluationMetadata && (
           <Typography.Hint size="sm">
             {Math.round(Number(evaluationMetadata[PROMPTLAB_METADATA_COLUMN_LATENCY]))} ms
-            {'MLFLOW_total_tokens' in evaluationMetadata ? ',' : ''}
+            {'QCFLOW_total_tokens' in evaluationMetadata ? ',' : ''}
           </Typography.Hint>
         )}
         {PROMPTLAB_METADATA_COLUMN_TOTAL_TOKENS in evaluationMetadata && (
@@ -83,7 +83,7 @@ export const EvaluationCreatePromptRunOutput = ({
       <div css={{ marginBottom: theme.spacing.md }}>
         <LegacyTooltip title={evaluateButtonTooltip}>
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationcreatepromptrunoutput.tsx_85"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationcreatepromptrunoutput.tsx_85"
             data-testid="button-evaluate"
             icon={<PlayIcon />}
             onClick={onEvaluateClick}
@@ -98,7 +98,7 @@ export const EvaluationCreatePromptRunOutput = ({
         </LegacyTooltip>
         {isEvaluating && (
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationcreatepromptrunoutput.tsx_99"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationcreatepromptrunoutput.tsx_99"
             data-testid="button-cancel"
             icon={<StopIcon />}
             onClick={onCancelClick}
@@ -142,7 +142,7 @@ export const EvaluationCreatePromptRunOutput = ({
       )}
       {!isEvaluating && (
         <TextArea
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationcreatepromptrunoutput.tsx_144"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_components_evaluationcreatepromptrunoutput.tsx_144"
           rows={5}
           css={{ cursor: 'default' }}
           data-testid="prompt-output"

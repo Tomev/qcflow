@@ -1,16 +1,16 @@
 # Utils for databricks authentication
 
-new_mlflow_client.mlflow_databricks <- function(tracking_uri) {
+new_qcflow_client.qcflow_databricks <- function(tracking_uri) {
   profile <- tracking_uri$path
   # make sure we can read the config
-  new_mlflow_client_impl(
+  new_qcflow_client_impl(
     get_host_creds = function() {
       get_databricks_config(profile)
     },
     get_cli_env = function() {
       databricks_config_as_env(get_databricks_config(profile))
     },
-    class = "mlflow_databricks_client"
+    class = "qcflow_databricks_client"
   )
 }
 
@@ -63,7 +63,7 @@ get_databricks_config_for_profile <- function(profile) {
 #' @importFrom utils modifyList
 new_databricks_config <- function(config_source,
                                   config_vars) {
-  res <- do.call(new_mlflow_host_creds, config_vars)
+  res <- do.call(new_qcflow_host_creds, config_vars)
   res$config_source <- config_source
   res
 }
@@ -123,48 +123,48 @@ get_databricks_config <- function(profile) {
 #'
 #' Retrieves the notebook id, path, url, name, version, and type from the Databricks Notebook
 #' execution environment and sets them to a list to be used for setting the configured environment
-#' for executing an MLflow run in R from Databricks.
+#' for executing an QCFlow run in R from Databricks.
 #'
 #' @param notebook_info The configuration data from the Databricks Notebook environment
 #'
-#' @return A list of tags to be set by the run context when creating MLflow runs in the
+#' @return A list of tags to be set by the run context when creating QCFlow runs in the
 #' current Databricks Notebook environment
 build_context_tags_from_databricks_notebook_info <- function(notebook_info) {
   tags <- list()
-  tags[[MLFLOW_DATABRICKS_TAGS$MLFLOW_DATABRICKS_NOTEBOOK_ID]] <- notebook_info$id
-  tags[[MLFLOW_DATABRICKS_TAGS$MLFLOW_DATABRICKS_NOTEBOOK_PATH]] <- notebook_info$path
-  tags[[MLFLOW_DATABRICKS_TAGS$MLFLOW_DATABRICKS_WEBAPP_URL]] <- notebook_info$webapp_url
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_NAME]] <- notebook_info$path
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_VERSION]] <- get_source_version()
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_TYPE]] <- MLFLOW_SOURCE_TYPE$NOTEBOOK
+  tags[[QCFLOW_DATABRICKS_TAGS$QCFLOW_DATABRICKS_NOTEBOOK_ID]] <- notebook_info$id
+  tags[[QCFLOW_DATABRICKS_TAGS$QCFLOW_DATABRICKS_NOTEBOOK_PATH]] <- notebook_info$path
+  tags[[QCFLOW_DATABRICKS_TAGS$QCFLOW_DATABRICKS_WEBAPP_URL]] <- notebook_info$webapp_url
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_NAME]] <- notebook_info$path
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_VERSION]] <- get_source_version()
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_TYPE]] <- QCFLOW_SOURCE_TYPE$NOTEBOOK
   tags
 }
 
 #' Get information from a Databricks job execution context
 #'
 #' Parses the data from a job execution context when running on Databricks in a non-interactive
-#' mode. This function extracts relevant data that MLflow needs in order to properly utilize the
-#' MLflow APIs from this context.
+#' mode. This function extracts relevant data that QCFlow needs in order to properly utilize the
+#' QCFlow APIs from this context.
 #'
 #' @param job_info The job-related metadata from a running Databricks job
 #'
-#' @return A list of tags to be set by the run context when creating MLflow runs in the
+#' @return A list of tags to be set by the run context when creating QCFlow runs in the
 #' current Databricks Job environment
 build_context_tags_from_databricks_job_info <- function(job_info) {
   tags <- list()
-  tags[[MLFLOW_DATABRICKS_TAGS$MLFLOW_DATABRICKS_JOB_ID]] <- job_info$job_id
-  tags[[MLFLOW_DATABRICKS_TAGS$MLFLOW_DATABRICKS_JOB_RUN_ID]] <- job_info$run_id
-  tags[[MLFLOW_DATABRICKS_TAGS$MLFLOW_DATABRICKS_JOB_TYPE]] <- job_info$job_type
-  tags[[MLFLOW_DATABRICKS_TAGS$MLFLOW_DATABRICKS_WEBAPP_URL]] <- job_info$webapp_url
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_NAME]] <- paste(
+  tags[[QCFLOW_DATABRICKS_TAGS$QCFLOW_DATABRICKS_JOB_ID]] <- job_info$job_id
+  tags[[QCFLOW_DATABRICKS_TAGS$QCFLOW_DATABRICKS_JOB_RUN_ID]] <- job_info$run_id
+  tags[[QCFLOW_DATABRICKS_TAGS$QCFLOW_DATABRICKS_JOB_TYPE]] <- job_info$job_type
+  tags[[QCFLOW_DATABRICKS_TAGS$QCFLOW_DATABRICKS_WEBAPP_URL]] <- job_info$webapp_url
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_NAME]] <- paste(
     "jobs", job_info$job_id, "run", job_info$run_id, sep = "/"
   )
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_VERSION]] <- get_source_version()
-  tags[[MLFLOW_TAGS$MLFLOW_SOURCE_TYPE]] <- MLFLOW_SOURCE_TYPE$JOB
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_VERSION]] <- get_source_version()
+  tags[[QCFLOW_TAGS$QCFLOW_SOURCE_TYPE]] <- QCFLOW_SOURCE_TYPE$JOB
   tags
 }
 
-mlflow_get_run_context.mlflow_databricks_client <- function(client, experiment_id, ...) {
+qcflow_get_run_context.qcflow_databricks_client <- function(client, experiment_id, ...) {
   if (exists(".databricks_internals")) {
     databricks_internal_env <- get(".databricks_internals", envir = .GlobalEnv)
     notebook_info <- do.call(".get_notebook_info", list(), envir = databricks_internal_env)
@@ -196,18 +196,18 @@ mlflow_get_run_context.mlflow_databricks_client <- function(client, experiment_i
   }
 }
 
-MLFLOW_DATABRICKS_TAGS <- list(
-  MLFLOW_DATABRICKS_NOTEBOOK_ID = "mlflow.databricks.notebookID",
-  MLFLOW_DATABRICKS_NOTEBOOK_PATH = "mlflow.databricks.notebookPath",
-  MLFLOW_DATABRICKS_WEBAPP_URL = "mlflow.databricks.webappURL",
-  MLFLOW_DATABRICKS_RUN_URL = "mlflow.databricks.runURL",
+QCFLOW_DATABRICKS_TAGS <- list(
+  QCFLOW_DATABRICKS_NOTEBOOK_ID = "qcflow.databricks.notebookID",
+  QCFLOW_DATABRICKS_NOTEBOOK_PATH = "qcflow.databricks.notebookPath",
+  QCFLOW_DATABRICKS_WEBAPP_URL = "qcflow.databricks.webappURL",
+  QCFLOW_DATABRICKS_RUN_URL = "qcflow.databricks.runURL",
   # The SHELL_JOB_ID and SHELL_JOB_RUN_ID tags are used for tracking the
-  # Databricks Job ID and Databricks Job Run ID associated with an MLflow Project run
-  MLFLOW_DATABRICKS_SHELL_JOB_ID = "mlflow.databricks.shellJobID",
-  MLFLOW_DATABRICKS_SHELL_JOB_RUN_ID = "mlflow.databricks.shellJobRunID",
+  # Databricks Job ID and Databricks Job Run ID associated with an QCFlow Project run
+  QCFLOW_DATABRICKS_SHELL_JOB_ID = "qcflow.databricks.shellJobID",
+  QCFLOW_DATABRICKS_SHELL_JOB_RUN_ID = "qcflow.databricks.shellJobRunID",
   # The JOB_ID, JOB_RUN_ID, and JOB_TYPE tags are used for automatically recording Job
-  # information when MLflow Tracking APIs are used within a Databricks Job
-  MLFLOW_DATABRICKS_JOB_ID = "mlflow.databricks.jobID",
-  MLFLOW_DATABRICKS_JOB_RUN_ID = "mlflow.databricks.jobRunID",
-  MLFLOW_DATABRICKS_JOB_TYPE = "mlflow.databricks.jobType"
+  # information when QCFlow Tracking APIs are used within a Databricks Job
+  QCFLOW_DATABRICKS_JOB_ID = "qcflow.databricks.jobID",
+  QCFLOW_DATABRICKS_JOB_RUN_ID = "qcflow.databricks.jobRunID",
+  QCFLOW_DATABRICKS_JOB_TYPE = "qcflow.databricks.jobType"
 )

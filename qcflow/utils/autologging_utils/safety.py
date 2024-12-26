@@ -8,19 +8,19 @@ from abc import abstractmethod
 from contextlib import contextmanager
 from typing import Optional
 
-import mlflow
-import mlflow.utils.autologging_utils
-from mlflow.entities.run_status import RunStatus
-from mlflow.environment_variables import _MLFLOW_AUTOLOGGING_TESTING
-from mlflow.tracking.client import MlflowClient
-from mlflow.utils import gorilla, is_iterator
-from mlflow.utils.autologging_utils import _logger
-from mlflow.utils.autologging_utils.events import AutologgingEventLogger
-from mlflow.utils.autologging_utils.logging_and_warnings import (
-    set_mlflow_events_and_warnings_behavior_globally,
-    set_non_mlflow_warnings_behavior_for_current_thread,
+import qcflow
+import qcflow.utils.autologging_utils
+from qcflow.entities.run_status import RunStatus
+from qcflow.environment_variables import _QCFLOW_AUTOLOGGING_TESTING
+from qcflow.tracking.client import MlflowClient
+from qcflow.utils import gorilla, is_iterator
+from qcflow.utils.autologging_utils import _logger
+from qcflow.utils.autologging_utils.events import AutologgingEventLogger
+from qcflow.utils.autologging_utils.logging_and_warnings import (
+    set_qcflow_events_and_warnings_behavior_globally,
+    set_non_qcflow_warnings_behavior_for_current_thread,
 )
-from mlflow.utils.mlflow_tags import MLFLOW_AUTOLOGGING
+from qcflow.utils.qcflow_tags import QCFLOW_AUTOLOGGING
 
 _AUTOLOGGING_PATCHES = {}
 
@@ -179,9 +179,9 @@ class PatchFunction:
 
 def with_managed_run(autologging_integration, patch_function, tags=None):
     """Given a `patch_function`, returns an `augmented_patch_function` that wraps the execution of
-    `patch_function` with an active MLflow run. The following properties apply:
+    `patch_function` with an active QCFlow run. The following properties apply:
 
-        - An MLflow run is only created if there is no active run present when the
+        - An QCFlow run is only created if there is no active run present when the
           patch function is executed
 
         - If an active run is created by the `augmented_patch_function`, it is terminated
@@ -202,12 +202,12 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
         tags: A dictionary of string tags to set on each managed run created during the
             execution of `patch_function`.
     """
-    from mlflow.utils.autologging_utils import _has_active_training_session
+    from qcflow.utils.autologging_utils import _has_active_training_session
 
     def create_managed_run():
-        managed_run = mlflow.start_run(tags=tags)
+        managed_run = qcflow.start_run(tags=tags)
         _logger.info(
-            "Created MLflow autologging run with ID '%s', which will track hyperparameters,"
+            "Created QCFlow autologging run with ID '%s', which will track hyperparameters,"
             " performance metrics, model artifacts, and lineage information for the"
             " current %s workflow",
             managed_run.info.run_id,
@@ -227,19 +227,19 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                 # in current thread, it means the thread is spawned by `estimator.fit`
                 # as a worker thread, we should disable autologging in
                 # these worker threads, so skip creating managed run.
-                if not mlflow.active_run() and not _has_active_training_session():
+                if not qcflow.active_run() and not _has_active_training_session():
                     self.managed_run = create_managed_run()
 
                 result = super()._patch_implementation(original, *args, **kwargs)
 
                 if self.managed_run:
-                    mlflow.end_run(RunStatus.to_string(RunStatus.FINISHED))
+                    qcflow.end_run(RunStatus.to_string(RunStatus.FINISHED))
 
                 return result
 
             def _on_exception(self, e):
                 if self.managed_run:
-                    mlflow.end_run(RunStatus.to_string(RunStatus.FAILED))
+                    qcflow.end_run(RunStatus.to_string(RunStatus.FAILED))
                 super()._on_exception(e)
 
         return PatchWithManagedRun
@@ -252,7 +252,7 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
             # in current thread, it means the thread is spawned by `estimator.fit`
             # as a worker thread, we should disable autologging in
             # these worker threads, so skip creating managed run.
-            if not mlflow.active_run() and not _has_active_training_session():
+            if not qcflow.active_run() and not _has_active_training_session():
                 managed_run = create_managed_run()
 
             try:
@@ -262,11 +262,11 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                 # that runs are terminated if a user prematurely interrupts training execution
                 # (e.g. via sigint / ctrl-c)
                 if managed_run:
-                    mlflow.end_run(RunStatus.to_string(RunStatus.FAILED))
+                    qcflow.end_run(RunStatus.to_string(RunStatus.FAILED))
                 raise
             else:
                 if managed_run:
-                    mlflow.end_run(RunStatus.to_string(RunStatus.FINISHED))
+                    qcflow.end_run(RunStatus.to_string(RunStatus.FINISHED))
                 return result
 
         return patch_with_managed_run
@@ -275,7 +275,7 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
 def is_testing():
     """
     Indicates whether or not autologging functionality is running in test mode (as determined
-    by the `MLFLOW_AUTOLOGGING_TESTING` environment variable). Test mode performs additional
+    by the `QCFLOW_AUTOLOGGING_TESTING` environment variable). Test mode performs additional
     validation during autologging, including:
 
         - Checks for the exception safety of arguments passed to model training functions
@@ -283,22 +283,22 @@ def is_testing():
         - Disables exception handling for patched function logic, ensuring that patch code
           executes without errors during testing
     """
-    return _MLFLOW_AUTOLOGGING_TESTING.get()
+    return _QCFLOW_AUTOLOGGING_TESTING.get()
 
 
 def _resolve_extra_tags(autologging_integration, extra_tags):
-    tags = {MLFLOW_AUTOLOGGING: autologging_integration}
+    tags = {QCFLOW_AUTOLOGGING: autologging_integration}
     if extra_tags:
         if isinstance(extra_tags, dict):
-            if MLFLOW_AUTOLOGGING in extra_tags:
-                extra_tags.pop(MLFLOW_AUTOLOGGING)
+            if QCFLOW_AUTOLOGGING in extra_tags:
+                extra_tags.pop(QCFLOW_AUTOLOGGING)
                 _logger.warning(
-                    f"Tag `{MLFLOW_AUTOLOGGING}` is ignored as it is a reserved tag by MLflow "
+                    f"Tag `{QCFLOW_AUTOLOGGING}` is ignored as it is a reserved tag by QCFlow "
                     f"autologging."
                 )
             tags.update(extra_tags)
         else:
-            raise mlflow.exceptions.MlflowException.invalid_parameter_value(
+            raise qcflow.exceptions.MlflowException.invalid_parameter_value(
                 f"Invalid `extra_tags` type: expecting dictionary, "
                 f"received `{type(extra_tags).__name__}`"
             )
@@ -332,13 +332,13 @@ def safe_patch(
             representing the underlying / original function. Subsequent arguments
             should be identical to those of the original function being patched.
         manage_run: If `True`, applies the `with_managed_run` wrapper to the specified
-            `patch_function`, which automatically creates & terminates an MLflow
+            `patch_function`, which automatically creates & terminates an QCFlow
             active run during patch code execution if necessary. If `False`,
             does not apply the `with_managed_run` wrapper to the specified
             `patch_function`.
         extra_tags: A dictionary of extra tags to set on each managed run created by autologging.
     """
-    from mlflow.utils.autologging_utils import autologging_is_disabled, get_autologging_config
+    from qcflow.utils.autologging_utils import autologging_is_disabled, get_autologging_config
 
     if manage_run:
         tags = _resolve_extra_tags(autologging_integration, extra_tags)
@@ -402,11 +402,11 @@ def safe_patch(
         while exceptions thrown from other parts of `patch_function` are caught and logged as
         warnings.
         """
-        # Reroute warnings encountered during the patch function implementation to an MLflow event
+        # Reroute warnings encountered during the patch function implementation to an QCFlow event
         # logger, and enforce silent mode if applicable (i.e. if the corresponding autologging
-        # integration was called with `silent=True`), hiding MLflow event logging statements and
+        # integration was called with `silent=True`), hiding QCFlow event logging statements and
         # hiding all warnings in the autologging preamble and postamble (i.e. the code surrounding
-        # the user's original / underlying ML function). Non-MLflow warnings are enabled during the
+        # the user's original / underlying ML function). Non-QCFlow warnings are enabled during the
         # execution of the original / underlying ML function
         #
         # Note that we've opted *not* to apply this context manager as a decorator on
@@ -415,22 +415,22 @@ def safe_patch(
         # during model serialization by ML frameworks such as scikit-learn
         is_silent_mode = get_autologging_config(autologging_integration, "silent", False)
         with (
-            set_mlflow_events_and_warnings_behavior_globally(
-                # MLflow warnings emitted during autologging training sessions are likely not
-                # actionable and result from the autologging implementation invoking another MLflow
-                # API. Accordingly, we reroute these warnings to the MLflow event logger with level
+            set_qcflow_events_and_warnings_behavior_globally(
+                # QCFlow warnings emitted during autologging training sessions are likely not
+                # actionable and result from the autologging implementation invoking another QCFlow
+                # API. Accordingly, we reroute these warnings to the QCFlow event logger with level
                 # WARNING For reference, see recommended warning and event logging behaviors from
                 # https://docs.python.org/3/howto/logging.html#when-to-use-logging
                 reroute_warnings=True,
                 disable_event_logs=is_silent_mode,
                 disable_warnings=is_silent_mode,
             ),
-            set_non_mlflow_warnings_behavior_for_current_thread(
-                # non-MLflow Warnings emitted during the autologging preamble (before the original /
+            set_non_qcflow_warnings_behavior_for_current_thread(
+                # non-QCFlow Warnings emitted during the autologging preamble (before the original /
                 # underlying ML function is called) and postamble (after the original / underlying
                 # ML function is called) are likely not actionable and result from the autologging
                 # implementation invoking an API from a dependent library. Accordingly, we reroute
-                # these warnings to the MLflow event logger with level WARNING. For reference, see
+                # these warnings to the QCFlow event logger with level WARNING. For reference, see
                 # recommended warning and event logging behaviors from
                 # https://docs.python.org/3/howto/logging.html#when-to-use-logging
                 reroute_warnings=True,
@@ -438,13 +438,13 @@ def safe_patch(
             ),
         ):
             if is_testing():
-                preexisting_run_for_testing = mlflow.active_run()
+                preexisting_run_for_testing = qcflow.active_run()
 
             # Whether or not to exclude autologged content from user-created fluent runs
-            # (i.e. runs created manually via `mlflow.start_run()`)
+            # (i.e. runs created manually via `qcflow.start_run()`)
             exclusive = get_autologging_config(autologging_integration, "exclusive", False)
             user_created_fluent_run_is_active = (
-                mlflow.active_run() and not _AutologgingSessionManager.active_session()
+                qcflow.active_run() and not _AutologgingSessionManager.active_session()
             )
             active_session_failed = (
                 _AutologgingSessionManager.active_session() is not None
@@ -456,7 +456,7 @@ def safe_patch(
                 or autologging_is_disabled(autologging_integration)
                 or (user_created_fluent_run_is_active and exclusive)
                 or (
-                    mlflow.utils.autologging_utils._AUTOLOGGING_GLOBALLY_DISABLED
+                    qcflow.utils.autologging_utils._AUTOLOGGING_GLOBALLY_DISABLED
                     and autologging_integration
                 )
             ):
@@ -465,7 +465,7 @@ def safe_patch(
                 # fluent run is active, call the original function and return. Restore the original
                 # warning behavior during original function execution, since autologging is being
                 # skipped
-                with set_non_mlflow_warnings_behavior_for_current_thread(
+                with set_non_qcflow_warnings_behavior_for_current_thread(
                     disable_warnings=False,
                     reroute_warnings=False,
                 ):
@@ -480,7 +480,7 @@ def safe_patch(
             # Whether or not an exception was raised from within the original / underlying function
             # during the execution of patched code
             failed_during_original = False
-            # The active MLflow run (if any) associated with patch code execution
+            # The active QCFlow run (if any) associated with patch code execution
             patch_function_run_for_testing = None
             # The exception raised during executing patching function
             patch_function_exception = None
@@ -547,23 +547,23 @@ def safe_patch(
                                 )
                                 # By the time `original` is called by the patch implementation, we
                                 # assume that either: 1. the patch implementation has already
-                                # created an MLflow run or 2. the patch code will not create an
-                                # MLflow run during the current execution. Here, we capture a
+                                # created an QCFlow run or 2. the patch code will not create an
+                                # QCFlow run during the current execution. Here, we capture a
                                 # reference to the active run, which we will use later on to
                                 # determine whether or not the patch implementation created
                                 # a run and perform validation if necessary
                                 nonlocal patch_function_run_for_testing
-                                patch_function_run_for_testing = mlflow.active_run()
+                                patch_function_run_for_testing = qcflow.active_run()
 
                             nonlocal original_has_been_called
                             original_has_been_called = True
 
                             nonlocal original_result
-                            # Show all non-MLflow warnings as normal (i.e. not as event logs)
+                            # Show all non-QCFlow warnings as normal (i.e. not as event logs)
                             # during original function execution, even if silent mode is enabled
                             # (`silent=True`), since these warnings originate from the ML framework
                             # or one of its dependencies and are likely relevant to the caller
-                            with set_non_mlflow_warnings_behavior_for_current_thread(
+                            with set_non_qcflow_warnings_behavior_for_current_thread(
                                 disable_warnings=False,
                                 reroute_warnings=False,
                             ):
@@ -611,10 +611,10 @@ def safe_patch(
                         raise
 
                 if is_testing() and not preexisting_run_for_testing:
-                    # If an MLflow run was created during the execution of patch code, verify that
+                    # If an QCFlow run was created during the execution of patch code, verify that
                     # it is no longer active and that it contains expected autologging tags
                     assert (
-                        not mlflow.active_run()
+                        not qcflow.active_run()
                     ), f"Autologging integration {autologging_integration} leaked an active run"
                     if patch_function_run_for_testing:
                         _validate_autologging_run(
@@ -693,7 +693,7 @@ def revert_patches(autologging_integration):
 
     Args:
         autologging_integration: The name of the autologging integration associated with the
-            patch. Note: If called via fluent api (`autologging_integration="mlflow"`), then revert
+            patch. Note: If called via fluent api (`autologging_integration="qcflow"`), then revert
             all patches for all active autologging integrations.
 
     """
@@ -808,7 +808,7 @@ def _store_patch(autologging_integration, patch):
 
 def _validate_autologging_run(autologging_integration, run_id):
     """
-    For testing purposes, verifies that an MLflow run produced by an `autologging_integration`
+    For testing purposes, verifies that an QCFlow run produced by an `autologging_integration`
     satisfies the following properties:
 
         - The run has an autologging tag whose value is the name of the autologging integration
@@ -816,7 +816,7 @@ def _validate_autologging_run(autologging_integration, run_id):
     """
     client = MlflowClient()
     run = client.get_run(run_id)
-    autologging_tag_value = run.data.tags.get(MLFLOW_AUTOLOGGING)
+    autologging_tag_value = run.data.tags.get(QCFLOW_AUTOLOGGING)
     assert autologging_tag_value == autologging_integration, (
         f"Autologging run with id {run_id} failed to set autologging tag with expected value. "
         f"Expected: '{autologging_integration}', Actual: '{autologging_tag_value}'"

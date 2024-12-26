@@ -57,7 +57,7 @@ export const parseEvaluationResponse = (
   response: ModelGatewayResponseType | EndpointModelGatewayResponseType,
   gatewayRoute: ModelGatewayRoute,
 ) => {
-  if (gatewayRoute.type === 'mlflow_deployment_endpoint') {
+  if (gatewayRoute.type === 'qcflow_deployment_endpoint') {
     // TODO
     return parseEndpointEvaluationResponse(response as EndpointModelGatewayResponseType, gatewayRoute.task);
   }

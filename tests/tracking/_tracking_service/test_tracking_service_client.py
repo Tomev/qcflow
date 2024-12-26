@@ -5,20 +5,20 @@ from unittest import mock
 import pydantic
 import pytest
 
-from mlflow import MlflowClient
-from mlflow.entities import Metric, Param, Run, RunInfo, RunTag
-from mlflow.entities.trace_data import TraceData
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.exceptions import MlflowTraceDataCorrupted, MlflowTraceDataNotFound
-from mlflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, SpanAttributeKey
-from mlflow.tracing.utils import TraceJSONEncoder
-from mlflow.tracking._tracking_service.client import TrackingServiceClient
+from qcflow import MlflowClient
+from qcflow.entities import Metric, Param, Run, RunInfo, RunTag
+from qcflow.entities.trace_data import TraceData
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.exceptions import MlflowTraceDataCorrupted, MlflowTraceDataNotFound
+from qcflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, SpanAttributeKey
+from qcflow.tracing.utils import TraceJSONEncoder
+from qcflow.tracking._tracking_service.client import TrackingServiceClient
 
 
 @pytest.fixture
 def mock_store():
-    with mock.patch("mlflow.tracking._tracking_service.utils._get_store") as mock_get_store:
+    with mock.patch("qcflow.tracking._tracking_service.utils._get_store") as mock_get_store:
         yield mock_get_store.return_value
 
 
@@ -51,7 +51,7 @@ def newTrackingServiceClient():
 def test_get_artifact_repo(artifact_uri, databricks_uri, uri_for_repo):
     with (
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.get_run",
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.get_run",
             return_value=Run(
                 RunInfo(
                     "uuid",
@@ -67,7 +67,7 @@ def test_get_artifact_repo(artifact_uri, databricks_uri, uri_for_repo):
             ),
         ),
         mock.patch(
-            "mlflow.tracking._tracking_service.client.get_artifact_repository", return_value=None
+            "qcflow.tracking._tracking_service.client.get_artifact_repository", return_value=None
         ) as get_repo_mock,
     ):
         client = TrackingServiceClient(databricks_uri)
@@ -78,7 +78,7 @@ def test_get_artifact_repo(artifact_uri, databricks_uri, uri_for_repo):
 def test_artifact_repo_is_cached_per_run_id(tmp_path):
     uri = "ftp://user:pass@host/path"
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.TrackingServiceClient.get_run",
+        "qcflow.tracking._tracking_service.client.TrackingServiceClient.get_run",
         return_value=Run(
             RunInfo("uuid", "expr_id", "userid", "status", 0, 10, "active", artifact_uri=uri),
             None,
@@ -100,10 +100,10 @@ def test_download_trace_data(tmp_path, mock_store):
         execution_time_ms=1,
         status=TraceStatus.OK,
         request_metadata={},
-        tags={"mlflow.artifactLocation": "test"},
+        tags={"qcflow.artifactLocation": "test"},
     )
     with mock.patch(
-        "mlflow.store.artifact.local_artifact_repo.LocalArtifactRepository.download_trace_data",
+        "qcflow.store.artifact.local_artifact_repo.LocalArtifactRepository.download_trace_data",
         return_value={"spans": []},
     ) as mock_download_trace_data:
         client = TrackingServiceClient(tmp_path.as_uri())
@@ -124,7 +124,7 @@ def test_upload_trace_data(tmp_path, mock_store):
         execution_time_ms=1,
         status=TraceStatus.OK,
         request_metadata={},
-        tags={"mlflow.artifactLocation": "test"},
+        tags={"qcflow.artifactLocation": "test"},
     )
     mock_store.start_trace.return_value = trace_info
 
@@ -141,7 +141,7 @@ def test_upload_trace_data(tmp_path, mock_store):
     trace_data = TraceData([span])
     trace_data_json = json.dumps(trace_data.to_dict(), cls=TraceJSONEncoder)
     with mock.patch(
-        "mlflow.store.artifact.artifact_repo.ArtifactRepository.upload_trace_data",
+        "qcflow.store.artifact.artifact_repo.ArtifactRepository.upload_trace_data",
     ) as mock_upload_trace_data:
         client = TrackingServiceClient(tmp_path.as_uri())
         client._upload_trace_data(trace_info=trace_info, trace_data=trace_data)
@@ -165,7 +165,7 @@ def test_search_traces(tmp_path):
                             execution_time_ms=0,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         ),
                         TraceInfo(
                             request_id="test",
@@ -174,7 +174,7 @@ def test_search_traces(tmp_path):
                             execution_time_ms=0,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         ),
                     ],
                     "token",
@@ -189,7 +189,7 @@ def test_search_traces(tmp_path):
                             execution_time_ms=1,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         ),
                         TraceInfo(
                             request_id="test",
@@ -198,7 +198,7 @@ def test_search_traces(tmp_path):
                             execution_time_ms=1,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         ),
                     ],
                     None,
@@ -247,7 +247,7 @@ def test_search_traces_download_failures(tmp_path):
                             execution_time_ms=0,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         ),
                         TraceInfo(
                             request_id="test",
@@ -256,7 +256,7 @@ def test_search_traces_download_failures(tmp_path):
                             execution_time_ms=0,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         ),
                     ],
                     "token1",
@@ -271,7 +271,7 @@ def test_search_traces_download_failures(tmp_path):
                             execution_time_ms=1,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         )
                     ],
                     "token2",
@@ -286,7 +286,7 @@ def test_search_traces_download_failures(tmp_path):
                             execution_time_ms=1,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         )
                     ],
                     "token3",
@@ -330,7 +330,7 @@ def test_search_traces_download_failures(tmp_path):
                             execution_time_ms=0,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         ),
                         TraceInfo(
                             request_id="test",
@@ -339,7 +339,7 @@ def test_search_traces_download_failures(tmp_path):
                             execution_time_ms=0,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         ),
                     ],
                     "token1",
@@ -354,7 +354,7 @@ def test_search_traces_download_failures(tmp_path):
                             execution_time_ms=1,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         )
                     ],
                     None,
@@ -396,7 +396,7 @@ def test_search_traces_does_not_swallow_unexpected_exceptions(tmp_path):
                             execution_time_ms=0,
                             status=TraceStatus.OK,
                             request_metadata={},
-                            tags={"mlflow.artifactLocation": "test"},
+                            tags={"qcflow.artifactLocation": "test"},
                         )
                     ],
                     "token1",
@@ -476,7 +476,7 @@ def test_log_batch(tracking_client_log_batch):
     run_data = client.get_run(run_id).data
 
     expected_tags = {tag.key: tag.value for tag in tags}
-    expected_tags["mlflow.runName"] = run_data.tags["mlflow.runName"]
+    expected_tags["qcflow.runName"] = run_data.tags["qcflow.runName"]
 
     assert run_data.metrics == {metric.key: metric.value for metric in metrics}
     assert run_data.params == {param.key: param.value for param in params}
@@ -491,7 +491,7 @@ def test_log_batch_with_empty_data(tracking_client_log_batch):
 
     assert run_data.metrics == {}
     assert run_data.params == {}
-    assert run_data.tags == {"mlflow.runName": run_data.tags["mlflow.runName"]}
+    assert run_data.tags == {"qcflow.runName": run_data.tags["qcflow.runName"]}
 
 
 def test_log_batch_with_numpy_array(tracking_client_log_batch):
@@ -507,7 +507,7 @@ def test_log_batch_with_numpy_array(tracking_client_log_batch):
     run_data = client.get_run(run_id).data
 
     expected_tags = {tag.key: tag.value for tag in tags}
-    expected_tags["mlflow.runName"] = run_data.tags["mlflow.runName"]
+    expected_tags["qcflow.runName"] = run_data.tags["qcflow.runName"]
 
     assert run_data.metrics == {metric.key: metric.value for metric in metrics}
     assert run_data.params == {param.key: param.value for param in params}

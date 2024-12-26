@@ -4,10 +4,10 @@ from typing import Any, Optional
 import numpy as np
 import pandas as pd
 
-from mlflow.data.dataset import Dataset
-from mlflow.types import Schema
-from mlflow.types.utils import _infer_schema
-from mlflow_test_plugin.dummy_dataset_source import DummyDatasetSource
+from qcflow.data.dataset import Dataset
+from qcflow.types import Schema
+from qcflow.types.utils import _infer_schema
+from qcflow_test_plugin.dummy_dataset_source import DummyDatasetSource
 
 
 class DummyDataset(Dataset):
@@ -41,7 +41,7 @@ class DummyDataset(Dataset):
         """
         return {
             **base_dict,
-            "schema": json.dumps({"mlflow_colspec": self.schema.to_dict()}),
+            "schema": json.dumps({"qcflow_colspec": self.schema.to_dict()}),
             "profile": json.dumps(self.profile),
         }
 
@@ -67,7 +67,7 @@ class DummyDataset(Dataset):
 def from_dummy(
     data_list: list[int], source: str, name: Optional[str] = None, digest: Optional[str] = None
 ) -> DummyDataset:
-    from mlflow.data.dataset_source_registry import resolve_dataset_source
+    from qcflow.data.dataset_source_registry import resolve_dataset_source
 
     resolved_source: DummyDatasetSource = resolve_dataset_source(
         source, candidate_sources=[DummyDatasetSource]

@@ -1,11 +1,11 @@
-mlflow.tensorflow
+qcflow.tensorflow
 ==================
 
-.. automodule:: mlflow.tensorflow
+.. automodule:: qcflow.tensorflow
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. autoclass:: mlflow.tensorflow.MlflowCallback
+.. autoclass:: qcflow.tensorflow.MlflowCallback
     :members:
     :undoc-members:

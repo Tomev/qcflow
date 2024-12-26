@@ -4,10 +4,10 @@ import os
 from decimal import Decimal
 from typing import Optional
 
-from mlflow.exceptions import MlflowException
-from mlflow.models.evaluation import EvaluationResult
-from mlflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
-from mlflow.utils.annotations import deprecated
+from qcflow.exceptions import MlflowException
+from qcflow.models.evaluation import EvaluationResult
+from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
+from qcflow.utils.annotations import deprecated
 
 _logger = logging.getLogger(__name__)
 
@@ -172,7 +172,7 @@ class _MetricValidationResult:
     Args:
         metric_name: String representing the metric name
         candidate_metric_value: value of metric for candidate model
-        metric_threshold: :py:class: `MetricThreshold<mlflow.models.validation.MetricThreshold>`
+        metric_threshold: :py:class: `MetricThreshold<qcflow.models.validation.MetricThreshold>`
             The MetricThreshold for the metric.
         baseline_metric_value: value of metric for baseline model
     """
@@ -267,17 +267,17 @@ def validate_evaluation_results(
     .. note::
 
         This API is a replacement for the deprecated model validation
-        functionality in the :py:func:`mlflow.evaluate` API.
+        functionality in the :py:func:`qcflow.evaluate` API.
 
     Args:
         validation_thresholds: A dictionary of metric name to
-            :py:class:`mlflow.models.MetricThreshold` used for model validation.
+            :py:class:`qcflow.models.MetricThreshold` used for model validation.
             Each metric name must either be the name of a builtin metric or the
             name of a metric defined in the ``extra_metrics`` parameter.
         candidate_result: The evaluation result of the candidate model.
-            Returned by the :py:func:`mlflow.evaluate` API.
+            Returned by the :py:func:`qcflow.evaluate` API.
         baseline_result: The evaluation result of the baseline model.
-            Returned by the :py:func:`mlflow.evaluate` API.
+            Returned by the :py:func:`qcflow.evaluate` API.
             If set to None, the candidate model result will be
             compared against the threshold values directly.
 
@@ -286,8 +286,8 @@ def validate_evaluation_results(
         .. code-block:: python
             :caption: Example of Model Validation
 
-            import mlflow
-            from mlflow.models import MetricThreshold
+            import qcflow
+            from qcflow.models import MetricThreshold
 
             thresholds = {
                 "accuracy_score": MetricThreshold(
@@ -302,7 +302,7 @@ def validate_evaluation_results(
             }
 
             # Get evaluation results for the candidate model
-            candidate_result = mlflow.evaluate(
+            candidate_result = qcflow.evaluate(
                 model="<YOUR_CANDIDATE_MODEL_URI>",
                 data=eval_dataset,
                 targets="ground_truth",
@@ -310,7 +310,7 @@ def validate_evaluation_results(
             )
 
             # Get evaluation results for the baseline model
-            baseline_result = mlflow.evaluate(
+            baseline_result = qcflow.evaluate(
                 model="<YOUR_BASELINE_MODEL_URI>",
                 data=eval_dataset,
                 targets="ground_truth",
@@ -318,7 +318,7 @@ def validate_evaluation_results(
             )
 
             # Validate the results
-            mlflow.validate_evaluation_results(
+            qcflow.validate_evaluation_results(
                 thresholds,
                 candidate_result,
                 baseline_result,

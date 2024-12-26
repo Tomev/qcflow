@@ -4,11 +4,11 @@ import pytest
 from promptflow import load_flow
 from pyspark.sql import SparkSession
 
-import mlflow
-from mlflow import MlflowException
-from mlflow.deployments import PredictionsResponse
-from mlflow.models.utils import load_serving_example
-from mlflow.pyfunc.scoring_server import CONTENT_TYPE_JSON
+import qcflow
+from qcflow import MlflowException
+from qcflow.deployments import PredictionsResponse
+from qcflow.models.utils import load_serving_example
+from qcflow.pyfunc.scoring_server import CONTENT_TYPE_JSON
 
 from tests.helper_functions import pyfunc_serve_and_score_model
 
@@ -26,7 +26,7 @@ def get_promptflow_example_model():
 
 def test_promptflow_log_and_load_model():
     logged_model = log_promptflow_example_model(with_input_example=True)
-    mlflow.promptflow.load_model(logged_model.model_uri)
+    qcflow.promptflow.load_model(logged_model.model_uri)
 
     assert "promptflow" in logged_model.flavors
     assert logged_model.signature is not None
@@ -44,25 +44,25 @@ def test_log_model_with_config():
         "connection_provider": "local",
         "connection_overrides": {"local_connection_name": "remote_connection_name"},
     }
-    with mlflow.start_run():
-        logged_model = mlflow.promptflow.log_model(
+    with qcflow.start_run():
+        logged_model = qcflow.promptflow.log_model(
             model, "promptflow_model", model_config=model_config
         )
 
-    assert mlflow.pyfunc.FLAVOR_NAME in logged_model.flavors
-    assert mlflow.pyfunc.MODEL_CONFIG in logged_model.flavors[mlflow.pyfunc.FLAVOR_NAME]
-    logged_model_config = logged_model.flavors[mlflow.pyfunc.FLAVOR_NAME][
-        mlflow.pyfunc.MODEL_CONFIG
+    assert qcflow.pyfunc.FLAVOR_NAME in logged_model.flavors
+    assert qcflow.pyfunc.MODEL_CONFIG in logged_model.flavors[qcflow.pyfunc.FLAVOR_NAME]
+    logged_model_config = logged_model.flavors[qcflow.pyfunc.FLAVOR_NAME][
+        qcflow.pyfunc.MODEL_CONFIG
     ]
     assert logged_model_config == model_config
 
 
 def log_promptflow_example_model(with_input_example=False):
     model = get_promptflow_example_model()
-    with mlflow.start_run():
+    with qcflow.start_run():
         if not with_input_example:
-            return mlflow.promptflow.log_model(model, "promptflow_model")
-        return mlflow.promptflow.log_model(
+            return qcflow.promptflow.log_model(model, "promptflow_model")
+        return qcflow.promptflow.log_model(
             model,
             "promptflow_model",
             input_example={"text": "Python Hello World!"},
@@ -71,10 +71,10 @@ def log_promptflow_example_model(with_input_example=False):
 
 def test_promptflow_model_predict_pyfunc():
     logged_model = log_promptflow_example_model()
-    loaded_model = mlflow.pyfunc.load_model(logged_model.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(logged_model.model_uri)
     # Assert pyfunc model
     assert "promptflow" in logged_model.flavors
-    assert type(loaded_model) == mlflow.pyfunc.PyFuncModel
+    assert type(loaded_model) == qcflow.pyfunc.PyFuncModel
     # Assert predict with pyfunc model
     input_value = "Python Hello World!"
     result = loaded_model.predict({"text": input_value})
@@ -109,7 +109,7 @@ def test_promptflow_model_sparkudf_predict(spark):
     # Assert predict with promptflow model
     logged_model = log_promptflow_example_model(with_input_example=True)
     # Assert predict with spark udf
-    udf = mlflow.pyfunc.spark_udf(
+    udf = qcflow.pyfunc.spark_udf(
         spark,
         logged_model.model_uri,
         result_type="string",
@@ -130,5 +130,5 @@ def test_unsupported_class():
     with pytest.raises(
         MlflowException, match="only supports instance defined with 'flow.dag.yaml' file"
     ):
-        with mlflow.start_run():
-            mlflow.promptflow.log_model(mock_model, "mock_model_path")
+        with qcflow.start_run():
+            qcflow.promptflow.log_model(mock_model, "mock_model_path")

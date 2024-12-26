@@ -5,11 +5,11 @@ import transformers
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.transformers import _SUPPORTED_PROMPT_TEMPLATING_TASK_TYPES, _validate_prompt_template
-from mlflow.transformers.flavor_config import FlavorKey
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.transformers import _SUPPORTED_PROMPT_TEMPLATING_TASK_TYPES, _validate_prompt_template
+from qcflow.transformers.flavor_config import FlavorKey
 
 # session fixtures to prevent saving and loading a ~400mb model every time
 TEST_PROMPT_TEMPLATE = "Answer the following question like a pirate:\nQ: {prompt}\nA: "
@@ -55,7 +55,7 @@ def small_text_generation_model():
 @pytest.fixture(scope="session")
 def saved_transformers_model_path(tmp_path_factory, small_text_generation_model):
     tmp_path = tmp_path_factory.mktemp("model")
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=small_text_generation_model,
         path=tmp_path,
         prompt_template=TEST_PROMPT_TEMPLATE,
@@ -105,19 +105,19 @@ def test_prompt_save_and_load(saved_transformers_model_path):
 
     assert mlmodel_dict["metadata"][FlavorKey.PROMPT_TEMPLATE] == TEST_PROMPT_TEMPLATE
 
-    model = mlflow.pyfunc.load_model(saved_transformers_model_path)
+    model = qcflow.pyfunc.load_model(saved_transformers_model_path)
     assert model._model_impl.prompt_template == TEST_PROMPT_TEMPLATE
     assert model._model_impl.model_config["return_full_text"] is False
 
 
 def test_model_save_override_return_full_text(tmp_path, small_text_generation_model):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=small_text_generation_model,
         path=tmp_path,
         prompt_template=TEST_PROMPT_TEMPLATE,
         model_config={"return_full_text": True},
     )
-    model = mlflow.pyfunc.load_model(tmp_path)
+    model = qcflow.pyfunc.load_model(tmp_path)
     assert model._model_impl.model_config["return_full_text"] is True
 
 
@@ -132,7 +132,7 @@ def test_saving_prompt_throws_on_unsupported_task():
             MlflowException,
             match=f"Prompt templating is not supported for the `{pipeline_type}` task type.",
         ):
-            mlflow.transformers.save_model(
+            qcflow.transformers.save_model(
                 transformers_model=model,
                 path="model",
                 prompt_template=TEST_PROMPT_TEMPLATE,
@@ -140,7 +140,7 @@ def test_saving_prompt_throws_on_unsupported_task():
 
 
 def test_prompt_formatting(saved_transformers_model_path):
-    model_impl = mlflow.pyfunc.load_model(saved_transformers_model_path)._model_impl
+    model_impl = qcflow.pyfunc.load_model(saved_transformers_model_path)._model_impl
 
     # test that the formatting function throws for unsupported pipelines
     # this is a bit of a redundant test, because the function is explicitly
@@ -187,16 +187,16 @@ def test_prompt_used_in_predict(task, pipeline_fixture, output_key, request, tmp
         )
 
     model_path = tmp_path / "model"
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=pipeline,
         path=model_path,
         prompt_template=TEST_PROMPT_TEMPLATE,
     )
 
-    model = mlflow.pyfunc.load_model(model_path)
-    prompt = "What is MLflow?"
+    model = qcflow.pyfunc.load_model(model_path)
+    prompt = "What is QCFlow?"
     formatted_prompt = TEST_PROMPT_TEMPLATE.format(prompt=prompt)
-    mock_response = "MLflow be a tool fer machine lernin'"
+    mock_response = "QCFlow be a tool fer machine lernin'"
     mock_return = [[{output_key: formatted_prompt + mock_response}]]
 
     model._model_impl.pipeline = MagicMock(
@@ -218,16 +218,16 @@ def test_prompt_and_llm_inference_task(tmp_path, request):
     pipeline = request.getfixturevalue("text_generation_pipeline")
 
     model_path = tmp_path / "model"
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=pipeline,
         path=model_path,
         prompt_template=TEST_PROMPT_TEMPLATE,
         task="llm/v1/completions",
     )
 
-    model = mlflow.pyfunc.load_model(model_path)
+    model = qcflow.pyfunc.load_model(model_path)
 
-    prompt = "What is MLflow?"
+    prompt = "What is QCFlow?"
     formatted_prompt = TEST_PROMPT_TEMPLATE.format(prompt=prompt)
     mock_return = [[{"generated_token_ids": [1, 2, 3]}]]
 

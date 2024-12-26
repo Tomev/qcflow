@@ -165,7 +165,7 @@ def serialize_settings(path: str) -> None:
     if unsupported_objects:
         msg = (
             "The following objects in Settings are not supported for serialization and will not "
-            "be logged with your model. MLflow only supports serialization of objects that inherit "
+            "be logged with your model. QCFlow only supports serialization of objects that inherit "
             "from llama_index.core.schema.BaseComponent.\n"
         )
         msg += "\n".join(f" - {type(v).__name__} for Settings.{k}" for k, v in unsupported_objects)

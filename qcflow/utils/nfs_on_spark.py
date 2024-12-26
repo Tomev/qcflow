@@ -2,24 +2,24 @@ import os
 import shutil
 import uuid
 
-from mlflow.utils._spark_utils import _get_active_spark_session
-from mlflow.utils.databricks_utils import (
+from qcflow.utils._spark_utils import _get_active_spark_session
+from qcflow.utils.databricks_utils import (
     get_databricks_nfs_temp_dir,
     is_databricks_connect,
     is_in_databricks_runtime,
     is_in_databricks_serverless_runtime,
 )
 
-# Set spark config "spark.mlflow.nfs.rootDir" to specify a NFS (network file system) directory
+# Set spark config "spark.qcflow.nfs.rootDir" to specify a NFS (network file system) directory
 # which is shared with all spark cluster nodes.
 # This will help optimize routine of distributing spark driver files to remote workers.
 # None represent no NFS directory available.
 # Note:
 #  1. If NFS directory set, you must ensure all spark cluster nodes using the same hardware and
-#  installed the same OS with the same environment configured, because mlflow uses NFS directory
+#  installed the same OS with the same environment configured, because qcflow uses NFS directory
 #  to distribute driver side virtual environment to remote workers if NFS available, heterogeneous
 #  cluster nodes might cause issues under the case.
-#  2. The NFS directory must be mounted before importing mlflow.
+#  2. The NFS directory must be mounted before importing qcflow.
 #  3. For databricks users, don't set this config, databricks product sets up internal NFS service
 #  automatically.
 _NFS_CACHE_ROOT_DIR = None
@@ -33,7 +33,7 @@ def get_nfs_cache_root_dir():
             nfs_enabled = False
         else:
             nfs_enabled = spark_sess and (
-                spark_sess.conf.get("spark.databricks.mlflow.nfs.enabled", "true").lower() == "true"
+                spark_sess.conf.get("spark.databricks.qcflow.nfs.enabled", "true").lower() == "true"
             )
         if nfs_enabled:
             try:
@@ -59,4 +59,4 @@ def get_nfs_cache_root_dir():
             # Remote spark connect client can't access Databricks Serverless cluster NFS.
             return None
         if spark_session is not None:
-            return spark_session.conf.get("spark.mlflow.nfs.rootDir", None)
+            return spark_session.conf.get("spark.qcflow.nfs.rootDir", None)

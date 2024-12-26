@@ -1,6 +1,6 @@
 :orphan:
 
-.. _mlflow.openai.messages:
+.. _qcflow.openai.messages:
 
 Supported ``messages`` formats for OpenAI chat completion task
 ==============================================================
@@ -26,11 +26,11 @@ Single variable
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import openai
 
-    with mlflow.start_run():
-        model_info = mlflow.openai.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.openai.log_model(
             artifact_path="model",
             model="gpt-4o-mini",
             task=openai.chat.completions,
@@ -45,7 +45,7 @@ Single variable
             ],
         )
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
     print(model.predict([{"adjective": "funny"}]))
 
 Logged model signature:
@@ -88,11 +88,11 @@ Multiple variables
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import openai
 
-    with mlflow.start_run():
-        model_info = mlflow.openai.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.openai.log_model(
             artifact_path="model",
             model="gpt-4o-mini",
             task=openai.chat.completions,
@@ -107,7 +107,7 @@ Multiple variables
             ],
         )
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
     print(model.predict([{"adjective": "funny", "thing": "vim"}]))
 
 Logged model signature:
@@ -152,8 +152,8 @@ with ``role = user``.
 
 .. code-block:: python
 
-    with mlflow.start_run():
-        model_info = mlflow.openai.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.openai.log_model(
             artifact_path="model",
             model="gpt-4o-mini",
             task=openai.chat.completions,
@@ -165,7 +165,7 @@ with ``role = user``.
             ],
         )
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
     print(model.predict(["Tell me a funny joke."]))
 
 Logged model signature:
@@ -209,17 +209,17 @@ sent to the OpenAI chat completion API as-is with ``role = user``.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import openai
 
-    with mlflow.start_run():
-        model_info = mlflow.openai.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.openai.log_model(
             artifact_path="model",
             model="gpt-4o-mini",
             task=openai.chat.completions,
         )
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
     print(model.predict(["Tell me a funny joke."]))
 
 Logged model signature:

@@ -1,4 +1,4 @@
-🤗 Transformers within MLflow
+🤗 Transformers within QCFlow
 =============================
 
 .. attention::
@@ -6,14 +6,14 @@
     subject to be added as additional functionality is brought to the flavor.
 
 The ``transformers`` model flavor enables logging of
-`transformers models, components, and pipelines <https://huggingface.co/docs/transformers/index>`_ in MLflow format via
-the :py:func:`mlflow.transformers.save_model()` and :py:func:`mlflow.transformers.log_model()` functions. Use of these
-functions also adds the ``python_function`` flavor to the MLflow Models that they produce, allowing the model to be
-interpreted as a generic Python function for inference via :py:func:`mlflow.pyfunc.load_model()`.
-You can also use the :py:func:`mlflow.transformers.load_model()` function to load a saved or logged MLflow
+`transformers models, components, and pipelines <https://huggingface.co/docs/transformers/index>`_ in QCFlow format via
+the :py:func:`qcflow.transformers.save_model()` and :py:func:`qcflow.transformers.log_model()` functions. Use of these
+functions also adds the ``python_function`` flavor to the QCFlow Models that they produce, allowing the model to be
+interpreted as a generic Python function for inference via :py:func:`qcflow.pyfunc.load_model()`.
+You can also use the :py:func:`qcflow.transformers.load_model()` function to load a saved or logged QCFlow
 Model with the ``transformers`` flavor in the native transformers formats.
 
-This page explains the detailed features and configurations of the MLflow ``transformers`` flavor. For the general introduction about the MLflow's Transformer integration, please refer to the `MLflow Transformers Flavor <../index.html>`_ page.
+This page explains the detailed features and configurations of the QCFlow ``transformers`` flavor. For the general introduction about the QCFlow's Transformer integration, please refer to the `QCFlow Transformers Flavor <../index.html>`_ page.
 
 .. contents:: Table of Contents
   :local:
@@ -45,9 +45,9 @@ to formats that are compatible with json serialization and casting to Pandas Dat
 
     In the current version, audio and text-based large language
     models are supported for use with ``pyfunc``, while computer vision, multi-modal, timeseries,
-    reinforcement learning, and graph models are only supported for native type loading via :py:func:`mlflow.transformers.load_model()`
+    reinforcement learning, and graph models are only supported for native type loading via :py:func:`qcflow.transformers.load_model()`
 
-    Future releases of MLflow will introduce ``pyfunc`` support for these additional types.
+    Future releases of QCFlow will introduce ``pyfunc`` support for these additional types.
 
 The table below shows the mapping of ``transformers`` pipeline types to the :ref:`python_function (pyfunc) model flavor <pyfunc-model-flavor>`
 data type inputs and outputs.
@@ -55,11 +55,11 @@ data type inputs and outputs.
 .. important::
     The inputs and outputs of the ``pyfunc`` implementation of these pipelines *are not guaranteed to match* the input types and output types that would
     return from a native use of a given pipeline type. If your use case requires access to scores, top_k results, or other additional references within
-    the output from a pipeline inference call, please use the native implementation by loading via :py:func:`mlflow.transformers.load_model()` to
+    the output from a pipeline inference call, please use the native implementation by loading via :py:func:`qcflow.transformers.load_model()` to
     receive the full output.
 
     Similarly, if your use case requires the use of raw tensor outputs or processing of outputs through an external ``processor`` module, load the
-    model components directly as a ``dict`` by calling :py:func:`mlflow.transformers.load_model()` and specify the ``return_type`` argument as 'components'.
+    model components directly as a ``dict`` by calling :py:func:`qcflow.transformers.load_model()` and specify the ``return_type`` argument as 'components'.
 
 
 ================================= ============================== ==========================================================================
@@ -93,33 +93,33 @@ expected input to the model to ensure your inference request can be read properl
 \**** The mask syntax for the model that you've chosen is going to be specific to that model's implementation. Some are '[MASK]', while others are '<mask>'. Verify the expected syntax to
 avoid failed inference requests.
 
-\***** If using `pyfunc` in MLflow Model Serving for realtime inference, the raw audio in bytes format must be base64 encoded prior to submitting to the endpoint. String inputs will be interpreted as uri locations.
+\***** If using `pyfunc` in QCFlow Model Serving for realtime inference, the raw audio in bytes format must be base64 encoded prior to submitting to the endpoint. String inputs will be interpreted as uri locations.
 
 Example of loading a transformers model as a python function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the below example, a simple pre-trained model is used within a pipeline. After logging to MLflow, the pipeline is
+In the below example, a simple pre-trained model is used within a pipeline. After logging to QCFlow, the pipeline is
 loaded as a ``pyfunc`` and used to generate a response from a passed-in list of strings.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import transformers
 
     # Read a pre-trained conversation pipeline from HuggingFace hub
     conversational_pipeline = transformers.pipeline(model="microsoft/DialoGPT-medium")
 
     # Define the signature
-    signature = mlflow.models.infer_signature(
+    signature = qcflow.models.infer_signature(
         "Hi there, chatbot!",
-        mlflow.transformers.generate_signature_output(
+        qcflow.transformers.generate_signature_output(
             conversational_pipeline, "Hi there, chatbot!"
         ),
     )
 
     # Log the pipeline
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             transformers_model=conversational_pipeline,
             artifact_path="chatbot",
             task="conversational",
@@ -128,7 +128,7 @@ loaded as a ``pyfunc`` and used to generate a response from a passed-in list of 
         )
 
     # Load the saved pipeline as pyfunc
-    chatbot = mlflow.pyfunc.load_model(model_uri=model_info.model_uri)
+    chatbot = qcflow.pyfunc.load_model(model_uri=model_info.model_uri)
 
     # Ask the chatbot a question
     response = chatbot.predict("What is machine learning?")
@@ -143,9 +143,9 @@ Saving Prompt Templates with Transformer Pipelines
 
 .. note::
 
-    This feature is only available in MLflow 2.10.0 and above.
+    This feature is only available in QCFlow 2.10.0 and above.
 
-MLflow supports specifying prompt templates for certain pipeline types:
+QCFlow supports specifying prompt templates for certain pipeline types:
 
 - `feature-extraction <https://huggingface.co/transformers/main_classes/pipelines.html#transformers.FeatureExtractionPipeline>`_
 - `fill-mask <https://huggingface.co/transformers/main_classes/pipelines.html#transformers.FillMaskPipeline>`_
@@ -154,14 +154,14 @@ MLflow supports specifying prompt templates for certain pipeline types:
 - `text-generation <https://huggingface.co/transformers/main_classes/pipelines.html#transformers.TextGenerationPipeline>`_
 
 Prompt templates are strings that are used to format user inputs prior to ``pyfunc`` inference. To specify a prompt template,
-use the ``prompt_template`` argument when calling :py:func:`mlflow.transformers.save_model()` or :py:func:`mlflow.transformers.log_model()`.
+use the ``prompt_template`` argument when calling :py:func:`qcflow.transformers.save_model()` or :py:func:`qcflow.transformers.log_model()`.
 The prompt template must be a string with a single format placeholder, ``{prompt}``. 
 
 For example:
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     from transformers import pipeline
 
     # Initialize a pipeline. `distilgpt2` uses a "text-generation" pipeline
@@ -171,26 +171,26 @@ For example:
     prompt_template = "Answer the following question: {prompt}"
 
     # Save the model
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=generator,
         path="path/to/model",
         prompt_template=prompt_template,
     )
 
-When the model is then loaded with :py:func:`mlflow.pyfunc.load_model()`, the prompt
+When the model is then loaded with :py:func:`qcflow.pyfunc.load_model()`, the prompt
 template will be used to format user inputs before passing them into the pipeline:
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
     # Load the model with pyfunc
-    model = mlflow.pyfunc.load_model("path/to/model")
+    model = qcflow.pyfunc.load_model("path/to/model")
 
     # The prompt template will be used to format this input, so the
     # string that is passed to the text-generation pipeline will be:
-    # "Answer the following question: What is MLflow?"
-    model.predict("What is MLflow?")
+    # "Answer the following question: What is QCFlow?"
+    model.predict("What is QCFlow?")
 
 .. note::
 
@@ -230,9 +230,9 @@ params that may be needed to compute the predictions for their specific samples.
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.models import infer_signature
-    from mlflow.transformers import generate_signature_output
+    import qcflow
+    from qcflow.models import infer_signature
+    from qcflow.transformers import generate_signature_output
     import transformers
 
     architecture = "mrm8488/t5-base-finetuned-common_gen"
@@ -258,19 +258,19 @@ params that may be needed to compute the predictions for their specific samples.
     }
 
     # Saving model_config with the model
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         model,
         path="text2text",
         model_config=model_config,
         signature=signature,
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model("text2text")
+    pyfunc_loaded = qcflow.pyfunc.load_model("text2text")
     # model_config will be applied
     result = pyfunc_loaded.predict(data)
 
     # overriding some inference configuration with diferent values
-    pyfunc_loaded = mlflow.pyfunc.load_model(
+    pyfunc_loaded = qcflow.pyfunc.load_model(
         "text2text", model_config=dict(do_sample=False)
     )
 
@@ -282,9 +282,9 @@ params that may be needed to compute the predictions for their specific samples.
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.models import infer_signature
-    from mlflow.transformers import generate_signature_output
+    import qcflow
+    from qcflow.models import infer_signature
+    from qcflow.transformers import generate_signature_output
     import transformers
 
     architecture = "mrm8488/t5-base-finetuned-common_gen"
@@ -315,14 +315,14 @@ params that may be needed to compute the predictions for their specific samples.
     )
 
     # Saving model with signature and model config
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         model,
         path="text2text",
         model_config=model_config,
         signature=signature_with_params,
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model("text2text")
+    pyfunc_loaded = qcflow.pyfunc.load_model("text2text")
 
     # Pass params at inference time
     params = {
@@ -359,14 +359,14 @@ and postprocessing work involved in using the models.
 
 For example, a text classification pipeline would handle the tokenization of text, passing the tokens through a model, and then interpret the logits to produce a human-readable classification.
 
-When logging a pipeline with MLflow, you're essentially saving this high-level abstraction, which can be loaded and used directly 
+When logging a pipeline with QCFlow, you're essentially saving this high-level abstraction, which can be loaded and used directly 
 for inference with minimal setup. This is ideal for end-to-end tasks where the preprocessing and postprocessing steps are standard 
 for the task at hand.
 
 **Components**
 
 Components refer to the individual parts that can make up a pipeline, such as the model itself, the tokenizer, and any additional 
-processors, extractors, or configuration needed for a specific task. Logging components with MLflow allows for more flexibility and 
+processors, extractors, or configuration needed for a specific task. Logging components with QCFlow allows for more flexibility and 
 customization. You can log individual components when your project needs to have more control over the preprocessing and postprocessing 
 steps or when you need to access the individual components in a bespoke manner that diverges from how the pipeline abstraction would call them.
 
@@ -375,7 +375,7 @@ to the model outputs. When loading the components, you can then reconstruct the 
 individually as needed.
 
 .. note::
-    MLflow by default uses a 500 MB `max_shard_size` to save the model object in :py:func:`mlflow.transformers.save_model()` or :py:func:`mlflow.transformers.log_model()` APIs. You can use the environment variable `MLFLOW_HUGGINGFACE_MODEL_MAX_SHARD_SIZE` to override the value.
+    QCFlow by default uses a 500 MB `max_shard_size` to save the model object in :py:func:`qcflow.transformers.save_model()` or :py:func:`qcflow.transformers.log_model()` APIs. You can use the environment variable `QCFLOW_HUGGINGFACE_MODEL_MAX_SHARD_SIZE` to override the value.
 
 .. note::
     For component-based logging, the only requirement that must be met in the submitted ``dict`` is that a model is provided. All other elements of the ``dict`` are optional.
@@ -385,7 +385,7 @@ Logging a components-based model
 
 The example below shows logging components of a ``transformers`` model via a dictionary mapping of specific named components. The names of the keys within the submitted dictionary
 must be in the set: ``{"model", "tokenizer", "feature_extractor", "image_processor"}``. Processor type objects (some image processors, audio processors, and multi-modal processors)
-must be saved explicitly with the ``processor`` argument in the :py:func:`mlflow.transformers.save_model()` or :py:func:`mlflow.transformers.log_model()` APIs.
+must be saved explicitly with the ``processor`` argument in the :py:func:`qcflow.transformers.save_model()` or :py:func:`qcflow.transformers.log_model()` APIs.
 
 After logging, the components are automatically inserted into the appropriate ``Pipeline`` type for the task being performed and are returned, ready for inference.
 
@@ -394,12 +394,12 @@ After logging, the components are automatically inserted into the appropriate ``
 
 .. attention::
     Not all model types are compatible with the pipeline API constructor via component elements. Incompatible models will raise an
-    ``MLflowException`` error stating that the model is missing the `name_or_path` attribute. In
+    ``QCFlowException`` error stating that the model is missing the `name_or_path` attribute. In
     the event that this occurs, please construct the model directly via the ``transformers.pipeline(<repo name>)`` API and save the pipeline object directly.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import transformers
 
     task = "text-classification"
@@ -411,22 +411,22 @@ After logging, the components are automatically inserted into the appropriate ``
     transformers_model = {"model": model, "tokenizer": tokenizer}
 
     # Log the model components
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             transformers_model=transformers_model,
             artifact_path="text_classifier",
             task=task,
         )
 
     # Load the components as a pipeline
-    loaded_pipeline = mlflow.transformers.load_model(
+    loaded_pipeline = qcflow.transformers.load_model(
         model_info.model_uri, return_type="pipeline"
     )
 
     print(type(loaded_pipeline).__name__)
     # >> TextClassificationPipeline
 
-    loaded_pipeline(["MLflow is awesome!", "Transformers is a great library!"])
+    loaded_pipeline(["QCFlow is awesome!", "Transformers is a great library!"])
 
     # >> [{'label': 'POSITIVE', 'score': 0.9998478889465332},
     # >>  {'label': 'POSITIVE', 'score': 0.9998030066490173}]
@@ -441,7 +441,7 @@ where pre / post-processing is performed on containers that do not house the mod
 .. code-block:: python
 
     import transformers
-    import mlflow
+    import qcflow
 
     translation_pipeline = transformers.pipeline(
         task="translation_en_to_fr",
@@ -451,13 +451,13 @@ where pre / post-processing is performed on containers that do not house the mod
         ),
     )
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             transformers_model=translation_pipeline,
             artifact_path="french_translator",
         )
 
-    translation_components = mlflow.transformers.load_model(
+    translation_components = qcflow.transformers.load_model(
         model_info.model_uri, return_type="components"
     )
 
@@ -468,11 +468,11 @@ where pre / post-processing is performed on containers that do not house the mod
     # >> model -> T5ForConditionalGeneration
     # >> tokenizer -> T5TokenizerFast
 
-    response = translation_pipeline("MLflow is great!")
+    response = translation_pipeline("QCFlow is great!")
 
     print(response)
 
-    # >> [{'translation_text': 'MLflow est formidable!'}]
+    # >> [{'translation_text': 'QCFlow est formidable!'}]
 
     reconstructed_pipeline = transformers.pipeline(**translation_components)
 
@@ -503,14 +503,14 @@ or, in the event that license information was never submitted to the huggingface
 in order to determine what restrictions exist regarding the use of the model.
 
 .. note::
-  Model license information was introduced in **MLflow 2.10.0**. Previous versions do not include license information for models.
+  Model license information was introduced in **QCFlow 2.10.0**. Previous versions do not include license information for models.
 
 Automatic Signature inference
 -----------------------------
 
 For pipelines that support ``pyfunc``, there are 3 means of attaching a model signature to the ``MLmodel`` file.
 
-* Provide a model signature explicitly via setting a valid ``ModelSignature`` to the ``signature`` attribute. This can be generated via the helper utility :py:func:`mlflow.transformers.generate_signature_output()`
+* Provide a model signature explicitly via setting a valid ``ModelSignature`` to the ``signature`` attribute. This can be generated via the helper utility :py:func:`qcflow.transformers.generate_signature_output()`
 
 * Provide an ``input_example``. The signature will be inferred and validated that it matches the appropriate input type. The output type will be validated by performing inference automatically (if the model is a ``pyfunc`` supported type).
 
@@ -536,7 +536,7 @@ Example:
 
     import transformers
     import torch
-    import mlflow
+    import qcflow
 
     task = "translation_en_to_fr"
 
@@ -549,8 +549,8 @@ Example:
         framework="pt",
     )
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             transformers_model=my_pipeline,
             artifact_path="my_pipeline",
             torch_dtype=torch.bfloat16,
@@ -585,7 +585,7 @@ Example:
 
     import transformers
     import torch
-    import mlflow
+    import qcflow
 
     task = "translation_en_to_fr"
 
@@ -598,14 +598,14 @@ Example:
         framework="pt",
     )
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             transformers_model=my_pipeline,
             artifact_path="my_pipeline",
             torch_dtype=torch.bfloat16,
         )
 
-    loaded_pipeline = mlflow.transformers.load_model(
+    loaded_pipeline = qcflow.transformers.load_model(
         model_info.model_uri, return_type="pipeline", torch_dtype=torch.float64
     )
 
@@ -618,8 +618,8 @@ Result:
 
     torch.float64
 
-.. note:: MLflow 2.12.1 slightly changed the ``torch_dtype`` extraction logic.
-    Previously it depended on the ``torch_dtype`` attribute of the pipeline instance, but now it is extracted from the underlying model via ``dtype`` property. This enables MLflow to capture the dtype change of the model after pipeline instantiation.
+.. note:: QCFlow 2.12.1 slightly changed the ``torch_dtype`` extraction logic.
+    Previously it depended on the ``torch_dtype`` attribute of the pipeline instance, but now it is extracted from the underlying model via ``dtype`` property. This enables QCFlow to capture the dtype change of the model after pipeline instantiation.
 
 
 .. note:: Logging or saving a model in 'components' mode (using a dictionary to declare components) does not support setting the data type for a constructed pipeline.
@@ -646,22 +646,22 @@ data in ``Spark`` ``DataFrames``. Ensure that you have ``ffmpeg`` installed in t
 to use ``str`` input uri-based inference. If this package is not properly installed (both from ``pypi`` and from the ``ffmpeg`` binaries), an Exception
 will be thrown at inference time.
 
-.. warning:: If using a uri (`str`) as an input type for a `pyfunc` model that you are intending to host for realtime inference through the `MLflow Model Server`,
+.. warning:: If using a uri (`str`) as an input type for a `pyfunc` model that you are intending to host for realtime inference through the `QCFlow Model Server`,
     you *must* specify a custom model signature when logging or saving the model.
-    The default signature input value type of ``bytes`` will, in `MLflow Model serving`, force the conversion of the uri string to ``bytes``, which will cause an Exception
+    The default signature input value type of ``bytes`` will, in `QCFlow Model serving`, force the conversion of the uri string to ``bytes``, which will cause an Exception
     to be thrown from the serving process stating that the soundfile is corrupt.
 
 An example of specifying an appropriate uri-based input model signature for an audio model is shown below:
 
 .. code-block:: python
 
-    from mlflow.models import infer_signature
-    from mlflow.transformers import generate_signature_output
+    from qcflow.models import infer_signature
+    from qcflow.transformers import generate_signature_output
 
     url = "https://www.mywebsite.com/sound/files/for/transcription/file111.mp3"
     signature = infer_signature(url, generate_signature_output(my_audio_pipeline, url))
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             transformers_model=my_audio_pipeline,
             artifact_path="my_transcriber",
             signature=signature,
@@ -686,14 +686,14 @@ This input format requires that both the bitrate has been set prior to conversio
     or the other as an allowed input type.
 
 
-PEFT Models in MLflow Transformers flavor
+PEFT Models in QCFlow Transformers flavor
 -----------------------------------------
 
 .. warning::
 
 
-    The PEFT model is supported in MLflow 2.11.0 and above and is still in the experimental stage. The API and behavior may change in future releases. Moreover, the `PEFT <https://huggingface.co/docs/peft/en/index>`_ library is under active development, so not all features
-    and adapter types might be supported in MLflow.
+    The PEFT model is supported in QCFlow 2.11.0 and above and is still in the experimental stage. The API and behavior may change in future releases. Moreover, the `PEFT <https://huggingface.co/docs/peft/en/index>`_ library is under active development, so not all features
+    and adapter types might be supported in QCFlow.
 
 `PEFT <https://huggingface.co/docs/peft/en/index>`_ is a library developed by HuggingFace🤗, that provides various optimization methods for pretrained models available on the HuggingFace Hub. With PEFT, you can easily apply various optimization techniques like LoRA and QLoRA to reduce the cost of fine-tuning Transformers models.
 
@@ -709,11 +709,11 @@ By using PEFT, you can apply LoRA to your Transformers model with only a few lin
     peft_model = get_peft_model(base_model, lora_config)
 
 
-In MLflow 2.11.0, we introduced support for tracking PEFT models in the MLflow Transformers flavor. You can log and load PEFT models using the same APIs as other Transformers models, such as :py:func:`mlflow.transformers.log_model()` and :py:func:`mlflow.transformers.load_model()`.
+In QCFlow 2.11.0, we introduced support for tracking PEFT models in the QCFlow Transformers flavor. You can log and load PEFT models using the same APIs as other Transformers models, such as :py:func:`qcflow.transformers.log_model()` and :py:func:`qcflow.transformers.load_model()`.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     from peft import LoraConfig, get_peft_model
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -724,12 +724,12 @@ In MLflow 2.11.0, we introduced support for tracking PEFT models in the MLflow T
     peft_config = LoraConfig(...)
     peft_model = get_peft_model(base_model, peft_config)
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         # Your training code here
         ...
 
         # Log the PEFT model
-        model_info = mlflow.transformers.log_model(
+        model_info = qcflow.transformers.log_model(
             transformers_model={
                 "model": peft_model,
                 "tokenizer": tokenizer,
@@ -738,22 +738,22 @@ In MLflow 2.11.0, we introduced support for tracking PEFT models in the MLflow T
         )
 
     # Load the PEFT model
-    loaded_model = mlflow.transformers.load_model(model_info.model_uri)
+    loaded_model = qcflow.transformers.load_model(model_info.model_uri)
 
-PEFT Models in MLflow Tutorial
+PEFT Models in QCFlow Tutorial
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Check out the tutorial `Fine-Tuning Open-Source LLM using QLoRA with MLflow and PEFT <../tutorials/fine-tuning/transformers-peft.html>`_ for a more in-depth guide on how to use PEFT with MLflow,
+Check out the tutorial `Fine-Tuning Open-Source LLM using QLoRA with QCFlow and PEFT <../tutorials/fine-tuning/transformers-peft.html>`_ for a more in-depth guide on how to use PEFT with QCFlow,
 
 Format of Saved PEFT Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-When saving PEFT models, MLflow only saves the PEFT adapter and the configuration, but not the base model's weights. This is the same behavior as the Transformer's `save_pretrained() <https://huggingface.co/docs/transformers/v4.38.1/en/main_classes/model#transformers.PreTrainedModel.save_pretrained>`_ method and is highly efficient in terms of storage space and logging latency. One difference is that MLflow will also save the HuggingFace Hub repository name and version for the base model in the model metadata, so that it can load the same base model when loading the PEFT model. Concretely, the following artifacts are saved in MLflow for PEFT models:
+When saving PEFT models, QCFlow only saves the PEFT adapter and the configuration, but not the base model's weights. This is the same behavior as the Transformer's `save_pretrained() <https://huggingface.co/docs/transformers/v4.38.1/en/main_classes/model#transformers.PreTrainedModel.save_pretrained>`_ method and is highly efficient in terms of storage space and logging latency. One difference is that QCFlow will also save the HuggingFace Hub repository name and version for the base model in the model metadata, so that it can load the same base model when loading the PEFT model. Concretely, the following artifacts are saved in QCFlow for PEFT models:
 
 * The PEFT adapter weight under the ``/peft`` directory.
 * The PEFT configuration as a JSON file under the ``/peft`` directory.
 * The HuggingFace Hub repository name and commit hash for the base model in the ``MLModel`` metadata file.
 
-Limitations of PEFT Models in MLflow
+Limitations of PEFT Models in QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Since the model saving/loading behavior for PEFT models is similar to that of ``save_pretrained=False``, :ref:`the same caveats <caveats-of-save-pretrained>` apply to PEFT models. For example, the base model weight may be deleted or become private in the HuggingFace Hub, and PEFT models cannot be registered to the legacy Databricks Workspace Model Registry.
 
-To save the base model weight for PEFT models, you can use the :py:func:`mlflow.transformers.persist_pretrained_model()` API. This will download the base model weight from the HuggingFace Hub and save it to the artifact location, updating the metadata of the given PEFT model. Please refer to :ref:`this section <persist-pretrained-guide>` for the detailed usage of this API.
+To save the base model weight for PEFT models, you can use the :py:func:`qcflow.transformers.persist_pretrained_model()` API. This will download the base model weight from the HuggingFace Hub and save it to the artifact location, updating the metadata of the given PEFT model. Please refer to :ref:`this section <persist-pretrained-guide>` for the detailed usage of this API.

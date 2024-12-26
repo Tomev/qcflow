@@ -1,21 +1,21 @@
 """
-The ``mlflow.spark`` module provides an API for logging and loading Spark MLlib models. This module
+The ``qcflow.spark`` module provides an API for logging and loading Spark MLlib models. This module
 exports Spark MLlib models with the following flavors:
 
 Spark MLlib (native) format
     Allows models to be loaded as Spark Transformers for scoring in a Spark session.
     Models with this flavor can be loaded as PySpark PipelineModel objects in Python.
     This is the main flavor and is always produced.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Supports deployment outside of Spark by instantiating a SparkContext and reading
     input data as a Spark DataFrame prior to scoring. Also supports deployment in Spark
     as a Spark UDF. Models with this flavor can be loaded as Python functions
     for performing inference. This flavor is always produced.
-:py:mod:`mlflow.mleap`
+:py:mod:`qcflow.mleap`
     Enables high-performance deployment outside of Spark by leveraging MLeap's
     custom dataframe and pipeline representations. Models with this flavor *cannot* be loaded
     back as Python objects. Rather, they must be deserialized in Java using the
-    ``mlflow/java`` package. This flavor is produced only if you specify
+    ``qcflow/java`` package. This flavor is produced only if you specify
     MLeap-compatible arguments.
 """
 
@@ -29,50 +29,50 @@ from typing import Any, Optional
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import environment_variables, mleap, pyfunc
-from mlflow.environment_variables import MLFLOW_DFS_TMP
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _LOG_MODEL_INFER_SIGNATURE_WARNING_TEMPLATE
-from mlflow.models.utils import _Example, _save_example
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.artifact.databricks_artifact_repo import DatabricksArtifactRepository
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import (
+import qcflow
+from qcflow import environment_variables, mleap, pyfunc
+from qcflow.environment_variables import QCFLOW_DFS_TMP
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _LOG_MODEL_INFER_SIGNATURE_WARNING_TEMPLATE
+from qcflow.models.utils import _Example, _save_example
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.artifact.databricks_artifact_repo import DatabricksArtifactRepository
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import (
     _download_artifact_from_uri,
     _get_root_uri_and_artifact_path,
 )
-from mlflow.types.schema import SparkMLVector
-from mlflow.utils import _get_fully_qualified_class_name, databricks_utils
-from mlflow.utils.autologging_utils import autologging_integration, safe_patch
-from mlflow.utils.class_utils import _get_class_from_string
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.types.schema import SparkMLVector
+from qcflow.utils import _get_fully_qualified_class_name, databricks_utils
+from qcflow.utils.autologging_utils import autologging_integration, safe_patch
+from qcflow.utils.class_utils import _get_class_from_string
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import (
+from qcflow.utils.file_utils import (
     TempDir,
     get_total_file_size,
     shutil_copytree_without_file_permissions,
     write_to,
 )
-from mlflow.utils.model_utils import (
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration_from_uri,
     _validate_and_copy_code_paths,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
-from mlflow.utils.uri import (
+from qcflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.uri import (
     append_to_uri_path,
     dbfs_hdfs_uri_to_fuse_path,
     generate_tmp_dfs_path,
@@ -85,7 +85,7 @@ from mlflow.utils.uri import (
 FLAVOR_NAME = "spark"
 
 _SPARK_MODEL_PATH_SUB = "sparkml"
-_MLFLOWDBFS_SCHEME = "mlflowdbfs"
+_QCFLOWDBFS_SCHEME = "qcflowdbfs"
 
 
 _logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements(is_spark_connect_model=False):
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -126,7 +126,7 @@ def get_default_pip_requirements(is_spark_connect_model=False):
 def get_default_conda_env(is_spark_connect_model=False):
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`. This Conda environment
         contains the current version of PySpark that is installed on the caller's
         system. ``dev`` versions of PySpark are replaced with stable versions in
@@ -134,7 +134,7 @@ def get_default_conda_env(is_spark_connect_model=False):
         ``2.4.5.dev0``, invoking this method produces a Conda environment with a
         dependency on PySpark version ``2.4.5``).
     """
-    return _mlflow_conda_env(
+    return _qcflow_conda_env(
         additional_pip_deps=get_default_pip_requirements(
             is_spark_connect_model=is_spark_connect_model
         )
@@ -158,18 +158,18 @@ def log_model(
     metadata=None,
 ):
     """
-    Log a Spark MLlib model as an MLflow artifact for the current run. This uses the
-    MLlib persistence format and produces an MLflow Model with the Spark flavor.
+    Log a Spark MLlib model as an QCFlow artifact for the current run. This uses the
+    MLlib persistence format and produces an QCFlow Model with the Spark flavor.
 
     Note: If no run is active, it will instantiate a run to obtain a run_id.
 
     Args:
-        spark_model: Spark model to be saved - MLflow can only save descendants of
+        spark_model: Spark model to be saved - QCFlow can only save descendants of
             pyspark.ml.Model or pyspark.ml.Transformer which implement
             MLReadable and MLWritable.
 
                 .. Note:: The provided Spark model's `transform` method must generate one column
-                    named with "prediction", the column is used as MLflow pyfunc model output.
+                    named with "prediction", the column is used as QCFlow pyfunc model output.
                     Most Spark models generate the output column with "prediction" name that
                     contains prediction labels by default.
                     To set probability column as the output column for probabilistic
@@ -184,7 +184,7 @@ def log_model(
                         destination and then copied into the model's artifact directory. This is
                         necessary as Spark ML models read from and write to DFS if running on a
                         cluster. If this operation completes successfully, all temporary files
-                        created on the DFS are removed. Defaults to ``/tmp/mlflow``.
+                        created on the DFS are removed. Defaults to ``/tmp/qcflow``.
                         For models defined in `pyspark.ml.connect` module, this param is ignored.
         sample_input: A sample input used to add the MLeap flavor to the model.
             This must be a PySpark DataFrame that the model can evaluate. If
@@ -194,25 +194,25 @@ def log_model(
             with the given name does not exist.
         signature: A Model Signature object that describes the input and output Schema of the
             model. The model signature can be inferred using `infer_signature` function
-            of `mlflow.models.signature`.
+            of `qcflow.models.signature`.
             Note if your Spark model contains Spark ML vector type input or output column,
             you should create ``SparkMLVector`` vector type for the column,
             `infer_signature` function can also infer ``SparkMLVector`` vector type correctly
             from Spark Dataframe input / output.
-            When loading a Spark ML model with ``SparkMLVector`` vector type input as MLflow
-            pyfunc model, it accepts ``Array[double]`` type input. MLflow internally converts
+            When loading a Spark ML model with ``SparkMLVector`` vector type input as QCFlow
+            pyfunc model, it accepts ``Array[double]`` type input. QCFlow internally converts
             the array into Spark ML vector and then invoke Spark model for inference. Similarly,
-            if the model has vector type output, MLflow internally converts Spark ML vector
+            if the model has vector type output, QCFlow internally converts Spark ML vector
             output data into ``Array[double]`` type inference result.
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
                 from pyspark.sql.functions import col
                 from pyspark.ml.classification import LogisticRegression
                 from pyspark.ml.functions import array_to_vector
                 import pandas as pd
-                import mlflow
+                import qcflow
 
                 train_df = spark.createDataFrame(
                     [([3.0, 4.0], 0), ([5.0, 6.0], 1)], schema="features array<double>, label long"
@@ -226,8 +226,8 @@ def log_model(
 
                 signature = infer_signature(test_df, prediction_df)
 
-                with mlflow.start_run() as run:
-                    model_info = mlflow.spark.log_model(
+                with qcflow.start_run() as run:
+                    model_info = qcflow.spark.log_model(
                         lor_model,
                         "model",
                         signature=signature,
@@ -240,7 +240,7 @@ def log_model(
                 #   ['prediction': SparkML vector (required)]
                 print(model_info.signature)
 
-                loaded = mlflow.pyfunc.load_model(model_info.model_uri)
+                loaded = qcflow.pyfunc.load_model(model_info.model_uri)
 
                 test_dataset = pd.DataFrame({"features": [[1.0, 2.0]]})
 
@@ -257,7 +257,7 @@ def log_model(
         metadata: {{ metadata }}
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
@@ -281,7 +281,7 @@ def log_model(
         lr = LogisticRegression(maxIter=10, regParam=0.001)
         pipeline = Pipeline(stages=[tokenizer, hashingTF, lr])
         model = pipeline.fit(training)
-        mlflow.spark.log_model(model, "spark-model")
+        qcflow.spark.log_model(model, "spark-model")
     """
     _validate_model(spark_model)
     from pyspark.ml import PipelineModel
@@ -289,7 +289,7 @@ def log_model(
     if _is_spark_connect_model(spark_model):
         return Model.log(
             artifact_path=artifact_path,
-            flavor=mlflow.spark,
+            flavor=qcflow.spark,
             spark_model=spark_model,
             conda_env=conda_env,
             code_paths=code_paths,
@@ -305,21 +305,21 @@ def log_model(
 
     if not isinstance(spark_model, PipelineModel):
         spark_model = PipelineModel([spark_model])
-    run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
-    run_root_artifact_uri = mlflow.get_artifact_uri()
+    run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
+    run_root_artifact_uri = qcflow.get_artifact_uri()
     remote_model_path = None
-    if _should_use_mlflowdbfs(run_root_artifact_uri):
+    if _should_use_qcflowdbfs(run_root_artifact_uri):
         remote_model_path = append_to_uri_path(
             run_root_artifact_uri, artifact_path, _SPARK_MODEL_PATH_SUB
         )
-        mlflowdbfs_path = _mlflowdbfs_path(run_id, artifact_path)
+        qcflowdbfs_path = _qcflowdbfs_path(run_id, artifact_path)
         with databricks_utils.MlflowCredentialContext(
             get_databricks_profile_uri_from_artifact_uri(run_root_artifact_uri)
         ):
             try:
-                spark_model.save(mlflowdbfs_path)
+                spark_model.save(qcflowdbfs_path)
             except Exception as e:
-                raise MlflowException("failed to save spark model via mlflowdbfs") from e
+                raise MlflowException("failed to save spark model via qcflowdbfs") from e
 
     # If the artifact URI is a local filesystem path, defer to Model.log() to persist the model,
     # since Spark may not be able to write directly to the driver's filesystem. For example,
@@ -333,7 +333,7 @@ def log_model(
     ):
         return Model.log(
             artifact_path=artifact_path,
-            flavor=mlflow.spark,
+            flavor=qcflow.spark,
             spark_model=spark_model,
             conda_env=conda_env,
             code_paths=code_paths,
@@ -348,13 +348,13 @@ def log_model(
             metadata=metadata,
         )
     # Otherwise, override the default model log behavior and save model directly to artifact repo
-    mlflow_model = Model(artifact_path=artifact_path, run_id=run_id)
+    qcflow_model = Model(artifact_path=artifact_path, run_id=run_id)
     with TempDir() as tmp:
         tmp_model_metadata_dir = tmp.path()
         _save_model_metadata(
             tmp_model_metadata_dir,
             spark_model,
-            mlflow_model,
+            qcflow_model,
             sample_input,
             conda_env,
             code_paths,
@@ -364,25 +364,25 @@ def log_model(
             extra_pip_requirements=extra_pip_requirements,
             remote_model_path=remote_model_path,
         )
-        mlflow.tracking.fluent.log_artifacts(tmp_model_metadata_dir, artifact_path)
-        mlflow.tracking.fluent._record_logged_model(mlflow_model)
+        qcflow.tracking.fluent.log_artifacts(tmp_model_metadata_dir, artifact_path)
+        qcflow.tracking.fluent._record_logged_model(qcflow_model)
         if registered_model_name is not None:
-            mlflow.register_model(
+            qcflow.register_model(
                 f"runs:/{run_id}/{artifact_path}",
                 registered_model_name,
                 await_registration_for,
             )
-        return mlflow_model.get_model_info()
+        return qcflow_model.get_model_info()
 
 
-def _mlflowdbfs_path(run_id, artifact_path):
+def _qcflowdbfs_path(run_id, artifact_path):
     if artifact_path.startswith("/"):
         raise MlflowException(
             f"artifact_path should be relative, found: {artifact_path}",
             INVALID_PARAMETER_VALUE,
         )
     return "{}:///artifacts?run_id={}&path=/{}".format(
-        _MLFLOWDBFS_SCHEME, run_id, posixpath.join(artifact_path, _SPARK_MODEL_PATH_SUB)
+        _QCFLOWDBFS_SCHEME, run_id, posixpath.join(artifact_path, _SPARK_MODEL_PATH_SUB)
     )
 
 
@@ -401,7 +401,7 @@ class _HadoopFileSystem:
     Interface to org.apache.hadoop.fs.FileSystem.
 
     Spark ML models expect to read from and write to Hadoop FileSystem when running on a cluster.
-    Since MLflow works on local directories, we need this interface to copy the files between
+    Since QCFlow works on local directories, we need this interface to copy the files between
     the current DFS and local dir.
     """
 
@@ -514,54 +514,54 @@ class _HadoopFileSystem:
         return scheme in [stats.getScheme() for stats in cls._stats().iterator()]
 
 
-def _should_use_mlflowdbfs(root_uri):
-    # The `mlflowdbfs` scheme does not appear in the available schemes returned from
+def _should_use_qcflowdbfs(root_uri):
+    # The `qcflowdbfs` scheme does not appear in the available schemes returned from
     # the Hadoop FileSystem API until a read call has been issued.
-    from mlflow.utils._spark_utils import _get_active_spark_session
+    from qcflow.utils._spark_utils import _get_active_spark_session
 
     if (
         not is_valid_dbfs_uri(root_uri)
         or not is_databricks_acled_artifacts_uri(root_uri)
         or not databricks_utils.is_in_databricks_runtime()
-        or (environment_variables._DISABLE_MLFLOWDBFS.get() or "").lower() == "true"
+        or (environment_variables._DISABLE_QCFLOWDBFS.get() or "").lower() == "true"
     ):
         return False
 
     try:
         databricks_utils._get_dbutils()
     except Exception:
-        # If dbutils is unavailable, indicate that mlflowdbfs is unavailable
-        # because usage of mlflowdbfs depends on dbutils
+        # If dbutils is unavailable, indicate that qcflowdbfs is unavailable
+        # because usage of qcflowdbfs depends on dbutils
         return False
 
-    mlflowdbfs_read_exception_str = None
+    qcflowdbfs_read_exception_str = None
     try:
-        _get_active_spark_session().read.load("mlflowdbfs:///artifact?run_id=foo&path=/bar")
+        _get_active_spark_session().read.load("qcflowdbfs:///artifact?run_id=foo&path=/bar")
     except Exception as e:
         # The load invocation is expected to throw an exception.
-        mlflowdbfs_read_exception_str = str(e)
+        qcflowdbfs_read_exception_str = str(e)
 
     try:
-        return _HadoopFileSystem.is_filesystem_available(_MLFLOWDBFS_SCHEME)
+        return _HadoopFileSystem.is_filesystem_available(_QCFLOWDBFS_SCHEME)
     except Exception:
-        # The HDFS filesystem logic used to determine mlflowdbfs availability on Databricks
+        # The HDFS filesystem logic used to determine qcflowdbfs availability on Databricks
         # clusters may not work on certain Databricks cluster types due to unavailability of
         # the _HadoopFileSystem.is_filesystem_available() API. As a temporary workaround,
-        # we check the contents of the expected exception raised by a dummy mlflowdbfs
-        # read for evidence that mlflowdbfs is available. If "MlflowdbfsClient" is present
-        # in the exception contents, we can safely assume that mlflowdbfs is available because
-        # `MlflowdbfsClient` is exclusively used by mlflowdbfs for performing MLflow
+        # we check the contents of the expected exception raised by a dummy qcflowdbfs
+        # read for evidence that qcflowdbfs is available. If "MlflowdbfsClient" is present
+        # in the exception contents, we can safely assume that qcflowdbfs is available because
+        # `MlflowdbfsClient` is exclusively used by qcflowdbfs for performing QCFlow
         # file storage operations
         #
         # TODO: Remove this logic once the _HadoopFileSystem.is_filesystem_available() check
         # below is determined to work on all Databricks cluster types
-        return "MlflowdbfsClient" in (mlflowdbfs_read_exception_str or "")
+        return "MlflowdbfsClient" in (qcflowdbfs_read_exception_str or "")
 
 
 def _save_model_metadata(
     dst_dir,
     spark_model,
-    mlflow_model,
+    qcflow_model,
     sample_input,
     conda_env,
     code_paths,
@@ -573,9 +573,9 @@ def _save_model_metadata(
 ):
     """
     Saves model metadata into the passed-in directory.
-    If mlflowdbfs is not used, the persisted metadata assumes that a model can be
+    If qcflowdbfs is not used, the persisted metadata assumes that a model can be
     loaded from a relative path to the metadata file (currently hard-coded to "sparkml").
-    If mlflowdbfs is used, remote_model_path should be provided, and the model needs to
+    If qcflowdbfs is used, remote_model_path should be provided, and the model needs to
     be loaded from the remote_model_path.
     """
     import pyspark
@@ -583,18 +583,18 @@ def _save_model_metadata(
     is_spark_connect_model = _is_spark_connect_model(spark_model)
     if sample_input is not None and not is_spark_connect_model:
         mleap.add_to_model(
-            mlflow_model=mlflow_model,
+            qcflow_model=qcflow_model,
             path=dst_dir,
             spark_model=spark_model,
             sample_input=sample_input,
         )
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if input_example is not None:
-        _save_example(mlflow_model, input_example, dst_dir)
+        _save_example(qcflow_model, input_example, dst_dir)
 
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, dst_dir)
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         pyspark_version=pyspark.__version__,
         model_data=_SPARK_MODEL_PATH_SUB,
@@ -602,16 +602,16 @@ def _save_model_metadata(
         model_class=_get_fully_qualified_class_name(spark_model),
     )
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.spark",
+        qcflow_model,
+        loader_module="qcflow.spark",
         data=_SPARK_MODEL_PATH_SUB,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
     )
     if size := get_total_file_size(dst_dir):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(dst_dir, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(dst_dir, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
@@ -623,8 +623,8 @@ def _save_model_metadata(
                     "specify the conda_env or pip_requirements when calling log_model()."
                 )
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 remote_model_path or dst_dir,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -670,7 +670,7 @@ def _validate_model(spark_model):
         or not isinstance(spark_model, MLWritable)
     ):
         raise MlflowException(
-            "Cannot serialize this model. MLflow can only save descendants of pyspark.ml.Model "
+            "Cannot serialize this model. QCFlow can only save descendants of pyspark.ml.Model "
             "or pyspark.ml.Transformer that implement MLWritable and MLReadable.",
             INVALID_PARAMETER_VALUE,
         )
@@ -693,7 +693,7 @@ def _is_spark_connect_model(spark_model):
 def save_model(
     spark_model,
     path,
-    mlflow_model=None,
+    qcflow_model=None,
     conda_env=None,
     code_paths=None,
     dfs_tmpdir=None,
@@ -712,11 +712,11 @@ def save_model(
     is also serialized in MLeap format and the MLeap flavor is added.
 
     Args:
-        spark_model: Spark model to be saved - MLflow can only save descendants of
+        spark_model: Spark model to be saved - QCFlow can only save descendants of
             pyspark.ml.Model or pyspark.ml.Transformer which implement
             MLReadable and MLWritable.
         path: Local path where the model is to be saved.
-        mlflow_model: MLflow model config this flavor is being added to.
+        qcflow_model: QCFlow model config this flavor is being added to.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
         dfs_tmpdir: Temporary directory path on Distributed (Hadoop) File System (DFS) or local
@@ -724,11 +724,11 @@ def save_model(
             destination and then copied to the requested local path. This is necessary
             as Spark ML models read from and write to DFS if running on a cluster. All
             temporary files created on the DFS are removed if this operation
-            completes successfully. Defaults to ``/tmp/mlflow``.
+            completes successfully. Defaults to ``/tmp/qcflow``.
         sample_input: A sample input that is used to add the MLeap flavor to the model.
             This must be a PySpark DataFrame that the model can evaluate. If
             ``sample_input`` is ``None``, the MLeap flavor is not added.
-        signature: See the document of argument ``signature`` in :py:func:`mlflow.spark.log_model`.
+        signature: See the document of argument ``signature`` in :py:func:`qcflow.spark.log_model`.
         input_example: {{ input_example }}
         pip_requirements: {{ pip_requirements }}
         extra_pip_requirements: {{ extra_pip_requirements }}
@@ -737,28 +737,28 @@ def save_model(
     .. code-block:: python
         :caption: Example
 
-        from mlflow import spark
+        from qcflow import spark
         from pyspark.ml.pipeline import PipelineModel
 
         # your pyspark.ml.pipeline.PipelineModel type
         model = ...
-        mlflow.spark.save_model(model, "spark-model")
+        qcflow.spark.save_model(model, "spark-model")
     """
     _validate_model(spark_model)
     _validate_env_arguments(conda_env, pip_requirements, extra_pip_requirements)
 
     from pyspark.ml import PipelineModel
 
-    from mlflow.utils._spark_utils import _get_active_spark_session
+    from qcflow.utils._spark_utils import _get_active_spark_session
 
     is_spark_connect_model = _is_spark_connect_model(spark_model)
 
     if not is_spark_connect_model and not isinstance(spark_model, PipelineModel):
         spark_model = PipelineModel([spark_model])
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     # for automatic signature inference, we use an inline implementation rather than the
     # `_infer_signature_from_input_example` API because we need to convert model predictions from a
@@ -769,11 +769,11 @@ def save_model(
             spark = _get_active_spark_session()
             if spark is not None:
                 input_example_spark_df = spark.createDataFrame(input_ex)
-                signature = mlflow.pyspark.ml._infer_spark_model_signature(
+                signature = qcflow.pyspark.ml._infer_spark_model_signature(
                     spark_model, input_example_spark_df
                 )
         except Exception as e:
-            if environment_variables._MLFLOW_TESTING.get():
+            if environment_variables._QCFLOW_TESTING.get():
                 raise
             _logger.warning(_LOG_MODEL_INFER_SIGNATURE_WARNING_TEMPLATE, repr(e))
             _logger.debug("", exc_info=True)
@@ -788,7 +788,7 @@ def save_model(
         # Spark ML stores the model on DFS if running on a cluster
         # Save it to a DFS temp dir first and copy it to local path
         if dfs_tmpdir is None:
-            dfs_tmpdir = MLFLOW_DFS_TMP.get()
+            dfs_tmpdir = QCFLOW_DFS_TMP.get()
         tmp_path = generate_tmp_dfs_path(dfs_tmpdir)
         spark_model.save(tmp_path)
         # We're copying the Spark model from DBFS to the local filesystem if (a) the temporary DFS
@@ -807,7 +807,7 @@ def save_model(
     _save_model_metadata(
         dst_dir=path,
         spark_model=spark_model,
-        mlflow_model=mlflow_model,
+        qcflow_model=qcflow_model,
         sample_input=sample_input,
         conda_env=conda_env,
         code_paths=code_paths,
@@ -835,7 +835,7 @@ def _load_model_databricks(dfs_tmpdir, local_model_path):
 def _load_model(model_uri, dfs_tmpdir_base=None, local_model_path=None):
     from pyspark.ml.pipeline import PipelineModel
 
-    dfs_tmpdir = generate_tmp_dfs_path(dfs_tmpdir_base or MLFLOW_DFS_TMP.get())
+    dfs_tmpdir = generate_tmp_dfs_path(dfs_tmpdir_base or QCFLOW_DFS_TMP.get())
     if databricks_utils.is_in_cluster() and databricks_utils.is_dbfs_fuse_available():
         return _load_model_databricks(
             dfs_tmpdir, local_model_path or _download_artifact_from_uri(model_uri)
@@ -853,21 +853,21 @@ def load_model(model_uri, dfs_tmpdir=None, dst_path=None):
     Load the Spark MLlib model from the path.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model, for example:
+        model_uri: The location, in URI format, of the QCFlow model, for example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
         dfs_tmpdir: Temporary directory path on Distributed (Hadoop) File System (DFS) or local
             filesystem if running in local mode. The model is loaded from this
-            destination. Defaults to ``/tmp/mlflow``.
+            destination. Defaults to ``/tmp/qcflow``.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
             path will be created.
@@ -878,9 +878,9 @@ def load_model(model_uri, dfs_tmpdir=None, dst_path=None):
     .. code-block:: python
         :caption: Example
 
-        from mlflow import spark
+        from qcflow import spark
 
-        model = mlflow.spark.load_model("spark-model")
+        model = qcflow.spark.load_model("spark-model")
         # Prepare test documents, which are unlabeled (id, text) tuples.
         test = spark.createDataFrame(
             [(4, "spark i j k"), (5, "l m n"), (6, "spark hadoop spark"), (7, "apache hadoop")],
@@ -890,33 +890,33 @@ def load_model(model_uri, dfs_tmpdir=None, dst_path=None):
         prediction = model.transform(test)
     """
     # This MUST be called prior to appending the model flavor to `model_uri` in order
-    # for `artifact_path` to take on the correct value for model loading via mlflowdbfs.
+    # for `artifact_path` to take on the correct value for model loading via qcflowdbfs.
     root_uri, artifact_path = _get_root_uri_and_artifact_path(model_uri)
 
     flavor_conf = _get_flavor_configuration_from_uri(model_uri, FLAVOR_NAME, _logger)
-    local_mlflow_model_path = _download_artifact_from_uri(
+    local_qcflow_model_path = _download_artifact_from_uri(
         artifact_uri=model_uri, output_path=dst_path
     )
-    _add_code_from_conf_to_system_path(local_mlflow_model_path, flavor_conf)
+    _add_code_from_conf_to_system_path(local_qcflow_model_path, flavor_conf)
 
     model_class = flavor_conf.get("model_class")
     if model_class is not None and model_class.startswith("pyspark.ml.connect."):
-        spark_model_local_path = os.path.join(local_mlflow_model_path, flavor_conf["model_data"])
+        spark_model_local_path = os.path.join(local_qcflow_model_path, flavor_conf["model_data"])
         return _load_spark_connect_model(model_class, spark_model_local_path)
 
-    if _should_use_mlflowdbfs(model_uri):
+    if _should_use_qcflowdbfs(model_uri):
         from pyspark.ml.pipeline import PipelineModel
 
-        mlflowdbfs_path = _mlflowdbfs_path(
+        qcflowdbfs_path = _qcflowdbfs_path(
             DatabricksArtifactRepository._extract_run_id(model_uri), artifact_path
         )
         with databricks_utils.MlflowCredentialContext(
             get_databricks_profile_uri_from_artifact_uri(root_uri)
         ):
-            return PipelineModel.load(mlflowdbfs_path)
+            return PipelineModel.load(qcflowdbfs_path)
 
     sparkml_model_uri = append_to_uri_path(model_uri, flavor_conf["model_data"])
-    local_sparkml_model_path = os.path.join(local_mlflow_model_path, flavor_conf["model_data"])
+    local_sparkml_model_path = os.path.join(local_qcflow_model_path, flavor_conf["model_data"])
     return _load_model(
         model_uri=sparkml_model_uri,
         dfs_tmpdir_base=dfs_tmpdir,
@@ -929,9 +929,9 @@ def _load_pyfunc(path):
     Load PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``spark`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``spark`` flavor.
     """
-    from mlflow.utils._spark_utils import (
+    from qcflow.utils._spark_utils import (
         _create_local_spark_session_for_loading_spark_model,
         _get_active_spark_session,
     )
@@ -1082,13 +1082,13 @@ class _PyFuncModelWrapper:
                     col_name = col_spec.name or spark_df.columns[0]
                     spark_df = spark_df.withColumn(col_name, array_to_vector(col_name))
 
-        # For the case of no signature or signature logged by old version MLflow,
+        # For the case of no signature or signature logged by old version QCFlow,
         # the signature does not support spark ML vector type, in this case,
         # automatically infer vector type input columns and do the conversion
         # using `_find_and_set_features_col_as_vector_if_needed` utility function.
         spark_df = _find_and_set_features_col_as_vector_if_needed(spark_df, self.spark_model)
 
-        prediction_column = mlflow.pyspark.ml._check_or_set_model_prediction_column(
+        prediction_column = qcflow.pyspark.ml._check_or_set_model_prediction_column(
             self.spark_model, spark_df
         )
         prediction_df = self.spark_model.transform(spark_df).select(prediction_column)
@@ -1114,45 +1114,45 @@ def autolog(disable=False, silent=False):
     `SparkSession
     <https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.SparkSession.html>`_
     already exists with the
-    `mlflow-spark JAR
-    <https://www.mlflow.org/docs/latest/tracking.html#spark>`_
+    `qcflow-spark JAR
+    <https://www.qcflow.org/docs/latest/tracking.html#spark>`_
     attached. It should be called on the Spark driver, not on the executors (i.e. do not call
     this method within a function parallelized by Spark).
-    The mlflow-spark JAR used must match the Scala version of Spark. Please see the
+    The qcflow-spark JAR used must match the Scala version of Spark. Please see the
     `Maven Repository
-    <https://mvnrepository.com/artifact/org.mlflow/mlflow-spark>`_
+    <https://mvnrepository.com/artifact/org.qcflow/qcflow-spark>`_
     for available versions. This API requires Spark 3.0 or above.
 
-    Datasource information is cached in memory and logged to all subsequent MLflow runs,
-    including the active MLflow run (if one exists when the data is read). Note that autologging of
+    Datasource information is cached in memory and logged to all subsequent QCFlow runs,
+    including the active QCFlow run (if one exists when the data is read). Note that autologging of
     Spark ML (MLlib) models is not currently supported via this API. Datasource autologging is
-    best-effort, meaning that if Spark is under heavy load or MLflow logging fails for any reason
-    (e.g., if the MLflow server is unavailable), logging may be dropped.
+    best-effort, meaning that if Spark is under heavy load or QCFlow logging fails for any reason
+    (e.g., if the QCFlow server is unavailable), logging may be dropped.
 
     For any unexpected issues with autologging, check Spark driver and executor logs in addition
-    to stderr & stdout generated from your MLflow code - datasource information is pulled from
+    to stderr & stdout generated from your QCFlow code - datasource information is pulled from
     Spark, so logs relevant to debugging may show up amongst the Spark logs.
 
-    .. Note:: Spark datasource autologging only supports logging to MLflow runs in a single thread
+    .. Note:: Spark datasource autologging only supports logging to QCFlow runs in a single thread
 
     .. code-block:: python
         :caption: Example
 
-        import mlflow.spark
+        import qcflow.spark
         import os
         import shutil
         from pyspark.sql import SparkSession
 
         # Create and persist some dummy data
-        # Note: the 2.12 in 'org.mlflow:mlflow-spark_2.12:2.16.2' below indicates the Scala
-        # version, please match this with that of Spark. The 2.16.2 indicates the mlflow version.
+        # Note: the 2.12 in 'org.qcflow:qcflow-spark_2.12:2.16.2' below indicates the Scala
+        # version, please match this with that of Spark. The 2.16.2 indicates the qcflow version.
         # Note: On environments like Databricks with pre-created SparkSessions,
-        # ensure the org.mlflow:mlflow-spark_2.12:2.16.2 is attached as a library to
+        # ensure the org.qcflow:qcflow-spark_2.12:2.16.2 is attached as a library to
         # your cluster
         spark = (
             SparkSession.builder.config(
                 "spark.jars.packages",
-                "org.mlflow:mlflow-spark_2.12:2.16.2",
+                "org.qcflow:qcflow-spark_2.12:2.16.2",
             )
             .master("local[*]")
             .getOrCreate()
@@ -1166,31 +1166,31 @@ def autolog(disable=False, silent=False):
         tempdir = tempfile.mkdtemp()
         df.write.csv(os.path.join(tempdir, "my-data-path"), header=True)
         # Enable Spark datasource autologging.
-        mlflow.spark.autolog()
+        qcflow.spark.autolog()
         loaded_df = spark.read.csv(
             os.path.join(tempdir, "my-data-path"), header=True, inferSchema=True
         )
         # Call toPandas() to trigger a read of the Spark datasource. Datasource info
         # (path and format) is logged to the current active run, or the
-        # next-created MLflow run if no run is currently active
-        with mlflow.start_run() as active_run:
+        # next-created QCFlow run if no run is currently active
+        with qcflow.start_run() as active_run:
             pandas_df = loaded_df.toPandas()
 
     Args:
         disable: If ``True``, disables the Spark datasource autologging integration.
             If ``False``, enables the Spark datasource autologging integration.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during Spark
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during Spark
             datasource autologging. If ``False``, show all events and warnings during Spark
             datasource autologging.
     """
     from pyspark import __version__ as pyspark_version
     from pyspark.sql import SparkSession
 
-    from mlflow.spark.autologging import (
+    from qcflow.spark.autologging import (
         _listen_for_spark_activity,
         _stop_listen_for_spark_activity,
     )
-    from mlflow.utils._spark_utils import _get_active_spark_session
+    from qcflow.utils._spark_utils import _get_active_spark_session
 
     # Check if environment variable PYSPARK_PIN_THREAD is set to false.
     # The "Pin thread" concept was introduced since Pyspark 3.0.0 and set to default to true

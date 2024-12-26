@@ -1,7 +1,7 @@
 from typing import Optional
 
-from mlflow.gateway.base_models import ResponseModel
-from mlflow.gateway.config import Limit, RouteModelInfo
+from qcflow.gateway.base_models import ResponseModel
+from qcflow.gateway.config import Limit, RouteModelInfo
 
 
 class Endpoint(ResponseModel):

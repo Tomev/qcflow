@@ -1,4 +1,4 @@
-package org.mlflow.spark.autologging
+package org.qcflow.spark.autologging
 
 import java.util.concurrent.{ConcurrentHashMap, ScheduledFuture, ScheduledThreadPoolExecutor, TimeUnit}
 

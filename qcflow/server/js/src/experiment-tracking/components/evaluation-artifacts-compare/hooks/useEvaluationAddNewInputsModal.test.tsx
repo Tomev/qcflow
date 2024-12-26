@@ -1,10 +1,10 @@
 import { useEvaluationAddNewInputsModal } from './useEvaluationAddNewInputsModal';
-import { act, renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react17';
+import { act, renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react17';
 import { RunRowType } from '../../experiment-page/utils/experimentPage.row-types';
 import { createParamFieldName } from '../../experiment-page/utils/experimentPage.column-utils';
 import { useEffect } from 'react';
 import userEvent from '@testing-library/user-event-14';
-import { MLFLOW_RUN_SOURCE_TYPE_TAG, MLflowRunSourceType } from '../../../constants';
+import { QCFLOW_RUN_SOURCE_TYPE_TAG, QCFlowRunSourceType } from '../../../constants';
 
 describe('useEvaluationAddNewInputsModal', () => {
   const renderHookResult = (runs: RunRowType[], onSuccess: (providedParamValues: Record<string, string>) => void) => {
@@ -30,9 +30,9 @@ describe('useEvaluationAddNewInputsModal', () => {
         },
       ],
       tags: {
-        [MLFLOW_RUN_SOURCE_TYPE_TAG]: {
-          key: MLFLOW_RUN_SOURCE_TYPE_TAG,
-          value: MLflowRunSourceType.PROMPT_ENGINEERING,
+        [QCFLOW_RUN_SOURCE_TYPE_TAG]: {
+          key: QCFLOW_RUN_SOURCE_TYPE_TAG,
+          value: QCFlowRunSourceType.PROMPT_ENGINEERING,
         },
       },
     } as any;
@@ -47,9 +47,9 @@ describe('useEvaluationAddNewInputsModal', () => {
         },
       ],
       tags: {
-        [MLFLOW_RUN_SOURCE_TYPE_TAG]: {
-          key: MLFLOW_RUN_SOURCE_TYPE_TAG,
-          value: MLflowRunSourceType.PROMPT_ENGINEERING,
+        [QCFLOW_RUN_SOURCE_TYPE_TAG]: {
+          key: QCFLOW_RUN_SOURCE_TYPE_TAG,
+          value: QCFlowRunSourceType.PROMPT_ENGINEERING,
         },
       },
     };

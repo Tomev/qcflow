@@ -55,7 +55,7 @@ describe('useSampledMetricHistoryGraphQL', () => {
       graphql.query<GetMetricHistoryBulkInterval>('GetMetricHistoryBulkInterval', (req, res, ctx) =>
         res(
           ctx.data({
-            mlflowGetMetricHistoryBulkInterval: {
+            qcflowGetMetricHistoryBulkInterval: {
               __typename: 'MlflowGetMetricHistoryBulkIntervalResponse',
               apiError: null,
               metrics: createMetrics(100),
@@ -86,7 +86,7 @@ describe('useSampledMetricHistoryGraphQL', () => {
       graphql.query<GetMetricHistoryBulkInterval>('GetMetricHistoryBulkInterval', (req, res, ctx) =>
         res(
           ctx.data({
-            mlflowGetMetricHistoryBulkInterval: {
+            qcflowGetMetricHistoryBulkInterval: {
               __typename: 'MlflowGetMetricHistoryBulkIntervalResponse',
               apiError: {
                 __typename: 'ApiError',
@@ -117,7 +117,7 @@ describe('useSampledMetricHistoryGraphQL', () => {
         res(
           ctx.status(400),
           ctx.data({
-            mlflowGetMetricHistoryBulkInterval: {
+            qcflowGetMetricHistoryBulkInterval: {
               __typename: 'MlflowGetMetricHistoryBulkIntervalResponse',
               apiError: null,
               metrics: null,

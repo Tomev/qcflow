@@ -1,4 +1,4 @@
-import { KeyValueEntity, RunInfoEntity } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { KeyValueEntity, RunInfoEntity } from '@qcflow/qcflow/src/experiment-tracking/types';
 import { DifferenceCardConfigCompareGroup, RunsChartType, RunsChartsDifferenceCardConfig } from '../runs-charts.types';
 import {
   getDifferenceChartDisplayedValue,
@@ -89,7 +89,7 @@ describe('getDifferenceViewDataGroups correctly groups metrics, system metrics, 
       },
       tags: {
         tag1: { key: 'tag1', value: 'val1' } as KeyValueEntity,
-        'mlflow.user': { key: 'mlflow.user', value: 'user1' } as KeyValueEntity,
+        'qcflow.user': { key: 'qcflow.user', value: 'user1' } as KeyValueEntity,
       },
       images: {},
     },
@@ -106,7 +106,7 @@ describe('getDifferenceViewDataGroups correctly groups metrics, system metrics, 
       },
       tags: {
         tag1: { key: 'tag1', value: 'val2' } as KeyValueEntity,
-        'mlflow.user': { key: 'mlflow.user', value: 'user1' } as KeyValueEntity,
+        'qcflow.user': { key: 'qcflow.user', value: 'user1' } as KeyValueEntity,
       },
       images: {},
     },

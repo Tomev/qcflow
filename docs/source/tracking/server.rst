@@ -1,9 +1,9 @@
 ======================
-MLflow Tracking Server
+QCFlow Tracking Server
 ======================
 
-MLflow tracking server is a stand-alone HTTP server that serves multiple REST API endpoints for tracking runs/experiments.
-While MLflow Tracking can be used in local environment, hosting a tracking server is powerful in the team development
+QCFlow tracking server is a stand-alone HTTP server that serves multiple REST API endpoints for tracking runs/experiments.
+While QCFlow Tracking can be used in local environment, hosting a tracking server is powerful in the team development
 workflow:
 
 * **Collaboration**: Multiple users can log runs to the same endpoint, and query runs and models logged by other users.
@@ -17,7 +17,7 @@ Starting the tracking server is as simple as running the following command:
 
 .. code-block:: bash
 
-    mlflow server --host 127.0.0.1 --port 8080
+    qcflow server --host 127.0.0.1 --port 8080
 
 Once the server starts runing, you should see the following output:
 
@@ -51,37 +51,37 @@ There are many options to configure the server, refer to :ref:`Configure Server 
 Logging to a Tracking Server
 ============================
 
-Once you started the tracking server, you can connect your local clients by set the ``MLFLOW_TRACKING_URI`` environment variable to the 
-server's URI, along with its scheme and port (for example, ``http://10.0.0.1:5000``) or call :py:func:`mlflow.set_tracking_uri`.
+Once you started the tracking server, you can connect your local clients by set the ``QCFLOW_TRACKING_URI`` environment variable to the 
+server's URI, along with its scheme and port (for example, ``http://10.0.0.1:5000``) or call :py:func:`qcflow.set_tracking_uri`.
 
-The :py:func:`mlflow.start_run`, :py:func:`mlflow.log_param`, and :py:func:`mlflow.log_metric` calls
+The :py:func:`qcflow.start_run`, :py:func:`qcflow.log_param`, and :py:func:`qcflow.log_metric` calls
 then make API requests to your remote tracking server.
 
 .. code-section::
 
   .. code-block:: python
 
-      import mlflow
+      import qcflow
 
       remote_server_uri = "..."  # set to your server URI
-      mlflow.set_tracking_uri(remote_server_uri)
-      mlflow.set_experiment("/my-experiment")
-      with mlflow.start_run():
-          mlflow.log_param("a", 1)
-          mlflow.log_metric("b", 2)
+      qcflow.set_tracking_uri(remote_server_uri)
+      qcflow.set_experiment("/my-experiment")
+      with qcflow.start_run():
+          qcflow.log_param("a", 1)
+          qcflow.log_metric("b", 2)
 
   .. code-block:: R
 
-      library(mlflow)
-      install_mlflow()
+      library(qcflow)
+      install_qcflow()
       remote_server_uri = "..." # set to your server URI
-      mlflow_set_tracking_uri(remote_server_uri)
-      mlflow_set_experiment("/my-experiment")
-      mlflow_log_param("a", "1")
+      qcflow_set_tracking_uri(remote_server_uri)
+      qcflow_set_experiment("/my-experiment")
+      qcflow_log_param("a", "1")
 
   .. code-block:: scala
 
-      import org.mlflow.tracking.MlflowClient
+      import org.qcflow.tracking.MlflowClient
 
       val remoteServerUri = "..." // set to your server URI
       val client = new MlflowClient(remoteServerUri)
@@ -93,13 +93,13 @@ then make API requests to your remote tracking server.
       client.logParam(run.getRunId(), "a", "1")
 
 .. note::
-    On Databricks, the experiment name passed to mlflow_set_experiment must be a valid path in the workspace e.g. ``/Workspace/Users/mlflow-experiments/my-experiment``
+    On Databricks, the experiment name passed to qcflow_set_experiment must be a valid path in the workspace e.g. ``/Workspace/Users/qcflow-experiments/my-experiment``
 
 .. _configure-server:
 
 Configure Server
 ================
-This section describes how to configure the tracking server for some common use cases. Please run ``mlflow server --help`` for the full list of command line options.
+This section describes how to configure the tracking server for some common use cases. Please run ``qcflow server --help`` for the full list of command line options.
 
 Backend Store
 -------------
@@ -110,7 +110,7 @@ Example
 
 .. code-block:: bash
 
-    mlflow server --backend-store-uri sqlite:///my.db
+    qcflow server --backend-store-uri sqlite:///my.db
 
 This will create a SQLite database ``my.db`` in the current directory, and logging requests from clients will be pointed to this database.
 
@@ -126,29 +126,29 @@ the tracking server to connect to remote storage and serve artifacts, start the 
 
 .. code-block:: bash
 
-    mlflow server \
+    qcflow server \
         --host 0.0.0.0 \
         --port 8885 \
         --artifacts-destination s3://my-bucket
 
-With this setting, MLflow server works as a proxy for accessing remote artifacts. The MLflow clients make HTTP request to the server for fetching artifacts.
+With this setting, QCFlow server works as a proxy for accessing remote artifacts. The QCFlow clients make HTTP request to the server for fetching artifacts.
 
 .. important::
-  If you are using remote storage, you have to configure the credentials for the server to access the artifacts. Be aware of that The MLflow artifact proxied 
+  If you are using remote storage, you have to configure the credentials for the server to access the artifacts. Be aware of that The QCFlow artifact proxied 
   access service enables users to have an *assumed role of access to all artifacts* that are accessible to the Tracking Server. Refer :ref:`Manage Access <artifacts-stores-manage-access>` for further details.
 
-The tracking server resolves the uri ``mlflow-artifacts:/`` in tracking request from the client to an otherwise 
+The tracking server resolves the uri ``qcflow-artifacts:/`` in tracking request from the client to an otherwise 
 explicit object store destination (e.g., "s3:/my_bucket/mlartifacts") for interfacing with artifacts. The following patterns will all resolve to the configured proxied object store location (in above example, ``s3://my-root-bucket/mlartifacts``):
 
  * ``https://<host>:<port>/mlartifacts``
  * ``http://<host>/mlartifacts``
- * ``mlflow-artifacts://<host>/mlartifacts``
- * ``mlflow-artifacts://<host>:<port>/mlartifacts``
- * ``mlflow-artifacts:/mlartifacts``
+ * ``qcflow-artifacts://<host>/mlartifacts``
+ * ``qcflow-artifacts://<host>:<port>/mlartifacts``
+ * ``qcflow-artifacts:/mlartifacts``
 
 
 .. important:: 
-  The MLflow client caches artifact location information on a per-run basis.
+  The QCFlow client caches artifact location information on a per-run basis.
   It is therefore not recommended to alter a run's artifact location before it has terminated.
 
 .. _tracking-server-no-proxy:
@@ -161,14 +161,14 @@ you want to redirect the request to.
 
 .. code-block:: bash
 
-    mlflow server --no-serve-artifacts --default-artifact-root s3://my-bucket
+    qcflow server --no-serve-artifacts --default-artifact-root s3://my-bucket
 
-With this setting, the MLflow client still makes minimum HTTP requests to the tracking server for fetching proper remote storage URI,
+With this setting, the QCFlow client still makes minimum HTTP requests to the tracking server for fetching proper remote storage URI,
 but can directly upload artifacts to / download artifacts from the remote storage. While this might not be a good practice for access and 
 secury governance, it could be useful when you want to avoid the overhead of proxying artifacts through the tracking server.
 
 .. note::
-    If the MLflow server is *not configured* with the ``--serve-artifacts`` option, the client directly pushes artifacts
+    If the QCFlow server is *not configured* with the ``--serve-artifacts`` option, the client directly pushes artifacts
     to the artifact store. It does not proxy these through the tracking server by default.
 
     For this reason, the client needs direct access to the artifact store. For instructions on setting up these credentials,
@@ -185,7 +185,7 @@ secury governance, it could be useful when you want to avoid the overhead of pro
 
 Optionally using a Tracking Server instance exclusively for artifact handling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-MLflow Tracking Server can be configured to use different backend store and artifact store, and provides a single endpoint for the clients.
+QCFlow Tracking Server can be configured to use different backend store and artifact store, and provides a single endpoint for the clients.
 
 However, if the volume of tracking server requests is sufficiently large and performance issues are noticed, a tracking server
 can be configured to serve in ``--artifacts-only`` mode, operating in tandem with an instance that
@@ -200,30 +200,30 @@ See the following example of a client REST call in Python attempting to list exp
 .. code-block:: bash
 
     # Lauch the artifact-only server
-    mlflow server --artifacts-only ...
+    qcflow server --artifacts-only ...
 
 .. code-block:: python
 
     import requests
 
     # Attempt to list experiments from the server
-    response = requests.get("http://0.0.0.0:8885/api/2.0/mlflow/experiments/list")
+    response = requests.get("http://0.0.0.0:8885/api/2.0/qcflow/experiments/list")
 
 Output
 
 .. code-block:: text
 
-    >> HTTPError: Endpoint: /api/2.0/mlflow/experiments/list disabled due to the mlflow server running in `--artifacts-only` mode.
+    >> HTTPError: Endpoint: /api/2.0/qcflow/experiments/list disabled due to the qcflow server running in `--artifacts-only` mode.
 
-Using an additional MLflow server to handle artifacts exclusively can be useful for large-scale MLOps infrastructure.
+Using an additional QCFlow server to handle artifacts exclusively can be useful for large-scale MLOps infrastructure.
 Decoupling the longer running and more compute-intensive tasks of artifact handling from the faster and higher-volume
-metadata functionality of the other Tracking API requests can help minimize the burden of an otherwise single MLflow
+metadata functionality of the other Tracking API requests can help minimize the burden of an otherwise single QCFlow
 server handling both types of payloads.
 
 .. note::
-    If an MLflow server is running with the ``--artifacts-only`` flag, the client should interact with this server explicitly by
+    If an QCFlow server is running with the ``--artifacts-only`` flag, the client should interact with this server explicitly by
     including either a ``host`` or ``host:port`` definition for uri location references for artifacts.
-    Otherwise, all artifact requests will route to the MLflow Tracking server, defeating the purpose of running a distinct artifact server.
+    Otherwise, all artifact requests will route to the QCFlow Tracking server, defeating the purpose of running a distinct artifact server.
 
 .. _tracking-auth:
 
@@ -234,20 +234,20 @@ The ``--host`` option exposes the service on all interfaces. If running a server
 would recommend not exposing the built-in server broadly (as it is unauthenticated and unencrypted),
 and instead putting it behind a reverse proxy like NGINX or Apache httpd, or connecting over VPN.
 
-You can then pass authentication headers to MLflow using these environment variables .
+You can then pass authentication headers to QCFlow using these environment variables .
 
-- ``MLFLOW_TRACKING_USERNAME`` and ``MLFLOW_TRACKING_PASSWORD`` - username and password to use with HTTP
+- ``QCFLOW_TRACKING_USERNAME`` and ``QCFLOW_TRACKING_PASSWORD`` - username and password to use with HTTP
   Basic authentication. To use Basic authentication, you must set `both` environment variables .
-- ``MLFLOW_TRACKING_TOKEN`` - token to use with HTTP Bearer authentication. Basic authentication takes precedence if set.
-- ``MLFLOW_TRACKING_INSECURE_TLS`` - If set to the literal ``true``, MLflow does not verify the TLS connection,
+- ``QCFLOW_TRACKING_TOKEN`` - token to use with HTTP Bearer authentication. Basic authentication takes precedence if set.
+- ``QCFLOW_TRACKING_INSECURE_TLS`` - If set to the literal ``true``, QCFlow does not verify the TLS connection,
   meaning it does not validate certificates or hostnames for ``https://`` tracking URIs. This flag is not recommended for
-  production environments. If this is set to ``true`` then ``MLFLOW_TRACKING_SERVER_CERT_PATH`` must not be set.
-- ``MLFLOW_TRACKING_SERVER_CERT_PATH`` - Path to a CA bundle to use. Sets the ``verify`` param of the
+  production environments. If this is set to ``true`` then ``QCFLOW_TRACKING_SERVER_CERT_PATH`` must not be set.
+- ``QCFLOW_TRACKING_SERVER_CERT_PATH`` - Path to a CA bundle to use. Sets the ``verify`` param of the
   ``requests.request`` function
   (see `requests main interface <https://requests.readthedocs.io/en/master/api/>`_).
   When you use a self-signed server certificate you can use this to verify it on client side.
-  If this is set ``MLFLOW_TRACKING_INSECURE_TLS`` must not be set (false).
-- ``MLFLOW_TRACKING_CLIENT_CERT_PATH`` - Path to ssl client cert file (.pem). Sets the ``cert`` param
+  If this is set ``QCFLOW_TRACKING_INSECURE_TLS`` must not be set (false).
+- ``QCFLOW_TRACKING_CLIENT_CERT_PATH`` - Path to ssl client cert file (.pem). Sets the ``cert`` param
   of the ``requests.request`` function
   (see `requests main interface <https://requests.readthedocs.io/en/master/api/>`_).
   This can be used to use a (self-signed) client certificate.
@@ -255,14 +255,14 @@ You can then pass authentication headers to MLflow using these environment varia
 Tracking Server versioning
 ==========================
 
-The version of MLflow running on the server can be found by querying the ``/version`` endpoint.
-This can be used to check that the client-side version of MLflow is up-to-date with a remote tracking server prior to running experiments.
+The version of QCFlow running on the server can be found by querying the ``/version`` endpoint.
+This can be used to check that the client-side version of QCFlow is up-to-date with a remote tracking server prior to running experiments.
 For example:
 
 .. code-block:: python
 
     import requests
-    import mlflow
+    import qcflow
 
-    response = requests.get("http://<mlflow-host>:<mlflow-port>/version")
-    assert response.text == mlflow.__version__  # Checking for a strict version match
+    response = requests.get("http://<qcflow-host>:<qcflow-port>/version")
+    assert response.text == qcflow.__version__  # Checking for a strict version match

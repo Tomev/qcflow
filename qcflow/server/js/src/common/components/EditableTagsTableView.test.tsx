@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { EditableTagsTableView } from './EditableTagsTableView';
-import { renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import userEvent from '@testing-library/user-event-14';
 import { BrowserRouter } from '../utils/RoutingUtils';
 import { DesignSystemProvider } from '@databricks/design-system';

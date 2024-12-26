@@ -11,49 +11,49 @@ import uuid
 from pathlib import Path
 from shlex import quote
 
-from mlflow import tracking
-from mlflow.entities import RunStatus
-from mlflow.environment_variables import MLFLOW_EXPERIMENT_ID, MLFLOW_RUN_ID, MLFLOW_TRACKING_URI
-from mlflow.exceptions import ExecutionException, MlflowException
-from mlflow.projects.submitted_run import SubmittedRun
-from mlflow.projects.utils import MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.utils import databricks_utils, file_utils, rest_utils
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATABRICKS_RUN_URL,
-    MLFLOW_DATABRICKS_SHELL_JOB_ID,
-    MLFLOW_DATABRICKS_SHELL_JOB_RUN_ID,
-    MLFLOW_DATABRICKS_WEBAPP_URL,
+from qcflow import tracking
+from qcflow.entities import RunStatus
+from qcflow.environment_variables import QCFLOW_EXPERIMENT_ID, QCFLOW_RUN_ID, QCFLOW_TRACKING_URI
+from qcflow.exceptions import ExecutionException, MlflowException
+from qcflow.projects.submitted_run import SubmittedRun
+from qcflow.projects.utils import QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.utils import databricks_utils, file_utils, rest_utils
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATABRICKS_RUN_URL,
+    QCFLOW_DATABRICKS_SHELL_JOB_ID,
+    QCFLOW_DATABRICKS_SHELL_JOB_RUN_ID,
+    QCFLOW_DATABRICKS_WEBAPP_URL,
 )
-from mlflow.utils.uri import is_databricks_uri, is_http_uri
-from mlflow.version import VERSION, is_release_version
+from qcflow.utils.uri import is_databricks_uri, is_http_uri
+from qcflow.version import VERSION, is_release_version
 
-# Base directory within driver container for storing files related to MLflow
-DB_CONTAINER_BASE = "/databricks/mlflow"
+# Base directory within driver container for storing files related to QCFlow
+DB_CONTAINER_BASE = "/databricks/qcflow"
 # Base directory within driver container for storing project archives
 DB_TARFILE_BASE = posixpath.join(DB_CONTAINER_BASE, "project-tars")
 # Base directory directory within driver container for storing extracted project directories
 DB_PROJECTS_BASE = posixpath.join(DB_CONTAINER_BASE, "projects")
 # Name to use for project directory when archiving it for upload to DBFS; the TAR will contain
 # a single directory with this name
-DB_TARFILE_ARCHIVE_NAME = "mlflow-project"
+DB_TARFILE_ARCHIVE_NAME = "qcflow-project"
 # Base directory within DBFS for storing code for project runs for experiments
-DBFS_EXPERIMENT_DIR_BASE = "mlflow-experiments"
+DBFS_EXPERIMENT_DIR_BASE = "qcflow-experiments"
 
 
 _logger = logging.getLogger(__name__)
 
-_MLFLOW_GIT_URI_REGEX = re.compile(r"^git\+https://github.com/[\w-]+/mlflow")
+_QCFLOW_GIT_URI_REGEX = re.compile(r"^git\+https://github.com/[\w-]+/qcflow")
 
 
-def _is_mlflow_git_uri(s):
-    return bool(_MLFLOW_GIT_URI_REGEX.match(s))
+def _is_qcflow_git_uri(s):
+    return bool(_QCFLOW_GIT_URI_REGEX.match(s))
 
 
-def _contains_mlflow_git_uri(libraries):
+def _contains_qcflow_git_uri(libraries):
     for lib in libraries:
         package = lib.get("pypi", {}).get("package")
-        if package and _is_mlflow_git_uri(package):
+        if package and _is_qcflow_git_uri(package):
             return True
     return False
 
@@ -62,31 +62,31 @@ def before_run_validations(tracking_uri, backend_config):
     """Validations to perform before running a project on Databricks."""
     if backend_config is None:
         raise ExecutionException(
-            "Backend spec must be provided when launching MLflow project runs on Databricks."
+            "Backend spec must be provided when launching QCFlow project runs on Databricks."
         )
     elif "existing_cluster_id" in backend_config:
         raise MlflowException(
             message=(
-                "MLflow Project runs on Databricks must provide a *new cluster* specification."
+                "QCFlow Project runs on Databricks must provide a *new cluster* specification."
                 " Project execution against existing clusters is not currently supported. For more"
-                " information, see https://mlflow.org/docs/latest/projects.html"
-                "#run-an-mlflow-project-on-databricks"
+                " information, see https://qcflow.org/docs/latest/projects.html"
+                "#run-an-qcflow-project-on-databricks"
             ),
             error_code=INVALID_PARAMETER_VALUE,
         )
     if not is_databricks_uri(tracking_uri) and not is_http_uri(tracking_uri):
         raise ExecutionException(
-            "When running on Databricks, the MLflow tracking URI must be of the form "
+            "When running on Databricks, the QCFlow tracking URI must be of the form "
             "'databricks' or 'databricks://profile', or a remote HTTP URI accessible to both the "
             "current client and code running on Databricks. Got local tracking URI "
-            f"{tracking_uri}. Please specify a valid tracking URI via mlflow.set_tracking_uri or "
-            "by setting the MLFLOW_TRACKING_URI environment variable."
+            f"{tracking_uri}. Please specify a valid tracking URI via qcflow.set_tracking_uri or "
+            "by setting the QCFLOW_TRACKING_URI environment variable."
         )
 
 
 class DatabricksJobRunner:
     """
-    Helper class for running an MLflow project as a Databricks Job.
+    Helper class for running an QCFlow project as a Databricks Job.
 
     Args:
         databricks_profile: Optional Databricks CLI profile to use to fetch hostname &
@@ -161,7 +161,7 @@ class DatabricksJobRunner:
         the HDFS-style URI of the tarball in DBFS (e.g. dbfs:/path/to/tar).
 
         Args:
-            project_dir: Path to a directory containing an MLflow project to upload to DBFS (e.g.
+            project_dir: Path to a directory containing an QCFlow project to upload to DBFS (e.g.
                 a directory containing an MLproject file).
         """
         with tempfile.TemporaryDirectory() as temp_tarfile_dir:
@@ -212,7 +212,7 @@ class DatabricksJobRunner:
                 or a `Databricks new cluster specification
                 <https://docs.databricks.com/dev-tools/api/latest/jobs.html#jobsclusterspecnewcluster>`_
                 to use when launching a run. If you specify libraries, this function
-                will add MLflow to the library list. This function does not support
+                will add QCFlow to the library list. This function does not support
                 installation of conda environment libraries on the workers.
 
         Returns:
@@ -220,17 +220,17 @@ class DatabricksJobRunner:
             Databricks `Runs Get <https://docs.databricks.com/api/latest/jobs.html#runs-get>`_ API.
         """
         if is_release_version():
-            mlflow_lib = {"pypi": {"package": f"mlflow=={VERSION}"}}
+            qcflow_lib = {"pypi": {"package": f"qcflow=={VERSION}"}}
         else:
             # When running a non-release version as the client the same version will not be
             # available within Databricks.
             _logger.warning(
-                "Your client is running a non-release version of MLflow. "
+                "Your client is running a non-release version of QCFlow. "
                 "This version is not available on the databricks runtime. "
-                "MLflow will fallback the MLflow version provided by the runtime. "
+                "QCFlow will fallback the QCFlow version provided by the runtime. "
                 "This might lead to unforeseen issues. "
             )
-            mlflow_lib = {"pypi": {"package": f"'mlflow<={VERSION}'"}}
+            qcflow_lib = {"pypi": {"package": f"'qcflow<={VERSION}'"}}
 
         # Check syntax of JSON - if it contains libraries and new_cluster, pull those out
         if "new_cluster" in cluster_spec:
@@ -238,24 +238,24 @@ class DatabricksJobRunner:
             cluster_spec_libraries = cluster_spec.get("libraries", [])
             libraries = (
                 # This is for development purposes only. If the cluster spec already includes
-                # an MLflow Git URI, then we don't append `mlflow_lib` to avoid having
-                # two different pip requirements for mlflow.
+                # an QCFlow Git URI, then we don't append `qcflow_lib` to avoid having
+                # two different pip requirements for qcflow.
                 cluster_spec_libraries
-                if _contains_mlflow_git_uri(cluster_spec_libraries)
-                else cluster_spec_libraries + [mlflow_lib]
+                if _contains_qcflow_git_uri(cluster_spec_libraries)
+                else cluster_spec_libraries + [qcflow_lib]
             )
             cluster_spec = cluster_spec["new_cluster"]
         else:
-            libraries = [mlflow_lib]
+            libraries = [qcflow_lib]
 
         # Make jobs API request to launch run.
         req_body_json = {
-            "run_name": f"MLflow Run for {project_uri}",
+            "run_name": f"QCFlow Run for {project_uri}",
             "new_cluster": cluster_spec,
             "shell_command_task": {"command": command, "env_vars": env_vars},
             "libraries": libraries,
         }
-        _logger.info("=== Submitting a run to execute the MLflow project... ===")
+        _logger.info("=== Submitting a run to execute the QCFlow project... ===")
         run_submit_res = self._jobs_runs_submit(req_body_json)
         return run_submit_res["run_id"]
 
@@ -270,14 +270,14 @@ class DatabricksJobRunner:
         entry_point,
         parameters,
     ):
-        from mlflow.utils.file_utils import get_or_create_tmp_dir
+        from qcflow.utils.file_utils import get_or_create_tmp_dir
 
         dbfs_fuse_uri = self._upload_project_to_dbfs(work_dir, experiment_id)
 
         env_vars = {
-            MLFLOW_TRACKING_URI.name: "databricks",
-            MLFLOW_EXPERIMENT_ID.name: experiment_id,
-            MLFLOW_RUN_ID.name: run_id,
+            QCFLOW_TRACKING_URI.name: "databricks",
+            QCFLOW_EXPERIMENT_ID.name: experiment_id,
+            QCFLOW_RUN_ID.name: run_id,
         }
         _logger.info(
             "=== Running databricks spark job of project %s on Databricks ===", project_uri
@@ -288,7 +288,7 @@ class DatabricksJobRunner:
                 _logger.warning(
                     "You configured Databricks spark job python_file and parameters within the "
                     "MLProject file's databricks_spark_job section. '--entry-point' "
-                    "and '--param-list' arguments specified in the 'mlflow run' command are "
+                    "and '--param-list' arguments specified in the 'qcflow run' command are "
                     "ignored."
                 )
             job_code_file = project_spec.databricks_spark_job_spec.python_file
@@ -346,7 +346,7 @@ os.chdir('{project_dir}')
         ]
         # Make Databricks Spark jobs API request to launch run.
         req_body_json = {
-            "run_name": f"MLflow Run for {project_uri}",
+            "run_name": f"QCFlow Run for {project_uri}",
             "new_cluster": cluster_spec,
             "libraries": libraries_config,
             "spark_python_task": {
@@ -355,7 +355,7 @@ os.chdir('{project_dir}')
             },
         }
 
-        _logger.info("=== Submitting a run to execute the MLflow project... ===")
+        _logger.info("=== Submitting a run to execute the QCFlow project... ===")
         run_submit_res = self._jobs_runs_submit(req_body_json)
         return run_submit_res["run_id"]
 
@@ -374,8 +374,8 @@ os.chdir('{project_dir}')
         dbfs_fuse_uri = self._upload_project_to_dbfs(work_dir, experiment_id)
 
         env_vars = {
-            MLFLOW_TRACKING_URI.name: tracking_uri,
-            MLFLOW_EXPERIMENT_ID.name: experiment_id,
+            QCFLOW_TRACKING_URI.name: tracking_uri,
+            QCFLOW_EXPERIMENT_ID.name: experiment_id,
         }
         _logger.info("=== Running entry point %s of project %s on Databricks ===", entry_point, uri)
         # Launch run on Databricks
@@ -429,9 +429,9 @@ def _get_tracking_uri_for_run():
     return uri
 
 
-def _get_cluster_mlflow_run_cmd(project_dir, run_id, entry_point, parameters, env_manager):
+def _get_cluster_qcflow_run_cmd(project_dir, run_id, entry_point, parameters, env_manager):
     cmd = [
-        "mlflow",
+        "qcflow",
         "run",
         project_dir,
         "--entry-point",
@@ -439,13 +439,13 @@ def _get_cluster_mlflow_run_cmd(project_dir, run_id, entry_point, parameters, en
     ]
     if env_manager:
         cmd += ["--env-manager", env_manager]
-    mlflow_run_arr = list(map(quote, cmd))
+    qcflow_run_arr = list(map(quote, cmd))
     if run_id:
-        mlflow_run_arr.extend(["-c", json.dumps({MLFLOW_LOCAL_BACKEND_RUN_ID_CONFIG: run_id})])
+        qcflow_run_arr.extend(["-c", json.dumps({QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG: run_id})])
     if parameters:
         for key, value in parameters.items():
-            mlflow_run_arr.extend(["-P", f"{key}={value}"])
-    return mlflow_run_arr
+            qcflow_run_arr.extend(["-P", f"{key}={value}"])
+    return qcflow_run_arr
 
 
 def _get_project_dir_and_extracting_tar_command(dbfs_fuse_tar_uri):
@@ -473,25 +473,25 @@ def _get_project_dir_and_extracting_tar_command(dbfs_fuse_tar_uri):
 
 def _get_databricks_run_cmd(dbfs_fuse_tar_uri, run_id, entry_point, parameters, env_manager):
     """
-    Generate MLflow CLI command to run on Databricks cluster in order to launch a run on Databricks.
+    Generate QCFlow CLI command to run on Databricks cluster in order to launch a run on Databricks.
     """
     project_dir, extracting_tar_command = _get_project_dir_and_extracting_tar_command(
         dbfs_fuse_tar_uri
     )
-    mlflow_run_arr = _get_cluster_mlflow_run_cmd(
+    qcflow_run_arr = _get_cluster_qcflow_run_cmd(
         project_dir,
         run_id,
         entry_point,
         parameters,
         env_manager,
     )
-    mlflow_run_cmd = " ".join([quote(elem) for elem in mlflow_run_arr])
+    qcflow_run_cmd = " ".join([quote(elem) for elem in qcflow_run_arr])
     shell_command = textwrap.dedent(
         f"""
     export PATH=$PATH:$DB_HOME/python/bin &&
-    mlflow --version &&
+    qcflow --version &&
     {extracting_tar_command} &&
-    {mlflow_run_cmd}
+    {qcflow_run_cmd}
     """
     )
     return ["bash", "-c", shell_command]
@@ -543,13 +543,13 @@ def run_databricks_spark_job(
 
 class DatabricksSubmittedRun(SubmittedRun):
     """
-    Instance of SubmittedRun corresponding to a Databricks Job run launched to run an MLflow
+    Instance of SubmittedRun corresponding to a Databricks Job run launched to run an QCFlow
     project. Note that run_id may be None, e.g. if we did not launch the run against a tracking
     server accessible to the local client.
 
     Args:
         databricks_run_id: Run ID of the launched Databricks Job.
-        mlflow_run_id: ID of the MLflow project run.
+        qcflow_run_id: ID of the QCFlow project run.
         databricks_job_runner: Instance of ``DatabricksJobRunner`` used to make Databricks API
             requests.
     """
@@ -557,15 +557,15 @@ class DatabricksSubmittedRun(SubmittedRun):
     # How often to poll run status when waiting on a run
     POLL_STATUS_INTERVAL = 30
 
-    def __init__(self, databricks_run_id, mlflow_run_id, databricks_job_runner):
+    def __init__(self, databricks_run_id, qcflow_run_id, databricks_job_runner):
         super().__init__()
         self._databricks_run_id = databricks_run_id
-        self._mlflow_run_id = mlflow_run_id
+        self._qcflow_run_id = qcflow_run_id
         self._job_runner = databricks_job_runner
 
     def _print_description_and_log_tags(self):
         _logger.info(
-            "=== Launched MLflow run as Databricks job run with ID %s."
+            "=== Launched QCFlow run as Databricks job run with ID %s."
             " Getting run status page URL... ===",
             self._databricks_run_id,
         )
@@ -576,25 +576,25 @@ class DatabricksSubmittedRun(SubmittedRun):
             self._job_runner.databricks_profile_uri
         )
         tracking.MlflowClient().set_tag(
-            self._mlflow_run_id, MLFLOW_DATABRICKS_RUN_URL, jobs_page_url
+            self._qcflow_run_id, QCFLOW_DATABRICKS_RUN_URL, jobs_page_url
         )
         tracking.MlflowClient().set_tag(
-            self._mlflow_run_id, MLFLOW_DATABRICKS_SHELL_JOB_RUN_ID, self._databricks_run_id
+            self._qcflow_run_id, QCFLOW_DATABRICKS_SHELL_JOB_RUN_ID, self._databricks_run_id
         )
         tracking.MlflowClient().set_tag(
-            self._mlflow_run_id, MLFLOW_DATABRICKS_WEBAPP_URL, host_creds.host
+            self._qcflow_run_id, QCFLOW_DATABRICKS_WEBAPP_URL, host_creds.host
         )
         job_id = run_info.get("job_id")
         # In some releases of Databricks we do not return the job ID. We start including it in DB
         # releases 2.80 and above.
         if job_id is not None:
             tracking.MlflowClient().set_tag(
-                self._mlflow_run_id, MLFLOW_DATABRICKS_SHELL_JOB_ID, job_id
+                self._qcflow_run_id, QCFLOW_DATABRICKS_SHELL_JOB_ID, job_id
             )
 
     @property
     def run_id(self):
-        return self._mlflow_run_id
+        return self._qcflow_run_id
 
     def wait(self):
         result_state = self._job_runner.get_run_result_state(self._databricks_run_id)

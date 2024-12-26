@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Union
 import cloudpickle
 import yaml
 
-from mlflow.exceptions import MlflowException
-from mlflow.langchain.utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.langchain.utils import (
     _BASE_LOAD_KEY,
     _CONFIG_LOAD_KEY,
     _MODEL_DATA_FOLDER_NAME,
@@ -283,7 +283,7 @@ def _warning_if_imported_from_lc_partner_pkg(runnable):
 
     Popular integrations like OpenAI have been migrated from the central langchain-community
     package to their own partner packages (e.g. langchain-openai). However, the class loading
-    mechanism in MLflow does not handle partner packages and always loads the community version.
+    mechanism in QCFlow does not handle partner packages and always loads the community version.
     This can lead to unexpected behavior because the community version is no longer maintained.
     """
     module = runnable.__module__
@@ -291,11 +291,11 @@ def _warning_if_imported_from_lc_partner_pkg(runnable):
     if m := _LC_PARTNER_MODULE_PATTERN.match(root_module):
         warnings.warn(
             "Your model contains a class imported from the LangChain partner package "
-            f"`langchain-{m.group(1)}`. When loading the model back, MLflow will use the "
+            f"`langchain-{m.group(1)}`. When loading the model back, QCFlow will use the "
             "community version of the classes instead of the partner packages, which may "
             "lead to unexpected behavior. To ensure that the model is loaded correctly, "
             "it is recommended to save the model with the 'model-from-code' method "
-            "instead: https://mlflow.org/docs/latest/models.html#models-from-code"
+            "instead: https://qcflow.org/docs/latest/models.html#models-from-code"
         )
 
 

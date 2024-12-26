@@ -1,7 +1,7 @@
-mlflow.system_metrics
+qcflow.system_metrics
 ======================
 
-.. automodule:: mlflow.system_metrics
+.. automodule:: qcflow.system_metrics
     :members:
     :undoc-members:
     

@@ -1,4 +1,4 @@
-from mlflow.tracking.request_auth.abstract_request_auth_provider import RequestAuthProvider
+from qcflow.tracking.request_auth.abstract_request_auth_provider import RequestAuthProvider
 
 
 class PluginRequestAuthProvider(RequestAuthProvider):

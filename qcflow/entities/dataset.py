@@ -1,7 +1,7 @@
 from typing import Optional
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.protos.service_pb2 import Dataset as ProtoDataset
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.protos.service_pb2 import Dataset as ProtoDataset
 
 
 class Dataset(_MlflowObject):

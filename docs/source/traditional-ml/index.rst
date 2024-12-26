@@ -6,18 +6,18 @@ and research institutions. From the precision of classification algorithms in he
 models in finance, and from the forecasting capabilities of time-series analyses in supply chain management to the insights drawn from 
 statistical modeling in social sciences, these core methodologies underscore many of the technological advancements we witness today.
 
-MLflow recognizes the enduring significance of traditional machine learning. Designed with precision and a deep understanding of the 
-challenges and intricacies faced by data scientists and ML practitioners, MLflow offers a comprehensive suite of tools tailor-made for 
+QCFlow recognizes the enduring significance of traditional machine learning. Designed with precision and a deep understanding of the 
+challenges and intricacies faced by data scientists and ML practitioners, QCFlow offers a comprehensive suite of tools tailor-made for 
 these classic techniques. This platform not only streamlines the model development and deployment processes but also ensures reproducibility, 
 scalability, and traceability.
 
-As we delve further, we'll explore the multifaceted functionalities MLflow offers, showcasing how it enhances the efficacy, reliability, 
+As we delve further, we'll explore the multifaceted functionalities QCFlow offers, showcasing how it enhances the efficacy, reliability, 
 and insights derived from traditional ML models. Whether you're a seasoned expert looking to optimize workflows or a newcomer eager to make 
-a mark, MLflow stands as an invaluable ally in your machine learning journey.
+a mark, QCFlow stands as an invaluable ally in your machine learning journey.
 
 Native Library Support
 ----------------------
-There are a number of natively supported traditional ML libraries within MLflow. Throughout the documentation, you may see these referred to as 
+There are a number of natively supported traditional ML libraries within QCFlow. Throughout the documentation, you may see these referred to as 
 "flavors", as they are specific implementations of native support for saving, logging, loading, and generic python function representation for 
 the models that are produced from these libraries. 
 
@@ -79,10 +79,10 @@ Tutorials and Guides
             <div class="simple-card">
                 <a href="hyperparameter-tuning-with-child-runs/index.html">
                     <div class="header">
-                        Hyperparameter Tuning with MLflow and Optuna
+                        Hyperparameter Tuning with QCFlow and Optuna
                     </div>
                     <p>
-                        Explore the integration of MLflow Tracking with Optuna for hyperparameter tuning. Dive into the capabilities of MLflow, 
+                        Explore the integration of QCFlow Tracking with Optuna for hyperparameter tuning. Dive into the capabilities of QCFlow, 
                         understand parent-child run relationships, and compare different tuning runs to optimize model performance.
                     </p>
                 </a>
@@ -90,10 +90,10 @@ Tutorials and Guides
             <div class="simple-card">
                 <a href="creating-custom-pyfunc/index.html">
                     <div class="header">
-                        Custom Pyfunc Models with MLflow
+                        Custom Pyfunc Models with QCFlow
                     </div>
                     <p>
-                        Dive deep into the world of MLflow's Custom Pyfunc. Starting with basic model definitions, embark on a journey that
+                        Dive deep into the world of QCFlow's Custom Pyfunc. Starting with basic model definitions, embark on a journey that
                         showcases the versatility and power of Pyfunc. From simple mathematical curves to complex machine learning integrations,
                         discover how Pyfunc offers standardized, reproducible, and efficient workflows for a variety of use cases.
                     </p>
@@ -105,7 +105,7 @@ Tutorials and Guides
                         Multi-Model Endpoints with PyFunc
                     </div>
                     <p>
-                        Dive deep into custom multi-model inference via MLflow's custom PyFunc models. Learn how to
+                        Dive deep into custom multi-model inference via QCFlow's custom PyFunc models. Learn how to
                         simplify low-latency inference by passing additional inference parameters to a simple custom PyFunc implementation. 
                         This tutorial can serve as a jumping off point for many multi-model endpoint (MME) use cases!
                     </p>
@@ -123,34 +123,34 @@ Tutorials and Guides
     creating-custom-pyfunc/index
     serving-multiple-models-with-pyfunc/index
 
-MLflow Tracking
+QCFlow Tracking
 ---------------
-Tracking is central to the MLflow ecosystem, facilitating the systematic organization of experiments and runs:
+Tracking is central to the QCFlow ecosystem, facilitating the systematic organization of experiments and runs:
 
 - **Experiments and Runs**: Each experiment encapsulates a specific aspect of your research, and each experiment can house multiple runs. Runs document critical data like metrics, parameters, and the code state.
 - **Artifacts**: Store crucial output from runs, be it models, visualizations, datasets, or other metadata. This repository of artifacts ensures traceability and easy access.
-- **Metrics and Parameters**: By allowing users to log parameters and metrics, MLflow makes it straightforward to compare different runs, facilitating model optimization.
+- **Metrics and Parameters**: By allowing users to log parameters and metrics, QCFlow makes it straightforward to compare different runs, facilitating model optimization.
 - **Dependencies and Environment**: The platform automatically captures the computational environment, ensuring that experiments are reproducible across different setups.
 - **Input Examples and Model Signatures**: These features allow developers to define the expected format of the model's inputs, making validation and debugging more straightforward.
 - **UI Integration**: The integrated UI provides a visual overview of all runs, enabling easy comparison and deeper insights.
-- **Search Functionality**: Efficiently sift through your experiments using MLflow's robust search functionality.
+- **Search Functionality**: Efficiently sift through your experiments using QCFlow's robust search functionality.
 - **APIs**: Comprehensive APIs are available, allowing users to interact with the tracking system programmatically, integrating it into existing workflows.
 
-MLflow Recipes
+QCFlow Recipes
 ---------------
-Recipes in MLflow are predefined templates tailored for specific tasks:
+Recipes in QCFlow are predefined templates tailored for specific tasks:
 
 - **Reduced Boilerplate**: These templates help eliminate repetitive setup or initialization code, speeding up development.
-- **Best Practices**: MLflow's recipes are crafted keeping best practices in mind, ensuring that users are aligned with industry standards right from the get-go.
+- **Best Practices**: QCFlow's recipes are crafted keeping best practices in mind, ensuring that users are aligned with industry standards right from the get-go.
 - **Customizability**: While recipes provide a structured starting point, they're designed to be flexible, accommodating tweaks and modifications as needed.
 
-MLflow Evaluate
+QCFlow Evaluate
 ---------------
 Ensuring model quality is paramount:
 
-- **Auto-generated Metrics**: MLflow automatically evaluates models, providing key metrics for regression (like RMSE, MAE) and classification (such as F1-score, AUC-ROC).
-- **Visualization**: Understand your model better with automatically generated plots. For instance, MLflow can produce confusion matrices, precision-recall curves, and more for classification tasks.
-- **Extensibility**: While MLflow provides a rich set of evaluation tools out of the box, it's also designed to accommodate custom metrics and visualizations.
+- **Auto-generated Metrics**: QCFlow automatically evaluates models, providing key metrics for regression (like RMSE, MAE) and classification (such as F1-score, AUC-ROC).
+- **Visualization**: Understand your model better with automatically generated plots. For instance, QCFlow can produce confusion matrices, precision-recall curves, and more for classification tasks.
+- **Extensibility**: While QCFlow provides a rich set of evaluation tools out of the box, it's also designed to accommodate custom metrics and visualizations.
 
 Model Registry
 --------------
@@ -162,8 +162,8 @@ This feature acts as a catalog for models:
 
 Deployment
 ----------
-MLflow simplifies the transition from development to production:
+QCFlow simplifies the transition from development to production:
 
-- **Consistency**: By meticulously recording dependencies and the computational environment, MLflow ensures that models behave consistently across different deployment setups.
+- **Consistency**: By meticulously recording dependencies and the computational environment, QCFlow ensures that models behave consistently across different deployment setups.
 - **Docker Support**: Facilitate deployment in containerized environments using Docker, encapsulating all dependencies and ensuring a uniform runtime environment.
-- **Scalability**: MLflow is designed to accommodate both small-scale deployments and large, distributed setups, ensuring that it scales with your needs.
+- **Scalability**: QCFlow is designed to accommodate both small-scale deployments and large, distributed setups, ensuring that it scales with your needs.

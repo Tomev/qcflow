@@ -1,10 +1,10 @@
 """
-The ``mlflow.tensorflow`` module provides an API for logging and loading TensorFlow models.
+The ``qcflow.tensorflow`` module provides an API for logging and loading TensorFlow models.
 This module exports TensorFlow models with the following flavors:
 
 TensorFlow (native) format
     This is the main flavor that can be loaded back into TensorFlow.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
 """
 
@@ -20,24 +20,24 @@ import pandas
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.numpy_dataset import from_numpy
-from mlflow.data.tensorflow_dataset import from_tensorflow
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature, infer_signature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.tensorflow.callback import MlflowCallback, MlflowModelCheckpointCallback  # noqa: F401
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.tracking.context import registry as context_registry
-from mlflow.tracking.fluent import _shut_down_async_logging
-from mlflow.types.schema import TensorSpec
-from mlflow.utils import is_iterator
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.numpy_dataset import from_numpy
+from qcflow.data.tensorflow_dataset import from_tensorflow
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature, infer_signature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.tensorflow.callback import MlflowCallback, MlflowModelCheckpointCallback  # noqa: F401
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.tracking.context import registry as context_registry
+from qcflow.tracking.fluent import _shut_down_async_logging
+from qcflow.types.schema import TensorSpec
+from qcflow.utils import is_iterator
+from qcflow.utils.autologging_utils import (
     PatchFunction,
     autologging_integration,
     get_autologging_config,
@@ -46,30 +46,30 @@ from mlflow.utils.autologging_utils import (
     resolve_input_example_and_signature,
     safe_patch,
 )
-from mlflow.utils.checkpoint_utils import (
+from qcflow.utils.checkpoint_utils import (
     _WEIGHT_ONLY_CHECKPOINT_SUFFIX,
     download_checkpoint_artifact,
 )
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import TempDir, get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import TempDir, get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "tensorflow"
 
@@ -98,13 +98,13 @@ _KERAS_MODEL_DATA_PATH = "data"
 _TF2MODEL_SUBPATH = "tf2model"
 
 
-MLflowCallback = MlflowCallback  # for backwards compatibility
+QCFlowCallback = MlflowCallback  # for backwards compatibility
 
 
 def get_default_pip_requirements(include_cloudpickle=False):
     """
     Returns
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -118,10 +118,10 @@ def get_default_pip_requirements(include_cloudpickle=False):
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 def get_global_custom_objects():
@@ -155,23 +155,23 @@ def log_model(
     metadata=None,
 ):
     """
-    Log a TF2 core model (inheriting tf.Module) or a Keras model in MLflow Model format.
+    Log a TF2 core model (inheriting tf.Module) or a Keras model in QCFlow Model format.
 
     .. note::
 
         If you log a Keras or TensorFlow model without a signature, inference with
-        :py:func:`mlflow.pyfunc.spark_udf()` will not work unless the model's pyfunc
+        :py:func:`qcflow.pyfunc.spark_udf()` will not work unless the model's pyfunc
         representation accepts pandas DataFrames as inference inputs.
 
-        You can infer a model's signature by calling the :py:func:`mlflow.models.infer_signature()`
+        You can infer a model's signature by calling the :py:func:`qcflow.models.infer_signature()`
         API on features from the model's test dataset. You can also manually create a model
         signature, for example:
 
         .. code-block:: python
             :caption: Example of creating signature for saving TensorFlow and `tf.Keras` models
 
-            from mlflow.types.schema import Schema, TensorSpec
-            from mlflow.models import ModelSignature
+            from qcflow.types.schema import Schema, TensorSpec
+            from qcflow.models import ModelSignature
             import numpy as np
 
             input_schema = Schema(
@@ -189,10 +189,10 @@ def log_model(
         model: The TF2 core model (inheriting tf.Module) or Keras model to be saved.
         artifact_path: The run-relative path to which to log model artifacts.
         custom_objects: A Keras ``custom_objects`` dictionary mapping names (strings) to
-            custom classes or functions associated with the Keras model. MLflow saves
+            custom classes or functions associated with the Keras model. QCFlow saves
             these custom layers using CloudPickle and restores them automatically
-            when the model is loaded with :py:func:`mlflow.tensorflow.load_model` and
-            :py:func:`mlflow.pyfunc.load_model`.
+            when the model is loaded with :py:func:`qcflow.tensorflow.load_model` and
+            :py:func:`qcflow.pyfunc.load_model`.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
         signature: {{ signature }}
@@ -210,13 +210,13 @@ def log_model(
         metadata: {{ metadata }}
 
     Returns
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
     """
 
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.tensorflow,
+        flavor=qcflow.tensorflow,
         model=model,
         conda_env=conda_env,
         code_paths=code_paths,
@@ -241,10 +241,10 @@ def _save_keras_custom_objects(path, custom_objects, file_name):
         path: An absolute path that points to the data directory within /path/to/model.
         custom_objects: Keras ``custom_objects`` is a dictionary mapping
             names (strings) to custom classes or functions to be considered
-            during deserialization. MLflow saves these custom layers using
+            during deserialization. QCFlow saves these custom layers using
             CloudPickle and restores them automatically when the model is
-            loaded with :py:func:`mlflow.keras.load_model` and
-            :py:func:`mlflow.pyfunc.load_model`.
+            loaded with :py:func:`qcflow.keras.load_model` and
+            :py:func:`qcflow.pyfunc.load_model`.
         file_name: The file name to save the custom objects to.
     """
     import cloudpickle
@@ -256,7 +256,7 @@ def _save_keras_custom_objects(path, custom_objects, file_name):
 
 _NO_MODEL_SIGNATURE_WARNING = (
     "You are saving a TensorFlow Core model or Keras model "
-    "without a signature. Inference with mlflow.pyfunc.spark_udf() will not work "
+    "without a signature. Inference with qcflow.pyfunc.spark_udf() will not work "
     "unless the model's pyfunc representation accepts pandas DataFrames as "
     "inference inputs."
 )
@@ -268,7 +268,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     custom_objects=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
@@ -279,22 +279,22 @@ def save_model(
     metadata=None,
 ):
     """
-    Save a TF2 core model (inheriting tf.Module) or Keras model in MLflow Model format to a path on
+    Save a TF2 core model (inheriting tf.Module) or Keras model in QCFlow Model format to a path on
     the local file system.
 
     .. note::
         If you save a Keras or TensorFlow model without a signature, inference with
-        :py:func:`mlflow.pyfunc.spark_udf()` will not work unless the model's pyfunc
+        :py:func:`qcflow.pyfunc.spark_udf()` will not work unless the model's pyfunc
         representation accepts pandas DataFrames as inference inputs.
-        You can infer a model's signature by calling the :py:func:`mlflow.models.infer_signature()`
+        You can infer a model's signature by calling the :py:func:`qcflow.models.infer_signature()`
         API on features from the model's test dataset. You can also manually create a model
         signature, for example:
 
         .. code-block:: python
             :caption: Example of creating signature for saving TensorFlow and `tf.Keras` models
 
-            from mlflow.types.schema import Schema, TensorSpec
-            from mlflow.models import ModelSignature
+            from qcflow.types.schema import Schema, TensorSpec
+            from qcflow.models import ModelSignature
             import numpy as np
 
             input_schema = Schema(
@@ -310,15 +310,15 @@ def save_model(
 
     Args:
         model: The Keras model or Tensorflow module to be saved.
-        path: Local path where the MLflow model is to be saved.
+        path: Local path where the QCFlow model is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: MLflow model configuration to which to add the ``tensorflow`` flavor.
+        qcflow_model: QCFlow model configuration to which to add the ``tensorflow`` flavor.
         custom_objects: A Keras ``custom_objects`` dictionary mapping names (strings) to
-            custom classes or functions associated with the Keras model. MLflow saves
+            custom classes or functions associated with the Keras model. QCFlow saves
             these custom layers using CloudPickle and restores them automatically
-            when the model is loaded with :py:func:`mlflow.tensorflow.load_model` and
-            :py:func:`mlflow.pyfunc.load_model`.
+            when the model is loaded with :py:func:`qcflow.tensorflow.load_model` and
+            :py:func:`qcflow.pyfunc.load_model`.
         signature: {{ signature }}
         input_example: {{ input_example }}
         pip_requirements: {{ pip_requirements }}
@@ -338,9 +338,9 @@ def save_model(
 
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = None
@@ -378,9 +378,9 @@ def save_model(
     _validate_env_arguments(conda_env, pip_requirements, extra_pip_requirements)
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     if isinstance(model, KerasModel):
         keras_model_kwargs = keras_model_kwargs or {}
@@ -458,33 +458,33 @@ def save_model(
     else:
         raise MlflowException(f"Unknown model type: {type(model)}")
 
-    # update flavor info to mlflow_model
-    mlflow_model.add_flavor(FLAVOR_NAME, code=code_dir_subpath, **flavor_options)
+    # update flavor info to qcflow_model
+    qcflow_model.add_flavor(FLAVOR_NAME, code=code_dir_subpath, **flavor_options)
 
-    # append loader_module, data and env data to mlflow_model
+    # append loader_module, data and env data to qcflow_model
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.tensorflow",
+        qcflow_model,
+        loader_module="qcflow.tensorflow",
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
         **pyfunc_options,
     )
 
-    # add model file size to mlflow_model
+    # add model file size to qcflow_model
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
+        qcflow_model.model_size_bytes = size
 
-    # save mlflow_model to path/MLmodel
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    # save qcflow_model to path/MLmodel
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     include_cloudpickle = custom_objects is not None or get_global_custom_objects() is not None
     if conda_env is None:
         if pip_requirements is None:
             default_reqs = get_default_pip_requirements(include_cloudpickle)
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path, FLAVOR_NAME, fallback=default_reqs
             )
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
@@ -538,7 +538,7 @@ def _load_keras_model(model_path, keras_module, save_format, **kwargs):
         model_path = os.path.join(model_path, _MODEL_SAVE_PATH)
 
     # If the save_format is HDF5, then we save with h5 file
-    # extension to align with prior behavior of mlflow logging
+    # extension to align with prior behavior of qcflow logging
     if save_format == "h5":
         model_path += ".h5"
     # Since TF 2.16.0, it only supports saving model in .h5 or .keras format.
@@ -574,7 +574,7 @@ def _infer_model_type(model_conf):
     model_type = _get_flavor_conf(model_conf).get("model_type")
     if model_type is not None:
         return model_type
-    # Loading model logged by old version mlflow, which deos not record model_type
+    # Loading model logged by old version qcflow, which deos not record model_type
     # Inferring model type by checking whether model_conf contains "keras" flavor.
     if "keras" in model_conf.flavors:
         return _MODEL_TYPE_KERAS
@@ -583,20 +583,20 @@ def _infer_model_type(model_conf):
 
 def load_model(model_uri, dst_path=None, saved_model_kwargs=None, keras_model_kwargs=None):
     """
-    Load an MLflow model that contains the TensorFlow flavor from the specified path.
+    Load an QCFlow model that contains the TensorFlow flavor from the specified path.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
@@ -685,12 +685,12 @@ def _load_tf1_estimator_saved_model(tf_saved_model_dir, tf_meta_graph_tags, tf_s
 
 def _load_pyfunc(path):
     """
-    Load PyFunc implementation. Called by ``pyfunc.load_model``. This function loads an MLflow
+    Load PyFunc implementation. Called by ``pyfunc.load_model``. This function loads an QCFlow
     model with the TensorFlow flavor into a new TensorFlow graph and exposes it behind the
     ``pyfunc.predict`` interface.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``tensorflow`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``tensorflow`` flavor.
     """
     import tensorflow as tf
 
@@ -924,7 +924,7 @@ def _get_tensorboard_callback(lst):
 
 # A representation of a TensorBoard event logging directory with two attributes:
 # :location - string: The filesystem location of the logging directory
-# :is_temp - boolean: `True` if the logging directory was created for temporary use by MLflow,
+# :is_temp - boolean: `True` if the logging directory was created for temporary use by QCFlow,
 #                     `False` otherwise
 class _TensorBoardLogDir(NamedTuple):
     location: str
@@ -936,16 +936,16 @@ def _setup_callbacks(callbacks, log_every_epoch, log_every_n_steps):
     Adds TensorBoard and MlfLowTfKeras callbacks to the
     input list, and returns the new list and appropriate log directory.
     """
-    from mlflow.tensorflow.autologging import _TensorBoard
-    from mlflow.tensorflow.callback import MlflowCallback, MlflowModelCheckpointCallback
+    from qcflow.tensorflow.autologging import _TensorBoard
+    from qcflow.tensorflow.callback import MlflowCallback, MlflowModelCheckpointCallback
 
     tb = _get_tensorboard_callback(callbacks)
     for callback in callbacks:
         if isinstance(callback, MlflowCallback):
             raise MlflowException(
-                "MLflow autologging must be turned off if an `MlflowCallback` is explicitly added "
+                "QCFlow autologging must be turned off if an `MlflowCallback` is explicitly added "
                 "to the callback list. You are creating an `MlflowCallback` while having "
-                "autologging enabled. Please either call `mlflow.tensorflow.autolog(disable=True)` "
+                "autologging enabled. Please either call `qcflow.tensorflow.autolog(disable=True)` "
                 "to disable autologging or remove `MlflowCallback` from the callback list. "
             )
     if tb is None:
@@ -961,22 +961,22 @@ def _setup_callbacks(callbacks, log_every_epoch, log_every_n_steps):
         )
     )
 
-    model_checkpoint = get_autologging_config(mlflow.tensorflow.FLAVOR_NAME, "checkpoint", True)
+    model_checkpoint = get_autologging_config(qcflow.tensorflow.FLAVOR_NAME, "checkpoint", True)
     if model_checkpoint:
         checkpoint_monitor = get_autologging_config(
-            mlflow.tensorflow.FLAVOR_NAME, "checkpoint_monitor", "val_loss"
+            qcflow.tensorflow.FLAVOR_NAME, "checkpoint_monitor", "val_loss"
         )
         checkpoint_mode = get_autologging_config(
-            mlflow.tensorflow.FLAVOR_NAME, "checkpoint_mode", "min"
+            qcflow.tensorflow.FLAVOR_NAME, "checkpoint_mode", "min"
         )
         checkpoint_save_best_only = get_autologging_config(
-            mlflow.tensorflow.FLAVOR_NAME, "checkpoint_save_best_only", True
+            qcflow.tensorflow.FLAVOR_NAME, "checkpoint_save_best_only", True
         )
         checkpoint_save_weights_only = get_autologging_config(
-            mlflow.tensorflow.FLAVOR_NAME, "checkpoint_save_weights_only", False
+            qcflow.tensorflow.FLAVOR_NAME, "checkpoint_save_weights_only", False
         )
         checkpoint_save_freq = get_autologging_config(
-            mlflow.tensorflow.FLAVOR_NAME, "checkpoint_save_freq", "epoch"
+            qcflow.tensorflow.FLAVOR_NAME, "checkpoint_save_freq", "epoch"
         )
 
         if not any(isinstance(callback, MlflowModelCheckpointCallback) for callback in callbacks):
@@ -1021,7 +1021,7 @@ def autolog(
     Enables autologging for ``tf.keras``.
     Note that only ``tensorflow>=2.3`` are supported.
     As an example, try running the
-    `Keras/TensorFlow example <https://github.com/mlflow/mlflow/blob/master/examples/keras/train.py>`_.
+    `Keras/TensorFlow example <https://github.com/qcflow/qcflow/blob/master/examples/keras/train.py>`_.
 
     For each TensorFlow module, autologging captures the following information:
 
@@ -1036,7 +1036,7 @@ def autolog(
      - **Artifacts**
 
       - Model summary on training start.
-      - Saved Keras model in `MLflow Model <https://mlflow.org/docs/latest/models.html>`_ format.
+      - Saved Keras model in `QCFlow Model <https://qcflow.org/docs/latest/models.html>`_ format.
       - TensorBoard logs on training end.
 
     **tf.keras.callbacks.EarlyStopping**
@@ -1049,19 +1049,19 @@ def autolog(
 
     Refer to the autologging tracking documentation for more
     information on `TensorFlow workflows
-    <https://www.mlflow.org/docs/latest/tracking.html#tensorflow-and-keras-experimental>`_.
+    <https://www.qcflow.org/docs/latest/tracking.html#tensorflow-and-keras-experimental>`_.
 
-    Note that autologging cannot be used together with explicit MLflow callback, i.e.,
-    `mlflow.tensorflow.MlflowCallback`, because it will cause the same metrics to be logged twice.
-    If you want to include `mlflow.tensorflow.MlflowCallback` in the callback list, please turn off
-    autologging by calling `mlflow.tensorflow.autolog(disable=True)`.
+    Note that autologging cannot be used together with explicit QCFlow callback, i.e.,
+    `qcflow.tensorflow.MlflowCallback`, because it will cause the same metrics to be logged twice.
+    If you want to include `qcflow.tensorflow.MlflowCallback` in the callback list, please turn off
+    autologging by calling `qcflow.tensorflow.autolog(disable=True)`.
 
     Args:
         every_n_iter: deprecated, please use ``log_every_epoch`` instead. Per ``every_n_iter``
             steps, metrics will be logged.
-        log_models: If ``True``, trained models are logged as MLflow model artifacts.
+        log_models: If ``True``, trained models are logged as QCFlow model artifacts.
             If ``False``, trained models are not logged.
-        log_datasets: If ``True``, dataset information is logged to MLflow Tracking.
+        log_datasets: If ``True``, dataset information is logged to QCFlow Tracking.
             If ``False``, dataset information is not logged.
         disable: If ``True``, disables the TensorFlow autologging integration. If ``False``,
             enables the TensorFlow integration autologging integration.
@@ -1069,9 +1069,9 @@ def autolog(
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
-            tensorflow that have not been tested against this version of the MLflow
+            tensorflow that have not been tested against this version of the QCFlow
             client or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during TensorFlow
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during TensorFlow
             autologging. If ``False``, show all events and warnings during TensorFlow
             autologging.
         registered_model_name: If given, each time a model is trained, it is registered as a
@@ -1081,7 +1081,7 @@ def autolog(
             logged along with tf/keras model artifacts during training. If
             ``False``, input examples are not logged.
         log_model_signatures: If ``True``,
-            :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
+            :py:class:`ModelSignatures <qcflow.models.ModelSignature>`
             describing model inputs and outputs are collected and logged along
             with tf/keras model artifacts during training. If ``False``,
             signatures are not logged. Note that logging TensorFlow models
@@ -1128,7 +1128,7 @@ def autolog(
 
     if Version(tf.__version__) < Version("2.3"):
         _logger.error(
-            "Could not log to MLflow because your Tensorflow version is below 2.3, detected "
+            "Could not log to QCFlow because your Tensorflow version is below 2.3, detected "
             f"version: {tf.__version__}."
         )
         return
@@ -1150,7 +1150,7 @@ def autolog(
                     "baseline": callback.baseline,
                     "restore_best_weights": callback.restore_best_weights,
                 }
-                mlflow.log_params(earlystopping_params)
+                qcflow.log_params(earlystopping_params)
             except Exception:
                 return
 
@@ -1161,7 +1161,7 @@ def autolog(
             return None
 
     def _log_early_stop_callback_metrics(callback, history):
-        from mlflow import log_metrics
+        from qcflow import log_metrics
 
         if callback is None or not callback.model.stop_training:
             return
@@ -1205,7 +1205,7 @@ def autolog(
             history.model.stop_training = original_stop_training
             return infer_signature(input_data_slice, model_output)
 
-        from mlflow.tensorflow.autologging import extract_tf_keras_input_example
+        from qcflow.tensorflow.autologging import extract_tf_keras_input_example
 
         def _get_tf_keras_input_example_slice():
             input_training_data = args[0]
@@ -1284,7 +1284,7 @@ def autolog(
                 )
 
             if batch_size is not None:
-                mlflow.log_param("batch_size", batch_size)
+                qcflow.log_param("batch_size", batch_size)
                 unlogged_params.append("batch_size")
 
             log_fn_args_as_params(original, args, kwargs, unlogged_params)
@@ -1346,7 +1346,7 @@ def autolog(
                 except Exception as e:
                     _logger.warning(
                         "Failed to log training dataset information to "
-                        "MLflow Tracking. Reason: %s",
+                        "QCFlow Tracking. Reason: %s",
                         e,
                     )
 
@@ -1364,7 +1364,7 @@ def autolog(
             # to avoid leaving zombie threads between patchings.
             _shut_down_async_logging()
 
-            mlflow.log_artifacts(
+            qcflow.log_artifacts(
                 local_dir=self.log_dir.location,
                 artifact_path="tensorboard_logs",
             )
@@ -1414,13 +1414,13 @@ def _log_tensorflow_dataset(tensorflow_dataset, source, context, name=None, targ
         )
         return
 
-    mlflow.log_input(dataset, context)
+    qcflow.log_input(dataset, context)
 
 
 def load_checkpoint(model=None, run_id=None, epoch=None, global_step=None):
     """
     If you enable "checkpoint" in autologging, during Keras model
-    training execution, checkpointed models are logged as MLflow artifacts.
+    training execution, checkpointed models are logged as QCFlow artifacts.
     Using this API, you can load the checkpointed model.
 
     If you want to load the latest checkpoint, set both `epoch` and `global_step` to None.
@@ -1447,21 +1447,21 @@ def load_checkpoint(model=None, run_id=None, epoch=None, global_step=None):
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        mlflow.tensorflow.autolog(checkpoint=True, checkpoint_save_best_only=False)
+        qcflow.tensorflow.autolog(checkpoint=True, checkpoint_save_best_only=False)
 
         model = create_tf_keras_model()  # Create a Keras model
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(data, label, epoch=10)
 
         run_id = run.info.run_id
 
         # load latest checkpoint model
-        latest_checkpoint_model = mlflow.tensorflow.load_checkpoint(run_id=run_id)
+        latest_checkpoint_model = qcflow.tensorflow.load_checkpoint(run_id=run_id)
 
         # load history checkpoint model logged in second epoch
-        checkpoint_model = mlflow.tensorflow.load_checkpoint(run_id=run_id, epoch=2)
+        checkpoint_model = qcflow.tensorflow.load_checkpoint(run_id=run_id, epoch=2)
     """
     import tensorflow as tf
 

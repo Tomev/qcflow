@@ -112,7 +112,7 @@ export class CompareRunScatterImpl extends Component<CompareRunScatterImplProps,
               <FormUI.Label htmlFor="x-axis-selector">
                 <FormattedMessage
                   defaultMessage="X-axis:"
-                  description="Label text for x-axis in scatter plot comparison in MLflow"
+                  description="Label text for x-axis in scatter plot comparison in QCFlow"
                 />
               </FormUI.Label>
               {this.renderSelect('x')}
@@ -122,7 +122,7 @@ export class CompareRunScatterImpl extends Component<CompareRunScatterImplProps,
               <FormUI.Label htmlFor="y-axis-selector">
                 <FormattedMessage
                   defaultMessage="Y-axis:"
-                  description="Label text for y-axis in scatter plot comparison in MLflow"
+                  description="Label text for y-axis in scatter plot comparison in QCFlow"
                 />
               </FormUI.Label>
               {this.renderSelect('y')}
@@ -180,7 +180,7 @@ export class CompareRunScatterImpl extends Component<CompareRunScatterImplProps,
   renderSelect(axis: any) {
     return (
       <SimpleSelect
-        componentId="codegen_mlflow_app_src_experiment-tracking_components_comparerunscatter.tsx_182"
+        componentId="codegen_qcflow_app_src_experiment-tracking_components_comparerunscatter.tsx_182"
         css={styles.select}
         id={axis + '-axis-selector'}
         onChange={({ target }) => {

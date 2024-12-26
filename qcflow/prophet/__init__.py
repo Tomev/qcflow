@@ -1,10 +1,10 @@
 """
-The ``mlflow.prophet`` module provides an API for logging and loading Prophet models.
+The ``qcflow.prophet`` module provides an API for logging and loading Prophet models.
 This module exports univariate Prophet models in the following flavors:
 
 Prophet (native) format
     This is the main flavor that can be accessed with Prophet APIs.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and for batch auditing
     of historical forecasts.
 
@@ -19,34 +19,34 @@ from typing import Any, Optional
 
 import yaml
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "prophet"
 _MODEL_BINARY_KEY = "data"
@@ -59,7 +59,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at a minimum, contains these requirements.
     """
@@ -73,10 +73,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
@@ -85,7 +85,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -101,21 +101,21 @@ def save_model(
         path: Local path where the serialized model (as JSON) is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
-        signature: an instance of the :py:class:`ModelSignature <mlflow.models.ModelSignature>`
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
+        signature: an instance of the :py:class:`ModelSignature <qcflow.models.ModelSignature>`
             class that describes the model's inputs and outputs. If not specified but an
             ``input_example`` is supplied, a signature will be automatically inferred
             based on the supplied input example and model. To disable automatic signature
             inference when providing an input example, set ``signature`` to ``False``.
             To manually infer a model signature, call
-            :py:func:`infer_signature() <mlflow.models.infer_signature>` on datasets
+            :py:func:`infer_signature() <qcflow.models.infer_signature>` on datasets
             with valid model inputs, such as a training dataset with the target column
             omitted, and valid model outputs, like model predictions made on the training
             dataset, for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 model = Prophet().fit(df)
                 train = model.history
@@ -134,9 +134,9 @@ def save_model(
     _validate_and_prepare_target_save_path(path)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _ProphetModelWrapper(pr_model)
@@ -145,17 +145,17 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     model_data_path = os.path.join(path, _MODEL_BINARY_FILE_NAME)
     _save_model(pr_model, model_data_path)
 
     model_bin_kwargs = {_MODEL_BINARY_KEY: _MODEL_BINARY_FILE_NAME}
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.prophet",
+        qcflow_model,
+        loader_module="qcflow.prophet",
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
@@ -165,15 +165,15 @@ def save_model(
         _MODEL_TYPE_KEY: pr_model.__class__.__name__,
         **model_bin_kwargs,
     }
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         prophet_version=prophet.__version__,
         code=code_dir_subpath,
         **flavor_conf,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         default_reqs = None
@@ -220,7 +220,7 @@ def log_model(
     metadata=None,
 ):
     """
-    Logs a Prophet model as an MLflow artifact for the current run.
+    Logs a Prophet model as an QCFlow artifact for the current run.
 
     Args:
         pr_model: Prophet model to be saved.
@@ -231,20 +231,20 @@ def log_model(
             future release without warning. If given, create a model
             version under ``registered_model_name``, also creating a
             registered model if one with the given name does not exist.
-        signature: An instance of the :py:class:`ModelSignature <mlflow.models.ModelSignature>`
+        signature: An instance of the :py:class:`ModelSignature <qcflow.models.ModelSignature>`
             class that describes the model's inputs and outputs. If not specified but an
             ``input_example`` is supplied, a signature will be automatically inferred
             based on the supplied input example and model. To disable automatic signature
             inference when providing an input example, set ``signature`` to ``False``.
             To manually infer a model signature, call
-            :py:func:`infer_signature() <mlflow.models.infer_signature>` on datasets
+            :py:func:`infer_signature() <qcflow.models.infer_signature>` on datasets
             with valid model inputs, such as a training dataset with the target column
             omitted, and valid model outputs, like model predictions made on the training
             dataset, for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 model = Prophet().fit(df)
                 train = model.history
@@ -261,12 +261,12 @@ def log_model(
         metadata: {{ metadata }}
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.prophet,
+        flavor=qcflow.prophet,
         registered_model_name=registered_model_name,
         pr_model=pr_model,
         conda_env=conda_env,
@@ -301,7 +301,7 @@ def _load_pyfunc(path):
     Loads PyFunc implementation for Prophet. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``prophet`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``prophet`` flavor.
     """
     return _ProphetModelWrapper(_load_model(path))
 
@@ -311,15 +311,15 @@ def load_model(model_uri, dst_path=None):
     Load a Prophet model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output

@@ -1,33 +1,33 @@
-Starting the MLflow Tracking Server
+Starting the QCFlow Tracking Server
 ===================================
 
-Before diving into MLflow's rich features, let's set up the foundational components: the MLflow
-Tracking Server and the MLflow UI. This guide will walk you through the steps to get both up and running.
+Before diving into QCFlow's rich features, let's set up the foundational components: the QCFlow
+Tracking Server and the QCFlow UI. This guide will walk you through the steps to get both up and running.
 
-Setting Up MLflow
+Setting Up QCFlow
 -----------------
 
-The first thing that we need to do is to get MLflow.
+The first thing that we need to do is to get QCFlow.
 
-Step 1: Install MLflow from PyPI
+Step 1: Install QCFlow from PyPI
 --------------------------------
 
-MLflow is conveniently available on PyPI. Installing it is as simple as running a pip command.
+QCFlow is conveniently available on PyPI. Installing it is as simple as running a pip command.
 
 .. code-section::
 
     .. code-block:: bash
-        :name: download-mlflow
+        :name: download-qcflow
 
-        pip install mlflow
+        pip install qcflow
 
-Step 2 (Optional): Launch the MLflow Tracking Server
+Step 2 (Optional): Launch the QCFlow Tracking Server
 ----------------------------------------------------
 
-If you would like to use a simpler solution by leveraging a managed instance of the MLflow Tracking Server, 
+If you would like to use a simpler solution by leveraging a managed instance of the QCFlow Tracking Server, 
 please `see the details about options here <../running-notebooks/index.html>`_.
 
-To begin, you'll need to initiate the MLflow Tracking Server. Remember to keep the command prompt
+To begin, you'll need to initiate the QCFlow Tracking Server. Remember to keep the command prompt
 running during the tutorial, as closing it will shut down the server.
 
 .. code-section::
@@ -35,7 +35,7 @@ running during the tutorial, as closing it will shut down the server.
     .. code-block:: bash
         :name: tracking-server-start
 
-        mlflow server --host 127.0.0.1 --port 8080
+        qcflow server --host 127.0.0.1 --port 8080
 
 Once the server starts running, you should see the following output:
 
@@ -52,8 +52,8 @@ Once the server starts running, you should see the following output:
     ...
 
 .. note::
-    Remember the host and port name that your MLflow tracking server is assigned. You will need
+    Remember the host and port name that your QCFlow tracking server is assigned. You will need
     this information in the next section of this tutorial!
 
-Congratulations! Your MLflow environment is now set up and ready to go. As you progress, you'll
-explore the myriad of functionalities MLflow has to offer, streamlining and enhancing your machine learning workflows.
+Congratulations! Your QCFlow environment is now set up and ready to go. As you progress, you'll
+explore the myriad of functionalities QCFlow has to offer, streamlining and enhancing your machine learning workflows.

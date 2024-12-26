@@ -3,8 +3,8 @@ import re
 
 import yaml
 
-from mlflow.exceptions import MlflowException
-from mlflow.version import VERSION as __version__
+from qcflow.exceptions import MlflowException
+from qcflow.version import VERSION as __version__
 
 
 class _PromptlabModel:
@@ -17,7 +17,7 @@ class _PromptlabModel:
         self.prompt_template = prompt_template
 
     def predict(self, inputs: pd.DataFrame) -> list[str]:
-        from mlflow.gateway import query
+        from qcflow.gateway import query
 
         results = []
         for idx in inputs.index:
@@ -41,7 +41,7 @@ class _PromptlabModel:
         return results
 
     def _construct_query_data(self, prompt):
-        from mlflow.gateway import get_route
+        from qcflow.gateway import get_route
 
         route_type = get_route(self.model_route).route_type
 
@@ -56,7 +56,7 @@ class _PromptlabModel:
             )
 
     def _parse_gateway_response(self, response):
-        from mlflow.gateway import get_route
+        from qcflow.gateway import get_route
 
         route_type = get_route(self.model_route).route_type
 
@@ -72,9 +72,9 @@ class _PromptlabModel:
 
 
 def _load_pyfunc(path):
-    from mlflow import pyfunc
-    from mlflow.entities.param import Param
-    from mlflow.utils.model_utils import (
+    from qcflow import pyfunc
+    from qcflow.entities.param import Param
+    from qcflow.utils.model_utils import (
         _get_flavor_configuration,
     )
 
@@ -102,7 +102,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature=None,
     input_example=None,
     pip_requirements=None,
@@ -111,11 +111,11 @@ def save_model(
     model_parameters=None,
     model_route=None,
 ):
-    from mlflow import pyfunc
-    from mlflow.models import Model
-    from mlflow.models.model import MLMODEL_FILE_NAME, Model
-    from mlflow.models.utils import _save_example
-    from mlflow.utils.environment import (
+    from qcflow import pyfunc
+    from qcflow.models import Model
+    from qcflow.models.model import MLMODEL_FILE_NAME, Model
+    from qcflow.models.utils import _save_example
+    from qcflow.utils.environment import (
         _CONDA_ENV_FILE_NAME,
         _CONSTRAINTS_FILE_NAME,
         _PYTHON_ENV_FILE_NAME,
@@ -126,8 +126,8 @@ def save_model(
         _validate_env_arguments,
         infer_pip_requirements,
     )
-    from mlflow.utils.file_utils import write_to
-    from mlflow.utils.model_utils import (
+    from qcflow.utils.file_utils import write_to
+    from qcflow.utils.model_utils import (
         _validate_and_copy_code_paths,
         _validate_and_prepare_target_save_path,
     )
@@ -137,12 +137,12 @@ def save_model(
     _validate_and_prepare_target_save_path(path)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if input_example is not None:
-        _save_example(mlflow_model, input_example, path)
+        _save_example(qcflow_model, input_example, path)
 
     parameters_sub_path = "parameters.yaml"
     parameters_path = os.path.join(path, parameters_sub_path)
@@ -158,20 +158,20 @@ def save_model(
         yaml.safe_dump(parameters, stream=f, default_flow_style=False)
 
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.promptlab",
+        qcflow_model,
+        loader_module="qcflow.promptlab",
         parameters_path=parameters_sub_path,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
     )
 
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
             inferred_reqs = infer_pip_requirements(
-                path, "mlflow._promptlab", [f"mlflow[gateway]=={__version__}"]
+                path, "qcflow._promptlab", [f"qcflow[gateway]=={__version__}"]
             )
             default_reqs = sorted(inferred_reqs)
         else:

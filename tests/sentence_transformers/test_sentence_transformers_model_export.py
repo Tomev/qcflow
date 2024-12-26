@@ -12,20 +12,20 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import ArrayType, DoubleType
 from sentence_transformers import SentenceTransformer
 
-import mlflow
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-import mlflow.sentence_transformers
-from mlflow import pyfunc
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, infer_signature
-from mlflow.models.utils import _read_example, load_serving_example
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.utils.environment import _mlflow_conda_env
+import qcflow
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+import qcflow.sentence_transformers
+from qcflow import pyfunc
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, infer_signature
+from qcflow.models.utils import _read_example, load_serving_example
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.utils.environment import _qcflow_conda_env
 
 from tests.helper_functions import (
     _assert_pip_requirements,
     _compare_logged_code_paths,
-    _mlflow_major_version_string,
+    _qcflow_major_version_string,
     assert_register_model_called_with_local_model_path,
     pyfunc_serve_and_score_model,
 )
@@ -53,9 +53,9 @@ def spark():
 
 
 def test_model_save_and_load(model_path, basic_model):
-    mlflow.sentence_transformers.save_model(model=basic_model, path=model_path)
+    qcflow.sentence_transformers.save_model(model=basic_model, path=model_path)
 
-    loaded_model = mlflow.sentence_transformers.load_model(model_path)
+    loaded_model = qcflow.sentence_transformers.load_model(model_path)
 
     encoded_single = loaded_model.encode("I'm just a simple string; nothing to see here.")
     encoded_multi = loaded_model.encode(["I'm a string", "I'm also a string", "Please encode me"])
@@ -73,8 +73,8 @@ def test_model_save_and_load(model_path, basic_model):
     "and `include_prompt` from gte-base-en-v1.5 requires 2.4.0 or above",
 )
 def test_model_save_and_load_with_custom_code(model_path, model_with_remote_code):
-    mlflow.sentence_transformers.save_model(model=model_with_remote_code, path=model_path)
-    loaded_model = mlflow.sentence_transformers.load_model(model_path)
+    qcflow.sentence_transformers.save_model(model=model_with_remote_code, path=model_path)
+    loaded_model = qcflow.sentence_transformers.load_model(model_path)
 
     encoded_single = loaded_model.encode("I'm just a simple string; nothing to see here.")
     assert isinstance(encoded_single, np.ndarray)
@@ -82,24 +82,24 @@ def test_model_save_and_load_with_custom_code(model_path, model_with_remote_code
 
 
 def test_dependency_mapping():
-    pip_requirements = mlflow.sentence_transformers.get_default_pip_requirements()
+    pip_requirements = qcflow.sentence_transformers.get_default_pip_requirements()
 
     expected_requirements = {"sentence-transformers", "torch", "transformers"}
     assert {package.split("=")[0] for package in pip_requirements}.intersection(
         expected_requirements
     ) == expected_requirements
 
-    conda_requirements = mlflow.sentence_transformers.get_default_conda_env()
+    conda_requirements = qcflow.sentence_transformers.get_default_conda_env()
     pip_in_conda = {
         package.split("=")[0] for package in conda_requirements["dependencies"][2]["pip"]
     }
-    expected_conda = {"mlflow"}
+    expected_conda = {"qcflow"}
     expected_conda.update(expected_requirements)
     assert pip_in_conda.intersection(expected_conda) == expected_conda
 
 
 def test_logged_data_structure(model_path, basic_model):
-    mlflow.sentence_transformers.save_model(model=basic_model, path=model_path)
+    qcflow.sentence_transformers.save_model(model=basic_model, path=model_path)
 
     with model_path.joinpath("requirements.txt").open() as file:
         requirements = file.read()
@@ -115,8 +115,8 @@ def test_logged_data_structure(model_path, basic_model):
     assert "model_size_bytes" in mlmodel
 
     pyfunc_flavor = mlmodel["flavors"]["python_function"]
-    assert pyfunc_flavor["loader_module"] == "mlflow.sentence_transformers"
-    assert pyfunc_flavor["data"] == mlflow.sentence_transformers.SENTENCE_TRANSFORMERS_DATA_PATH
+    assert pyfunc_flavor["loader_module"] == "qcflow.sentence_transformers"
+    assert pyfunc_flavor["data"] == qcflow.sentence_transformers.SENTENCE_TRANSFORMERS_DATA_PATH
 
     st_flavor = mlmodel["flavors"]["sentence_transformers"]
     assert st_flavor["pipeline_model_type"] == "BertModel"
@@ -141,15 +141,15 @@ def test_logged_data_structure(model_path, basic_model):
     ],
 )
 def test_get_transformers_model_name(model_name, expected):
-    assert mlflow.sentence_transformers._get_transformers_model_name(model_name) == expected
+    assert qcflow.sentence_transformers._get_transformers_model_name(model_name) == expected
 
 
 def test_model_logging_and_inference(basic_model):
     artifact_path = "sentence_transformer"
-    with mlflow.start_run():
-        model_info = mlflow.sentence_transformers.log_model(basic_model, artifact_path)
+    with qcflow.start_run():
+        model_info = qcflow.sentence_transformers.log_model(basic_model, artifact_path)
 
-    model = mlflow.sentence_transformers.load_model(model_info.model_uri)
+    model = qcflow.sentence_transformers.load_model(model_info.model_uri)
 
     encoded_single = model.encode(
         "Encodings provide a fixed width output regardless of input size."
@@ -171,13 +171,13 @@ def test_model_logging_and_inference(basic_model):
 
 
 def test_load_from_remote_uri(model_path, basic_model, mock_s3_bucket):
-    mlflow.sentence_transformers.save_model(model=basic_model, path=model_path)
+    qcflow.sentence_transformers.save_model(model=basic_model, path=model_path)
     artifact_root = f"s3://{mock_s3_bucket}"
     artifact_path = "model"
     artifact_repo = S3ArtifactRepository(artifact_root)
     artifact_repo.log_artifacts(model_path, artifact_path=artifact_path)
     model_uri = os.path.join(artifact_root, artifact_path)
-    loaded = mlflow.sentence_transformers.load_model(model_uri=str(model_uri))
+    loaded = qcflow.sentence_transformers.load_model(model_uri=str(model_uri))
 
     encoding = loaded.encode(
         "I can see why these are useful when you do distance calculations on them!"
@@ -188,21 +188,21 @@ def test_load_from_remote_uri(model_path, basic_model, mock_s3_bucket):
 
 def test_log_model_calls_register_model(tmp_path, basic_model):
     artifact_path = "sentence_transformer"
-    register_model_patch = mock.patch("mlflow.tracking._model_registry.fluent._register_model")
-    with mlflow.start_run(), register_model_patch:
+    register_model_patch = mock.patch("qcflow.tracking._model_registry.fluent._register_model")
+    with qcflow.start_run(), register_model_patch:
         conda_env = tmp_path.joinpath("conda_env.yaml")
-        _mlflow_conda_env(
+        _qcflow_conda_env(
             conda_env, additional_pip_deps=["transformers", "torch", "sentence-transformers"]
         )
-        mlflow.sentence_transformers.log_model(
+        qcflow.sentence_transformers.log_model(
             basic_model,
             artifact_path,
             conda_env=str(conda_env),
             registered_model_name="My super cool encoder",
         )
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
         assert_register_model_called_with_local_model_path(
-            register_model_mock=mlflow.tracking._model_registry.fluent._register_model,
+            register_model_mock=qcflow.tracking._model_registry.fluent._register_model,
             model_uri=model_uri,
             registered_model_name="My super cool encoder",
         )
@@ -210,92 +210,92 @@ def test_log_model_calls_register_model(tmp_path, basic_model):
 
 def test_log_model_with_no_registered_model_name(tmp_path, basic_model):
     artifact_path = "sentence_transformer"
-    register_model_patch = mock.patch("mlflow.tracking._model_registry.fluent._register_model")
-    with mlflow.start_run(), register_model_patch:
+    register_model_patch = mock.patch("qcflow.tracking._model_registry.fluent._register_model")
+    with qcflow.start_run(), register_model_patch:
         conda_env = tmp_path.joinpath("conda_env.yaml")
-        _mlflow_conda_env(
+        _qcflow_conda_env(
             conda_env, additional_pip_deps=["transformers", "torch", "sentence-transformers"]
         )
-        mlflow.sentence_transformers.log_model(
+        qcflow.sentence_transformers.log_model(
             basic_model,
             artifact_path,
             conda_env=str(conda_env),
         )
-        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()
+        qcflow.tracking._model_registry.fluent._register_model.assert_not_called()
 
 
 def test_log_with_pip_requirements(tmp_path, basic_model):
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
 
     requirements_file = tmp_path.joinpath("requirements.txt")
     requirements_file.write_text("some-clever-package")
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(
             basic_model, "model", pip_requirements=str(requirements_file)
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "some-clever-package"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "some-clever-package"],
             strict=True,
         )
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(
             basic_model,
             "model",
             pip_requirements=[f"-r {requirements_file}", "a-hopefully-useful-package"],
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "some-clever-package", "a-hopefully-useful-package"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "some-clever-package", "a-hopefully-useful-package"],
             strict=True,
         )
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(
             basic_model,
             "model",
             pip_requirements=[f"-c {requirements_file}", "i-dunno-maybe-its-good"],
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "i-dunno-maybe-its-good", "-c constraints.txt"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "i-dunno-maybe-its-good", "-c constraints.txt"],
             ["some-clever-package"],
             strict=True,
         )
 
 
 def test_log_with_extra_pip_requirements(basic_model, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
-    default_requirements = mlflow.sentence_transformers.get_default_pip_requirements()
+    expected_qcflow_version = _qcflow_major_version_string()
+    default_requirements = qcflow.sentence_transformers.get_default_pip_requirements()
     requirements_file = tmp_path.joinpath("requirements.txt")
     requirements_file.write_text("effective-package")
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(
             basic_model, "model", extra_pip_requirements=str(requirements_file)
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, *default_requirements, "effective-package"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, *default_requirements, "effective-package"],
         )
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(
             basic_model,
             "model",
             extra_pip_requirements=[f"-r {requirements_file}", "useful-package"],
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, *default_requirements, "effective-package", "useful-package"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, *default_requirements, "effective-package", "useful-package"],
         )
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(
             basic_model,
             "model",
             extra_pip_requirements=[f"-c {requirements_file}", "constrained-pkg"],
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
+            qcflow.get_artifact_uri("model"),
             [
-                expected_mlflow_version,
+                expected_qcflow_version,
                 *default_requirements,
                 "constrained-pkg",
                 "-c constraints.txt",
@@ -307,9 +307,9 @@ def test_log_with_extra_pip_requirements(basic_model, tmp_path):
 def test_model_save_without_conda_env_uses_default_env_with_expected_dependencies(
     basic_model, model_path
 ):
-    mlflow.sentence_transformers.save_model(basic_model, model_path)
+    qcflow.sentence_transformers.save_model(basic_model, model_path)
     _assert_pip_requirements(
-        model_path, mlflow.sentence_transformers.get_default_pip_requirements()
+        model_path, qcflow.sentence_transformers.get_default_pip_requirements()
     )
 
 
@@ -317,22 +317,22 @@ def test_model_log_without_conda_env_uses_default_env_with_expected_dependencies
     basic_model,
 ):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(basic_model, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
-    _assert_pip_requirements(model_uri, mlflow.sentence_transformers.get_default_pip_requirements())
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(basic_model, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
+    _assert_pip_requirements(model_uri, qcflow.sentence_transformers.get_default_pip_requirements())
 
 
 def test_log_model_with_code_paths(basic_model):
     artifact_path = "model"
     with (
-        mlflow.start_run(),
-        mock.patch("mlflow.sentence_transformers._add_code_from_conf_to_system_path") as add_mock,
+        qcflow.start_run(),
+        mock.patch("qcflow.sentence_transformers._add_code_from_conf_to_system_path") as add_mock,
     ):
-        mlflow.sentence_transformers.log_model(basic_model, artifact_path, code_paths=[__file__])
-        model_uri = mlflow.get_artifact_uri(artifact_path)
-        _compare_logged_code_paths(__file__, model_uri, mlflow.sentence_transformers.FLAVOR_NAME)
-        mlflow.sentence_transformers.load_model(model_uri)
+        qcflow.sentence_transformers.log_model(basic_model, artifact_path, code_paths=[__file__])
+        model_uri = qcflow.get_artifact_uri(artifact_path)
+        _compare_logged_code_paths(__file__, model_uri, qcflow.sentence_transformers.FLAVOR_NAME)
+        qcflow.sentence_transformers.load_model(model_uri)
         add_mock.assert_called()
 
 
@@ -343,16 +343,16 @@ def test_default_signature_assignment():
         "params": None,
     }
 
-    default_signature = mlflow.sentence_transformers._get_default_signature()
+    default_signature = qcflow.sentence_transformers._get_default_signature()
 
     assert default_signature.to_dict() == expected_signature
 
 
 def test_model_pyfunc_save_load(basic_model, model_path):
-    mlflow.sentence_transformers.save_model(basic_model, model_path)
+    qcflow.sentence_transformers.save_model(basic_model, model_path)
     loaded_pyfunc = pyfunc.load_model(model_uri=model_path)
 
-    sentence = "hello world and hello mlflow"
+    sentence = "hello world and hello qcflow"
     sentences = [sentence, "goodbye my friends", "i am a sentence"]
     embedding_dim = basic_model.get_sentence_embedding_dimension()
 
@@ -371,12 +371,12 @@ def test_model_pyfunc_save_load(basic_model, model_path):
 
 
 def test_model_pyfunc_predict_with_params(basic_model, tmp_path):
-    sentence = "hello world and hello mlflow"
+    sentence = "hello world and hello qcflow"
     params = {"batch_size": 16}
 
     model_path = tmp_path / "model1"
     signature = infer_signature(sentence, params=params)
-    mlflow.sentence_transformers.save_model(basic_model, model_path, signature=signature)
+    qcflow.sentence_transformers.save_model(basic_model, model_path, signature=signature)
     loaded_pyfunc = pyfunc.load_model(model_uri=model_path)
     embedding_dim = basic_model.get_sentence_embedding_dimension()
 
@@ -387,9 +387,9 @@ def test_model_pyfunc_predict_with_params(basic_model, tmp_path):
         loaded_pyfunc.predict(sentence, {"batch_size": "16"})
 
     model_path = tmp_path / "model3"
-    mlflow.sentence_transformers.save_model(basic_model, model_path)
+    qcflow.sentence_transformers.save_model(basic_model, model_path)
     loaded_pyfunc = pyfunc.load_model(model_uri=model_path)
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         loaded_pyfunc.predict(sentence, params)
     mock_warning.assert_called_with(
         "`params` can only be specified at inference time if the model signature defines a params "
@@ -403,9 +403,9 @@ def test_model_pyfunc_predict_with_params(basic_model, tmp_path):
     reason="This test only passes for Sentence Transformers < 3.1.0",
 )
 def test_model_pyfunc_predict_with_invalid_params(basic_model, tmp_path):
-    sentence = "hello world and hello mlflow"
+    sentence = "hello world and hello qcflow"
     model_path = tmp_path / "model"
-    mlflow.sentence_transformers.save_model(
+    qcflow.sentence_transformers.save_model(
         basic_model,
         model_path,
         signature=infer_signature(sentence, params={"invalid_param": "value"}),
@@ -421,21 +421,21 @@ def test_model_pyfunc_predict_with_invalid_params(basic_model, tmp_path):
 
 def test_spark_udf(basic_model, spark):
     params = {"batch_size": 16}
-    with mlflow.start_run():
+    with qcflow.start_run():
         signature = infer_signature(SENTENCES, basic_model.encode(SENTENCES), params)
-        model_info = mlflow.sentence_transformers.log_model(
+        model_info = qcflow.sentence_transformers.log_model(
             basic_model, "my_model", signature=signature
         )
 
     result_type = ArrayType(DoubleType())
-    loaded_model = mlflow.pyfunc.spark_udf(
+    loaded_model = qcflow.pyfunc.spark_udf(
         spark,
         model_info.model_uri,
         result_type=result_type,
         params=params,
     )
 
-    df = spark.createDataFrame([("hello MLflow",), ("bye world",)], ["text"])
+    df = spark.createDataFrame([("hello QCFlow",), ("bye world",)], ["text"])
     df = df.withColumn("embedding", loaded_model("text"))
     assert df.schema[1].dataType == result_type
 
@@ -451,12 +451,12 @@ def test_spark_udf(basic_model, spark):
     ("input1", "input2"),
     [
         (["hello world"], ["goodbye world!"]),
-        (["hello world", "i am mlflow"], ["goodbye world!", "i am mlflow"]),
+        (["hello world", "i am qcflow"], ["goodbye world!", "i am qcflow"]),
     ],
 )
 def test_pyfunc_serve_and_score(input1, input2, basic_model):
-    with mlflow.start_run():
-        model_info = mlflow.sentence_transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.sentence_transformers.log_model(
             basic_model, "my_model", input_example=input1
         )
     loaded_pyfunc = pyfunc.load_model(model_uri=model_info.model_uri)
@@ -486,7 +486,7 @@ def test_pyfunc_serve_and_score(input1, input2, basic_model):
     assert not np.equal(local_predict, serving_result).all()
 
 
-SENTENCES = ["hello world", "i am mlflow"]
+SENTENCES = ["hello world", "i am qcflow"]
 SENTENCES_DF = pd.DataFrame(SENTENCES)
 SIGNATURE = infer_signature(
     model_input=SENTENCES,
@@ -501,7 +501,7 @@ SIGNATURE_FROM_EXAMPLE = infer_signature(
 @pytest.mark.parametrize(
     ("example", "signature", "expected_signature"),
     [
-        (None, None, mlflow.sentence_transformers._get_default_signature()),
+        (None, None, qcflow.sentence_transformers._get_default_signature()),
         (SENTENCES_DF, None, SIGNATURE_FROM_EXAMPLE),
         (None, SIGNATURE, SIGNATURE),
         (SENTENCES, SIGNATURE, SIGNATURE),
@@ -510,33 +510,33 @@ SIGNATURE_FROM_EXAMPLE = infer_signature(
 def test_signature_and_examples_are_saved_correctly(
     example, signature, expected_signature, basic_model, model_path
 ):
-    mlflow.sentence_transformers.save_model(
+    qcflow.sentence_transformers.save_model(
         basic_model,
         path=model_path,
         signature=signature,
         input_example=example,
     )
-    mlflow_model = Model.load(model_path)
+    qcflow_model = Model.load(model_path)
 
-    assert mlflow_model.signature == expected_signature
+    assert qcflow_model.signature == expected_signature
 
     if example is None:
-        assert mlflow_model.saved_input_example_info is None
+        assert qcflow_model.saved_input_example_info is None
     else:
         if isinstance(example, pd.DataFrame):
-            assert mlflow_model.saved_input_example_info["type"] == "dataframe"
-            pd.testing.assert_frame_equal(_read_example(mlflow_model, model_path), example)
+            assert qcflow_model.saved_input_example_info["type"] == "dataframe"
+            pd.testing.assert_frame_equal(_read_example(qcflow_model, model_path), example)
         else:
-            assert mlflow_model.saved_input_example_info["type"] == "json_object"
-            np.testing.assert_equal(_read_example(mlflow_model, model_path), example)
+            assert qcflow_model.saved_input_example_info["type"] == "json_object"
+            np.testing.assert_equal(_read_example(qcflow_model, model_path), example)
 
 
 def test_model_log_with_signature_inference(basic_model):
     artifact_path = "model"
 
-    with mlflow.start_run():
-        mlflow.sentence_transformers.log_model(basic_model, artifact_path, input_example=SENTENCES)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.sentence_transformers.log_model(basic_model, artifact_path, input_example=SENTENCES)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     model_info = Model.load(model_uri)
     assert model_info.signature == SIGNATURE
@@ -544,10 +544,10 @@ def test_model_log_with_signature_inference(basic_model):
 
 def test_verify_task_and_update_metadata():
     # Update embedding task with empty metadata
-    metadata = mlflow.sentence_transformers._verify_task_and_update_metadata("llm/v1/embeddings")
+    metadata = qcflow.sentence_transformers._verify_task_and_update_metadata("llm/v1/embeddings")
     assert metadata == {"task": "llm/v1/embeddings"}
     # Update embedding task with metadata containing task
-    metadata = mlflow.sentence_transformers._verify_task_and_update_metadata(
+    metadata = qcflow.sentence_transformers._verify_task_and_update_metadata(
         "llm/v1/embeddings", metadata
     )
     assert metadata == {"task": "llm/v1/embeddings"}
@@ -557,18 +557,18 @@ def test_verify_task_and_update_metadata():
     with pytest.raises(
         MlflowException, match=r"Task type is inconsistent with the task value from metadata"
     ):
-        mlflow.sentence_transformers._verify_task_and_update_metadata("llm/v1/embeddings", metadata)
+        qcflow.sentence_transformers._verify_task_and_update_metadata("llm/v1/embeddings", metadata)
 
     # Invalid task type
     with pytest.raises(MlflowException, match=r"Task type could only be llm/v1/embeddings"):
-        mlflow.sentence_transformers._verify_task_and_update_metadata("llm/v1/completions")
+        qcflow.sentence_transformers._verify_task_and_update_metadata("llm/v1/completions")
 
 
 def test_model_pyfunc_with_dict_input(basic_model, model_path):
-    mlflow.sentence_transformers.save_model(basic_model, model_path, task="llm/v1/embeddings")
+    qcflow.sentence_transformers.save_model(basic_model, model_path, task="llm/v1/embeddings")
     loaded_pyfunc = pyfunc.load_model(model_uri=model_path)
 
-    sentence = "hello world and hello mlflow"
+    sentence = "hello world and hello qcflow"
     sentences = [sentence, "goodbye my friends", "i am a sentence"]
     embedding_dim = basic_model.get_sentence_embedding_dimension()
 

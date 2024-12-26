@@ -1,9 +1,9 @@
-from mlflow.entities import Metric
-from mlflow.entities.assessment import Assessment
-from mlflow.entities.assessment_source import AssessmentSource
-from mlflow.entities.evaluation import Evaluation
-from mlflow.entities.evaluation_tag import EvaluationTag
-from mlflow.evaluation.utils import evaluations_to_dataframes
+from qcflow.entities import Metric
+from qcflow.entities.assessment import Assessment
+from qcflow.entities.assessment_source import AssessmentSource
+from qcflow.entities.evaluation import Evaluation
+from qcflow.entities.evaluation_tag import EvaluationTag
+from qcflow.evaluation.utils import evaluations_to_dataframes
 
 
 def test_evaluations_to_dataframes_basic():

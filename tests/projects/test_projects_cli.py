@@ -8,8 +8,8 @@ from unittest import mock
 import pytest
 from click.testing import CliRunner
 
-from mlflow import MlflowClient, cli
-from mlflow.utils import process
+from qcflow import MlflowClient, cli
+from qcflow.utils import process
 
 from tests.integration.utils import invoke_cli_runner
 from tests.projects.utils import (
@@ -23,8 +23,8 @@ from tests.projects.utils import (
 _logger = logging.getLogger(__name__)
 
 skip_if_skinny = pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
-    reason="MLflow skinny does not have dependencies to run this test",
+    "QCFLOW_SKINNY" in os.environ,
+    reason="QCFlow skinny does not have dependencies to run this test",
 )
 
 
@@ -90,7 +90,7 @@ def clean_mlruns_dir():
 def test_run_local_conda_env():
     with open(os.path.join(TEST_PROJECT_DIR, "conda.yaml")) as handle:
         conda_env_contents = handle.read()
-    expected_env_name = "mlflow-{}".format(
+    expected_env_name = "qcflow-{}".format(
         hashlib.sha1(conda_env_contents.encode("utf-8"), usedforsecurity=False).hexdigest()
     )
     try:
@@ -155,7 +155,7 @@ def test_run_databricks_cluster_spec(tmp_path):
     with open(cluster_spec_path, "w") as handle:
         json.dump(cluster_spec, handle)
 
-    with mock.patch("mlflow.projects._run") as run_mock:
+    with mock.patch("qcflow.projects._run") as run_mock:
         for cluster_spec_arg in [json.dumps(cluster_spec), cluster_spec_path]:
             invoke_cli_runner(
                 cli.run,
@@ -170,7 +170,7 @@ def test_run_databricks_cluster_spec(tmp_path):
                     "-P",
                     "name=hi",
                 ],
-                env={"MLFLOW_TRACKING_URI": "databricks://profile"},
+                env={"QCFLOW_TRACKING_URI": "databricks://profile"},
             )
             assert run_mock.call_count == 1
             _, run_kwargs = run_mock.call_args_list[0]
@@ -189,30 +189,30 @@ def test_run_databricks_cluster_spec(tmp_path):
                 "-P",
                 "name=hi",
             ],
-            env={"MLFLOW_TRACKING_URI": "databricks://profile"},
+            env={"QCFLOW_TRACKING_URI": "databricks://profile"},
         )
         assert res.exit_code != 0
 
 
-def test_mlflow_run():
-    with mock.patch("mlflow.cli.projects") as mock_projects:
+def test_qcflow_run():
+    with mock.patch("qcflow.cli.projects") as mock_projects:
         result = CliRunner().invoke(cli.run)
         mock_projects.run.assert_not_called()
         assert "Missing argument 'URI'" in result.output
 
-    with mock.patch("mlflow.cli.projects") as mock_projects:
+    with mock.patch("qcflow.cli.projects") as mock_projects:
         CliRunner().invoke(cli.run, ["project_uri"])
         mock_projects.run.assert_called_once()
 
-    with mock.patch("mlflow.cli.projects") as mock_projects:
+    with mock.patch("qcflow.cli.projects") as mock_projects:
         CliRunner().invoke(cli.run, ["--experiment-id", "5", "project_uri"])
         mock_projects.run.assert_called_once()
 
-    with mock.patch("mlflow.cli.projects") as mock_projects:
+    with mock.patch("qcflow.cli.projects") as mock_projects:
         CliRunner().invoke(cli.run, ["--experiment-name", "random name", "project_uri"])
         mock_projects.run.assert_called_once()
 
-    with mock.patch("mlflow.cli.projects") as mock_projects:
+    with mock.patch("qcflow.cli.projects") as mock_projects:
         result = CliRunner().invoke(
             cli.run, ["--experiment-id", "51", "--experiment-name", "name blah", "uri"]
         )

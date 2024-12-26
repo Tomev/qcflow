@@ -1,6 +1,6 @@
 import time
 
-from mlflow.utils.time import Timer
+from qcflow.utils.time import Timer
 
 
 def test_timer():

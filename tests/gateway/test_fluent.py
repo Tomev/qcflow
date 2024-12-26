@@ -4,10 +4,10 @@ from unittest import mock
 import pytest
 from requests.exceptions import HTTPError
 
-import mlflow.gateway.utils
-from mlflow.environment_variables import MLFLOW_GATEWAY_URI
-from mlflow.exceptions import MlflowException
-from mlflow.gateway import (
+import qcflow.gateway.utils
+from qcflow.environment_variables import QCFLOW_GATEWAY_URI
+from qcflow.exceptions import MlflowException
+from qcflow.gateway import (
     create_route,
     delete_route,
     get_gateway_uri,
@@ -18,9 +18,9 @@ from mlflow.gateway import (
     set_gateway_uri,
     set_limits,
 )
-from mlflow.gateway.config import Route
-from mlflow.gateway.constants import MLFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
-from mlflow.gateway.utils import resolve_route_url
+from qcflow.gateway.config import Route
+from qcflow.gateway.constants import QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
+from qcflow.gateway.utils import resolve_route_url
 
 from tests.gateway.tools import Gateway, save_yaml
 
@@ -58,7 +58,7 @@ def basic_config_dict():
 
 @pytest.fixture(autouse=True)
 def clear_uri():
-    mlflow.gateway.utils._gateway_uri = None
+    qcflow.gateway.utils._gateway_uri = None
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def test_fluent_apis_with_no_server_set():
 
 
 def test_fluent_health_check_on_non_running_server(monkeypatch):
-    monkeypatch.setenv("MLFLOW_HTTP_REQUEST_MAX_RETRIES", "0")
+    monkeypatch.setenv("QCFLOW_HTTP_REQUEST_MAX_RETRIES", "0")
     set_gateway_uri("http://not.real:1000")
     with pytest.raises(
         MlflowException,
@@ -88,8 +88,8 @@ def test_fluent_health_check_on_non_running_server(monkeypatch):
 
 
 def test_fluent_health_check_on_env_var_uri(gateway, monkeypatch):
-    monkeypatch.setenv(MLFLOW_GATEWAY_URI.name, gateway.url)
-    mlflow.gateway.utils._gateway_uri = None
+    monkeypatch.setenv(QCFLOW_GATEWAY_URI.name, gateway.url)
+    qcflow.gateway.utils._gateway_uri = None
     assert get_route("completions").model.name == "text-davinci-003"
 
 
@@ -155,7 +155,7 @@ def test_fluent_search_routes_handles_pagination(tmp_path):
             },
         },
     }
-    num_routes = (MLFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE * 2) + 1
+    num_routes = (QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE * 2) + 1
     gateway_route_names = [f"route_{i}" for i in range(num_routes)]
     gateway_config_dict = {
         "routes": [{"name": route_name, **base_route_config} for route_name in gateway_route_names]
@@ -203,7 +203,7 @@ def test_fluent_query_chat(gateway):
     data = {"messages": [{"role": "user", "content": "How hot is the core of the sun?"}]}
 
     with mock.patch(
-        "mlflow.gateway.fluent.MlflowGatewayClient.query", return_value=expected_output
+        "qcflow.gateway.fluent.MlflowGatewayClient.query", return_value=expected_output
     ):
         response = query(route=routes[1].name, data=data)
         assert response == expected_output
@@ -230,7 +230,7 @@ def test_fluent_query_completions(gateway):
     data = {"prompt": "I like to drive fast in my"}
 
     with mock.patch(
-        "mlflow.gateway.fluent.MlflowGatewayClient.query", return_value=expected_output
+        "qcflow.gateway.fluent.MlflowGatewayClient.query", return_value=expected_output
     ):
         response = query(route=routes[0].name, data=data)
         assert response == expected_output

@@ -128,13 +128,13 @@ export const GroupParentCellRenderer = ({ data, isComparingRuns }: GroupParentCe
           </span>
         )}
         <Tag
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_cells_groupparentcellrenderer.tsx_109"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_cells_groupparentcellrenderer.tsx_109"
           css={{ marginLeft: 0, marginRight: 0 }}
         >
           {groupParentInfo.runUuids.length}
         </Tag>
         <Tooltip
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_cells_groupparentcellrenderer.tsx_136"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_cells_groupparentcellrenderer.tsx_136"
           content={
             <FormattedMessage
               defaultMessage="Open runs in this group in the new tab"
@@ -155,7 +155,7 @@ export const GroupParentCellRenderer = ({ data, isComparingRuns }: GroupParentCe
           >
             <Button
               type="link"
-              componentId="mlflow.experiment_page.grouped_runs.open_runs_in_new_tab"
+              componentId="qcflow.experiment_page.grouped_runs.open_runs_in_new_tab"
               size="small"
               icon={<NewWindowIcon css={{ svg: { width: 12, height: 12 } }} />}
             />

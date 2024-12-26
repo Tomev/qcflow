@@ -13,17 +13,17 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 from opentelemetry import trace as trace_api
 from packaging.version import Version
 
-from mlflow.exceptions import BAD_REQUEST, MlflowTracingException
-from mlflow.tracing.constant import SpanAttributeKey
-from mlflow.utils.mlflow_tags import IMMUTABLE_TAGS
+from qcflow.exceptions import BAD_REQUEST, MlflowTracingException
+from qcflow.tracing.constant import SpanAttributeKey
+from qcflow.utils.qcflow_tags import IMMUTABLE_TAGS
 
 _logger = logging.getLogger(__name__)
 
 SPANS_COLUMN_NAME = "spans"
 
 if TYPE_CHECKING:
-    from mlflow.entities import LiveSpan
-    from mlflow.types.chat import ChatMessage, ChatTool
+    from qcflow.entities import LiveSpan
+    from qcflow.types.chat import ChatMessage, ChatTool
 
 
 def capture_function_input_args(func, args, kwargs) -> dict[str, Any]:
@@ -195,10 +195,10 @@ def get_otel_attribute(span: trace_api.Span, key: str) -> Optional[str]:
 
 
 def _try_get_prediction_context():
-    # NB: Tracing is enabled in mlflow-skinny, but the pyfunc module cannot be imported as it
+    # NB: Tracing is enabled in qcflow-skinny, but the pyfunc module cannot be imported as it
     #     relies on numpy, which is not installed in skinny.
     try:
-        from mlflow.pyfunc.context import get_prediction_context
+        from qcflow.pyfunc.context import get_prediction_context
     except ImportError:
         return
 
@@ -206,7 +206,7 @@ def _try_get_prediction_context():
 
 
 def maybe_get_request_id(is_evaluate=False) -> Optional[str]:
-    """Get the request ID if the current prediction is as a part of MLflow model evaluation."""
+    """Get the request ID if the current prediction is as a part of QCFlow model evaluation."""
     context = _try_get_prediction_context()
     if not context or (is_evaluate and not context.is_evaluate):
         return None
@@ -228,7 +228,7 @@ def maybe_get_dependencies_schemas() -> Optional[dict]:
 
 
 def exclude_immutable_tags(tags: dict[str, str]) -> dict[str, str]:
-    """Exclude immutable tags e.g. "mlflow.user" from the given tags."""
+    """Exclude immutable tags e.g. "qcflow.user" from the given tags."""
     return {k: v for k, v in tags.items() if k not in IMMUTABLE_TAGS}
 
 
@@ -241,9 +241,9 @@ def set_span_chat_messages(
     messages: Union[dict, ChatMessage],
 ):
     """
-    Set the `mlflow.chat.messages` attribute on the specified span. This
+    Set the `qcflow.chat.messages` attribute on the specified span. This
     attribute is used in the UI, and also by downstream applications that
-    consume trace data, such as MLflow evaluate.
+    consume trace data, such as QCFlow evaluate.
 
     Args:
         span: The LiveSpan to add the attribute to
@@ -256,21 +256,21 @@ def set_span_chat_messages(
     .. code-block:: python
         :test:
 
-        import mlflow
-        from mlflow.tracing import set_span_chat_messages
+        import qcflow
+        from qcflow.tracing import set_span_chat_messages
 
 
-        @mlflow.trace
+        @qcflow.trace
         def f():
             messages = [{"role": "user", "content": "hello"}]
-            span = mlflow.get_current_active_span()
+            span = qcflow.get_current_active_span()
             set_span_chat_messages(span, messages)
             return 0
 
 
         f()
     """
-    from mlflow.types.chat import ChatMessage
+    from qcflow.types.chat import ChatMessage
 
     sanitized_messages = []
     for message in messages:
@@ -289,9 +289,9 @@ def set_span_chat_messages(
 
 def set_span_chat_tools(span: LiveSpan, tools: list[ChatTool]):
     """
-    Set the `mlflow.chat.tools` attribute on the specified span. This
+    Set the `qcflow.chat.tools` attribute on the specified span. This
     attribute is used in the UI, and also by downstream applications that
-    consume trace data, such as MLflow evaluate.
+    consume trace data, such as QCFlow evaluate.
 
     Args:
         span: The LiveSpan to add the attribute to
@@ -304,8 +304,8 @@ def set_span_chat_tools(span: LiveSpan, tools: list[ChatTool]):
     .. code-block:: python
         :test:
 
-        import mlflow
-        from mlflow.tracing import set_span_chat_tools
+        import qcflow
+        from qcflow.tracing import set_span_chat_tools
 
         tools = [
             {
@@ -326,16 +326,16 @@ def set_span_chat_tools(span: LiveSpan, tools: list[ChatTool]):
         ]
 
 
-        @mlflow.trace
+        @qcflow.trace
         def f():
-            span = mlflow.get_current_active_span()
+            span = qcflow.get_current_active_span()
             set_span_chat_tools(span, tools)
             return 0
 
 
         f()
     """
-    from mlflow.types.chat import ChatTool
+    from qcflow.types.chat import ChatTool
 
     if not isinstance(tools, list):
         raise MlflowTracingException(

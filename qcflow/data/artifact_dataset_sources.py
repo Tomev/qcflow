@@ -4,15 +4,15 @@ from pathlib import Path
 from typing import Any, TypeVar
 from urllib.parse import urlparse
 
-from mlflow.artifacts import download_artifacts
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.store.artifact.artifact_repository_registry import get_registered_artifact_repositories
-from mlflow.utils.uri import is_local_uri
+from qcflow.artifacts import download_artifacts
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.store.artifact.artifact_repository_registry import get_registered_artifact_repositories
+from qcflow.utils.uri import is_local_uri
 
 
 def register_artifact_dataset_sources():
-    from mlflow.data.dataset_source_registry import register_dataset_source
+    from qcflow.data.dataset_source_registry import register_dataset_source
 
     registered_source_schemes = set()
     artifact_schemes_to_exclude = [
@@ -20,7 +20,7 @@ def register_artifact_dataset_sources():
         "https",
         "runs",
         "models",
-        "mlflow-artifacts",
+        "qcflow-artifacts",
         # DBFS supports two access patterns: dbfs:/ (URI) and /dbfs (FUSE).
         # The DBFS artifact repository online supports dbfs:/ (URI). To ensure
         # a consistent dictionary representation of DBFS datasets across the URI and
@@ -68,7 +68,7 @@ def register_artifact_dataset_sources():
 
 
 def _create_dataset_source_for_artifact_repo(scheme: str, dataset_source_name: str):
-    from mlflow.data.filesystem_dataset_source import FileSystemDatasetSource
+    from qcflow.data.filesystem_dataset_source import FileSystemDatasetSource
 
     if scheme in ["", "file"]:
         source_type = "local"

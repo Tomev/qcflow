@@ -8,7 +8,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, relationship
 
-from mlflow.server.auth.entities import ExperimentPermission, RegisteredModelPermission, User
+from qcflow.server.auth.entities import ExperimentPermission, RegisteredModelPermission, User
 
 Base = declarative_base()
 
@@ -22,15 +22,15 @@ class SqlUser(Base):
     experiment_permissions = relationship("SqlExperimentPermission", backref="users")
     registered_model_permissions = relationship("SqlRegisteredModelPermission", backref="users")
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         return User(
             id_=self.id,
             username=self.username,
             password_hash=self.password_hash,
             is_admin=self.is_admin,
-            experiment_permissions=[p.to_mlflow_entity() for p in self.experiment_permissions],
+            experiment_permissions=[p.to_qcflow_entity() for p in self.experiment_permissions],
             registered_model_permissions=[
-                p.to_mlflow_entity() for p in self.registered_model_permissions
+                p.to_qcflow_entity() for p in self.registered_model_permissions
             ],
         )
 
@@ -43,7 +43,7 @@ class SqlExperimentPermission(Base):
     permission = Column(String(255))
     __table_args__ = (UniqueConstraint("experiment_id", "user_id", name="unique_experiment_user"),)
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         return ExperimentPermission(
             experiment_id=self.experiment_id,
             user_id=self.user_id,
@@ -59,7 +59,7 @@ class SqlRegisteredModelPermission(Base):
     permission = Column(String(255))
     __table_args__ = (UniqueConstraint("name", "user_id", name="unique_name_user"),)
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         return RegisteredModelPermission(
             name=self.name,
             user_id=self.user_id,

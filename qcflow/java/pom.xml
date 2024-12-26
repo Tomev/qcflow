@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.mlflow</groupId>
-  <artifactId>mlflow-parent</artifactId>
+  <groupId>org.qcflow</groupId>
+  <artifactId>qcflow-parent</artifactId>
   <version>2.19.1-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>MLflow Parent POM</name>
-  <url>http://mlflow.org</url>
+  <name>QCFlow Parent POM</name>
+  <url>http://qcflow.org</url>
 
   <description>Open source platform for the machine learning lifecycle</description>
 
@@ -43,9 +43,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:git://github.com/mlflow/mlflow.git</connection>
-    <developerConnection>scm:git:ssh://github.com:mlflow/mlflow.git</developerConnection>
-    <url>http://github.com/mlflow/mlflow/tree/master</url>
+    <connection>scm:git:git://github.com/qcflow/qcflow.git</connection>
+    <developerConnection>scm:git:ssh://github.com:qcflow/qcflow.git</developerConnection>
+    <url>http://github.com/qcflow/qcflow/tree/master</url>
   </scm>
   <distributionManagement>
     <snapshotRepository>
@@ -59,7 +59,7 @@
   </distributionManagement>
 
   <properties>
-    <mlflow-version>2.19.1-SNAPSHOT</mlflow-version>
+    <qcflow-version>2.19.1-SNAPSHOT</qcflow-version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <scala.version>2.11.12</scala.version>
@@ -218,7 +218,7 @@
                     </module>
                   </module>
                 </checkstyleRules>
-                <excludes>com/databricks/**,org/mlflow/api/proto/**,org/mlflow/scalapb_interface/**</excludes>
+                <excludes>com/databricks/**,org/qcflow/api/proto/**,org/qcflow/scalapb_interface/**</excludes>
               </configuration>
             </execution>
           </executions>

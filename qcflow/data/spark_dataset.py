@@ -5,17 +5,17 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 from packaging.version import Version
 
-from mlflow.data.dataset import Dataset
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.data.delta_dataset_source import DeltaDatasetSource
-from mlflow.data.digest_utils import get_normalized_md5_digest
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
-from mlflow.data.spark_dataset_source import SparkDatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
-from mlflow.types import Schema
-from mlflow.types.utils import _infer_schema
+from qcflow.data.dataset import Dataset
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.data.delta_dataset_source import DeltaDatasetSource
+from qcflow.data.digest_utils import get_normalized_md5_digest
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
+from qcflow.data.spark_dataset_source import SparkDatasetSource
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
+from qcflow.types import Schema
+from qcflow.types.utils import _infer_schema
 
 if TYPE_CHECKING:
     import pyspark
@@ -26,7 +26,7 @@ _logger = logging.getLogger(__name__)
 class SparkDataset(Dataset, PyFuncConvertibleDatasetMixin):
     """
     Represents a Spark dataset (e.g. data derived from a Spark Table / file directory or Delta
-    Table) for use with MLflow Tracking.
+    Table) for use with QCFlow Tracking.
     """
 
     def __init__(
@@ -79,7 +79,7 @@ class SparkDataset(Dataset, PyFuncConvertibleDatasetMixin):
         Returns a string dictionary containing the following fields: name, digest, source, source
         type, schema, and profile.
         """
-        schema = json.dumps({"mlflow_colspec": self.schema.to_dict()}) if self.schema else None
+        schema = json.dumps({"qcflow_colspec": self.schema.to_dict()}) if self.schema else None
         config = super().to_dict()
         config.update(
             {
@@ -124,8 +124,8 @@ class SparkDataset(Dataset, PyFuncConvertibleDatasetMixin):
 
         Returns:
             An instance of
-            :py:class:`SparkDatasetSource <mlflow.data.spark_dataset_source.SparkDatasetSource>` or
-            :py:class:`DeltaDatasetSource <mlflow.data.delta_dataset_source.DeltaDatasetSource>`.
+            :py:class:`SparkDatasetSource <qcflow.data.spark_dataset_source.SparkDatasetSource>` or
+            :py:class:`DeltaDatasetSource <qcflow.data.delta_dataset_source.DeltaDatasetSource>`.
         """
         return self._source
 
@@ -176,7 +176,7 @@ class SparkDataset(Dataset, PyFuncConvertibleDatasetMixin):
     @cached_property
     def schema(self) -> Optional[Schema]:
         """
-        The MLflow ColSpec schema of the Spark dataset.
+        The QCFlow ColSpec schema of the Spark dataset.
         """
         try:
             return _infer_schema(self._df)
@@ -212,7 +212,7 @@ class SparkDataset(Dataset, PyFuncConvertibleDatasetMixin):
     def to_evaluation_dataset(self, path=None, feature_names=None) -> EvaluationDataset:
         """
         Converts the dataset to an EvaluationDataset for model evaluation. Required
-        for use with mlflow.evaluate().
+        for use with qcflow.evaluate().
         """
         return EvaluationDataset(
             data=self._df.limit(10000).toPandas(),
@@ -232,8 +232,8 @@ def load_delta(
     digest: Optional[str] = None,
 ) -> SparkDataset:
     """
-    Loads a :py:class:`SparkDataset <mlflow.data.spark_dataset.SparkDataset>` from a Delta table
-    for use with MLflow Tracking.
+    Loads a :py:class:`SparkDataset <qcflow.data.spark_dataset.SparkDataset>` from a Delta table
+    for use with QCFlow Tracking.
 
     Args:
         path: The path to the Delta table. Either ``path`` or ``table_name`` must be specified.
@@ -248,9 +248,9 @@ def load_delta(
             is automatically computed.
 
     Returns:
-        An instance of :py:class:`SparkDataset <mlflow.data.spark_dataset.SparkDataset>`.
+        An instance of :py:class:`SparkDataset <qcflow.data.spark_dataset.SparkDataset>`.
     """
-    from mlflow.data.spark_delta_utils import (
+    from qcflow.data.spark_delta_utils import (
         _try_get_delta_table_latest_version_from_path,
         _try_get_delta_table_latest_version_from_table_name,
     )
@@ -295,8 +295,8 @@ def from_spark(
 ) -> SparkDataset:
     """
     Given a Spark DataFrame, constructs a
-    :py:class:`SparkDataset <mlflow.data.spark_dataset.SparkDataset>` object for use with
-    MLflow Tracking.
+    :py:class:`SparkDataset <qcflow.data.spark_dataset.SparkDataset>` object for use with
+    QCFlow Tracking.
 
     Args:
         df: The Spark DataFrame from which to construct a SparkDataset.
@@ -304,26 +304,26 @@ def from_spark(
             that the path does not have to match the DataFrame exactly, since the DataFrame may have
             been modified by Spark operations. This is used to reload the dataset upon request via
             :py:func:`SparkDataset.source.load()
-            <mlflow.data.spark_dataset_source.SparkDatasetSource.load>`. If none of ``path``,
+            <qcflow.data.spark_dataset_source.SparkDatasetSource.load>`. If none of ``path``,
             ``table_name``, or ``sql`` are specified, a CodeDatasetSource is used, which will source
             information from the run context.
         table_name: The name of the Spark or Delta table that the DataFrame originally came from.
             Note that the table does not have to match the DataFrame exactly, since the DataFrame
             may have been modified by Spark operations. This is used to reload the dataset upon
             request via :py:func:`SparkDataset.source.load()
-            <mlflow.data.spark_dataset_source.SparkDatasetSource.load>`. If none of ``path``,
+            <qcflow.data.spark_dataset_source.SparkDatasetSource.load>`. If none of ``path``,
             ``table_name``, or ``sql`` are specified, a CodeDatasetSource is used, which will source
             information from the run context.
         version: If the DataFrame originally came from a Delta table, specifies the version of the
             Delta table. This is used to reload the dataset upon request via
             :py:func:`SparkDataset.source.load()
-            <mlflow.data.spark_dataset_source.SparkDatasetSource.load>`. ``version`` cannot be
+            <qcflow.data.spark_dataset_source.SparkDatasetSource.load>`. ``version`` cannot be
             specified if ``sql`` is specified.
         sql: The Spark SQL statement that was originally used to construct the DataFrame. Note that
             the Spark SQL statement does not have to match the DataFrame exactly, since the
             DataFrame may have been modified by Spark operations. This is used to reload the dataset
             upon request via :py:func:`SparkDataset.source.load()
-            <mlflow.data.spark_dataset_source.SparkDatasetSource.load>`. If none of ``path``,
+            <qcflow.data.spark_dataset_source.SparkDatasetSource.load>`. If none of ``path``,
             ``table_name``, or ``sql`` are specified, a CodeDatasetSource is used, which will source
             information from the run context.
         targets: Optional. The name of the Data Frame column containing targets (labels) for
@@ -337,16 +337,16 @@ def from_spark(
             must be present in the dataframe (``df``).
 
     Returns:
-        An instance of :py:class:`SparkDataset <mlflow.data.spark_dataset.SparkDataset>`.
+        An instance of :py:class:`SparkDataset <qcflow.data.spark_dataset.SparkDataset>`.
     """
-    from mlflow.data.code_dataset_source import CodeDatasetSource
-    from mlflow.data.spark_delta_utils import (
+    from qcflow.data.code_dataset_source import CodeDatasetSource
+    from qcflow.data.spark_delta_utils import (
         _is_delta_table,
         _is_delta_table_path,
         _try_get_delta_table_latest_version_from_path,
         _try_get_delta_table_latest_version_from_table_name,
     )
-    from mlflow.tracking.context import registry
+    from qcflow.tracking.context import registry
 
     if (path, table_name, sql).count(None) < 2:
         raise MlflowException(

@@ -4,21 +4,21 @@ from typing import Any, Optional
 import dspy
 from dspy.utils.callback import BaseCallback
 
-import mlflow
-from mlflow.entities import SpanStatusCode, SpanType
-from mlflow.entities.span_event import SpanEvent
-from mlflow.pyfunc.context import Context, maybe_set_prediction_context
-from mlflow.tracing.provider import detach_span_from_context, set_span_in_context
-from mlflow.tracing.utils.token import SpanWithToken
+import qcflow
+from qcflow.entities import SpanStatusCode, SpanType
+from qcflow.entities.span_event import SpanEvent
+from qcflow.pyfunc.context import Context, maybe_set_prediction_context
+from qcflow.tracing.provider import detach_span_from_context, set_span_in_context
+from qcflow.tracing.utils.token import SpanWithToken
 
 _logger = logging.getLogger(__name__)
 
 
 class MlflowCallback(BaseCallback):
-    """Callback for generating MLflow traces for DSPy components"""
+    """Callback for generating QCFlow traces for DSPy components"""
 
     def __init__(self, prediction_context: Optional[Context] = None):
-        self._client = mlflow.MlflowClient()
+        self._client = qcflow.MlflowClient()
         self._prediction_context = prediction_context or Context()
         # call_id: (LiveSpan, OTel token)
         self._call_id_to_span: dict[str, SpanWithToken] = {}
@@ -113,9 +113,9 @@ class MlflowCallback(BaseCallback):
         inputs: dict[str, Any],
         attributes: dict[str, Any],
     ):
-        # If there is an active span in MLflow, use it as parent span.
+        # If there is an active span in QCFlow, use it as parent span.
         # Otherwise, start a new root span.
-        parent_span = mlflow.get_current_active_span()
+        parent_span = qcflow.get_current_active_span()
 
         common_params = {
             "name": name,

@@ -1,4 +1,4 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,7 +19,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mlflow.utils.SerializationUtils;
+import org.qcflow.utils.SerializationUtils;
 
 public class ScoringServerTest {
   private class TestPredictor implements Predictor {

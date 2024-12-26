@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Executes a subset of mlflow tests that is supported with fewer dependencies than the core mlflow package.
-# Tests include most client interactions and compatibility points with the mlflow plugins around tracking, projects, models, deployments, and the cli.
+# Executes a subset of qcflow tests that is supported with fewer dependencies than the core qcflow package.
+# Tests include most client interactions and compatibility points with the qcflow plugins around tracking, projects, models, deployments, and the cli.
 
 # The SQL alchemy store's dependencies are added for a base client/store that can be tested against.
 # A different example client/store with a minimal dependency footprint could also work for this purpose.
@@ -11,7 +11,7 @@ set -x
 # https://stackoverflow.com/a/42219754
 err=0
 trap 'err=1' ERR
-export MLFLOW_SKINNY='true'
+export QCFLOW_SKINNY='true'
 
 pytest tests/test_skinny_client_omits_sql_libs.py
 
@@ -33,7 +33,7 @@ pytest \
   tests/deployments/test_cli.py \
   tests/deployments/test_deployments.py \
   tests/projects/test_projects_cli.py \
-  tests/utils/test_requirements_utils.py::test_infer_requirements_excludes_mlflow \
+  tests/utils/test_requirements_utils.py::test_infer_requirements_excludes_qcflow \
   tests/utils/test_search_utils.py \
   tests/store/tracking/test_file_store.py
 

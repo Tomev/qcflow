@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { EvaluationDataReduxState } from '../../../reducers/EvaluationDataReducer';
-import { ArtifactLogTableImageObject } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { ArtifactLogTableImageObject } from '@qcflow/qcflow/src/experiment-tracking/types';
 
 type ArtifactsByRun = EvaluationDataReduxState['evaluationArtifactsByRunUuid'];
 

@@ -7,13 +7,13 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from mlflow.environment_variables import MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME
-from mlflow.recipes import Recipe
-from mlflow.recipes.step import StepStatus
-from mlflow.recipes.steps.ingest import IngestStep
-from mlflow.recipes.steps.split import SplitStep
-from mlflow.recipes.steps.transform import TransformStep
-from mlflow.recipes.utils.execution import (
+from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME
+from qcflow.recipes import Recipe
+from qcflow.recipes.step import StepStatus
+from qcflow.recipes.steps.ingest import IngestStep
+from qcflow.recipes.steps.split import SplitStep
+from qcflow.recipes.steps.transform import TransformStep
+from qcflow.recipes.utils.execution import (
     _ExecutionPlan,
     _get_or_create_execution_directory,
     get_step_output_path,
@@ -167,7 +167,7 @@ def test_get_or_create_execution_directory_is_idempotent(tmp_path):
     # Simulate a failure with Makefile creation
     with (
         mock.patch(
-            "mlflow.recipes.utils.execution._create_makefile",
+            "qcflow.recipes.utils.execution._create_makefile",
             side_effect=Exception("Makefile creation failed"),
         ),
         pytest.raises(Exception, match="Makefile creation failed"),
@@ -195,7 +195,7 @@ def test_get_or_create_execution_directory_is_idempotent(tmp_path):
     # Simulate a failure with step-specific directory creation
     with (
         mock.patch(
-            "mlflow.recipes.utils.execution._get_step_output_directory_path",
+            "qcflow.recipes.utils.execution._get_step_output_directory_path",
             side_effect=Exception("Step directory creation failed"),
         ),
         pytest.raises(Exception, match="Step directory creation failed"),
@@ -245,8 +245,8 @@ def test_run_recipe_step_sets_environment_as_expected(tmp_path):
             return {"C": "D"}
 
     with (
-        mock.patch("mlflow.recipes.utils.execution._exec_cmd") as mock_run_in_subprocess,
-        mock.patch("mlflow.recipes.utils.execution._ExecutionPlan"),
+        mock.patch("qcflow.recipes.utils.execution._exec_cmd") as mock_run_in_subprocess,
+        mock.patch("qcflow.recipes.utils.execution._ExecutionPlan"),
     ):
         process = mock.Mock()
         process.stdout.readline = mock.Mock(side_effect="")
@@ -264,7 +264,7 @@ def test_run_recipe_step_sets_environment_as_expected(tmp_path):
     assert subprocess_call_kwargs.get("extra_env") == {
         "A": "B",
         "C": "D",
-        MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name: "test_step_1",
+        QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name: "test_step_1",
     }
     assert mock_run_in_subprocess.call_count == 2
 
@@ -279,8 +279,8 @@ def test_run_recipe_step_calls_execution_plan(tmp_path):
             return "test_step"
 
     with (
-        mock.patch("mlflow.recipes.utils.execution._exec_cmd") as mock_run_in_subprocess,
-        mock.patch("mlflow.recipes.utils.execution._ExecutionPlan") as mock_execution_plan,
+        mock.patch("qcflow.recipes.utils.execution._exec_cmd") as mock_run_in_subprocess,
+        mock.patch("qcflow.recipes.utils.execution._ExecutionPlan") as mock_execution_plan,
     ):
         process = mock.Mock()
         process.poll.return_value = 0
@@ -566,15 +566,15 @@ def test_execution_plan():
     plan = _ExecutionPlan(
         "transform",
         [
-            'echo "Run MLflow Recipe step: ingest"\n',
-            'echo "Run MLflow Recipe step: split"\n',
-            'echo "Run MLflow Recipe step: transform"\n',
+            'echo "Run QCFlow Recipe step: ingest"\n',
+            'echo "Run QCFlow Recipe step: split"\n',
+            'echo "Run QCFlow Recipe step: transform"\n',
         ],
         train_subgraph,
     )
     assert plan.steps_cached == []
 
     plan = _ExecutionPlan(
-        "transform", ['echo "Run MLflow Recipe step: transform"\n'], train_subgraph
+        "transform", ['echo "Run QCFlow Recipe step: transform"\n'], train_subgraph
     )
     assert plan.steps_cached == ["ingest", "split"]

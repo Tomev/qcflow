@@ -15,7 +15,7 @@ import laptopSvg from '../static/laptop.svg';
 import projectSvg from '../static/project.svg';
 import workflowsIconSvg from '../static/WorkflowsIcon.svg';
 import qs from 'qs';
-import { MLFLOW_INTERNAL_PREFIX } from './TagUtils';
+import { QCFLOW_INTERNAL_PREFIX } from './TagUtils';
 import _ from 'lodash';
 import { ErrorCodes, SupportPageUrl } from '../constants';
 import { FormattedMessage } from 'react-intl';
@@ -81,16 +81,16 @@ class Utils {
     (Utils.#notificationsApi as any).info({ message: content, duration: duration });
   }
 
-  static runNameTag = 'mlflow.runName';
-  static sourceNameTag = 'mlflow.source.name';
-  static sourceTypeTag = 'mlflow.source.type';
-  static gitCommitTag = 'mlflow.source.git.commit';
-  static entryPointTag = 'mlflow.project.entryPoint';
-  static backendTag = 'mlflow.project.backend';
-  static userTag = 'mlflow.user';
-  static loggedModelsTag = 'mlflow.log-model.history';
-  static pipelineProfileNameTag = 'mlflow.pipeline.profile.name';
-  static pipeLineStepNameTag = 'mlflow.pipeline.step.name';
+  static runNameTag = 'qcflow.runName';
+  static sourceNameTag = 'qcflow.source.name';
+  static sourceTypeTag = 'qcflow.source.type';
+  static gitCommitTag = 'qcflow.source.git.commit';
+  static entryPointTag = 'qcflow.project.entryPoint';
+  static backendTag = 'qcflow.project.backend';
+  static userTag = 'qcflow.user';
+  static loggedModelsTag = 'qcflow.log-model.history';
+  static pipelineProfileNameTag = 'qcflow.pipeline.profile.name';
+  static pipeLineStepNameTag = 'qcflow.pipeline.step.name';
 
   static formatMetric(value: any) {
     if (value === 0) {
@@ -154,7 +154,7 @@ class Utils {
       return (
         <FormattedMessage
           defaultMessage="{timeSince, plural, =1 {1 year} other {# years}} ago"
-          description="Text for time in years since given date for MLflow views"
+          description="Text for time in years since given date for QCFlow views"
           values={{ timeSince: interval }}
         />
       );
@@ -164,7 +164,7 @@ class Utils {
       return (
         <FormattedMessage
           defaultMessage="{timeSince, plural, =1 {1 month} other {# months}} ago"
-          description="Text for time in months since given date for MLflow views"
+          description="Text for time in months since given date for QCFlow views"
           values={{ timeSince: interval }}
         />
       );
@@ -174,7 +174,7 @@ class Utils {
       return (
         <FormattedMessage
           defaultMessage="{timeSince, plural, =1 {1 day} other {# days}} ago"
-          description="Text for time in days since given date for MLflow views"
+          description="Text for time in days since given date for QCFlow views"
           values={{ timeSince: interval }}
         />
       );
@@ -184,7 +184,7 @@ class Utils {
       return (
         <FormattedMessage
           defaultMessage="{timeSince, plural, =1 {1 hour} other {# hours}} ago"
-          description="Text for time in hours since given date for MLflow views"
+          description="Text for time in hours since given date for QCFlow views"
           values={{ timeSince: interval }}
         />
       );
@@ -194,7 +194,7 @@ class Utils {
       return (
         <FormattedMessage
           defaultMessage="{timeSince, plural, =1 {1 minute} other {# minutes}} ago"
-          description="Text for time in minutes since given date for MLflow views"
+          description="Text for time in minutes since given date for QCFlow views"
           values={{ timeSince: interval }}
         />
       );
@@ -202,7 +202,7 @@ class Utils {
     return (
       <FormattedMessage
         defaultMessage="{timeSince, plural, =1 {1 second} other {# seconds}} ago"
-        description="Text for time in seconds since given date for MLflow views"
+        description="Text for time in seconds since given date for QCFlow views"
         values={{ timeSince: seconds }}
       />
     );
@@ -350,8 +350,8 @@ class Utils {
    * Makes sure that the URL begins with correct scheme according
    * to RFC3986 [https://datatracker.ietf.org/doc/html/rfc3986#section-3.1]
    * It does not support slash-less schemes (e.g. news:abc, urn:anc).
-   * @param url URL string like "my-mlflow-server.com/#/experiments/9" or
-   *        "https://my-mlflow-server.com/#/experiments/9"
+   * @param url URL string like "my-qcflow-server.com/#/experiments/9" or
+   *        "https://my-qcflow-server.com/#/experiments/9"
    * @param defaultScheme scheme to add if missing in the provided URL, defaults to "https"
    * @returns {string} the URL string with ensured default scheme
    */
@@ -375,7 +375,7 @@ class Utils {
 
   /**
    * Returns a copy of the provided URL with its query parameters set to `queryParams`.
-   * @param url URL string like "http://my-mlflow-server.com/#/experiments/9.
+   * @param url URL string like "http://my-qcflow-server.com/#/experiments/9.
    * @param queryParams Optional query parameter string like "?param=12345". Query params provided
    *        via this string will override existing query param values in `url`
    */
@@ -437,27 +437,27 @@ class Utils {
   }
 
   static getNotebookId(tags: any) {
-    const notebookIdTag = 'mlflow.databricks.notebookID';
+    const notebookIdTag = 'qcflow.databricks.notebookID';
     return tags && tags[notebookIdTag] && tags[notebookIdTag].value;
   }
 
   static getClusterSpecJson(tags: any) {
-    const clusterSpecJsonTag = 'mlflow.databricks.cluster.info';
+    const clusterSpecJsonTag = 'qcflow.databricks.cluster.info';
     return tags && tags[clusterSpecJsonTag] && tags[clusterSpecJsonTag].value;
   }
 
   static getClusterLibrariesJson(tags: any) {
-    const clusterLibrariesJsonTag = 'mlflow.databricks.cluster.libraries';
+    const clusterLibrariesJsonTag = 'qcflow.databricks.cluster.libraries';
     return tags && tags[clusterLibrariesJsonTag] && tags[clusterLibrariesJsonTag].value;
   }
 
   static getClusterId(tags: any) {
-    const clusterIdTag = 'mlflow.databricks.cluster.id';
+    const clusterIdTag = 'qcflow.databricks.cluster.id';
     return tags && tags[clusterIdTag] && tags[clusterIdTag].value;
   }
 
   static getNotebookRevisionId(tags: any) {
-    const revisionIdTag = 'mlflow.databricks.notebookRevisionID';
+    const revisionIdTag = 'qcflow.databricks.notebookRevisionID';
     return tags && tags[revisionIdTag] && tags[revisionIdTag].value;
   }
 
@@ -465,7 +465,7 @@ class Utils {
    * Renders the source name and entry point into an HTML element. Used for display.
    * @param tags Object containing tag key value pairs.
    * @param queryParams Query params to add to certain source type links.
-   * @param runUuid ID of the MLflow run to add to certain source (revision) links.
+   * @param runUuid ID of the QCFlow run to add to certain source (revision) links.
    */
   static renderSource(tags: any, queryParams: any, runUuid: any, branchName = 'master') {
     const sourceName = Utils.getSourceName(tags);
@@ -522,7 +522,7 @@ class Utils {
     if (revisionId) {
       url += `/revision/${revisionId}`;
       if (runUuid) {
-        url += `/mlflow/run/${runUuid}`;
+        url += `/qcflow/run/${runUuid}`;
       }
     }
     return url;
@@ -584,8 +584,8 @@ class Utils {
       }
       return res;
     } else if (sourceType === 'JOB') {
-      const jobIdTag = 'mlflow.databricks.jobID';
-      const jobRunIdTag = 'mlflow.databricks.jobRunID';
+      const jobIdTag = 'qcflow.databricks.jobID';
+      const jobRunIdTag = 'qcflow.databricks.jobRunID';
       const jobId = tags && tags[jobIdTag] && tags[jobIdTag].value;
       const jobRunId = tags && tags[jobRunIdTag] && tags[jobRunIdTag].value;
       if (jobId && jobRunId) {
@@ -868,10 +868,10 @@ class Utils {
   }
 
   static getVisibleTagValues(tags: Record<string, KeyValueEntity>) {
-    // Collate tag objects into list of [key, value] lists and filter MLflow-internal tags
+    // Collate tag objects into list of [key, value] lists and filter QCFlow-internal tags
     return Object.values(tags)
       .map((t) => [t.key, t.value])
-      .filter((t) => !t[0].startsWith(MLFLOW_INTERNAL_PREFIX));
+      .filter((t) => !t[0].startsWith(QCFLOW_INTERNAL_PREFIX));
   }
 
   static getVisibleTagKeyList(tagsList: any) {
@@ -898,7 +898,7 @@ class Utils {
   }
 
   /**
-   * Parses the mlflow.log-model.history tag and returns a list of logged models,
+   * Parses the qcflow.log-model.history tag and returns a list of logged models,
    * with duplicates (as defined by two logged models with the same path) removed by
    * keeping the logged model with the most recent creation date.
    * Each logged model will be of the form:
@@ -919,7 +919,7 @@ class Utils {
         // crashing the page. However, we should come up with
         // a better solution (e.g. keep only the last X entries
         // to prevent exceeding tag value limits).
-        // See https://github.com/mlflow/mlflow/issues/12032
+        // See https://github.com/qcflow/qcflow/issues/12032
       }
       if (models) {
         // extract artifact path, flavors and creation time from tag.
@@ -1020,11 +1020,11 @@ class Utils {
     const errorMessages = {
       404: intl.formatMessage({
         defaultMessage: '404: Resource not found',
-        description: 'Generic 404 user-friendly error for the MLflow UI',
+        description: 'Generic 404 user-friendly error for the QCFlow UI',
       }),
       500: intl.formatMessage({
         defaultMessage: '500: Internal server error',
-        description: 'Generic 500 user-friendly error for the MLflow UI',
+        description: 'Generic 500 user-friendly error for the QCFlow UI',
       }),
     };
 

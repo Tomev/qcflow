@@ -75,7 +75,7 @@ def developer_stable(func):
     them.
 
     APIs that are annotated with this decorator are guaranteed (except in cases of notes below) to:
-    - maintain backwards compatibility such that earlier versions of any MLflow client, cli, or
+    - maintain backwards compatibility such that earlier versions of any QCFlow client, cli, or
       server will not have issues with any changes being made to them from an interface perspective.
     - maintain a consistent contract with respect to existing named arguments such that
       modifications will not alter or remove an existing named argument.

@@ -1,7 +1,7 @@
 import re
 import shlex
 
-from mlflow.utils.os import is_windows
+from qcflow.utils.os import is_windows
 
 
 def strip_prefix(original, prefix):

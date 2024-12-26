@@ -31,13 +31,13 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import React from 'react';
-import { parseJSONSafe } from '@mlflow/mlflow/src/common/utils/TagUtils';
-import { ArtifactLogTableImageObject } from '@mlflow/mlflow/src/experiment-tracking/types';
-import { LOG_TABLE_IMAGE_COLUMN_TYPE } from '@mlflow/mlflow/src/experiment-tracking/constants';
+import { parseJSONSafe } from '@qcflow/qcflow/src/common/utils/TagUtils';
+import { ArtifactLogTableImageObject } from '@qcflow/qcflow/src/experiment-tracking/types';
+import { LOG_TABLE_IMAGE_COLUMN_TYPE } from '@qcflow/qcflow/src/experiment-tracking/constants';
 import { ImagePlot } from '../runs-charts/components/charts/ImageGridPlot.common';
 import { ToggleIconButton } from '../../../common/components/ToggleIconButton';
 import { ShowArtifactLoggedTableViewDataPreview } from './ShowArtifactLoggedTableViewDataPreview';
-import Utils from '@mlflow/mlflow/src/common/utils/Utils';
+import Utils from '@qcflow/qcflow/src/common/utils/Utils';
 import type { LoggedModelArtifactViewerProps } from './ArtifactViewComponents.types';
 
 const MAX_ROW_HEIGHT = 160;
@@ -183,7 +183,7 @@ const LoggedTable = ({ data, runUuid }: { data: { columns: string[]; data: any[]
 
   const paginationComponent = (
     <Pagination
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_artifact-view-components_showartifactloggedtableview.tsx_181"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_artifact-view-components_showartifactloggedtableview.tsx_181"
       currentPageIndex={pagination.pageIndex + 1}
       numTotal={rows.length}
       onChange={(page, pageSize) => {
@@ -225,7 +225,7 @@ const LoggedTable = ({ data, runUuid }: { data: { columns: string[]; data: any[]
                   {headerGroup.headers.map((header, index) => {
                     return (
                       <TableHeader
-                        componentId="codegen_mlflow_app_src_experiment-tracking_components_artifact-view-components_showartifactloggedtableview.tsx_223"
+                        componentId="codegen_qcflow_app_src_experiment-tracking_components_artifact-view-components_showartifactloggedtableview.tsx_223"
                         key={header.id}
                         sortable
                         sortDirection={header.column.getIsSorted() || 'none'}
@@ -313,13 +313,13 @@ const LoggedTable = ({ data, runUuid }: { data: { columns: string[]; data: any[]
                 description: 'Run view > artifact view > logged table > table settings tooltip',
               })}
             >
-              <Button componentId="mlflow.run.artifact_view.table_settings" icon={<GearIcon />} />
+              <Button componentId="qcflow.run.artifact_view.table_settings" icon={<GearIcon />} />
             </DropdownMenu.Trigger>
           </LegacyTooltip>
           <DropdownMenu.Content css={{ maxHeight: theme.general.heightSm * 10, overflowY: 'auto' }} side="left">
             <DropdownMenu.Arrow />
             <DropdownMenu.CheckboxItem
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_artifact-view-components_showartifactloggedtableview.tsx_315"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_artifact-view-components_showartifactloggedtableview.tsx_315"
               checked={isCompactView}
               onCheckedChange={setIsCompactView}
             >
@@ -339,7 +339,7 @@ const LoggedTable = ({ data, runUuid }: { data: { columns: string[]; data: any[]
               </DropdownMenu.Label>
               {columns.map((column) => (
                 <DropdownMenu.CheckboxItem
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_artifact-view-components_showartifactloggedtableview.tsx_331"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_artifact-view-components_showartifactloggedtableview.tsx_331"
                   onSelect={(event) => event.preventDefault()}
                   checked={!hiddenColumns.includes(column)}
                   key={column}
@@ -367,7 +367,7 @@ const LoggedTable = ({ data, runUuid }: { data: { columns: string[]; data: any[]
             });
           }}
           pressed={!isUndefined(previewData)}
-          componentId="mlflow.run.artifact_view.preview_sidebar_toggle"
+          componentId="qcflow.run.artifact_view.preview_sidebar_toggle"
           icon={<SidebarIcon />}
         />
       </div>

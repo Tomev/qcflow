@@ -1,5 +1,5 @@
-from mlflow.tracking.request_header.abstract_request_header_provider import RequestHeaderProvider
-from mlflow.utils import databricks_utils
+from qcflow.tracking.request_header.abstract_request_header_provider import RequestHeaderProvider
+from qcflow.utils import databricks_utils
 
 
 class DatabricksRequestHeaderProvider(RequestHeaderProvider):

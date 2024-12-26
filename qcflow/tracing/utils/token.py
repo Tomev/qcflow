@@ -3,13 +3,13 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
-from mlflow.entities import LiveSpan
+from qcflow.entities import LiveSpan
 
 
 @dataclass
 class SpanWithToken:
     """
-    A utility container to hold an MLflow span and its corresponding OpenTelemetry token.
+    A utility container to hold an QCFlow span and its corresponding OpenTelemetry token.
 
     The token is a special object that is generated when setting a span as active within
     the Open Telemetry span context. This token is required when inactivate the span i.e.

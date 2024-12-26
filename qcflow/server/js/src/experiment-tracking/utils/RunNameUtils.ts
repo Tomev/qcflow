@@ -1,6 +1,6 @@
 /**
  * TS implementation of
- * https://github.com/mlflow/mlflow/blob/master/mlflow/utils/name_utils.py
+ * https://github.com/qcflow/qcflow/blob/master/qcflow/utils/name_utils.py
  */
 
 import { RUNS_COLOR_PALETTE, RUNS_COLOR_PALETTE_NEXT } from '../../common/color-palette';

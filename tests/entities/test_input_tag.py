@@ -1,4 +1,4 @@
-from mlflow.entities import InputTag
+from qcflow.entities import InputTag
 
 
 def _check(input_tag, key, value):

@@ -13,13 +13,13 @@ if TYPE_CHECKING:
     from pyspark.sql.connect.session import SparkSession as SparkConnectSession
 
 
-import mlflow.utils
-from mlflow.environment_variables import (
-    MLFLOW_ENABLE_DB_SDK,
-    MLFLOW_TRACKING_URI,
+import qcflow.utils
+from qcflow.environment_variables import (
+    QCFLOW_ENABLE_DB_SDK,
+    QCFLOW_TRACKING_URI,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.legacy_databricks_cli.configure.provider import (
+from qcflow.exceptions import MlflowException
+from qcflow.legacy_databricks_cli.configure.provider import (
     DatabricksConfig,
     DatabricksConfigProvider,
     DatabricksModelServingConfigProvider,
@@ -27,9 +27,9 @@ from mlflow.legacy_databricks_cli.configure.provider import (
     ProfileConfigProvider,
     SparkTaskContextConfigProvider,
 )
-from mlflow.utils._spark_utils import _get_active_spark_session
-from mlflow.utils.rest_utils import MlflowHostCreds
-from mlflow.utils.uri import (
+from qcflow.utils._spark_utils import _get_active_spark_session
+from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.uri import (
     _DATABRICKS_UNITY_CATALOG_SCHEME,
     get_db_info_from_uri,
     is_databricks_uri,
@@ -81,9 +81,9 @@ def _use_repl_context_if_available(
     return decorator
 
 
-def get_mlflow_credential_context_by_run_id(run_id):
-    from mlflow.tracking.artifact_utils import get_artifact_uri
-    from mlflow.utils.uri import get_databricks_profile_uri_from_artifact_uri
+def get_qcflow_credential_context_by_run_id(run_id):
+    from qcflow.tracking.artifact_utils import get_artifact_uri
+    from qcflow.utils.uri import get_databricks_profile_uri_from_artifact_uri
 
     run_root_artifact_uri = get_artifact_uri(run_id=run_id)
     profile = get_databricks_profile_uri_from_artifact_uri(run_root_artifact_uri)
@@ -211,12 +211,12 @@ def is_in_databricks_model_serving_environment():
     return val.lower() == "true"
 
 
-def is_mlflow_tracing_enabled_in_model_serving() -> bool:
+def is_qcflow_tracing_enabled_in_model_serving() -> bool:
     """
     This environment variable guards tracing behaviors for models in databricks
     model serving. Tracing in serving is only enabled when this env var is true.
     """
-    return os.environ.get("ENABLE_MLFLOW_TRACING", "false").lower() == "true"
+    return os.environ.get("ENABLE_QCFLOW_TRACING", "false").lower() == "true"
 
 
 # this should only be the case when we are in model serving environment
@@ -268,7 +268,7 @@ def is_in_databricks_serverless_runtime():
 
 
 def is_in_databricks_shared_cluster_runtime():
-    from mlflow.utils.spark_utils import is_spark_connect_mode
+    from qcflow.utils.spark_utils import is_spark_connect_mode
 
     return (
         is_in_databricks_runtime()
@@ -281,7 +281,7 @@ def is_databricks_connect(spark=None):
     """
     Return True if current Spark-connect client connects to Databricks cluster.
     """
-    from mlflow.utils.spark_utils import is_spark_connect_mode
+    from qcflow.utils.spark_utils import is_spark_connect_mode
 
     if is_in_databricks_serverless_runtime() or is_in_databricks_shared_cluster_runtime():
         return True
@@ -307,7 +307,7 @@ class DBConnectUDFSandboxInfo:
     image_version: str
     runtime_version: str
     platform_machine: str
-    mlflow_version: str
+    qcflow_version: str
 
 
 _dbconnect_udf_sandbox_info_cache: Optional[DBConnectUDFSandboxInfo] = None
@@ -320,7 +320,7 @@ def get_dbconnect_udf_sandbox_info(spark):
       '{major_version}.{minor_version}' or 'client.{major_version}.{minor_version}'
      - runtime_version like '{major_version}.{minor_version}'
      - platform_machine like 'x86_64' or 'aarch64'
-     - mlflow_version
+     - qcflow_version
     """
     global _dbconnect_udf_sandbox_info_cache
     from pyspark.sql.functions import pandas_udf
@@ -347,7 +347,7 @@ def get_dbconnect_udf_sandbox_info(spark):
             platform_machine=platform.machine(),
             # In databricks runtime, driver and executor should have the
             # same version.
-            mlflow_version=mlflow.__version__,
+            qcflow_version=qcflow.__version__,
         )
     else:
         image_version = runtime_version
@@ -359,25 +359,25 @@ def get_dbconnect_udf_sandbox_info(spark):
             platform_machine = platform.machine()
 
             try:
-                import mlflow
+                import qcflow
 
-                mlflow_version = mlflow.__version__
+                qcflow_version = qcflow.__version__
             except ImportError:
-                mlflow_version = ""
+                qcflow_version = ""
 
-            return pd.Series([f"{platform_machine}\n{mlflow_version}"])
+            return pd.Series([f"{platform_machine}\n{qcflow_version}"])
 
-        platform_machine, mlflow_version = (
+        platform_machine, qcflow_version = (
             spark.range(1).select(f("id")).collect()[0][0].split("\n")
         )
-        if mlflow_version == "":
-            mlflow_version = None
+        if qcflow_version == "":
+            qcflow_version = None
         _dbconnect_udf_sandbox_info_cache = DBConnectUDFSandboxInfo(
             spark=spark,
             image_version=image_version,
             runtime_version=runtime_version,
             platform_machine=platform_machine,
-            mlflow_version=mlflow_version,
+            qcflow_version=qcflow_version,
         )
 
     return _dbconnect_udf_sandbox_info_cache
@@ -388,7 +388,7 @@ def is_databricks_serverless(spark):
     Return True if running on Databricks Serverless notebook or
     on Databricks Connect client that connects to Databricks Serverless.
     """
-    from mlflow.utils.spark_utils import is_spark_connect_mode
+    from qcflow.utils.spark_utils import is_spark_connect_mode
 
     if not is_spark_connect_mode():
         return False
@@ -677,10 +677,10 @@ def _fail_malformed_databricks_auth(uri):
             f"configure authentication by setting environment variables as described in "
             f"https://docs.databricks.com/en/generative-ai/agent-framework/deploy-agent.html"
             f"#manual-authentication. "
-            f"Additional debug info: the MLflow {uri_name} was set to '{uri}'"
+            f"Additional debug info: the QCFlow {uri_name} was set to '{uri}'"
         )
     raise MlflowException(
-        f"Reading Databricks credential configuration failed with MLflow {uri_name} '{uri}'. "
+        f"Reading Databricks credential configuration failed with QCFlow {uri_name} '{uri}'. "
         "Please ensure that the 'databricks-sdk' PyPI library is installed, the tracking "
         "URI is set correctly, and Databricks authentication is properly configured. "
         f"The {uri_name} can be either '{uri_scheme}' "
@@ -721,7 +721,7 @@ class TrackingURIConfigProvider(DatabricksConfigProvider):
 
     This provider only works in Databricks runtime and it is deprecated,
     in Databricks runtime you can simply use 'databricks'
-    as the tracking URI and MLflow can automatically read dynamic token in
+    as the tracking URI and QCFlow can automatically read dynamic token in
     Databricks runtime.
     """
 
@@ -766,7 +766,7 @@ def get_databricks_host_creds(server_uri=None):
     .. Warning:: This API is deprecated. In the future it might be removed.
     """
 
-    if MLFLOW_ENABLE_DB_SDK.get():
+    if QCFLOW_ENABLE_DB_SDK.get():
         from databricks.sdk import WorkspaceClient
 
         profile, key_prefix = get_db_info_from_uri(server_uri)
@@ -790,7 +790,7 @@ def get_databricks_host_creds(server_uri=None):
                 ) from e
         try:
             # Using databricks-sdk to create Databricks WorkspaceClient instance,
-            # If authentication is failed, MLflow falls back to legacy authentication methods,
+            # If authentication is failed, QCFlow falls back to legacy authentication methods,
             # see `SparkTaskContextConfigProvider`, `DatabricksModelServingConfigProvider`,
             # and `TrackingURIConfigProvider`.
             # databricks-sdk supports many kinds of authentication ways,
@@ -834,60 +834,60 @@ def get_databricks_host_creds(server_uri=None):
     )
 
 
-@_use_repl_context_if_available("mlflowGitRepoUrl")
+@_use_repl_context_if_available("qcflowGitRepoUrl")
 def get_git_repo_url():
     try:
-        return _get_command_context().mlflowGitRepoUrl().get()
+        return _get_command_context().qcflowGitRepoUrl().get()
     except Exception:
-        return _get_extra_context("mlflowGitUrl")
+        return _get_extra_context("qcflowGitUrl")
 
 
-@_use_repl_context_if_available("mlflowGitRepoProvider")
+@_use_repl_context_if_available("qcflowGitRepoProvider")
 def get_git_repo_provider():
     try:
-        return _get_command_context().mlflowGitRepoProvider().get()
+        return _get_command_context().qcflowGitRepoProvider().get()
     except Exception:
-        return _get_extra_context("mlflowGitProvider")
+        return _get_extra_context("qcflowGitProvider")
 
 
-@_use_repl_context_if_available("mlflowGitRepoCommit")
+@_use_repl_context_if_available("qcflowGitRepoCommit")
 def get_git_repo_commit():
     try:
-        return _get_command_context().mlflowGitRepoCommit().get()
+        return _get_command_context().qcflowGitRepoCommit().get()
     except Exception:
-        return _get_extra_context("mlflowGitCommit")
+        return _get_extra_context("qcflowGitCommit")
 
 
-@_use_repl_context_if_available("mlflowGitRelativePath")
+@_use_repl_context_if_available("qcflowGitRelativePath")
 def get_git_repo_relative_path():
     try:
-        return _get_command_context().mlflowGitRelativePath().get()
+        return _get_command_context().qcflowGitRelativePath().get()
     except Exception:
-        return _get_extra_context("mlflowGitRelativePath")
+        return _get_extra_context("qcflowGitRelativePath")
 
 
-@_use_repl_context_if_available("mlflowGitRepoReference")
+@_use_repl_context_if_available("qcflowGitRepoReference")
 def get_git_repo_reference():
     try:
-        return _get_command_context().mlflowGitRepoReference().get()
+        return _get_command_context().qcflowGitRepoReference().get()
     except Exception:
-        return _get_extra_context("mlflowGitReference")
+        return _get_extra_context("qcflowGitReference")
 
 
-@_use_repl_context_if_available("mlflowGitRepoReferenceType")
+@_use_repl_context_if_available("qcflowGitRepoReferenceType")
 def get_git_repo_reference_type():
     try:
-        return _get_command_context().mlflowGitRepoReferenceType().get()
+        return _get_command_context().qcflowGitRepoReferenceType().get()
     except Exception:
-        return _get_extra_context("mlflowGitReferenceType")
+        return _get_extra_context("qcflowGitReferenceType")
 
 
-@_use_repl_context_if_available("mlflowGitRepoStatus")
+@_use_repl_context_if_available("qcflowGitRepoStatus")
 def get_git_repo_status():
     try:
-        return _get_command_context().mlflowGitRepoStatus().get()
+        return _get_command_context().qcflowGitRepoStatus().get()
     except Exception:
-        return _get_extra_context("mlflowGitStatus")
+        return _get_extra_context("qcflowGitStatus")
 
 
 def is_running_in_ipython_environment():
@@ -901,21 +901,21 @@ def is_running_in_ipython_environment():
 
 def get_databricks_run_url(tracking_uri: str, run_id: str, artifact_path=None) -> Optional[str]:
     """
-    Obtains a Databricks URL corresponding to the specified MLflow Run, optionally referring
+    Obtains a Databricks URL corresponding to the specified QCFlow Run, optionally referring
     to an artifact within the run.
 
     Args:
-        tracking_uri: The URI of the MLflow Tracking server containing the Run.
-        run_id: The ID of the MLflow Run for which to obtain a Databricks URL.
+        tracking_uri: The URI of the QCFlow Tracking server containing the Run.
+        run_id: The ID of the QCFlow Run for which to obtain a Databricks URL.
         artifact_path: An optional relative artifact path within the Run to which the URL
             should refer.
 
     Returns:
-        A Databricks URL corresponding to the specified MLflow Run
-        (and artifact path, if specified), or None if the MLflow Run does not belong to a
+        A Databricks URL corresponding to the specified QCFlow Run
+        (and artifact path, if specified), or None if the QCFlow Run does not belong to a
         Databricks Workspace.
     """
-    from mlflow.tracking.client import MlflowClient
+    from qcflow.tracking.client import MlflowClient
 
     try:
         workspace_info = (
@@ -1011,7 +1011,7 @@ def get_databricks_workspace_info_from_uri(tracking_uri: str) -> Optional[Databr
                 " host URL, you may want to specify the workspace ID (along with the host"
                 " information in the secret manager) for run lineage tracking. For more"
                 " details on how to specify this information in the secret manager,"
-                " please refer to the Databricks MLflow documentation."
+                " please refer to the Databricks QCFlow documentation."
             )
 
     if workspace_host:
@@ -1031,7 +1031,7 @@ def check_databricks_secret_scope_access(scope_name):
                 "that will be used to deploy the model to Databricks Model Serving. "
                 "Please verify that the current Databricks user has 'READ' permission for "
                 "this scope. For more information, see "
-                "https://mlflow.org/docs/latest/python_api/openai/index.html#credential-management-for-openai-on-databricks. "  # noqa: E501
+                "https://qcflow.org/docs/latest/python_api/openai/index.html#credential-management-for-openai-on-databricks. "  # noqa: E501
                 f"Error: {e}"
             )
 
@@ -1047,7 +1047,7 @@ def _construct_databricks_run_url(
     if workspace_id and workspace_id != "0":
         run_url += "?o=" + str(workspace_id)
 
-    run_url += f"#mlflow/experiments/{experiment_id}/runs/{run_id}"
+    run_url += f"#qcflow/experiments/{experiment_id}/runs/{run_id}"
 
     if artifact_path is not None:
         run_url += f"/artifactPath/{artifact_path.lstrip('/')}"
@@ -1062,7 +1062,7 @@ def _construct_databricks_model_version_url(
     if workspace_id and workspace_id != "0":
         model_version_url += "?o=" + str(workspace_id)
 
-    model_version_url += f"#mlflow/models/{name}/versions/{version}"
+    model_version_url += f"#qcflow/models/{name}/versions/{version}"
 
     return model_version_url
 
@@ -1084,7 +1084,7 @@ def _get_databricks_creds_config(tracking_uri):
         providers = [TrackingURIConfigProvider(tracking_uri)]
     elif profile:
         # If `tracking_uri` is 'databricks://<profile>'
-        # MLflow should only read credentials from this profile
+        # QCFlow should only read credentials from this profile
         providers = [ProfileConfigProvider(profile)]
     else:
         providers = [
@@ -1111,15 +1111,15 @@ def _get_databricks_creds_config(tracking_uri):
 
 
 def get_databricks_env_vars(tracking_uri):
-    if not mlflow.utils.uri.is_databricks_uri(tracking_uri):
+    if not qcflow.utils.uri.is_databricks_uri(tracking_uri):
         return {}
 
     config = _get_databricks_creds_config(tracking_uri)
 
     if config.auth_type == "databricks-cli":
         raise MlflowException(
-            "You configured authentication type to 'databricks-cli', in this case, MLflow cannot "
-            "read credential values, so that MLflow cannot construct the databricks environment "
+            "You configured authentication type to 'databricks-cli', in this case, QCFlow cannot "
+            "read credential values, so that QCFlow cannot construct the databricks environment "
             "variables for child process authentication."
         )
 
@@ -1127,7 +1127,7 @@ def get_databricks_env_vars(tracking_uri):
     # than all profiles in ~/.databrickscfg; maybe better would be to mount the necessary
     # part of ~/.databrickscfg into the container
     env_vars = {}
-    env_vars[MLFLOW_TRACKING_URI.name] = "databricks"
+    env_vars[QCFLOW_TRACKING_URI.name] = "databricks"
     env_vars["DATABRICKS_HOST"] = config.host
     if config.username:
         env_vars["DATABRICKS_USERNAME"] = config.username
@@ -1323,7 +1323,7 @@ if is_in_databricks_runtime():
     except _NoDbutilsError:
         # If there is no dbutils available, it means it is run in databricks driver local suite,
         # in this case, we don't need to initialize databricks token because
-        # there is no backend mlflow service available.
+        # there is no backend qcflow service available.
         pass
 
 

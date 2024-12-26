@@ -60,7 +60,7 @@ const NotConfiguredParallelCoordsPlaceholder = ({ onEdit }: { onEdit: () => void
             description="Experiment page > compare runs > parallel coordinates chart > chart not configured warning > description"
           />
         </Typography.Text>
-        <Button componentId="mlflow.charts.parallel_coords_chart_configure_button" type="primary" onClick={onEdit}>
+        <Button componentId="qcflow.charts.parallel_coords_chart_configure_button" type="primary" onClick={onEdit}>
           <FormattedMessage
             defaultMessage="Configure chart"
             description="Experiment page > compare runs > parallel coordinates chart > configure chart button"
@@ -268,7 +268,7 @@ export const RunsChartsParallelChartCard = ({
           <>
             <DropdownMenu.Separator />
             <DropdownMenu.CheckboxItem
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_runschartsparallelchartcard.tsx_293"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_runschartsparallelchartcard.tsx_293"
               checked={!config.showAllRuns}
               onClick={() => updateVisibleOnlySetting(false)}
             >
@@ -279,7 +279,7 @@ export const RunsChartsParallelChartCard = ({
               />
             </DropdownMenu.CheckboxItem>
             <DropdownMenu.CheckboxItem
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_runschartsparallelchartcard.tsx_300"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_runschartsparallelchartcard.tsx_300"
               checked={config.showAllRuns}
               onClick={() => updateVisibleOnlySetting(true)}
             >

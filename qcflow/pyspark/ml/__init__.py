@@ -10,21 +10,21 @@ from urllib.parse import urlparse
 
 import numpy as np
 
-import mlflow
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.spark_dataset import SparkDataset
-from mlflow.entities import Metric, Param
-from mlflow.entities.dataset_input import DatasetInput
-from mlflow.entities.input_tag import InputTag
-from mlflow.exceptions import MlflowException
-from mlflow.tracking.client import MlflowClient
-from mlflow.utils import (
+import qcflow
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.spark_dataset import SparkDataset
+from qcflow.entities import Metric, Param
+from qcflow.entities.dataset_input import DatasetInput
+from qcflow.entities.input_tag import InputTag
+from qcflow.exceptions import MlflowException
+from qcflow.tracking.client import MlflowClient
+from qcflow.utils import (
     _chunk_dict,
     _get_fully_qualified_class_name,
     _inspect_original_var_name,
     _truncate_dict,
 )
-from mlflow.utils.autologging_utils import (
+from qcflow.utils.autologging_utils import (
     INPUT_EXAMPLE_SAMPLE_ROWS,
     _get_new_training_session_class,
     autologging_integration,
@@ -32,20 +32,20 @@ from mlflow.utils.autologging_utils import (
     resolve_input_example_and_signature,
     safe_patch,
 )
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_AUTOLOGGING,
-    MLFLOW_DATASET_CONTEXT,
-    MLFLOW_PARENT_RUN_ID,
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_AUTOLOGGING,
+    QCFLOW_DATASET_CONTEXT,
+    QCFLOW_PARENT_RUN_ID,
 )
-from mlflow.utils.os import is_windows
-from mlflow.utils.rest_utils import (
+from qcflow.utils.os import is_windows
+from qcflow.utils.rest_utils import (
     MlflowHostCreds,
     augmented_raise_for_status,
     http_request,
 )
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.validation import (
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.validation import (
     MAX_ENTITY_KEY_LENGTH,
     MAX_PARAM_VAL_LENGTH,
     MAX_PARAMS_TAGS_PER_BATCH,
@@ -94,7 +94,7 @@ def _read_log_model_allowlist():
     """
     Reads the module allowlist and returns it as a set.
     """
-    from mlflow.utils._spark_utils import _get_active_spark_session
+    from qcflow.utils._spark_utils import _get_active_spark_session
 
     # New in 3.9: https://docs.python.org/3/library/importlib.resources.html#importlib.resources.files
     if sys.version_info.major > 2 and sys.version_info.minor > 8:
@@ -112,13 +112,13 @@ def _read_log_model_allowlist():
         _logger.info(
             "No SparkSession detected. Autologging will log pyspark.ml models contained "
             "in the default allowlist. To specify a custom allowlist, initialize a SparkSession "
-            "prior to calling mlflow.pyspark.ml.autolog() and specify the path to your allowlist "
-            "file via the spark.mlflow.pysparkml.autolog.logModelAllowlistFile conf."
+            "prior to calling qcflow.pyspark.ml.autolog() and specify the path to your allowlist "
+            "file via the spark.qcflow.pysparkml.autolog.logModelAllowlistFile conf."
         )
         return _read_log_model_allowlist_from_file(builtin_allowlist_file)
 
     allowlist_file = spark_session.sparkContext._conf.get(
-        "spark.mlflow.pysparkml.autolog.logModelAllowlistFile", None
+        "spark.qcflow.pysparkml.autolog.logModelAllowlistFile", None
     )
     if allowlist_file:
         try:
@@ -144,10 +144,10 @@ _log_model_allowlist = None
 def _get_warning_msg_for_skip_log_model(model):
     return (
         f"Model {model.uid} will not be autologged because it is not allowlisted or or because "
-        "one or more of its nested models are not allowlisted. Call mlflow.spark.log_model() "
+        "one or more of its nested models are not allowlisted. Call qcflow.spark.log_model() "
         "to explicitly log the model, or specify a custom allowlist via the "
-        "spark.mlflow.pysparkml.autolog.logModelAllowlistFile Spark conf "
-        "(see mlflow.pyspark.ml.autolog docs for more info)."
+        "spark.qcflow.pysparkml.autolog.logModelAllowlistFile Spark conf "
+        "(see qcflow.pyspark.ml.autolog docs for more info)."
     )
 
 
@@ -186,7 +186,7 @@ def _should_log_model(spark_model):
 def _get_estimator_info_tags(estimator):
     """
     Returns:
-        A dictionary of MLflow run tag keys and values
+        A dictionary of QCFlow run tag keys and values
         describing the specified estimator.
     """
     return {
@@ -412,7 +412,7 @@ def _create_child_runs_for_parameter_search(parent_estimator, parent_model, pare
     for i, est_param in enumerate(estimator_param_maps):
         child_estimator = tuned_estimator.copy(est_param)
         tags_to_log = dict(child_tags) if child_tags else {}
-        tags_to_log.update({MLFLOW_PARENT_RUN_ID: parent_run.info.run_id})
+        tags_to_log.update({QCFLOW_PARENT_RUN_ID: parent_run.info.run_id})
         tags_to_log.update(_get_estimator_info_tags(child_estimator))
 
         child_run = client.create_run(
@@ -430,7 +430,7 @@ def _create_child_runs_for_parameter_search(parent_estimator, parent_model, pare
             param_batches_to_log, [metrics_to_log], fillvalue={}
         ):
             # Trim any parameter keys / values and metric keys that exceed the limits
-            # imposed by corresponding MLflow Tracking APIs (e.g., LogParam, LogMetric)
+            # imposed by corresponding QCFlow Tracking APIs (e.g., LogParam, LogMetric)
             truncated_params_batch = _truncate_dict(
                 params_batch, MAX_ENTITY_KEY_LENGTH, MAX_PARAM_VAL_LENGTH
             )
@@ -531,7 +531,7 @@ def _log_estimator_params(param_map):
     # Chunk model parameters to avoid hitting the log_batch API limit
     for chunk in _chunk_dict(param_map, chunk_size=MAX_PARAMS_TAGS_PER_BATCH):
         truncated = _truncate_dict(chunk, MAX_ENTITY_KEY_LENGTH, MAX_PARAM_VAL_LENGTH)
-        mlflow.log_params(truncated)
+        qcflow.log_params(truncated)
 
 
 class _AutologgingMetricsManager:
@@ -602,13 +602,13 @@ class _AutologgingMetricsManager:
 
     @staticmethod
     def get_run_id_for_model(model):
-        return getattr(model, "_mlflow_run_id", None)
+        return getattr(model, "_qcflow_run_id", None)
 
     @staticmethod
     def is_metric_value_loggable(metric_value):
         """
         check whether the specified `metric_value` is a numeric value which can be logged
-        as an MLflow metric.
+        as an QCFlow metric.
         """
         return isinstance(metric_value, (int, float, np.number)) and not isinstance(
             metric_value, bool
@@ -620,7 +620,7 @@ class _AutologgingMetricsManager:
         So that in following metric autologging, the metric will be logged into the registered
         run_id
         """
-        model._mlflow_run_id = run_id
+        model._qcflow_run_id = run_id
 
     @staticmethod
     def gen_name_with_index(name, index):
@@ -729,7 +729,7 @@ class _AutologgingMetricsManager:
 
     def log_post_training_metric(self, run_id, key, value):
         """
-        Log the metric into the specified mlflow run.
+        Log the metric into the specified qcflow run.
         and it will also update the metric_info artifact if needed.
         """
         # Note: if the case log the same metric key multiple times,
@@ -755,7 +755,7 @@ _AUTOLOGGING_METRICS_MANAGER = _AutologgingMetricsManager()
 def _get_columns_with_unsupported_data_type(df):
     from pyspark.ml.linalg import VectorUDT
 
-    from mlflow.types.schema import DataType
+    from qcflow.types.schema import DataType
 
     supported_spark_types = DataType.get_spark_types()
     unsupported_columns = []
@@ -772,7 +772,7 @@ def _check_or_set_model_prediction_column(spark_model, input_spark_df):
 
     prediction_column = "prediction"
     if isinstance(spark_model, PipelineModel) and spark_model.stages[-1].hasParam("outputCol"):
-        from mlflow.utils._spark_utils import _get_active_spark_session
+        from qcflow.utils._spark_utils import _get_active_spark_session
 
         spark = _get_active_spark_session()
         # do a transform with an empty input DataFrame
@@ -787,7 +787,7 @@ def _check_or_set_model_prediction_column(spark_model, input_spark_df):
 
 
 def _infer_spark_model_signature(spark_model, input_example_spark_df):
-    from mlflow.models import infer_signature
+    from qcflow.models import infer_signature
 
     prediction_column = _check_or_set_model_prediction_column(spark_model, input_example_spark_df)
     model_output = spark_model.transform(input_example_spark_df).select(prediction_column)
@@ -802,7 +802,7 @@ def _infer_spark_model_signature(spark_model, input_example_spark_df):
     signature = infer_signature(input_example_spark_df, model_output)
     if signature.outputs:
         # We only have one prediction column output,
-        # convert it to unnamed output schema to keep consistent with old MLflow version.
+        # convert it to unnamed output schema to keep consistent with old QCFlow version.
         signature.outputs.inputs[0].name = None
     return signature
 
@@ -845,8 +845,8 @@ def autolog(
       .. _post training metrics:
 
       **Post training metrics**
-        When users call evaluator APIs after model training, MLflow tries to capture the
-        `Evaluator.evaluate` results and log them as MLflow metrics to the Run associated with
+        When users call evaluator APIs after model training, QCFlow tries to capture the
+        `Evaluator.evaluate` results and log them as QCFlow metrics to the Run associated with
         the model. All pyspark ML evaluators are supported.
 
         For post training metrics autologging, the metric key format is:
@@ -855,10 +855,10 @@ def autolog(
         - The metric name is the name returned by `Evaluator.getMetricName()`
         - If multiple calls are made to the same pyspark ML evaluator metric, each subsequent call
           adds a "call_index" (starting from 2) to the metric key.
-        - MLflow uses the prediction input dataset variable name as the "dataset_name" in the
+        - QCFlow uses the prediction input dataset variable name as the "dataset_name" in the
           metric key. The "prediction input dataset variable" refers to the variable which was
           used as the `dataset` argument of `model.transform` call.
-          Note: MLflow captures the "prediction input dataset" instance in the outermost call
+          Note: QCFlow captures the "prediction input dataset" instance in the outermost call
           frame and fetches the variable name in the outermost call frame. If the "prediction
           input dataset" instance is an intermediate expression without a defined variable
           name, the dataset name is set to "unknown_dataset". If multiple "prediction input
@@ -866,18 +866,18 @@ def autolog(
           index (starting from 2) to the inspected dataset name.
 
         **Limitations**
-          - MLflow cannot find run information for other objects derived from a given prediction
+          - QCFlow cannot find run information for other objects derived from a given prediction
             result (e.g. by doing some transformation on the prediction result dataset).
 
       **Artifacts**
-        - An MLflow Model with the :py:mod:`mlflow.spark` flavor containing a fitted estimator
-          (logged by :py:func:`mlflow.spark.log_model()`). Note that large models may not be
+        - An QCFlow Model with the :py:mod:`qcflow.spark` flavor containing a fitted estimator
+          (logged by :py:func:`qcflow.spark.log_model()`). Note that large models may not be
           autologged for performance and storage space considerations, and autologging for
           Pipelines and hyperparameter tuning meta-estimators (e.g. CrossValidator) is not yet
           supported.
           See ``log_models`` param below for details.
         - For post training metrics API calls, a "metric_info.json" artifact is logged. This is a
-          JSON object whose keys are MLflow post training metric names
+          JSON object whose keys are QCFlow post training metric names
           (see "Post training metrics" section for the key format) and whose values are the
           corresponding evaluator information, including evaluator class name and evaluator params.
 
@@ -915,14 +915,14 @@ def autolog(
         https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.ml.tuning.TrainValidationSplit.html#pyspark.ml.tuning.TrainValidationSplit
 
     Args:
-        log_models: If ``True``, if trained models are in allowlist, they are logged as MLflow
+        log_models: If ``True``, if trained models are in allowlist, they are logged as QCFlow
             model artifacts. If ``False``, trained models are not logged.
             Note: the built-in allowlist excludes some models (e.g. ALS models) which
             can be large. To specify a custom allowlist, create a file containing a
             newline-delimited list of fully-qualified estimator classnames, and set
-            the "spark.mlflow.pysparkml.autolog.logModelAllowlistFile" Spark config
+            the "spark.qcflow.pysparkml.autolog.logModelAllowlistFile" Spark config
             to the path of your allowlist file.
-        log_datasets: If ``True``, dataset information is logged to MLflow Tracking.
+        log_datasets: If ``True``, dataset information is logged to QCFlow Tracking.
             If ``False``, dataset information is not logged.
         disable: If ``True``, disables the scikit-learn autologging integration. If ``False``,
             enables the pyspark ML autologging integration.
@@ -930,9 +930,9 @@ def autolog(
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
-            pyspark that have not been tested against this version of the MLflow
+            pyspark that have not been tested against this version of the QCFlow
             client or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during pyspark ML
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during pyspark ML
             autologging. If ``False``, show all events and warnings during pyspark ML
             autologging.
         log_post_training_metrics: If ``True``, post training metrics are logged. Defaults to
@@ -945,7 +945,7 @@ def autolog(
             logged along with pyspark ml model artifacts during training. If
             ``False``, input examples are not logged.
         log_model_signatures: If ``True``,
-            :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
+            :py:class:`ModelSignatures <qcflow.models.ModelSignature>`
             describing model inputs and outputs are collected and logged along
             with spark ml pipeline/estimator artifacts during training.
             If ``False`` signatures are not logged.
@@ -956,12 +956,12 @@ def autolog(
                 model inputs/outputs contain non-scalar Spark data types such
                 as ``pyspark.ml.linalg.Vector``, signatures are not logged.
 
-        log_model_allowlist: If given, it overrides the default log model allowlist in mlflow.
+        log_model_allowlist: If given, it overrides the default log model allowlist in qcflow.
             This takes precedence over the spark configuration of
-            "spark.mlflow.pysparkml.autolog.logModelAllowlistFile".
+            "spark.qcflow.pysparkml.autolog.logModelAllowlistFile".
 
-            **The default log model allowlist in mlflow**
-                .. literalinclude:: ../../../mlflow/pyspark/ml/log_model_allowlist.txt
+            **The default log model allowlist in qcflow**
+                .. literalinclude:: ../../../qcflow/pyspark/ml/log_model_allowlist.txt
                     :language: text
 
         extra_tags: A dictionary of extra tags to set on each managed run created by autologging.
@@ -969,7 +969,7 @@ def autolog(
     from pyspark.ml.base import Estimator, Model
     from pyspark.ml.evaluation import Evaluator
 
-    from mlflow.tracking.context import registry as context_registry
+    from qcflow.tracking.context import registry as context_registry
 
     global _log_model_allowlist
 
@@ -1011,11 +1011,11 @@ def autolog(
             )
 
         if artifact_dict:
-            mlflow.log_dict(artifact_dict, artifact_file="estimator_info.json")
+            qcflow.log_dict(artifact_dict, artifact_file="estimator_info.json")
 
         _log_estimator_params(param_map)
 
-        mlflow.set_tags(_get_estimator_info_tags(estimator))
+        qcflow.set_tags(_get_estimator_info_tags(estimator))
 
         if log_datasets:
             try:
@@ -1025,10 +1025,10 @@ def autolog(
                     df=input_df,
                     source=code_source,
                 )
-                mlflow.log_input(dataset, "train")
+                qcflow.log_input(dataset, "train")
             except Exception as e:
                 _logger.warning(
-                    "Failed to log training dataset information to MLflow Tracking. Reason: %s", e
+                    "Failed to log training dataset information to QCFlow Tracking. Reason: %s", e
                 )
 
     def _log_posttraining_metadata(estimator, spark_model, params, input_df):
@@ -1037,11 +1037,11 @@ def autolog(
                 # Fetch environment-specific tags (e.g., user and source) to ensure that lineage
                 # information is consistent with the parent run
                 child_tags = context_registry.resolve_tags()
-                child_tags.update({MLFLOW_AUTOLOGGING: AUTOLOGGING_INTEGRATION_NAME})
+                child_tags.update({QCFLOW_AUTOLOGGING: AUTOLOGGING_INTEGRATION_NAME})
                 _create_child_runs_for_parameter_search(
                     parent_estimator=estimator,
                     parent_model=spark_model,
-                    parent_run=mlflow.active_run(),
+                    parent_run=qcflow.active_run(),
                     child_tags=child_tags,
                 )
             except Exception:
@@ -1059,12 +1059,12 @@ def autolog(
                 estimator, spark_model
             )
             _log_parameter_search_results_as_artifact(
-                estimator_param_maps, metrics_dict, mlflow.active_run().info.run_id
+                estimator_param_maps, metrics_dict, qcflow.active_run().info.run_id
             )
 
             # Log best_param_map as JSON artifact
             best_param_map = estimator_param_maps[best_index]
-            mlflow.log_dict(best_param_map, artifact_file="best_parameters.json")
+            qcflow.log_dict(best_param_map, artifact_file="best_parameters.json")
 
             # Log best_param_map as autologging parameters as well
             _log_estimator_params(
@@ -1076,7 +1076,7 @@ def autolog(
 
         if log_models:
             if _should_log_model(spark_model):
-                from mlflow.pyspark.ml._autolog import (
+                from qcflow.pyspark.ml._autolog import (
                     cast_spark_df_with_vector_to_array,
                     get_feature_cols,
                 )
@@ -1112,7 +1112,7 @@ def autolog(
                     ).toPandas()
                 else:
                     input_example = None
-                mlflow.spark.log_model(
+                qcflow.spark.log_model(
                     spark_model,
                     "model",
                     registered_model_name=registered_model_name,
@@ -1120,14 +1120,14 @@ def autolog(
                     signature=signature,
                 )
                 if _is_parameter_search_model(spark_model):
-                    mlflow.spark.log_model(
+                    qcflow.spark.log_model(
                         spark_model.bestModel,
                         "best_model",
                     )
             else:
                 _logger.warning(_get_warning_msg_for_skip_log_model(spark_model))
 
-    def fit_mlflow(original, self, *args, **kwargs):
+    def fit_qcflow(original, self, *args, **kwargs):
         params = get_method_call_arg_value(1, "params", None, args, kwargs)
 
         # Do not perform autologging on direct calls to fit() for featurizers.
@@ -1161,11 +1161,11 @@ def autolog(
         with _SparkTrainingSession(estimator=self, allow_children=False) as t:
             if t.should_log():
                 with _AUTOLOGGING_METRICS_MANAGER.disable_log_post_training_metrics():
-                    fit_result = fit_mlflow(original, self, *args, **kwargs)
+                    fit_result = fit_qcflow(original, self, *args, **kwargs)
                 # In some cases the `fit_result` may be an iterator of spark models.
                 if should_log_post_training_metrics and isinstance(fit_result, Model):
                     _AUTOLOGGING_METRICS_MANAGER.register_model(
-                        fit_result, mlflow.active_run().info.run_id
+                        fit_result, qcflow.active_run().info.run_id
                     )
                 return fit_result
             else:
@@ -1222,15 +1222,15 @@ def autolog(
                                 df=pred_result_dataset,
                                 source=code_source,
                             )
-                            tags = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="eval")]
+                            tags = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="eval")]
                             dataset_input = DatasetInput(
-                                dataset=dataset._to_mlflow_entity(), tags=tags
+                                dataset=dataset._to_qcflow_entity(), tags=tags
                             )
                             client = MlflowClient()
                             client.log_inputs(run_id, [dataset_input])
                         except Exception as e:
                             _logger.warning(
-                                "Failed to log evaluation dataset information to MLflow Tracking. "
+                                "Failed to log evaluation dataset information to QCFlow Tracking. "
                                 "Reason: %s",
                                 e,
                             )

@@ -5,21 +5,21 @@ import warnings
 
 from packaging.version import Version
 
-import mlflow
-from mlflow.entities import SpanType
-from mlflow.entities.span import LiveSpan
-from mlflow.tracing.utils import TraceJSONEncoder
-from mlflow.utils.autologging_utils.config import AutoLoggingConfig
+import qcflow
+from qcflow.entities import SpanType
+from qcflow.entities.span import LiveSpan
+from qcflow.tracing.utils import TraceJSONEncoder
+from qcflow.utils.autologging_utils.config import AutoLoggingConfig
 
 _logger = logging.getLogger(__name__)
 
 
 def patched_class_call(original, self, *args, **kwargs):
-    config = AutoLoggingConfig.init(flavor_name=mlflow.gemini.FLAVOR_NAME)
+    config = AutoLoggingConfig.init(flavor_name=qcflow.gemini.FLAVOR_NAME)
 
     if config.log_traces:
         fullname = f"{self.__class__.__name__}.{original.__name__}"
-        with mlflow.start_span(
+        with qcflow.start_span(
             name=fullname,
             span_type=_get_span_type(self),
         ) as span:

@@ -1,7 +1,7 @@
 from dataclasses import fields, is_dataclass
 from typing import Union, get_args, get_origin
 
-from mlflow.utils.annotations import experimental
+from qcflow.utils.annotations import experimental
 
 
 def _is_optional_dataclass(field_type) -> bool:

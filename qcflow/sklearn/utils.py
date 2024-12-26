@@ -12,11 +12,11 @@ from operator import itemgetter
 import numpy as np
 from packaging.version import Version
 
-from mlflow import MlflowClient
-from mlflow.utils.arguments_utils import _get_arg_names
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.mlflow_tags import MLFLOW_PARENT_RUN_ID
-from mlflow.utils.time import get_current_time_millis
+from qcflow import MlflowClient
+from qcflow.utils.arguments_utils import _get_arg_names
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.qcflow_tags import QCFLOW_PARENT_RUN_ID
+from qcflow.utils.time import get_current_time_millis
 
 _logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ def _gen_xgboost_sklearn_estimators_to_patch():
 def _gen_lightgbm_sklearn_estimators_to_patch():
     import lightgbm as lgb
 
-    import mlflow.lightgbm
+    import qcflow.lightgbm
 
     all_classes = inspect.getmembers(lgb.sklearn, inspect.isclass)
     base_class = lgb.sklearn._LGBMModelBase
@@ -60,7 +60,7 @@ def _gen_lightgbm_sklearn_estimators_to_patch():
     for _, class_object in all_classes:
         package_name = class_object.__module__.split(".")[0]
         if (
-            package_name == mlflow.lightgbm.FLAVOR_NAME
+            package_name == qcflow.lightgbm.FLAVOR_NAME
             and issubclass(class_object, base_class)
             and class_object != base_class
         ):
@@ -72,7 +72,7 @@ def _gen_lightgbm_sklearn_estimators_to_patch():
 def _get_estimator_info_tags(estimator):
     """
     Returns:
-        A dictionary of MLflow run tag keys and values describing the specified estimator.
+        A dictionary of QCFlow run tag keys and values describing the specified estimator.
     """
     return {
         "estimator_name": estimator.__class__.__name__,
@@ -624,7 +624,7 @@ def _log_estimator_content(
 
     Args:
         autologging_client: An instance of `MlflowAutologgingQueueingClient` used for
-            efficiently logging run data to MLflow Tracking.
+            efficiently logging run data to QCFlow Tracking.
         estimator: The estimator used to compute metrics and artifacts.
         run_id: The run under which the content is logged.
         prefix: A prefix used to name the logged content. Typically it's 'training_' for
@@ -712,7 +712,7 @@ def _is_parameter_search_estimator(estimator):
 
 def _log_parameter_search_results_as_artifact(cv_results_df, run_id):
     """
-    Records a collection of parameter search results as an MLflow artifact
+    Records a collection of parameter search results as an QCFlow artifact
     for the specified run.
 
     Args:
@@ -720,7 +720,7 @@ def _log_parameter_search_results_as_artifact(cv_results_df, run_id):
             training session, which may be obtained by parsing the `cv_results_`
             attribute of a trained parameter search estimator such as
             `GridSearchCV`.
-        run_id: The ID of the MLflow Run to which the artifact should be recorded.
+        run_id: The ID of the QCFlow Run to which the artifact should be recorded.
     """
     with TempDir() as t:
         results_path = t.path("cv_results.csv")
@@ -764,12 +764,12 @@ def _create_child_runs_for_parameter_search(  # noqa: D417
 
     Args:
         autologging_client: An instance of `MlflowAutologgingQueueingClient` used for
-            efficiently logging run data to MLflow Tracking.
+            efficiently logging run data to QCFlow Tracking.
         cv_estimator: The trained parameter search estimator for which to create
             child runs.
-        parent_run: A py:class:`mlflow.entities.Run` object referring to the parent
+        parent_run: A py:class:`qcflow.entities.Run` object referring to the parent
             parameter search run for which child runs should be created.
-        child_tags: An optional dictionary of MLflow tag keys and values to log
+        child_tags: An optional dictionary of QCFlow tag keys and values to log
             for each child run.
     """
     import pandas as pd
@@ -816,7 +816,7 @@ def _create_child_runs_for_parameter_search(  # noqa: D417
 
     for _, result_row in cv_results_best_n_df.iterrows():
         tags_to_log = dict(child_tags) if child_tags else {}
-        tags_to_log.update({MLFLOW_PARENT_RUN_ID: parent_run.info.run_id})
+        tags_to_log.update({QCFLOW_PARENT_RUN_ID: parent_run.info.run_id})
         tags_to_log.update(_get_estimator_info_tags(seed_estimator))
         pending_child_run_id = autologging_client.create_run(
             experiment_id=parent_run.info.experiment_id,

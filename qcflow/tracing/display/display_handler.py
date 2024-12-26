@@ -4,15 +4,15 @@ import logging
 from typing import TYPE_CHECKING
 from urllib.parse import urlencode, urljoin
 
-import mlflow
-from mlflow.environment_variables import MLFLOW_MAX_TRACES_TO_DISPLAY_IN_NOTEBOOK
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
-from mlflow.utils.uri import is_http_uri
+import qcflow
+from qcflow.environment_variables import QCFLOW_MAX_TRACES_TO_DISPLAY_IN_NOTEBOOK
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.utils.uri import is_http_uri
 
 _logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from mlflow.entities import Trace
+    from qcflow.entities import Trace
 
 
 TRACE_RENDERER_ASSET_PATH = "/static-files/lib/notebook-trace-renderer/index.html"
@@ -43,9 +43,9 @@ IFRAME_HTML = """
         this.nextElementSibling.style.display = isCollapsed ? null : 'none';
 
         const verb = isCollapsed ? 'Collapse' : 'Expand';
-        this.innerText = `${{verb}} MLflow Trace`;
+        this.innerText = `${{verb}} QCFlow Trace`;
     "
-  >Collapse MLflow Trace</button>
+  >Collapse QCFlow Trace</button>
   <iframe
     id="trace-renderer"
     style="width: 100%; height: 500px; border: none; resize: vertical;"
@@ -57,11 +57,11 @@ IFRAME_HTML = """
 
 def get_notebook_iframe_html(traces: list["Trace"]):
     # fetch assets from tracking server
-    uri = urljoin(mlflow.get_tracking_uri(), TRACE_RENDERER_ASSET_PATH)
+    uri = urljoin(qcflow.get_tracking_uri(), TRACE_RENDERER_ASSET_PATH)
     query_string = _get_query_string_for_traces(traces)
 
-    # include mlflow version to invalidate browser cache when mlflow updates
-    src = html.escape(f"{uri}?{query_string}&version={mlflow.__version__}")
+    # include qcflow version to invalidate browser cache when qcflow updates
+    src = html.escape(f"{uri}?{query_string}&version={qcflow.__version__}")
     return IFRAME_HTML.format(src=src)
 
 
@@ -95,7 +95,7 @@ def _is_jupyter():
 
 
 def is_using_tracking_server():
-    return is_http_uri(mlflow.get_tracking_uri())
+    return is_http_uri(qcflow.get_tracking_uri())
 
 
 def is_trace_ui_available():
@@ -136,7 +136,7 @@ class IPythonTraceDisplayHandler:
             # Register a post-run cell display hook to display traces
             # after the cell has executed. We don't validate that the
             # user is using a tracking server at this step, because
-            # the user might set it later using mlflow.set_tracking_uri()
+            # the user might set it later using qcflow.set_tracking_uri()
             get_ipython().events.register("post_run_cell", self._display_traces_post_run)
         except Exception:
             # swallow exceptions. this function is called as
@@ -153,7 +153,7 @@ class IPythonTraceDisplayHandler:
         try:
             from IPython.display import display
 
-            MAX_TRACES_TO_DISPLAY = MLFLOW_MAX_TRACES_TO_DISPLAY_IN_NOTEBOOK.get()
+            MAX_TRACES_TO_DISPLAY = QCFLOW_MAX_TRACES_TO_DISPLAY_IN_NOTEBOOK.get()
             traces_to_display = list(self.traces_to_display.values())[:MAX_TRACES_TO_DISPLAY]
             if len(traces_to_display) == 0:
                 self.traces_to_display = {}
@@ -177,7 +177,7 @@ class IPythonTraceDisplayHandler:
         else:
             bundle = {"text/plain": repr(traces)}
             if is_in_databricks_runtime():
-                bundle["application/databricks.mlflow.trace"] = _serialize_trace_list(traces)
+                bundle["application/databricks.qcflow.trace"] = _serialize_trace_list(traces)
             else:
                 bundle["text/html"] = get_notebook_iframe_html(traces)
             return bundle

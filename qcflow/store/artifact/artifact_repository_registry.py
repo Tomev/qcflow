@@ -1,23 +1,23 @@
 import warnings
 
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
-from mlflow.store.artifact.dbfs_artifact_repo import dbfs_artifact_repo_factory
-from mlflow.store.artifact.ftp_artifact_repo import FTPArtifactRepository
-from mlflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
-from mlflow.store.artifact.hdfs_artifact_repo import HdfsArtifactRepository
-from mlflow.store.artifact.http_artifact_repo import HttpArtifactRepository
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from mlflow.store.artifact.mlflow_artifacts_repo import MlflowArtifactsRepository
-from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
-from mlflow.store.artifact.r2_artifact_repo import R2ArtifactRepository
-from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.store.artifact.sftp_artifact_repo import SFTPArtifactRepository
-from mlflow.store.artifact.uc_volume_artifact_repo import uc_volume_artifact_repo_factory
-from mlflow.utils.plugins import get_entry_points
-from mlflow.utils.uri import get_uri_scheme, is_uc_volumes_uri
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
+from qcflow.store.artifact.dbfs_artifact_repo import dbfs_artifact_repo_factory
+from qcflow.store.artifact.ftp_artifact_repo import FTPArtifactRepository
+from qcflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
+from qcflow.store.artifact.hdfs_artifact_repo import HdfsArtifactRepository
+from qcflow.store.artifact.http_artifact_repo import HttpArtifactRepository
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.store.artifact.qcflow_artifacts_repo import MlflowArtifactsRepository
+from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
+from qcflow.store.artifact.r2_artifact_repo import R2ArtifactRepository
+from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.store.artifact.sftp_artifact_repo import SFTPArtifactRepository
+from qcflow.store.artifact.uc_volume_artifact_repo import uc_volume_artifact_repo_factory
+from qcflow.utils.plugins import get_entry_points
+from qcflow.utils.uri import get_uri_scheme, is_uc_volumes_uri
 
 
 class ArtifactRepositoryRegistry:
@@ -25,7 +25,7 @@ class ArtifactRepositoryRegistry:
 
     This class allows the registration of a function or class to provide an implementation for a
     given scheme of `artifact_uri` through the `register` method. Implementations declared though
-    the entrypoints `mlflow.artifact_repository` group can be automatically registered through the
+    the entrypoints `qcflow.artifact_repository` group can be automatically registered through the
     `register_entrypoints` method.
 
     When instantiating an artifact repository through the `get_artifact_repository` method, the
@@ -42,7 +42,7 @@ class ArtifactRepositoryRegistry:
 
     def register_entrypoints(self):
         # Register artifact repositories provided by other packages
-        for entrypoint in get_entry_points("mlflow.artifact_repository"):
+        for entrypoint in get_entry_points("qcflow.artifact_repository"):
             try:
                 self.register(entrypoint.name, entrypoint.load())
             except (AttributeError, ImportError) as exc:
@@ -63,7 +63,7 @@ class ArtifactRepositoryRegistry:
                 implementation.
 
         Returns:
-            An instance of `mlflow.store.ArtifactRepository` that fulfills the artifact URI
+            An instance of `qcflow.store.ArtifactRepository` that fulfills the artifact URI
             requirements.
         """
         scheme = get_uri_scheme(artifact_uri)
@@ -110,7 +110,7 @@ _artifact_repository_registry.register("runs", RunsArtifactRepository)
 _artifact_repository_registry.register("models", ModelsArtifactRepository)
 for scheme in ["http", "https"]:
     _artifact_repository_registry.register(scheme, HttpArtifactRepository)
-_artifact_repository_registry.register("mlflow-artifacts", MlflowArtifactsRepository)
+_artifact_repository_registry.register("qcflow-artifacts", MlflowArtifactsRepository)
 
 _artifact_repository_registry.register_entrypoints()
 
@@ -125,7 +125,7 @@ def get_artifact_repository(artifact_uri: str) -> ArtifactRepository:
             implementation.
 
     Returns:
-        An instance of `mlflow.store.ArtifactRepository` that fulfills the artifact URI
+        An instance of `qcflow.store.ArtifactRepository` that fulfills the artifact URI
         requirements.
     """
     return _artifact_repository_registry.get_artifact_repository(artifact_uri)

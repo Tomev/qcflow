@@ -11,31 +11,31 @@ from concurrent.futures import ThreadPoolExecutor
 from queue import Empty, Queue
 from typing import Callable
 
-from mlflow.entities.metric import Metric
-from mlflow.entities.param import Param
-from mlflow.entities.run_tag import RunTag
-from mlflow.environment_variables import (
-    MLFLOW_ASYNC_LOGGING_BUFFERING_SECONDS,
-    MLFLOW_ASYNC_LOGGING_THREADPOOL_SIZE,
+from qcflow.entities.metric import Metric
+from qcflow.entities.param import Param
+from qcflow.entities.run_tag import RunTag
+from qcflow.environment_variables import (
+    QCFLOW_ASYNC_LOGGING_BUFFERING_SECONDS,
+    QCFLOW_ASYNC_LOGGING_THREADPOOL_SIZE,
 )
-from mlflow.utils.async_logging.run_batch import RunBatch
-from mlflow.utils.async_logging.run_operations import RunOperations
+from qcflow.utils.async_logging.run_batch import RunBatch
+from qcflow.utils.async_logging.run_operations import RunOperations
 
 _logger = logging.getLogger(__name__)
 
 
-ASYNC_LOGGING_WORKER_THREAD_PREFIX = "MLflowBatchLoggingWorkerPool"
-ASYNC_LOGGING_STATUS_CHECK_THREAD_PREFIX = "MLflowAsyncLoggingStatusCheck"
+ASYNC_LOGGING_WORKER_THREAD_PREFIX = "QCFlowBatchLoggingWorkerPool"
+ASYNC_LOGGING_STATUS_CHECK_THREAD_PREFIX = "QCFlowAsyncLoggingStatusCheck"
 
 
 class QueueStatus(enum.Enum):
     """Status of the async queue"""
 
-    # The queue is listening to new data and logging enqueued data to MLflow.
+    # The queue is listening to new data and logging enqueued data to QCFlow.
     ACTIVE = 1
-    # The queue is not listening to new data, but still logging enqueued data to MLflow.
+    # The queue is not listening to new data, but still logging enqueued data to QCFlow.
     TEAR_DOWN = 2
-    # The queue is neither listening to new data or logging enqueued data to MLflow.
+    # The queue is neither listening to new data or logging enqueued data to QCFlow.
     IDLE = 3
 
 
@@ -128,7 +128,7 @@ class AsyncLoggingQueue:
             while not self._queue.empty():
                 self._log_run_data()
         except Exception as e:
-            from mlflow.exceptions import MlflowException
+            from qcflow.exceptions import MlflowException
 
             raise MlflowException(f"Exception inside the run data logging thread: {e}")
 
@@ -183,7 +183,7 @@ class AsyncLoggingQueue:
 
         Returns: None
         """
-        async_logging_buffer_seconds = MLFLOW_ASYNC_LOGGING_BUFFERING_SECONDS.get()
+        async_logging_buffer_seconds = QCFLOW_ASYNC_LOGGING_BUFFERING_SECONDS.get()
         try:
             if async_logging_buffer_seconds:
                 self._stop_data_logging_thread_event.wait(async_logging_buffer_seconds)
@@ -214,9 +214,9 @@ class AsyncLoggingQueue:
             except Exception as e:
                 _logger.error(
                     f"Failed to submit batch for logging: {e}. Usually this means you are not "
-                    "shutting down MLflow properly before exiting. Please make sure you are using "
-                    "context manager, e.g., `with mlflow.start_run():` or call `mlflow.end_run()`"
-                    "explicitly to terminate MLflow logging before exiting."
+                    "shutting down QCFlow properly before exiting. Please make sure you are using "
+                    "context manager, e.g., `with qcflow.start_run():` or call `qcflow.end_run()`"
+                    "explicitly to terminate QCFlow logging before exiting."
                 )
                 run_batch.exception = e
                 run_batch.complete()
@@ -288,18 +288,18 @@ class AsyncLoggingQueue:
 
         Args:
             run_id (str): The ID of the run to log data for.
-            params (list[mlflow.entities.Param]): A list of parameters to log for the run.
-            tags (list[mlflow.entities.RunTag]): A list of tags to log for the run.
-            metrics (list[mlflow.entities.Metric]): A list of metrics to log for the run.
+            params (list[qcflow.entities.Param]): A list of parameters to log for the run.
+            tags (list[qcflow.entities.RunTag]): A list of tags to log for the run.
+            metrics (list[qcflow.entities.Metric]): A list of metrics to log for the run.
 
         Returns:
-            mlflow.utils.async_utils.RunOperations: An object that encapsulates the
+            qcflow.utils.async_utils.RunOperations: An object that encapsulates the
                 asynchronous operation of logging the batch of run data.
                 The object contains a list of `concurrent.futures.Future` objects that can be used
                 to check the status of the operation and retrieve any exceptions
                 that occurred during the operation.
         """
-        from mlflow import MlflowException
+        from qcflow import MlflowException
 
         if not self.is_active():
             raise MlflowException("AsyncLoggingQueue is not activated.")
@@ -331,16 +331,16 @@ class AsyncLoggingQueue:
         with self._lock:
             self._batch_logging_thread = threading.Thread(
                 target=self._logging_loop,
-                name="MLflowAsyncLoggingLoop",
+                name="QCFlowAsyncLoggingLoop",
                 daemon=True,
             )
             self._batch_logging_worker_threadpool = ThreadPoolExecutor(
-                max_workers=MLFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.get() or 10,
+                max_workers=QCFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.get() or 10,
                 thread_name_prefix=ASYNC_LOGGING_WORKER_THREAD_PREFIX,
             )
 
             self._batch_status_check_threadpool = ThreadPoolExecutor(
-                max_workers=MLFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.get() or 10,
+                max_workers=QCFLOW_ASYNC_LOGGING_THREADPOOL_SIZE.get() or 10,
                 thread_name_prefix=ASYNC_LOGGING_STATUS_CHECK_THREAD_PREFIX,
             )
 

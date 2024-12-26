@@ -3,9 +3,9 @@ from unittest import mock
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo, ArtifactCredentialType
-from mlflow.store.artifact.cloud_artifact_repo import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo, ArtifactCredentialType
+from qcflow.store.artifact.cloud_artifact_repo import (
     CloudArtifactRepository,
     _readable_size,
     _validate_chunk_size_aws,
@@ -38,11 +38,11 @@ def test__parallelized_download_from_cloud(
     monkeypatch, future_result, expected_call_count, tmp_path
 ):
     # Mock environment variables
-    monkeypatch.setenv("_MLFLOW_MPD_NUM_RETRIES", "3")
-    monkeypatch.setenv("_MLFLOW_MPD_RETRY_INTERVAL_SECONDS", "0")
+    monkeypatch.setenv("_QCFLOW_MPD_NUM_RETRIES", "3")
+    monkeypatch.setenv("_QCFLOW_MPD_RETRY_INTERVAL_SECONDS", "0")
 
     with mock.patch(
-        "mlflow.store.artifact.cloud_artifact_repo.CloudArtifactRepository"
+        "qcflow.store.artifact.cloud_artifact_repo.CloudArtifactRepository"
     ) as cloud_artifact_mock:
         cloud_artifact_instance = cloud_artifact_mock.return_value
 
@@ -96,11 +96,11 @@ def test__parallelized_download_from_cloud(
 
         with (
             mock.patch(
-                "mlflow.store.artifact.cloud_artifact_repo.parallelized_download_file_using_http_uri",
+                "qcflow.store.artifact.cloud_artifact_repo.parallelized_download_file_using_http_uri",
                 return_value=mock_failed_downloads,
             ),
             mock.patch(
-                "mlflow.store.artifact.cloud_artifact_repo.as_completed",
+                "qcflow.store.artifact.cloud_artifact_repo.as_completed",
                 return_value=futures,
             ),
         ):

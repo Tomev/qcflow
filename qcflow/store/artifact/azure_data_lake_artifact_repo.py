@@ -5,17 +5,17 @@ import urllib.parse
 
 import requests
 
-from mlflow.azure.client import patch_adls_file_upload, patch_adls_flush, put_adls_file_creation
-from mlflow.entities import FileInfo
-from mlflow.environment_variables import (
-    MLFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT,
-    MLFLOW_ENABLE_MULTIPART_UPLOAD,
-    MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
+from qcflow.azure.client import patch_adls_file_upload, patch_adls_flush, put_adls_file_creation
+from qcflow.entities import FileInfo
+from qcflow.environment_variables import (
+    QCFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT,
+    QCFLOW_ENABLE_MULTIPART_UPLOAD,
+    QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
-from mlflow.store.artifact.artifact_repo import _retry_with_new_creds
-from mlflow.store.artifact.cloud_artifact_repo import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
+from qcflow.store.artifact.artifact_repo import _retry_with_new_creds
+from qcflow.store.artifact.cloud_artifact_repo import (
     CloudArtifactRepository,
     _complete_futures,
     _compute_num_chunks,
@@ -85,7 +85,7 @@ class AzureDataLakeArtifactRepository(CloudArtifactRepository):
     ):
         super().__init__(artifact_uri)
         _DEFAULT_TIMEOUT = 600  # 10 minutes
-        self.write_timeout = MLFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT.get() or _DEFAULT_TIMEOUT
+        self.write_timeout = QCFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT.get() or _DEFAULT_TIMEOUT
         self._parse_credentials(credential)
         self._credential_refresh_def = credential_refresh_def
 
@@ -173,8 +173,8 @@ class AzureDataLakeArtifactRepository(CloudArtifactRepository):
 
     def _upload_to_cloud(self, cloud_credential_info, src_file_path, artifact_file_path):
         if (
-            MLFLOW_ENABLE_MULTIPART_UPLOAD.get()
-            and os.path.getsize(src_file_path) > MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
+            QCFLOW_ENABLE_MULTIPART_UPLOAD.get()
+            and os.path.getsize(src_file_path) > QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
         ):
             self._multipart_upload(cloud_credential_info, src_file_path, artifact_file_path)
         else:
@@ -210,11 +210,11 @@ class AzureDataLakeArtifactRepository(CloudArtifactRepository):
             futures = {}
             file_size = os.path.getsize(src_file_path)
             num_chunks = _compute_num_chunks(
-                src_file_path, MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
+                src_file_path, QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
             )
             use_single_part_upload = num_chunks == 1
             for index in range(num_chunks):
-                start_byte = index * MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
+                start_byte = index * QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
                 future = self.chunk_thread_pool.submit(
                     self._retryable_adls_function,
                     func=patch_adls_file_upload,
@@ -222,7 +222,7 @@ class AzureDataLakeArtifactRepository(CloudArtifactRepository):
                     sas_url=credentials.signed_uri,
                     local_file=src_file_path,
                     start_byte=start_byte,
-                    size=MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get(),
+                    size=QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get(),
                     position=start_byte,
                     headers=headers,
                     is_single=use_single_part_upload,

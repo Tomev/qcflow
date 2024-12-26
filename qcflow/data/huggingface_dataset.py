@@ -3,15 +3,15 @@ import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Union
 
-from mlflow.data.dataset import Dataset
-from mlflow.data.digest_utils import compute_pandas_digest
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
-from mlflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
-from mlflow.types import Schema
-from mlflow.types.utils import _infer_schema
+from qcflow.data.dataset import Dataset
+from qcflow.data.digest_utils import compute_pandas_digest
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
+from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
+from qcflow.types import Schema
+from qcflow.types.utils import _infer_schema
 
 _logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 class HuggingFaceDataset(Dataset, PyFuncConvertibleDatasetMixin):
     """
-    Represents a HuggingFace dataset for use with MLflow Tracking.
+    Represents a HuggingFace dataset for use with QCFlow Tracking.
     """
 
     def __init__(  # noqa: D417
@@ -73,7 +73,7 @@ class HuggingFaceDataset(Dataset, PyFuncConvertibleDatasetMixin):
         Returns a string dictionary containing the following fields: name, digest, source, source
         type, schema, and profile.
         """
-        schema = json.dumps({"mlflow_colspec": self.schema.to_dict()}) if self.schema else None
+        schema = json.dumps({"qcflow_colspec": self.schema.to_dict()}) if self.schema else None
         config = super().to_dict()
         config.update(
             {
@@ -109,7 +109,7 @@ class HuggingFaceDataset(Dataset, PyFuncConvertibleDatasetMixin):
         """Hugging Face dataset source information.
 
         Returns:
-            A :py:class:`mlflow.data.huggingface_dataset_source.HuggingFaceDatasetSource`
+            A :py:class:`qcflow.data.huggingface_dataset_source.HuggingFaceDatasetSource`
         """
         return self._source
 
@@ -128,7 +128,7 @@ class HuggingFaceDataset(Dataset, PyFuncConvertibleDatasetMixin):
     @cached_property
     def schema(self) -> Optional[Schema]:
         """
-        The MLflow ColSpec schema of the Hugging Face dataset.
+        The QCFlow ColSpec schema of the Hugging Face dataset.
         """
         try:
             df = next(
@@ -162,7 +162,7 @@ class HuggingFaceDataset(Dataset, PyFuncConvertibleDatasetMixin):
     def to_evaluation_dataset(self, path=None, feature_names=None) -> EvaluationDataset:
         """
         Converts the dataset to an EvaluationDataset for model evaluation. Required
-        for use with mlflow.evaluate().
+        for use with qcflow.evaluate().
         """
         return EvaluationDataset(
             data=self._ds.to_pandas(),
@@ -184,7 +184,7 @@ def from_huggingface(
     trust_remote_code: Optional[bool] = None,
 ) -> HuggingFaceDataset:
     """
-    Create a `mlflow.data.huggingface_dataset.HuggingFaceDataset` from a Hugging Face dataset.
+    Create a `qcflow.data.huggingface_dataset.HuggingFaceDataset` from a Hugging Face dataset.
 
     Args:
         ds:
@@ -192,7 +192,7 @@ def from_huggingface(
             `datasets.DatasetDict`, are not supported.
         path: The path of the Hugging Face dataset used to construct the source. This is the same
             argument as `path` in `datasets.load_dataset()` function. To be able to reload the
-            dataset via MLflow, `path` must match the path of the dataset on the hub, e.g.,
+            dataset via QCFlow, `path` must match the path of the dataset on the hub, e.g.,
             "databricks/databricks-dolly-15k". If no path is specified, a `CodeDatasetSource` is,
             used which will source information from the run context.
         targets: The name of the Hugging Face `dataset.Dataset` column containing targets (labels)
@@ -200,15 +200,15 @@ def from_huggingface(
         data_dir: The `data_dir` of the Hugging Face dataset configuration. This is used by the
             `datasets.load_dataset()` function to reload the dataset upon request via
             :py:func:`HuggingFaceDataset.source.load()
-            <mlflow.data.huggingface_dataset_source.HuggingFaceDatasetSource.load>`.
+            <qcflow.data.huggingface_dataset_source.HuggingFaceDatasetSource.load>`.
         data_files: Paths to source data file(s) for the Hugging Face dataset configuration.
             This is used by the `datasets.load_dataset()` function to reload the
             dataset upon request via :py:func:`HuggingFaceDataset.source.load()
-            <mlflow.data.huggingface_dataset_source.HuggingFaceDatasetSource.load>`.
+            <qcflow.data.huggingface_dataset_source.HuggingFaceDatasetSource.load>`.
         revision: Version of the dataset script to load. This is used by the
             `datasets.load_dataset()` function to reload the dataset upon request via
             :py:func:`HuggingFaceDataset.source.load()
-            <mlflow.data.huggingface_dataset_source.HuggingFaceDatasetSource.load>`.
+            <qcflow.data.huggingface_dataset_source.HuggingFaceDatasetSource.load>`.
         name: The name of the dataset. E.g. "wiki_train". If unspecified, a name is automatically
             generated.
         digest: The digest (hash, fingerprint) of the dataset. If unspecified, a digest is
@@ -217,8 +217,8 @@ def from_huggingface(
     """
     import datasets
 
-    from mlflow.data.code_dataset_source import CodeDatasetSource
-    from mlflow.tracking.context import registry
+    from qcflow.data.code_dataset_source import CodeDatasetSource
+    from qcflow.tracking.context import registry
 
     if not isinstance(ds, datasets.Dataset):
         raise MlflowException(

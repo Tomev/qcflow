@@ -20,8 +20,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MLFLOW_HOME: /home/runner/work/mlflow/mlflow
-  MLFLOW_CONDA_HOME: /usr/share/miniconda
+  QCFLOW_HOME: /home/runner/work/qcflow/qcflow
+  QCFLOW_CONDA_HOME: /usr/share/miniconda
   SPARK_LOCAL_IP: localhost
   PYTHON_VERSION: "3.10" # mininum supported version + 1
 
@@ -34,11 +34,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions: {}
-    if: (github.event_name == 'schedule' && github.repository == 'mlflow-automation/mlflow') || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    if: (github.event_name == 'schedule' && github.repository == 'qcflow-automation/qcflow') || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: ${{ github.event_name == 'schedule' && 'mlflow/mlflow' || null }}
+          repository: ${{ github.event_name == 'schedule' && 'qcflow/qcflow' || null }}
           submodules: recursive
       - uses: ./.github/actions/setup-python
         with:
@@ -59,11 +59,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     permissions: {}
-    if: (github.event_name == 'schedule' && github.repository == 'mlflow-automation/mlflow') || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    if: (github.event_name == 'schedule' && github.repository == 'qcflow-automation/qcflow') || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: ${{ github.event_name == 'schedule' && 'mlflow/mlflow' || null }}
+          repository: ${{ github.event_name == 'schedule' && 'qcflow/qcflow' || null }}
           submodules: recursive
       - uses: ./.github/actions/free-disk-space
       - uses: ./.github/actions/setup-python

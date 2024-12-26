@@ -1,10 +1,10 @@
 # GENERATED FILE. PLEASE DON'T MODIFY.
 # Run python3 ./dev/proto_to_graphql/code_generator.py to regenerate.
 import graphene
-import mlflow
-from mlflow.server.graphql.graphql_custom_scalars import LongString
-from mlflow.server.graphql.graphql_errors import ApiError
-from mlflow.utils.proto_json_utils import parse_dict
+import qcflow
+from qcflow.server.graphql.graphql_custom_scalars import LongString
+from qcflow.server.graphql.graphql_errors import ApiError
+from qcflow.utils.proto_json_utils import parse_dict
 
 
 class MlflowModelVersionStatus(graphene.Enum):
@@ -159,13 +159,13 @@ class MlflowRun(graphene.ObjectType):
 
 
 class MlflowSearchRunsResponse(graphene.ObjectType):
-    runs = graphene.List(graphene.NonNull('mlflow.server.graphql.graphql_schema_extensions.MlflowRunExtension'))
+    runs = graphene.List(graphene.NonNull('qcflow.server.graphql.graphql_schema_extensions.MlflowRunExtension'))
     next_page_token = graphene.String()
     apiError = graphene.Field(ApiError)
 
 
 class MlflowGetRunResponse(graphene.ObjectType):
-    run = graphene.Field('mlflow.server.graphql.graphql_schema_extensions.MlflowRunExtension')
+    run = graphene.Field('qcflow.server.graphql.graphql_schema_extensions.MlflowRunExtension')
     apiError = graphene.Field(ApiError)
 
 
@@ -234,55 +234,55 @@ class MlflowGetExperimentInput(graphene.InputObjectType):
 
 
 class QueryType(graphene.ObjectType):
-    mlflow_get_experiment = graphene.Field(MlflowGetExperimentResponse, input=MlflowGetExperimentInput())
-    mlflow_get_metric_history_bulk_interval = graphene.Field(MlflowGetMetricHistoryBulkIntervalResponse, input=MlflowGetMetricHistoryBulkIntervalInput())
-    mlflow_get_run = graphene.Field(MlflowGetRunResponse, input=MlflowGetRunInput())
-    mlflow_list_artifacts = graphene.Field(MlflowListArtifactsResponse, input=MlflowListArtifactsInput())
-    mlflow_search_model_versions = graphene.Field(MlflowSearchModelVersionsResponse, input=MlflowSearchModelVersionsInput())
+    qcflow_get_experiment = graphene.Field(MlflowGetExperimentResponse, input=MlflowGetExperimentInput())
+    qcflow_get_metric_history_bulk_interval = graphene.Field(MlflowGetMetricHistoryBulkIntervalResponse, input=MlflowGetMetricHistoryBulkIntervalInput())
+    qcflow_get_run = graphene.Field(MlflowGetRunResponse, input=MlflowGetRunInput())
+    qcflow_list_artifacts = graphene.Field(MlflowListArtifactsResponse, input=MlflowListArtifactsInput())
+    qcflow_search_model_versions = graphene.Field(MlflowSearchModelVersionsResponse, input=MlflowSearchModelVersionsInput())
 
-    def resolve_mlflow_get_experiment(self, info, input):
+    def resolve_qcflow_get_experiment(self, info, input):
         input_dict = vars(input)
-        request_message = mlflow.protos.service_pb2.GetExperiment()
+        request_message = qcflow.protos.service_pb2.GetExperiment()
         parse_dict(input_dict, request_message)
-        return mlflow.server.handlers.get_experiment_impl(request_message)
+        return qcflow.server.handlers.get_experiment_impl(request_message)
 
-    def resolve_mlflow_get_metric_history_bulk_interval(self, info, input):
+    def resolve_qcflow_get_metric_history_bulk_interval(self, info, input):
         input_dict = vars(input)
-        request_message = mlflow.protos.service_pb2.GetMetricHistoryBulkInterval()
+        request_message = qcflow.protos.service_pb2.GetMetricHistoryBulkInterval()
         parse_dict(input_dict, request_message)
-        return mlflow.server.handlers.get_metric_history_bulk_interval_impl(request_message)
+        return qcflow.server.handlers.get_metric_history_bulk_interval_impl(request_message)
 
-    def resolve_mlflow_get_run(self, info, input):
+    def resolve_qcflow_get_run(self, info, input):
         input_dict = vars(input)
-        request_message = mlflow.protos.service_pb2.GetRun()
+        request_message = qcflow.protos.service_pb2.GetRun()
         parse_dict(input_dict, request_message)
-        return mlflow.server.handlers.get_run_impl(request_message)
+        return qcflow.server.handlers.get_run_impl(request_message)
 
-    def resolve_mlflow_list_artifacts(self, info, input):
+    def resolve_qcflow_list_artifacts(self, info, input):
         input_dict = vars(input)
-        request_message = mlflow.protos.service_pb2.ListArtifacts()
+        request_message = qcflow.protos.service_pb2.ListArtifacts()
         parse_dict(input_dict, request_message)
-        return mlflow.server.handlers.list_artifacts_impl(request_message)
+        return qcflow.server.handlers.list_artifacts_impl(request_message)
 
-    def resolve_mlflow_search_model_versions(self, info, input):
+    def resolve_qcflow_search_model_versions(self, info, input):
         input_dict = vars(input)
-        request_message = mlflow.protos.model_registry_pb2.SearchModelVersions()
+        request_message = qcflow.protos.model_registry_pb2.SearchModelVersions()
         parse_dict(input_dict, request_message)
-        return mlflow.server.handlers.search_model_versions_impl(request_message)
+        return qcflow.server.handlers.search_model_versions_impl(request_message)
 
 
 class MutationType(graphene.ObjectType):
-    mlflow_search_datasets = graphene.Field(MlflowSearchDatasetsResponse, input=MlflowSearchDatasetsInput())
-    mlflow_search_runs = graphene.Field(MlflowSearchRunsResponse, input=MlflowSearchRunsInput())
+    qcflow_search_datasets = graphene.Field(MlflowSearchDatasetsResponse, input=MlflowSearchDatasetsInput())
+    qcflow_search_runs = graphene.Field(MlflowSearchRunsResponse, input=MlflowSearchRunsInput())
 
-    def resolve_mlflow_search_datasets(self, info, input):
+    def resolve_qcflow_search_datasets(self, info, input):
         input_dict = vars(input)
-        request_message = mlflow.protos.service_pb2.SearchDatasets()
+        request_message = qcflow.protos.service_pb2.SearchDatasets()
         parse_dict(input_dict, request_message)
-        return mlflow.server.handlers.search_datasets_impl(request_message)
+        return qcflow.server.handlers.search_datasets_impl(request_message)
 
-    def resolve_mlflow_search_runs(self, info, input):
+    def resolve_qcflow_search_runs(self, info, input):
         input_dict = vars(input)
-        request_message = mlflow.protos.service_pb2.SearchRuns()
+        request_message = qcflow.protos.service_pb2.SearchRuns()
         parse_dict(input_dict, request_message)
-        return mlflow.server.handlers.search_runs_impl(request_message)
+        return qcflow.server.handlers.search_runs_impl(request_message)

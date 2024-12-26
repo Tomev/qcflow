@@ -12,7 +12,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "jsxImportSource": "@emotion/react",
     "paths": {
-      "@mlflow/mlflow/*": [
+      "@qcflow/qcflow/*": [
         "./*"
       ],
       "@databricks/web-shared/*": [

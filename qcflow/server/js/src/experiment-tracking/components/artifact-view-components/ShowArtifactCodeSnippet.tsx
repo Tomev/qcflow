@@ -1,7 +1,7 @@
 import React from 'react';
 import { CopyIcon, useDesignSystemTheme } from '@databricks/design-system';
 import { CodeSnippet } from '@databricks/web-shared/snippet';
-import { CopyButton } from '@mlflow/mlflow/src/shared/building_blocks/CopyButton';
+import { CopyButton } from '@qcflow/qcflow/src/shared/building_blocks/CopyButton';
 
 export const ShowArtifactCodeSnippet = ({ code }: { code: string }): React.ReactElement => {
   const { theme } = useDesignSystemTheme();

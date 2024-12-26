@@ -51,7 +51,7 @@ export const getEntityNamesFromRunsData = (
   const tagNames = mergeDedup(getTagNames(existingNames.tagNames), getTagNames(newRunsData.tagsList));
   // Filter out internal tag names and wrap names that include control characters in backticks.
   const tagNamesCleaned = tagNames
-    .filter((s: string) => !s.startsWith('mlflow.'))
+    .filter((s: string) => !s.startsWith('qcflow.'))
     .map((s: string) => {
       if (s.includes('"') || s.includes(' ') || s.includes('.')) {
         return `\`${s}\``;

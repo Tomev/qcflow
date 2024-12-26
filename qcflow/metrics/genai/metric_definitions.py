@@ -1,13 +1,13 @@
 from typing import Any, Optional
 
-from mlflow.exceptions import MlflowException
-from mlflow.metrics.genai.base import EvaluationExample
-from mlflow.metrics.genai.genai_metric import make_genai_metric
-from mlflow.metrics.genai.utils import _get_latest_metric_version
-from mlflow.models import EvaluationMetric
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
-from mlflow.utils.annotations import experimental
-from mlflow.utils.class_utils import _get_class_from_string
+from qcflow.exceptions import MlflowException
+from qcflow.metrics.genai.base import EvaluationExample
+from qcflow.metrics.genai.genai_metric import make_genai_metric
+from qcflow.metrics.genai.utils import _get_latest_metric_version
+from qcflow.models import EvaluationMetric
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
+from qcflow.utils.annotations import experimental
+from qcflow.utils.class_utils import _get_class_from_string
 
 
 @experimental
@@ -30,13 +30,13 @@ def answer_similarity(
 
     The ``targets`` eval_arg must be provided as part of the input dataset or output
     predictions. This can be mapped to a column of a different name using ``col_mapping``
-    in the ``evaluator_config`` parameter, or using the ``targets`` parameter in mlflow.evaluate().
+    in the ``evaluator_config`` parameter, or using the ``targets`` parameter in qcflow.evaluate().
 
     An MlflowException will be raised if the specified version for this metric does not exist.
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
-            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
+            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
             documentation for the supported model types and their URI format.
         metric_version: (Optional) The version of the answer similarity metric to use.
             Defaults to the latest version.
@@ -62,7 +62,7 @@ def answer_similarity(
     """
     if metric_version is None:
         metric_version = _get_latest_metric_version()
-    class_name = f"mlflow.metrics.genai.prompts.{metric_version}.AnswerSimilarityMetric"
+    class_name = f"qcflow.metrics.genai.prompts.{metric_version}.AnswerSimilarityMetric"
     try:
         answer_similarity_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
@@ -123,13 +123,13 @@ def answer_correctness(
 
     The ``targets`` eval_arg must be provided as part of the input dataset or output
     predictions. This can be mapped to a column of a different name using ``col_mapping``
-    in the ``evaluator_config`` parameter, or using the ``targets`` parameter in mlflow.evaluate().
+    in the ``evaluator_config`` parameter, or using the ``targets`` parameter in qcflow.evaluate().
 
     An MlflowException will be raised if the specified version for this metric does not exist.
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
-            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
+            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
             documentation for the supported model types and their URI format.
         metric_version: The version of the answer correctness metric to use.
             Defaults to the latest version.
@@ -155,7 +155,7 @@ def answer_correctness(
     """
     if metric_version is None:
         metric_version = _get_latest_metric_version()
-    class_name = f"mlflow.metrics.genai.prompts.{metric_version}.AnswerCorrectnessMetric"
+    class_name = f"qcflow.metrics.genai.prompts.{metric_version}.AnswerCorrectnessMetric"
     try:
         answer_correctness_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
@@ -219,7 +219,7 @@ def faithfulness(
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
-            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
+            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
             documentation for the supported model types and their URI format.
         metric_version: The version of the faithfulness metric to use.
             Defaults to the latest version.
@@ -243,7 +243,7 @@ def faithfulness(
     Returns:
         A metric object
     """
-    class_name = f"mlflow.metrics.genai.prompts.{metric_version}.FaithfulnessMetric"
+    class_name = f"qcflow.metrics.genai.prompts.{metric_version}.FaithfulnessMetric"
     try:
         faithfulness_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
@@ -304,7 +304,7 @@ def answer_relevance(
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
-            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
+            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
             documentation for the supported model types and their URI format.
         metric_version: The version of the answer relevance metric to use.
             Defaults to the latest version.
@@ -328,7 +328,7 @@ def answer_relevance(
     Returns:
         A metric object
     """
-    class_name = f"mlflow.metrics.genai.prompts.{metric_version}.AnswerRelevanceMetric"
+    class_name = f"qcflow.metrics.genai.prompts.{metric_version}.AnswerRelevanceMetric"
     try:
         answer_relevance_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
@@ -391,7 +391,7 @@ def relevance(
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
-            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
+            e.g., ``openai:/gpt-4``. Refer to the `LLM-as-a-Judge Metrics <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html#selecting-the-llm-as-judge-model>`_
             documentation for the supported model types and their URI format.
         metric_version: (Optional) The version of the relevance metric to use.
             Defaults to the latest version.
@@ -417,7 +417,7 @@ def relevance(
     """
     if metric_version is None:
         metric_version = _get_latest_metric_version()
-    class_name = f"mlflow.metrics.genai.prompts.{metric_version}.RelevanceMetric"
+    class_name = f"qcflow.metrics.genai.prompts.{metric_version}.RelevanceMetric"
     try:
         relevance_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:

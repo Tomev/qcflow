@@ -35,9 +35,9 @@ import {
   shouldEnableDeepLearningUIPhase3,
   shouldEnableGlobalLineChartConfig,
   shouldEnableManualRangeControls,
-} from '@mlflow/mlflow/src/common/utils/FeatureUtils';
-import { RunsChartsLineChartXAxisType } from '@mlflow/mlflow/src/experiment-tracking/components/runs-charts/components/RunsCharts.common';
-import { LineSmoothSlider } from '@mlflow/mlflow/src/experiment-tracking/components/LineSmoothSlider';
+} from '@qcflow/qcflow/src/common/utils/FeatureUtils';
+import { RunsChartsLineChartXAxisType } from '@qcflow/qcflow/src/experiment-tracking/components/runs-charts/components/RunsCharts.common';
+import { LineSmoothSlider } from '@qcflow/qcflow/src/experiment-tracking/components/LineSmoothSlider';
 import { isUndefined } from 'lodash';
 import { RunsChartsYAxisMetricAndExpressionSelector } from '../RunsChartsYAxisMetricAndExpressionSelector';
 import { RunsChartsLineChartExpression } from '../../runs-charts.types';
@@ -433,7 +433,7 @@ export const RunsChartsConfigureLineChart = ({
       <RunsChartsConfigureField title="Type" compact>
         {usingChartExpressions ? (
           <SimpleSelect
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_436"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_436"
             id="x-axis-type"
             width="100%"
             value={state.useGlobalXaxisKey ? USE_GLOBAL_SETTING_KEY : state.xAxisKey}
@@ -472,7 +472,7 @@ export const RunsChartsConfigureLineChart = ({
                 description="Label for a radio button that configures the x-axis on a line chart. This option is for the absolute time that the metrics were logged."
               />
               <Tooltip
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_474"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_474"
                 content={
                   <FormattedMessage
                     defaultMessage="Absolute date and time"
@@ -493,7 +493,7 @@ export const RunsChartsConfigureLineChart = ({
                 description="Label for a radio button that configures the x-axis on a line chart. This option is for relative time since the first metric was logged."
               />
               <Tooltip
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_494"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_494"
                 content={
                   <FormattedMessage
                     defaultMessage="Amount of time that has passed since the first metric value was logged"
@@ -524,7 +524,7 @@ export const RunsChartsConfigureLineChart = ({
           </SimpleSelect>
         ) : (
           <Radio.Group
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_524"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_524"
             name="runs-charts-field-group-x-axis"
             value={state.useGlobalXaxisKey ? USE_GLOBAL_SETTING_KEY : state.xAxisKey}
             onChange={({ target: { value } }) => {
@@ -602,7 +602,7 @@ export const RunsChartsConfigureLineChart = ({
               <div css={{ display: 'flex', gap: theme.spacing.sm }}>
                 <div>
                   <Input
-                    componentId="mlflow.charts.line_chart_configure.x_axis_min"
+                    componentId="qcflow.charts.line_chart_configure.x_axis_min"
                     aria-label="x-axis-min"
                     name="min"
                     type="number"
@@ -615,7 +615,7 @@ export const RunsChartsConfigureLineChart = ({
                 </div>
                 <div>
                   <Input
-                    componentId="mlflow.charts.line_chart_configure.x_axis_max"
+                    componentId="qcflow.charts.line_chart_configure.x_axis_max"
                     aria-label="x-axis-max"
                     name="max"
                     type="number"
@@ -629,7 +629,7 @@ export const RunsChartsConfigureLineChart = ({
               </div>
               <div style={{ padding: theme.spacing.xs }} />
               <Switch
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_628"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_628"
                 aria-label="x-axis-log"
                 checked={state.xAxisScaleType === 'log'}
                 onChange={updateXAxisScaleType}
@@ -656,7 +656,7 @@ export const RunsChartsConfigureLineChart = ({
           <div css={{ display: 'flex', gap: theme.spacing.sm }}>
             <div>
               <Input
-                componentId="mlflow.charts.line_chart_configure.y_axis_min"
+                componentId="qcflow.charts.line_chart_configure.y_axis_min"
                 aria-label="y-axis-min"
                 name="min"
                 type="number"
@@ -669,7 +669,7 @@ export const RunsChartsConfigureLineChart = ({
             </div>
             <div>
               <Input
-                componentId="mlflow.charts.line_chart_configure.y_axis_max"
+                componentId="qcflow.charts.line_chart_configure.y_axis_max"
                 aria-label="y-axis-max"
                 name="max"
                 type="number"
@@ -684,7 +684,7 @@ export const RunsChartsConfigureLineChart = ({
         )}
         <Spacer size="xs" />
         <Switch
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_682"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_682"
           aria-label="y-axis-log"
           checked={state.scaleType === 'log'}
           onChange={updateYAxisType}
@@ -703,7 +703,7 @@ export const RunsChartsConfigureLineChart = ({
               />
             </Typography.Text>
             <Tooltip
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_703"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_703"
               delayDuration={0}
               content={
                 <FormattedMessage
@@ -720,7 +720,7 @@ export const RunsChartsConfigureLineChart = ({
             </Tooltip>
           </div>
           <Switch
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_716"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_716"
             aria-label="y-axis-ignore-outliers"
             checked={state.ignoreOutliers}
             onChange={updateIgnoreOutliers}
@@ -752,7 +752,7 @@ export const RunsChartsConfigureLineChart = ({
         compact
       >
         <SegmentedControlGroup
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_747"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_747"
           name={intl.formatMessage({
             defaultMessage: 'Display points',
             description: 'Runs charts > line chart > display points > label',
@@ -844,7 +844,7 @@ export const RunsChartsConfigureLineChart = ({
       >
         {shouldEnableGlobalLineChartConfig() && (
           <Radio.Group
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_838"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_config_runschartsconfigurelinechart.tsx_838"
             name="use-global-line-smoothness"
             value={Boolean(state.useGlobalLineSmoothing)}
             onChange={({ target }) => {

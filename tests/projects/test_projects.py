@@ -9,29 +9,29 @@ import git
 import pytest
 import yaml
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.entities import RunStatus, SourceType, ViewType
-from mlflow.environment_variables import MLFLOW_CONDA_CREATE_ENV_CMD, MLFLOW_CONDA_HOME
-from mlflow.exceptions import ExecutionException, MlflowException
-from mlflow.projects import _parse_kubernetes_config, _resolve_experiment_id
-from mlflow.store.tracking.file_store import FileStore
-from mlflow.utils import PYTHON_VERSION
-from mlflow.utils.conda import CONDA_EXE, get_or_create_conda_env
-from mlflow.utils.mlflow_tags import (
-    LEGACY_MLFLOW_GIT_BRANCH_NAME,
-    LEGACY_MLFLOW_GIT_REPO_URL,
-    MLFLOW_GIT_BRANCH,
-    MLFLOW_GIT_REPO_URL,
-    MLFLOW_PARENT_RUN_ID,
-    MLFLOW_PROJECT_BACKEND,
-    MLFLOW_PROJECT_ENTRY_POINT,
-    MLFLOW_PROJECT_ENV,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
-    MLFLOW_USER,
+import qcflow
+from qcflow import MlflowClient
+from qcflow.entities import RunStatus, SourceType, ViewType
+from qcflow.environment_variables import QCFLOW_CONDA_CREATE_ENV_CMD, QCFLOW_CONDA_HOME
+from qcflow.exceptions import ExecutionException, MlflowException
+from qcflow.projects import _parse_kubernetes_config, _resolve_experiment_id
+from qcflow.store.tracking.file_store import FileStore
+from qcflow.utils import PYTHON_VERSION
+from qcflow.utils.conda import CONDA_EXE, get_or_create_conda_env
+from qcflow.utils.qcflow_tags import (
+    LEGACY_QCFLOW_GIT_BRANCH_NAME,
+    LEGACY_QCFLOW_GIT_REPO_URL,
+    QCFLOW_GIT_BRANCH,
+    QCFLOW_GIT_REPO_URL,
+    QCFLOW_PARENT_RUN_ID,
+    QCFLOW_PROJECT_BACKEND,
+    QCFLOW_PROJECT_ENTRY_POINT,
+    QCFLOW_PROJECT_ENV,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
+    QCFLOW_USER,
 )
-from mlflow.utils.process import ShellCommandException
+from qcflow.utils.process import ShellCommandException
 
 from tests.projects.utils import TEST_PROJECT_DIR, TEST_PROJECT_NAME, validate_exit_status
 
@@ -40,7 +40,7 @@ MOCK_USER = "janebloggs"
 
 @pytest.fixture
 def patch_user():
-    with mock.patch("mlflow.projects.utils._get_user", return_value=MOCK_USER):
+    with mock.patch("qcflow.projects.utils._get_user", return_value=MOCK_USER):
         yield
 
 
@@ -85,18 +85,18 @@ def test_invalid_run_mode():
     with pytest.raises(
         ExecutionException, match="Got unsupported execution mode some unsupported mode"
     ):
-        mlflow.projects.run(uri=TEST_PROJECT_DIR, backend="some unsupported mode")
+        qcflow.projects.run(uri=TEST_PROJECT_DIR, backend="some unsupported mode")
 
 
 def test_expected_tags_logged_when_using_conda():
     with mock.patch.object(MlflowClient, "set_tag") as tag_mock:
         try:
-            mlflow.projects.run(TEST_PROJECT_DIR, env_manager="conda")
+            qcflow.projects.run(TEST_PROJECT_DIR, env_manager="conda")
         finally:
             tag_mock.assert_has_calls(
                 [
-                    mock.call(mock.ANY, MLFLOW_PROJECT_BACKEND, "local"),
-                    mock.call(mock.ANY, MLFLOW_PROJECT_ENV, "conda"),
+                    mock.call(mock.ANY, QCFLOW_PROJECT_BACKEND, "local"),
+                    mock.call(mock.ANY, QCFLOW_PROJECT_ENV, "conda"),
                 ],
                 any_order=True,
             )
@@ -120,7 +120,7 @@ def test_run_local_git_repo(
         uri = os.path.join(f"{local_git_repo}/", TEST_PROJECT_NAME)
     if version == "git-commit":
         version = _get_version_local_git_repo(local_git_repo)
-    submitted_run = mlflow.projects.run(
+    submitted_run = qcflow.projects.run(
         uri,
         entry_point="test_tracking",
         version=version,
@@ -137,14 +137,14 @@ def test_run_local_git_repo(
     validate_exit_status(submitted_run.get_status(), RunStatus.FINISHED)
     # Validate run contents in the FileStore
     run_id = submitted_run.run_id
-    mlflow_service = MlflowClient()
-    runs = mlflow_service.search_runs(
+    qcflow_service = MlflowClient()
+    runs = qcflow_service.search_runs(
         [FileStore.DEFAULT_EXPERIMENT_ID], run_view_type=ViewType.ACTIVE_ONLY
     )
     assert len(runs) == 1
     store_run_id = runs[0].info.run_id
     assert run_id == store_run_id
-    run = mlflow_service.get_run(run_id)
+    run = qcflow_service.get_run(run_id)
 
     assert run.info.status == RunStatus.to_string(RunStatus.FINISHED)
 
@@ -154,23 +154,23 @@ def test_run_local_git_repo(
     assert run.data.metrics == {"some_key": 3}
 
     tags = run.data.tags
-    assert tags[MLFLOW_USER] == MOCK_USER
-    assert "file:" in tags[MLFLOW_SOURCE_NAME]
-    assert tags[MLFLOW_SOURCE_TYPE] == SourceType.to_string(SourceType.PROJECT)
-    assert tags[MLFLOW_PROJECT_ENTRY_POINT] == "test_tracking"
-    assert tags[MLFLOW_PROJECT_BACKEND] == "local"
+    assert tags[QCFLOW_USER] == MOCK_USER
+    assert "file:" in tags[QCFLOW_SOURCE_NAME]
+    assert tags[QCFLOW_SOURCE_TYPE] == SourceType.to_string(SourceType.PROJECT)
+    assert tags[QCFLOW_PROJECT_ENTRY_POINT] == "test_tracking"
+    assert tags[QCFLOW_PROJECT_BACKEND] == "local"
 
     if version == "master":
-        assert tags[MLFLOW_GIT_BRANCH] == "master"
-        assert tags[MLFLOW_GIT_REPO_URL] == local_git_repo_uri
-        assert tags[LEGACY_MLFLOW_GIT_BRANCH_NAME] == "master"
-        assert tags[LEGACY_MLFLOW_GIT_REPO_URL] == local_git_repo_uri
+        assert tags[QCFLOW_GIT_BRANCH] == "master"
+        assert tags[QCFLOW_GIT_REPO_URL] == local_git_repo_uri
+        assert tags[LEGACY_QCFLOW_GIT_BRANCH_NAME] == "master"
+        assert tags[LEGACY_QCFLOW_GIT_REPO_URL] == local_git_repo_uri
 
 
 def test_invalid_version_local_git_repo(local_git_repo_uri):
     # Run project with invalid commit hash
     with pytest.raises(ExecutionException, match=r"Unable to checkout version \'badc0de\'"):
-        mlflow.projects.run(
+        qcflow.projects.run(
             local_git_repo_uri + "#" + TEST_PROJECT_NAME,
             entry_point="test_tracking",
             version="badc0de",
@@ -182,7 +182,7 @@ def test_invalid_version_local_git_repo(local_git_repo_uri):
 @pytest.mark.parametrize("use_start_run", map(str, [0, 1]))
 @pytest.mark.usefixtures("patch_user")
 def test_run(use_start_run):
-    submitted_run = mlflow.projects.run(
+    submitted_run = qcflow.projects.run(
         TEST_PROJECT_DIR,
         entry_point="test_tracking",
         parameters={"use_start_run": use_start_run},
@@ -198,15 +198,15 @@ def test_run(use_start_run):
     validate_exit_status(submitted_run.get_status(), RunStatus.FINISHED)
     # Validate run contents in the FileStore
     run_id = submitted_run.run_id
-    mlflow_service = MlflowClient()
+    qcflow_service = MlflowClient()
 
-    runs = mlflow_service.search_runs(
+    runs = qcflow_service.search_runs(
         [FileStore.DEFAULT_EXPERIMENT_ID], run_view_type=ViewType.ACTIVE_ONLY
     )
     assert len(runs) == 1
     store_run_id = runs[0].info.run_id
     assert run_id == store_run_id
-    run = mlflow_service.get_run(run_id)
+    run = qcflow_service.get_run(run_id)
 
     assert run.info.status == RunStatus.to_string(RunStatus.FINISHED)
 
@@ -216,17 +216,17 @@ def test_run(use_start_run):
     assert run.data.metrics == {"some_key": 3}
 
     tags = run.data.tags
-    assert tags[MLFLOW_USER] == MOCK_USER
-    assert "file:" in tags[MLFLOW_SOURCE_NAME]
-    assert tags[MLFLOW_SOURCE_TYPE] == SourceType.to_string(SourceType.PROJECT)
-    assert tags[MLFLOW_PROJECT_ENTRY_POINT] == "test_tracking"
+    assert tags[QCFLOW_USER] == MOCK_USER
+    assert "file:" in tags[QCFLOW_SOURCE_NAME]
+    assert tags[QCFLOW_SOURCE_TYPE] == SourceType.to_string(SourceType.PROJECT)
+    assert tags[QCFLOW_PROJECT_ENTRY_POINT] == "test_tracking"
 
 
 def test_run_with_parent():
-    """Verify that if we are in a nested run, mlflow.projects.run() will have a parent_run_id."""
-    with mlflow.start_run():
-        parent_run_id = mlflow.active_run().info.run_id
-        submitted_run = mlflow.projects.run(
+    """Verify that if we are in a nested run, qcflow.projects.run() will have a parent_run_id."""
+    with qcflow.start_run():
+        parent_run_id = qcflow.active_run().info.run_id
+        submitted_run = qcflow.projects.run(
             TEST_PROJECT_DIR,
             entry_point="test_tracking",
             parameters={"use_start_run": "1"},
@@ -237,15 +237,15 @@ def test_run_with_parent():
     validate_exit_status(submitted_run.get_status(), RunStatus.FINISHED)
     run_id = submitted_run.run_id
     run = MlflowClient().get_run(run_id)
-    assert run.data.tags[MLFLOW_PARENT_RUN_ID] == parent_run_id
+    assert run.data.tags[QCFLOW_PARENT_RUN_ID] == parent_run_id
 
 
 def test_run_with_artifact_path(tmp_path):
     artifact_file = tmp_path.joinpath("model.pkl")
     artifact_file.write_text("Hello world")
-    with mlflow.start_run() as run:
-        mlflow.log_artifact(artifact_file)
-        submitted_run = mlflow.projects.run(
+    with qcflow.start_run() as run:
+        qcflow.log_artifact(artifact_file)
+        submitted_run = qcflow.projects.run(
             TEST_PROJECT_DIR,
             entry_point="test_artifact_path",
             parameters={"model": f"runs:/{run.info.run_id}/model.pkl"},
@@ -256,7 +256,7 @@ def test_run_with_artifact_path(tmp_path):
 
 
 def test_run_async():
-    submitted_run0 = mlflow.projects.run(
+    submitted_run0 = qcflow.projects.run(
         TEST_PROJECT_DIR,
         entry_point="sleep",
         parameters={"duration": 2},
@@ -267,7 +267,7 @@ def test_run_async():
     validate_exit_status(submitted_run0.get_status(), RunStatus.RUNNING)
     submitted_run0.wait()
     validate_exit_status(submitted_run0.get_status(), RunStatus.FINISHED)
-    submitted_run1 = mlflow.projects.run(
+    submitted_run1 = qcflow.projects.run(
         TEST_PROJECT_DIR,
         entry_point="sleep",
         parameters={"duration": -1, "invalid-param": 30},
@@ -288,7 +288,7 @@ def test_run_async():
             "/abc/activate",
         ),
         (
-            {MLFLOW_CONDA_HOME.name: "/some/dir/"},
+            {QCFLOW_CONDA_HOME.name: "/some/dir/"},
             "/some/dir/bin/conda",
             "/some/dir/bin/activate",
         ),
@@ -296,10 +296,10 @@ def test_run_async():
 )
 def test_conda_path(mock_env, expected_conda, expected_activate, monkeypatch):
     """Verify that we correctly determine the path to conda executables"""
-    monkeypatch.delenvs([CONDA_EXE, MLFLOW_CONDA_HOME.name], raising=False)
+    monkeypatch.delenvs([CONDA_EXE, QCFLOW_CONDA_HOME.name], raising=False)
     monkeypatch.setenvs(mock_env)
-    assert mlflow.utils.conda.get_conda_bin_executable("conda") == expected_conda
-    assert mlflow.utils.conda.get_conda_bin_executable("activate") == expected_activate
+    assert qcflow.utils.conda.get_conda_bin_executable("conda") == expected_conda
+    assert qcflow.utils.conda.get_conda_bin_executable("activate") == expected_activate
 
 
 @pytest.mark.parametrize(
@@ -310,15 +310,15 @@ def test_conda_path(mock_env, expected_conda, expected_activate, monkeypatch):
             "/abc/conda",
         ),
         (
-            {CONDA_EXE: "/abc/conda", MLFLOW_CONDA_CREATE_ENV_CMD.name: "mamba"},
+            {CONDA_EXE: "/abc/conda", QCFLOW_CONDA_CREATE_ENV_CMD.name: "mamba"},
             "/abc/mamba",
         ),
         (
-            {MLFLOW_CONDA_HOME.name: "/some/dir/"},
+            {QCFLOW_CONDA_HOME.name: "/some/dir/"},
             "/some/dir/bin/conda",
         ),
         (
-            {MLFLOW_CONDA_HOME.name: "/some/dir/", MLFLOW_CONDA_CREATE_ENV_CMD.name: "mamba"},
+            {QCFLOW_CONDA_HOME.name: "/some/dir/", QCFLOW_CONDA_CREATE_ENV_CMD.name: "mamba"},
             "/some/dir/bin/mamba",
         ),
     ],
@@ -329,10 +329,10 @@ def test_find_conda_executables(mock_env, expected_conda_env_create_path, monkey
     create environments (for example, it could be mamba instead of conda)
     """
     monkeypatch.delenvs(
-        [CONDA_EXE, MLFLOW_CONDA_HOME.name, MLFLOW_CONDA_CREATE_ENV_CMD.name], raising=False
+        [CONDA_EXE, QCFLOW_CONDA_HOME.name, QCFLOW_CONDA_CREATE_ENV_CMD.name], raising=False
     )
     monkeypatch.setenvs(mock_env)
-    conda_env_create_path = mlflow.utils.conda._get_conda_executable_for_create_env()
+    conda_env_create_path = qcflow.utils.conda._get_conda_executable_for_create_env()
     assert conda_env_create_path == expected_conda_env_create_path
 
 
@@ -347,7 +347,7 @@ def test_create_env_with_mamba(monkeypatch):
         if cmd[-1] == "--json":
             # We are supposed to list environments in JSON format
             return subprocess.CompletedProcess(
-                cmd, 0, json.dumps({"envs": ["mlflow-mock-environment"]}), None
+                cmd, 0, json.dumps({"envs": ["qcflow-mock-environment"]}), None
             )
         else:
             # Here we are creating the environment, no need to return
@@ -360,18 +360,18 @@ def test_create_env_with_mamba(monkeypatch):
 
     conda_env_path = os.path.join(TEST_PROJECT_DIR, "conda.yaml")
 
-    monkeypatch.setenv(MLFLOW_CONDA_CREATE_ENV_CMD.name, "mamba")
+    monkeypatch.setenv(QCFLOW_CONDA_CREATE_ENV_CMD.name, "mamba")
     # Simulate success
-    with mock.patch("mlflow.utils.process._exec_cmd", side_effect=exec_cmd_mock):
-        mlflow.utils.conda.get_or_create_conda_env(conda_env_path)
+    with mock.patch("qcflow.utils.process._exec_cmd", side_effect=exec_cmd_mock):
+        qcflow.utils.conda.get_or_create_conda_env(conda_env_path)
 
     # Simulate a non-working or non-existent mamba
-    with mock.patch("mlflow.utils.process._exec_cmd", side_effect=exec_cmd_mock_raise):
+    with mock.patch("qcflow.utils.process._exec_cmd", side_effect=exec_cmd_mock_raise):
         with pytest.raises(
             ExecutionException,
-            match="You have set the env variable MLFLOW_CONDA_CREATE_ENV_CMD",
+            match="You have set the env variable QCFLOW_CONDA_CREATE_ENV_CMD",
         ):
-            mlflow.utils.conda.get_or_create_conda_env(conda_env_path)
+            qcflow.utils.conda.get_or_create_conda_env(conda_env_path)
 
 
 def test_conda_environment_cleaned_up_when_pip_fails(tmp_path):
@@ -384,23 +384,23 @@ dependencies:
   - python={PYTHON_VERSION}
   - pip
   - pip:
-      - mlflow==999.999.999
+      - qcflow==999.999.999
 """
     conda_yaml.write_text(content)
-    envs_before = mlflow.utils.conda._list_conda_environments()
+    envs_before = qcflow.utils.conda._list_conda_environments()
 
-    # `conda create` should fail because mlflow 999.999.999 doesn't exist
+    # `conda create` should fail because qcflow 999.999.999 doesn't exist
     with pytest.raises(ShellCommandException, match=r"No matching distribution found"):
-        mlflow.utils.conda.get_or_create_conda_env(conda_yaml, capture_output=True)
+        qcflow.utils.conda.get_or_create_conda_env(conda_yaml, capture_output=True)
 
     # Ensure the environment is cleaned up
-    envs_after = mlflow.utils.conda._list_conda_environments()
+    envs_after = qcflow.utils.conda._list_conda_environments()
     assert envs_before == envs_after
 
 
 def test_cancel_run():
     submitted_run0, submitted_run1 = (
-        mlflow.projects.run(
+        qcflow.projects.run(
             TEST_PROJECT_DIR,
             entry_point="sleep",
             parameters={"duration": 2},
@@ -425,7 +425,7 @@ def test_parse_kubernetes_config():
     kubernetes_config = {
         "kube-context": "docker-for-desktop",
         "kube-job-template-path": os.path.join(work_dir, "kubernetes_job_template.yaml"),
-        "repository-uri": "dockerhub_account/mlflow-kubernetes-example",
+        "repository-uri": "dockerhub_account/qcflow-kubernetes-example",
     }
     yaml_obj = None
     with open(kubernetes_config["kube-job-template-path"]) as job_template:
@@ -445,17 +445,17 @@ def mock_kubernetes_job_template(tmp_path):
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{replaced with MLflow Project name}"
-  namespace: mlflow
+  name: "{replaced with QCFlow Project name}"
+  namespace: qcflow
 spec:
   ttlSecondsAfterFinished: 100
   backoffLimit: 0
   template:
     spec:
       containers:
-      - name: "{replaced with MLflow Project name}"
+      - name: "{replaced with QCFlow Project name}"
         image: "{replaced with URI of Docker image created during Project execution}"
-        command: ["{replaced with MLflow Project entry point command}"]
+        command: ["{replaced with QCFlow Project entry point command}"]
         resources:
           limits:
             memory: 512Mi
@@ -476,9 +476,9 @@ class StartsWithMatcher:
 
 
 def test_parse_kubernetes_config_without_context(mock_kubernetes_job_template):
-    with mock.patch("mlflow.projects._logger.debug") as mock_debug:
+    with mock.patch("qcflow.projects._logger.debug") as mock_debug:
         kubernetes_config = {
-            "repository-uri": "dockerhub_account/mlflow-kubernetes-example",
+            "repository-uri": "dockerhub_account/qcflow-kubernetes-example",
             "kube-job-template-path": mock_kubernetes_job_template,
         }
         _parse_kubernetes_config(kubernetes_config)
@@ -499,7 +499,7 @@ def test_parse_kubernetes_config_without_image_uri(mock_kubernetes_job_template)
 def test_parse_kubernetes_config_invalid_template_job_file():
     kubernetes_config = {
         "kube-context": "docker-for-desktop",
-        "repository-uri": "username/mlflow-kubernetes-example",
+        "repository-uri": "username/qcflow-kubernetes-example",
         "kube-job-template-path": "file_not_found.yaml",
     }
     with pytest.raises(ExecutionException, match="Could not find 'kube-job-template-path'"):
@@ -526,9 +526,9 @@ def test_credential_propagation(synchronous, monkeypatch):
     )
     with (
         mock.patch("subprocess.Popen", return_value=DummyProcess()) as popen_mock,
-        mock.patch("mlflow.utils.uri.is_databricks_uri", return_value=True),
+        mock.patch("qcflow.utils.uri.is_databricks_uri", return_value=True),
     ):
-        mlflow.projects.run(
+        qcflow.projects.run(
             TEST_PROJECT_DIR,
             entry_point="sleep",
             experiment_id=FileStore.DEFAULT_EXPERIMENT_ID,

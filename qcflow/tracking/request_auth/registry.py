@@ -1,8 +1,8 @@
 import warnings
 
-from mlflow.utils.plugins import get_entry_points
+from qcflow.utils.plugins import get_entry_points
 
-REQUEST_AUTH_PROVIDER_ENTRYPOINT = "mlflow.request_auth_provider"
+REQUEST_AUTH_PROVIDER_ENTRYPOINT = "qcflow.request_auth_provider"
 
 
 class RequestAuthProviderRegistry:
@@ -35,11 +35,11 @@ _request_auth_provider_registry.register_entrypoints()
 def fetch_auth(request_auth):
     """
     Find the request auth from registered providers based on the auth provider's name.
-    The auth provider's name can be provided through environment variable `MLFLOW_TRACKING_AUTH`.
+    The auth provider's name can be provided through environment variable `QCFLOW_TRACKING_AUTH`.
 
     This function iterates through all request auth providers in the registry. Additional context
     providers can be registered as described in
-    :py:class:`mlflow.tracking.request_auth.RequestAuthProvider`.
+    :py:class:`qcflow.tracking.request_auth.RequestAuthProvider`.
 
     Args:
         request_auth: The name of request auth provider.

@@ -2,9 +2,9 @@ from unittest import mock
 
 import pytest
 
-from mlflow import deployments
-from mlflow.deployments.plugin_manager import DeploymentPlugins
-from mlflow.exceptions import MlflowException
+from qcflow import deployments
+from qcflow.deployments.plugin_manager import DeploymentPlugins
+from qcflow.exceptions import MlflowException
 
 f_model_uri = "fake_model_uri"
 f_endpoint_name = "fake_endpoint_name"
@@ -109,7 +109,7 @@ def test_target_uri_parsing():
 
 
 def test_explain_with_no_target_implementation():
-    from mlflow_test_plugin import fake_deployment_plugin
+    from qcflow_test_plugin import fake_deployment_plugin
 
     mock_error = MlflowException("MOCK ERROR")
     target_client = deployments.get_deploy_client(f_target)

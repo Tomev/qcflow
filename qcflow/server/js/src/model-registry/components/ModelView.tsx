@@ -73,7 +73,7 @@ export class ModelViewImpl extends React.Component<ModelViewImplProps, ModelView
 
   componentDidMount() {
     // @ts-expect-error TS(2532): Object is possibly 'undefined'.
-    const pageTitle = `${this.props.model.name} - MLflow Model`;
+    const pageTitle = `${this.props.model.name} - QCFlow Model`;
     Utils.updatePageTitle(pageTitle);
   }
 
@@ -216,7 +216,7 @@ export class ModelViewImpl extends React.Component<ModelViewImplProps, ModelView
   renderDescriptionEditIcon() {
     return (
       <Button
-        componentId="codegen_mlflow_app_src_model-registry_components_modelview.tsx_467"
+        componentId="codegen_qcflow_app_src_model-registry_components_modelview.tsx_467"
         data-test-id="descriptionEditButton"
         type="link"
         css={styles.editButton}
@@ -346,7 +346,7 @@ export class ModelViewImpl extends React.Component<ModelViewImplProps, ModelView
                 </span>
                 {!this.props.usingNextModelsUI && (
                   <SegmentedControlGroup
-                    componentId="codegen_mlflow_app_src_model-registry_components_modelview.tsx_600"
+                    componentId="codegen_qcflow_app_src_model-registry_components_modelview.tsx_600"
                     name="stage-filter"
                     value={this.state.stageFilter}
                     onChange={(e) => this.handleStageFilterChange(e)}
@@ -368,7 +368,7 @@ export class ModelViewImpl extends React.Component<ModelViewImplProps, ModelView
                   </SegmentedControlGroup>
                 )}
                 <Button
-                  componentId="codegen_mlflow_app_src_model-registry_components_modelview.tsx_619"
+                  componentId="codegen_qcflow_app_src_model-registry_components_modelview.tsx_619"
                   data-test-id="compareButton"
                   disabled={compareDisabled}
                   onClick={this.onCompare}
@@ -409,8 +409,8 @@ export class ModelViewImpl extends React.Component<ModelViewImplProps, ModelView
 
         {/* Delete Model Dialog */}
         <DangerModal
-          componentId="codegen_mlflow_app_src_model-registry_components_modelview.tsx_662"
-          data-testid="mlflow-input-modal"
+          componentId="codegen_qcflow_app_src_model-registry_components_modelview.tsx_662"
+          data-testid="qcflow-input-modal"
           title={this.props.intl.formatMessage({
             defaultMessage: 'Delete Model',
             description: 'Title text for delete model modal on model view page',

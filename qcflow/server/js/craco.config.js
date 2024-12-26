@@ -4,8 +4,8 @@ const fs = require('fs');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
 
-const proxyTarget = process.env.MLFLOW_PROXY;
-const useProxyServer = !!proxyTarget && !process.env.MLFLOW_DEV_PROXY_MODE;
+const proxyTarget = process.env.QCFLOW_PROXY;
+const useProxyServer = !!proxyTarget && !process.env.QCFLOW_DEV_PROXY_MODE;
 
 const isDevserverWebsocketRequest = (request) =>
   request.url === '/ws' && (request.headers.upgrade === 'websocket' || request.headers['sec-websocket-version']);
@@ -33,14 +33,14 @@ function rewriteRedirect(proxyRes, req) {
 }
 
 /**
- * In Databricks, we send a cookie with a CSRF token and set the path of the cookie as "/mlflow".
+ * In Databricks, we send a cookie with a CSRF token and set the path of the cookie as "/qcflow".
  * We need to rewrite the path to "/" for the dev index.html/bundle.js to use the CSRF token.
  */
 function rewriteCookies(proxyRes) {
   if (proxyRes.headers['set-cookie'] !== undefined) {
     const newCookies = [];
     proxyRes.headers['set-cookie'].forEach((c) => {
-      newCookies.push(c.replace('Path=/mlflow', 'Path=/'));
+      newCookies.push(c.replace('Path=/qcflow', 'Path=/'));
     });
     proxyRes.headers['set-cookie'] = newCookies;
   }
@@ -247,7 +247,7 @@ module.exports = function () {
 
           // We'll ignore only dependencies in 'node_modules' directly within certain
           // directories in order to avoid false positive matches in nested modules.
-          const validNodeModulesRoots = ['mlflow/web/js'];
+          const validNodeModulesRoots = ['qcflow/web/js'];
 
           // prettier-ignore
           // eslint-disable-next-line max-len
@@ -273,7 +273,7 @@ module.exports = function () {
         const moduleNameMapper = {
           ...jestConfig.moduleNameMapper,
           '@databricks/web-shared/(.*)': '<rootDir>/src/shared/web-shared/$1',
-          '@mlflow/mlflow/(.*)': '<rootDir>/$1',
+          '@qcflow/qcflow/(.*)': '<rootDir>/$1',
         };
 
         jestConfig.moduleNameMapper = moduleNameMapper;
@@ -311,8 +311,8 @@ module.exports = function () {
       },
       plugins: [
         new webpack.EnvironmentPlugin({
-          MLFLOW_SHOW_GDPR_PURGING_MESSAGES: process.env.MLFLOW_SHOW_GDPR_PURGING_MESSAGES ? 'true' : 'false',
-          MLFLOW_USE_ABSOLUTE_AJAX_URLS: process.env.MLFLOW_USE_ABSOLUTE_AJAX_URLS ? 'true' : 'false',
+          QCFLOW_SHOW_GDPR_PURGING_MESSAGES: process.env.QCFLOW_SHOW_GDPR_PURGING_MESSAGES ? 'true' : 'false',
+          QCFLOW_USE_ABSOLUTE_AJAX_URLS: process.env.QCFLOW_USE_ABSOLUTE_AJAX_URLS ? 'true' : 'false',
         }),
       ],
     },

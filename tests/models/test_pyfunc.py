@@ -1,4 +1,4 @@
-MLFLOW_VERSION = "1.0.0"  # we expect this model to be bound to this mlflow version.
+QCFLOW_VERSION = "1.0.0"  # we expect this model to be bound to this qcflow version.
 
 
 class PyFuncTestModel:
@@ -6,10 +6,10 @@ class PyFuncTestModel:
         self._check_version = check_version
 
     def predict(self, df):
-        from mlflow.version import VERSION
+        from qcflow.version import VERSION
 
         if self._check_version:
-            assert VERSION == MLFLOW_VERSION
+            assert VERSION == QCFLOW_VERSION
         mu = df.mean().mean()
         return [mu for _ in range(len(df))]
 

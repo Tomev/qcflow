@@ -1,7 +1,7 @@
-mlflow.onnx
+qcflow.onnx
 ==================
 
-.. automodule:: mlflow.onnx
+.. automodule:: qcflow.onnx
     :members:
     :undoc-members:
     :show-inheritance:

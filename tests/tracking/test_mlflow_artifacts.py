@@ -8,10 +8,10 @@ from collections import namedtuple
 import pytest
 import requests
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.artifacts import download_artifacts
-from mlflow.utils.os import is_windows
+import qcflow
+from qcflow import MlflowClient
+from qcflow.artifacts import download_artifacts
+from qcflow.utils.os import is_windows
 
 from tests.helper_functions import LOCALHOST, get_safe_port
 from tests.tracking.integration_test_utils import _await_server_up_or_die
@@ -20,7 +20,7 @@ from tests.tracking.integration_test_utils import _await_server_up_or_die
 def _launch_server(host, port, backend_store_uri, default_artifact_root, artifacts_destination):
     extra_cmd = [] if is_windows() else ["--gunicorn-opts", "--log-level debug"]
     cmd = [
-        "mlflow",
+        "qcflow",
         "server",
         "--host",
         host,
@@ -52,7 +52,7 @@ def artifacts_server():
         backend_store_uri = f'sqlite:///{os.path.join(tmpdir, "mlruns.db")}'
         artifacts_destination = os.path.join(tmpdir, "mlartifacts")
         url = f"http://{LOCALHOST}:{port}"
-        default_artifact_root = f"{url}/api/2.0/mlflow-artifacts/artifacts"
+        default_artifact_root = f"{url}/api/2.0/qcflow-artifacts/artifacts"
         process = _launch_server(
             LOCALHOST,
             port,
@@ -88,7 +88,7 @@ def download_file(url, local_path, headers=None):
         return r
 
 
-def test_mlflow_artifacts_rest_apis(artifacts_server, tmp_path):
+def test_qcflow_artifacts_rest_apis(artifacts_server, tmp_path):
     default_artifact_root = artifacts_server.default_artifact_root
     artifacts_destination = artifacts_server.artifacts_destination
 
@@ -131,13 +131,13 @@ def test_mlflow_artifacts_rest_apis(artifacts_server, tmp_path):
 def test_log_artifact(artifacts_server, tmp_path):
     url = artifacts_server.url
     artifacts_destination = artifacts_server.artifacts_destination
-    mlflow.set_tracking_uri(url)
+    qcflow.set_tracking_uri(url)
 
     tmp_path = tmp_path.joinpath("a.txt")
     tmp_path.write_text("0")
 
-    with mlflow.start_run() as run:
-        mlflow.log_artifact(tmp_path)
+    with qcflow.start_run() as run:
+        qcflow.log_artifact(tmp_path)
 
     experiment_id = "0"
     run_artifact_root = os.path.join(
@@ -147,8 +147,8 @@ def test_log_artifact(artifacts_server, tmp_path):
     assert os.path.exists(dest_path)
     assert read_file(dest_path) == "0"
 
-    with mlflow.start_run() as run:
-        mlflow.log_artifact(tmp_path, artifact_path="artifact_path")
+    with qcflow.start_run() as run:
+        qcflow.log_artifact(tmp_path, artifact_path="artifact_path")
 
     run_artifact_root = os.path.join(
         artifacts_destination, experiment_id, run.info.run_id, "artifacts"
@@ -160,15 +160,15 @@ def test_log_artifact(artifacts_server, tmp_path):
 
 def test_log_artifacts(artifacts_server, tmp_path):
     url = artifacts_server.url
-    mlflow.set_tracking_uri(url)
+    qcflow.set_tracking_uri(url)
 
     tmp_path.joinpath("a.txt").write_text("0")
     d = tmp_path.joinpath("dir")
     d.mkdir()
     d.joinpath("b.txt").write_text("1")
 
-    with mlflow.start_run() as run:
-        mlflow.log_artifacts(tmp_path)
+    with qcflow.start_run() as run:
+        qcflow.log_artifacts(tmp_path)
 
     client = MlflowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
@@ -177,8 +177,8 @@ def test_log_artifacts(artifacts_server, tmp_path):
     assert artifacts == ["dir/b.txt"]
 
     # With `artifact_path`
-    with mlflow.start_run() as run:
-        mlflow.log_artifacts(tmp_path, artifact_path="artifact_path")
+    with qcflow.start_run() as run:
+        qcflow.log_artifacts(tmp_path, artifact_path="artifact_path")
 
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert artifacts == ["artifact_path"]
@@ -190,17 +190,17 @@ def test_log_artifacts(artifacts_server, tmp_path):
 
 def test_list_artifacts(artifacts_server, tmp_path):
     url = artifacts_server.url
-    mlflow.set_tracking_uri(url)
+    qcflow.set_tracking_uri(url)
 
     tmp_path_a = tmp_path.joinpath("a.txt")
     tmp_path_a.write_text("0")
     tmp_path_b = tmp_path.joinpath("b.txt")
     tmp_path_b.write_text("1")
     client = MlflowClient()
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         assert client.list_artifacts(run.info.run_id) == []
-        mlflow.log_artifact(tmp_path_a)
-        mlflow.log_artifact(tmp_path_b, "dir")
+        qcflow.log_artifact(tmp_path_a)
+        qcflow.log_artifact(tmp_path_b, "dir")
 
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert sorted(artifacts) == ["a.txt", "dir"]
@@ -210,15 +210,15 @@ def test_list_artifacts(artifacts_server, tmp_path):
 
 def test_download_artifacts(artifacts_server, tmp_path):
     url = artifacts_server.url
-    mlflow.set_tracking_uri(url)
+    qcflow.set_tracking_uri(url)
 
     tmp_path_a = tmp_path.joinpath("a.txt")
     tmp_path_a.write_text("0")
     tmp_path_b = tmp_path.joinpath("b.txt")
     tmp_path_b.write_text("1")
-    with mlflow.start_run() as run:
-        mlflow.log_artifact(tmp_path_a)
-        mlflow.log_artifact(tmp_path_b, "dir")
+    with qcflow.start_run() as run:
+        qcflow.log_artifact(tmp_path_a)
+        qcflow.log_artifact(tmp_path_b, "dir")
 
     dest_path = download_artifacts(run_id=run.info.run_id, artifact_path="")
     assert sorted(os.listdir(dest_path)) == ["a.txt", "dir"]
@@ -233,8 +233,8 @@ def is_github_actions():
 
 
 @pytest.mark.skipif(is_windows(), reason="This example doesn't work on Windows")
-def test_mlflow_artifacts_example(tmp_path):
-    root = pathlib.Path(mlflow.__file__).parents[1]
+def test_qcflow_artifacts_example(tmp_path):
+    root = pathlib.Path(qcflow.__file__).parents[1]
     # On GitHub Actions, remove generated images to save disk space
     rmi_option = "--rmi all" if is_github_actions() else ""
     cmd = f"""
@@ -251,7 +251,7 @@ test $err = 0
     subprocess.run(
         ["bash", script_path],
         check=True,
-        cwd=os.path.join(root, "examples", "mlflow_artifacts"),
+        cwd=os.path.join(root, "examples", "qcflow_artifacts"),
     )
 
 
@@ -265,17 +265,17 @@ def test_rest_tracking_api_list_artifacts_with_proxied_artifacts(artifacts_serve
         return resp.json()
 
     url = artifacts_server.url
-    mlflow.set_tracking_uri(url)
-    api = f"{url}/api/2.0/mlflow/artifacts/list"
+    qcflow.set_tracking_uri(url)
+    api = f"{url}/api/2.0/qcflow/artifacts/list"
 
     tmp_path_a = tmp_path.joinpath("a.txt")
     tmp_path_a.write_text("0")
     tmp_path_b = tmp_path.joinpath("b.txt")
     tmp_path_b.write_text("1")
-    mlflow.set_experiment("rest_list_api_test")
-    with mlflow.start_run() as run:
-        mlflow.log_artifact(tmp_path_a)
-        mlflow.log_artifact(tmp_path_b, "dir")
+    qcflow.set_experiment("rest_list_api_test")
+    with qcflow.start_run() as run:
+        qcflow.log_artifact(tmp_path_a)
+        qcflow.log_artifact(tmp_path_b, "dir")
 
     list_artifacts_response = list_artifacts_via_rest_api(url=api, run_id=run.info.run_id)
     assert list_artifacts_response.get("files") == [
@@ -295,13 +295,13 @@ def test_rest_tracking_api_list_artifacts_with_proxied_artifacts(artifacts_serve
 
 def test_rest_get_artifact_api_proxied_with_artifacts(artifacts_server, tmp_path):
     url = artifacts_server.url
-    mlflow.set_tracking_uri(url)
+    qcflow.set_tracking_uri(url)
     tmp_path_a = tmp_path.joinpath("a.txt")
     tmp_path_a.write_text("abcdefg")
 
-    mlflow.set_experiment("rest_get_artifact_api_test")
-    with mlflow.start_run() as run:
-        mlflow.log_artifact(tmp_path_a)
+    qcflow.set_experiment("rest_get_artifact_api_test")
+    with qcflow.start_run() as run:
+        qcflow.log_artifact(tmp_path_a)
 
     get_artifact_response = requests.get(
         url=f"{url}/get-artifact", params={"run_id": run.info.run_id, "path": "a.txt"}
@@ -317,10 +317,10 @@ def test_rest_get_model_version_artifact_api_proxied_artifact_root(artifacts_ser
     artifact_file.write_text("abcdefg")
 
     name = "GetModelVersionTest"
-    mlflow_client = MlflowClient(artifacts_server.backend_store_uri)
-    mlflow_client.create_registered_model(name)
-    # An artifact root with scheme http, https, or mlflow-artifacts is a proxied artifact root
-    mlflow_client.create_model_version(name, "mlflow-artifacts:", 1)
+    qcflow_client = MlflowClient(artifacts_server.backend_store_uri)
+    qcflow_client.create_registered_model(name)
+    # An artifact root with scheme http, https, or qcflow-artifacts is a proxied artifact root
+    qcflow_client.create_model_version(name, "qcflow-artifacts:", 1)
 
     get_model_version_artifact_response = requests.get(
         url=f"{url}/model-versions/get-artifact",
@@ -355,9 +355,9 @@ def test_mime_type_for_download_artifacts_api(
     assert params["filename"] == filename
     assert download_response.headers["Content-Type"] == expected_mime_type
 
-    mlflow.set_tracking_uri(url)
-    with mlflow.start_run() as run:
-        mlflow.log_artifact(test_file)
+    qcflow.set_tracking_uri(url)
+    with qcflow.start_run() as run:
+        qcflow.log_artifact(test_file)
     artifact_response = requests.get(
         url=f"{url}/get-artifact", params={"run_id": run.info.run_id, "path": filename}
     )

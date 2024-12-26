@@ -10,10 +10,10 @@ from unittest.mock import ANY
 import pytest
 from requests.models import Response
 
-from mlflow.entities import TraceData
-from mlflow.entities.file_info import FileInfo as FileInfoEntity
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_artifacts_pb2 import (
+from qcflow.entities import TraceData
+from qcflow.entities.file_info import FileInfo as FileInfoEntity
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_artifacts_pb2 import (
     ArtifactCredentialInfo,
     ArtifactCredentialType,
     CompleteMultipartUpload,
@@ -23,15 +23,15 @@ from mlflow.protos.databricks_artifacts_pb2 import (
     GetCredentialsForWrite,
     GetPresignedUploadPartUrl,
 )
-from mlflow.protos.service_pb2 import FileInfo, ListArtifacts
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.databricks_artifact_repo import (
+from qcflow.protos.service_pb2 import FileInfo, ListArtifacts
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.databricks_artifact_repo import (
     _MAX_CREDENTIALS_REQUEST_SIZE,
     DatabricksArtifactRepository,
 )
 
-DATABRICKS_ARTIFACT_REPOSITORY_PACKAGE = "mlflow.store.artifact.databricks_artifact_repo"
-CLOUD_ARTIFACT_REPOSITORY_PACKAGE = "mlflow.store.artifact.cloud_artifact_repo"
+DATABRICKS_ARTIFACT_REPOSITORY_PACKAGE = "qcflow.store.artifact.databricks_artifact_repo"
+CLOUD_ARTIFACT_REPOSITORY_PACKAGE = "qcflow.store.artifact.cloud_artifact_repo"
 DATABRICKS_ARTIFACT_REPOSITORY = (
     f"{DATABRICKS_ARTIFACT_REPOSITORY_PACKAGE}.DatabricksArtifactRepository"
 )
@@ -46,7 +46,7 @@ MOCK_HEADERS = [
     ArtifactCredentialInfo.HttpHeader(name="Mock-Name1", value="Mock-Value1"),
     ArtifactCredentialInfo.HttpHeader(name="Mock-Name2", value="Mock-Value2"),
 ]
-MOCK_RUN_ROOT_URI = "dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts"
+MOCK_RUN_ROOT_URI = "dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts"
 MOCK_SUBDIR = "subdir/path"
 MOCK_SUBDIR_ROOT_URI = posixpath.join(MOCK_RUN_ROOT_URI, MOCK_SUBDIR)
 
@@ -57,7 +57,7 @@ def databricks_artifact_repo():
         f"{DATABRICKS_ARTIFACT_REPOSITORY}._get_run_artifact_root", return_value=MOCK_RUN_ROOT_URI
     ):
         yield get_artifact_repository(
-            "dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts"
+            "dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts"
         )
 
 
@@ -89,10 +89,10 @@ def test_init_validation_and_cleaning():
     ):
         # Basic artifact uri
         repo = get_artifact_repository(
-            "dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts"
+            "dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts"
         )
         assert (
-            repo.artifact_uri == "dbfs:/databricks/mlflow-tracking/"
+            repo.artifact_uri == "dbfs:/databricks/qcflow-tracking/"
             "MOCK-EXP/MOCK-RUN-ID/artifacts"
         )
         assert repo.run_id == MOCK_RUN_ID
@@ -101,10 +101,10 @@ def test_init_validation_and_cleaning():
         with pytest.raises(MlflowException, match="DBFS URI must be of the form dbfs"):
             DatabricksArtifactRepository("s3://test")
         with pytest.raises(MlflowException, match="Artifact URI incorrect"):
-            DatabricksArtifactRepository("dbfs:/databricks/mlflow/EXP/RUN/artifact")
+            DatabricksArtifactRepository("dbfs:/databricks/qcflow/EXP/RUN/artifact")
         with pytest.raises(MlflowException, match="DBFS URI must be of the form dbfs"):
             DatabricksArtifactRepository(
-                "dbfs://scope:key@notdatabricks/databricks/mlflow-tracking/experiment/1/run/2"
+                "dbfs://scope:key@notdatabricks/databricks/qcflow-tracking/experiment/1/run/2"
             )
 
 
@@ -112,33 +112,33 @@ def test_init_validation_and_cleaning():
     ("artifact_uri", "expected_uri", "expected_db_uri"),
     [
         (
-            "dbfs:/databricks/mlflow-tracking/experiment/1/run/2",
-            "dbfs:/databricks/mlflow-tracking/experiment/1/run/2",
+            "dbfs:/databricks/qcflow-tracking/experiment/1/run/2",
+            "dbfs:/databricks/qcflow-tracking/experiment/1/run/2",
             "databricks://getTrackingUriDefault",
         ),  # see test body for the mock
         (
-            "dbfs://@databricks/databricks/mlflow-tracking/experiment/1/run/2",
-            "dbfs:/databricks/mlflow-tracking/experiment/1/run/2",
+            "dbfs://@databricks/databricks/qcflow-tracking/experiment/1/run/2",
+            "dbfs:/databricks/qcflow-tracking/experiment/1/run/2",
             "databricks",
         ),
         (
-            "dbfs://someProfile@databricks/databricks/mlflow-tracking/experiment/1/run/2",
-            "dbfs:/databricks/mlflow-tracking/experiment/1/run/2",
+            "dbfs://someProfile@databricks/databricks/qcflow-tracking/experiment/1/run/2",
+            "dbfs:/databricks/qcflow-tracking/experiment/1/run/2",
             "databricks://someProfile",
         ),
         (
-            "dbfs://scope:key@databricks/databricks/mlflow-tracking/experiment/1/run/2",
-            "dbfs:/databricks/mlflow-tracking/experiment/1/run/2",
+            "dbfs://scope:key@databricks/databricks/qcflow-tracking/experiment/1/run/2",
+            "dbfs:/databricks/qcflow-tracking/experiment/1/run/2",
             "databricks://scope:key",
         ),
         (
-            "dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts",
-            "dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts",
+            "dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts",
+            "dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts",
             "databricks://getTrackingUriDefault",
         ),
         (
-            "dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/awesome/path",
-            "dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/awesome/path",
+            "dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/awesome/path",
+            "dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/awesome/path",
             "databricks://getTrackingUriDefault",
         ),
     ],
@@ -152,7 +152,7 @@ def test_init_artifact_uri(artifact_uri, expected_uri, expected_db_uri):
             f"{DATABRICKS_ARTIFACT_REPOSITORY}._get_run_artifact_root", return_value="whatever"
         ),
         mock.patch(
-            "mlflow.tracking.get_tracking_uri", return_value="databricks://getTrackingUriDefault"
+            "qcflow.tracking.get_tracking_uri", return_value="databricks://getTrackingUriDefault"
         ),
     ):
         repo = DatabricksArtifactRepository(artifact_uri)
@@ -163,14 +163,14 @@ def test_init_artifact_uri(artifact_uri, expected_uri, expected_db_uri):
 @pytest.mark.parametrize(
     ("artifact_uri", "expected_relative_path"),
     [
-        ("dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts", ""),
-        ("dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts/arty", "arty"),
+        ("dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts", ""),
+        ("dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts/arty", "arty"),
         (
-            "dbfs://prof@databricks/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts/arty",
+            "dbfs://prof@databricks/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/artifacts/arty",
             "arty",
         ),
         (
-            "dbfs:/databricks/mlflow-tracking/MOCK-EXP/MOCK-RUN-ID/awesome/path",
+            "dbfs:/databricks/qcflow-tracking/MOCK-EXP/MOCK-RUN-ID/awesome/path",
             "../awesome/path",
         ),
     ],
@@ -192,16 +192,16 @@ def test_extract_run_id():
         return_value=MOCK_RUN_ROOT_URI,
     ):
         expected_run_id = "RUN_ID"
-        repo = get_artifact_repository("dbfs:/databricks/mlflow-tracking/EXP/RUN_ID/artifact")
+        repo = get_artifact_repository("dbfs:/databricks/qcflow-tracking/EXP/RUN_ID/artifact")
         assert repo.run_id == expected_run_id
-        repo = get_artifact_repository("dbfs:/databricks/mlflow-tracking/EXP_ID/RUN_ID/artifacts")
+        repo = get_artifact_repository("dbfs:/databricks/qcflow-tracking/EXP_ID/RUN_ID/artifacts")
         assert repo.run_id == expected_run_id
         repo = get_artifact_repository(
-            "dbfs:/databricks///mlflow-tracking///EXP_ID///RUN_ID///artifacts/"
+            "dbfs:/databricks///qcflow-tracking///EXP_ID///RUN_ID///artifacts/"
         )
         assert repo.run_id == expected_run_id
         repo = get_artifact_repository(
-            "dbfs:/databricks///mlflow-tracking//EXP_ID//RUN_ID///artifacts//"
+            "dbfs:/databricks///qcflow-tracking//EXP_ID//RUN_ID///artifacts//"
         )
         assert repo.run_id == expected_run_id
 
@@ -349,7 +349,7 @@ def test_log_artifact_adls_gen2_with_headers(
             for header_name, header_value in mock_azure_headers.items()
         ],
     )
-    monkeypatch.setenv("MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE", "5")
+    monkeypatch.setenv("QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE", "5")
     with (
         mock.patch(
             f"{DATABRICKS_ARTIFACT_REPOSITORY}._get_credential_infos",
@@ -1310,8 +1310,8 @@ def test_log_artifacts_provides_failure_info(databricks_artifact_repo, tmp_path)
 def mock_chunk_size(monkeypatch):
     # Use a smaller chunk size for faster comparison
     chunk_size = 10
-    monkeypatch.setenv("MLFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE", str(chunk_size))
-    monkeypatch.setenv("MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE", str(chunk_size))
+    monkeypatch.setenv("QCFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE", str(chunk_size))
+    monkeypatch.setenv("QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE", str(chunk_size))
     return chunk_size
 
 

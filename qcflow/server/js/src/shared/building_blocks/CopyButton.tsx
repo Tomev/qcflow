@@ -33,7 +33,7 @@ export const CopyButton = ({ copyText, showLabel = true, componentId, ...buttonP
       }}
     >
       <Button
-        componentId={componentId ?? 'mlflow.shared.copy_button'}
+        componentId={componentId ?? 'qcflow.shared.copy_button'}
         type="primary"
         onClick={handleClick}
         onMouseLeave={handleMouseLeave}

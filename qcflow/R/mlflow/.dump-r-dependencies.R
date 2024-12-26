@@ -1,4 +1,4 @@
-# Make sure the current working directory is 'mlflow/R/mlflow'
+# Make sure the current working directory is 'qcflow/R/qcflow'
 print(R.version)
 install.packages('remotes')
 saveRDS(remotes::dev_package_deps(".", dependencies = TRUE), "depends.Rds", version = 2)

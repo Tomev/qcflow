@@ -1,4 +1,4 @@
-"""MLflow module for HuggingFace/transformer support."""
+"""QCFlow module for HuggingFace/transformer support."""
 
 from __future__ import annotations
 
@@ -27,40 +27,40 @@ import pandas as pd
 import yaml
 from packaging.version import Version
 
-from mlflow import pyfunc
-from mlflow.environment_variables import (
-    MLFLOW_DEFAULT_PREDICTION_DEVICE,
-    MLFLOW_HUGGINGFACE_DEVICE_MAP_STRATEGY,
-    MLFLOW_HUGGINGFACE_USE_DEVICE_MAP,
-    MLFLOW_HUGGINGFACE_USE_LOW_CPU_MEM_USAGE,
-    MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT,
+from qcflow import pyfunc
+from qcflow.environment_variables import (
+    QCFLOW_DEFAULT_PREDICTION_DEVICE,
+    QCFLOW_HUGGINGFACE_DEVICE_MAP_STRATEGY,
+    QCFLOW_HUGGINGFACE_USE_DEVICE_MAP,
+    QCFLOW_HUGGINGFACE_USE_LOW_CPU_MEM_USAGE,
+    QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.models import (
+from qcflow.exceptions import MlflowException
+from qcflow.models import (
     Model,
     ModelInputExample,
     ModelSignature,
 )
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.utils import _save_example
-from mlflow.protos.databricks_pb2 import (
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.utils import _save_example
+from qcflow.protos.databricks_pb2 import (
     BAD_REQUEST,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _get_root_uri_and_artifact_path
-from mlflow.transformers.flavor_config import (
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _get_root_uri_and_artifact_path
+from qcflow.transformers.flavor_config import (
     FlavorKey,
     build_flavor_config,
     build_flavor_config_from_local_checkpoint,
     update_flavor_conf_to_persist_pretrained_model,
 )
-from mlflow.transformers.hub_utils import (
+from qcflow.transformers.hub_utils import (
     is_valid_hf_repo_id,
 )
-from mlflow.transformers.llm_inference_utils import (
+from qcflow.transformers.llm_inference_utils import (
     _LLM_INFERENCE_TASK_CHAT,
     _LLM_INFERENCE_TASK_COMPLETIONS,
     _LLM_INFERENCE_TASK_EMBEDDING,
@@ -76,7 +76,7 @@ from mlflow.transformers.llm_inference_utils import (
     preprocess_llm_embedding_params,
     preprocess_llm_inference_input,
 )
-from mlflow.transformers.model_io import (
+from qcflow.transformers.model_io import (
     _COMPONENTS_BINARY_DIR_NAME,
     _MODEL_BINARY_FILE_NAME,
     load_model_and_components_from_huggingface_hub,
@@ -84,45 +84,45 @@ from mlflow.transformers.model_io import (
     save_local_checkpoint,
     save_pipeline_pretrained_weights,
 )
-from mlflow.transformers.peft import (
+from qcflow.transformers.peft import (
     _PEFT_ADAPTOR_DIR_NAME,
     get_model_with_peft_adapter,
     get_peft_base_model,
     is_peft_model,
 )
-from mlflow.transformers.signature import (
+from qcflow.transformers.signature import (
     format_input_example_for_special_cases,
     infer_or_get_default_signature,
 )
-from mlflow.transformers.torch_utils import _TORCH_DTYPE_KEY, _deserialize_torch_dtype
-from mlflow.types.utils import _validate_input_dictionary_contains_only_strings_and_lists_of_strings
-from mlflow.utils import _truncate_and_ellipsize
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import (
+from qcflow.transformers.torch_utils import _TORCH_DTYPE_KEY, _deserialize_torch_dtype
+from qcflow.types.utils import _validate_input_dictionary_contains_only_strings_and_lists_of_strings
+from qcflow.utils import _truncate_and_ellipsize
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import (
     autologging_integration,
     disable_discrete_autologging,
     safe_patch,
 )
-from mlflow.utils.docstring_utils import (
+from qcflow.utils.docstring_utils import (
     LOG_MODEL_PARAM_DOCS,
     docstring_version_compatibility_warning,
     format_docstring,
 )
-from mlflow.utils.environment import (
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
     infer_pip_requirements,
 )
-from mlflow.utils.file_utils import TempDir, get_total_file_size, write_to
-from mlflow.utils.logging_utils import suppress_logs
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import TempDir, get_total_file_size, write_to
+from qcflow.utils.logging_utils import suppress_logs
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _download_artifact_from_uri,
     _get_flavor_configuration,
@@ -130,7 +130,7 @@ from mlflow.utils.model_utils import (
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 # The following import is only used for type hinting
 if TYPE_CHECKING:
@@ -138,7 +138,7 @@ if TYPE_CHECKING:
     from transformers import Pipeline
 
 # Transformers pipeline complains that PeftModel is not supported for any task type, even
-# when the wrapped model is supported. As MLflow require users to use pipeline for logging,
+# when the wrapped model is supported. As QCFlow require users to use pipeline for logging,
 # we should suppress that confusing error message.
 _PEFT_PIPELINE_ERROR_MSG = re.compile(r"The model 'PeftModel[^']*' is not supported for")
 
@@ -197,7 +197,7 @@ def get_default_pip_requirements(model) -> list[str]:
             be the actual model instance and not a Pipeline.
 
     Returns:
-        A list of default pip requirements for MLflow Models that have been produced with the
+        A list of default pip requirements for QCFlow Models that have been produced with the
         ``transformers`` flavor. Calls to :py:func:`save_model()` and :py:func:`log_model()`
         produce a pip environment that contain these requirements at a minimum.
     """
@@ -261,10 +261,10 @@ def _validate_transformers_model_dict(transformers_model):
 def get_default_conda_env(model):
     """
     Returns:
-        The default Conda environment for MLflow Models produced with the ``transformers``
+        The default Conda environment for QCFlow Models produced with the ``transformers``
         flavor, based on the model instance framework type of the model to be logged.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements(model))
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements(model))
 
 
 @experimental
@@ -279,7 +279,7 @@ def save_model(
     model_card=None,
     inference_config: Optional[dict[str, Any]] = None,
     code_paths: Optional[list[str]] = None,
-    mlflow_model: Optional[Model] = None,
+    qcflow_model: Optional[Model] = None,
     signature: Optional[ModelSignature] = None,
     input_example: Optional[ModelInputExample] = None,
     pip_requirements: Optional[Union[list[str], str]] = None,
@@ -321,8 +321,8 @@ def save_model(
 
                 qa_pipe = pipeline("question-answering", "csarron/mobilebert-uncased-squad-v2")
 
-                with mlflow.start_run():
-                    mlflow.transformers.save_model(
+                with qcflow.start_run():
+                    qcflow.transformers.save_model(
                         transformers_model=qa_pipe,
                         path="path/to/save/model",
                     )
@@ -337,12 +337,12 @@ def save_model(
                 tokenizer = AutoTokenizer.from_pretrained(architecture)
                 model = MobileBertForQuestionAnswering.from_pretrained(architecture)
 
-                with mlflow.start_run():
+                with qcflow.start_run():
                     components = {
                         "model": model,
                         "tokenizer": tokenizer,
                     }
-                    mlflow.transformers.save_model(
+                    qcflow.transformers.save_model(
                         transformers_model=components,
                         path="path/to/save/model",
                     )
@@ -351,8 +351,8 @@ def save_model(
 
             .. code-block:: python
 
-                with mlflow.start_run():
-                    mlflow.transformers.save_model(
+                with qcflow.start_run():
+                    qcflow.transformers.save_model(
                         transformers_model="path/to/local/checkpoint",
                         path="path/to/save/model",
                     )
@@ -365,7 +365,7 @@ def save_model(
             .. Note:: If a processor is supplied when saving a model, the
                         model will be unavailable for loading as a ``Pipeline`` or for
                         usage with pyfunc inference.
-        task: The transformers-specific task type of the model, or MLflow inference task type.
+        task: The transformers-specific task type of the model, or QCFlow inference task type.
             If provided a transformers-specific task type, these strings are utilized so
             that a pipeline can be created with the appropriate internal call architecture
             to meet the needs of a given model.
@@ -391,35 +391,35 @@ def save_model(
             .. Warning:: Deprecated. `inference_config` is deprecated in favor of `model_config`.
 
         code_paths: {{ code_paths }}
-        mlflow_model: An MLflow model object that specifies the flavor that this model is being
+        qcflow_model: An QCFlow model object that specifies the flavor that this model is being
             added to.
         signature: A Model Signature object that describes the input and output Schema of the
             model. The model signature can be inferred using `infer_signature` function
-            of `mlflow.models.signature`.
+            of `qcflow.models.signature`.
 
             .. code-block:: python
                 :caption: Example
 
-                from mlflow.models import infer_signature
-                from mlflow.transformers import generate_signature_output
+                from qcflow.models import infer_signature
+                from qcflow.transformers import generate_signature_output
                 from transformers import pipeline
 
                 en_to_de = pipeline("translation_en_to_de")
 
-                data = "MLflow is great!"
+                data = "QCFlow is great!"
                 output = generate_signature_output(en_to_de, data)
                 signature = infer_signature(data, output)
 
-                mlflow.transformers.save_model(
+                qcflow.transformers.save_model(
                     transformers_model=en_to_de,
                     path="/path/to/save/model",
                     signature=signature,
                     input_example=data,
                 )
 
-                loaded = mlflow.pyfunc.load_model("/path/to/save/model")
+                loaded = qcflow.pyfunc.load_model("/path/to/save/model")
                 print(loaded.predict(data))
-                # MLflow ist großartig!
+                # QCFlow ist großartig!
 
             If an input_example is provided and the signature is not, a signature will
             be inferred automatically and applied to the MLmodel file iff the
@@ -437,7 +437,7 @@ def save_model(
             These arguments are used exclusively for the case of loading the model as a ``pyfunc``
             Model or for use in Spark.
             These values are not applied to a returned Pipeline from a call to
-            ``mlflow.transformers.load_model()``
+            ``qcflow.transformers.load_model()``
 
             .. Warning:: If the key provided is not compatible with either the
                     Pipeline instance for the task provided or is not a valid
@@ -477,7 +477,7 @@ def save_model(
                 # Verify that no exceptions are thrown
                 sentence_pipeline(prompts, **model_config)
 
-                mlflow.transformers.save_model(
+                qcflow.transformers.save_model(
                     transformers_model=sentence_pipeline,
                     path="/path/for/model",
                     task=task,
@@ -555,8 +555,8 @@ def save_model(
             "and please try again."
         )
 
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
 
     if task and task.startswith(_LLM_INFERENCE_TASK_PREFIX):
         llm_inference_task = task
@@ -573,26 +573,26 @@ def save_model(
         llm_inference_task = None
 
     if llm_inference_task:
-        mlflow_model.signature = infer_signature_from_llm_inference_task(
+        qcflow_model.signature = infer_signature_from_llm_inference_task(
             llm_inference_task, signature
         )
     elif signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
 
     if input_example is not None:
         input_example = format_input_example_for_special_cases(input_example, built_pipeline)
-        _save_example(mlflow_model, input_example, str(path), example_no_conversion)
+        _save_example(qcflow_model, input_example, str(path), example_no_conversion)
 
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     # Check task consistency between model metadata and task argument
-    #  NB: Using mlflow_model.metadata instead of passed metadata argument directly, because
+    #  NB: Using qcflow_model.metadata instead of passed metadata argument directly, because
     #  metadata argument is not directly propagated from log_model() to save_model(), instead
-    #  via the mlflow_model object attribute.
+    #  via the qcflow_model object attribute.
     if (
-        mlflow_model.metadata is not None
-        and (metadata_task := mlflow_model.metadata.get(_METADATA_LLM_INFERENCE_TASK_KEY))
+        qcflow_model.metadata is not None
+        and (metadata_task := qcflow_model.metadata.get(_METADATA_LLM_INFERENCE_TASK_KEY))
         and metadata_task != task
     ):
         raise MlflowException(
@@ -600,7 +600,7 @@ def save_model(
             "metadata, but it doesn't match the task type provided in the `task` argument: "
             f"'{task}'. The mismatched task type may cause incorrect model inference behavior. "
             "Please provide the correct LLM v1 task type in the `task` argument. E.g. "
-            f'`mlflow.transformers.save_model(task="{metadata_task}", ...)`',
+            f'`qcflow.transformers.save_model(task="{metadata_task}", ...)`',
             error_code=INVALID_PARAMETER_VALUE,
         )
 
@@ -613,10 +613,10 @@ def save_model(
             )
 
         _validate_prompt_template(prompt_template)
-        if mlflow_model.metadata:
-            mlflow_model.metadata[FlavorKey.PROMPT_TEMPLATE] = prompt_template
+        if qcflow_model.metadata:
+            qcflow_model.metadata[FlavorKey.PROMPT_TEMPLATE] = prompt_template
         else:
-            mlflow_model.metadata = {FlavorKey.PROMPT_TEMPLATE: prompt_template}
+            qcflow_model.metadata = {FlavorKey.PROMPT_TEMPLATE: prompt_template}
 
     if is_peft_model(built_pipeline.model):
         _logger.info(
@@ -646,12 +646,12 @@ def save_model(
 
     if llm_inference_task:
         flavor_conf.update({_LLM_INFERENCE_TASK_KEY: llm_inference_task})
-        if mlflow_model.metadata:
-            mlflow_model.metadata[_METADATA_LLM_INFERENCE_TASK_KEY] = llm_inference_task
+        if qcflow_model.metadata:
+            qcflow_model.metadata[_METADATA_LLM_INFERENCE_TASK_KEY] = llm_inference_task
         else:
-            mlflow_model.metadata = {_METADATA_LLM_INFERENCE_TASK_KEY: llm_inference_task}
+            qcflow_model.metadata = {_METADATA_LLM_INFERENCE_TASK_KEY: llm_inference_task}
 
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         transformers_version=transformers.__version__,
         code=code_dir_subpath,
@@ -678,7 +678,7 @@ def save_model(
     if inference_config:
         _logger.warning(
             "Indicating `inference_config` is deprecated and will be removed in a future version "
-            "of MLflow. Use `model_config` instead."
+            "of QCFlow. Use `model_config` instead."
         )
         path.joinpath(_INFERENCE_CONFIG_BINARY_KEY).write_text(
             json.dumps(inference_config, indent=2)
@@ -703,8 +703,8 @@ def save_model(
         # for pyfunc prediction. This may not be true for all cases, so we should revisit this.
         isinstance(transformers_model, str) or _should_add_pyfunc_to_model(built_pipeline)
     ):
-        if mlflow_model.signature is None:
-            mlflow_model.signature = infer_or_get_default_signature(
+        if qcflow_model.signature is None:
+            qcflow_model.signature = infer_or_get_default_signature(
                 pipeline=built_pipeline,
                 example=input_example,
                 model_config=model_config or inference_config,
@@ -722,8 +722,8 @@ def save_model(
                 _logger.info(_PROMPT_TEMPLATE_RETURN_FULL_TEXT_INFO)
 
         pyfunc.add_to_model(
-            mlflow_model,
-            loader_module="mlflow.transformers",
+            qcflow_model,
+            loader_module="qcflow.transformers",
             conda_env=_CONDA_ENV_FILE_NAME,
             python_env=_PYTHON_ENV_FILE_NAME,
             code=code_dir_subpath,
@@ -743,9 +743,9 @@ def save_model(
         )
 
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
+        qcflow_model.model_size_bytes = size
 
-    mlflow_model.save(str(path.joinpath(MLMODEL_FILE_NAME)))
+    qcflow_model.save(str(path.joinpath(MLMODEL_FILE_NAME)))
 
     if conda_env is None:
         if pip_requirements is None:
@@ -764,7 +764,7 @@ def save_model(
                     model_uri=str(path),
                     flavor=FLAVOR_NAME,
                     fallback=default_reqs,
-                    timeout=MLFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT.get(),
+                    timeout=QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT.get(),
                 )
                 default_reqs = set(inferred_reqs).union(default_reqs)
             default_reqs = sorted(default_reqs)
@@ -814,7 +814,7 @@ def log_model(
     **kwargs,
 ):
     """
-    Log a ``transformers`` object as an MLflow artifact for the current run. Note that
+    Log a ``transformers`` object as an QCFlow artifact for the current run. Note that
     logging transformers models with custom code (i.e. models that require
     ``trust_remote_code=True``) requires ``transformers >= 4.26.0``.
 
@@ -842,8 +842,8 @@ def log_model(
 
                 qa_pipe = pipeline("question-answering", "csarron/mobilebert-uncased-squad-v2")
 
-                with mlflow.start_run():
-                    mlflow.transformers.log_model(
+                with qcflow.start_run():
+                    qcflow.transformers.log_model(
                         transformers_model=qa_pipe,
                         artifact_path="model",
                     )
@@ -858,12 +858,12 @@ def log_model(
                 tokenizer = AutoTokenizer.from_pretrained(architecture)
                 model = MobileBertForQuestionAnswering.from_pretrained(architecture)
 
-                with mlflow.start_run():
+                with qcflow.start_run():
                     components = {
                         "model": model,
                         "tokenizer": tokenizer,
                     }
-                    mlflow.transformers.log_model(
+                    qcflow.transformers.log_model(
                         transformers_model=components,
                         artifact_path="model",
                     )
@@ -872,8 +872,8 @@ def log_model(
 
             .. code-block:: python
 
-                with mlflow.start_run():
-                    mlflow.transformers.log_model(
+                with qcflow.start_run():
+                    qcflow.transformers.log_model(
                         transformers_model="path/to/local/checkpoint",
                         artifact_path="model",
                     )
@@ -916,23 +916,23 @@ def log_model(
             registered model if one with the given name does not exist.
         signature: A Model Signature object that describes the input and output Schema of the
             model. The model signature can be inferred using `infer_signature` function
-            of `mlflow.models.signature`.
+            of `qcflow.models.signature`.
 
             .. code-block:: python
                 :caption: Example
 
-                from mlflow.models import infer_signature
-                from mlflow.transformers import generate_signature_output
+                from qcflow.models import infer_signature
+                from qcflow.transformers import generate_signature_output
                 from transformers import pipeline
 
                 en_to_de = pipeline("translation_en_to_de")
 
-                data = "MLflow is great!"
+                data = "QCFlow is great!"
                 output = generate_signature_output(en_to_de, data)
                 signature = infer_signature(data, output)
 
-                with mlflow.start_run() as run:
-                    mlflow.transformers.log_model(
+                with qcflow.start_run() as run:
+                    qcflow.transformers.log_model(
                         transformers_model=en_to_de,
                         artifact_path="english_to_german_translator",
                         signature=signature,
@@ -940,10 +940,10 @@ def log_model(
                     )
 
                 model_uri = f"runs:/{run.info.run_id}/english_to_german_translator"
-                loaded = mlflow.pyfunc.load_model(model_uri)
+                loaded = qcflow.pyfunc.load_model(model_uri)
 
                 print(loaded.predict(data))
-                # MLflow ist großartig!
+                # QCFlow ist großartig!
 
             If an input_example is provided and the signature is not, a signature will
             be inferred automatically and applied to the MLmodel file iff the
@@ -964,7 +964,7 @@ def log_model(
             A dict of valid overrides that can be applied to a pipeline instance during inference.
             These arguments are used exclusively for the case of loading the model as a ``pyfunc``
             Model or for use in Spark. These values are not applied to a returned Pipeline from a
-            call to ``mlflow.transformers.load_model()``
+            call to ``qcflow.transformers.load_model()``
 
             .. Warning:: If the key provided is not compatible with either the
                          Pipeline instance for the task provided or is not a valid
@@ -1004,8 +1004,8 @@ def log_model(
                 # Verify that no exceptions are thrown
                 sentence_pipeline(prompts, **model_config)
 
-                with mlflow.start_run():
-                    mlflow.transformers.log_model(
+                with qcflow.start_run():
+                    qcflow.transformers.log_model(
                         transformers_model=sentence_pipeline,
                         artifact_path="my_sentence_generator",
                         task=task,
@@ -1014,7 +1014,7 @@ def log_model(
         example_no_conversion: {{ example_no_conversion }}
         prompt_template: {{ prompt_template }}
         save_pretrained: {{ save_pretrained }}
-        kwargs: Additional arguments for :py:class:`mlflow.models.model.Model`
+        kwargs: Additional arguments for :py:class:`qcflow.models.model.Model`
     """
     return Model.log(
         artifact_path=artifact_path,
@@ -1057,16 +1057,16 @@ def load_model(
     Load a ``transformers`` object from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
-            - ``mlflow-artifacts:/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
+            - ``qcflow-artifacts:/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to utilize for downloading the model artifact.
             This directory must already exist if provided. If unspecified, a local output
@@ -1131,7 +1131,7 @@ def load_model(
 def persist_pretrained_model(model_uri: str) -> None:
     """
     Persist Transformers pretrained model weights to the artifacts directory of the specified
-    model_uri. This API is primary used for updating an MLflow Model that was logged or saved
+    model_uri. This API is primary used for updating an QCFlow Model that was logged or saved
     with setting save_pretrained=False. Such models cannot be registered to Databricks Workspace
     Model Registry, due to the full pretrained model weights being absent in the artifacts.
     Transformers models saved in this mode store only the reference to the HuggingFace Hub
@@ -1140,33 +1140,33 @@ def persist_pretrained_model(model_uri: str) -> None:
     to Databricks Workspace Model Registry.
 
     Args:
-        model_uri: The URI of the existing MLflow Model of the Transformers flavor.
+        model_uri: The URI of the existing QCFlow Model of the Transformers flavor.
             It must be logged/saved with save_pretrained=False.
 
     Examples:
 
     .. code-block:: python
 
-        import mlflow
+        import qcflow
 
         # Saving a model with save_pretrained=False
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model = pipeline("question-answering", "csarron/mobilebert-uncased-squad-v2")
-            mlflow.transformers.log_model(
+            qcflow.transformers.log_model(
                 transformers_model=model, artifact_path="pipeline", save_pretrained=False
             )
 
         # The model cannot be registered to the Model Registry as it is
         try:
-            mlflow.register_model(f"runs:/{run.info.run_id}/pipeline", "qa_pipeline")
+            qcflow.register_model(f"runs:/{run.info.run_id}/pipeline", "qa_pipeline")
         except MlflowException as e:
             print(e.message)
 
         # Use this API to persist the pretrained model weights
-        mlflow.transformers.persist_pretrained_model(f"runs:/{run.info.run_id}/pipeline")
+        qcflow.transformers.persist_pretrained_model(f"runs:/{run.info.run_id}/pipeline")
 
         # Now the model can be registered to the Model Registry
-        mlflow.register_model(f"runs:/{run.info.run_id}/pipeline", "qa_pipeline")
+        qcflow.register_model(f"runs:/{run.info.run_id}/pipeline", "qa_pipeline")
     """
     # Check if the model weight already exists in the model artifact before downloading
     root_uri, artifact_path = _get_root_uri_and_artifact_path(model_uri)
@@ -1198,7 +1198,7 @@ def persist_pretrained_model(model_uri: str) -> None:
             pathlib.Path(local_model_path), pipeline, updated_flavor_conf
         )
 
-        # Upload updated local artifacts to MLflow
+        # Upload updated local artifacts to QCFlow
         for dir_to_upload in (_MODEL_BINARY_FILE_NAME, _COMPONENTS_BINARY_DIR_NAME):
             local_dir = os.path.join(local_model_path, dir_to_upload)
             if not os.path.isdir(local_dir):
@@ -1268,28 +1268,28 @@ def _load_model(path: str, flavor_config, return_type: str, device=None, **kwarg
     # Note that we don't set the device in the conf yet because device is
     # incompatible with device_map.
     accelerate_model_conf = {}
-    if MLFLOW_HUGGINGFACE_USE_DEVICE_MAP.get():
-        device_map_strategy = MLFLOW_HUGGINGFACE_DEVICE_MAP_STRATEGY.get()
+    if QCFLOW_HUGGINGFACE_USE_DEVICE_MAP.get():
+        device_map_strategy = QCFLOW_HUGGINGFACE_DEVICE_MAP_STRATEGY.get()
         conf["device_map"] = device_map_strategy
         accelerate_model_conf["device_map"] = device_map_strategy
         # Cannot use device with device_map
         if device is not None:
             raise MlflowException.invalid_parameter_value(
-                "The environment variable MLFLOW_HUGGINGFACE_USE_DEVICE_MAP is set to True, but "
+                "The environment variable QCFLOW_HUGGINGFACE_USE_DEVICE_MAP is set to True, but "
                 f"the `device` argument is provided with value {device}. The device_map and "
-                "`device` argument cannot be used together. Set MLFLOW_HUGGINGFACE_USE_DEVICE_MAP "
+                "`device` argument cannot be used together. Set QCFLOW_HUGGINGFACE_USE_DEVICE_MAP "
                 "to False to specify a particular device ID, or pass None for the `device` "
                 "argument to use device_map."
             )
         device = None
     elif device is None:
-        if device_value := MLFLOW_DEFAULT_PREDICTION_DEVICE.get():
+        if device_value := QCFLOW_DEFAULT_PREDICTION_DEVICE.get():
             try:
                 device = int(device_value)
             except ValueError:
                 _logger.warning(
-                    f"Invalid value for {MLFLOW_DEFAULT_PREDICTION_DEVICE}: {device_value}. "
-                    f"{MLFLOW_DEFAULT_PREDICTION_DEVICE} value must be an integer. "
+                    f"Invalid value for {QCFLOW_DEFAULT_PREDICTION_DEVICE}: {device_value}. "
+                    f"{QCFLOW_DEFAULT_PREDICTION_DEVICE} value must be an integer. "
                     f"Setting to: {_TRANSFORMERS_DEFAULT_CPU_DEVICE_ID}."
                 )
                 device = _TRANSFORMERS_DEFAULT_CPU_DEVICE_ID
@@ -1307,7 +1307,7 @@ def _load_model(path: str, flavor_config, return_type: str, device=None, **kwarg
         flavor_config[_TORCH_DTYPE_KEY] = dtype_val
         accelerate_model_conf[_TORCH_DTYPE_KEY] = dtype_val
 
-    accelerate_model_conf["low_cpu_mem_usage"] = MLFLOW_HUGGINGFACE_USE_LOW_CPU_MEM_USAGE.get()
+    accelerate_model_conf["low_cpu_mem_usage"] = QCFLOW_HUGGINGFACE_USE_LOW_CPU_MEM_USAGE.get()
 
     # Load model and components either from local or from HuggingFace Hub. We check for the
     # presence of the model revision (a commit hash of the hub repository) that is only present
@@ -1523,7 +1523,7 @@ def _get_task_for_model(model_name_or_path: str, default_task=None) -> str:
         elif default_task is not None:
             _logger.warning(
                 f"The task '{model_task}' inferred from the model is not"
-                "supported by the transformers pipeline. MLflow will "
+                "supported by the transformers pipeline. QCFlow will "
                 f"construct the pipeline with the fallback task {default_task} "
                 "inferred from the specified 'llm/v1/xxx' task."
             )
@@ -1707,7 +1707,7 @@ def generate_signature_output(pipeline, data, model_config=None, params=None, fl
     """
     import transformers
 
-    from mlflow.transformers import signature
+    from qcflow.transformers import signature
 
     if not isinstance(pipeline, transformers.Pipeline):
         raise MlflowException(
@@ -1795,7 +1795,7 @@ class _TransformersWrapper:
             if model_config.get("return_full_text", None) is not None:
                 _logger.warning(
                     "The `return_full_text` parameter is mutually exclusive with the "
-                    "`return_tensors` parameter set when a MLflow inference task is provided. "
+                    "`return_tensors` parameter set when a QCFlow inference task is provided. "
                     "The `return_full_text` parameter will be ignored."
                 )
                 # `return_full_text` is mutually exclusive with `return_tensors`
@@ -2107,7 +2107,7 @@ class _TransformersWrapper:
     def _validate_text_classification_input(data):
         """
         Perform input type validation for TextClassification pipelines and casting of data
-        that is manipulated internally by the MLflow model server back to a structure that
+        that is manipulated internally by the QCFlow model server back to a structure that
         can be used for pipeline inference.
 
         To illustrate the input and outputs of this function, for the following inputs to
@@ -2135,7 +2135,7 @@ class _TransformersWrapper:
         [{"text": "text", "text_pair": "pair"}, {"text": "t", "text_pair": "tp" }]
 
         Additionally, for dict input types (the 'text' & 'text_pair' input example), the dict
-        input will be JSON stringified within MLflow model serving. In order to reconvert this
+        input will be JSON stringified within QCFlow model serving. In order to reconvert this
         structure back into the appropriate type, we use ast.literal_eval() to convert back
         to a dict. We avoid using JSON.loads() due to pandas DataFrame conversions that invert
         single and double quotes with escape sequences that are not consistent if the string
@@ -2167,7 +2167,7 @@ class _TransformersWrapper:
                 if list(data[0].keys())[0] == 0:
                     data = [item[0] for item in data]
                 try:
-                    # NB: To support MLflow serving signature validation, the value within dict
+                    # NB: To support QCFlow serving signature validation, the value within dict
                     # inputs is JSON encoded. In order for the proper data structure input support
                     # for a {"text": "a", "text_pair": "b"} (or the list of such a structure) as
                     # an input, we have to convert the string encoded dict back to a dict.

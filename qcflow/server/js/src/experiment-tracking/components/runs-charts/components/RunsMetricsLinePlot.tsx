@@ -32,14 +32,14 @@ import {
   shouldEnableChartsOriginalLinesWhenSmoothing,
   shouldEnableRelativeTimeDateAxis,
   shouldEnableChartExpressions,
-} from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+} from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 import { useRunsMultipleTracesTooltipData } from '../hooks/useRunsChartsMultipleTracesTooltip';
 import { createChartImageDownloadHandler } from '../hooks/useChartImageDownloadHandler';
 import {
   EPOCH_RELATIVE_TIME,
   HOUR_IN_MILLISECONDS,
   LINE_CHART_RELATIVE_TIME_THRESHOLD,
-} from '@mlflow/mlflow/src/experiment-tracking/constants';
+} from '@qcflow/qcflow/src/experiment-tracking/constants';
 import { type RunsChartsLineChartExpression, RunsChartsLineChartYAxisType } from '../runs-charts.types';
 import { useChartExpressionParser } from '../hooks/useChartExpressionParser';
 import { getExpressionChartsSortedMetricHistory } from '../utils/expressionCharts.utils';

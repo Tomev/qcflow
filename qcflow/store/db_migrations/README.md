@@ -1,12 +1,12 @@
-# MLflow Tracking database migrations
+# QCFlow Tracking database migrations
 
-This directory contains configuration scripts and database migration logic for MLflow tracking
+This directory contains configuration scripts and database migration logic for QCFlow tracking
 databases, using the Alembic migration library (https://alembic.sqlalchemy.org). To run database
-migrations, use the `mlflow db upgrade` CLI command. To add and modify database migration logic,
-see the contributor guide at https://github.com/mlflow/mlflow/blob/master/CONTRIBUTING.md.
+migrations, use the `qcflow db upgrade` CLI command. To add and modify database migration logic,
+see the contributor guide at https://github.com/qcflow/qcflow/blob/master/CONTRIBUTING.md.
 
 If you encounter failures while executing migrations, please file a GitHub issue at
-https://github.com/mlflow/mlflow/issues.
+https://github.com/qcflow/qcflow/issues.
 
 ## Migration descriptions
 
@@ -56,5 +56,5 @@ previous version, and deleting the `latest_metrics` table is sufficient to resto
 to its prior state.
 
 If the migration fails to complete due to excessive latency, please try executing the
-`mlflow db upgrade` command on the same host machine where the database is running. This will
+`qcflow db upgrade` command on the same host machine where the database is running. This will
 reduce the overhead of the migration's queries and batch insert operation.

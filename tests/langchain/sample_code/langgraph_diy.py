@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 
-import mlflow
+import qcflow
 
 
 def generate(state):
@@ -43,4 +43,4 @@ workflow.add_conditional_edges(
 
 graph = workflow.compile()
 
-mlflow.models.set_model(graph)
+qcflow.models.set_model(graph)

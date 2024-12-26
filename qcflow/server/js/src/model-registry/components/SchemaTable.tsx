@@ -198,7 +198,7 @@ export class SchemaTableImpl extends React.PureComponent<Props> {
               <div>
                 {/* eslint-disable-next-line max-len */}
                 <FormattedMessage
-                  defaultMessage="No schema. See <link>MLflow docs</link> for how to include
+                  defaultMessage="No schema. See <link>QCFlow docs</link> for how to include
                      input and output schema with your model."
                   description="Text for schema table when no schema exists in the model version
                      page"

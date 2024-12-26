@@ -1,4 +1,4 @@
-from mlflow.entities.model_registry import ModelVersion
+from qcflow.entities.model_registry import ModelVersion
 
 
 class ModelVersionSearch(ModelVersion):

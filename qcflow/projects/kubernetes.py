@@ -9,9 +9,9 @@ import kubernetes
 from kubernetes.config.config_exception import ConfigException
 
 import docker
-from mlflow.entities import RunStatus
-from mlflow.exceptions import ExecutionException
-from mlflow.projects.submitted_run import SubmittedRun
+from qcflow.entities import RunStatus
+from qcflow.exceptions import ExecutionException
+from qcflow.projects.submitted_run import SubmittedRun
 
 _logger = logging.getLogger(__name__)
 
@@ -36,8 +36,8 @@ def _get_kubernetes_job_definition(
     timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
     job_name = f"{project_name}-{timestamp}"
     _logger.info("=== Creating Job %s ===", job_name)
-    if os.environ.get("KUBE_MLFLOW_TRACKING_URI") is not None:
-        env_vars["MLFLOW_TRACKING_URI"] = os.environ["KUBE_MLFLOW_TRACKING_URI"]
+    if os.environ.get("KUBE_QCFLOW_TRACKING_URI") is not None:
+        env_vars["QCFLOW_TRACKING_URI"] = os.environ["KUBE_QCFLOW_TRACKING_URI"]
     environment_variables = [{"name": k, "value": v} for k, v in env_vars.items()]
     job_template["metadata"]["name"] = job_name
     job_template["spec"]["template"]["spec"]["containers"][0]["name"] = project_name
@@ -90,11 +90,11 @@ def run_kubernetes_job(
 
 class KubernetesSubmittedRun(SubmittedRun):
     """
-    Instance of SubmittedRun corresponding to a Kubernetes Job run launched to run an MLflow
+    Instance of SubmittedRun corresponding to a Kubernetes Job run launched to run an QCFlow
     project.
 
     Args:
-        mlflow_run_id: ID of the MLflow project run.
+        qcflow_run_id: ID of the QCFlow project run.
         job_name: Kubernetes job name.
         job_namespace: Kubernetes job namespace.
     """
@@ -102,9 +102,9 @@ class KubernetesSubmittedRun(SubmittedRun):
     # How often to poll run status when waiting on a run
     POLL_STATUS_INTERVAL = 5
 
-    def __init__(self, mlflow_run_id, job_name, job_namespace):
+    def __init__(self, qcflow_run_id, job_name, job_namespace):
         super().__init__()
-        self._mlflow_run_id = mlflow_run_id
+        self._qcflow_run_id = qcflow_run_id
         self._job_name = job_name
         self._job_namespace = job_namespace
         self._status = RunStatus.SCHEDULED
@@ -113,7 +113,7 @@ class KubernetesSubmittedRun(SubmittedRun):
 
     @property
     def run_id(self):
-        return self._mlflow_run_id
+        return self._qcflow_run_id
 
     def wait(self):
         while not RunStatus.is_terminated(self._update_status()):

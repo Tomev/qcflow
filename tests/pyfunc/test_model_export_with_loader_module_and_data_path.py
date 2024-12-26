@@ -10,17 +10,17 @@ import sklearn.linear_model
 import sklearn.neighbors
 import yaml
 
-import mlflow
-import mlflow.pyfunc
-import mlflow.pyfunc.model
-import mlflow.sklearn
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, infer_signature
-from mlflow.models.utils import _read_example
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.environment import _mlflow_conda_env
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.model_utils import _get_flavor_configuration
+import qcflow
+import qcflow.pyfunc
+import qcflow.pyfunc.model
+import qcflow.sklearn
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, infer_signature
+from qcflow.models.utils import _read_example
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.environment import _qcflow_conda_env
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.model_utils import _get_flavor_configuration
 
 from tests.helper_functions import _assert_pip_requirements
 
@@ -33,13 +33,13 @@ def _load_pyfunc(path):
 @pytest.fixture
 def pyfunc_custom_env_file(tmp_path):
     conda_env = os.path.join(tmp_path, "conda_env.yml")
-    _mlflow_conda_env(
+    _qcflow_conda_env(
         conda_env,
         additional_pip_deps=[
             "scikit-learn",
             "pytest",
             "cloudpickle",
-            "-e " + os.path.dirname(mlflow.__path__[0]),
+            "-e " + os.path.dirname(qcflow.__path__[0]),
         ],
     )
     return conda_env
@@ -47,12 +47,12 @@ def pyfunc_custom_env_file(tmp_path):
 
 @pytest.fixture
 def pyfunc_custom_env_dict():
-    return _mlflow_conda_env(
+    return _qcflow_conda_env(
         additional_pip_deps=[
             "scikit-learn",
             "pytest",
             "cloudpickle",
-            "-e " + os.path.dirname(mlflow.__path__[0]),
+            "-e " + os.path.dirname(qcflow.__path__[0]),
         ],
     )
 
@@ -84,19 +84,19 @@ def test_model_save_load(sklearn_knn_model, iris_data, tmp_path, model_path):
         pickle.dump(sklearn_knn_model, f)
 
     model_config = Model(run_id="test", artifact_path="testtest")
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=model_path,
         data_path=sk_model_path,
         loader_module=__name__,
         code_paths=[__file__],
-        mlflow_model=model_config,
+        qcflow_model=model_config,
     )
 
     reloaded_model_config = Model.load(os.path.join(model_path, "MLmodel"))
     assert model_config.__dict__ == reloaded_model_config.__dict__
-    assert mlflow.pyfunc.FLAVOR_NAME in reloaded_model_config.flavors
-    assert mlflow.pyfunc.PY_VERSION in reloaded_model_config.flavors[mlflow.pyfunc.FLAVOR_NAME]
-    reloaded_model = mlflow.pyfunc.load_model(model_path)
+    assert qcflow.pyfunc.FLAVOR_NAME in reloaded_model_config.flavors
+    assert qcflow.pyfunc.PY_VERSION in reloaded_model_config.flavors[qcflow.pyfunc.FLAVOR_NAME]
+    reloaded_model = qcflow.pyfunc.load_model(model_path)
     np.testing.assert_array_equal(
         sklearn_knn_model.predict(iris_data[0]), reloaded_model.predict(iris_data[0])
     )
@@ -112,7 +112,7 @@ def test_signature_and_examples_are_saved_correctly(sklearn_knn_model, iris_data
                 with open(tmp.path("skmodel"), "wb") as f:
                     pickle.dump(sklearn_knn_model, f)
                 path = tmp.path("model")
-                mlflow.pyfunc.save_model(
+                qcflow.pyfunc.save_model(
                     path=path,
                     data_path=tmp.path("skmodel"),
                     loader_module=__name__,
@@ -120,12 +120,12 @@ def test_signature_and_examples_are_saved_correctly(sklearn_knn_model, iris_data
                     signature=signature,
                     input_example=example,
                 )
-                mlflow_model = Model.load(path)
-                assert signature == mlflow_model.signature
+                qcflow_model = Model.load(path)
+                assert signature == qcflow_model.signature
                 if example is None:
-                    assert mlflow_model.saved_input_example_info is None
+                    assert qcflow_model.saved_input_example_info is None
                 else:
-                    np.testing.assert_array_equal(_read_example(mlflow_model, path), example)
+                    np.testing.assert_array_equal(_read_example(qcflow_model, path), example)
 
 
 def test_model_log_load(sklearn_knn_model, iris_data, tmp_path):
@@ -134,21 +134,21 @@ def test_model_log_load(sklearn_knn_model, iris_data, tmp_path):
         pickle.dump(sklearn_knn_model, f)
 
     pyfunc_artifact_path = "pyfunc_model"
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model(
             pyfunc_artifact_path,
             data_path=sk_model_path,
             loader_module=__name__,
             code_paths=[__file__],
         )
         pyfunc_model_path = _download_artifact_from_uri(
-            f"runs:/{mlflow.active_run().info.run_id}/{pyfunc_artifact_path}"
+            f"runs:/{qcflow.active_run().info.run_id}/{pyfunc_artifact_path}"
         )
 
     model_config = Model.load(os.path.join(pyfunc_model_path, "MLmodel"))
-    assert mlflow.pyfunc.FLAVOR_NAME in model_config.flavors
-    assert mlflow.pyfunc.PY_VERSION in model_config.flavors[mlflow.pyfunc.FLAVOR_NAME]
-    reloaded_model = mlflow.pyfunc.load_model(pyfunc_model_path)
+    assert qcflow.pyfunc.FLAVOR_NAME in model_config.flavors
+    assert qcflow.pyfunc.PY_VERSION in model_config.flavors[qcflow.pyfunc.FLAVOR_NAME]
+    reloaded_model = qcflow.pyfunc.load_model(pyfunc_model_path)
     assert model_config.to_yaml() == reloaded_model.metadata.to_yaml()
     np.testing.assert_array_equal(
         sklearn_knn_model.predict(iris_data[0]), reloaded_model.predict(iris_data[0])
@@ -161,45 +161,45 @@ def test_model_log_load_no_active_run(sklearn_knn_model, iris_data, tmp_path):
         pickle.dump(sklearn_knn_model, f)
 
     pyfunc_artifact_path = "pyfunc_model"
-    assert mlflow.active_run() is None
-    mlflow.pyfunc.log_model(
+    assert qcflow.active_run() is None
+    qcflow.pyfunc.log_model(
         pyfunc_artifact_path,
         data_path=sk_model_path,
         loader_module=__name__,
         code_paths=[__file__],
     )
     pyfunc_model_path = _download_artifact_from_uri(
-        f"runs:/{mlflow.active_run().info.run_id}/{pyfunc_artifact_path}"
+        f"runs:/{qcflow.active_run().info.run_id}/{pyfunc_artifact_path}"
     )
 
     model_config = Model.load(os.path.join(pyfunc_model_path, "MLmodel"))
-    assert mlflow.pyfunc.FLAVOR_NAME in model_config.flavors
-    assert mlflow.pyfunc.PY_VERSION in model_config.flavors[mlflow.pyfunc.FLAVOR_NAME]
-    reloaded_model = mlflow.pyfunc.load_model(pyfunc_model_path)
+    assert qcflow.pyfunc.FLAVOR_NAME in model_config.flavors
+    assert qcflow.pyfunc.PY_VERSION in model_config.flavors[qcflow.pyfunc.FLAVOR_NAME]
+    reloaded_model = qcflow.pyfunc.load_model(pyfunc_model_path)
     np.testing.assert_array_equal(
         sklearn_knn_model.predict(iris_data[0]), reloaded_model.predict(iris_data[0])
     )
-    mlflow.end_run()
+    qcflow.end_run()
 
 
 def test_save_model_with_unsupported_argument_combinations_throws_exception(model_path):
     with pytest.raises(
         MlflowException, match="Either `loader_module` or `python_model` must be specified"
     ):
-        mlflow.pyfunc.save_model(path=model_path, data_path="/path/to/data")
+        qcflow.pyfunc.save_model(path=model_path, data_path="/path/to/data")
 
 
 def test_log_model_with_unsupported_argument_combinations_throws_exception():
     with (
-        mlflow.start_run(),
+        qcflow.start_run(),
         pytest.raises(
             MlflowException, match="Either `loader_module` or `python_model` must be specified"
         ),
     ):
-        mlflow.pyfunc.log_model("pyfunc_model", data_path="/path/to/data")
+        qcflow.pyfunc.log_model("pyfunc_model", data_path="/path/to/data")
 
 
-def test_log_model_persists_specified_conda_env_file_in_mlflow_model_directory(
+def test_log_model_persists_specified_conda_env_file_in_qcflow_model_directory(
     sklearn_knn_model, tmp_path, pyfunc_custom_env_file
 ):
     sk_model_path = os.path.join(tmp_path, "knn.pkl")
@@ -207,22 +207,22 @@ def test_log_model_persists_specified_conda_env_file_in_mlflow_model_directory(
         pickle.dump(sklearn_knn_model, f)
 
     pyfunc_artifact_path = "pyfunc_model"
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model(
             pyfunc_artifact_path,
             data_path=sk_model_path,
             loader_module=__name__,
             code_paths=[__file__],
             conda_env=pyfunc_custom_env_file,
         )
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
 
     pyfunc_model_path = _download_artifact_from_uri(f"runs:/{run_id}/{pyfunc_artifact_path}")
 
     pyfunc_conf = _get_flavor_configuration(
-        model_path=pyfunc_model_path, flavor_name=mlflow.pyfunc.FLAVOR_NAME
+        model_path=pyfunc_model_path, flavor_name=qcflow.pyfunc.FLAVOR_NAME
     )
-    saved_conda_env_path = os.path.join(pyfunc_model_path, pyfunc_conf[mlflow.pyfunc.ENV]["conda"])
+    saved_conda_env_path = os.path.join(pyfunc_model_path, pyfunc_conf[qcflow.pyfunc.ENV]["conda"])
     assert os.path.exists(saved_conda_env_path)
     assert saved_conda_env_path != pyfunc_custom_env_file
 
@@ -233,7 +233,7 @@ def test_log_model_persists_specified_conda_env_file_in_mlflow_model_directory(
     assert saved_conda_env_parsed == pyfunc_custom_env_parsed
 
 
-def test_log_model_persists_specified_conda_env_dict_in_mlflow_model_directory(
+def test_log_model_persists_specified_conda_env_dict_in_qcflow_model_directory(
     sklearn_knn_model, tmp_path, pyfunc_custom_env_dict
 ):
     sk_model_path = os.path.join(tmp_path, "knn.pkl")
@@ -241,22 +241,22 @@ def test_log_model_persists_specified_conda_env_dict_in_mlflow_model_directory(
         pickle.dump(sklearn_knn_model, f)
 
     pyfunc_artifact_path = "pyfunc_model"
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model(
             pyfunc_artifact_path,
             data_path=sk_model_path,
             loader_module=__name__,
             code_paths=[__file__],
             conda_env=pyfunc_custom_env_dict,
         )
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
 
     pyfunc_model_path = _download_artifact_from_uri(f"runs:/{run_id}/{pyfunc_artifact_path}")
 
     pyfunc_conf = _get_flavor_configuration(
-        model_path=pyfunc_model_path, flavor_name=mlflow.pyfunc.FLAVOR_NAME
+        model_path=pyfunc_model_path, flavor_name=qcflow.pyfunc.FLAVOR_NAME
     )
-    saved_conda_env_path = os.path.join(pyfunc_model_path, pyfunc_conf[mlflow.pyfunc.ENV]["conda"])
+    saved_conda_env_path = os.path.join(pyfunc_model_path, pyfunc_conf[qcflow.pyfunc.ENV]["conda"])
     assert os.path.exists(saved_conda_env_path)
 
     with open(saved_conda_env_path) as f:
@@ -264,7 +264,7 @@ def test_log_model_persists_specified_conda_env_dict_in_mlflow_model_directory(
     assert saved_conda_env_parsed == pyfunc_custom_env_dict
 
 
-def test_log_model_persists_requirements_in_mlflow_model_directory(
+def test_log_model_persists_requirements_in_qcflow_model_directory(
     sklearn_knn_model, tmp_path, pyfunc_custom_env_dict
 ):
     sk_model_path = os.path.join(tmp_path, "knn.pkl")
@@ -272,15 +272,15 @@ def test_log_model_persists_requirements_in_mlflow_model_directory(
         pickle.dump(sklearn_knn_model, f)
 
     pyfunc_artifact_path = "pyfunc_model"
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model(
             pyfunc_artifact_path,
             data_path=sk_model_path,
             loader_module=__name__,
             code_paths=[__file__],
             conda_env=pyfunc_custom_env_dict,
         )
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
 
     pyfunc_model_path = _download_artifact_from_uri(f"runs:/{run_id}/{pyfunc_artifact_path}")
 
@@ -301,15 +301,15 @@ def test_log_model_without_specified_conda_env_uses_default_env_with_expected_de
         pickle.dump(sklearn_knn_model, f)
 
     pyfunc_artifact_path = "pyfunc_model"
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model(
             pyfunc_artifact_path,
             data_path=sk_model_path,
             loader_module=__name__,
             code_paths=[__file__],
         )
-        model_uri = mlflow.get_artifact_uri(pyfunc_artifact_path)
-    _assert_pip_requirements(model_uri, mlflow.pyfunc.get_default_pip_requirements())
+        model_uri = qcflow.get_artifact_uri(pyfunc_artifact_path)
+    _assert_pip_requirements(model_uri, qcflow.pyfunc.get_default_pip_requirements())
 
 
 def test_streamable_model_save_load(tmp_path, model_path):
@@ -331,15 +331,15 @@ def test_streamable_model_save_load(tmp_path, model_path):
         cloudpickle.dump(custom_model, f)
 
     model_config = Model(run_id="test", artifact_path="testtest")
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=model_path,
         data_path=custom_model_path,
         loader_module=__name__,
         code_paths=[__file__],
-        mlflow_model=model_config,
+        qcflow_model=model_config,
         streamable=True,
     )
-    loaded_pyfunc_model = mlflow.pyfunc.load_model(model_uri=model_path)
+    loaded_pyfunc_model = qcflow.pyfunc.load_model(model_uri=model_path)
 
     stream_result = loaded_pyfunc_model.predict_stream("single-input")
     assert isinstance(stream_result, types.GeneratorType)

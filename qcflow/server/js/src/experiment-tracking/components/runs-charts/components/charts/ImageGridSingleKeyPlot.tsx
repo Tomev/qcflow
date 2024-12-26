@@ -1,10 +1,10 @@
 import { LegacyTooltip, useDesignSystemTheme } from '@databricks/design-system';
-import { RunColorPill } from '@mlflow/mlflow/src/experiment-tracking/components/experiment-page/components/RunColorPill';
+import { RunColorPill } from '@qcflow/qcflow/src/experiment-tracking/components/experiment-page/components/RunColorPill';
 import { useMemo } from 'react';
 import { RunsChartsImageCardConfig, RunsChartsCardConfig } from '../../runs-charts.types';
 import { RunsChartsRunData } from '../RunsCharts.common';
 import { EmptyImageGridPlot, IMAGE_GAP_SIZE, ImagePlotWithHistory, getImageSize } from './ImageGridPlot.common';
-import { ImageEntity } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { ImageEntity } from '@qcflow/qcflow/src/experiment-tracking/types';
 
 export const ImageGridSingleKeyPlot = ({
   previewData,

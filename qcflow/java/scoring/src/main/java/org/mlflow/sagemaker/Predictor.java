@@ -1,8 +1,8 @@
-package org.mlflow.sagemaker;
+package org.qcflow.sagemaker;
 
 /**
  * A generic predictor object that provides a uniform interface for model inference. By extending
- * {@link org.mlflow.sagemaker.Predictor}, models of a specific flavor can expose their inference
+ * {@link org.qcflow.sagemaker.Predictor}, models of a specific flavor can expose their inference
  * routines for use by generic tools, such as model containers
  */
 public interface Predictor {

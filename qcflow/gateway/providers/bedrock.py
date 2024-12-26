@@ -2,16 +2,16 @@ import json
 import time
 from enum import Enum
 
-from mlflow.gateway.config import AmazonBedrockConfig, AWSIdAndKey, AWSRole, RouteConfig
-from mlflow.gateway.constants import (
-    MLFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
+from qcflow.gateway.config import AmazonBedrockConfig, AWSIdAndKey, AWSRole, RouteConfig
+from qcflow.gateway.constants import (
+    QCFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
 )
-from mlflow.gateway.exceptions import AIGatewayConfigException, AIGatewayException
-from mlflow.gateway.providers.anthropic import AnthropicAdapter
-from mlflow.gateway.providers.base import BaseProvider, ProviderAdapter
-from mlflow.gateway.providers.cohere import CohereAdapter
-from mlflow.gateway.providers.utils import rename_payload_keys
-from mlflow.gateway.schemas import completions
+from qcflow.gateway.exceptions import AIGatewayConfigException, AIGatewayException
+from qcflow.gateway.providers.anthropic import AnthropicAdapter
+from qcflow.gateway.providers.base import BaseProvider, ProviderAdapter
+from qcflow.gateway.providers.cohere import CohereAdapter
+from qcflow.gateway.providers.utils import rename_payload_keys
+from qcflow.gateway.schemas import completions
 
 AWS_BEDROCK_ANTHROPIC_MAXIMUM_MAX_TOKENS = 8191
 
@@ -32,7 +32,7 @@ class AmazonBedrockAnthropicAdapter(AnthropicAdapter):
             payload.setdefault("stop_sequences", []).append("\n\nHuman:")
 
         payload["max_tokens_to_sample"] = min(
-            payload.get("max_tokens_to_sample", MLFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS),
+            payload.get("max_tokens_to_sample", QCFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS),
             AWS_BEDROCK_ANTHROPIC_MAXIMUM_MAX_TOKENS,
         )
 

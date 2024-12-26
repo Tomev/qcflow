@@ -2,9 +2,9 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities import SourceType
-from mlflow.tracking.context.default_context import DefaultRunContext
-from mlflow.utils.mlflow_tags import MLFLOW_SOURCE_NAME, MLFLOW_SOURCE_TYPE, MLFLOW_USER
+from qcflow.entities import SourceType
+from qcflow.tracking.context.default_context import DefaultRunContext
+from qcflow.utils.qcflow_tags import QCFLOW_SOURCE_NAME, QCFLOW_SOURCE_TYPE, QCFLOW_USER
 
 MOCK_SCRIPT_NAME = "/path/to/script.py"
 
@@ -25,7 +25,7 @@ def test_default_run_context_tags(patch_script_name):
     mock_user = mock.Mock()
     with mock.patch("getpass.getuser", return_value=mock_user):
         assert DefaultRunContext().tags() == {
-            MLFLOW_USER: mock_user,
-            MLFLOW_SOURCE_NAME: MOCK_SCRIPT_NAME,
-            MLFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.LOCAL),
+            QCFLOW_USER: mock_user,
+            QCFLOW_SOURCE_NAME: MOCK_SCRIPT_NAME,
+            QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.LOCAL),
         }

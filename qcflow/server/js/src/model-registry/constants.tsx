@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Tag } from '@databricks/design-system';
-// @ts-expect-error TS(2306): File '/Users/elad.ossadon/universe4/mlflow/web/js/... Remove this comment to see the full error message
+// @ts-expect-error TS(2306): File '/Users/elad.ossadon/universe4/qcflow/web/js/... Remove this comment to see the full error message
 // eslint-disable-next-line
 import * as overrides from './constant-overrides'; // eslint-disable-line import/no-namespace
 import { FormattedMessage } from 'react-intl';
@@ -31,20 +31,20 @@ export const StageLabels = {
 
 export const StageTagComponents = {
   [Stages.NONE]: (
-    <Tag componentId="codegen_mlflow_app_src_model-registry_constants.tsx_37">{StageLabels[Stages.NONE]}</Tag>
+    <Tag componentId="codegen_qcflow_app_src_model-registry_constants.tsx_37">{StageLabels[Stages.NONE]}</Tag>
   ),
   [Stages.STAGING]: (
-    <Tag componentId="codegen_mlflow_app_src_model-registry_constants.tsx_38" color="lemon">
+    <Tag componentId="codegen_qcflow_app_src_model-registry_constants.tsx_38" color="lemon">
       {StageLabels[Stages.STAGING]}
     </Tag>
   ),
   [Stages.PRODUCTION]: (
-    <Tag componentId="codegen_mlflow_app_src_model-registry_constants.tsx_39" color="lime">
+    <Tag componentId="codegen_qcflow_app_src_model-registry_constants.tsx_39" color="lime">
       {StageLabels[Stages.PRODUCTION]}
     </Tag>
   ),
   [Stages.ARCHIVED]: (
-    <Tag componentId="codegen_mlflow_app_src_model-registry_constants.tsx_40" color="charcoal">
+    <Tag componentId="codegen_qcflow_app_src_model-registry_constants.tsx_40" color="charcoal">
       {StageLabels[Stages.ARCHIVED]}
     </Tag>
   ),
@@ -124,5 +124,5 @@ export const archiveExistingVersionToolTipText = (currentStage: any) => (
   />
 );
 
-export const mlflowAliasesLearnMoreLink =
-  'https://mlflow.org/docs/latest/model-registry.html#using-registered-model-aliases';
+export const qcflowAliasesLearnMoreLink =
+  'https://qcflow.org/docs/latest/model-registry.html#using-registered-model-aliases';

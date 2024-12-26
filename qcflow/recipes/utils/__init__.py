@@ -4,10 +4,10 @@ import pathlib
 import posixpath
 from typing import Any, Optional
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
-from mlflow.utils.file_utils import read_yaml, render_and_merge_yaml
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.utils.file_utils import read_yaml, render_and_merge_yaml
 
 _RECIPE_CONFIG_FILE_NAME = "recipe.yaml"
 _RECIPE_PROFILE_DIR = "profiles"
@@ -101,7 +101,7 @@ def get_recipe_root_path() -> str:
     Returns:
         The absolute path of the recipe root directory on the local filesystem.
     """
-    # In the release version of MLflow Recipes, each recipe will be its own git repository.
+    # In the release version of QCFlow Recipes, each recipe will be its own git repository.
     # To improve developer velocity for now, we choose to treat a recipe as a directory, which
     # may be a subdirectory of a git repo. The logic for resolving the repository root for
     # development purposes finds the first `recipe.yaml` file by traversing up the directory

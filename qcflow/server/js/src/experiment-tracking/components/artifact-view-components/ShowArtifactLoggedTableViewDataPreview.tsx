@@ -1,6 +1,6 @@
 import { Button, CloseIcon, Typography, useDesignSystemTheme } from '@databricks/design-system';
 import { Global } from '@emotion/react';
-import { FormattedJsonDisplay } from '@mlflow/mlflow/src/common/components/JsonFormatting';
+import { FormattedJsonDisplay } from '@qcflow/qcflow/src/common/components/JsonFormatting';
 import { isUndefined } from 'lodash';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -81,7 +81,7 @@ export const ShowArtifactLoggedTableViewDataPreview = ({
               />
             </Typography.Title>
             <Button
-              componentId="mlflow.run.artifact_view.preview_close"
+              componentId="qcflow.run.artifact_view.preview_close"
               onClick={() => onClose()}
               icon={<CloseIcon />}
             />

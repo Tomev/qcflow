@@ -2,7 +2,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from mlflow.data.dataset_source import DatasetSource
+from qcflow.data.dataset_source import DatasetSource
 
 
 class CodeDatasetSource(DatasetSource):

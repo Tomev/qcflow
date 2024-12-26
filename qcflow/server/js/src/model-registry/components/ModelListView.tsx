@@ -85,7 +85,7 @@ export class ModelListViewImpl extends React.Component<ModelListViewImplProps, M
   }
 
   componentDidMount() {
-    const pageTitle = 'MLflow Models';
+    const pageTitle = 'QCFlow Models';
     Utils.updatePageTitle(pageTitle);
   }
 
@@ -176,7 +176,7 @@ export class ModelListViewImpl extends React.Component<ModelListViewImplProps, M
               values={{
                 link: (chunks) => (
                   <Typography.Link
-                    componentId="codegen_mlflow_app_src_model-registry_components_modellistview.tsx_244"
+                    componentId="codegen_qcflow_app_src_model-registry_components_modellistview.tsx_244"
                     href={ModelListViewImpl.getLearnMoreLinkUrl()}
                     openInNewTab
                   >
@@ -209,7 +209,7 @@ export class ModelListViewImpl extends React.Component<ModelListViewImplProps, M
               <div css={{ flex: 1 }}>{shouldShowModelsNextUI() && <ModelsNextUIToggleSwitch />}</div>
               <div>
                 <CursorPagination
-                  componentId="codegen_mlflow_app_src_model-registry_components_modellistview.tsx_305"
+                  componentId="codegen_qcflow_app_src_model-registry_components_modellistview.tsx_305"
                   hasNextPage={Boolean(nextPageToken)}
                   hasPreviousPage={currentPage > 1}
                   onNextPage={this.handleClickNext}

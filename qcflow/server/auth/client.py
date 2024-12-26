@@ -1,5 +1,5 @@
-from mlflow.server.auth.entities import ExperimentPermission, RegisteredModelPermission, User
-from mlflow.server.auth.routes import (
+from qcflow.server.auth.entities import ExperimentPermission, RegisteredModelPermission, User
+from qcflow.server.auth.routes import (
     CREATE_EXPERIMENT_PERMISSION,
     CREATE_REGISTERED_MODEL_PERMISSION,
     CREATE_USER,
@@ -14,15 +14,15 @@ from mlflow.server.auth.routes import (
     UPDATE_USER_ADMIN,
     UPDATE_USER_PASSWORD,
 )
-from mlflow.utils.credentials import get_default_host_creds
-from mlflow.utils.rest_utils import http_request_safe
+from qcflow.utils.credentials import get_default_host_creds
+from qcflow.utils.rest_utils import http_request_safe
 
 
 class AuthServiceClient:
     """
-    Client of an MLflow Tracking Server that enabled the default basic authentication plugin.
-    It is recommended to use :py:func:`mlflow.server.get_app_client()` to instantiate this class.
-    See https://mlflow.org/docs/latest/auth.html for more information.
+    Client of an QCFlow Tracking Server that enabled the default basic authentication plugin.
+    It is recommended to use :py:func:`qcflow.server.get_app_client()` to instantiate this class.
+    See https://qcflow.org/docs/latest/auth.html for more information.
     """
 
     def __init__(self, tracking_uri: str):
@@ -46,15 +46,15 @@ class AuthServiceClient:
             password: The user's password. Must not be empty string.
 
         Raises:
-            mlflow.exceptions.RestException: if the username is already taken.
+            qcflow.exceptions.RestException: if the username is already taken.
 
         Returns:
-            A single :py:class:`mlflow.server.auth.entities.User` object.
+            A single :py:class:`qcflow.server.auth.entities.User` object.
 
         .. code-block:: python
             :caption: Example
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             user = client.create_user("newuser", "newpassword")
@@ -86,20 +86,20 @@ class AuthServiceClient:
             username: The username.
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist
+            qcflow.exceptions.RestException: if the user does not exist
 
         Returns:
-            A single :py:class:`mlflow.server.auth.entities.User` object.
+            A single :py:class:`qcflow.server.auth.entities.User` object.
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -134,17 +134,17 @@ class AuthServiceClient:
             password: The new password.
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist
+            qcflow.exceptions.RestException: if the user does not exist
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -166,17 +166,17 @@ class AuthServiceClient:
             is_admin: The new admin status.
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist
+            qcflow.exceptions.RestException: if the user does not exist
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -197,17 +197,17 @@ class AuthServiceClient:
             username: The username.
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist
+            qcflow.exceptions.RestException: if the user does not exist
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -231,22 +231,22 @@ class AuthServiceClient:
                 "NO_PERMISSIONS".
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist, or a permission already
+            qcflow.exceptions.RestException: if the user does not exist, or a permission already
                 exists for this experiment user pair, or if the permission is invalid. Does not
                 require ``experiment_id`` to be an existing experiment.
 
         Returns:
-            A single :py:class:`mlflow.server.auth.entities.ExperimentPermission` object.
+            A single :py:class:`qcflow.server.auth.entities.ExperimentPermission` object.
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -279,23 +279,23 @@ class AuthServiceClient:
             username: The username.
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist,
+            qcflow.exceptions.RestException: if the user does not exist,
                 or no permission exists for this experiment user pair.
                 Note that the default permission will still be effective even if
                 no permission exists.
 
         Returns:
-            A single :py:class:`mlflow.server.auth.entities.ExperimentPermission` object.
+            A single :py:class:`qcflow.server.auth.entities.ExperimentPermission` object.
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -330,18 +330,18 @@ class AuthServiceClient:
                 "NO_PERMISSIONS".
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist, or no permission exists for
+            qcflow.exceptions.RestException: if the user does not exist, or no permission exists for
                 this experiment user pair, or if the permission is invalid
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -363,7 +363,7 @@ class AuthServiceClient:
             username: The username.
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist, or no permission exists for
+            qcflow.exceptions.RestException: if the user does not exist, or no permission exists for
                 this experiment user pair, or if the permission is invalid.
                 Note that the default permission will still be effective even
                 after the permission has been deleted.
@@ -372,12 +372,12 @@ class AuthServiceClient:
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -401,13 +401,13 @@ class AuthServiceClient:
                 "NO_PERMISSIONS".
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist,
+            qcflow.exceptions.RestException: if the user does not exist,
                 or a permission already exists for this registered model user pair,
                 or if the permission is invalid.
                 Does not require ``name`` to be an existing registered model.
 
         Returns:
-            A single :py:class:`mlflow.server.auth.entities.RegisteredModelPermission` object.
+            A single :py:class:`qcflow.server.auth.entities.RegisteredModelPermission` object.
         """
         resp = self._request(
             CREATE_REGISTERED_MODEL_PERMISSION,
@@ -425,22 +425,22 @@ class AuthServiceClient:
             username: The username.
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not
+            qcflow.exceptions.RestException: if the user does not
                 exist, or no permission exists for this registered model user pair. Note that the
                 default permission will still be effective even if no permission exists.
 
         Returns:
-             A single :py:class:`mlflow.server.auth.entities.RegisteredModelPermission` object.
+             A single :py:class:`qcflow.server.auth.entities.RegisteredModelPermission` object.
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -476,18 +476,18 @@ class AuthServiceClient:
                 "NO_PERMISSIONS".
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist, or no permission exists for
+            qcflow.exceptions.RestException: if the user does not exist, or no permission exists for
                 this registered model user pair, or if the permission is invalid.
 
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")
@@ -509,7 +509,7 @@ class AuthServiceClient:
             username: The username.
 
         Raises:
-            mlflow.exceptions.RestException: if the user does not exist,
+            qcflow.exceptions.RestException: if the user does not exist,
                 or no permission exists for this registered model user pair,
                 or if the permission is invalid.
                 Note that the default permission will still be effective even
@@ -518,12 +518,12 @@ class AuthServiceClient:
         .. code-block:: bash
             :caption: Example
 
-            export MLFLOW_TRACKING_USERNAME=admin
-            export MLFLOW_TRACKING_PASSWORD=password
+            export QCFLOW_TRACKING_USERNAME=admin
+            export QCFLOW_TRACKING_PASSWORD=password
 
         .. code-block:: python
 
-            from mlflow.server.auth.client import AuthServiceClient
+            from qcflow.server.auth.client import AuthServiceClient
 
             client = AuthServiceClient("tracking_uri")
             client.create_user("newuser", "newpassword")

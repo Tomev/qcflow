@@ -5,8 +5,8 @@ from enum import Enum
 
 from opentelemetry import trace as trace_api
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
 class SpanStatusCode(str, Enum):
@@ -25,7 +25,7 @@ class SpanStatus:
 
     Args:
         status_code: The status code of the span or the trace. This must be one of the
-            values of the :py:class:`mlflow.entities.SpanStatusCode` enum or a string
+            values of the :py:class:`qcflow.entities.SpanStatusCode` enum or a string
             representation of it like "OK", "ERROR".
         description: Description of the status. This should be only set when the status
             is ERROR, otherwise it will be ignored.
@@ -51,7 +51,7 @@ class SpanStatus:
 
     def to_otel_status(self) -> trace_api.Status:
         """
-        Convert :py:class:`mlflow.entities.SpanStatus` object to OpenTelemetry status object.
+        Convert :py:class:`qcflow.entities.SpanStatus` object to OpenTelemetry status object.
 
         :meta private:
         """

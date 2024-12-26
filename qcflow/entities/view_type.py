@@ -1,4 +1,4 @@
-from mlflow.protos import service_pb2
+from qcflow.protos import service_pb2
 
 
 class ViewType:

@@ -26,7 +26,7 @@ class Timer:
 
     .. code-block:: python
 
-        from mlflow.utils.time import Timer
+        from qcflow.utils.time import Timer
 
         with Timer() as t:
             ...

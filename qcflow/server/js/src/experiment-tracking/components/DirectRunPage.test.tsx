@@ -1,5 +1,5 @@
 import { Provider } from 'react-redux';
-import { useLocation, createMLflowRoutePath } from '../../common/utils/RoutingUtils';
+import { useLocation, createQCFlowRoutePath } from '../../common/utils/RoutingUtils';
 import { testRoute, TestRouter } from '../../common/utils/RoutingTestUtils';
 import configureStore from 'redux-mock-store';
 import { ErrorWrapper } from '../../common/utils/ErrorWrapper';
@@ -38,20 +38,20 @@ describe('DirectRunPage', () => {
     renderWithIntl(
       <Provider store={mockStore}>
         <TestRouter
-          initialEntries={[createMLflowRoutePath(`/${runUuid}`)]}
+          initialEntries={[createQCFlowRoutePath(`/${runUuid}`)]}
           routes={[
             testRoute(
               <>
                 <TestComponent />
               </>,
-              createMLflowRoutePath('/experiments/:experimentId/runs/:runId'),
+              createQCFlowRoutePath('/experiments/:experimentId/runs/:runId'),
             ),
             testRoute(
               <>
                 <TestComponent />
                 <DirectRunPage />
               </>,
-              createMLflowRoutePath('/:runUuid'),
+              createQCFlowRoutePath('/:runUuid'),
             ),
           ]}
         />
@@ -79,7 +79,7 @@ describe('DirectRunPage', () => {
       '321-run-id',
     );
 
-    expect(mockLocation.pathname).toBe(createMLflowRoutePath('/experiments/123-exp-id/runs/321-run-id'));
+    expect(mockLocation.pathname).toBe(createQCFlowRoutePath('/experiments/123-exp-id/runs/321-run-id'));
   });
 
   test('properly dispatches redux actions for fetching the run', async () => {

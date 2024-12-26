@@ -2,7 +2,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from mlflow.gateway.app import create_app_from_path
+from qcflow.gateway.app import create_app_from_path
 
 # This HTML was obtained by sending a request to the `/docs` route and saving the response.
 # To hide the "try it out" button, we set `supportedSubmitMethods` to an empty list.
@@ -21,7 +21,7 @@ API_HTML = """
       rel="shortcut icon"
       href="../_static/favicon.ico"
     />
-    <title>MLflow AI Gateway - Swagger UI</title>
+    <title>QCFlow AI Gateway - Swagger UI</title>
   </head>
   <body>
     <div id="swagger-ui"></div>

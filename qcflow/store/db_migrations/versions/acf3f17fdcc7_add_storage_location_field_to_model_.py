@@ -7,7 +7,7 @@ Create Date: 2023-10-23 15:26:53.062080
 """
 from alembic import op
 import sqlalchemy as sa
-from mlflow.store.model_registry.dbmodels.models import SqlModelVersion
+from qcflow.store.model_registry.dbmodels.models import SqlModelVersion
 
 
 # revision identifiers, used by Alembic.

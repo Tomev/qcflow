@@ -27,7 +27,7 @@ export const ModelVersionViewAliasEditor = ({
       {EditAliasesModal}
       {aliases.length < 1 ? (
         <Button
-          componentId="codegen_mlflow_app_src_model-registry_components_aliases_modelversionviewaliaseditor.tsx_29"
+          componentId="codegen_qcflow_app_src_model-registry_components_aliases_modelversionviewaliaseditor.tsx_29"
           size="small"
           type="link"
           onClick={onAddEdit}
@@ -41,7 +41,7 @@ export const ModelVersionViewAliasEditor = ({
             <ModelVersionAliasTag compact value={alias} key={alias} />
           ))}
           <Button
-            componentId="codegen_mlflow_app_src_model-registry_components_aliases_modelversionviewaliaseditor.tsx_37"
+            componentId="codegen_qcflow_app_src_model-registry_components_aliases_modelversionviewaliaseditor.tsx_37"
             size="small"
             icon={<PencilIcon />}
             onClick={onAddEdit}

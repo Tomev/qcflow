@@ -6,7 +6,7 @@ Create Date: 2024-04-27 12:29:25.178685
 
 """
 from alembic import op
-from mlflow.store.tracking.dbmodels.models import SqlTraceInfo, SqlTraceRequestMetadata, SqlTraceTag
+from qcflow.store.tracking.dbmodels.models import SqlTraceInfo, SqlTraceRequestMetadata, SqlTraceTag
 import sqlalchemy as sa
 
 

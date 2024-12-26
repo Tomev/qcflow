@@ -1,6 +1,6 @@
-package org.mlflow.tracking.creds;
+package org.qcflow.tracking.creds;
 
-/** Credentials to talk to a Databricks-hosted MLflow server. */
+/** Credentials to talk to a Databricks-hosted QCFlow server. */
 public final class DatabricksMlflowHostCreds extends BasicMlflowHostCreds {
 
   public DatabricksMlflowHostCreds(String host, String username, String password) {

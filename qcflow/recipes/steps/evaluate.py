@@ -8,14 +8,14 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Any
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.recipes.cards import BaseCard
-from mlflow.recipes.step import BaseStep, StepClass
-from mlflow.recipes.steps.train import TrainStep
-from mlflow.recipes.utils.execution import get_step_output_path
-from mlflow.recipes.utils.metrics import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.recipes.cards import BaseCard
+from qcflow.recipes.step import BaseStep, StepClass
+from qcflow.recipes.steps.train import TrainStep
+from qcflow.recipes.utils.execution import get_step_output_path
+from qcflow.recipes.utils.metrics import (
     _get_builtin_metrics,
     _get_custom_metrics,
     _get_extended_task,
@@ -24,16 +24,16 @@ from mlflow.recipes.utils.metrics import (
     _load_custom_metrics,
     transform_multiclass_metric,
 )
-from mlflow.recipes.utils.step import get_merged_eval_metrics, validate_classification_config
-from mlflow.recipes.utils.tracking import (
+from qcflow.recipes.utils.step import get_merged_eval_metrics, validate_classification_config
+from qcflow.recipes.utils.tracking import (
     TrackingConfig,
     apply_recipe_tracking_config,
     get_recipe_tracking_config,
     get_run_tags_env_vars,
 )
-from mlflow.tracking.fluent import _get_experiment_id, _set_experiment_primary_metric
-from mlflow.utils.databricks_utils import get_databricks_env_vars, get_databricks_run_url
-from mlflow.utils.string_utils import strip_prefix
+from qcflow.tracking.fluent import _get_experiment_id, _set_experiment_primary_metric
+from qcflow.utils.databricks_utils import get_databricks_env_vars, get_databricks_run_url
+from qcflow.utils.string_utils import strip_prefix
 
 _logger = logging.getLogger(__name__)
 
@@ -110,7 +110,7 @@ class EvaluateStep(BaseStep):
             if metric_val is None:
                 raise MlflowException(
                     f"The metric {metric_name} is defined in the recipe's validation criteria"
-                    " but was not returned from mlflow evaluation.",
+                    " but was not returned from qcflow evaluation.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
             greater_is_better = self.evaluation_metrics[metric_name].greater_is_better
@@ -188,7 +188,7 @@ class EvaluateStep(BaseStep):
                 exp_id, f"test_{self.primary_metric}", primary_metric_greater_is_better
             )
 
-            with mlflow.start_run(run_id=run_id):
+            with qcflow.start_run(run_id=run_id):
                 eval_metrics = {}
                 for dataset_name, dataset, evaluator_config in (
                     (
@@ -211,7 +211,7 @@ class EvaluateStep(BaseStep):
                 ):
                     if self.extended_task == "classification/binary":
                         evaluator_config["pos_label"] = self.positive_class
-                    eval_result = mlflow.evaluate(
+                    eval_result = qcflow.evaluate(
                         model=model_uri,
                         data=dataset,
                         targets=self.target_col,
@@ -265,9 +265,9 @@ class EvaluateStep(BaseStep):
         to the current evaluate step state.
 
         Args:
-            run_id: The ID of the MLflow Run to which to log model evaluation results.
+            run_id: The ID of the QCFlow Run to which to log model evaluation results.
             model_uri: The URI of the model being evaluated.
-            eval_metrics: The evaluation result keyed by dataset name from `mlflow.evaluate`.
+            eval_metrics: The evaluation result keyed by dataset name from `qcflow.evaluate`.
             validation_results: A list of `MetricValidationResult` instances.
             output_directory: Output directory used by the evaluate step.
         """
@@ -441,29 +441,29 @@ class EvaluateStep(BaseStep):
             "VALIDATION_STATUS", f"**Validation status:** `{self.model_validation_status}`"
         )
         run_url = get_databricks_run_url(
-            tracking_uri=mlflow.get_tracking_uri(),
+            tracking_uri=qcflow.get_tracking_uri(),
             run_id=run_id,
         )
         model_uri = f"runs:/{run_id}/train/{TrainStep.MODEL_ARTIFACT_RELATIVE_PATH}"
         model_url = get_databricks_run_url(
-            tracking_uri=mlflow.get_tracking_uri(),
+            tracking_uri=qcflow.get_tracking_uri(),
             run_id=run_id,
             artifact_path=f"train/{TrainStep.MODEL_ARTIFACT_RELATIVE_PATH}",
         )
 
         if run_url is not None:
             run_summary_card_tab.add_html(
-                "RUN_ID", f"<b>MLflow Run ID:</b> <a href={run_url}>{run_id}</a><br><br>"
+                "RUN_ID", f"<b>QCFlow Run ID:</b> <a href={run_url}>{run_id}</a><br><br>"
             )
         else:
-            run_summary_card_tab.add_markdown("RUN_ID", f"**MLflow Run ID:** `{run_id}`")
+            run_summary_card_tab.add_markdown("RUN_ID", f"**QCFlow Run ID:** `{run_id}`")
 
         if model_url is not None:
             run_summary_card_tab.add_html(
-                "MODEL_URI", f"<b>MLflow Model URI:</b> <a href={model_url}>{model_uri}</a>"
+                "MODEL_URI", f"<b>QCFlow Model URI:</b> <a href={model_url}>{model_uri}</a>"
             )
         else:
-            run_summary_card_tab.add_markdown("MODEL_URI", f"**MLflow Model URI:** `{model_uri}`")
+            run_summary_card_tab.add_markdown("MODEL_URI", f"**QCFlow Model URI:** `{model_uri}`")
 
         return card
 

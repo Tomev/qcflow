@@ -40,7 +40,7 @@ class CreateExperimentFormComponent extends Component<Props> {
               required: true,
               message: this.props.intl.formatMessage({
                 defaultMessage: 'Please input a new name for the new experiment.',
-                description: 'Error message for name requirement in create experiment for MLflow',
+                description: 'Error message for name requirement in create experiment for QCFlow',
               }),
             },
             {
@@ -49,7 +49,7 @@ class CreateExperimentFormComponent extends Component<Props> {
           ]}
         >
           <Input
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_modals_createexperimentform.tsx_51"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_modals_createexperimentform.tsx_51"
             placeholder={this.props.intl.formatMessage({
               defaultMessage: 'Input an experiment name',
               description: 'Input placeholder to enter experiment name for create experiment',
@@ -70,7 +70,7 @@ class CreateExperimentFormComponent extends Component<Props> {
           ]}
         >
           <Input
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_modals_createexperimentform.tsx_71"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_modals_createexperimentform.tsx_71"
             placeholder={this.props.intl.formatMessage({
               defaultMessage: 'Input an artifact location (optional)',
               description: 'Input placeholder to enter artifact location for create experiment',

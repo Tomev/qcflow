@@ -5,25 +5,25 @@ import posixpath
 import urllib.parse
 from mimetypes import guess_type
 
-from mlflow.entities import FileInfo
-from mlflow.environment_variables import (
-    MLFLOW_ENABLE_MULTIPART_UPLOAD,
-    MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
-    MLFLOW_S3_UPLOAD_EXTRA_ARGS,
+from qcflow.entities import FileInfo
+from qcflow.environment_variables import (
+    QCFLOW_ENABLE_MULTIPART_UPLOAD,
+    QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
+    QCFLOW_S3_UPLOAD_EXTRA_ARGS,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
-from mlflow.store.artifact.artifact_repo import _retry_with_new_creds
-from mlflow.store.artifact.cloud_artifact_repo import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
+from qcflow.store.artifact.artifact_repo import _retry_with_new_creds
+from qcflow.store.artifact.cloud_artifact_repo import (
     CloudArtifactRepository,
     _complete_futures,
     _compute_num_chunks,
     _validate_chunk_size_aws,
 )
-from mlflow.store.artifact.s3_artifact_repo import _get_s3_client
-from mlflow.utils.file_utils import read_chunk
-from mlflow.utils.request_utils import cloud_storage_http_request
-from mlflow.utils.rest_utils import augmented_raise_for_status
+from qcflow.store.artifact.s3_artifact_repo import _get_s3_client
+from qcflow.utils.file_utils import read_chunk
+from qcflow.utils.request_utils import cloud_storage_http_request
+from qcflow.utils.rest_utils import augmented_raise_for_status
 
 _logger = logging.getLogger(__name__)
 _BUCKET_REGION = "BucketRegion"
@@ -141,7 +141,7 @@ class OptimizedS3ArtifactRepository(CloudArtifactRepository):
 
     @staticmethod
     def get_s3_file_upload_extra_args():
-        s3_file_upload_extra_args = MLFLOW_S3_UPLOAD_EXTRA_ARGS.get()
+        s3_file_upload_extra_args = QCFLOW_S3_UPLOAD_EXTRA_ARGS.get()
         if s3_file_upload_extra_args:
             return json.loads(s3_file_upload_extra_args)
         else:
@@ -187,8 +187,8 @@ class OptimizedS3ArtifactRepository(CloudArtifactRepository):
         dest_path = posixpath.join(self.bucket_path, artifact_file_path)
         key = posixpath.normpath(dest_path)
         if (
-            MLFLOW_ENABLE_MULTIPART_UPLOAD.get()
-            and os.path.getsize(src_file_path) > MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
+            QCFLOW_ENABLE_MULTIPART_UPLOAD.get()
+            and os.path.getsize(src_file_path) > QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
         ):
             self._multipart_upload(cloud_credential_info, src_file_path, self.bucket, key)
         else:
@@ -200,8 +200,8 @@ class OptimizedS3ArtifactRepository(CloudArtifactRepository):
         response = s3_client.create_multipart_upload(Bucket=bucket, Key=key)
         upload_id = response["UploadId"]
 
-        num_parts = _compute_num_chunks(local_file, MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get())
-        _validate_chunk_size_aws(MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get())
+        num_parts = _compute_num_chunks(local_file, QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get())
+        _validate_chunk_size_aws(QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get())
 
         # define helper functions for uploading data
         def _upload_part(part_number, local_file, start_byte, size):
@@ -231,13 +231,13 @@ class OptimizedS3ArtifactRepository(CloudArtifactRepository):
             futures = {}
             for index in range(num_parts):
                 part_number = index + 1
-                start_byte = index * MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
+                start_byte = index * QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get()
                 future = self.chunk_thread_pool.submit(
                     _upload_part,
                     part_number=part_number,
                     local_file=local_file,
                     start_byte=start_byte,
-                    size=MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get(),
+                    size=QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE.get(),
                 )
                 futures[future] = part_number
 

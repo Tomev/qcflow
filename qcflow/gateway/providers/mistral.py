@@ -1,10 +1,10 @@
 import time
 from typing import Any
 
-from mlflow.gateway.config import MistralConfig, RouteConfig
-from mlflow.gateway.providers.base import BaseProvider, ProviderAdapter
-from mlflow.gateway.providers.utils import send_request
-from mlflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.config import MistralConfig, RouteConfig
+from qcflow.gateway.providers.base import BaseProvider, ProviderAdapter
+from qcflow.gateway.providers.utils import send_request
+from qcflow.gateway.schemas import chat, completions, embeddings
 
 
 class MistralAdapter(ProviderAdapter):

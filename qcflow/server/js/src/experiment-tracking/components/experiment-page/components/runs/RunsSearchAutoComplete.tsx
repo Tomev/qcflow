@@ -44,7 +44,7 @@ export type RunsSearchAutoCompleteProps = {
 };
 
 /**
- * Autocomplete component that provides suggestions for MLflow search entity names.
+ * Autocomplete component that provides suggestions for QCFlow search entity names.
  */
 export const RunsSearchAutoComplete = (props: RunsSearchAutoCompleteProps) => {
   const { runsData, searchFilter, requestError, onSearchFilterChange, onClear } = props;
@@ -254,7 +254,7 @@ export const RunsSearchAutoComplete = (props: RunsSearchAutoCompleteProps) => {
         )}
       >
         <Input
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_runssearchautocomplete.tsx_236"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_runssearchautocomplete.tsx_236"
           value={text}
           prefix={
             <SearchIcon
@@ -277,7 +277,7 @@ export const RunsSearchAutoComplete = (props: RunsSearchAutoCompleteProps) => {
             <div css={{ display: 'flex', gap: 4, alignItems: 'center' }}>
               {text && (
                 <Button
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_runssearchautocomplete.tsx_212"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_runssearchautocomplete.tsx_212"
                   onClick={onClear}
                   type="link"
                   data-test-id="clear-button"
@@ -287,7 +287,7 @@ export const RunsSearchAutoComplete = (props: RunsSearchAutoCompleteProps) => {
               )}
               {quickRegexpFilter ? (
                 <Tooltip
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_runssearchautocomplete.tsx_310"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_runssearchautocomplete.tsx_310"
                   content={
                     <FormattedMessage
                       defaultMessage="Using regular expression quick filter. The following query will be used: {filterSample}"
@@ -336,7 +336,7 @@ export const RunsSearchAutoComplete = (props: RunsSearchAutoCompleteProps) => {
                   <Button
                     size="small"
                     ref={tooltipIcon}
-                    componentId="mlflow.experiment_page.search_filter.tooltip"
+                    componentId="qcflow.experiment_page.search_filter.tooltip"
                     type="link"
                     css={{ marginLeft: -theme.spacing.xs, marginRight: -theme.spacing.xs }}
                     icon={

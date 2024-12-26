@@ -1,9 +1,9 @@
 import logging
 
-from mlflow.tracking.context.abstract_context import RunContextProvider
-from mlflow.tracking.context.default_context import _get_main_file
-from mlflow.utils.git_utils import get_git_commit
-from mlflow.utils.mlflow_tags import MLFLOW_GIT_COMMIT
+from qcflow.tracking.context.abstract_context import RunContextProvider
+from qcflow.tracking.context.default_context import _get_main_file
+from qcflow.utils.git_utils import get_git_commit
+from qcflow.utils.qcflow_tags import QCFLOW_GIT_COMMIT
 
 _logger = logging.getLogger(__name__)
 
@@ -29,4 +29,4 @@ class GitRunContext(RunContextProvider):
         return self._source_version is not None
 
     def tags(self):
-        return {MLFLOW_GIT_COMMIT: self._source_version}
+        return {QCFLOW_GIT_COMMIT: self._source_version}

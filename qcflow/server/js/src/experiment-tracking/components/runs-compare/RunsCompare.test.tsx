@@ -7,7 +7,7 @@ import {
   within,
   waitFor,
   cleanup,
-} from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+} from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import { ImageEntity, MetricEntitiesByName } from '../../types';
 import { ExperimentPageUIStateContextProvider } from '../experiment-page/contexts/ExperimentPageUIStateContext';
 import { createExperimentPageUIState, ExperimentPageUIState } from '../experiment-page/models/ExperimentPageUIState';

@@ -3,8 +3,8 @@ from unittest import mock
 from unittest.mock import ANY
 from uuid import UUID
 
-import mlflow
-from mlflow.tracking.artifact_utils import (
+import qcflow
+from qcflow.tracking.artifact_utils import (
     _download_artifact_from_uri,
     _upload_artifact_to_uri,
     _upload_artifacts_to_databricks,
@@ -18,9 +18,9 @@ def test_artifact_can_be_downloaded_from_absolute_uri_successfully(tmp_path):
     local_artifact_path.write_text(artifact_text)
 
     logged_artifact_path = "artifact"
-    with mlflow.start_run():
-        mlflow.log_artifact(local_path=local_artifact_path, artifact_path=logged_artifact_path)
-        artifact_uri = mlflow.get_artifact_uri(artifact_path=logged_artifact_path)
+    with qcflow.start_run():
+        qcflow.log_artifact(local_path=local_artifact_path, artifact_path=logged_artifact_path)
+        artifact_uri = qcflow.get_artifact_uri(artifact_path=logged_artifact_path)
 
     downloaded_artifact_path = os.path.join(
         _download_artifact_from_uri(artifact_uri), artifact_file_name
@@ -38,9 +38,9 @@ def test_download_artifact_from_absolute_uri_persists_data_to_specified_output_d
     local_artifact_path.write_text(artifact_text)
 
     logged_artifact_subdir = "logged_artifact"
-    with mlflow.start_run():
-        mlflow.log_artifact(local_path=local_artifact_path, artifact_path=logged_artifact_subdir)
-        artifact_uri = mlflow.get_artifact_uri(artifact_path=logged_artifact_subdir)
+    with qcflow.start_run():
+        qcflow.log_artifact(local_path=local_artifact_path, artifact_path=logged_artifact_subdir)
+        artifact_uri = qcflow.get_artifact_uri(artifact_path=logged_artifact_subdir)
 
     artifact_output_path = tmp_path.joinpath("artifact_output")
     artifact_output_path.mkdir()
@@ -65,9 +65,9 @@ def test_download_artifact_with_special_characters_in_file_name_and_path(tmp_pat
         out.write(artifact_text)
 
     logged_artifact_subdir = "logged_artifact"
-    with mlflow.start_run():
-        mlflow.log_artifact(local_path=local_artifact_path, artifact_path=logged_artifact_subdir)
-        artifact_uri = mlflow.get_artifact_uri(artifact_path=logged_artifact_subdir)
+    with qcflow.start_run():
+        qcflow.log_artifact(local_path=local_artifact_path, artifact_path=logged_artifact_subdir)
+        artifact_uri = qcflow.get_artifact_uri(artifact_path=logged_artifact_subdir)
 
     artifact_output_path = tmp_path.joinpath("artifact output path!")
     artifact_output_path.mkdir()
@@ -81,7 +81,7 @@ def test_download_artifact_with_special_characters_in_file_name_and_path(tmp_pat
 
 
 def test_upload_artifacts_to_databricks():
-    import_root = "mlflow.tracking.artifact_utils"
+    import_root = "qcflow.tracking.artifact_utils"
     with (
         mock.patch(import_root + "._download_artifact_from_uri") as download_mock,
         mock.patch(import_root + ".DbfsRestArtifactRepository") as repo_mock,
@@ -94,13 +94,13 @@ def test_upload_artifacts_to_databricks():
         )
         download_mock.assert_called_once_with("dbfs://tracking@databricks/original/sourcedir/", ANY)
         repo_mock.assert_called_once_with(
-            "dbfs://registry:ws@databricks/databricks/mlflow/tmp-external-source/"
+            "dbfs://registry:ws@databricks/databricks/qcflow/tmp-external-source/"
         )
-        assert new_source == "dbfs:/databricks/mlflow/tmp-external-source/runid12345/sourcedir"
+        assert new_source == "dbfs:/databricks/qcflow/tmp-external-source/runid12345/sourcedir"
 
 
 def test_upload_artifacts_to_databricks_no_run_id():
-    import_root = "mlflow.tracking.artifact_utils"
+    import_root = "qcflow.tracking.artifact_utils"
     with (
         mock.patch(import_root + "._download_artifact_from_uri") as download_mock,
         mock.patch(import_root + ".DbfsRestArtifactRepository") as repo_mock,
@@ -113,10 +113,10 @@ def test_upload_artifacts_to_databricks_no_run_id():
             "dbfs://tracking:ws@databricks/original/sourcedir/", ANY
         )
         repo_mock.assert_called_once_with(
-            "dbfs://registry@databricks/databricks/mlflow/tmp-external-source/"
+            "dbfs://registry@databricks/databricks/qcflow/tmp-external-source/"
         )
         assert (
-            new_source == "dbfs:/databricks/mlflow/tmp-external-source/"
+            new_source == "dbfs:/databricks/qcflow/tmp-external-source/"
             "4f746cdcc0374da2808917e81bb53323/sourcedir"
         )
 
@@ -127,8 +127,8 @@ def test_upload_artifacts_to_uri(tmp_path):
     local_artifact_path = tmp_path.joinpath(artifact_file_name)
     local_artifact_path.write_text(artifact_text)
 
-    with mlflow.start_run() as run:
-        mlflow.log_metric("coolness", 1)
+    with qcflow.start_run() as run:
+        qcflow.log_metric("coolness", 1)
 
     artifact_uri = f"runs:/{run.info.run_id}/"
     _upload_artifact_to_uri(local_artifact_path, artifact_uri)

@@ -8,26 +8,26 @@ import pandas as pd
 import pytest
 import yaml
 
-import mlflow
-from mlflow.entities import Run, SourceType
-from mlflow.entities.model_registry import ModelVersion
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.recipe import Recipe
-from mlflow.recipes.step import BaseStep
-from mlflow.recipes.utils.execution import (
+import qcflow
+from qcflow.entities import Run, SourceType
+from qcflow.entities.model_registry import ModelVersion
+from qcflow.exceptions import MlflowException
+from qcflow.recipes.recipe import Recipe
+from qcflow.recipes.step import BaseStep
+from qcflow.recipes.utils.execution import (
     _MAKEFILE_FORMAT_STRING,
     _get_execution_directory_basename,
     get_step_output_path,
 )
-from mlflow.tracking.client import MlflowClient
-from mlflow.tracking.context.registry import resolve_tags
-from mlflow.utils.file_utils import path_to_local_file_uri
-from mlflow.utils.mlflow_tags import (
-    LEGACY_MLFLOW_GIT_REPO_URL,
-    MLFLOW_GIT_COMMIT,
-    MLFLOW_GIT_REPO_URL,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
+from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.context.registry import resolve_tags
+from qcflow.utils.file_utils import path_to_local_file_uri
+from qcflow.utils.qcflow_tags import (
+    LEGACY_QCFLOW_GIT_REPO_URL,
+    QCFLOW_GIT_COMMIT,
+    QCFLOW_GIT_REPO_URL,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
 )
 
 from tests.recipes.helper_functions import chdir, list_all_artifacts
@@ -83,13 +83,13 @@ def test_recipes_execution_directory_is_managed_as_expected(
         custom_execution_directory = tmp_path / custom_execution_directory
 
     if custom_execution_directory is not None:
-        monkeypatch.setenv("MLFLOW_RECIPES_EXECUTION_DIRECTORY", str(custom_execution_directory))
+        monkeypatch.setenv("QCFLOW_RECIPES_EXECUTION_DIRECTORY", str(custom_execution_directory))
 
     expected_execution_directory_location = (
         pathlib.Path(custom_execution_directory)
         if custom_execution_directory
         else pathlib.Path.home()
-        / ".mlflow"
+        / ".qcflow"
         / "recipes"
         / _get_execution_directory_basename(enter_recipe_example_directory)
     )
@@ -114,7 +114,7 @@ def test_recipes_execution_directory_is_managed_as_expected(
 
 
 @pytest.mark.usefixtures("enter_test_recipe_directory")
-def test_recipes_log_to_expected_mlflow_backend_with_expected_run_tags_once_on_reruns(
+def test_recipes_log_to_expected_qcflow_backend_with_expected_run_tags_once_on_reruns(
     tmp_path,
 ):
     experiment_name = "my_test_exp"
@@ -132,12 +132,12 @@ def test_recipes_log_to_expected_mlflow_backend_with_expected_run_tags_once_on_r
     with open(profile_path, "w") as f:
         yaml.safe_dump(profile_contents, f)
 
-    mlflow.set_tracking_uri(tracking_uri)
+    qcflow.set_tracking_uri(tracking_uri)
     recipe = Recipe(profile="local")
     recipe.clean()
     recipe.run()
 
-    logged_runs = mlflow.search_runs(experiment_names=[experiment_name], output_format="list")
+    logged_runs = qcflow.search_runs(experiment_names=[experiment_name], output_format="list")
     assert len(logged_runs) == 1
     logged_run = logged_runs[0]
     assert logged_run.info.artifact_uri == path_to_local_file_uri(
@@ -154,16 +154,16 @@ def test_recipes_log_to_expected_mlflow_backend_with_expected_run_tags_once_on_r
         "train/model",
     }
     run_tags = MlflowClient(tracking_uri).get_run(run_id=logged_run.info.run_id).data.tags
-    recipe_source_tag = {MLFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.RECIPE)}
+    recipe_source_tag = {QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.RECIPE)}
     assert resolve_tags(recipe_source_tag).items() <= run_tags.items()
 
     recipe.run()
-    logged_runs = mlflow.search_runs(experiment_names=[experiment_name], output_format="list")
+    logged_runs = qcflow.search_runs(experiment_names=[experiment_name], output_format="list")
     assert len(logged_runs) == 1
 
 
 @pytest.mark.usefixtures("enter_recipe_example_directory")
-def test_recipes_run_sets_mlflow_git_tags():
+def test_recipes_run_sets_qcflow_git_tags():
     recipe = Recipe(profile="local")
     recipe.clean()
     recipe.run(step="train")
@@ -175,8 +175,8 @@ def test_recipes_run_sets_mlflow_git_tags():
     tracking_uri = profile_contents["experiment"]["tracking_uri"]
     experiment_name = profile_contents["experiment"]["name"]
 
-    mlflow.set_tracking_uri(tracking_uri)
-    logged_runs = mlflow.search_runs(
+    qcflow.set_tracking_uri(tracking_uri)
+    logged_runs = qcflow.search_runs(
         experiment_names=[experiment_name],
         output_format="list",
         order_by=["attributes.start_time DESC"],
@@ -185,12 +185,12 @@ def test_recipes_run_sets_mlflow_git_tags():
 
     run_tags = MlflowClient(tracking_uri).get_run(run_id=logged_run.info.run_id).data.tags
     assert {
-        MLFLOW_SOURCE_NAME,
-        MLFLOW_GIT_COMMIT,
-        MLFLOW_GIT_REPO_URL,
-        LEGACY_MLFLOW_GIT_REPO_URL,
+        QCFLOW_SOURCE_NAME,
+        QCFLOW_GIT_COMMIT,
+        QCFLOW_GIT_REPO_URL,
+        LEGACY_QCFLOW_GIT_REPO_URL,
     } < run_tags.keys()
-    assert run_tags[MLFLOW_SOURCE_NAME] == run_tags[MLFLOW_GIT_REPO_URL]
+    assert run_tags[QCFLOW_SOURCE_NAME] == run_tags[QCFLOW_GIT_REPO_URL]
 
 
 @pytest.mark.usefixtures("enter_test_recipe_directory")
@@ -270,7 +270,7 @@ def test_recipe_get_artifacts():
     assert isinstance(recipe.get_artifact("transformed_training_data"), pd.DataFrame)
     assert isinstance(recipe.get_artifact("transformed_validation_data"), pd.DataFrame)
     assert hasattr(recipe.get_artifact("transformer"), "transform")
-    assert isinstance(recipe.get_artifact("model"), mlflow.pyfunc.PyFuncModel)
+    assert isinstance(recipe.get_artifact("model"), qcflow.pyfunc.PyFuncModel)
     assert isinstance(recipe.get_artifact("run"), Run)
     assert isinstance(recipe.get_artifact("registered_model_version"), ModelVersion)
 
@@ -337,7 +337,7 @@ def test_print_cached_steps_and_running_steps(capsys):
 def test_make_dry_run_error_does_not_print_cached_steps_messages(capsys):
     malformed_makefile = _MAKEFILE_FORMAT_STRING + "non_existing_cmd"
     with mock.patch(
-        "mlflow.recipes.utils.execution._MAKEFILE_FORMAT_STRING",
+        "qcflow.recipes.utils.execution._MAKEFILE_FORMAT_STRING",
         new=malformed_makefile,
     ):
         r = Recipe(profile="local")
@@ -358,14 +358,14 @@ def test_make_dry_run_error_does_not_print_cached_steps_messages(capsys):
 
 @pytest.mark.usefixtures("enter_recipe_example_directory")
 def test_makefile_with_runtime_error_print_cached_steps_messages(capsys):
-    split = 'echo "Run MLflow Recipe step: split"'
+    split = 'echo "Run QCFlow Recipe step: split"'
     tokens = _MAKEFILE_FORMAT_STRING.split(split)
     assert len(tokens) == 2
     tokens[1] = "\n\tnon-existing-cmd" + tokens[1]
     malformed_makefile_rte = split.join(tokens)
 
     with mock.patch(
-        "mlflow.recipes.utils.execution._MAKEFILE_FORMAT_STRING",
+        "qcflow.recipes.utils.execution._MAKEFILE_FORMAT_STRING",
         new=malformed_makefile_rte,
     ):
         r = Recipe(profile="local")

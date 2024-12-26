@@ -28,7 +28,7 @@ def _get_active_spark_session():
 # So the 2 lines here are to clear 'PYSPARK_GATEWAY_PORT' and 'PYSPARK_GATEWAY_SECRET' to
 # enforce launching a new pyspark JVM gateway.
 def _prepare_subprocess_environ_for_creating_local_spark_session():
-    from mlflow.utils.databricks_utils import is_in_databricks_runtime
+    from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
     if is_in_databricks_runtime():
         os.environ["SPARK_DIST_CLASSPATH"] = "/databricks/jars/*"
@@ -52,7 +52,7 @@ def _get_spark_scala_version_child_proc_target(result_queue):
 
 
 def _get_spark_scala_version():
-    from mlflow.utils.databricks_utils import is_in_databricks_runtime
+    from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
     if is_in_databricks_runtime() and "SPARK_SCALA_VERSION" in os.environ:
         return os.environ["SPARK_SCALA_VERSION"]
@@ -117,7 +117,7 @@ def _create_local_spark_session_for_loading_spark_model():
         # a SparkSession on the workers
         .config("spark.executor.allowSparkContext", "true")
         # Binding "spark.driver.host" to 127.0.0.1 helps avoiding some local hostname
-        # related issues (e.g. https://github.com/mlflow/mlflow/issues/5733).
+        # related issues (e.g. https://github.com/qcflow/qcflow/issues/5733).
         # Note that we should set "spark.driver.host" instead of "spark.driver.bindAddress",
         # the latter one only set server binding host, but it doesn't set client side request
         # destination host.
@@ -136,10 +136,10 @@ _NFS_PATH_PREFIX = "nfs:"
 
 
 def _get_spark_distributor_nfs_cache_dir():
-    from mlflow.utils.nfs_on_spark import get_nfs_cache_root_dir  # avoid circular import
+    from qcflow.utils.nfs_on_spark import get_nfs_cache_root_dir  # avoid circular import
 
     if (nfs_root_dir := get_nfs_cache_root_dir()) is not None:
-        cache_dir = os.path.join(nfs_root_dir, "mlflow_distributor_cache_dir")
+        cache_dir = os.path.join(nfs_root_dir, "qcflow_distributor_cache_dir")
         os.makedirs(cache_dir, exist_ok=True)
         return cache_dir
     return None

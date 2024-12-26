@@ -297,7 +297,7 @@ export const ModelListTable = ({
         <TableRow isHeader>
           {table.getLeafHeaders().map((header) => (
             <TableHeader
-              componentId="codegen_mlflow_app_src_model-registry_components_model-list_modellisttable.tsx_412"
+              componentId="codegen_qcflow_app_src_model-registry_components_model-list_modellisttable.tsx_412"
               ellipsis
               key={header.id}
               sortable={header.column.getCanSort()}

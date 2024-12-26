@@ -28,7 +28,7 @@
 #### Is this a user-facing change?
 
 - [ ] No. You can skip the rest of this section.
-- [ ] Yes. Give a description of this change to be included in the release notes for MLflow users.
+- [ ] Yes. Give a description of this change to be included in the release notes for QCFlow users.
 
 <!-- Details in 1-2 sentences. You can just refer to another PR with a description if this PR is part of a larger change. -->
 
@@ -37,22 +37,22 @@
 Components
 
 - [ ] `area/artifacts`: Artifact stores and artifact logging
-- [ ] `area/build`: Build and test infrastructure for MLflow
-- [ ] `area/deployments`: MLflow Deployments client APIs, server, and third-party Deployments integrations
-- [ ] `area/docs`: MLflow documentation pages
+- [ ] `area/build`: Build and test infrastructure for QCFlow
+- [ ] `area/deployments`: QCFlow Deployments client APIs, server, and third-party Deployments integrations
+- [ ] `area/docs`: QCFlow documentation pages
 - [ ] `area/examples`: Example code
 - [ ] `area/model-registry`: Model Registry service, APIs, and the fluent client calls for Model Registry
 - [ ] `area/models`: MLmodel format, model serialization/deserialization, flavors
 - [ ] `area/recipes`: Recipes, Recipe APIs, Recipe configs, Recipe Templates
 - [ ] `area/projects`: MLproject format, project running backends
-- [ ] `area/scoring`: MLflow Model server, model deployment tools, Spark UDFs
-- [ ] `area/server-infra`: MLflow Tracking server backend
+- [ ] `area/scoring`: QCFlow Model server, model deployment tools, Spark UDFs
+- [ ] `area/server-infra`: QCFlow Tracking server backend
 - [ ] `area/tracking`: Tracking Service, tracking client APIs, autologging
 
 Interface
 
 - [ ] `area/uiux`: Front-end, user experience, plotting, JavaScript, JavaScript dev server
-- [ ] `area/docker`: Docker use across MLflow's components, such as MLflow Projects and MLflow Models
+- [ ] `area/docker`: Docker use across QCFlow's components, such as QCFlow Projects and QCFlow Models
 - [ ] `area/sqlalchemy`: Use of SQLAlchemy in the Tracking Service or Model Registry
 - [ ] `area/windows`: Windows support
 
@@ -70,7 +70,7 @@ Integrations
 
 <!--
 Insert an empty named anchor here to allow jumping to this section with a fragment URL
-(e.g. https://github.com/mlflow/mlflow/pull/123#user-content-release-note-category).
+(e.g. https://github.com/qcflow/qcflow/pull/123#user-content-release-note-category).
 Note that GitHub prefixes anchor names in markdown with "user-content-".
 -->
 

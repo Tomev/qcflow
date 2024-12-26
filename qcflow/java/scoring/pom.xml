@@ -3,16 +3,16 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.mlflow</groupId>
-    <artifactId>mlflow-parent</artifactId>
+    <groupId>org.qcflow</groupId>
+    <artifactId>qcflow-parent</artifactId>
     <version>2.19.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>mlflow-scoring</artifactId>
+  <artifactId>qcflow-scoring</artifactId>
   <packaging>jar</packaging>
-  <name>MLflow scoring server</name>
-  <url>http://mlflow.org</url>
+  <name>QCFlow scoring server</name>
+  <url>http://qcflow.org</url>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

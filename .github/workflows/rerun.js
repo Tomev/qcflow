@@ -57,7 +57,7 @@ async function rerun({ github, context }) {
     )
     .map(
       ({
-        // Example: https://github.com/mlflow/mlflow/actions/runs/10675586265/job/29587793829
+        // Example: https://github.com/qcflow/qcflow/actions/runs/10675586265/job/29587793829
         //                                                        ^^^^^^^^^^^ run_id
         html_url,
       }) => html_url.match(/\/actions\/runs\/(\d+)/)[1]

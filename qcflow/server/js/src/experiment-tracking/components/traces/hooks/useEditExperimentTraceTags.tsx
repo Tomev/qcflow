@@ -3,7 +3,7 @@ import { useEditKeyValueTagsModal } from '../../../../common/hooks/useEditKeyVal
 import { MlflowService } from '../../../sdk/MlflowService';
 import { KeyValueEntity } from '../../../types';
 import { useCallback } from 'react';
-import { MLFLOW_INTERNAL_PREFIX } from '../../../../common/utils/TagUtils';
+import { QCFLOW_INTERNAL_PREFIX } from '../../../../common/utils/TagUtils';
 
 type EditedModelTrace = {
   traceRequestId: string;
@@ -46,7 +46,7 @@ export const useEditExperimentTraceTags = ({
       return updateRequests;
     },
     valueRequired: true,
-    allAvailableTags: existingTagKeys.filter((tagKey) => tagKey && !tagKey.startsWith(MLFLOW_INTERNAL_PREFIX)),
+    allAvailableTags: existingTagKeys.filter((tagKey) => tagKey && !tagKey.startsWith(QCFLOW_INTERNAL_PREFIX)),
     onSuccess: onSuccess,
   });
 
@@ -55,7 +55,7 @@ export const useEditExperimentTraceTags = ({
       if (!trace.request_id) {
         return;
       }
-      const visibleTags = trace.tags?.filter(({ key }) => key && !key.startsWith(MLFLOW_INTERNAL_PREFIX)) || [];
+      const visibleTags = trace.tags?.filter(({ key }) => key && !key.startsWith(QCFLOW_INTERNAL_PREFIX)) || [];
       showEditTagsModal({
         traceRequestId: trace.request_id,
         tags: visibleTags || [],

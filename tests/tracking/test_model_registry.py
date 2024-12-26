@@ -7,11 +7,11 @@ import time
 
 import pytest
 
-from mlflow import MlflowClient
-from mlflow.entities.model_registry import ModelVersion, RegisteredModel
-from mlflow.exceptions import MlflowException
-from mlflow.utils.os import is_windows
-from mlflow.utils.time import get_current_time_millis
+from qcflow import MlflowClient
+from qcflow.entities.model_registry import ModelVersion, RegisteredModel
+from qcflow.exceptions import MlflowException
+from qcflow.utils.os import is_windows
+from qcflow.utils.time import get_current_time_millis
 
 from tests.tracking.integration_test_utils import _init_server
 

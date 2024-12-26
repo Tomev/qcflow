@@ -2,9 +2,9 @@
 
 set -ex
 
-pushd ../mlflow/R/mlflow
+pushd ../qcflow/R/qcflow
 
-image_name="mlflow-r-dev"
+image_name="qcflow-r-dev"
 
 # Workaround for this issue:
 # https://discuss.circleci.com/t/increased-rate-of-errors-when-pulling-docker-images-on-machine-executor/42094
@@ -18,8 +18,8 @@ done
 
 docker run \
   --rm \
-  -v $(pwd):/mlflow/mlflow/R/mlflow \
-  -v $(pwd)/../../../docs/source:/mlflow/docs/source \
+  -v $(pwd):/qcflow/qcflow/R/qcflow \
+  -v $(pwd)/../../../docs/source:/qcflow/docs/source \
   $image_name \
   Rscript -e 'source(".build-doc.R", echo = TRUE)'
 

@@ -6,7 +6,7 @@ Create Date: 2024-05-22 17:44:24.597019
 
 """
 from alembic import op
-from mlflow.store.tracking.dbmodels.models import SqlTraceInfo, SqlTraceRequestMetadata, SqlTraceTag
+from qcflow.store.tracking.dbmodels.models import SqlTraceInfo, SqlTraceRequestMetadata, SqlTraceTag
 
 
 # revision identifiers, used by Alembic.

@@ -4,21 +4,21 @@ from unittest import mock
 
 import pytest
 
-import mlflow.tracking.context.default_context
-from mlflow.entities.span import LiveSpan
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.environment_variables import MLFLOW_TRACKING_USERNAME
-from mlflow.pyfunc.context import Context, set_prediction_context
-from mlflow.tracing.constant import (
+import qcflow.tracking.context.default_context
+from qcflow.entities.span import LiveSpan
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.environment_variables import QCFLOW_TRACKING_USERNAME
+from qcflow.pyfunc.context import Context, set_prediction_context
+from qcflow.tracing.constant import (
     TRACE_SCHEMA_VERSION,
     TRACE_SCHEMA_VERSION_KEY,
     SpanAttributeKey,
     TraceMetadataKey,
 )
-from mlflow.tracing.processor.mlflow import MlflowSpanProcessor
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
-from mlflow.utils.os import is_windows
+from qcflow.tracing.processor.qcflow import MlflowSpanProcessor
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
+from qcflow.utils.os import is_windows
 
 from tests.tracing.helper import create_mock_otel_span, create_test_trace_info
 
@@ -27,8 +27,8 @@ _REQUEST_ID = f"tr-{_TRACE_ID}"
 
 
 def test_on_start(monkeypatch):
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
 
     # Root span should create a new trace on start
     span = create_mock_otel_span(
@@ -47,10 +47,10 @@ def test_on_start(monkeypatch):
         timestamp_ms=5,
         request_metadata={TRACE_SCHEMA_VERSION_KEY: str(TRACE_SCHEMA_VERSION)},
         tags={
-            "mlflow.traceName": "test_span",
-            "mlflow.user": "bob",
-            "mlflow.source.name": "test",
-            "mlflow.source.type": "LOCAL",
+            "qcflow.traceName": "test_span",
+            "qcflow.user": "bob",
+            "qcflow.source.name": "test",
+            "qcflow.source.type": "LOCAL",
         },
     )
     assert span.attributes.get(SpanAttributeKey.REQUEST_ID) == json.dumps(_REQUEST_ID)
@@ -69,7 +69,7 @@ def test_on_start(monkeypatch):
 
 @pytest.mark.skipif(is_windows(), reason="Timestamp is not precise enough on Windows")
 def test_on_start_adjust_span_timestamp_to_exclude_backend_latency(monkeypatch):
-    monkeypatch.setenv("MLFLOW_TESTING", "false")
+    monkeypatch.setenv("QCFLOW_TESTING", "false")
     trace_info = create_test_trace_info(_REQUEST_ID, 0)
     mock_client = mock.MagicMock()
 
@@ -93,8 +93,8 @@ def test_on_start_adjust_span_timestamp_to_exclude_backend_latency(monkeypatch):
 
 
 def test_on_start_with_experiment_id(monkeypatch):
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
 
     experiment_id = "test_experiment_id"
     span = create_mock_otel_span(
@@ -114,10 +114,10 @@ def test_on_start_with_experiment_id(monkeypatch):
         timestamp_ms=5,
         request_metadata={TRACE_SCHEMA_VERSION_KEY: str(TRACE_SCHEMA_VERSION)},
         tags={
-            "mlflow.traceName": "test_span",
-            "mlflow.user": "bob",
-            "mlflow.source.name": "test",
-            "mlflow.source.type": "LOCAL",
+            "qcflow.traceName": "test_span",
+            "qcflow.user": "bob",
+            "qcflow.source.name": "test",
+            "qcflow.source.type": "LOCAL",
         },
     )
     assert span.attributes.get(SpanAttributeKey.REQUEST_ID) == json.dumps(_REQUEST_ID)
@@ -139,8 +139,8 @@ def test_on_start_during_model_evaluation():
 
 
 def test_on_start_during_run(monkeypatch):
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
 
     span = create_mock_otel_span(
         trace_id=_TRACE_ID, span_id=1, parent_id=None, start_time=5_000_000
@@ -149,16 +149,16 @@ def test_on_start_during_run(monkeypatch):
     env_experiment_name = "env_experiment_id"
     run_experiment_name = "run_experiment_id"
 
-    mlflow.create_experiment(env_experiment_name)
-    run_experiment_id = mlflow.create_experiment(run_experiment_name)
+    qcflow.create_experiment(env_experiment_name)
+    run_experiment_id = qcflow.create_experiment(run_experiment_name)
 
-    mlflow.set_experiment(experiment_name=env_experiment_name)
+    qcflow.set_experiment(experiment_name=env_experiment_name)
     trace_info = create_test_trace_info(_REQUEST_ID)
     mock_client = mock.MagicMock()
     mock_client._start_tracked_trace.return_value = trace_info
     processor = MlflowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
 
-    with mlflow.start_run(experiment_id=run_experiment_id) as run:
+    with qcflow.start_run(experiment_id=run_experiment_id) as run:
         processor.on_start(span)
         expected_run_id = run.info.run_id
 
@@ -176,13 +176,13 @@ def test_on_start_during_run(monkeypatch):
 
 
 def test_on_start_warns_default_experiment(monkeypatch):
-    mlflow.set_experiment(experiment_id=DEFAULT_EXPERIMENT_ID)
+    qcflow.set_experiment(experiment_id=DEFAULT_EXPERIMENT_ID)
 
     mock_client = mock.MagicMock()
     mock_client._start_tracked_trace.return_value = create_test_trace_info(_REQUEST_ID, 0)
 
     mock_logger = mock.MagicMock()
-    monkeypatch.setattr("mlflow.tracing.processor.mlflow._logger", mock_logger)
+    monkeypatch.setattr("qcflow.tracing.processor.qcflow._logger", mock_logger)
 
     processor = MlflowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
 

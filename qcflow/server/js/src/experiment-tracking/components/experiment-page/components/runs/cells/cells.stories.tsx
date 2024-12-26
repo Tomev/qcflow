@@ -217,35 +217,35 @@ export const SourceRenderer = () => {
   const rowsWithTagsInfo: Partial<RunRowType>[] = [
     {
       tags: {
-        'mlflow.source.name': { key: 'mlflow.source.name', value: 'Notebook name' },
-        'mlflow.databricks.notebookID': { key: 'mlflow.databricks.notebookID', value: '123456' },
-        'mlflow.source.type': { key: 'mlflow.source.type', value: 'NOTEBOOK' },
+        'qcflow.source.name': { key: 'qcflow.source.name', value: 'Notebook name' },
+        'qcflow.databricks.notebookID': { key: 'qcflow.databricks.notebookID', value: '123456' },
+        'qcflow.source.type': { key: 'qcflow.source.type', value: 'NOTEBOOK' },
       },
     },
     {
       tags: {
-        'mlflow.source.name': {
-          key: 'mlflow.source.name',
+        'qcflow.source.name': {
+          key: 'qcflow.source.name',
           value: 'https://github.com/xyz/path-to-repo',
         },
-        'mlflow.source.type': { key: 'mlflow.source.type', value: 'LOCAL' },
+        'qcflow.source.type': { key: 'qcflow.source.type', value: 'LOCAL' },
       },
     },
     {
       tags: {
-        'mlflow.source.name': {
-          key: 'mlflow.source.name',
+        'qcflow.source.name': {
+          key: 'qcflow.source.name',
           value: 'https://github.com/xyz/path-to-repo',
         },
-        'mlflow.source.type': { key: 'mlflow.source.type', value: 'PROJECT' },
+        'qcflow.source.type': { key: 'qcflow.source.type', value: 'PROJECT' },
       },
     },
     {
       tags: {
-        'mlflow.source.name': { key: 'mlflow.source.name', value: '1234' },
-        'mlflow.databricks.jobID': { key: 'mlflow.databricks.jobID', value: '1234' },
-        'mlflow.databricks.jobRunID': { key: 'mlflow.databricks.jobRunID', value: '4321' },
-        'mlflow.source.type': { key: 'mlflow.source.type', value: 'JOB' },
+        'qcflow.source.name': { key: 'qcflow.source.name', value: '1234' },
+        'qcflow.databricks.jobID': { key: 'qcflow.databricks.jobID', value: '1234' },
+        'qcflow.databricks.jobRunID': { key: 'qcflow.databricks.jobRunID', value: '4321' },
+        'qcflow.source.type': { key: 'qcflow.source.type', value: 'JOB' },
       },
     },
   ];

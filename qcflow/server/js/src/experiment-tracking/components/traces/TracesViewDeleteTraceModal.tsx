@@ -1,4 +1,4 @@
-import Utils from '@mlflow/mlflow/src/common/utils/Utils';
+import Utils from '@qcflow/qcflow/src/common/utils/Utils';
 import { keys, pickBy } from 'lodash';
 import React, { useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
@@ -54,7 +54,7 @@ export const TracesViewDeleteTraceModal = ({
 
   return (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_traces_tracesviewdeletetracemodal.tsx_62"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_traces_tracesviewdeletetracemodal.tsx_62"
       title={
         <FormattedMessage
           defaultMessage="{count, plural, one {Delete Trace} other {Delete Traces}}"

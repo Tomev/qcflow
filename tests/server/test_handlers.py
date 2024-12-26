@@ -4,18 +4,18 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow.entities import ViewType
-from mlflow.entities.model_registry import (
+import qcflow
+from qcflow.entities import ViewType
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModel,
     RegisteredModelTag,
 )
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE, ErrorCode
-from mlflow.protos.model_registry_pb2 import (
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE, ErrorCode
+from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
     CreateRegisteredModel,
     DeleteModelVersion,
@@ -38,19 +38,19 @@ from mlflow.protos.model_registry_pb2 import (
     UpdateModelVersion,
     UpdateRegisteredModel,
 )
-from mlflow.protos.service_pb2 import CreateExperiment, SearchRuns
-from mlflow.server import (
+from qcflow.protos.service_pb2 import CreateExperiment, SearchRuns
+from qcflow.server import (
     ARTIFACTS_DESTINATION_ENV_VAR,
     BACKEND_STORE_URI_ENV_VAR,
     SERVE_ARTIFACTS_ENV_VAR,
     app,
 )
-from mlflow.server.handlers import (
+from qcflow.server.handlers import (
     _convert_path_parameter_to_flask_format,
     _create_experiment,
     _create_model_version,
     _create_registered_model,
-    _delete_artifact_mlflow_artifacts,
+    _delete_artifact_qcflow_artifacts,
     _delete_model_version,
     _delete_model_version_tag,
     _delete_registered_model,
@@ -75,37 +75,37 @@ from mlflow.server.handlers import (
     _update_model_version,
     _update_registered_model,
     _validate_source,
-    catch_mlflow_exception,
+    catch_qcflow_exception,
     get_endpoints,
 )
-from mlflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry import (
+from qcflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_THRESHOLD,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
 )
-from mlflow.utils.mlflow_tags import MLFLOW_ARTIFACT_LOCATION
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.validation import MAX_BATCH_LOG_REQUEST_SIZE
+from qcflow.utils.qcflow_tags import QCFLOW_ARTIFACT_LOCATION
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.validation import MAX_BATCH_LOG_REQUEST_SIZE
 
 
 @pytest.fixture
 def mock_get_request_message():
-    with mock.patch("mlflow.server.handlers._get_request_message") as m:
+    with mock.patch("qcflow.server.handlers._get_request_message") as m:
         yield m
 
 
 @pytest.fixture
 def mock_get_request_json():
-    with mock.patch("mlflow.server.handlers._get_request_json") as m:
+    with mock.patch("qcflow.server.handlers._get_request_json") as m:
         yield m
 
 
 @pytest.fixture
 def mock_tracking_store():
-    with mock.patch("mlflow.server.handlers._get_tracking_store") as m:
+    with mock.patch("qcflow.server.handlers._get_tracking_store") as m:
         mock_store = mock.MagicMock()
         m.return_value = mock_store
         yield mock_store
@@ -113,7 +113,7 @@ def mock_tracking_store():
 
 @pytest.fixture
 def mock_model_registry_store():
-    with mock.patch("mlflow.server.handlers._get_model_registry_store") as m:
+    with mock.patch("qcflow.server.handlers._get_model_registry_store") as m:
         mock_store = mock.MagicMock()
         m.return_value = mock_store
         yield mock_store
@@ -135,7 +135,7 @@ def test_version():
     with app.test_client() as c:
         response = c.get("/version")
         assert response.status_code == 200
-        assert response.get_data().decode() == mlflow.__version__
+        assert response.get_data().decode() == qcflow.__version__
 
 
 def test_get_endpoints():
@@ -145,14 +145,14 @@ def test_get_endpoints():
 
 
 def test_convert_path_parameter_to_flask_format():
-    converted = _convert_path_parameter_to_flask_format("/mlflow/trace")
-    assert "/mlflow/trace" == converted
+    converted = _convert_path_parameter_to_flask_format("/qcflow/trace")
+    assert "/qcflow/trace" == converted
 
-    converted = _convert_path_parameter_to_flask_format("/mlflow/trace/{request_id}")
-    assert "/mlflow/trace/<request_id>" == converted
+    converted = _convert_path_parameter_to_flask_format("/qcflow/trace/{request_id}")
+    assert "/qcflow/trace/<request_id>" == converted
 
-    converted = _convert_path_parameter_to_flask_format("/mlflow/{foo}/{bar}/{baz}")
-    assert "/mlflow/<foo>/<bar>/<baz>" == converted
+    converted = _convert_path_parameter_to_flask_format("/qcflow/{foo}/{bar}/{baz}")
+    assert "/qcflow/<foo>/<bar>/<baz>" == converted
 
 
 def test_all_model_registry_endpoints_available():
@@ -276,8 +276,8 @@ def test_log_batch_api_req(mock_get_request_json):
     )
 
 
-def test_catch_mlflow_exception():
-    @catch_mlflow_exception
+def test_catch_qcflow_exception():
+    @catch_qcflow_exception
     def test_handler():
         raise MlflowException("test error", error_code=INTERNAL_ERROR)
 
@@ -288,13 +288,13 @@ def test_catch_mlflow_exception():
     assert json_response["message"] == "test error"
 
 
-def test_mlflow_server_with_installed_plugin(tmp_path, monkeypatch):
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
-    from mlflow_test_plugin.file_store import PluginFileStore
+def test_qcflow_server_with_installed_plugin(tmp_path, monkeypatch):
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
+    from qcflow_test_plugin.file_store import PluginFileStore
 
     monkeypatch.setenv(BACKEND_STORE_URI_ENV_VAR, f"file-plugin:{tmp_path}")
-    monkeypatch.setattr(mlflow.server.handlers, "_tracking_store", None)
-    plugin_file_store = mlflow.server.handlers._get_tracking_store()
+    monkeypatch.setattr(qcflow.server.handlers, "_tracking_store", None)
+    plugin_file_store = qcflow.server.handlers._get_tracking_store()
     assert isinstance(plugin_file_store, PluginFileStore)
     assert plugin_file_store.is_plugin
 
@@ -819,8 +819,8 @@ def test_get_model_version_by_alias(mock_get_request_message, mock_model_registr
         "%2E%2E%2F%2E%2E%2Fpath",
     ],
 )
-def test_delete_artifact_mlflow_artifacts_throws_for_malicious_path(enable_serve_artifacts, path):
-    response = _delete_artifact_mlflow_artifacts(path)
+def test_delete_artifact_qcflow_artifacts_throws_for_malicious_path(enable_serve_artifacts, path):
+    response = _delete_artifact_qcflow_artifacts(path)
     assert response.status_code == 400
     json_response = json.loads(response.get_data())
     assert json_response["error_code"] == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -844,7 +844,7 @@ def test_local_file_read_write_by_pass_vulnerability(uri):
         "artifact_location": uri,
     }
     msg = _get_request_message(CreateExperiment(), flask_request=request)
-    with mock.patch("mlflow.server.handlers._get_request_message", return_value=msg):
+    with mock.patch("qcflow.server.handlers._get_request_message", return_value=msg):
         response = _create_experiment()
         json_response = json.loads(response.get_data())
         assert (
@@ -854,7 +854,7 @@ def test_local_file_read_write_by_pass_vulnerability(uri):
     # Test if source is a local filesystem path, `_validate_source` validates that the run
     # artifact_uri is also a local filesystem path.
     run_id = uuid.uuid4().hex
-    with mock.patch("mlflow.server.handlers._get_tracking_store") as mock_get_tracking_store:
+    with mock.patch("qcflow.server.handlers._get_tracking_store") as mock_get_tracking_store:
         mock_get_tracking_store().get_run(
             run_id
         ).info.artifact_uri = f"http://host/{run_id}/artifacts/abc"
@@ -882,17 +882,17 @@ def test_local_file_read_write_by_pass_vulnerability(uri):
         ),
         # Proxy URI must be resolved to the actual storage URI
         (
-            "https://127.0.0.1/api/2.0/mlflow-artifacts/artifacts/2/traces/123",
+            "https://127.0.0.1/api/2.0/qcflow-artifacts/artifacts/2/traces/123",
             S3ArtifactRepository,
             "s3://bucket/2/traces/123",
         ),
-        ("mlflow-artifacts:/1/traces/123", S3ArtifactRepository, "s3://bucket/1/traces/123"),
+        ("qcflow-artifacts:/1/traces/123", S3ArtifactRepository, "s3://bucket/1/traces/123"),
     ],
 )
 def test_get_trace_artifact_repo(location, expected_class, expected_uri, monkeypatch):
     monkeypatch.setenv(SERVE_ARTIFACTS_ENV_VAR, "true")
     monkeypatch.setenv(ARTIFACTS_DESTINATION_ENV_VAR, "s3://bucket")
-    trace_info = TraceInfo("123", "0", 0, 1, "OK", tags={MLFLOW_ARTIFACT_LOCATION: location})
+    trace_info = TraceInfo("123", "0", 0, 1, "OK", tags={QCFLOW_ARTIFACT_LOCATION: location})
     repo = _get_trace_artifact_repo(trace_info)
     assert isinstance(repo, expected_class)
     assert repo.artifact_uri == expected_uri

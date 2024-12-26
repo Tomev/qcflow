@@ -1,7 +1,7 @@
-mlflow.crewai
+qcflow.crewai
 ==============
 
-.. automodule:: mlflow.crewai
+.. automodule:: qcflow.crewai
     :members:
     :undoc-members:
     :show-inheritance:

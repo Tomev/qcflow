@@ -1,4 +1,4 @@
-// Excerpt from the color palette used in MLflow UI, intended to be used in the MLflow experiment runs.
+// Excerpt from the color palette used in QCFlow UI, intended to be used in the QCFlow experiment runs.
 // The color values are copied instead of used from theme directly.
 export const RUNS_COLOR_PALETTE = [
   // Secondary colors:

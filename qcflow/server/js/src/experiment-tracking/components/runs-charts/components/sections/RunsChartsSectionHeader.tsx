@@ -14,7 +14,7 @@ import { RunsChartsAddChartMenu } from '../RunsChartsAddChartMenu';
 import { RunsChartType } from '../../runs-charts.types';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useDragAndDropElement } from '@mlflow/mlflow/src/common/hooks/useDragAndDropElement';
+import { useDragAndDropElement } from '@qcflow/qcflow/src/common/hooks/useDragAndDropElement';
 import { CheckIcon } from '@databricks/design-system';
 import { METRIC_CHART_SECTION_HEADER_SIZE } from '../../../MetricChartsAccordion';
 import cx from 'classnames';
@@ -218,7 +218,7 @@ export const RunsChartsSectionHeader = ({
           </div>
           {editSection === index && (
             <Input
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_220"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_220"
               autoFocus
               onClick={stopPropagation}
               onMouseDown={stopPropagation}
@@ -258,7 +258,7 @@ export const RunsChartsSectionHeader = ({
           {!hideExtraControls && (
             <div className="section-element-visibility-on-hover-and-not-drag section-element-hidden-on-edit">
               <Button
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_sections_runscomparesectionheader.tsx_246"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_sections_runscomparesectionheader.tsx_246"
                 onClick={onEdit}
                 aria-label="Icon label"
                 icon={<PencilIcon />}
@@ -269,7 +269,7 @@ export const RunsChartsSectionHeader = ({
         {editSection === index && !hideExtraControls && (
           <div style={{ padding: `0 ${theme.spacing.xs}px` }}>
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_sections_runscomparesectionheader.tsx_251"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_sections_runscomparesectionheader.tsx_251"
               onClick={onSubmit}
               icon={<CheckIcon />}
               ref={confirmButtonRef}
@@ -314,13 +314,13 @@ export const RunsChartsSectionHeader = ({
               <DropdownMenu.Root modal={false}>
                 <DropdownMenu.Trigger asChild>
                   <Button
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_sections_runscomparesectionheader.tsx_288"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_sections_runscomparesectionheader.tsx_288"
                     icon={<OverflowIcon />}
                   />
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Content>
                   <DropdownMenu.Item
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_321"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_321"
                     onClick={addSectionAbove}
                   >
                     <FormattedMessage
@@ -329,7 +329,7 @@ export const RunsChartsSectionHeader = ({
                     />
                   </DropdownMenu.Item>
                   <DropdownMenu.Item
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_327"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_327"
                     onClick={addSectionBelow}
                   >
                     <FormattedMessage
@@ -338,7 +338,7 @@ export const RunsChartsSectionHeader = ({
                     />
                   </DropdownMenu.Item>
                   <DropdownMenu.Item
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_333"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_333"
                     onClick={deleteSection}
                   >
                     <FormattedMessage
@@ -349,7 +349,7 @@ export const RunsChartsSectionHeader = ({
                 </DropdownMenu.Content>
               </DropdownMenu.Root>
               <DangerModal
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_351"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_sections_runschartssectionheader.tsx_351"
                 visible={isDeleteSectionModalOpen}
                 onOk={deleteModalConfirm}
                 onCancel={deleteModalCancel}

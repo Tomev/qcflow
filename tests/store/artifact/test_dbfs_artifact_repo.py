@@ -2,13 +2,13 @@ from unittest import mock
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.databricks_artifact_repo import DatabricksArtifactRepository
-from mlflow.store.artifact.dbfs_artifact_repo import (
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.databricks_artifact_repo import DatabricksArtifactRepository
+from qcflow.store.artifact.dbfs_artifact_repo import (
     DbfsRestArtifactRepository,
     dbfs_artifact_repo_factory,
 )
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
 
 
 @pytest.mark.parametrize(
@@ -17,9 +17,9 @@ from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
 )
 def test_dbfs_artifact_repo_factory_local_repo(artifact_uri, uri_at_init):
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_dbfs_fuse_available", return_value=True),
+        mock.patch("qcflow.utils.databricks_utils.is_dbfs_fuse_available", return_value=True),
         mock.patch(
-            "mlflow.store.artifact.dbfs_artifact_repo.LocalArtifactRepository", autospec=True
+            "qcflow.store.artifact.dbfs_artifact_repo.LocalArtifactRepository", autospec=True
         ) as mock_repo,
     ):
         repo = dbfs_artifact_repo_factory(artifact_uri)
@@ -36,17 +36,17 @@ def test_dbfs_artifact_repo_factory_local_repo(artifact_uri, uri_at_init):
         # with the current workspace (authority component = "databricks") and other workspaces
         # (authority component = "someProfile@databricks"), as model registry paths cannot
         # be accessed via the local filesystem (via FUSE)
-        "dbfs://databricks/databricks/mlflow-registry/abcdefg123/path",
-        "dbfs://someProfile@databricks/mlflow-registry/abcdefg123/path",
-        "dbfs://somewhere:else@databricks/mlflow-registry/abcdefg123/path",
-        "dbfs:/databricks/mlflow-registry/abcdefg123/path",
+        "dbfs://databricks/databricks/qcflow-registry/abcdefg123/path",
+        "dbfs://someProfile@databricks/qcflow-registry/abcdefg123/path",
+        "dbfs://somewhere:else@databricks/qcflow-registry/abcdefg123/path",
+        "dbfs:/databricks/qcflow-registry/abcdefg123/path",
     ],
 )
 def test_dbfs_artifact_repo_factory_dbfs_rest_repo(artifact_uri):
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_dbfs_fuse_available", return_value=True),
+        mock.patch("qcflow.utils.databricks_utils.is_dbfs_fuse_available", return_value=True),
         mock.patch(
-            "mlflow.store.artifact.dbfs_artifact_repo.DbfsRestArtifactRepository", autospec=True
+            "qcflow.store.artifact.dbfs_artifact_repo.DbfsRestArtifactRepository", autospec=True
         ) as mock_repo,
     ):
         repo = dbfs_artifact_repo_factory(artifact_uri)
@@ -57,17 +57,17 @@ def test_dbfs_artifact_repo_factory_dbfs_rest_repo(artifact_uri):
 @pytest.mark.parametrize(
     "artifact_uri",
     [
-        ("dbfs:/databricks/mlflow-tracking/experiment/1/run/2"),
-        ("dbfs://@databricks/databricks/mlflow-tracking/experiment/1/run/2"),
-        ("dbfs://someProfile@databricks/databricks/mlflow-tracking/experiment/1/run/2"),
+        ("dbfs:/databricks/qcflow-tracking/experiment/1/run/2"),
+        ("dbfs://@databricks/databricks/qcflow-tracking/experiment/1/run/2"),
+        ("dbfs://someProfile@databricks/databricks/qcflow-tracking/experiment/1/run/2"),
     ],
 )
 def test_dbfs_artifact_repo_factory_acled_paths(artifact_uri):
-    repo_pkg_path = "mlflow.store.artifact.databricks_artifact_repo"
+    repo_pkg_path = "qcflow.store.artifact.databricks_artifact_repo"
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_dbfs_fuse_available", return_value=True),
+        mock.patch("qcflow.utils.databricks_utils.is_dbfs_fuse_available", return_value=True),
         mock.patch(
-            "mlflow.store.artifact.dbfs_artifact_repo.DatabricksArtifactRepository", autospec=True
+            "qcflow.store.artifact.dbfs_artifact_repo.DatabricksArtifactRepository", autospec=True
         ) as mock_repo,
         mock.patch(repo_pkg_path + ".get_databricks_host_creds", return_value=None),
         mock.patch(

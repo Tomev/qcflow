@@ -1,4 +1,4 @@
-package org.mlflow.tracking;
+package org.qcflow.tracking;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -13,11 +13,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.mlflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.tracking.creds.MlflowHostCredsProvider;
 
 /**
- * Provides an MLflow API client for testing. This is a real client, pointed to a real server.
- * If the MLFLOW_TRACKING_URI environment variable is set, we will talk to the provided server;
+ * Provides an QCFlow API client for testing. This is a real client, pointed to a real server.
+ * If the QCFLOW_TRACKING_URI environment variable is set, we will talk to the provided server;
  * this allows running tests against existing servers. Otherwise, we will launch a local
  * server on an ephemeral port, and manage its lifecycle.
  */
@@ -31,7 +31,7 @@ public class TestClientProvider {
   private MlflowClient client;
 
   /**
-   * Intializes an MLflow client and, if necessary, a local MLflow server process as well.
+   * Intializes an QCFlow client and, if necessary, a local QCFlow server process as well.
    * Callers should always call {@link #cleanupClientAndServer()}.
    */
   public MlflowClient initializeClientAndServer() throws IOException {
@@ -39,9 +39,9 @@ public class TestClientProvider {
       throw new IllegalStateException("Previous server process not cleaned up");
     }
 
-    String trackingUri = System.getenv("MLFLOW_TRACKING_URI");
+    String trackingUri = System.getenv("QCFLOW_TRACKING_URI");
     if (trackingUri != null) {
-      logger.info("MLFLOW_TRACKING_URI was set, test will run against that server");
+      logger.info("QCFLOW_TRACKING_URI was set, test will run against that server");
       client = new MlflowClient(trackingUri);
       return client;
     } else {
@@ -56,9 +56,9 @@ public class TestClientProvider {
       throw new IllegalStateException("Previous server process not cleaned up");
     }
 
-    String trackingUri = System.getenv("MLFLOW_TRACKING_URI");
+    String trackingUri = System.getenv("QCFLOW_TRACKING_URI");
     if (trackingUri != null) {
-      logger.info("MLFLOW_TRACKING_URI was set, test will run against that server");
+      logger.info("QCFLOW_TRACKING_URI was set, test will run against that server");
       client = new MlflowClient(trackingUri);
       return client;
     } else {
@@ -101,7 +101,7 @@ public class TestClientProvider {
   }
 
   /**
-   * Launches an "mlflow server" process locally. This requires that the "mlflow" command
+   * Launches an "qcflow server" process locally. This requires that the "qcflow" command
    * line client is on the local PATH (e.g., that we're within a conda environment), and that
    * we are allowed to bind to 127.0.0.1 on ephemeral ports.
    *
@@ -117,7 +117,7 @@ public class TestClientProvider {
     ProcessBuilder pb = new ProcessBuilder();
     int freePort = getFreePort();
     String bindAddress = "127.0.0.1";
-    pb.command("mlflow", "server",
+    pb.command("qcflow", "server",
             "--host", bindAddress,
             "--port", "" + freePort,
             "--backend-store-uri", backendStoreUri,
@@ -128,8 +128,8 @@ public class TestClientProvider {
     // NB: We cannot use pb.inheritIO() because that interacts poorly with the Maven
     // Surefire test runner (it keeps waiting for more input/output indefinitely).
     // Therefore, we must manually drain the stdout and stderr streams.
-    drainStream(serverProcess.getInputStream(), System.out, "mlflow-server-stdout-reader");
-    drainStream(serverProcess.getErrorStream(), System.err, "mlflow-server-stderr-reader");
+    drainStream(serverProcess.getInputStream(), System.out, "qcflow-server-stdout-reader");
+    drainStream(serverProcess.getErrorStream(), System.err, "qcflow-server-stderr-reader");
 
     logger.info("Awaiting start of server on port " + freePort);
     long startTime = System.nanoTime();

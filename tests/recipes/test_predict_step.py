@@ -8,13 +8,13 @@ import pytest
 from pyspark.sql import SparkSession
 from sklearn.datasets import load_diabetes
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.artifacts import RegisteredModelVersionInfo
-from mlflow.recipes.steps.predict import _INPUT_FILE_NAME, _SCORED_OUTPUT_FILE_NAME, PredictStep
-from mlflow.recipes.steps.register import _REGISTERED_MV_INFO_FILE
-from mlflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
-from mlflow.utils.file_utils import read_yaml
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.recipes.artifacts import RegisteredModelVersionInfo
+from qcflow.recipes.steps.predict import _INPUT_FILE_NAME, _SCORED_OUTPUT_FILE_NAME, PredictStep
+from qcflow.recipes.steps.register import _REGISTERED_MV_INFO_FILE
+from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
+from qcflow.utils.file_utils import read_yaml
 
 from tests.recipes.helper_functions import (
     get_random_id,
@@ -41,7 +41,7 @@ def spark_session():
 
 @pytest.fixture(autouse=True)
 def patch_env_manager():
-    with mock.patch("mlflow.recipes.steps.predict._ENV_MANAGER", "local"):
+    with mock.patch("qcflow.recipes.steps.predict._ENV_MANAGER", "local"):
         yield
 
 
@@ -74,7 +74,7 @@ def predict_step_output_dir(tmp_recipe_root_path: Path, tmp_recipe_exec_path: Pa
 recipe: "regression/v1"
 experiment:
   name: "test"
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 """
     )
     return predict_step_output_dir
@@ -384,7 +384,7 @@ def test_predict_skips_profiling_when_specified(
 ):
     model_name = "model_" + get_random_id()
     model_uri = train_log_and_register_model(model_name, is_dummy=True)
-    with mock.patch("mlflow.recipes.utils.step.get_pandas_data_profiles") as mock_profiling:
+    with mock.patch("qcflow.recipes.utils.step.get_pandas_data_profiles") as mock_profiling:
         recipe_config = read_yaml(tmp_recipe_root_path, _RECIPE_CONFIG_FILE_NAME)
         recipe_config.update(
             {
@@ -420,10 +420,10 @@ def test_predict_uses_registry_uri(
 ):
     registry_uri = registry_uri_path
     model_name = "model_" + get_random_id()
-    mlflow.set_registry_uri(registry_uri)
+    qcflow.set_registry_uri(registry_uri)
     model_uri = train_log_and_register_model(model_name, is_dummy=True)
     # reset model registry
-    mlflow.set_registry_uri("")
+    qcflow.set_registry_uri("")
 
     recipe_config = read_yaml(tmp_recipe_root_path, _RECIPE_CONFIG_FILE_NAME)
     recipe_config.update({"model_registry": {"registry_uri": str(registry_uri)}})
@@ -444,5 +444,5 @@ def test_predict_uses_registry_uri(
         recipe_config,
         str(tmp_recipe_root_path),
     ).run(str(predict_step_output_dir))
-    assert mlflow.get_registry_uri() == registry_uri
+    assert qcflow.get_registry_uri() == registry_uri
     prediction_assertions(predict_step_output_dir, "parquet", "output", spark_session)

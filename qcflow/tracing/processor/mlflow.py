@@ -8,9 +8,9 @@ from opentelemetry.sdk.trace import ReadableSpan as OTelReadableSpan
 from opentelemetry.sdk.trace import Span as OTelSpan
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor, SpanExporter
 
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.tracing.constant import (
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.tracing.constant import (
     MAX_CHARS_IN_TRACE_INFO_METADATA_AND_TAGS,
     TRACE_SCHEMA_VERSION,
     TRACE_SCHEMA_VERSION_KEY,
@@ -19,20 +19,20 @@ from mlflow.tracing.constant import (
     TraceMetadataKey,
     TraceTagKey,
 )
-from mlflow.tracing.trace_manager import InMemoryTraceManager, _Trace
-from mlflow.tracing.utils import (
+from qcflow.tracing.trace_manager import InMemoryTraceManager, _Trace
+from qcflow.tracing.utils import (
     deduplicate_span_names_in_place,
     get_otel_attribute,
     maybe_get_dependencies_schemas,
     maybe_get_request_id,
 )
-from mlflow.tracking.client import MlflowClient
-from mlflow.tracking.context.databricks_repo_context import DatabricksRepoRunContext
-from mlflow.tracking.context.git_context import GitRunContext
-from mlflow.tracking.context.registry import resolve_tags
-from mlflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
-from mlflow.tracking.fluent import _get_experiment_id
-from mlflow.utils.mlflow_tags import TRACE_RESOLVE_TAGS_ALLOWLIST
+from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.context.databricks_repo_context import DatabricksRepoRunContext
+from qcflow.tracking.context.git_context import GitRunContext
+from qcflow.tracking.context.registry import resolve_tags
+from qcflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
+from qcflow.tracking.fluent import _get_experiment_id
+from qcflow.utils.qcflow_tags import TRACE_RESOLVE_TAGS_ALLOWLIST
 
 _logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class MlflowSpanProcessor(SimpleSpanProcessor):
     """
     Defines custom hooks to be executed when a span is started or ended (before exporting).
 
-    This processor is used when the tracing destination is MLflow Tracking Server.
+    This processor is used when the tracing destination is QCFlow Tracking Server.
     """
 
     def __init__(self, span_exporter: SpanExporter, client: Optional[MlflowClient] = None):
@@ -85,16 +85,16 @@ class MlflowSpanProcessor(SimpleSpanProcessor):
         span.set_attribute(SpanAttributeKey.REQUEST_ID, json.dumps(request_id))
 
     def _start_trace(self, span: OTelSpan, start_time_ns: Optional[int]) -> TraceInfo:
-        from mlflow.tracking.fluent import _get_latest_active_run
+        from qcflow.tracking.fluent import _get_latest_active_run
 
         experiment_id = get_otel_attribute(span, SpanAttributeKey.EXPERIMENT_ID)
         metadata = {TRACE_SCHEMA_VERSION_KEY: str(TRACE_SCHEMA_VERSION)}
-        # If the span is started within an active MLflow run, we should record it as a trace tag
-        # Note `mlflow.active_run()` can only get thread-local active run,
+        # If the span is started within an active QCFlow run, we should record it as a trace tag
+        # Note `qcflow.active_run()` can only get thread-local active run,
         # but tracing routine might be applied to model inference worker threads
         # in the following cases:
         #  - langchain model `chain.batch` which uses thread pool to spawn workers.
-        #  - MLflow langchain pyfunc model `predict` which calls `api_request_parallel_processor`.
+        #  - QCFlow langchain pyfunc model `predict` which calls `api_request_parallel_processor`.
         # Therefore, we use `_get_global_active_run()` instead to get the active run from
         # all threads and set it as the tracing source run.
         if run := _get_latest_active_run():
@@ -115,7 +115,7 @@ class MlflowSpanProcessor(SimpleSpanProcessor):
                 "probable performance issues over time due to directory table listing performance "
                 "degradation with high volumes of directories within a specific path. "
                 "To avoid performance and disambiguation issues, set the experiment for "
-                "your environment using `mlflow.set_experiment()` API."
+                "your environment using `qcflow.set_experiment()` API."
             )
             self._issued_default_exp_warning = True
 
@@ -127,7 +127,7 @@ class MlflowSpanProcessor(SimpleSpanProcessor):
             if key in TRACE_RESOLVE_TAGS_ALLOWLIST
         }
 
-        # If the trace is created in the context of MLflow model evaluation, we extract the request
+        # If the trace is created in the context of QCFlow model evaluation, we extract the request
         # ID from the prediction context. Otherwise, we create a new trace info by calling the
         # backend API.
         if request_id := maybe_get_request_id(is_evaluate=True):

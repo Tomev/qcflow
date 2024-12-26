@@ -130,7 +130,7 @@ const CompareModelVersionsPageWithRouter = withRouterNext(
 );
 
 export const CompareModelVersionsPage = withErrorBoundary(
-  ErrorUtils.mlflowServices.MODEL_REGISTRY,
+  ErrorUtils.qcflowServices.MODEL_REGISTRY,
   CompareModelVersionsPageWithRouter,
 );
 

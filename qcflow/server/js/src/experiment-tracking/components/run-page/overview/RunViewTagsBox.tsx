@@ -7,7 +7,7 @@ import { keys, values } from 'lodash';
 import { useDispatch } from 'react-redux';
 import { ThunkDispatch } from '../../../../redux-types';
 import { setRunTagsBulkApi } from '../../../actions';
-import { MLFLOW_INTERNAL_PREFIX } from '../../../../common/utils/TagUtils';
+import { QCFLOW_INTERNAL_PREFIX } from '../../../../common/utils/TagUtils';
 import { useMemo } from 'react';
 import { isUserFacingTag } from '../../../../common/utils/TagUtils';
 
@@ -64,7 +64,7 @@ export const RunViewTagsBox = ({
     >
       {visibleTagEntities.length < 1 ? (
         <Button
-          componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewtagsbox.tsx_67"
+          componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewtagsbox.tsx_67"
           size="small"
           type="link"
           onClick={showEditModal}
@@ -78,7 +78,7 @@ export const RunViewTagsBox = ({
           ))}
           <LegacyTooltip title={editTagsLabel}>
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewtagsbox.tsx_76"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewtagsbox.tsx_76"
               aria-label={editTagsLabel}
               size="small"
               icon={<PencilIcon />}

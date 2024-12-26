@@ -3,9 +3,9 @@ from typing import Optional
 import numpy as np
 from sklearn import metrics as sk_metrics
 
-import mlflow
-from mlflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
-from mlflow.models.evaluation.default_evaluator import (
+import qcflow
+from qcflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
+from qcflow.models.evaluation.default_evaluator import (
     BuiltInEvaluator,
     _extract_predict_fn,
     _get_aggregate_metrics_values,
@@ -25,7 +25,7 @@ class RegressorEvaluator(BuiltInEvaluator):
 
     def _evaluate(
         self,
-        model: Optional["mlflow.pyfunc.PyFuncModel"],
+        model: Optional["qcflow.pyfunc.PyFuncModel"],
         extra_metrics: list[EvaluationMetric],
         custom_artifacts=None,
         **kwargs,
@@ -65,7 +65,7 @@ class RegressorEvaluator(BuiltInEvaluator):
 
 
 def _get_regressor_metrics(y, y_pred, sample_weights):
-    from mlflow.metrics.metric_definitions import _root_mean_squared_error
+    from qcflow.metrics.metric_definitions import _root_mean_squared_error
 
     sum_on_target = (
         (np.array(y) * np.array(sample_weights)).sum() if sample_weights is not None else sum(y)

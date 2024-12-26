@@ -9,12 +9,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-import mlflow.utils.async_logging.async_logging_queue
-from mlflow import MlflowException
-from mlflow.entities.metric import Metric
-from mlflow.entities.param import Param
-from mlflow.entities.run_tag import RunTag
-from mlflow.utils.async_logging.async_logging_queue import AsyncLoggingQueue, QueueStatus
+import qcflow.utils.async_logging.async_logging_queue
+from qcflow import MlflowException
+from qcflow.entities.metric import Metric
+from qcflow.entities.param import Param
+from qcflow.entities.run_tag import RunTag
+from qcflow.utils.async_logging.async_logging_queue import AsyncLoggingQueue, QueueStatus
 
 METRIC_PER_BATCH = 250
 TAGS_PER_BATCH = 1
@@ -55,7 +55,7 @@ def generate_async_logging_queue(clazz):
 
 
 def test_single_thread_publish_consume_queue(monkeypatch):
-    monkeypatch.setenv("MLFLOW_ASYNC_LOGGING_BUFFERING_SECONDS", "3")
+    monkeypatch.setenv("QCFLOW_ASYNC_LOGGING_BUFFERING_SECONDS", "3")
 
     with (
         patch.object(
@@ -377,9 +377,9 @@ def _assert_sent_received_data(
 
 
 def test_batch_split(monkeypatch):
-    monkeypatch.setattr(mlflow.utils.async_logging.async_logging_queue, "_MAX_ITEMS_PER_BATCH", 10)
-    monkeypatch.setattr(mlflow.utils.async_logging.async_logging_queue, "_MAX_PARAMS_PER_BATCH", 6)
-    monkeypatch.setattr(mlflow.utils.async_logging.async_logging_queue, "_MAX_TAGS_PER_BATCH", 8)
+    monkeypatch.setattr(qcflow.utils.async_logging.async_logging_queue, "_MAX_ITEMS_PER_BATCH", 10)
+    monkeypatch.setattr(qcflow.utils.async_logging.async_logging_queue, "_MAX_PARAMS_PER_BATCH", 6)
+    monkeypatch.setattr(qcflow.utils.async_logging.async_logging_queue, "_MAX_TAGS_PER_BATCH", 8)
 
     run_data = RunData()
     with generate_async_logging_queue(run_data) as async_logging_queue:

@@ -1,2 +1,2 @@
-import mlflow.pyfunc.loaders.chat_model
-import mlflow.pyfunc.loaders.code_model  # noqa: F401
+import qcflow.pyfunc.loaders.chat_model
+import qcflow.pyfunc.loaders.code_model  # noqa: F401

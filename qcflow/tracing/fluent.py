@@ -11,33 +11,33 @@ from typing import TYPE_CHECKING, Any, Callable, Generator, Optional, Union
 from cachetools import TTLCache
 from opentelemetry import trace as trace_api
 
-from mlflow import MlflowClient
-from mlflow.entities import NoOpSpan, SpanType, Trace
-from mlflow.entities.span import LiveSpan, create_mlflow_span
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.environment_variables import (
-    MLFLOW_TRACE_BUFFER_MAX_SIZE,
-    MLFLOW_TRACE_BUFFER_TTL_SECONDS,
+from qcflow import MlflowClient
+from qcflow.entities import NoOpSpan, SpanType, Trace
+from qcflow.entities.span import LiveSpan, create_qcflow_span
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.environment_variables import (
+    QCFLOW_TRACE_BUFFER_MAX_SIZE,
+    QCFLOW_TRACE_BUFFER_TTL_SECONDS,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import BAD_REQUEST
-from mlflow.store.tracking import SEARCH_TRACES_DEFAULT_MAX_RESULTS
-from mlflow.tracing import provider
-from mlflow.tracing.constant import SpanAttributeKey
-from mlflow.tracing.display import get_display_handler
-from mlflow.tracing.provider import is_tracing_enabled
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracing.utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import BAD_REQUEST
+from qcflow.store.tracking import SEARCH_TRACES_DEFAULT_MAX_RESULTS
+from qcflow.tracing import provider
+from qcflow.tracing.constant import SpanAttributeKey
+from qcflow.tracing.display import get_display_handler
+from qcflow.tracing.provider import is_tracing_enabled
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracing.utils import (
     SPANS_COLUMN_NAME,
     capture_function_input_args,
     encode_span_id,
     get_otel_attribute,
 )
-from mlflow.tracing.utils.search import extract_span_inputs_outputs, traces_to_df
-from mlflow.tracking.fluent import _get_experiment_id
-from mlflow.utils import get_results_from_paginated_fn
-from mlflow.utils.annotations import experimental
-from mlflow.utils.databricks_utils import is_in_databricks_model_serving_environment
+from qcflow.tracing.utils.search import extract_span_inputs_outputs, traces_to_df
+from qcflow.tracking.fluent import _get_experiment_id
+from qcflow.utils import get_results_from_paginated_fn
+from qcflow.utils.annotations import experimental
+from qcflow.utils.databricks_utils import is_in_databricks_model_serving_environment
 
 _logger = logging.getLogger(__name__)
 
@@ -49,8 +49,8 @@ if TYPE_CHECKING:
 # For example, Databricks model serving fetches the trace data from the buffer after
 # making the prediction request, and logging them into the Inference Table.
 TRACE_BUFFER = TTLCache(
-    maxsize=MLFLOW_TRACE_BUFFER_MAX_SIZE.get(),
-    ttl=MLFLOW_TRACE_BUFFER_TTL_SECONDS.get(),
+    maxsize=QCFLOW_TRACE_BUFFER_MAX_SIZE.get(),
+    ttl=QCFLOW_TRACE_BUFFER_TTL_SECONDS.get(),
 )
 
 
@@ -63,7 +63,7 @@ def trace(
     """
     A decorator that creates a new span for the decorated function.
 
-    When you decorate a function with this :py:func:`@mlflow.trace() <trace>` decorator,
+    When you decorate a function with this :py:func:`@qcflow.trace() <trace>` decorator,
     a span will be created for the scope of the decorated function. The span will automatically
     capture the input and output of the function. When it is applied to a method, it doesn't
     capture the `self` argument. Any exception raised within the function will set the span
@@ -76,27 +76,27 @@ def trace(
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
 
-        @mlflow.trace
+        @qcflow.trace
         def my_function(x, y):
             return x + y
 
-    This is equivalent to doing the following using the :py:func:`mlflow.start_span` context
+    This is equivalent to doing the following using the :py:func:`qcflow.start_span` context
     manager, but requires less boilerplate code.
 
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
 
         def my_function(x, y):
             return x + y
 
 
-        with mlflow.start_span("my_function") as span:
+        with qcflow.start_span("my_function") as span:
             x = 1
             y = 2
             span.set_inputs({"x": x, "y": y})
@@ -106,9 +106,9 @@ def trace(
 
     .. tip::
 
-        The @mlflow.trace decorator is useful when you want to trace a function defined by
+        The @qcflow.trace decorator is useful when you want to trace a function defined by
         yourself. However, you may also want to trace a function in external libraries. In
-        such case, you can use this ``mlflow.trace()`` function to directly wrap the function,
+        such case, you can use this ``qcflow.trace()`` function to directly wrap the function,
         instead of using as the decorator. This will create the exact same span as the
         one created by the decorator i.e. captures information from the function call.
 
@@ -117,15 +117,15 @@ def trace(
 
             import math
 
-            import mlflow
+            import qcflow
 
-            mlflow.trace(math.factorial)(5)
+            qcflow.trace(math.factorial)(5)
 
     Args:
         func: The function to be decorated. Must **not** be provided when using as a decorator.
         name: The name of the span. If not provided, the name of the function will be used.
         span_type: The type of the span. Can be either a string or a
-            :py:class:`SpanType <mlflow.entities.SpanType>` enum value.
+            :py:class:`SpanType <qcflow.entities.SpanType>` enum value.
         attributes: A dictionary of attributes to set on the span.
     """
 
@@ -198,9 +198,9 @@ def start_span(
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_span("my_span") as span:
+        with qcflow.start_span("my_span") as span:
             x = 1
             y = 2
             span.set_inputs({"x": x, "y": y})
@@ -219,7 +219,7 @@ def start_span(
     .. tip::
 
         If you want more explicit control over the trace lifecycle, you can use
-        :py:func:`MLflow Client APIs <mlflow.client.MlflowClient.start_trace>`. It provides lower
+        :py:func:`QCFlow Client APIs <qcflow.client.MlflowClient.start_trace>`. It provides lower
         level to start and end traces manually, as well as setting the parent spans explicitly.
         However, it is generally recommended to use this context manager as long as it satisfies
         your requirements, because it requires less boilerplate code and is less error-prone.
@@ -228,7 +228,7 @@ def start_span(
 
         The context manager doesn't propagate the span context across threads. If you want to create
         a child span in a different thread, you should use
-        :py:func:`MLflow Client APIs <mlflow.client.MlflowClient.start_trace>`
+        :py:func:`QCFlow Client APIs <qcflow.client.MlflowClient.start_trace>`
         and pass the parent span ID explicitly.
 
     .. note::
@@ -236,46 +236,46 @@ def start_span(
         All spans created under the root span (i.e. a single trace) are buffered in memory and
         not exported until the root span is ended. The buffer has a default size of 1000 traces
         and TTL of 1 hour. You can configure the buffer size and TTL using the environment variables
-        ``MLFLOW_TRACE_BUFFER_MAX_SIZE`` and ``MLFLOW_TRACE_BUFFER_TTL_SECONDS`` respectively.
+        ``QCFLOW_TRACE_BUFFER_MAX_SIZE`` and ``QCFLOW_TRACE_BUFFER_TTL_SECONDS`` respectively.
 
     Args:
         name: The name of the span.
         span_type: The type of the span. Can be either a string or
-            a :py:class:`SpanType <mlflow.entities.SpanType>` enum value
+            a :py:class:`SpanType <qcflow.entities.SpanType>` enum value
         attributes: A dictionary of attributes to set on the span.
 
     Returns:
-        Yields an :py:class:`mlflow.entities.Span` that represents the created span.
+        Yields an :py:class:`qcflow.entities.Span` that represents the created span.
     """
     try:
         otel_span = provider.start_span_in_context(name)
 
-        # Create a new MLflow span and register it to the in-memory trace manager
+        # Create a new QCFlow span and register it to the in-memory trace manager
         request_id = get_otel_attribute(otel_span, SpanAttributeKey.REQUEST_ID)
-        mlflow_span = create_mlflow_span(otel_span, request_id, span_type)
-        mlflow_span.set_attributes(attributes or {})
-        InMemoryTraceManager.get_instance().register_span(mlflow_span)
+        qcflow_span = create_qcflow_span(otel_span, request_id, span_type)
+        qcflow_span.set_attributes(attributes or {})
+        InMemoryTraceManager.get_instance().register_span(qcflow_span)
 
     except Exception as e:
         _logger.warning(
             f"Failed to start span: {e}. For full traceback, set logging level to debug.",
             exc_info=_logger.isEnabledFor(logging.DEBUG),
         )
-        mlflow_span = NoOpSpan()
-        yield mlflow_span
+        qcflow_span = NoOpSpan()
+        yield qcflow_span
         return
 
     try:
         # Setting end_on_exit = False to suppress the default span
-        # export and instead invoke MLflow span's end() method.
-        with trace_api.use_span(mlflow_span._span, end_on_exit=False):
-            yield mlflow_span
+        # export and instead invoke QCFlow span's end() method.
+        with trace_api.use_span(qcflow_span._span, end_on_exit=False):
+            yield qcflow_span
     finally:
         try:
-            mlflow_span.end()
+            qcflow_span.end()
         except Exception as e:
             _logger.warning(
-                f"Failed to end span {mlflow_span.span_id}: {e}. "
+                f"Failed to end span {qcflow_span.span_id}: {e}. "
                 "For full traceback, set logging level to debug.",
                 exc_info=_logger.isEnabledFor(logging.DEBUG),
             )
@@ -296,18 +296,18 @@ def get_trace(request_id: str) -> Optional[Trace]:
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
 
-        with mlflow.start_span(name="span") as span:
+        with qcflow.start_span(name="span") as span:
             span.set_attribute("key", "value")
 
-        trace = mlflow.get_trace(span.request_id)
+        trace = qcflow.get_trace(span.request_id)
         print(trace)
 
 
     Returns:
-        A :py:class:`mlflow.entities.Trace` objects with the given request ID.
+        A :py:class:`qcflow.entities.Trace` objects with the given request ID.
     """
     # Try to get the trace from the in-memory buffer first
     if trace := TRACE_BUFFER.get(request_id, None):
@@ -338,9 +338,9 @@ def search_traces(
     .. tip::
 
         This API returns a **Pandas DataFrame** that contains the traces as rows. To retrieve
-        a list of the original :py:class:`Trace <mlflow.entities.Trace>` objects,
+        a list of the original :py:class:`Trace <qcflow.entities.Trace>` objects,
         you can use the :py:meth:`MlflowClient().search_traces
-        <mlflow.client.MlflowClient.search_traces>` method instead.
+        <qcflow.client.MlflowClient.search_traces>` method instead.
 
     Args:
         experiment_ids: List of experiment ids to scope the search. If not provided, the search
@@ -382,13 +382,13 @@ def search_traces(
         :test:
         :caption: Search traces with extract_fields
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_span(name="span1") as span:
+        with qcflow.start_span(name="span1") as span:
             span.set_inputs({"a": 1, "b": 2})
             span.set_outputs({"c": 3, "d": 4})
 
-        mlflow.search_traces(
+        qcflow.search_traces(
             extract_fields=["span1.inputs", "span1.outputs", "span1.outputs.c"]
         )
 
@@ -397,13 +397,13 @@ def search_traces(
         :test:
         :caption: Search traces with extract_fields and non-dictionary span inputs and outputs
 
-        import mlflow
+        import qcflow
 
-        with mlflow.start_span(name="non_dict_span") as span:
+        with qcflow.start_span(name="non_dict_span") as span:
             span.set_inputs(["a", "b"])
             span.set_outputs([1, 2, 3])
 
-        mlflow.search_traces(
+        qcflow.search_traces(
             extract_fields=["non_dict_span.inputs", "non_dict_span.outputs"],
         )
 
@@ -411,18 +411,18 @@ def search_traces(
         :test:
         :caption: Search traces by run ID
 
-        import mlflow
+        import qcflow
 
 
-        @mlflow.trace
+        @qcflow.trace
         def traced_func(x):
             return x + 1
 
 
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             traced_func(1)
 
-        mlflow.search_traces(run_id=run.info.run_id)
+        qcflow.search_traces(run_id=run.info.run_id)
 
     """
     # Check if pandas is installed early to avoid unnecessary computation
@@ -430,7 +430,7 @@ def search_traces(
         raise MlflowException(
             message=(
                 "The `pandas` library is not installed. Please install `pandas` to use"
-                "`mlflow.search_traces` function."
+                "`qcflow.search_traces` function."
             ),
         )
 
@@ -439,7 +439,7 @@ def search_traces(
             experiment_ids = [experiment_id]
         else:
             raise MlflowException(
-                "No active experiment found. Set an experiment using `mlflow.set_experiment`, "
+                "No active experiment found. Set an experiment using `qcflow.set_experiment`, "
                 "or specify the list of experiment IDs in the `experiment_ids` parameter."
             )
 
@@ -478,20 +478,20 @@ def get_current_active_span() -> Optional[LiveSpan]:
 
     .. attention::
 
-        This only works when the span is created with fluent APIs like `@mlflow.trace` or
-        `with mlflow.start_span`. If a span is created with MlflowClient APIs, it won't be
+        This only works when the span is created with fluent APIs like `@qcflow.trace` or
+        `with qcflow.start_span`. If a span is created with MlflowClient APIs, it won't be
         attached to the global context so this function will not return it.
 
 
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
 
-        @mlflow.trace
+        @qcflow.trace
         def f():
-            span = mlflow.get_current_active_span()
+            span = qcflow.get_current_active_span()
             span.set_attribute("key", "value")
             return 0
 
@@ -523,7 +523,7 @@ def get_last_active_trace() -> Optional[Trace]:
 
         The last active trace is only stored in-memory for the time defined by the TTL
         (Time To Live) configuration. By default, the TTL is 1 hour and can be configured
-        using the environment variable ``MLFLOW_TRACE_BUFFER_TTL_SECONDS``.
+        using the environment variable ``QCFLOW_TRACE_BUFFER_TTL_SECONDS``.
 
     .. note::
 
@@ -537,28 +537,28 @@ def get_last_active_trace() -> Optional[Trace]:
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
 
-        @mlflow.trace
+        @qcflow.trace
         def f():
             pass
 
 
         f()
 
-        trace = mlflow.get_last_active_trace()
+        trace = qcflow.get_last_active_trace()
 
 
         # Use MlflowClient APIs to mutate the ended trace
-        mlflow.MlflowClient().set_trace_tag(trace.info.request_id, "key", "value")
+        qcflow.MlflowClient().set_trace_tag(trace.info.request_id, "key", "value")
 
     Returns:
         The last active trace if exists, otherwise None.
     """
     if is_in_databricks_model_serving_environment():
         raise MlflowException(
-            "The function `mlflow.get_last_active_trace` is not supported in "
+            "The function `qcflow.get_last_active_trace` is not supported in "
             "Databricks model serving.",
             error_code=BAD_REQUEST,
         )
@@ -576,33 +576,33 @@ def update_current_trace(
     """
     Update the current active trace with the given tags.
 
-    You can use this function either within a function decorated with `@mlflow.trace` or within the
-    scope of the `with mlflow.start_span` context manager. If there is no active trace found, this
+    You can use this function either within a function decorated with `@qcflow.trace` or within the
+    scope of the `with qcflow.start_span` context manager. If there is no active trace found, this
     function will raise an exception.
 
-    Using within a function decorated with `@mlflow.trace`:
+    Using within a function decorated with `@qcflow.trace`:
 
     .. code-block:: python
 
-        @mlflow.trace
+        @qcflow.trace
         def my_func(x):
-            mlflow.update_current_trace(tags={"fruit": "apple"})
+            qcflow.update_current_trace(tags={"fruit": "apple"})
             return x + 1
 
-    Using within the `with mlflow.start_span` context manager:
+    Using within the `with qcflow.start_span` context manager:
 
     .. code-block:: python
 
-        with mlflow.start_span("span"):
-            mlflow.update_current_trace(tags={"fruit": "apple"})
+        with qcflow.start_span("span"):
+            qcflow.update_current_trace(tags={"fruit": "apple"})
 
     """
     active_span = get_current_active_span()
 
     if not active_span:
         raise MlflowException(
-            "No active trace found. Please create a span using `mlflow.start_span` or "
-            "`@mlflow.trace` before calling this function.",
+            "No active trace found. Please create a span using `qcflow.start_span` or "
+            "`@qcflow.trace` before calling this function.",
             error_code=BAD_REQUEST,
         )
 
@@ -620,7 +620,7 @@ def add_trace(trace: Union[Trace, dict[str, Any]], target: Optional[LiveSpan] = 
     Add a completed trace object into another trace.
 
     This is particularly useful when you call a remote service instrumented by
-    MLflow Tracing. By using this function, you can merge the trace from the remote
+    QCFlow Tracing. By using this function, you can merge the trace from the remote
     service into the current active local trace, so that you can see the full
     trace including what happens inside the remote service call.
 
@@ -629,7 +629,7 @@ def add_trace(trace: Union[Trace, dict[str, Any]], target: Optional[LiveSpan] = 
 
     .. code-block:: python
 
-        @mlflow.trace(name="predict")
+        @qcflow.trace(name="predict")
         def predict(input):
             # Call a remote service that returns a trace in the response
             resp = requests.get("https://your-service-endpoint", ...)
@@ -639,7 +639,7 @@ def add_trace(trace: Union[Trace, dict[str, Any]], target: Optional[LiveSpan] = 
 
             # Use the remote trace as a part of the current active trace.
             # It will be merged under the span "predict" and exported together when it is ended.
-            mlflow.add_trace(trace_json)
+            qcflow.add_trace(trace_json)
 
     If you have a specific target span to merge the trace under, you can pass the target span
 
@@ -653,10 +653,10 @@ def add_trace(trace: Union[Trace, dict[str, Any]], target: Optional[LiveSpan] = 
             trace_json = resp.json().get("trace")
 
             # Merge the remote trace under the span created above
-            mlflow.add_trace(trace_json, target=span)
+            qcflow.add_trace(trace_json, target=span)
 
     Args:
-        trace: A :py:class:`Trace <mlflow.entities.Trace>` object or a dictionary representation
+        trace: A :py:class:`Trace <qcflow.entities.Trace>` object or a dictionary representation
             of the trace. The trace **must** be already completed i.e. no further updates should
             be made to it. Otherwise, this function will raise an exception.
 
@@ -683,11 +683,11 @@ def add_trace(trace: Union[Trace, dict[str, Any]], target: Optional[LiveSpan] = 
         except Exception as e:
             raise MlflowException.invalid_parameter_value(
                 "Failed to load a trace object from the given dictionary. Please ensure the "
-                f"dictionary is in the correct MLflow Trace format. Error: {e}",
+                f"dictionary is in the correct QCFlow Trace format. Error: {e}",
             )
     elif not isinstance(trace, Trace):
         raise MlflowException.invalid_parameter_value(
-            f"Invalid trace object: {type(trace)}. Please provide a valid MLflow Trace object "
+            f"Invalid trace object: {type(trace)}. Please provide a valid QCFlow Trace object "
             "to use it as a remote trace. You can create a Trace object from its json format by "
             "using the Trace.from_dict() method."
         )

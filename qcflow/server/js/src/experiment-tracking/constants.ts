@@ -32,11 +32,11 @@ export const ATTRIBUTE_COLUMN_SORT_LABEL = {
 
 export const ATTRIBUTE_COLUMN_SORT_KEY = {
   DATE: 'attributes.start_time',
-  USER: 'tags.`mlflow.user`',
-  RUN_NAME: 'tags.`mlflow.runName`',
-  SOURCE: 'tags.`mlflow.source.name`',
-  VERSION: 'tags.`mlflow.source.git.commit`',
-  DESCRIPTION: 'tags.`mlflow.note.content`',
+  USER: 'tags.`qcflow.user`',
+  RUN_NAME: 'tags.`qcflow.runName`',
+  SOURCE: 'tags.`qcflow.source.name`',
+  VERSION: 'tags.`qcflow.source.git.commit`',
+  DESCRIPTION: 'tags.`qcflow.note.content`',
 };
 
 export const COLUMN_SORT_BY_ASC = 'ASCENDING';
@@ -80,24 +80,24 @@ export const POLL_INTERVAL = 15000;
 export const AUTOML_TAG_PREFIX = '_databricks_automl';
 export const AUTOML_EVALUATION_METRIC_TAG = `${AUTOML_TAG_PREFIX}.evaluation_metric`;
 
-export const MLFLOW_EXPERIMENT_PRIMARY_METRIC_NAME = 'mlflow.experiment.primaryMetric.name';
-export const MLFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER = 'mlflow.experiment.primaryMetric.greaterIsBetter';
-export const MLFLOW_RUN_DATASET_CONTEXT_TAG = 'mlflow.data.context';
-export const MLFLOW_LOGGED_ARTIFACTS_TAG = 'mlflow.loggedArtifacts';
-export const EXPERIMENT_PAGE_FEEDBACK_URL = 'https://github.com/mlflow/mlflow/issues/6348';
+export const QCFLOW_EXPERIMENT_PRIMARY_METRIC_NAME = 'qcflow.experiment.primaryMetric.name';
+export const QCFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER = 'qcflow.experiment.primaryMetric.greaterIsBetter';
+export const QCFLOW_RUN_DATASET_CONTEXT_TAG = 'qcflow.data.context';
+export const QCFLOW_LOGGED_ARTIFACTS_TAG = 'qcflow.loggedArtifacts';
+export const EXPERIMENT_PAGE_FEEDBACK_URL = 'https://github.com/qcflow/qcflow/issues/6348';
 
-export const MLFLOW_RUN_TYPE_TAG = 'mlflow.runType';
-export const MLFLOW_RUN_COLOR_TAG = 'mlflow.runColor';
-export const MLFLOW_RUN_SOURCE_TYPE_TAG = 'mlflow.runSourceType';
-export const MLFLOW_RUN_TYPE_VALUE_EVALUATION = 'evaluation';
+export const QCFLOW_RUN_TYPE_TAG = 'qcflow.runType';
+export const QCFLOW_RUN_COLOR_TAG = 'qcflow.runColor';
+export const QCFLOW_RUN_SOURCE_TYPE_TAG = 'qcflow.runSourceType';
+export const QCFLOW_RUN_TYPE_VALUE_EVALUATION = 'evaluation';
 
-export const MLFLOW_RUN_GIT_SOURCE_BRANCH_TAG = 'mlflow.source.git.branch';
+export const QCFLOW_RUN_GIT_SOURCE_BRANCH_TAG = 'qcflow.source.git.branch';
 
-export enum MLflowRunSourceType {
+export enum QCFlowRunSourceType {
   PROMPT_ENGINEERING = 'PROMPT_ENGINEERING',
 }
 
-export const MLFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME = 'eval_results_table.json';
+export const QCFLOW_PROMPT_ENGINEERING_ARTIFACT_NAME = 'eval_results_table.json';
 
 export enum RunPageTabName {
   OVERVIEW = 'overview',
@@ -108,25 +108,25 @@ export enum RunPageTabName {
   EVALUATIONS = 'evaluations',
 }
 
-export const MLFLOW_SYSTEM_METRIC_PREFIX = 'system/';
+export const QCFLOW_SYSTEM_METRIC_PREFIX = 'system/';
 
-export const MLFLOW_SYSTEM_METRIC_NAME = 'System metrics';
+export const QCFLOW_SYSTEM_METRIC_NAME = 'System metrics';
 
-export const MLFLOW_MODEL_METRIC_PREFIX = '';
+export const QCFLOW_MODEL_METRIC_PREFIX = '';
 
-export const MLFLOW_MODEL_METRIC_NAME = 'Model metrics';
+export const QCFLOW_MODEL_METRIC_NAME = 'Model metrics';
 
 export const EXPERIMENT_PAGE_VIEW_STATE_SHARE_URL_PARAM_KEY = 'viewStateShareKey';
-export const EXPERIMENT_PAGE_VIEW_STATE_SHARE_TAG_PREFIX = 'mlflow.sharedViewState.';
+export const EXPERIMENT_PAGE_VIEW_STATE_SHARE_TAG_PREFIX = 'qcflow.sharedViewState.';
 
-export const MLFLOW_LOGGED_IMAGE_ARTIFACTS_PATH = 'images';
+export const QCFLOW_LOGGED_IMAGE_ARTIFACTS_PATH = 'images';
 export const IMAGE_FILE_EXTENSION = 'png';
 export const IMAGE_COMPRESSED_FILE_EXTENSION = 'webp';
 export const EXPERIMENT_RUNS_IMAGE_AUTO_REFRESH_INTERVAL = 30000;
 export const DEFAULT_IMAGE_GRID_CHART_NAME = 'Image grid';
 
 export const LOG_TABLE_IMAGE_COLUMN_TYPE = 'image';
-export const LOG_IMAGE_TAG_INDICATOR = 'mlflow.loggedImages';
+export const LOG_IMAGE_TAG_INDICATOR = 'qcflow.loggedImages';
 export const NUM_RUNS_TO_SUPPORT_FOR_LOG_IMAGE = 10;
 
 /**

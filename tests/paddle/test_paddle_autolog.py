@@ -1,8 +1,8 @@
 import paddle
 import pytest
 
-import mlflow
-from mlflow import MlflowClient
+import qcflow
+from qcflow import MlflowClient
 
 NUM_EPOCHS = 6
 
@@ -34,9 +34,9 @@ def train_model(**fit_kwargs):
 
 
 def test_autolog_logs_expected_data():
-    mlflow.paddle.autolog()
+    qcflow.paddle.autolog()
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         train_model()
 
     client = MlflowClient()
@@ -59,10 +59,10 @@ def test_autolog_logs_expected_data():
 
 
 def test_autolog_early_stopping_callback():
-    mlflow.paddle.autolog()
+    qcflow.paddle.autolog()
 
     early_stopping = paddle.callbacks.EarlyStopping("loss", mode="min", patience=1, min_delta=0)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         train_model(callbacks=[early_stopping])
 
     client = MlflowClient()
@@ -84,9 +84,9 @@ def test_autolog_early_stopping_callback():
 
 @pytest.mark.parametrize("log_models", [True, False])
 def test_autolog_log_models_configuration(log_models):
-    mlflow.paddle.autolog(log_models=log_models)
+    qcflow.paddle.autolog(log_models=log_models)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         train_model()
 
     artifacts = MlflowClient().list_artifacts(run.info.run_id)
@@ -95,9 +95,9 @@ def test_autolog_log_models_configuration(log_models):
 
 def test_autolog_registering_model():
     registered_model_name = "test_autolog_registered_model"
-    mlflow.paddle.autolog(registered_model_name=registered_model_name)
+    qcflow.paddle.autolog(registered_model_name=registered_model_name)
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         train_model()
 
         registered_model = MlflowClient().get_registered_model(registered_model_name)
@@ -105,9 +105,9 @@ def test_autolog_registering_model():
 
 
 def test_extra_tags_paddle_autolog():
-    mlflow.paddle.autolog(extra_tags={"test_tag": "paddle_autolog"})
+    qcflow.paddle.autolog(extra_tags={"test_tag": "paddle_autolog"})
     train_model()
 
-    run = mlflow.last_active_run()
+    run = qcflow.last_active_run()
     assert run.data.tags["test_tag"] == "paddle_autolog"
-    assert run.data.tags[mlflow.utils.mlflow_tags.MLFLOW_AUTOLOGGING] == "paddle"
+    assert run.data.tags[qcflow.utils.qcflow_tags.QCFLOW_AUTOLOGGING] == "paddle"

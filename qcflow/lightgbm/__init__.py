@@ -1,10 +1,10 @@
 """
-The ``mlflow.lightgbm`` module provides an API for logging and loading LightGBM models.
+The ``qcflow.lightgbm`` module provides an API for logging and loading LightGBM models.
 This module exports LightGBM models with the following flavors:
 
 LightGBM (native) format
     This is the main flavor that can be loaded back into LightGBM.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and batch inference.
 
 .. _lightgbm.Booster:
@@ -29,58 +29,58 @@ from typing import Any, Optional
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.numpy_dataset import from_numpy
-from mlflow.data.pandas_dataset import from_pandas
-from mlflow.entities.dataset_input import DatasetInput
-from mlflow.entities.input_tag import InputTag
-from mlflow.models import Model, ModelInputExample, ModelSignature, infer_signature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import _save_example
-from mlflow.sklearn import _SklearnTrainingSession
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.tracking.context import registry as context_registry
-from mlflow.utils import _get_fully_qualified_class_name
-from mlflow.utils.arguments_utils import _get_arg_names
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.numpy_dataset import from_numpy
+from qcflow.data.pandas_dataset import from_pandas
+from qcflow.entities.dataset_input import DatasetInput
+from qcflow.entities.input_tag import InputTag
+from qcflow.models import Model, ModelInputExample, ModelSignature, infer_signature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import _save_example
+from qcflow.sklearn import _SklearnTrainingSession
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.tracking.context import registry as context_registry
+from qcflow.utils import _get_fully_qualified_class_name
+from qcflow.utils.arguments_utils import _get_arg_names
+from qcflow.utils.autologging_utils import (
     ENSURE_AUTOLOGGING_ENABLED_TEXT,
     INPUT_EXAMPLE_SAMPLE_ROWS,
     InputExampleInfo,
     MlflowAutologgingQueueingClient,
     autologging_integration,
     batch_metrics_logger,
-    get_mlflow_run_params_for_fn_args,
+    get_qcflow_run_params_for_fn_args,
     picklable_exception_safe_function,
     resolve_input_example_and_signature,
     safe_patch,
 )
-from mlflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
-from mlflow.utils.environment import (
+from qcflow.utils.docstring_utils import LOG_MODEL_PARAM_DOCS, format_docstring
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATASET_CONTEXT,
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATASET_CONTEXT,
 )
-from mlflow.utils.model_utils import (
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
 FLAVOR_NAME = "lightgbm"
 
@@ -91,7 +91,7 @@ _logger = logging.getLogger(__name__)
 def get_default_pip_requirements(include_cloudpickle=False):
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at minimum, contains these requirements.
     """
@@ -104,10 +104,10 @@ def get_default_pip_requirements(include_cloudpickle=False):
 def get_default_conda_env(include_cloudpickle=False):
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements(include_cloudpickle))
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements(include_cloudpickle))
 
 
 @format_docstring(LOG_MODEL_PARAM_DOCS.format(package_name=FLAVOR_NAME))
@@ -116,7 +116,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -132,7 +132,7 @@ def save_model(
         path: Local path where the model is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
         signature: {{ signature }}
         input_example: {{ input_example }}
         pip_requirements: {{ pip_requirements }}
@@ -145,7 +145,7 @@ def save_model(
         from pathlib import Path
         from lightgbm import LGBMClassifier
         from sklearn import datasets
-        import mlflow
+        import qcflow
 
         # Load iris dataset
         X, y = datasets.load_iris(return_X_y=True, as_frame=True)
@@ -158,10 +158,10 @@ def save_model(
 
         # Save the model
         path = "model"
-        mlflow.lightgbm.save_model(model, path)
+        qcflow.lightgbm.save_model(model, path)
 
         # Load model for inference
-        loaded_model = mlflow.lightgbm.load_model(Path.cwd() / path)
+        loaded_model = qcflow.lightgbm.load_model(Path.cwd() / path)
         print(loaded_model.predict(X[:5]))
 
     .. code-block:: text
@@ -179,9 +179,9 @@ def save_model(
     model_data_path = os.path.join(path, model_data_subpath)
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path)
 
     if signature is None and saved_example is not None:
         wrapped_model = _LGBModelWrapper(lgb_model)
@@ -190,23 +190,23 @@ def save_model(
         signature = None
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     # Save a LightGBM model
     _save_model(lgb_model, model_data_path)
 
     lgb_model_class = _get_fully_qualified_class_name(lgb_model)
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.lightgbm",
+        qcflow_model,
+        loader_module="qcflow.lightgbm",
         data=model_data_subpath,
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
     )
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         lgb_version=lgb.__version__,
         data=model_data_subpath,
@@ -214,8 +214,8 @@ def save_model(
         code=code_dir_subpath,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
@@ -223,8 +223,8 @@ def save_model(
                 include_cloudpickle=not isinstance(lgb_model, lgb.Booster)
             )
             # To ensure `_load_pyfunc` can successfully load the model during the dependency
-            # inference, `mlflow_model.save` must be called beforehand to save an MLmodel file.
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            # inference, `qcflow_model.save` must be called beforehand to save an MLmodel file.
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 path,
                 FLAVOR_NAME,
                 fallback=default_reqs,
@@ -285,7 +285,7 @@ def log_model(
     **kwargs,
 ):
     """
-    Log a LightGBM model as an MLflow artifact for the current run.
+    Log a LightGBM model as an QCFlow artifact for the current run.
 
     Args:
         lgb_model: LightGBM model (an instance of `lightgbm.Booster`_) or
@@ -308,7 +308,7 @@ def log_model(
         kwargs: kwargs to pass to `lightgbm.Booster.save_model`_ method.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
     .. code-block:: python
@@ -316,8 +316,8 @@ def log_model(
 
         from lightgbm import LGBMClassifier
         from sklearn import datasets
-        import mlflow
-        from mlflow.models import infer_signature
+        import qcflow
+        from qcflow.models import infer_signature
 
         # Load iris dataset
         X, y = datasets.load_iris(return_X_y=True, as_frame=True)
@@ -334,12 +334,12 @@ def log_model(
 
         # Log the model
         artifact_path = "model"
-        with mlflow.start_run():
-            model_info = mlflow.lightgbm.log_model(model, artifact_path, signature=signature)
+        with qcflow.start_run():
+            model_info = qcflow.lightgbm.log_model(model, artifact_path, signature=signature)
 
         # Fetch the logged model artifacts
         print(f"run_id: {run.info.run_id}")
-        client = mlflow.MlflowClient()
+        client = qcflow.MlflowClient()
         artifacts = [f.path for f in client.list_artifacts(run.info.run_id, artifact_path)]
         print(f"artifacts: {artifacts}")
 
@@ -354,7 +354,7 @@ def log_model(
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.lightgbm,
+        flavor=qcflow.lightgbm,
         registered_model_name=registered_model_name,
         lgb_model=lgb_model,
         conda_env=conda_env,
@@ -375,8 +375,8 @@ def _load_model(path):
 
     Args:
         path: Local filesystem path to
-            the MLflow Model with the ``lightgbm`` flavor (MLflow < 1.23.0) or
-            the top-level MLflow Model directory (MLflow >= 1.23.0).
+            the QCFlow Model with the ``lightgbm`` flavor (QCFlow < 1.23.0) or
+            the top-level QCFlow Model directory (QCFlow >= 1.23.0).
     """
 
     model_dir = os.path.dirname(path) if os.path.isfile(path) else path
@@ -404,7 +404,7 @@ def _load_pyfunc(path):
     Load PyFunc implementation. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``lightgbm`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``lightgbm`` flavor.
     """
     return _LGBModelWrapper(_load_model(path))
 
@@ -414,15 +414,15 @@ def load_model(model_uri, dst_path=None):
     Load a LightGBM model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
@@ -438,10 +438,10 @@ def load_model(model_uri, dst_path=None):
 
         from lightgbm import LGBMClassifier
         from sklearn import datasets
-        import mlflow
+        import qcflow
 
-        # Auto log all MLflow entities
-        mlflow.lightgbm.autolog()
+        # Auto log all QCFlow entities
+        qcflow.lightgbm.autolog()
 
         # Load iris dataset
         X, y = datasets.load_iris(return_X_y=True, as_frame=True)
@@ -453,8 +453,8 @@ def load_model(model_uri, dst_path=None):
         model.fit(X, y)
 
         # Load model for inference
-        model_uri = f"runs:/{mlflow.last_active_run().info.run_id}/model"
-        loaded_model = mlflow.lightgbm.load_model(model_uri)
+        model_uri = f"runs:/{qcflow.last_active_run().info.run_id}/model"
+        loaded_model = qcflow.lightgbm.load_model(model_uri)
         print(loaded_model.predict(X[:5]))
 
     .. code-block:: text
@@ -491,7 +491,7 @@ class _LGBModelWrapper:
 
 
 def _patch_metric_names(metric_dict):
-    # lightgbm provides some metrics with "@", e.g. "ndcg@3" that are not valid MLflow metric names
+    # lightgbm provides some metrics with "@", e.g. "ndcg@3" that are not valid QCFlow metric names
     patched_metrics = {
         metric_name.replace("@", "_at_"): value for metric_name, value in metric_dict.items()
     }
@@ -530,7 +530,7 @@ def autolog(
     extra_tags=None,
 ):
     """
-    Enables (or disables) and configures autologging from LightGBM to MLflow. Logs the following:
+    Enables (or disables) and configures autologging from LightGBM to QCFlow. Logs the following:
 
         - parameters specified in `lightgbm.train`_.
         - metrics on each iteration (if ``valid_sets`` specified).
@@ -547,20 +547,20 @@ def autolog(
         log_input_examples: If ``True``, input examples from training datasets are collected and
             logged along with LightGBM model artifacts during training. If
             ``False``, input examples are not logged.
-            Note: Input examples are MLflow model attributes
+            Note: Input examples are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
         log_model_signatures: If ``True``,
-            :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
+            :py:class:`ModelSignatures <qcflow.models.ModelSignature>`
             describing model inputs and outputs are collected and logged along
             with LightGBM model artifacts during training. If ``False``,
             signatures are not logged.
-            Note: Model signatures are MLflow model attributes
+            Note: Model signatures are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
-        log_models: If ``True``, trained models are logged as MLflow model artifacts.
+        log_models: If ``True``, trained models are logged as QCFlow model artifacts.
             If ``False``, trained models are not logged.
-            Input examples and model signatures, which are attributes of MLflow models,
+            Input examples and model signatures, which are attributes of QCFlow models,
             are also omitted when ``log_models`` is ``False``.
-        log_datasets: If ``True``, train and validation dataset information is logged to MLflow
+        log_datasets: If ``True``, train and validation dataset information is logged to QCFlow
             Tracking if applicable. If ``False``, dataset information is not logged.
         disable: If ``True``, disables the LightGBM autologging integration. If ``False``,
             enables the LightGBM autologging integration.
@@ -568,9 +568,9 @@ def autolog(
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
-            lightgbm that have not been tested against this version of the MLflow client
+            lightgbm that have not been tested against this version of the QCFlow client
             or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during LightGBM
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during LightGBM
             autologging. If ``False``, show all events and warnings during LightGBM
             autologging.
         registered_model_name: If given, each time a model is trained, it is registered as a
@@ -581,19 +581,19 @@ def autolog(
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
         from lightgbm import LGBMClassifier
         from sklearn import datasets
 
 
         def print_auto_logged_info(run):
-            tags = {k: v for k, v in run.data.tags.items() if not k.startswith("mlflow.")}
+            tags = {k: v for k, v in run.data.tags.items() if not k.startswith("qcflow.")}
             artifacts = [
-                f.path for f in mlflow.MlflowClient().list_artifacts(run.info.run_id, "model")
+                f.path for f in qcflow.MlflowClient().list_artifacts(run.info.run_id, "model")
             ]
             feature_importances = [
                 f.path
-                for f in mlflow.MlflowClient().list_artifacts(run.info.run_id)
+                for f in qcflow.MlflowClient().list_artifacts(run.info.run_id)
                 if f.path != "model"
             ]
             print(f"run_id: {run.info.run_id}")
@@ -610,15 +610,15 @@ def autolog(
         # Initialize our model
         model = LGBMClassifier(objective="multiclass", random_state=42)
 
-        # Auto log all MLflow entities
-        mlflow.lightgbm.autolog()
+        # Auto log all QCFlow entities
+        qcflow.lightgbm.autolog()
 
         # Train the model
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(X, y)
 
         # fetch the auto logged parameters and metrics
-        print_auto_logged_info(mlflow.get_run(run_id=run.info.run_id))
+        print_auto_logged_info(qcflow.get_run(run_id=run.info.run_id))
 
     .. code-block:: text
         :caption: Output
@@ -708,16 +708,16 @@ def autolog(
                 try:
                     filepath = os.path.join(tmpdir, f"feature_importance_{imp_type}.png")
                     fig.savefig(filepath)
-                    mlflow.log_artifact(filepath)
+                    qcflow.log_artifact(filepath)
                 finally:
                     plt.close(fig)
 
         autologging_client = MlflowAutologgingQueueingClient()
 
-        # logging booster params separately via mlflow.log_params to extract key/value pairs
+        # logging booster params separately via qcflow.log_params to extract key/value pairs
         # and make it easier to compare them across runs.
         booster_params = args[0] if len(args) > 0 else kwargs["params"]
-        autologging_client.log_params(run_id=mlflow.active_run().info.run_id, params=booster_params)
+        autologging_client.log_params(run_id=qcflow.active_run().info.run_id, params=booster_params)
 
         unlogged_params = [
             "params",
@@ -735,11 +735,11 @@ def autolog(
             # https://github.com/microsoft/LightGBM/pull/4882
             unlogged_params.append("evals_result")
 
-        params_to_log_for_fn = get_mlflow_run_params_for_fn_args(
+        params_to_log_for_fn = get_qcflow_run_params_for_fn_args(
             original, args, kwargs, unlogged_params
         )
         autologging_client.log_params(
-            run_id=mlflow.active_run().info.run_id, params=params_to_log_for_fn
+            run_id=qcflow.active_run().info.run_id, params=params_to_log_for_fn
         )
 
         param_logging_operations = autologging_client.flush(synchronous=False)
@@ -750,7 +750,7 @@ def autolog(
         # adding a callback that records evaluation results.
         eval_results = []
         callbacks_index = all_arg_names.index("callbacks")
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
 
         train_set = args[1] if len(args) > 1 else kwargs.get("train_set")
 
@@ -778,7 +778,7 @@ def autolog(
                 dataset_logging_operations.await_completion()
             except Exception as e:
                 _logger.warning(
-                    "Failed to log dataset information to MLflow Tracking. Reason: %s", e
+                    "Failed to log dataset information to QCFlow Tracking. Reason: %s", e
                 )
 
         with batch_metrics_logger(run_id) as metrics_logger:
@@ -801,7 +801,7 @@ def autolog(
             if early_stopping:
                 extra_step = len(eval_results)
                 autologging_client.log_metrics(
-                    run_id=mlflow.active_run().info.run_id,
+                    run_id=qcflow.active_run().info.run_id,
                     metrics={
                         "stopped_iteration": extra_step,
                         # best_iteration is set even if training does not stop early.
@@ -811,7 +811,7 @@ def autolog(
                 # iteration starts from 1 in LightGBM.
                 last_iter_results = eval_results[model.best_iteration - 1]
                 autologging_client.log_metrics(
-                    run_id=mlflow.active_run().info.run_id,
+                    run_id=qcflow.active_run().info.run_id,
                     metrics=last_iter_results,
                     step=extra_step,
                 )
@@ -834,7 +834,7 @@ def autolog(
                 filepath = os.path.join(tmpdir, f"feature_importance_{imp_type}.json")
                 with open(filepath, "w") as f:
                     json.dump(imp, f, indent=2)
-                mlflow.log_artifact(filepath)
+                qcflow.log_artifact(filepath)
 
         # train_set must exist as the original train function already ran successfully
         # it is possible that the dataset was constructed before the patched
@@ -896,8 +896,8 @@ def autolog(
     # The `train()` method logs LightGBM models as Booster objects. When using LightGBM
     # scikit-learn models, we want to save / log models as their model classes. So we turn
     # off the log_models functionality in the `train()` method patched to `lightgbm.sklearn`.
-    # Instead the model logging is handled in `fit_mlflow_xgboost_and_lightgbm()`
-    # in `mlflow.sklearn._autolog()`, where models are logged as LightGBM scikit-learn models
+    # Instead the model logging is handled in `fit_qcflow_xgboost_and_lightgbm()`
+    # in `qcflow.sklearn._autolog()`, where models are logged as LightGBM scikit-learn models
     # after the `fit()` method returns.
     safe_patch(
         FLAVOR_NAME,
@@ -909,9 +909,9 @@ def autolog(
     )
 
     # enable LightGBM scikit-learn estimators autologging
-    import mlflow.sklearn
+    import qcflow.sklearn
 
-    mlflow.sklearn._autolog(
+    qcflow.sklearn._autolog(
         flavor_name=FLAVOR_NAME,
         log_input_examples=log_input_examples,
         log_model_signatures=log_model_signatures,
@@ -944,8 +944,8 @@ def _log_lightgbm_dataset(lgb_dataset, source, context, autologging_client, name
     else:
         _logger.warning("Unrecognized dataset type %s. Dataset logging skipped.", type(data))
         return
-    tags = [InputTag(key=MLFLOW_DATASET_CONTEXT, value=context)]
-    dataset_input = DatasetInput(dataset=dataset._to_mlflow_entity(), tags=tags)
+    tags = [InputTag(key=QCFLOW_DATASET_CONTEXT, value=context)]
+    dataset_input = DatasetInput(dataset=dataset._to_qcflow_entity(), tags=tags)
 
     # log the dataset
-    autologging_client.log_inputs(run_id=mlflow.active_run().info.run_id, datasets=[dataset_input])
+    autologging_client.log_inputs(run_id=qcflow.active_run().info.run_id, datasets=[dataset_input])

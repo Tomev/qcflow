@@ -1,13 +1,13 @@
 :orphan:
 
-mlflow.exceptions
+qcflow.exceptions
 =================
 
-.. exception:: mlflow.exceptions.MlflowException(message, error_code=1, **kwargs)
+.. exception:: qcflow.exceptions.MlflowException(message, error_code=1, **kwargs)
 
-    Generic exception thrown when an MLflow operation fails
+    Generic exception thrown when an QCFlow operation fails
 
-.. automodule:: mlflow.exceptions
+.. automodule:: qcflow.exceptions
     :members:
     :undoc-members:
     :show-inheritance:

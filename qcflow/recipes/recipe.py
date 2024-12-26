@@ -3,24 +3,24 @@ import logging
 import os
 from typing import Optional
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import BAD_REQUEST, INTERNAL_ERROR, INVALID_PARAMETER_VALUE
-from mlflow.recipes import dag_help_strings
-from mlflow.recipes.artifacts import Artifact
-from mlflow.recipes.step import BaseStep, StepClass, StepStatus
-from mlflow.recipes.utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import BAD_REQUEST, INTERNAL_ERROR, INVALID_PARAMETER_VALUE
+from qcflow.recipes import dag_help_strings
+from qcflow.recipes.artifacts import Artifact
+from qcflow.recipes.step import BaseStep, StepClass, StepStatus
+from qcflow.recipes.utils import (
     get_recipe_config,
     get_recipe_name,
     get_recipe_root_path,
 )
-from mlflow.recipes.utils.execution import (
+from qcflow.recipes.utils.execution import (
     clean_execution_state,
     get_or_create_base_execution_directory,
     get_step_output_path,
     run_recipe_step,
 )
-from mlflow.recipes.utils.step import display_html
-from mlflow.utils.class_utils import _get_class_from_string
+from qcflow.recipes.utils.step import display_html
+from qcflow.utils.class_utils import _get_class_from_string
 
 _logger = logging.getLogger(__name__)
 
@@ -257,8 +257,8 @@ class BaseRecipe:
                     "help_string": dag_help_strings.FITTED_MODEL,
                     "help_string_type": "text",
                 },
-                "mlflow_run_help": {
-                    "help_string": dag_help_strings.MLFLOW_RUN,
+                "qcflow_run_help": {
+                    "help_string": dag_help_strings.QCFLOW_RUN,
                     "help_string_type": "text",
                 },
                 "predicted_training_data_help": {
@@ -361,7 +361,7 @@ class Recipe:
         :caption: Example
 
         import os
-        from mlflow.recipes import Recipe
+        from qcflow.recipes import Recipe
 
         os.chdir("~/recipes-regression-template")
         regression_recipe = Recipe(profile="local")
@@ -370,10 +370,10 @@ class Recipe:
 
     def __new__(cls, profile: str):
         """
-        Creates an instance of an MLflow Recipe for a particular ML problem or MLOps task based
+        Creates an instance of an QCFlow Recipe for a particular ML problem or MLOps task based
         on the current working directory and supplied configuration. The current working directory
-        must be the root directory of an MLflow Recipe repository or a subdirectory of an
-        MLflow Recipe repository.
+        must be the root directory of an QCFlow Recipe repository or a subdirectory of an
+        QCFlow Recipe repository.
 
         Args:
             profile: The name of the profile to use for configuring the problem-specific or
@@ -383,13 +383,13 @@ class Recipe:
 
         Returns:
             A recipe for a particular ML problem or MLOps task. For example, an instance of
-            `RegressionRecipe <https://github.com/mlflow/recipes-regression-template>`_
+            `RegressionRecipe <https://github.com/qcflow/recipes-regression-template>`_
             for regression problems.
 
         .. code-block:: python
 
             import os
-            from mlflow.recipes import Recipe
+            from qcflow.recipes import Recipe
 
             os.chdir("~/recipes-regression-template")
             regression_recipe = Recipe(profile="local")
@@ -420,7 +420,7 @@ class Recipe:
                 error_code=INVALID_PARAMETER_VALUE,
             ) from None
         recipe_path = recipe.replace("/", ".").replace("@", ".")
-        class_name = f"mlflow.recipes.{recipe_path}.RecipeImpl"
+        class_name = f"qcflow.recipes.{recipe_path}.RecipeImpl"
 
         try:
             recipe_class_module = _get_class_from_string(class_name)
@@ -438,5 +438,5 @@ class Recipe:
                 ) from e
 
         recipe_name = get_recipe_name(recipe_root_path)
-        _logger.info(f"Creating MLflow Recipe '{recipe_name}' with profile: '{profile}'")
+        _logger.info(f"Creating QCFlow Recipe '{recipe_name}' with profile: '{profile}'")
         return recipe_class_module(recipe_root_path, profile)

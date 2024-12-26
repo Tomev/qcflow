@@ -14,25 +14,25 @@ from typing import Any, Callable, NamedTuple, Optional, Union
 import numpy as np
 import pandas as pd
 
-import mlflow
-from mlflow import MlflowClient, MlflowException
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.entities.metric import Metric
-from mlflow.metrics.base import MetricValue
-from mlflow.models.evaluation.artifacts import (
+import qcflow
+from qcflow import MlflowClient, MlflowException
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.entities.metric import Metric
+from qcflow.metrics.base import MetricValue
+from qcflow.models.evaluation.artifacts import (
     CsvEvaluationArtifact,
     ImageEvaluationArtifact,
     JsonEvaluationArtifact,
     NumpyEvaluationArtifact,
     _infer_artifact_type_and_ext,
 )
-from mlflow.models.evaluation.base import EvaluationMetric, EvaluationResult, ModelEvaluator
-from mlflow.models.evaluation.utils.metric import MetricDefinition
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.pyfunc import _ServedPyFuncModel
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.proto_json_utils import NumpyEncoder
-from mlflow.utils.time import get_current_time_millis
+from qcflow.models.evaluation.base import EvaluationMetric, EvaluationResult, ModelEvaluator
+from qcflow.models.evaluation.utils.metric import MetricDefinition
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.pyfunc import _ServedPyFuncModel
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.proto_json_utils import NumpyEncoder
+from qcflow.utils.time import get_current_time_millis
 
 _logger = logging.getLogger(__name__)
 
@@ -46,10 +46,10 @@ def _extract_raw_model(model):
         return None, None
 
     model_loader_module = model.metadata.flavors["python_function"]["loader_module"]
-    # If we load a model with mlflow.pyfunc.load_model, the model will be wrapped
+    # If we load a model with qcflow.pyfunc.load_model, the model will be wrapped
     # with a pyfunc wrapper. We need to extract the raw model so that shap
     # explainer uses the raw model instead of the wrapper and skips data schema validation.
-    if model_loader_module in ["mlflow.sklearn", "mlflow.xgboost"] and not isinstance(
+    if model_loader_module in ["qcflow.sklearn", "qcflow.xgboost"] and not isinstance(
         model, _ServedPyFuncModel
     ):
         if hasattr(model._model_impl, "get_raw_model"):
@@ -80,7 +80,7 @@ def _extract_predict_fn(model: Any) -> Optional[Callable]:
     if raw_model is not None:
         predict_fn = raw_model.predict
         try:
-            from mlflow.xgboost import _wrapped_xgboost_model_predict_fn
+            from qcflow.xgboost import _wrapped_xgboost_model_predict_fn
 
             # Because shap evaluation will pass evaluation data in ndarray format
             # (without feature names), if set validate_features=True it will raise error.
@@ -132,7 +132,7 @@ class _CustomArtifact(NamedTuple):
 
     function : the custom artifact function
     name : the name of the custom artifact function
-    index : the index of the function in the ``custom_artifacts`` argument of mlflow.evaluate
+    index : the index of the function in the ``custom_artifacts`` argument of qcflow.evaluate
     artifacts_dir : the path to a temporary directory to store produced artifacts of the function
     """
 
@@ -154,7 +154,7 @@ def _evaluate_custom_artifacts(custom_artifact_tuple, eval_df, builtin_metrics):
 
     Args:
         custom_artifact_tuple: Containing a user provided function and its index in the
-            ``custom_artifacts`` parameter of ``mlflow.evaluate``
+            ``custom_artifacts`` parameter of ``qcflow.evaluate``
         eval_df: A Pandas dataframe object containing a prediction and a target column.
         builtin_metrics: A dictionary of metrics produced by the default evaluator.
 
@@ -187,7 +187,7 @@ def _evaluate_custom_artifacts(custom_artifact_tuple, eval_df, builtin_metrics):
 # TODO: Move this to the /evaluators directory
 class BuiltInEvaluator(ModelEvaluator):
     """
-    The base class for all evaluators that are built-in to MLflow.
+    The base class for all evaluators that are built-in to QCFlow.
 
     Each evaluator is responsible for implementing the `_evaluate()` method, which is called by
     the `evaluate()` method of this base class. This class contains many helper methods used
@@ -200,7 +200,7 @@ class BuiltInEvaluator(ModelEvaluator):
     @abstractmethod
     def _evaluate(
         self,
-        model: Optional["mlflow.pyfunc.PyFuncModel"],
+        model: Optional["qcflow.pyfunc.PyFuncModel"],
         extra_metrics: list[EvaluationMetric],
         custom_artifacts=None,
         **kwargs,
@@ -245,8 +245,8 @@ class BuiltInEvaluator(ModelEvaluator):
         except Exception as e:
             _logger.warning(f"Failed to log image artifact {artifact_name!r}: {e!r}")
         else:
-            mlflow.log_artifact(artifact_file_local_path)
-            artifact = ImageEvaluationArtifact(uri=mlflow.get_artifact_uri(artifact_file_name))
+            qcflow.log_artifact(artifact_file_local_path)
+            artifact = ImageEvaluationArtifact(uri=qcflow.get_artifact_uri(artifact_file_name))
             artifact._load(artifact_file_local_path)
             self.artifacts[artifact_name] = artifact
         finally:
@@ -254,7 +254,7 @@ class BuiltInEvaluator(ModelEvaluator):
 
     def _evaluate_sklearn_model_score_if_scorable(self, model, y_true, sample_weights):
         model_loader_module, raw_model = _extract_raw_model(model)
-        if model_loader_module == "mlflow.sklearn" and raw_model is not None:
+        if model_loader_module == "qcflow.sklearn" and raw_model is not None:
             try:
                 score = raw_model.score(
                     self.X.copy_to_avoid_mutation(), y_true, sample_weight=sample_weights
@@ -271,9 +271,9 @@ class BuiltInEvaluator(ModelEvaluator):
         """
         This function logs and returns a custom metric artifact. Two cases:
             - The provided artifact is a path to a file, the function will make a copy of it with
-              a formatted name in a temporary directory and call mlflow.log_artifact.
+              a formatted name in a temporary directory and call qcflow.log_artifact.
             - Otherwise: will attempt to save the artifact to an temporary path with an inferred
-              type. Then call mlflow.log_artifact.
+              type. Then call qcflow.log_artifact.
 
         Args:
             artifact_name: the name of the artifact
@@ -331,7 +331,7 @@ class BuiltInEvaluator(ModelEvaluator):
                     f"{exception_and_warning_header} produced an unsupported artifact "
                     f"'{artifact_name}' with type '{type(raw_artifact)}' that cannot be pickled. "
                     "Supported object types for artifacts are:\n"
-                    "- A string uri representing the file path to the artifact. MLflow"
+                    "- A string uri representing the file path to the artifact. QCFlow"
                     "  will infer the type of the artifact based on the file extension.\n"
                     "- A string representation of a JSON object. This will be saved as a "
                     ".json artifact.\n"
@@ -341,8 +341,8 @@ class BuiltInEvaluator(ModelEvaluator):
                     "- Other objects will be attempted to be pickled with default protocol."
                 )
 
-        mlflow.log_artifact(artifact_file_local_path)
-        artifact = inferred_type(uri=mlflow.get_artifact_uri(artifact_name + inferred_ext))
+        qcflow.log_artifact(artifact_file_local_path)
+        artifact = inferred_type(uri=qcflow.get_artifact_uri(artifact_name + inferred_ext))
         artifact._load(artifact_file_local_path)
         return artifact
 
@@ -364,7 +364,7 @@ class BuiltInEvaluator(ModelEvaluator):
 
         Args:
             metric: The metric definition containing a user provided function and its index
-                in the ``extra_metrics`` parameter of ``mlflow.evaluate``.
+                in the ``extra_metrics`` parameter of ``qcflow.evaluate``.
             eval_df: The evaluation dataframe containing the prediction and target columns.
             input_df: The input dataframe containing the features used to make predictions.
             other_output_df: A dataframe containing all model output columns but the predictions.
@@ -730,7 +730,7 @@ class BuiltInEvaluator(ModelEvaluator):
                 columns[f"{metric_name}/justification"] = justifications
         data = data.assign(**columns)
         artifact_file_name = f"{metric_prefix}{_EVAL_TABLE_FILE_NAME}"
-        mlflow.log_table(data, artifact_file=artifact_file_name)
+        qcflow.log_table(data, artifact_file=artifact_file_name)
         if self.eval_results_path:
             eval_table_spark = self.spark_session.createDataFrame(data)
             try:
@@ -742,7 +742,7 @@ class BuiltInEvaluator(ModelEvaluator):
 
         name = _EVAL_TABLE_FILE_NAME.split(".", 1)[0]
         self.artifacts[name] = JsonEvaluationArtifact(
-            uri=mlflow.get_artifact_uri(artifact_file_name)
+            uri=qcflow.get_artifact_uri(artifact_file_name)
         )
 
     def _update_aggregate_metrics(self):
@@ -779,7 +779,7 @@ class BuiltInEvaluator(ModelEvaluator):
         dataset,
         run_id,
         evaluator_config,
-        model: "mlflow.pyfunc.PyFuncModel" = None,
+        model: "qcflow.pyfunc.PyFuncModel" = None,
         custom_metrics=None,
         extra_metrics=None,
         custom_artifacts=None,
@@ -791,7 +791,7 @@ class BuiltInEvaluator(ModelEvaluator):
                 message=(
                     "Either a model or set of predictions must be specified in order to use the"
                     " default evaluator. Either specify the `model` parameter, the `predictions`"
-                    " parameter, an MLflow dataset containing the `predictions` column name"
+                    " parameter, an QCFlow dataset containing the `predictions` column name"
                     " (via the `data` parameter), or a different evaluator (via the `evaluators`"
                     " parameter)."
                 ),
@@ -815,7 +815,7 @@ class BuiltInEvaluator(ModelEvaluator):
         self.eval_results_mode = self.evaluator_config.get("eval_results_mode", "overwrite")
 
         if self.eval_results_path:
-            from mlflow.utils._spark_utils import _get_active_spark_session
+            from qcflow.utils._spark_utils import _get_active_spark_session
 
             self.spark_session = _get_active_spark_session()
             if not self.spark_session:
@@ -832,12 +832,12 @@ class BuiltInEvaluator(ModelEvaluator):
 
         if extra_metrics and custom_metrics:
             raise MlflowException(
-                "The 'custom_metrics' parameter in mlflow.evaluate is deprecated. Please update "
+                "The 'custom_metrics' parameter in qcflow.evaluate is deprecated. Please update "
                 "your code to only use the 'extra_metrics' parameter instead."
             )
         if custom_metrics:
             warnings.warn(
-                "The 'custom_metrics' parameter in mlflow.evaluate is deprecated. "
+                "The 'custom_metrics' parameter in qcflow.evaluate is deprecated. "
                 "Please update your code to use the 'extra_metrics' parameter instead.",
                 FutureWarning,
                 stacklevel=2,
@@ -859,7 +859,7 @@ class BuiltInEvaluator(ModelEvaluator):
                 f"In the 'extra_metrics' parameter, the following metrics have the wrong type:\n"
                 f"{message}\n"
                 f"Please ensure that all extra metrics are instances of "
-                f"mlflow.metrics.EvaluationMetric."
+                f"qcflow.metrics.EvaluationMetric."
             )
 
         import matplotlib

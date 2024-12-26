@@ -1,7 +1,7 @@
 import { CopyIcon, Typography, useDesignSystemTheme } from '@databricks/design-system';
 import { FormattedMessage } from 'react-intl';
 import { CodeSnippet } from '@databricks/web-shared/snippet';
-import { CopyButton } from '@mlflow/mlflow/src/shared/building_blocks/CopyButton';
+import { CopyButton } from '@qcflow/qcflow/src/shared/building_blocks/CopyButton';
 
 export const TraceTableCustomQuickstartContent = ({
   baseComponentId,
@@ -13,20 +13,20 @@ export const TraceTableCustomQuickstartContent = ({
   runUuid?: string;
 }) => {
   const { theme } = useDesignSystemTheme();
-  const code = `import mlflow
-${experimentId ? `\nmlflow.set_experiment(experiment_id="${experimentId}")\n` : ''}
-@mlflow.trace
+  const code = `import qcflow
+${experimentId ? `\nqcflow.set_experiment(experiment_id="${experimentId}")\n` : ''}
+@qcflow.trace
 def foo(a):
     return a + bar(a)
 
 # Various attributes can be passed to the decorator
 # to modify the information contained in the span
-@mlflow.trace(name="custom_name", attributes={"key": "value"})
+@qcflow.trace(name="custom_name", attributes={"key": "value"})
 def bar(b):
     return b + 1
 
 # Invoking the traced function will cause a trace to be logged
-${runUuid ? `with mlflow.start_run():\n    ` : ''}foo(1)`;
+${runUuid ? `with qcflow.start_run():\n    ` : ''}foo(1)`;
 
   return (
     <div>
@@ -36,9 +36,9 @@ ${runUuid ? `with mlflow.start_run():\n    ` : ''}foo(1)`;
             'To manually instrument your own traces, the most convenient method is to use the {code} function decorator. ' +
             'This will cause the inputs and outputs of the function to be captured in the trace. For example:'
           }
-          description="Description of how to log custom code traces using MLflow. This message is followed by a code example."
+          description="Description of how to log custom code traces using QCFlow. This message is followed by a code example."
           values={{
-            code: <code>@mlflow.trace</code>,
+            code: <code>@qcflow.trace</code>,
           }}
         />
       </Typography.Text>
@@ -65,20 +65,20 @@ ${runUuid ? `with mlflow.start_run():\n    ` : ''}foo(1)`;
       <Typography.Text>
         <FormattedMessage
           defaultMessage={
-            'For more complex use cases, MLflow also provides granular APIs that can be used to ' +
+            'For more complex use cases, QCFlow also provides granular APIs that can be used to ' +
             'control tracing behavior. For more information, please visit the <a>official documentation</a> on ' +
-            'fluent and client APIs for MLflow Tracing.'
+            'fluent and client APIs for QCFlow Tracing.'
           }
           description={
-            'Explanation of alternative APIs for custom tracing in MLflow. ' +
-            'The link leads to the MLflow documentation for the user to learn more.'
+            'Explanation of alternative APIs for custom tracing in QCFlow. ' +
+            'The link leads to the QCFlow documentation for the user to learn more.'
           }
           values={{
             a: (text: string) => (
               <Typography.Link
                 title="official documentation"
                 componentId={`${baseComponentId}.traces_table.custom_tracing_docs_link`}
-                href="https://mlflow.org/docs/latest/llms/tracing/index.html#tracing-fluent-apis"
+                href="https://qcflow.org/docs/latest/llms/tracing/index.html#tracing-fluent-apis"
                 openInNewTab
               >
                 {text}

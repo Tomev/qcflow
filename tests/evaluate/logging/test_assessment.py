@@ -2,9 +2,9 @@ from unittest.mock import patch
 
 import pytest
 
-from mlflow.entities.assessment_source import AssessmentSource
-from mlflow.evaluation import Assessment
-from mlflow.exceptions import MlflowException
+from qcflow.entities.assessment_source import AssessmentSource
+from qcflow.evaluation import Assessment
+from qcflow.exceptions import MlflowException
 
 
 def test_assessment_equality():

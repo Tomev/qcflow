@@ -2,16 +2,16 @@ import logging
 import warnings
 from typing import Optional
 
-from mlflow.tracking.context.abstract_context import RunContextProvider
-from mlflow.tracking.context.databricks_cluster_context import DatabricksClusterRunContext
-from mlflow.tracking.context.databricks_command_context import DatabricksCommandRunContext
-from mlflow.tracking.context.databricks_job_context import DatabricksJobRunContext
-from mlflow.tracking.context.databricks_notebook_context import DatabricksNotebookRunContext
-from mlflow.tracking.context.databricks_repo_context import DatabricksRepoRunContext
-from mlflow.tracking.context.default_context import DefaultRunContext
-from mlflow.tracking.context.git_context import GitRunContext
-from mlflow.tracking.context.system_environment_context import SystemEnvironmentContext
-from mlflow.utils.plugins import get_entry_points
+from qcflow.tracking.context.abstract_context import RunContextProvider
+from qcflow.tracking.context.databricks_cluster_context import DatabricksClusterRunContext
+from qcflow.tracking.context.databricks_command_context import DatabricksCommandRunContext
+from qcflow.tracking.context.databricks_job_context import DatabricksJobRunContext
+from qcflow.tracking.context.databricks_notebook_context import DatabricksNotebookRunContext
+from qcflow.tracking.context.databricks_repo_context import DatabricksRepoRunContext
+from qcflow.tracking.context.default_context import DefaultRunContext
+from qcflow.tracking.context.git_context import GitRunContext
+from qcflow.tracking.context.system_environment_context import SystemEnvironmentContext
+from qcflow.utils.plugins import get_entry_points
 
 _logger = logging.getLogger(__name__)
 
@@ -20,8 +20,8 @@ class RunContextProviderRegistry:
     """Registry for run context provider implementations
 
     This class allows the registration of a run context provider which can be used to infer meta
-    information about the context of an MLflow experiment run. Implementations declared though the
-    entrypoints `mlflow.run_context_provider` group can be automatically registered through the
+    information about the context of an QCFlow experiment run. Implementations declared though the
+    entrypoints `qcflow.run_context_provider` group can be automatically registered through the
     `register_entrypoints` method.
 
     Registered run context providers can return tags that override those implemented in the core
@@ -36,7 +36,7 @@ class RunContextProviderRegistry:
 
     def register_entrypoints(self):
         """Register tracking stores provided by other packages"""
-        for entrypoint in get_entry_points("mlflow.run_context_provider"):
+        for entrypoint in get_entry_points("qcflow.run_context_provider"):
             try:
                 self.register(entrypoint.load())
             except (AttributeError, ImportError) as exc:
@@ -70,7 +70,7 @@ def resolve_tags(tags=None, ignore: Optional[list[RunContextProvider]] = None):
 
     This function iterates through all run context providers in the registry. Additional context
     providers can be registered as described in
-    :py:class:`mlflow.tracking.context.RunContextProvider`.
+    :py:class:`qcflow.tracking.context.RunContextProvider`.
 
     Args:
         tags: A dictionary of tags to override. If specified, tags passed in this argument will

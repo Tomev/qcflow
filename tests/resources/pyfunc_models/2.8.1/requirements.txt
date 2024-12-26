@@ -1,2 +1,2 @@
-mlflow==2.8.1
+qcflow==2.8.1
 cloudpickle==2.2.1

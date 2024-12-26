@@ -17,7 +17,7 @@ fileConfig(config.config_file_name, disable_existing_loggers=False)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from mlflow.store.db.base_sql_model import Base
+from qcflow.store.db.base_sql_model import Base
 
 target_metadata = Base.metadata
 

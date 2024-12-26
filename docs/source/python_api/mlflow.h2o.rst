@@ -1,7 +1,7 @@
-mlflow.h2o
+qcflow.h2o
 ==========
 
-.. automodule:: mlflow.h2o
+.. automodule:: qcflow.h2o
     :members:
     :undoc-members:
     :show-inheritance:

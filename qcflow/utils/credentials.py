@@ -4,18 +4,18 @@ import logging
 import os
 from typing import NamedTuple, Optional
 
-from mlflow.environment_variables import (
-    MLFLOW_TRACKING_AUTH,
-    MLFLOW_TRACKING_AWS_SIGV4,
-    MLFLOW_TRACKING_CLIENT_CERT_PATH,
-    MLFLOW_TRACKING_INSECURE_TLS,
-    MLFLOW_TRACKING_PASSWORD,
-    MLFLOW_TRACKING_SERVER_CERT_PATH,
-    MLFLOW_TRACKING_TOKEN,
-    MLFLOW_TRACKING_USERNAME,
+from qcflow.environment_variables import (
+    QCFLOW_TRACKING_AUTH,
+    QCFLOW_TRACKING_AWS_SIGV4,
+    QCFLOW_TRACKING_CLIENT_CERT_PATH,
+    QCFLOW_TRACKING_INSECURE_TLS,
+    QCFLOW_TRACKING_PASSWORD,
+    QCFLOW_TRACKING_SERVER_CERT_PATH,
+    QCFLOW_TRACKING_TOKEN,
+    QCFLOW_TRACKING_USERNAME,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.utils.rest_utils import MlflowHostCreds
+from qcflow.exceptions import MlflowException
+from qcflow.utils.rest_utils import MlflowHostCreds
 
 _logger = logging.getLogger(__name__)
 
@@ -26,32 +26,32 @@ class MlflowCreds(NamedTuple):
 
 
 def _get_credentials_path() -> str:
-    return os.path.expanduser("~/.mlflow/credentials")
+    return os.path.expanduser("~/.qcflow/credentials")
 
 
-def _read_mlflow_creds_from_file() -> tuple[Optional[str], Optional[str]]:
+def _read_qcflow_creds_from_file() -> tuple[Optional[str], Optional[str]]:
     path = _get_credentials_path()
     if not os.path.exists(path):
         return None, None
 
     config = configparser.ConfigParser()
     config.read(path)
-    if "mlflow" not in config:
+    if "qcflow" not in config:
         return None, None
 
-    mlflow_cfg = config["mlflow"]
-    username_key = MLFLOW_TRACKING_USERNAME.name.lower()
-    password_key = MLFLOW_TRACKING_PASSWORD.name.lower()
-    return mlflow_cfg.get(username_key), mlflow_cfg.get(password_key)
+    qcflow_cfg = config["qcflow"]
+    username_key = QCFLOW_TRACKING_USERNAME.name.lower()
+    password_key = QCFLOW_TRACKING_PASSWORD.name.lower()
+    return qcflow_cfg.get(username_key), qcflow_cfg.get(password_key)
 
 
-def _read_mlflow_creds_from_env() -> tuple[Optional[str], Optional[str]]:
-    return MLFLOW_TRACKING_USERNAME.get(), MLFLOW_TRACKING_PASSWORD.get()
+def _read_qcflow_creds_from_env() -> tuple[Optional[str], Optional[str]]:
+    return QCFLOW_TRACKING_USERNAME.get(), QCFLOW_TRACKING_PASSWORD.get()
 
 
-def read_mlflow_creds() -> MlflowCreds:
-    username_file, password_file = _read_mlflow_creds_from_file()
-    username_env, password_env = _read_mlflow_creds_from_env()
+def read_qcflow_creds() -> MlflowCreds:
+    username_file, password_file = _read_qcflow_creds_from_file()
+    username_env, password_env = _read_qcflow_creds_from_env()
     return MlflowCreds(
         username=username_env or username_file,
         password=password_env or password_file,
@@ -59,24 +59,24 @@ def read_mlflow_creds() -> MlflowCreds:
 
 
 def get_default_host_creds(store_uri):
-    creds = read_mlflow_creds()
+    creds = read_qcflow_creds()
     return MlflowHostCreds(
         host=store_uri,
         username=creds.username,
         password=creds.password,
-        token=MLFLOW_TRACKING_TOKEN.get(),
-        aws_sigv4=MLFLOW_TRACKING_AWS_SIGV4.get(),
-        auth=MLFLOW_TRACKING_AUTH.get(),
-        ignore_tls_verification=MLFLOW_TRACKING_INSECURE_TLS.get(),
-        client_cert_path=MLFLOW_TRACKING_CLIENT_CERT_PATH.get(),
-        server_cert_path=MLFLOW_TRACKING_SERVER_CERT_PATH.get(),
+        token=QCFLOW_TRACKING_TOKEN.get(),
+        aws_sigv4=QCFLOW_TRACKING_AWS_SIGV4.get(),
+        auth=QCFLOW_TRACKING_AUTH.get(),
+        ignore_tls_verification=QCFLOW_TRACKING_INSECURE_TLS.get(),
+        client_cert_path=QCFLOW_TRACKING_CLIENT_CERT_PATH.get(),
+        server_cert_path=QCFLOW_TRACKING_SERVER_CERT_PATH.get(),
     )
 
 
 def login(backend: str = "databricks", interactive: bool = True) -> None:
-    """Configure MLflow server authentication and connect MLflow to tracking server.
+    """Configure QCFlow server authentication and connect QCFlow to tracking server.
 
-    This method provides a simple way to connect MLflow to its tracking server. Currently only
+    This method provides a simple way to connect QCFlow to its tracking server. Currently only
     Databricks tracking server is supported. Users will be prompted to enter the credentials if no
     existing Databricks profile is found, and the credentials will be saved to `~/.databrickscfg`.
 
@@ -91,13 +91,13 @@ def login(backend: str = "databricks", interactive: bool = True) -> None:
     .. code-block:: python
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        mlflow.login()
-        with mlflow.start_run():
-            mlflow.log_param("p", 0)
+        qcflow.login()
+        with qcflow.start_run():
+            qcflow.log_param("p", 0)
     """
-    from mlflow.tracking import set_tracking_uri
+    from qcflow.tracking import set_tracking_uri
 
     if backend == "databricks":
         _databricks_login(interactive)
@@ -114,7 +114,7 @@ def _validate_databricks_auth():
         from databricks.sdk import WorkspaceClient
     except ImportError:
         raise ImportError(
-            "Databricks SDK is not installed. To use `mlflow.login()`, please install "
+            "Databricks SDK is not installed. To use `qcflow.login()`, please install "
             "databricks-sdk by `pip install databricks-sdk`."
         )
 
@@ -127,7 +127,7 @@ def _validate_databricks_auth():
             # If credentials are invalid, `w.current_user.me()` will throw an error.
             w.current_user.me()
         _logger.info(
-            f"Successfully connected to MLflow hosted tracking server! Host: {w.config.host}."
+            f"Successfully connected to QCFlow hosted tracking server! Host: {w.config.host}."
         )
     except Exception as e:
         raise MlflowException(f"Failed to validate databricks credentials: {e}")
@@ -228,4 +228,4 @@ def _databricks_login(interactive):
         _validate_databricks_auth()
     except Exception as e:
         # If user entered invalid auth, we will raise an error and ask users to retry.
-        raise MlflowException(f"`mlflow.login()` failed with error: {e}")
+        raise MlflowException(f"`qcflow.login()` failed with error: {e}")

@@ -1,9 +1,9 @@
 import click
 
-from mlflow.environment_variables import MLFLOW_GATEWAY_CONFIG
-from mlflow.gateway.config import _validate_config
-from mlflow.gateway.runner import run_app
-from mlflow.utils.os import is_windows
+from qcflow.environment_variables import QCFLOW_GATEWAY_CONFIG
+from qcflow.gateway.config import _validate_config
+from qcflow.gateway.runner import run_app
+from qcflow.utils.os import is_windows
 
 
 def validate_config_path(_ctx, _param, value):
@@ -14,15 +14,15 @@ def validate_config_path(_ctx, _param, value):
         raise click.BadParameter(str(e))
 
 
-@click.group("gateway", help="Manage the MLflow Gateway service")
+@click.group("gateway", help="Manage the QCFlow Gateway service")
 def commands():
     pass
 
 
-@commands.command("start", help="Start the MLflow Gateway service")
+@commands.command("start", help="Start the QCFlow Gateway service")
 @click.option(
     "--config-path",
-    envvar=MLFLOW_GATEWAY_CONFIG.name,
+    envvar=QCFLOW_GATEWAY_CONFIG.name,
     callback=validate_config_path,
     required=True,
     help="The path to the gateway configuration file.",
@@ -44,5 +44,5 @@ def commands():
 )
 def start(config_path: str, host: str, port: str, workers: int):
     if is_windows():
-        raise click.ClickException("MLflow AI Gateway does not support Windows.")
+        raise click.ClickException("QCFlow AI Gateway does not support Windows.")
     run_app(config_path=config_path, host=host, port=port, workers=workers)

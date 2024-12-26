@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal, Optional, Union
 from pydantic import BaseModel as _BaseModel
 from pydantic import Field
 
-from mlflow.utils import IS_PYDANTIC_V2_OR_NEWER
+from qcflow.utils import IS_PYDANTIC_V2_OR_NEWER
 
 
 class BaseModel(_BaseModel):
@@ -69,9 +69,9 @@ class ChatMessage(BaseModel):
 
     A content part is one of the following:
 
-    - :py:class:`TextContentPart <mlflow.types.chat.TextContentPart>`
-    - :py:class:`ImageContentPart <mlflow.types.chat.ImageContentPart>`
-    - :py:class:`AudioContentPart <mlflow.types.chat.AudioContentPart>`
+    - :py:class:`TextContentPart <qcflow.types.chat.TextContentPart>`
+    - :py:class:`ImageContentPart <qcflow.types.chat.ImageContentPart>`
+    - :py:class:`AudioContentPart <qcflow.types.chat.AudioContentPart>`
     """
 
     role: str

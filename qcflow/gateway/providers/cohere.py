@@ -2,11 +2,11 @@ import json
 import time
 from typing import Any, AsyncGenerator, AsyncIterable
 
-from mlflow.gateway.config import CohereConfig, RouteConfig
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.base import BaseProvider, ProviderAdapter
-from mlflow.gateway.providers.utils import rename_payload_keys, send_request, send_stream_request
-from mlflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.config import CohereConfig, RouteConfig
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.base import BaseProvider, ProviderAdapter
+from qcflow.gateway.providers.utils import rename_payload_keys, send_request, send_stream_request
+from qcflow.gateway.schemas import chat, completions, embeddings
 
 
 class CohereAdapter(ProviderAdapter):

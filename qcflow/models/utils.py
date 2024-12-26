@@ -19,30 +19,30 @@ import numpy as np
 import pandas as pd
 import pydantic
 
-import mlflow
-from mlflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
-from mlflow.models import Model
-from mlflow.models.model_config import _set_model_config
-from mlflow.store.artifact.utils.models import get_model_name_and_version
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types import DataType, ParamSchema, ParamSpec, Schema, TensorSpec
-from mlflow.types.schema import AnyType, Array, Map, Object, Property
-from mlflow.types.type_hints import PYDANTIC_V1_OR_OLDER
-from mlflow.types.utils import (
+import qcflow
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.models import Model
+from qcflow.models.model_config import _set_model_config
+from qcflow.store.artifact.utils.models import get_model_name_and_version
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types import DataType, ParamSchema, ParamSpec, Schema, TensorSpec
+from qcflow.types.schema import AnyType, Array, Map, Object, Property
+from qcflow.types.type_hints import PYDANTIC_V1_OR_OLDER
+from qcflow.types.utils import (
     TensorsNotSupportedException,
     _infer_param_schema,
     _is_none_or_nan,
     clean_tensor_type,
 )
-from mlflow.utils.annotations import experimental
-from mlflow.utils.file_utils import create_tmp_dir, get_local_path_or_none
-from mlflow.utils.proto_json_utils import (
+from qcflow.utils.annotations import experimental
+from qcflow.utils.file_utils import create_tmp_dir, get_local_path_or_none
+from qcflow.utils.proto_json_utils import (
     NumpyEncoder,
     dataframe_from_parsed_json,
     parse_inputs_data,
     parse_tf_serving_input,
 )
-from mlflow.utils.uri import get_databricks_profile_uri_from_artifact_uri
+from qcflow.utils.uri import get_databricks_profile_uri_from_artifact_uri
 
 try:
     from scipy.sparse import csc_matrix, csr_matrix
@@ -124,7 +124,7 @@ if HAS_PYSPARK:
 
 _logger = logging.getLogger(__name__)
 
-_FEATURE_STORE_FLAVOR = "databricks.feature_store.mlflow_model"
+_FEATURE_STORE_FLAVOR = "databricks.feature_store.qcflow_model"
 
 
 def _is_scalar(x):
@@ -235,10 +235,10 @@ def _contains_nd_array(data):
 
 class _Example:
     """
-    Represents an input example for MLflow model.
+    Represents an input example for QCFlow model.
 
     Contains jsonable data that can be saved with the model and meta data about the exported format
-    that can be saved with :py:class:`Model <mlflow.models.Model>`.
+    that can be saved with :py:class:`Model <qcflow.models.Model>`.
 
     The _Example is created from example data provided by user. The example(s) can be provided as
     pandas.DataFrame, numpy.ndarray, python dictionary or python list. The assumption is that the
@@ -268,7 +268,7 @@ class _Example:
     Storage Format:
 
     The examples are stored as json for portability and readability. Therefore, the contents of the
-    example(s) must be jsonable. MLflow will make the following conversions automatically on behalf
+    example(s) must be jsonable. QCFlow will make the following conversions automatically on behalf
     of the user:
 
         - binary values: :py:class:`bytes` or :py:class:`bytearray` are converted to base64
@@ -323,7 +323,7 @@ class _Example:
                 model_input = _handle_ndarray_input(model_input)
                 self.serving_input = {INPUTS: model_input}
             else:
-                from mlflow.pyfunc.utils.serving_data_parser import is_unified_llm_input
+                from qcflow.pyfunc.utils.serving_data_parser import is_unified_llm_input
 
                 self.info["type"] = "json_object"
                 is_unified_llm_input = is_unified_llm_input(model_input)
@@ -485,7 +485,7 @@ def convert_input_example_to_serving_input(input_example) -> Optional[str]:
 
 
 def _save_example(  # noqa: D417
-    mlflow_model: Model, input_example: Optional[ModelInputExample], path: str, no_conversion=None
+    qcflow_model: Model, input_example: Optional[ModelInputExample], path: str, no_conversion=None
 ) -> Optional[_Example]:
     """
     Saves example to a file on the given path and updates passed Model with example metadata.
@@ -497,11 +497,11 @@ def _save_example(  # noqa: D417
             - 'pandas_orient': Used to store dataframes. Determines the json encoding for dataframe
                                examples in terms of pandas orient convention. Defaults to 'split'.
             - 'format: Used to store tensors. Determines the standard used to store a tensor input
-                       example. MLflow uses a JSON-formatted string representation of TF serving
+                       example. QCFlow uses a JSON-formatted string representation of TF serving
                        input.
 
     Args:
-        mlflow_model: Model metadata that will get updated with the example metadata.
+        qcflow_model: Model metadata that will get updated with the example metadata.
         path: Where to store the example file. Should be model the model directory.
 
     Returns:
@@ -513,31 +513,31 @@ def _save_example(  # noqa: D417
     # TODO: remove this and all example_no_conversion param after 2.17.0 release
     if no_conversion is not None:
         warnings.warn(
-            "The `example_no_conversion` parameter is deprecated since mlflow 2.16.0 and will be "
+            "The `example_no_conversion` parameter is deprecated since qcflow 2.16.0 and will be "
             "removed in a future release. This parameter is no longer used and safe to be removed, "
-            "MLflow no longer converts input examples when logging the model.",
+            "QCFlow no longer converts input examples when logging the model.",
             FutureWarning,
             stacklevel=2,
         )
 
     example = _Example(input_example)
     example.save(path)
-    mlflow_model.saved_input_example_info = example.info
+    qcflow_model.saved_input_example_info = example.info
     return example
 
 
-def _get_mlflow_model_input_example_dict(mlflow_model: Model, path: str):
+def _get_qcflow_model_input_example_dict(qcflow_model: Model, path: str):
     """
     Args:
-        mlflow_model: Model metadata.
+        qcflow_model: Model metadata.
         path: Path to the model directory.
 
     Returns:
         Input example or None if the model has no example.
     """
-    if mlflow_model.saved_input_example_info is None:
+    if qcflow_model.saved_input_example_info is None:
         return None
-    example_type = mlflow_model.saved_input_example_info["type"]
+    example_type = qcflow_model.saved_input_example_info["type"]
     if example_type not in [
         "dataframe",
         "ndarray",
@@ -545,27 +545,27 @@ def _get_mlflow_model_input_example_dict(mlflow_model: Model, path: str):
         "sparse_matrix_csr",
         "json_object",
     ]:
-        raise MlflowException(f"This version of mlflow can not load example of type {example_type}")
-    path = os.path.join(path, mlflow_model.saved_input_example_info[INPUT_EXAMPLE_PATH])
+        raise MlflowException(f"This version of qcflow can not load example of type {example_type}")
+    path = os.path.join(path, qcflow_model.saved_input_example_info[INPUT_EXAMPLE_PATH])
     with open(path) as handle:
         return json.load(handle)
 
 
-def _load_serving_input_example(mlflow_model: Model, path: str) -> Optional[str]:
+def _load_serving_input_example(qcflow_model: Model, path: str) -> Optional[str]:
     """
     Load serving input example from a model directory. Returns None if there is no serving input
     example.
 
     Args:
-        mlflow_model: Model metadata.
+        qcflow_model: Model metadata.
         path: Path to the model directory.
 
     Returns:
         Serving input example or None if the model has no serving input example.
     """
-    if mlflow_model.saved_input_example_info is None:
+    if qcflow_model.saved_input_example_info is None:
         return None
-    serving_input_path = mlflow_model.saved_input_example_info.get(SERVING_INPUT_PATH)
+    serving_input_path = qcflow_model.saved_input_example_info.get(SERVING_INPUT_PATH)
     if serving_input_path is None:
         return None
     with open(os.path.join(path, serving_input_path)) as handle:
@@ -593,26 +593,26 @@ def load_serving_example(model_uri_or_path: str):
                 return handle.read()
 
 
-def _read_example(mlflow_model: Model, path: str):
+def _read_example(qcflow_model: Model, path: str):
     """
     Read example from a model directory. Returns None if there is no example metadata (i.e. the
     model was saved without example). Raises FileNotFoundError if there is model metadata but the
     example file is missing.
 
     Args:
-        mlflow_model: Model metadata.
+        qcflow_model: Model metadata.
         path: Path to the model directory.
 
     Returns:
         Input example data or None if the model has no example.
     """
-    input_example = _get_mlflow_model_input_example_dict(mlflow_model, path)
+    input_example = _get_qcflow_model_input_example_dict(qcflow_model, path)
     if input_example is None:
         return None
 
-    example_type = mlflow_model.saved_input_example_info["type"]
-    input_schema = mlflow_model.signature.inputs if mlflow_model.signature is not None else None
-    if mlflow_model.saved_input_example_info.get(EXAMPLE_PARAMS_KEY, None):
+    example_type = qcflow_model.saved_input_example_info["type"]
+    input_schema = qcflow_model.signature.inputs if qcflow_model.signature is not None else None
+    if qcflow_model.saved_input_example_info.get(EXAMPLE_PARAMS_KEY, None):
         input_example = input_example[EXAMPLE_DATA_KEY]
     if example_type == "json_object":
         return input_example
@@ -628,17 +628,17 @@ def _read_example(mlflow_model: Model, path: str):
     )
 
 
-def _read_example_params(mlflow_model: Model, path: str):
+def _read_example_params(qcflow_model: Model, path: str):
     """
     Read params of input_example from a model directory. Returns None if there is no params
     in the input_example or the model was saved without example.
     """
     if (
-        mlflow_model.saved_input_example_info is None
-        or mlflow_model.saved_input_example_info.get(EXAMPLE_PARAMS_KEY, None) is None
+        qcflow_model.saved_input_example_info is None
+        or qcflow_model.saved_input_example_info.get(EXAMPLE_PARAMS_KEY, None) is None
     ):
         return None
-    input_example_dict = _get_mlflow_model_input_example_dict(mlflow_model, path)
+    input_example_dict = _get_qcflow_model_input_example_dict(qcflow_model, path)
     return input_example_dict[EXAMPLE_PARAMS_KEY]
 
 
@@ -734,7 +734,7 @@ def _enforce_tensor_spec(
     return values
 
 
-def _enforce_mlflow_datatype(name, values: pd.Series, t: DataType):
+def _enforce_qcflow_datatype(name, values: pd.Series, t: DataType):
     """
     Enforce the input column type matches the declared in model input schema.
 
@@ -772,13 +772,13 @@ def _enforce_mlflow_datatype(name, values: pd.Series, t: DataType):
 
     if t == DataType.binary and values.dtype.kind == t.binary.to_numpy().kind:
         # NB: bytes in numpy have variable itemsize depending on the length of the longest
-        # element in the array (column). Since MLflow binary type is length agnostic, we ignore
+        # element in the array (column). Since QCFlow binary type is length agnostic, we ignore
         # itemsize when matching binary columns.
         return values
 
     if t == DataType.datetime and values.dtype.kind == t.to_numpy().kind:
         # NB: datetime values have variable precision denoted by brackets, e.g. datetime64[ns]
-        # denotes nanosecond precision. Since MLflow datetime type is precision agnostic, we
+        # denotes nanosecond precision. Since QCFlow datetime type is precision agnostic, we
         # ignore precision when matching datetime columns.
         return values.astype(np.dtype("datetime64[ns]"))
 
@@ -852,7 +852,7 @@ def _enforce_mlflow_datatype(name, values: pd.Series, t: DataType):
                 "schema based on a realistic data sample (training dataset) that includes missing "
                 "values. Alternatively, you can declare integer columns as doubles (float64) "
                 "whenever these columns may have missing values. See `Handling Integers With "
-                "Missing Values <https://www.mlflow.org/docs/latest/models.html#"
+                "Missing Values <https://www.qcflow.org/docs/latest/models.html#"
                 "handling-integers-with-missing-values>`_ for more details."
             )
 
@@ -937,7 +937,7 @@ def _enforce_unnamed_col_schema(pf_input: pd.DataFrame, input_schema: Schema):
     new_pf_input = {}
     for i, x in enumerate(input_names):
         if isinstance(input_types[i], DataType):
-            new_pf_input[x] = _enforce_mlflow_datatype(x, pf_input[x], input_types[i])
+            new_pf_input[x] = _enforce_qcflow_datatype(x, pf_input[x], input_types[i])
         # If the input_type is objects/arrays/maps, we assume pf_input must be a pandas DataFrame.
         # Otherwise, the schema is not valid.
         else:
@@ -964,7 +964,7 @@ def _enforce_named_col_schema(pf_input: pd.DataFrame, input_schema: Schema):
             else:
                 continue
         if isinstance(input_type, DataType):
-            new_pf_input[name] = _enforce_mlflow_datatype(name, pf_input[name], input_type)
+            new_pf_input[name] = _enforce_qcflow_datatype(name, pf_input[name], input_type)
         # If the input_type is objects/arrays/maps, we assume pf_input must be a pandas DataFrame.
         # Otherwise, the schema is not valid.
         else:
@@ -1124,8 +1124,8 @@ def _enforce_schema(pf_input: PyFuncInput, input_schema: Schema, flavor: Optiona
     For column-based signatures, we make sure the types of the input match the type specified in
     the schema or if it can be safely converted to match the input schema.
 
-    For Pyspark DataFrame inputs, MLflow casts a sample of the PySpark DataFrame into a Pandas
-    DataFrame. MLflow will only enforce the schema on a subset of the data rows.
+    For Pyspark DataFrame inputs, QCFlow casts a sample of the PySpark DataFrame into a Pandas
+    DataFrame. QCFlow will only enforce the schema on a subset of the data rows.
 
     For tensor-based signatures, we make sure the shape and type of the input matches the shape
     and type specified in model's input schema.
@@ -1329,10 +1329,10 @@ def _enforce_datatype(data: Any, dtype: DataType, required=True):
         raise MlflowException(f"Expected dtype to be DataType, got {type(dtype).__name__}")
     if not np.isscalar(data):
         raise MlflowException(f"Expected data to be scalar, got {type(data).__name__}")
-    # Reuse logic in _enforce_mlflow_datatype for type conversion
+    # Reuse logic in _enforce_qcflow_datatype for type conversion
     pd_series = pd.Series(data)
     try:
-        pd_series = _enforce_mlflow_datatype("", pd_series, dtype)
+        pd_series = _enforce_qcflow_datatype("", pd_series, dtype)
     except MlflowException:
         raise MlflowException(
             f"Failed to enforce schema of data `{data}` with dtype `{dtype.name}`"
@@ -1448,19 +1448,19 @@ def validate_schema(data: PyFuncInput, expected_schema: Schema) -> None:
         expected_schema: Expected Schema of the input data.
 
     Raises:
-        mlflow.exceptions.MlflowException: when the input data does not match the schema.
+        qcflow.exceptions.MlflowException: when the input data does not match the schema.
 
     .. code-block:: python
         :caption: Example usage of validate_schema
 
-        import mlflow.models
+        import qcflow.models
 
         # Suppose you've already got a model_uri
-        model_info = mlflow.models.get_model_info(model_uri)
+        model_info = qcflow.models.get_model_info(model_uri)
         # Get model signature directly
         model_signature = model_info.signature
         # validate schema
-        mlflow.models.validate_schema(input_data, model_signature.inputs)
+        qcflow.models.validate_schema(input_data, model_signature.inputs)
     """
 
     _enforce_schema(data, expected_schema)
@@ -1504,17 +1504,17 @@ def add_libraries_to_model(model_uri, run_id=None, registered_model_name=None):
         import pandas as pd
         from sklearn import datasets
         from sklearn.ensemble import RandomForestClassifier
-        import mlflow
-        import mlflow.sklearn
-        from mlflow.models import infer_signature
+        import qcflow
+        import qcflow.sklearn
+        from qcflow.models import infer_signature
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             iris = datasets.load_iris()
             iris_train = pd.DataFrame(iris.data, columns=iris.feature_names)
             clf = RandomForestClassifier(max_depth=7, random_state=0)
             clf.fit(iris_train, iris.target)
             signature = infer_signature(iris_train, clf.predict(iris_train))
-            mlflow.sklearn.log_model(
+            qcflow.sklearn.log_model(
                 clf, "iris_rf", signature=signature, registered_model_name="model-with-libs"
             )
 
@@ -1522,7 +1522,7 @@ def add_libraries_to_model(model_uri, run_id=None, registered_model_name=None):
         model_uri = "models:/model-with-libs/1"
 
         # Import utility
-        from mlflow.models.utils import add_libraries_to_model
+        from qcflow.models.utils import add_libraries_to_model
 
         # Log libraries to the original run of the model
         add_libraries_to_model(model_uri)
@@ -1532,21 +1532,21 @@ def add_libraries_to_model(model_uri, run_id=None, registered_model_name=None):
         add_libraries_to_model(model_uri, run_id=existing_run_id)
 
         # Log libraries to a new run
-        with mlflow.start_run():
+        with qcflow.start_run():
             add_libraries_to_model(model_uri)
 
         # Log libraries to a new registered model named 'new-model'
-        with mlflow.start_run():
+        with qcflow.start_run():
             add_libraries_to_model(model_uri, registered_model_name="new-model")
     """
 
-    import mlflow
-    from mlflow.models.wheeled_model import WheeledModel
+    import qcflow
+    from qcflow.models.wheeled_model import WheeledModel
 
-    if mlflow.active_run() is None:
+    if qcflow.active_run() is None:
         if run_id is None:
             run_id = get_model_version_from_model_uri(model_uri).run_id
-        with mlflow.start_run(run_id):
+        with qcflow.start_run(run_id):
             return WheeledModel.log_model(model_uri, registered_model_name)
     else:
         return WheeledModel.log_model(model_uri, registered_model_name)
@@ -1557,11 +1557,11 @@ def get_model_version_from_model_uri(model_uri):
     Helper function to fetch a model version from a model uri of the form
     models:/<model_name>/<model_version/stage/latest>.
     """
-    import mlflow
-    from mlflow import MlflowClient
+    import qcflow
+    from qcflow import MlflowClient
 
     databricks_profile_uri = (
-        get_databricks_profile_uri_from_artifact_uri(model_uri) or mlflow.get_registry_uri()
+        get_databricks_profile_uri_from_artifact_uri(model_uri) or qcflow.get_registry_uri()
     )
     client = MlflowClient(registry_uri=databricks_profile_uri)
     (name, version) = get_model_name_and_version(client, model_uri)
@@ -1900,12 +1900,12 @@ def _load_model_code_path(code_path: str, model_config: Optional[Union[str, dict
                 "Review the stack trace for more information."
             ) from e
 
-    if mlflow.models.model.__mlflow_model__ is None:
+    if qcflow.models.model.__qcflow_model__ is None:
         raise MlflowException(
             "If the model is logged as code, ensure the model is set using "
-            "mlflow.models.set_model() within the code file code file."
+            "qcflow.models.set_model() within the code file code file."
         )
-    return mlflow.models.model.__mlflow_model__
+    return qcflow.models.model.__qcflow_model__
 
 
 def _flatten_nested_params(
@@ -1936,7 +1936,7 @@ def validate_serving_input(model_uri: str, serving_input: Union[str, dict[str, A
     Returns:
         The prediction result from the model.
     """
-    from mlflow.pyfunc.scoring_server import _parse_json_data
+    from qcflow.pyfunc.scoring_server import _parse_json_data
 
     # sklearn model might not have python_function flavor if it
     # doesn't define a predict function. In such case the model
@@ -1945,7 +1945,7 @@ def validate_serving_input(model_uri: str, serving_input: Union[str, dict[str, A
     output_dir = None if get_local_path_or_none(model_uri) else create_tmp_dir()
 
     try:
-        pyfunc_model = mlflow.pyfunc.load_model(model_uri, dst_path=output_dir)
+        pyfunc_model = qcflow.pyfunc.load_model(model_uri, dst_path=output_dir)
         parsed_input = _parse_json_data(
             serving_input,
             pyfunc_model.metadata,

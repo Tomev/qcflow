@@ -1,19 +1,19 @@
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_ALREADY_EXISTS,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.server.auth.entities import ExperimentPermission, RegisteredModelPermission, User
-from mlflow.server.auth.permissions import (
+from qcflow.server.auth.entities import ExperimentPermission, RegisteredModelPermission, User
+from qcflow.server.auth.permissions import (
     ALL_PERMISSIONS,
     EDIT,
     READ,
 )
-from mlflow.server.auth.sqlalchemy_store import SqlAlchemyStore
+from qcflow.server.auth.sqlalchemy_store import SqlAlchemyStore
 
 from tests.helper_functions import random_str
 

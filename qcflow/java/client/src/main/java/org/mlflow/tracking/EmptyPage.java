@@ -1,4 +1,4 @@
-package org.mlflow.tracking;
+package org.qcflow.tracking;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -32,7 +32,7 @@ public class EmptyPage<E> implements Page<E> {
   }
 
   /**
-   * @return An {@link org.mlflow.tracking.EmptyPage}
+   * @return An {@link org.qcflow.tracking.EmptyPage}
    */
   public EmptyPage getNextPage() {
     return this;

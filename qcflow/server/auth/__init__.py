@@ -4,7 +4,7 @@ Usage
 
 .. code-block:: bash
 
-    mlflow server --app-name basic-auth
+    qcflow server --app-name basic-auth
 """
 
 import functools
@@ -18,17 +18,17 @@ import sqlalchemy
 from flask import Flask, Response, flash, jsonify, make_response, render_template_string, request
 from werkzeug.datastructures import Authorization
 
-from mlflow import MlflowException
-from mlflow.entities import Experiment
-from mlflow.entities.model_registry import RegisteredModel
-from mlflow.protos.databricks_pb2 import (
+from qcflow import MlflowException
+from qcflow.entities import Experiment
+from qcflow.entities.model_registry import RegisteredModel
+from qcflow.protos.databricks_pb2 import (
     BAD_REQUEST,
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.protos.model_registry_pb2 import (
+from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
     CreateRegisteredModel,
     DeleteModelVersion,
@@ -50,7 +50,7 @@ from mlflow.protos.model_registry_pb2 import (
     UpdateModelVersion,
     UpdateRegisteredModel,
 )
-from mlflow.protos.service_pb2 import (
+from qcflow.protos.service_pb2 import (
     CreateExperiment,
     CreateRun,
     DeleteExperiment,
@@ -73,11 +73,11 @@ from mlflow.protos.service_pb2 import (
     UpdateExperiment,
     UpdateRun,
 )
-from mlflow.server import app
-from mlflow.server.auth.config import read_auth_config
-from mlflow.server.auth.logo import MLFLOW_LOGO
-from mlflow.server.auth.permissions import MANAGE, Permission, get_permission
-from mlflow.server.auth.routes import (
+from qcflow.server import app
+from qcflow.server.auth.config import read_auth_config
+from qcflow.server.auth.logo import QCFLOW_LOGO
+from qcflow.server.auth.permissions import MANAGE, Permission, get_permission
+from qcflow.server.auth.routes import (
     CREATE_EXPERIMENT_PERMISSION,
     CREATE_REGISTERED_MODEL_PERMISSION,
     CREATE_USER,
@@ -94,18 +94,18 @@ from mlflow.server.auth.routes import (
     UPDATE_USER_ADMIN,
     UPDATE_USER_PASSWORD,
 )
-from mlflow.server.auth.sqlalchemy_store import SqlAlchemyStore
-from mlflow.server.handlers import (
+from qcflow.server.auth.sqlalchemy_store import SqlAlchemyStore
+from qcflow.server.handlers import (
     _get_model_registry_store,
     _get_request_message,
     _get_tracking_store,
-    catch_mlflow_exception,
+    catch_qcflow_exception,
     get_endpoints,
 )
-from mlflow.store.entities import PagedList
-from mlflow.utils.proto_json_utils import message_to_json, parse_dict
-from mlflow.utils.rest_utils import _REST_API_PATH_PREFIX
-from mlflow.utils.search_utils import SearchUtils
+from qcflow.store.entities import PagedList
+from qcflow.utils.proto_json_utils import message_to_json, parse_dict
+from qcflow.utils.rest_utils import _REST_API_PATH_PREFIX
+from qcflow.utils.search_utils import SearchUtils
 
 _logger = logging.getLogger(__name__)
 
@@ -120,11 +120,11 @@ def is_unprotected_route(path: str) -> bool:
 def make_basic_auth_response() -> Response:
     res = make_response(
         "You are not authenticated. Please see "
-        "https://www.mlflow.org/docs/latest/auth/index.html#authenticating-to-mlflow "
+        "https://www.qcflow.org/docs/latest/auth/index.html#authenticating-to-qcflow "
         "on how to authenticate."
     )
     res.status_code = 401
-    res.headers["WWW-Authenticate"] = 'Basic realm="mlflow"'
+    res.headers["WWW-Authenticate"] = 'Basic realm="qcflow"'
     return res
 
 
@@ -408,7 +408,7 @@ BEFORE_REQUEST_VALIDATORS.update(
 
 
 def _is_proxy_artifact_path(path: str) -> bool:
-    return path.startswith(f"{_REST_API_PATH_PREFIX}/mlflow-artifacts/artifacts/")
+    return path.startswith(f"{_REST_API_PATH_PREFIX}/qcflow-artifacts/artifacts/")
 
 
 def _get_proxy_artifact_validator(
@@ -457,7 +457,7 @@ def authenticate_request_basic_auth() -> Union[Authorization, Response]:
         return make_basic_auth_response()
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def _before_request():
     if is_unprotected_route(request.path):
         return
@@ -642,7 +642,7 @@ AFTER_REQUEST_HANDLERS = {
 }
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def _after_request(resp: Response):
     if 400 <= resp.status_code < 600:
         return resp
@@ -743,7 +743,7 @@ def signup():
 <form action="{{ users_route }}" method="post">
   <div class="logo-container">
     {% autoescape false %}
-    {{ mlflow_logo }}
+    {{ qcflow_logo }}
     {% endautoescape %}
   </div>
   <label for="username">Username:</label>
@@ -758,12 +758,12 @@ def signup():
   <input type="submit" value="Sign up">
 </form>
 """,
-        mlflow_logo=MLFLOW_LOGO,
+        qcflow_logo=QCFLOW_LOGO,
         users_route=CREATE_USER,
     )
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def create_user():
     content_type = request.headers.get("Content-Type")
     if content_type == "application/x-www-form-urlencoded":
@@ -799,14 +799,14 @@ def create_user():
         return make_response(message, 400)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def get_user():
     username = _get_request_param("username")
     user = store.get_user(username)
     return jsonify({"user": user.to_json()})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def update_user_password():
     username = _get_request_param("username")
     password = _get_request_param("password")
@@ -814,7 +814,7 @@ def update_user_password():
     return make_response({})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def update_user_admin():
     username = _get_request_param("username")
     is_admin = _get_request_param("is_admin")
@@ -822,14 +822,14 @@ def update_user_admin():
     return make_response({})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def delete_user():
     username = _get_request_param("username")
     store.delete_user(username)
     return make_response({})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def create_experiment_permission():
     experiment_id = _get_request_param("experiment_id")
     username = _get_request_param("username")
@@ -838,7 +838,7 @@ def create_experiment_permission():
     return jsonify({"experiment_permission": ep.to_json()})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def get_experiment_permission():
     experiment_id = _get_request_param("experiment_id")
     username = _get_request_param("username")
@@ -846,7 +846,7 @@ def get_experiment_permission():
     return make_response({"experiment_permission": ep.to_json()})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def update_experiment_permission():
     experiment_id = _get_request_param("experiment_id")
     username = _get_request_param("username")
@@ -855,7 +855,7 @@ def update_experiment_permission():
     return make_response({})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def delete_experiment_permission():
     experiment_id = _get_request_param("experiment_id")
     username = _get_request_param("username")
@@ -863,7 +863,7 @@ def delete_experiment_permission():
     return make_response({})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def create_registered_model_permission():
     name = _get_request_param("name")
     username = _get_request_param("username")
@@ -872,7 +872,7 @@ def create_registered_model_permission():
     return make_response({"registered_model_permission": rmp.to_json()})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def get_registered_model_permission():
     name = _get_request_param("name")
     username = _get_request_param("username")
@@ -880,7 +880,7 @@ def get_registered_model_permission():
     return make_response({"registered_model_permission": rmp.to_json()})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def update_registered_model_permission():
     name = _get_request_param("name")
     username = _get_request_param("username")
@@ -889,7 +889,7 @@ def update_registered_model_permission():
     return make_response({})
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def delete_registered_model_permission():
     name = _get_request_param("name")
     username = _get_request_param("username")
@@ -899,7 +899,7 @@ def delete_registered_model_permission():
 
 def create_app(app: Flask = app):
     """
-    A factory to enable authentication and authorization for the MLflow server.
+    A factory to enable authentication and authorization for the QCFlow server.
 
     Args:
         app: The Flask app to enable authentication and authorization for.

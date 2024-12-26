@@ -3,11 +3,11 @@ from unittest import mock
 
 import pytest
 
-import mlflow.tracking.request_header.registry
-from mlflow.tracking.request_header.databricks_request_header_provider import (
+import qcflow.tracking.request_header.registry
+from qcflow.tracking.request_header.databricks_request_header_provider import (
     DatabricksRequestHeaderProvider,
 )
-from mlflow.tracking.request_header.registry import (
+from qcflow.tracking.request_header.registry import (
     RequestHeaderProviderRegistry,
     resolve_request_headers,
 )
@@ -16,7 +16,7 @@ from mlflow.tracking.request_header.registry import (
 @pytest.fixture(autouse=True)
 def reload_registry():
     yield
-    reload(mlflow.tracking.request_header.registry)
+    reload(qcflow.tracking.request_header.registry)
 
 
 def test_request_header_context_provider_registry_register():
@@ -34,14 +34,14 @@ def test_request_header_provider_registry_register_entrypoints():
     mock_entrypoint.load.return_value = provider_class
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         registry = RequestHeaderProviderRegistry()
         registry.register_entrypoints()
 
     assert set(registry) == {provider_class.return_value}
     mock_entrypoint.load.assert_called_once_with()
-    mock_get_group_all.assert_called_once_with("mlflow.request_header_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.request_header_provider")
 
 
 @pytest.mark.parametrize(
@@ -52,7 +52,7 @@ def test_request_header_provider_registry_register_entrypoints_handles_exception
     mock_entrypoint.load.side_effect = exception
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         registry = RequestHeaderProviderRegistry()
         # Check that the raised warning contains the message from the original exception
@@ -60,13 +60,13 @@ def test_request_header_provider_registry_register_entrypoints_handles_exception
             registry.register_entrypoints()
 
     mock_entrypoint.load.assert_called_once_with()
-    mock_get_group_all.assert_called_once_with("mlflow.request_header_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.request_header_provider")
 
 
 def _currently_registered_request_header_provider_classes():
     return {
         provider.__class__
-        for provider in mlflow.tracking.request_header.registry._request_header_provider_registry
+        for provider in qcflow.tracking.request_header.registry._request_header_provider_registry
     }
 
 
@@ -83,22 +83,22 @@ def test_registry_instance_loads_entrypoints():
     mock_entrypoint.load.return_value = MockRequestHeaderProvider
 
     with mock.patch(
-        "mlflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
+        "qcflow.utils.plugins._get_entry_points", return_value=[mock_entrypoint]
     ) as mock_get_group_all:
         # Entrypoints are registered at import time, so we need to reload the module to register the
         # entrypoint given by the mocked entrypoints.get_group_all
-        reload(mlflow.tracking.request_header.registry)
+        reload(qcflow.tracking.request_header.registry)
 
     assert MockRequestHeaderProvider in _currently_registered_request_header_provider_classes()
-    mock_get_group_all.assert_called_once_with("mlflow.request_header_provider")
+    mock_get_group_all.assert_called_once_with("qcflow.request_header_provider")
 
 
 def test_run_context_provider_registry_with_installed_plugin():
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
 
-    reload(mlflow.tracking.request_header.registry)
+    reload(qcflow.tracking.request_header.registry)
 
-    from mlflow_test_plugin.request_header_provider import PluginRequestHeaderProvider
+    from qcflow_test_plugin.request_header_provider import PluginRequestHeaderProvider
 
     assert PluginRequestHeaderProvider in _currently_registered_request_header_provider_classes()
 
@@ -138,7 +138,7 @@ def mock_request_header_providers():
     providers = [base_provider, skipped_provider, exception_provider, override_provider]
 
     with mock.patch(
-        "mlflow.tracking.request_header.registry._request_header_provider_registry", providers
+        "qcflow.tracking.request_header.registry._request_header_provider_registry", providers
     ):
         yield
 

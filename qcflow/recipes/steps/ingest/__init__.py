@@ -6,19 +6,19 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.recipes.artifacts import DataframeArtifact
-from mlflow.recipes.cards import BaseCard
-from mlflow.recipes.step import BaseStep, StepClass
-from mlflow.recipes.steps.ingest.datasets import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.recipes.artifacts import DataframeArtifact
+from qcflow.recipes.cards import BaseCard
+from qcflow.recipes.step import BaseStep, StepClass
+from qcflow.recipes.steps.ingest.datasets import (
     CustomDataset,
     DeltaTableDataset,
     ParquetDataset,
     SparkSqlDataset,
 )
-from mlflow.recipes.utils.step import get_pandas_data_profiles, validate_classification_config
-from mlflow.utils.file_utils import read_parquet_as_pandas_df
+from qcflow.recipes.utils.step import get_pandas_data_profiles, validate_classification_config
+from qcflow.utils.file_utils import read_parquet_as_pandas_df
 
 _logger = logging.getLogger(__name__)
 

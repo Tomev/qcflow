@@ -12,9 +12,9 @@ from dspy.utils.callback import BaseCallback, with_callbacks
 from dspy.utils.dummies import DSPDummyLM, DummyLM
 from packaging.version import Version
 
-import mlflow
-from mlflow.entities import SpanType
-from mlflow.models.dependencies_schemas import DependenciesSchemasType, _clear_retriever_schema
+import qcflow
+from qcflow.entities import SpanType
+from qcflow.models.dependencies_schemas import DependenciesSchemasType, _clear_retriever_schema
 
 from tests.tracing.helper import get_traces
 
@@ -22,13 +22,13 @@ _DSPY_VERSION = Version(importlib.metadata.version("dspy"))
 
 
 def test_autolog_lm():
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
 
     lm = DummyLM([{"output": "test output"}])
     result = lm("test input")
     assert result == ["[[ ## output ## ]]\ntest output"]
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "OK"
     # Latency of LM is too small to get > 0 milliseconds difference
@@ -48,7 +48,7 @@ def test_autolog_lm():
 
 
 def test_autolog_cot():
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
 
     dspy.settings.configure(
         lm=DummyLM({"How are you?": {"answer": "test output", "reasoning": "No more responses"}})
@@ -99,8 +99,8 @@ def test_autolog_cot():
         assert spans[4 + i].span_type == SpanType.PARSER
 
 
-def test_mlflow_callback_exception():
-    mlflow.dspy.autolog()
+def test_qcflow_callback_exception():
+    qcflow.dspy.autolog()
 
     class ErrorLM(dspy.LM):
         @with_callbacks
@@ -120,7 +120,7 @@ def test_mlflow_callback_exception():
     with pytest.raises(ValueError, match="Error"):
         cot(question="How are you?")
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "ERROR"
     assert trace.info.execution_time_ms > 0
@@ -147,7 +147,7 @@ def test_mlflow_callback_exception():
     reason="dspy.ReAct is broken in >=2.5.19",
 )
 def test_autolog_react():
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
 
     dspy.settings.configure(
         lm=DummyLM(
@@ -174,7 +174,7 @@ def test_autolog_react():
     result = react(question="What is the highest mountain in the world?")
     assert result["answer"] == "Mount Everest"
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "OK"
     assert trace.info.execution_time_ms > 0
@@ -196,7 +196,7 @@ def test_autolog_react():
 
 
 def test_autolog_retriever():
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
 
     dspy.settings.configure(lm=DummyLM([{"output": "test output"}]))
 
@@ -209,7 +209,7 @@ def test_autolog_retriever():
     result = retriever(query="test query", n=3)
     assert result == ["test output"] * 3
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "OK"
     assert trace.info.execution_time_ms > 0
@@ -246,8 +246,8 @@ class RAG(dspy.Module):
 
     def forward(self, question):
         # Create a custom span inside the module using fluent API
-        assert mlflow.get_current_active_span() is not None
-        with mlflow.start_span(name="retrieve_context", span_type=SpanType.RETRIEVER) as span:
+        assert qcflow.get_current_active_span() is not None
+        with qcflow.start_span(name="retrieve_context", span_type=SpanType.RETRIEVER) as span:
             span.set_inputs(question)
             docs = self.retrieve(question)
             context = "".join(docs)
@@ -257,7 +257,7 @@ class RAG(dspy.Module):
 
 
 def test_autolog_custom_module():
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
 
     dspy.settings.configure(
         lm=DummyLM(
@@ -295,7 +295,7 @@ def test_autolog_custom_module():
 
 
 def test_autolog_tracing_disabled_during_compile_evaluate():
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
 
     dspy.settings.configure(
         lm=DummyLM(
@@ -327,14 +327,14 @@ def test_autolog_tracing_disabled_during_compile_evaluate():
     teleprompter = BootstrapFewShot()
     teleprompter.compile(RAG(), trainset=trainset)
 
-    assert mlflow.get_last_active_trace() is None
+    assert qcflow.get_last_active_trace() is None
 
     # Evaluate the model
     evaluator = Evaluate(devset=trainset)
     score = evaluator(RAG(), metric=lambda example, pred, _: example.answer == pred.answer)
 
     assert score == 0.0
-    assert mlflow.get_last_active_trace() is None
+    assert qcflow.get_last_active_trace() is None
 
 
 def test_autolog_should_not_override_existing_callbacks():
@@ -345,28 +345,28 @@ def test_autolog_should_not_override_existing_callbacks():
 
     dspy.settings.configure(callbacks=[callback])
 
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
     assert callback in dspy.settings.callbacks
 
-    mlflow.dspy.autolog(disable=True)
+    qcflow.dspy.autolog(disable=True)
     assert callback in dspy.settings.callbacks
 
 
 def test_disable_autolog():
     lm = DummyLM([{"output": "test output"}])
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
     lm("test input")
 
     assert len(get_traces()) == 1
 
-    mlflow.dspy.autolog(disable=True)
+    qcflow.dspy.autolog(disable=True)
 
     lm("test input")
 
     # no additional trace should be created
     assert len(get_traces()) == 1
 
-    mlflow.dspy.autolog(log_traces=False)
+    qcflow.dspy.autolog(log_traces=False)
 
     lm("test input")
 
@@ -375,14 +375,14 @@ def test_disable_autolog():
 
 
 def test_autolog_set_retriever_schema():
-    mlflow.dspy.autolog()
+    qcflow.dspy.autolog()
     dspy.settings.configure(lm=DSPDummyLM(answers=["4", "6", "8", "10"]))
 
     class CoT(dspy.Module):
         def __init__(self):
             super().__init__()
             self.prog = dspy.ChainOfThought("question -> answer")
-            mlflow.models.set_retriever_schema(
+            qcflow.models.set_retriever_schema(
                 primary_key="id",
                 text_column="text",
                 doc_uri="source",
@@ -391,16 +391,16 @@ def test_autolog_set_retriever_schema():
         def forward(self, question):
             return self.prog(question=question)
 
-    with mlflow.start_run():
-        model_info = mlflow.dspy.log_model(CoT(), "model")
+    with qcflow.start_run():
+        model_info = qcflow.dspy.log_model(CoT(), "model")
 
     # Reset retriever schema
     _clear_retriever_schema()
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     loaded_model.predict({"question": "What is 2 + 2?"})
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "OK"
     assert json.loads(trace.info.tags[DependenciesSchemasType.RETRIEVERS.value]) == [

@@ -1,11 +1,11 @@
 from dataclasses import asdict, dataclass, field
 from typing import Optional
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.protos.service_pb2 import TraceInfo as ProtoTraceInfo
-from mlflow.protos.service_pb2 import TraceRequestMetadata as ProtoTraceRequestMetadata
-from mlflow.protos.service_pb2 import TraceTag as ProtoTraceTag
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.protos.service_pb2 import TraceInfo as ProtoTraceInfo
+from qcflow.protos.service_pb2 import TraceRequestMetadata as ProtoTraceRequestMetadata
+from qcflow.protos.service_pb2 import TraceTag as ProtoTraceTag
 
 
 @dataclass
@@ -38,7 +38,7 @@ class TraceInfo(_MlflowObject):
         return False
 
     def to_proto(self):
-        from mlflow.tracing.constant import MAX_CHARS_IN_TRACE_INFO_METADATA_AND_TAGS
+        from qcflow.tracing.constant import MAX_CHARS_IN_TRACE_INFO_METADATA_AND_TAGS
 
         proto = ProtoTraceInfo()
         proto.request_id = self.request_id

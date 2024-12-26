@@ -1,4 +1,4 @@
-package org.mlflow.spark.autologging
+package org.qcflow.spark.autologging
 
 import org.apache.spark.scheduler._
 import org.apache.spark.sql.catalyst.plans.logical.{LeafNode, LogicalPlan}

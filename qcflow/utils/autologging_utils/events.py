@@ -1,13 +1,13 @@
 import warnings
 
-from mlflow.utils.autologging_utils import _logger
+from qcflow.utils.autologging_utils import _logger
 
 
 class AutologgingEventLogger:
     """
     Provides instrumentation hooks for important autologging lifecycle events, including:
 
-        - Calls to `mlflow.autolog()` APIs
+        - Calls to `qcflow.autolog()` APIs
         - Calls to patched APIs with associated termination states
           ("success" and "failure due to error")
         - Calls to original / underlying APIs made by patched function code with
@@ -50,12 +50,12 @@ class AutologgingEventLogger:
 
     def log_autolog_called(self, integration, call_args, call_kwargs):
         """Called when the `autolog()` method for an autologging integration
-        is invoked (e.g., when a user invokes `mlflow.sklearn.autolog()`)
+        is invoked (e.g., when a user invokes `qcflow.sklearn.autolog()`)
 
         Args:
             integration: The autologging integration for which `autolog()` was called.
             call_args: **DEPRECATED** The positional arguments passed to the `autolog()` call.
-                This field is empty in MLflow > 1.13.1; all arguments are passed in
+                This field is empty in QCFlow > 1.13.1; all arguments are passed in
                 keyword form via `call_kwargs`.
             call_kwargs: The arguments passed to the `autolog()` call in keyword form.
                 Any positional arguments should also be converted to keyword form
@@ -64,7 +64,7 @@ class AutologgingEventLogger:
         if len(call_args) > 0:
             warnings.warn(
                 "Received %d positional arguments via `call_args`. `call_args` is"
-                " deprecated in MLflow > 1.13.1, and all arguments should be passed"
+                " deprecated in QCFlow > 1.13.1, and all arguments should be passed"
                 " in keyword form via `call_kwargs`." % len(call_args),
                 category=DeprecationWarning,
                 stacklevel=2,

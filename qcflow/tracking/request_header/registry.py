@@ -1,13 +1,13 @@
 import logging
 import warnings
 
-from mlflow.tracking.request_header.databricks_request_header_provider import (
+from qcflow.tracking.request_header.databricks_request_header_provider import (
     DatabricksRequestHeaderProvider,
 )
-from mlflow.tracking.request_header.default_request_header_provider import (
+from qcflow.tracking.request_header.default_request_header_provider import (
     DefaultRequestHeaderProvider,
 )
-from mlflow.utils.plugins import get_entry_points
+from qcflow.utils.plugins import get_entry_points
 
 _logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class RequestHeaderProviderRegistry:
 
     def register_entrypoints(self):
         """Register tracking stores provided by other packages"""
-        for entrypoint in get_entry_points("mlflow.request_header_provider"):
+        for entrypoint in get_entry_points("qcflow.request_header_provider"):
             try:
                 self.register(entrypoint.load())
             except (AttributeError, ImportError) as exc:
@@ -49,7 +49,7 @@ def resolve_request_headers(request_headers=None):
     Request headers are resolved in the order that providers are registered. Argument headers are
     applied last. This function iterates through all request header providers in the registry.
     Additional context providers can be registered as described in
-    :py:class:`mlflow.tracking.request_header.RequestHeaderProvider`.
+    :py:class:`qcflow.tracking.request_header.RequestHeaderProvider`.
 
     Args:
         request_headers: A dictionary of request headers to override. If specified, headers passed

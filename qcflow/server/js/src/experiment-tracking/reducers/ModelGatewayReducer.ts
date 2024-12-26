@@ -28,10 +28,10 @@ export const modelGatewayRoutesLoading = (
   action: AsyncAction,
 ) => {
   switch (action.type) {
-    case pending('SEARCH_MLFLOW_DEPLOYMENTS_MODEL_ROUTES'):
+    case pending('SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES'):
       return { ...state, deploymentRoutesLoading: true, loading: true };
-    case fulfilled('SEARCH_MLFLOW_DEPLOYMENTS_MODEL_ROUTES'):
-    case rejected('SEARCH_MLFLOW_DEPLOYMENTS_MODEL_ROUTES'):
+    case fulfilled('SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES'):
+    case rejected('SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES'):
       return {
         ...state,
         deploymentRoutesLoading: false,
@@ -48,7 +48,7 @@ export const modelGatewayRoutes = (
 ): Record<string, ModelGatewayRoute> => {
   const compatibleEndpointTypes = [ModelGatewayRouteTask.LLM_V1_COMPLETIONS, ModelGatewayRouteTask.LLM_V1_CHAT];
   switch (type) {
-    case fulfilled('SEARCH_MLFLOW_DEPLOYMENTS_MODEL_ROUTES'):
+    case fulfilled('SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES'):
       if (!payload.endpoints) {
         return state;
       }
@@ -59,11 +59,11 @@ export const modelGatewayRoutes = (
       return compatibleGatewayEndpoints.reduce((newState, deploymentEndpoint) => {
         return {
           ...newState,
-          [`mlflow_deployment_endpoint:${deploymentEndpoint.name}`]: {
-            type: 'mlflow_deployment_endpoint',
-            key: `mlflow_deployment_endpoint:${deploymentEndpoint.name}`,
+          [`qcflow_deployment_endpoint:${deploymentEndpoint.name}`]: {
+            type: 'qcflow_deployment_endpoint',
+            key: `qcflow_deployment_endpoint:${deploymentEndpoint.name}`,
             name: deploymentEndpoint.name,
-            mlflowDeployment: deploymentEndpoint,
+            qcflowDeployment: deploymentEndpoint,
             task: deploymentEndpoint.endpoint_type as ModelGatewayRouteTask,
           },
         };

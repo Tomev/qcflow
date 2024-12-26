@@ -47,7 +47,7 @@ const ModelLink = ({
         <LegacyTooltip title={displayFullName} placement="topLeft">
           <span css={{ verticalAlign: 'middle' }}>{registeredModelName}</span>{' '}
           <Tag
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_cells_modelscellrenderer.tsx_49"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_cells_modelscellrenderer.tsx_49"
             css={{ marginRight: 0, verticalAlign: 'middle' }}
           >
             v{registeredModelVersion}

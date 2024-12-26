@@ -9,10 +9,10 @@ from typing import Any, Optional
 
 import requests
 
-from mlflow.deployments import PredictionsResponse
-from mlflow.exceptions import MlflowException
-from mlflow.pyfunc import scoring_server
-from mlflow.utils.proto_json_utils import dump_input_data
+from qcflow.deployments import PredictionsResponse
+from qcflow.exceptions import MlflowException
+from qcflow.pyfunc import scoring_server
+from qcflow.utils.proto_json_utils import dump_input_data
 
 _logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ class ScoringServerClient(BaseScoringServerClient):
             params: Additional parameters to pass to the model for inference.
 
         Returns:
-            :py:class:`PredictionsResponse <mlflow.deployments.PredictionsResponse>` result.
+            :py:class:`PredictionsResponse <qcflow.deployments.PredictionsResponse>` result.
         """
         response = requests.post(
             url=self.url_prefix + "/invocations",
@@ -115,7 +115,7 @@ class StdinScoringServerClient(BaseScoringServerClient):
             params: Additional parameters to pass to the model for inference.
 
         Returns:
-            :py:class:`PredictionsResponse <mlflow.deployments.PredictionsResponse>` result.
+            :py:class:`PredictionsResponse <qcflow.deployments.PredictionsResponse>` result.
         """
         if not self.output_json.exists():
             self.output_json.touch()

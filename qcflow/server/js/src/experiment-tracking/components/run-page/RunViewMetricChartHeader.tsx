@@ -76,7 +76,7 @@ export const RunViewMetricChartHeader = ({
       <DropdownMenu.Root modal={false}>
         <DropdownMenu.Trigger asChild>
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewmetricchartheader.tsx_78"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewmetricchartheader.tsx_78"
             css={{ flexShrink: 0 }}
             icon={<OverflowIcon />}
             size="small"
@@ -85,7 +85,7 @@ export const RunViewMetricChartHeader = ({
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
           <DropdownMenu.Item
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewmetricchartheader.tsx_87"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewmetricchartheader.tsx_87"
             disabled={!canMoveUp}
             onClick={onMoveUp}
           >
@@ -95,7 +95,7 @@ export const RunViewMetricChartHeader = ({
             />
           </DropdownMenu.Item>
           <DropdownMenu.Item
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewmetricchartheader.tsx_93"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewmetricchartheader.tsx_93"
             disabled={!canMoveDown}
             onClick={onMoveDown}
           >

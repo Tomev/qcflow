@@ -8,32 +8,32 @@ from typing import Any
 
 import yaml
 
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_ALREADY_EXISTS,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
-from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils import get_parent_module
-from mlflow.utils.databricks_utils import is_in_databricks_runtime
-from mlflow.utils.file_utils import _copy_file_or_tree
-from mlflow.utils.requirements_utils import _capture_imported_modules
-from mlflow.utils.uri import append_to_uri_path
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
+from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils import get_parent_module
+from qcflow.utils.databricks_utils import is_in_databricks_runtime
+from qcflow.utils.file_utils import _copy_file_or_tree
+from qcflow.utils.requirements_utils import _capture_imported_modules
+from qcflow.utils.uri import append_to_uri_path
 
 FLAVOR_CONFIG_CODE = "code"
 
 
 def _get_all_flavor_configurations(model_path):
-    """Obtains all the flavor configurations from the specified MLflow model path.
+    """Obtains all the flavor configurations from the specified QCFlow model path.
 
     Args:
-        model_path: The path to the root directory of the MLflow model for which to load
+        model_path: The path to the root directory of the QCFlow model for which to load
             the specified flavor configuration.
 
     Returns:
@@ -46,11 +46,11 @@ def _get_all_flavor_configurations(model_path):
 
 def _get_flavor_configuration(model_path, flavor_name):
     """Obtains the configuration for the specified flavor from the specified
-    MLflow model path. If the model does not contain the specified flavor,
+    QCFlow model path. If the model does not contain the specified flavor,
     an exception will be thrown.
 
     Args:
-        model_path: The path to the root directory of the MLflow model for which to load
+        model_path: The path to the root directory of the QCFlow model for which to load
             the specified flavor configuration.
         flavor_name: The name of the flavor configuration to load.
 
@@ -68,11 +68,11 @@ def _get_flavor_configuration(model_path, flavor_name):
 
 def _get_flavor_configuration_from_uri(model_uri, flavor_name, logger):
     """Obtains the configuration for the specified flavor from the specified
-    MLflow model uri. If the model does not contain the specified flavor,
+    QCFlow model uri. If the model does not contain the specified flavor,
     an exception will be thrown.
 
     Args:
-        model_uri: The path to the root directory of the MLflow model for which to load
+        model_uri: The path to the root directory of the QCFlow model for which to load
             the specified flavor configuration.
         flavor_name: The name of the flavor configuration to load.
         logger: The local flavor's logger to report the resolved path of the model uri.
@@ -175,10 +175,10 @@ def _infer_and_copy_code_paths(flavor, path, default_subpath="code"):
 
     # Generate code_paths set from the imported modules full name list.
     # It only picks necessary files, because:
-    #  1. Reduce risk of logging files containing user credentials to MLflow
+    #  1. Reduce risk of logging files containing user credentials to QCFlow
     #     artifact repository.
     #  2. In databricks runtime, notebook files might exist under a code_path directory,
-    #     if logging the whole directory to MLflow artifact repository, these
+    #     if logging the whole directory to QCFlow artifact repository, these
     #     notebook files are not accessible and trigger exceptions. On the other
     #     hand, these notebook files are not used as code_paths modules because
     #     code in notebook files are loaded into python `__main__` module.
@@ -340,14 +340,14 @@ def _get_overridden_pyfunc_model_config(
     """
     Updates the inference configuration according to the model's configuration and the overrides.
     Only arguments already present in the inference configuration can be updated. The environment
-    variable ``MLFLOW_PYFUNC_INFERENCE_CONFIG`` can also be used to provide additional inference
+    variable ``QCFLOW_PYFUNC_INFERENCE_CONFIG`` can also be used to provide additional inference
     configuration.
     """
 
     overrides = {}
-    if env_overrides := os.getenv("MLFLOW_PYFUNC_INFERENCE_CONFIG"):
+    if env_overrides := os.getenv("QCFLOW_PYFUNC_INFERENCE_CONFIG"):
         logger.debug(
-            "Inference configuration is being loaded from ``MLFLOW_PYFUNC_INFERENCE_CONFIG``"
+            "Inference configuration is being loaded from ``QCFLOW_PYFUNC_INFERENCE_CONFIG``"
             " environ."
         )
         overrides.update(dict(json.loads(env_overrides)))
@@ -454,11 +454,11 @@ def env_var_tracker():
     Context manager for temporarily tracking environment variables accessed.
     It tracks environment variables accessed during the context manager's lifetime.
     """
-    from mlflow.environment_variables import MLFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING
+    from qcflow.environment_variables import QCFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING
 
     tracked_env_names = set()
 
-    if MLFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING.get():
+    if QCFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING.get():
         original_getitem = os._Environ.__getitem__
         original_get = os._Environ.get
 

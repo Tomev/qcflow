@@ -6,8 +6,8 @@ import warnings
 
 import click
 
-from mlflow.environment_variables import MLFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING
-from mlflow.utils import env_manager as _EnvManager
+from qcflow.environment_variables import QCFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING
+from qcflow.utils import env_manager as _EnvManager
 
 MODEL_PATH = click.option(
     "--model-path",
@@ -23,7 +23,7 @@ _model_uri_help_string = (
     "URI to the model. A local path, a 'runs:/' URI, or a"
     " remote storage URI (e.g., an 's3://' URI). For more information"
     " about supported remote URIs for model artifacts, see"
-    " https://mlflow.org/docs/latest/tracking.html#artifact-stores"
+    " https://qcflow.org/docs/latest/tracking.html#artifact-stores"
 )
 
 MODEL_URI_BUILD_DOCKER = click.option(
@@ -43,11 +43,11 @@ MODEL_URI = click.option(
     help=_model_uri_help_string,
 )
 
-MLFLOW_HOME = click.option(
-    "--mlflow-home",
+QCFLOW_HOME = click.option(
+    "--qcflow-home",
     default=None,
     metavar="PATH",
-    help="Path to local clone of MLflow project. Use for development only.",
+    help="Path to local clone of QCFlow project. Use for development only.",
 )
 
 RUN_ID = click.option(
@@ -56,21 +56,21 @@ RUN_ID = click.option(
     default=None,
     required=False,
     metavar="ID",
-    help="ID of the MLflow run that generated the referenced content.",
+    help="ID of the QCFlow run that generated the referenced content.",
 )
 
 
 def _resolve_env_manager(_, __, env_manager):
     if env_manager is not None:
         _EnvManager.validate(env_manager)
-        if env_manager == _EnvManager.CONDA and not MLFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING.get():
+        if env_manager == _EnvManager.CONDA and not QCFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING.get():
             warnings.warn(
                 (
                     "Use of conda is discouraged. If you use it, please ensure that your use of "
                     "conda complies with Anaconda's terms of service "
                     "(https://legal.anaconda.com/policies/en/?name=terms-of-service). "
                     "virtualenv is the recommended tool for environment reproducibility. "
-                    f"To suppress this warning, set the {MLFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING} "
+                    f"To suppress this warning, set the {QCFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING} "
                     "environment variable to 'TRUE'."
                 ),
                 UserWarning,
@@ -137,7 +137,7 @@ environment manager. The following values are supported:
 - virtualenv: use virtualenv (and pyenv for Python version management)
 - conda: use conda
 
-If unspecified, default to None, then MLflow will automatically pick the env manager
+If unspecified, default to None, then QCFlow will automatically pick the env manager
 based on the model's flavor configuration.
 If model-uri is specified: if python version is specified in the flavor configuration
 and no java installation is required, then we use local environment. Otherwise we use virtualenv.
@@ -146,20 +146,20 @@ If no model-uri is provided, we use virtualenv.
 )
 
 
-INSTALL_MLFLOW = click.option(
-    "--install-mlflow",
+INSTALL_QCFLOW = click.option(
+    "--install-qcflow",
     is_flag=True,
     default=False,
     help="If specified and there is a conda or virtualenv environment to be activated "
-    "mlflow will be installed into the environment after it has been "
-    "activated. The version of installed mlflow will be the same as "
+    "qcflow will be installed into the environment after it has been "
+    "activated. The version of installed qcflow will be the same as "
     "the one used to invoke this command.",
 )
 
 HOST = click.option(
     "--host",
     "-h",
-    envvar="MLFLOW_HOST",
+    envvar="QCFLOW_HOST",
     metavar="HOST",
     default="127.0.0.1",
     help="The network address to listen on (default: 127.0.0.1). "
@@ -170,7 +170,7 @@ HOST = click.option(
 PORT = click.option(
     "--port",
     "-p",
-    envvar="MLFLOW_PORT",
+    envvar="QCFLOW_PORT",
     default=5000,
     help="The port to listen on (default: 5000).",
 )
@@ -178,7 +178,7 @@ PORT = click.option(
 TIMEOUT = click.option(
     "--timeout",
     "-t",
-    envvar="MLFLOW_SCORING_SERVER_REQUEST_TIMEOUT",
+    envvar="QCFLOW_SCORING_SERVER_REQUEST_TIMEOUT",
     default=60,
     help="Timeout in seconds to serve a request (default: 60).",
 )
@@ -187,7 +187,7 @@ TIMEOUT = click.option(
 WORKERS = click.option(
     "--workers",
     "-w",
-    envvar="MLFLOW_WORKERS",
+    envvar="QCFLOW_WORKERS",
     default=None,
     help="Number of gunicorn worker processes to handle requests (default: 1).",
 )
@@ -205,20 +205,20 @@ ENABLE_MLSERVER = click.option(
 
 ARTIFACTS_DESTINATION = click.option(
     "--artifacts-destination",
-    envvar="MLFLOW_ARTIFACTS_DESTINATION",
+    envvar="QCFLOW_ARTIFACTS_DESTINATION",
     metavar="URI",
     default="./mlartifacts",
     help=(
         "The base artifact location from which to resolve artifact upload/download/list requests "
         "(e.g. 's3://my-bucket'). Defaults to a local './mlartifacts' directory. This option only "
         "applies when the tracking server is configured to stream artifacts and the experiment's "
-        "artifact root location is http or mlflow-artifacts URI."
+        "artifact root location is http or qcflow-artifacts URI."
     ),
 )
 
 SERVE_ARTIFACTS = click.option(
     "--serve-artifacts/--no-serve-artifacts",
-    envvar="MLFLOW_SERVE_ARTIFACTS",
+    envvar="QCFLOW_SERVE_ARTIFACTS",
     is_flag=True,
     default=True,
     help="Enables serving of artifact uploads, downloads, and list requests "

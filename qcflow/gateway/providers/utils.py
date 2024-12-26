@@ -3,17 +3,17 @@ from typing import Any, AsyncGenerator
 
 import aiohttp
 
-from mlflow.gateway.constants import (
-    MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS,
+from qcflow.gateway.constants import (
+    QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS,
 )
-from mlflow.utils.uri import append_to_uri_path
+from qcflow.utils.uri import append_to_uri_path
 
 
 @asynccontextmanager
 async def _aiohttp_post(headers: dict[str, str], base_url: str, path: str, payload: dict[str, Any]):
     async with aiohttp.ClientSession(headers=headers) as session:
         url = append_to_uri_path(base_url, path)
-        timeout = aiohttp.ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS)
+        timeout = aiohttp.ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS)
         async with session.post(url, json=payload, timeout=timeout) as response:
             yield response
 

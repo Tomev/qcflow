@@ -2,11 +2,11 @@ import json
 import logging
 from typing import Optional
 
-from mlflow.entities import DatasetInput, Experiment, Metric, Run, RunInfo, TraceInfo, ViewType
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.exceptions import MlflowException
-from mlflow.protos import databricks_pb2
-from mlflow.protos.service_pb2 import (
+from qcflow.entities import DatasetInput, Experiment, Metric, Run, RunInfo, TraceInfo, ViewType
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.exceptions import MlflowException
+from qcflow.protos import databricks_pb2
+from qcflow.protos.service_pb2 import (
     CreateExperiment,
     CreateRun,
     DeleteExperiment,
@@ -40,11 +40,11 @@ from mlflow.protos.service_pb2 import (
     UpdateExperiment,
     UpdateRun,
 )
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.tracking import SEARCH_TRACES_DEFAULT_MAX_RESULTS
-from mlflow.store.tracking.abstract_store import AbstractStore
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.rest_utils import (
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.tracking import SEARCH_TRACES_DEFAULT_MAX_RESULTS
+from qcflow.store.tracking.abstract_store import AbstractStore
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.rest_utils import (
     _REST_API_PATH_PREFIX,
     call_endpoint,
     extract_api_info_for_service,
@@ -63,7 +63,7 @@ class RestStore(AbstractStore):
 
     Args
         get_host_creds: Method to be invoked prior to every REST request to get the
-            :py:class:`mlflow.rest_utils.MlflowHostCreds` for the request. Note that this
+            :py:class:`qcflow.rest_utils.MlflowHostCreds` for the request. Note that this
             is a function so that we can obtain fresh credentials in the case of expiry.
     """
 
@@ -74,7 +74,7 @@ class RestStore(AbstractStore):
     def _call_endpoint(self, api, json_body, endpoint=None):
         if endpoint:
             # Allow customizing the endpoint for compatibility with dynamic endpoints, such as
-            # /mlflow/traces/{request_id}/info.
+            # /qcflow/traces/{request_id}/info.
             _, method = _METHOD_TO_INFO[api]
         else:
             endpoint, method = _METHOD_TO_INFO[api]
@@ -113,7 +113,7 @@ class RestStore(AbstractStore):
         Args:
             name: Desired name for an experiment.
             artifact_location: Location to store run artifacts.
-            tags: A list of :py:class:`mlflow.entities.ExperimentTag` instances to set for the
+            tags: A list of :py:class:`qcflow.entities.ExperimentTag` instances to set for the
                 experiment.
 
         Returns:
@@ -134,7 +134,7 @@ class RestStore(AbstractStore):
             experiment_id: String id for the experiment
 
         Returns:
-            A single :py:class:`mlflow.entities.Experiment` object if it exists,
+            A single :py:class:`qcflow.entities.Experiment` object if it exists,
             otherwise raises an Exception.
         """
         req_body = message_to_json(GetExperiment(experiment_id=str(experiment_id)))
@@ -334,7 +334,7 @@ class RestStore(AbstractStore):
             request_id: String id of the trace to fetch.
 
         Returns:
-            The fetched Trace object, of type ``mlflow.entities.TraceInfo``.
+            The fetched Trace object, of type ``qcflow.entities.TraceInfo``.
         """
         req_body = message_to_json(GetTraceInfo(request_id=request_id))
         endpoint = get_trace_info_endpoint(request_id)
@@ -468,9 +468,9 @@ class RestStore(AbstractStore):
             page_token: A Token specifying the next paginated set of results of metric history.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.Metric` entities if a paginated request
+            A PagedList of :py:class:`qcflow.entities.Metric` entities if a paginated request
             is made by setting ``max_results`` to a value other than ``None``, a List of
-            :py:class:`mlflow.entities.Metric` entities if ``max_results`` is None, else, if no
+            :py:class:`qcflow.entities.Metric` entities if ``max_results`` is None, else, if no
             metrics of the ``metric_key`` have been logged to the ``run_id``, an empty list.
         """
         req_body = message_to_json(
@@ -538,9 +538,9 @@ class RestStore(AbstractStore):
         )
         self._call_endpoint(LogBatch, req_body)
 
-    def record_logged_model(self, run_id, mlflow_model):
+    def record_logged_model(self, run_id, qcflow_model):
         req_body = message_to_json(
-            LogModel(run_id=run_id, model_json=json.dumps(mlflow_model.get_tags_dict()))
+            LogModel(run_id=run_id, model_json=json.dumps(qcflow_model.get_tags_dict()))
         )
         self._call_endpoint(LogModel, req_body)
 
@@ -550,7 +550,7 @@ class RestStore(AbstractStore):
 
         Args:
             run_id: String id for the run
-            datasets: List of :py:class:`mlflow.entities.DatasetInput` instances to log
+            datasets: List of :py:class:`qcflow.entities.DatasetInput` instances to log
                 as inputs to the run.
 
         Returns:

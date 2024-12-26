@@ -2,12 +2,12 @@ import hashlib
 import json
 from typing import Any, Optional, Union
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.evaluation import Evaluation as EvaluationEntity
-from mlflow.entities.evaluation_tag import EvaluationTag  # Assuming EvaluationTag is in this module
-from mlflow.entities.metric import Metric
-from mlflow.evaluation.assessment import Assessment
-from mlflow.tracing.utils import TraceJSONEncoder
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.evaluation import Evaluation as EvaluationEntity
+from qcflow.entities.evaluation_tag import EvaluationTag  # Assuming EvaluationTag is in this module
+from qcflow.entities.metric import Metric
+from qcflow.evaluation.assessment import Assessment
+from qcflow.tracing.utils import TraceJSONEncoder
 
 
 class Evaluation(_MlflowObject):
@@ -35,7 +35,7 @@ class Evaluation(_MlflowObject):
             inputs: Input names and values for evaluation.
             outputs: Outputs obtained during inference.
             inputs_id: A unique identifier for the input names and values for evaluation.
-            request_id: The ID of an MLflow Trace corresponding to the inputs and outputs.
+            request_id: The ID of an QCFlow Trace corresponding to the inputs and outputs.
             targets: Expected values that the model should produce during inference.
             error_code: An error code representing any issues encountered during the evaluation.
             error_message: A descriptive error message representing any issues encountered during

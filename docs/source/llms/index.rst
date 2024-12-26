@@ -9,12 +9,12 @@ multiple providers to fine-tuning specific models to achieve desired outcomes.
 Such complexities can easily become a bottleneck for developers and data scientists aiming to integrate LLM 
 capabilities into their applications.
 
-**MLflow's Support for LLMs** aims to alleviate these challenges by introducing a suite of features and tools designed with the end-user in mind.
+**QCFlow's Support for LLMs** aims to alleviate these challenges by introducing a suite of features and tools designed with the end-user in mind.
 
-Tutorials and Use Case Guides for GenAI applications in MLflow
+Tutorials and Use Case Guides for GenAI applications in QCFlow
 --------------------------------------------------------------
 
-Interested in learning how to leverage MLflow for your GenAI projects? 
+Interested in learning how to leverage QCFlow for your GenAI projects? 
 
 Look in the tutorials and guides below to learn more about interesting use cases that could help to make your journey into leveraging GenAI a bit easier!
 
@@ -43,7 +43,7 @@ Note that there are additional tutorials within the `"Explore the Native LLM Fla
                         Custom GenAI Models with ChatModel
                     </div>
                     <p>
-                        Learn the basics of creating custom chat models using MLflow's <code>ChatModel</code> by wrapping a local LLM provider.
+                        Learn the basics of creating custom chat models using QCFlow's <code>ChatModel</code> by wrapping a local LLM provider.
                     </p>
                 </a>
             </div>
@@ -63,7 +63,7 @@ Note that there are additional tutorials within the `"Explore the Native LLM Fla
                         Tool Calling Models
                     </div>
                     <p>
-                        Learn how to build a simple tool-calling model using MLflow's <code>ChatModel</code>.
+                        Learn how to build a simple tool-calling model using QCFlow's <code>ChatModel</code>.
                     </p>
                 </a>
             </div>
@@ -73,7 +73,7 @@ Note that there are additional tutorials within the `"Explore the Native LLM Fla
                         Evaluating LLMs
                     </div>
                     <p>
-                        Learn how to evaluate LLMs with various metrics including LLM-as-a-Judge using <code>mlflow.evaluate()</code> API.
+                        Learn how to evaluate LLMs with various metrics including LLM-as-a-Judge using <code>qcflow.evaluate()</code> API.
                     </p>
                 </a>
             </div>
@@ -83,7 +83,7 @@ Note that there are additional tutorials within the `"Explore the Native LLM Fla
                         Using Custom PyFunc with LLMs
                     </div>
                     <p>
-                        Explore the nuances of packaging, customizing, and deploying advanced LLMs in MLflow using custom PyFuncs. 
+                        Explore the nuances of packaging, customizing, and deploying advanced LLMs in QCFlow using custom PyFuncs. 
                     </p>
                 </a>
             </div>
@@ -93,7 +93,7 @@ Note that there are additional tutorials within the `"Explore the Native LLM Fla
                         Evaluation for RAG
                     </div>
                     <p>
-                        Learn how to evaluate Retrieval Augmented Generation applications by leveraging LLMs to generate a evaluation dataset and evaluate it using the built-in metrics in the MLflow Evaluate API.
+                        Learn how to evaluate Retrieval Augmented Generation applications by leveraging LLMs to generate a evaluation dataset and evaluate it using the built-in metrics in the QCFlow Evaluate API.
                     </p>
                 </a>
             </div>
@@ -101,13 +101,13 @@ Note that there are additional tutorials within the `"Explore the Native LLM Fla
     </section>
 
 
-`MLflow Tracing <tracing/index.html>`_
+`QCFlow Tracing <tracing/index.html>`_
 --------------------------------------
 
-MLflow offers comprehensive tracing capabilities to monitor and analyze the execution of GenAI applications. This includes automated tracing GenAI frameworks such as
+QCFlow offers comprehensive tracing capabilities to monitor and analyze the execution of GenAI applications. This includes automated tracing GenAI frameworks such as
 LangChain, OpenAI, LlamaIndex, manual trace instrumentation using high-level fluent APIs, and low-level client APIs for fine-grained control. This functionality 
 allows you to capture detailed trace data, enabling better debugging, performance monitoring, and insights into complex workflows. 
-Whether through decorators, context managers, or explicit API calls, MLflow provides the flexibility needed to trace and optimize the operations 
+Whether through decorators, context managers, or explicit API calls, QCFlow provides the flexibility needed to trace and optimize the operations 
 of your GenAI models and retain your traced data within the tracking server for further analysis.
 
 - `Automated tracing with GenAI libraries <tracing/index.html#automatic-tracing>`_: Seamless integration with libraries such as LangChain, OpenAI, LlamaIndex, and AutoGen, for automatic trace data collection.
@@ -125,16 +125,16 @@ of your GenAI models and retain your traced data within the tracking server for 
     tracing/search-traces
 
 To learn more about what tracing is, see our `Tracing Concepts Overview <tracing/overview.html>`_ guide. For an in-depth exploration into the structure of 
-MLflow traces and their schema, see the `Tracing Schema <tracing/tracing-schema.html>`_ guide.
+QCFlow traces and their schema, see the `Tracing Schema <tracing/tracing-schema.html>`_ guide.
 
-If you're interested in contributing to the development of MLflow Tracing, please refer to the `Contribute to MLflow Tracing <tracing/contribute.html>`_ guide.
+If you're interested in contributing to the development of QCFlow Tracing, please refer to the `Contribute to QCFlow Tracing <tracing/contribute.html>`_ guide.
 
 .. figure:: ../_static/images/llms/tracing/tracing-top.gif
     :alt: Tracing Gateway Video
     :width: 80%
     :align: center
 
-`MLflow AI Gateway for LLMs <deployments/index.html>`_
+`QCFlow AI Gateway for LLMs <deployments/index.html>`_
 --------------------------------------------------------------
 
 .. toctree::
@@ -143,15 +143,15 @@ If you're interested in contributing to the development of MLflow Tracing, pleas
 
     deployments/index
 
-Serving as a unified interface, the `MLflow AI Gateway <deployments/index.html>`_ 
-simplifies interactions with multiple LLM providers. In addition to supporting the most popular SaaS LLM providers, the MLflow AI Gateway 
-provides an integration to MLflow model serving, allowing you to serve your own LLM or a fine-tuned foundation model within your own serving infrastructure.
+Serving as a unified interface, the `QCFlow AI Gateway <deployments/index.html>`_ 
+simplifies interactions with multiple LLM providers. In addition to supporting the most popular SaaS LLM providers, the QCFlow AI Gateway 
+provides an integration to QCFlow model serving, allowing you to serve your own LLM or a fine-tuned foundation model within your own serving infrastructure.
 
 .. note:: 
-    The MLflow AI Gateway is in active development and has been marked as **Experimental**. 
+    The QCFlow AI Gateway is in active development and has been marked as **Experimental**. 
     APIs may change as this new feature is refined and its functionality is expanded based on feedback.
 
-Benefits of the MLflow AI Gateway
+Benefits of the QCFlow AI Gateway
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **Unified Endpoint**: No more juggling between multiple provider APIs.
@@ -174,15 +174,15 @@ Benefits of the MLflow AI Gateway
   - Zero downtime provider, model, or route swapping.
 
 
-Explore the Native Providers of the MLflow AI Gateway
+Explore the Native Providers of the QCFlow AI Gateway
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The MLflow AI Gateway supports a large range of foundational models from popular SaaS model vendors, as well as providing a means of self-hosting your 
-own open source model via an integration with MLflow model serving. 
+The QCFlow AI Gateway supports a large range of foundational models from popular SaaS model vendors, as well as providing a means of self-hosting your 
+own open source model via an integration with QCFlow model serving. 
 
 Please refer to `Supported Providers <deployments/index.html#providers>`_ for the full list of supported providers and models.
 
-If you're interested in learning about how to set up the MLflow AI Gateway for a specific provider, follow the links below for our up-to-date 
+If you're interested in learning about how to set up the QCFlow AI Gateway for a specific provider, follow the links below for our up-to-date 
 documentation on GitHub. Each link will take you to a README file that will explain how to set up a route for the provider. In the same directory as 
 the README, you will find a runnable example of how to query the routes that the example creates, providing you with a quick reference for getting started 
 with your favorite provider!
@@ -191,52 +191,52 @@ with your favorite provider!
 
     <section>
         <div class="logo-grid">
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/openai/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/openai/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/openai-logo.png" alt="OpenAI Logo"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/mosaicml/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/mosaicml/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/mosaicml-logo.svg" alt="MosaicML Logo"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/openai/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/openai/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/anthropic-logo.svg" alt="Anthropic Logo"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/cohere/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/cohere/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/cohere-logo.png" alt="Cohere Logo"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/mlflow_models/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/qcflow_models/README.md">
                 <div class="logo-card">
-                    <img src="../_static/images/logos/mlflow-logo.svg" alt="MLflow Logo"/>
+                    <img src="../_static/images/logos/qcflow-logo.svg" alt="QCFlow Logo"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/bedrock/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/bedrock/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/aws-logo.svg" alt="AWS BedLock Logo" style="max-height: 3rem;"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/palm/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/palm/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/PaLM-logo.png" alt="PaLM Logo"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/ai21_labs/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/ai21_labs/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/ai21labs-logo.svg" alt="ai21Labs Logo"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/azure_openai/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/azure_openai/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/azure-ml-logo.png" alt="Azure OpenAI Logo"/>
                 </div>
             </a>
-            <a href="https://github.com/mlflow/mlflow/blob/master/examples/deployments/deployments_server/huggingface/README.md">
+            <a href="https://github.com/qcflow/qcflow/blob/master/examples/deployments/deployments_server/huggingface/README.md">
                 <div class="logo-card">
                     <img src="../_static/images/logos/huggingface-logo.svg" alt="Hugging Face Logo"/>
                 </div>
@@ -245,7 +245,7 @@ with your favorite provider!
     </section>
 
 .. note::
-    The **MLflow** and **Hugging Face TGI** providers are for self-hosted LLM serving of either foundation open-source LLM models, fine-tuned open-source 
+    The **QCFlow** and **Hugging Face TGI** providers are for self-hosted LLM serving of either foundation open-source LLM models, fine-tuned open-source 
     LLM models, or your own custom LLM. The example documentation for these providers will show you how to get started with these, using free-to-use open-source 
     models from the `Hugging Face Hub <https://huggingface.co/docs/hub/index>`_.
 
@@ -263,23 +263,23 @@ Navigating the vast landscape of Large Language Models (LLMs) can be daunting. D
 with a project's needs is no small feat. Traditional machine learning evaluation metrics often fall short when it comes to assessing the 
 nuanced performance of generative models.
 
-Enter `MLflow LLM Evaluation <llm-evaluate/index.html>`_. This feature is designed to simplify the evaluation process, 
+Enter `QCFlow LLM Evaluation <llm-evaluate/index.html>`_. This feature is designed to simplify the evaluation process, 
 offering a streamlined approach to compare foundational models, providers, and prompts.
 
-Benefits of MLflow's LLM Evaluation
+Benefits of QCFlow's LLM Evaluation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **Simplified Evaluation**: Navigate the LLM space with ease, ensuring the best fit for your project with standard metrics that can be used to compare generated text.
 
-- **Use-Case Specific Metrics**: Leverage MLflow's :py:func:`mlflow.evaluate` API for a high-level, frictionless evaluation experience.
+- **Use-Case Specific Metrics**: Leverage QCFlow's :py:func:`qcflow.evaluate` API for a high-level, frictionless evaluation experience.
 
-- **Customizable Metrics**: Beyond the provided metrics, MLflow supports a plugin-style for custom scoring, enhancing the evaluation's flexibility.
+- **Customizable Metrics**: Beyond the provided metrics, QCFlow supports a plugin-style for custom scoring, enhancing the evaluation's flexibility.
 
 - **Comparative Analysis**: Effortlessly compare foundational models, providers, and prompts to make informed decisions.
 
 - **Deep Insights**: Dive into the intricacies of generative models with a comprehensive suite of LLM-relevant metrics.
 
-MLflow's LLM Evaluation is designed to bridge the gap between traditional machine learning evaluation and the unique challenges posed by LLMs.
+QCFlow's LLM Evaluation is designed to bridge the gap between traditional machine learning evaluation and the unique challenges posed by LLMs.
 
 
 `Prompt Engineering UI <prompt-engineering/index.html>`_
@@ -296,10 +296,10 @@ The development of a high-quality prompt is an iterative process of trial and er
 result in cumulative quality improvements. With the volume and speed of iteration through prompt experimentation, it can quickly become very 
 overwhelming to remember or keep a history of the state of different prompts that were tried.
 
-Serving as a powerful tool for prompt engineering, the `MLflow Prompt Engineering UI <prompt-engineering/index.html>`_ revolutionizes the 
+Serving as a powerful tool for prompt engineering, the `QCFlow Prompt Engineering UI <prompt-engineering/index.html>`_ revolutionizes the 
 way developers interact with and refine LLM prompts. 
 
-Benefits of the MLflow Prompt Engineering UI
+Benefits of the QCFlow Prompt Engineering UI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **Iterative Development**: Streamlined process for trial and error without the overwhelming complexity.
@@ -316,11 +316,11 @@ Benefits of the MLflow Prompt Engineering UI
   - Ensures reproducibility and transparency in your development process.
 
 .. note:: 
-    The MLflow Prompt Engineering UI is in active development and has been marked as **Experimental**. 
+    The QCFlow Prompt Engineering UI is in active development and has been marked as **Experimental**. 
     Features and interfaces may evolve as feedback is gathered and the tool is refined.
 
 
-Native MLflow Flavors for LLMs
+Native QCFlow Flavors for LLMs
 ------------------------------
 
 Harnessing the power of LLMs becomes effortless with flavors designed specifically for working with LLM libraries and frameworks.
@@ -335,7 +335,7 @@ Harnessing the power of LLMs becomes effortless with flavors designed specifical
 
 - **Cohesive Ecosystem**: 
 
-  - All essential tools and functionalities consolidated under MLflow.
+  - All essential tools and functionalities consolidated under QCFlow.
   - Focus on deriving value from LLMs without getting bogged down by interfacing and optimization intricacies.
 
 .. toctree::
@@ -352,7 +352,7 @@ Harnessing the power of LLMs becomes effortless with flavors designed specifical
 Explore the Native LLM Flavors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Select the integration below to read the documentation on how to leverage MLflow's native integration with these popular libraries:
+Select the integration below to read the documentation on how to leverage QCFlow's native integration with these popular libraries:
 
 .. raw:: html
 
@@ -364,8 +364,8 @@ Select the integration below to read the documentation on how to leverage MLflow
                         <img src="../_static/images/logos/huggingface-logo.svg" alt="HuggingFace Logo"/>
                     </div>
                     <p>
-                        Learn about MLflow's native integration with the Transformers 🤗 library and see example notebooks that leverage 
-                        MLflow and Transformers to build Open-Source LLM powered solutions.
+                        Learn about QCFlow's native integration with the Transformers 🤗 library and see example notebooks that leverage 
+                        QCFlow and Transformers to build Open-Source LLM powered solutions.
                     </p>
                 </a>
             </div>
@@ -375,8 +375,8 @@ Select the integration below to read the documentation on how to leverage MLflow
                         <img src="../_static/images/logos/openai-logo.png" alt="OpenAI Logo" style="width: 80%"/>
                     </div>
                     <p>
-                        Learn about MLflow's native integration with the OpenAI SDK and see example notebooks that leverage 
-                        MLflow and OpenAI's advanced LLMs to build interesting and fun applications.
+                        Learn about QCFlow's native integration with the OpenAI SDK and see example notebooks that leverage 
+                        QCFlow and OpenAI's advanced LLMs to build interesting and fun applications.
                     </p>
                 </a>
             </div>
@@ -386,8 +386,8 @@ Select the integration below to read the documentation on how to leverage MLflow
                         <img src="../_static/images/logos/sentence-transformers-logo.png"  alt="Sentence Transformers Logo" style="width: 70%"/>
                     </div>
                     <p>
-                        Learn about MLflow's native integration with the Sentence Transformers library and see example notebooks that leverage 
-                        MLflow and Sentence Transformers to perform operations with encoded text such as semantic search, text similarity, and information retrieval.
+                        Learn about QCFlow's native integration with the Sentence Transformers library and see example notebooks that leverage 
+                        QCFlow and Sentence Transformers to perform operations with encoded text such as semantic search, text similarity, and information retrieval.
                     </p>
                 </a>
             </div>
@@ -397,8 +397,8 @@ Select the integration below to read the documentation on how to leverage MLflow
                         <img src="../_static/images/logos/langchain-logo.png" alt="LangChain Logo" style="width: 90%"/>
                     </div>
                     <p>
-                        Learn about MLflow's native integration with LangChain and see example notebooks that leverage 
-                        MLflow and LangChain to build LLM-backed applications.
+                        Learn about QCFlow's native integration with LangChain and see example notebooks that leverage 
+                        QCFlow and LangChain to build LLM-backed applications.
                     </p>
                 </a>
             </div>
@@ -408,8 +408,8 @@ Select the integration below to read the documentation on how to leverage MLflow
                         <img src="../_static/images/logos/llamaindex-logo.svg" alt="LlamaIndex Logo" style="width: 90%"/>
                     </div>
                     <p>
-                        Learn about MLflow's native integration with LlamaIndex and see example notebooks that leverage 
-                        MLflow and LlamaIndex to build advanced QA systems, chatbots, and other AI-driven applications.
+                        Learn about QCFlow's native integration with LlamaIndex and see example notebooks that leverage 
+                        QCFlow and LlamaIndex to build advanced QA systems, chatbots, and other AI-driven applications.
                     </p>
                 </a>
             </div>
@@ -419,8 +419,8 @@ Select the integration below to read the documentation on how to leverage MLflow
                         <img src="../_static/images/logos/dspy-logo.png" alt="DSPy Logo" style="width: 90%"/>
                     </div>
                     <p>
-                        Learn about MLflow's native integration with DSPy and see example notebooks that leverage 
-                        MLflow and DSPy to optimize your GenAI applications.
+                        Learn about QCFlow's native integration with DSPy and see example notebooks that leverage 
+                        QCFlow and DSPy to optimize your GenAI applications.
                     </p>
                 </a>
             </div>
@@ -428,7 +428,7 @@ Select the integration below to read the documentation on how to leverage MLflow
     </section>
 
 
-`LLM Tracking in MLflow <llm-tracking/index.html>`_
+`LLM Tracking in QCFlow <llm-tracking/index.html>`_
 ---------------------------------------------------
 
 .. toctree::
@@ -437,10 +437,10 @@ Select the integration below to read the documentation on how to leverage MLflow
 
     llm-tracking/index
 
-Empowering developers with advanced tracking capabilities, the `MLflow LLM Tracking System <llm-tracking/index.html>`_ stands out as the 
+Empowering developers with advanced tracking capabilities, the `QCFlow LLM Tracking System <llm-tracking/index.html>`_ stands out as the 
 premier solution for managing and analyzing interactions with Large Language Models (LLMs).
 
-Benefits of the MLflow LLM Tracking System
+Benefits of the QCFlow LLM Tracking System
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **Robust Interaction Management**: Comprehensive tracking of every LLM interaction for maximum insight.
@@ -448,7 +448,7 @@ Benefits of the MLflow LLM Tracking System
 - **Tailor-Made for LLMs**: 
 
   - Unique features specifically designed for LLMs.
-  - From logging prompts to tracking dynamic data, MLflow has it covered.
+  - From logging prompts to tracking dynamic data, QCFlow has it covered.
 
 - **Deep Model Insight**: 
 

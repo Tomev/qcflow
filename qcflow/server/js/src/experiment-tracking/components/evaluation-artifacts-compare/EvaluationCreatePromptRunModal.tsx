@@ -227,11 +227,11 @@ export const EvaluationCreatePromptRunModal = ({
           setEvaluationOutput(text);
           const metadataWithEvaluationTime = { ...metadata, latency };
 
-          // Prefix the metadata keys with "MLFLOW_"
+          // Prefix the metadata keys with "QCFLOW_"
           const prefixedMetadata = Object.entries(metadataWithEvaluationTime).reduce(
             (acc, [metadata_key, metadata_value]) => ({
               ...acc,
-              [`MLFLOW_${metadata_key}`]: metadata_value,
+              [`QCFLOW_${metadata_key}`]: metadata_value,
             }),
             {},
           );
@@ -249,8 +249,8 @@ export const EvaluationCreatePromptRunModal = ({
         const errorMessage = getPromptEngineeringErrorMessage(e);
         const wrappedMessage = intl.formatMessage(
           {
-            defaultMessage: 'MLflow deployment returned the following error: "{errorMessage}"',
-            description: 'Experiment page > MLflow deployment error message',
+            defaultMessage: 'QCFlow deployment returned the following error: "{errorMessage}"',
+            description: 'Experiment page > QCFlow deployment error message',
           },
           {
             errorMessage,
@@ -418,8 +418,8 @@ export const EvaluationCreatePromptRunModal = ({
         checked={selectedModel === modelRoute.key}
       >
         {modelRoute.name}
-        {modelRoute.mlflowDeployment && (
-          <DialogComboboxHintRow>{modelRoute.mlflowDeployment.model.name}</DialogComboboxHintRow>
+        {modelRoute.qcflowDeployment && (
+          <DialogComboboxHintRow>{modelRoute.qcflowDeployment.model.name}</DialogComboboxHintRow>
         )}
       </DialogComboboxOptionListSelectItem>
     ));
@@ -427,7 +427,7 @@ export const EvaluationCreatePromptRunModal = ({
 
   return (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_541"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_541"
       verticalSizing="maxed_out"
       visible={isOpen}
       onCancel={closeModal}
@@ -435,7 +435,7 @@ export const EvaluationCreatePromptRunModal = ({
       footer={
         <div css={{ display: 'flex', gap: theme.spacing.sm, justifyContent: 'flex-end' }}>
           <Button
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_589"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_589"
             onClick={closeModal}
           >
             <FormattedMessage
@@ -445,7 +445,7 @@ export const EvaluationCreatePromptRunModal = ({
           </Button>
           <LegacyTooltip title={createRunButtonTooltip}>
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_596"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_596"
               onClick={onHandleSubmit}
               data-testid="button-create-run"
               type="primary"
@@ -484,7 +484,7 @@ export const EvaluationCreatePromptRunModal = ({
           </FormUI.Label>
           <div css={{ marginBottom: theme.spacing.lg, display: 'flex', alignItems: 'center' }}>
             <DialogCombobox
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_597"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_597"
               label={selectModelLabel}
               modal={false}
               value={selectedModel ? [formatVisibleRouteName(selectedModel)] : undefined}
@@ -526,7 +526,7 @@ export const EvaluationCreatePromptRunModal = ({
                 )}
               </FormUI.Label>
               <Input
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_638"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_638"
                 id="new_run_name"
                 data-testid="run-name-input"
                 required
@@ -547,7 +547,7 @@ export const EvaluationCreatePromptRunModal = ({
                   />
                 </FormUI.Label>
                 <Button
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_695"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_695"
                   onClick={() => setViewExamplesModalOpen(true)}
                   style={{ marginLeft: 'auto' }}
                   size="small"
@@ -567,7 +567,7 @@ export const EvaluationCreatePromptRunModal = ({
             </>
 
             <TextArea
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_678"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_678"
               id="prompt_template"
               autoSize={{ minRows: 3 }}
               data-testid="prompt-template-input"
@@ -584,7 +584,7 @@ export const EvaluationCreatePromptRunModal = ({
                   <span>{inputVariable}</span>
                 </FormUI.Label>
                 <TextArea
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_694"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_694"
                   id={inputVariable}
                   autoSize
                   value={inputVariableValues[inputVariable] ? inputVariableValues[inputVariable] : ''}
@@ -595,7 +595,7 @@ export const EvaluationCreatePromptRunModal = ({
           ))}
           <div css={{ marginBottom: 2 * theme.spacing.md }}>
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_736"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_evaluation-artifacts-compare_evaluationcreatepromptrunmodal.tsx_736"
               icon={<PlusIcon />}
               onClick={handleAddVariableToTemplate}
             >

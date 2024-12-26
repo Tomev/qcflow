@@ -1,7 +1,7 @@
 import logging
 
-from mlflow.entities.model_registry import ModelVersion, RegisteredModel
-from mlflow.protos.model_registry_pb2 import (
+from qcflow.entities.model_registry import ModelVersion, RegisteredModel
+from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
     CreateRegisteredModel,
     DeleteModelVersion,
@@ -25,10 +25,10 @@ from mlflow.protos.model_registry_pb2 import (
     UpdateModelVersion,
     UpdateRegisteredModel,
 )
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry.base_rest_store import BaseRestStore
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.rest_utils import (
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry.base_rest_store import BaseRestStore
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.rest_utils import (
     _REST_API_PATH_PREFIX,
     extract_all_api_info_for_service,
     extract_api_info_for_service,
@@ -46,7 +46,7 @@ class RestStore(BaseRestStore):
 
     Args:
         get_host_creds: Method to be invoked prior to every REST request to get the
-            :py:class:`mlflow.rest_utils.MlflowHostCreds` for the request. Note that this
+            :py:class:`qcflow.rest_utils.MlflowHostCreds` for the request. Note that this
             is a function so that we can obtain fresh credentials in the case of expiry.
     """
 
@@ -67,12 +67,12 @@ class RestStore(BaseRestStore):
 
         Args:
             name: Name of the new model. This is expected to be unique in the backend store.
-            tags: A list of :py:class:`mlflow.entities.model_registry.RegisteredModelTag`
+            tags: A list of :py:class:`qcflow.entities.model_registry.RegisteredModelTag`
                 instances associated with this registered model.
             description: Description of the model.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.RegisteredModel`
+            A single object of :py:class:`qcflow.entities.model_registry.RegisteredModel`
             created in the backend.
         """
         proto_tags = [tag.to_proto() for tag in tags or []]
@@ -91,7 +91,7 @@ class RestStore(BaseRestStore):
             description: New description.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
         """
         req_body = message_to_json(UpdateRegisteredModel(name=name, description=description))
         response_proto = self._call_endpoint(UpdateRegisteredModel, req_body)
@@ -106,7 +106,7 @@ class RestStore(BaseRestStore):
             new_name: New proposed name.
 
         Returns:
-            A single updated :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single updated :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
 
         """
         req_body = message_to_json(RenameRegisteredModel(name=name, new_name=new_name))
@@ -142,7 +142,7 @@ class RestStore(BaseRestStore):
                 a ``search_registered_models`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.RegisteredModel` objects
+            A PagedList of :py:class:`qcflow.entities.model_registry.RegisteredModel` objects
             that satisfy the search expressions. The pagination token for the next page can be
             obtained via the ``token`` attribute of the object.
 
@@ -170,7 +170,7 @@ class RestStore(BaseRestStore):
             name: Registered model name.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.RegisteredModel` object.
+            A single :py:class:`qcflow.entities.model_registry.RegisteredModel` object.
         """
         req_body = message_to_json(GetRegisteredModel(name=name))
         response_proto = self._call_endpoint(GetRegisteredModel, req_body)
@@ -187,7 +187,7 @@ class RestStore(BaseRestStore):
                 each stage.
 
         Returns:
-            List of :py:class:`mlflow.entities.model_registry.ModelVersion` objects.
+            List of :py:class:`qcflow.entities.model_registry.ModelVersion` objects.
         """
         req_body = message_to_json(GetLatestVersions(name=name, stages=stages))
         response_proto = self._call_endpoint(GetLatestVersions, req_body, call_all_endpoints=True)
@@ -202,7 +202,7 @@ class RestStore(BaseRestStore):
 
         Args:
             name: Registered model name.
-            tag: :py:class:`mlflow.entities.model_registry.RegisteredModelTag` instance to log.
+            tag: :py:class:`qcflow.entities.model_registry.RegisteredModelTag` instance to log.
 
         Returns:
             None
@@ -242,15 +242,15 @@ class RestStore(BaseRestStore):
         Args:
             name: Registered model name.
             source: URI indicating the location of the model artifacts.
-            run_id: Run ID from MLflow tracking server that generated the model.
-            tags: A list of :py:class:`mlflow.entities.model_registry.ModelVersionTag`
+            run_id: Run ID from QCFlow tracking server that generated the model.
+            tags: A list of :py:class:`qcflow.entities.model_registry.ModelVersionTag`
                 instances associated with this model version.
-            run_link: Link to the run from an MLflow tracking server that generated this model.
+            run_link: Link to the run from an QCFlow tracking server that generated this model.
             description: Description of the version.
             local_model_path: Unused.
 
         Returns:
-            A single object of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A single object of :py:class:`qcflow.entities.model_registry.ModelVersion`
             created in the backend.
 
         """
@@ -282,7 +282,7 @@ class RestStore(BaseRestStore):
                 be raised.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         """
         req_body = message_to_json(
@@ -306,7 +306,7 @@ class RestStore(BaseRestStore):
             description: New model description.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
 
         """
         req_body = message_to_json(
@@ -338,7 +338,7 @@ class RestStore(BaseRestStore):
             version: Registered model version.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
         """
         req_body = message_to_json(GetModelVersion(name=name, version=str(version)))
         response_proto = self._call_endpoint(GetModelVersion, req_body)
@@ -378,7 +378,7 @@ class RestStore(BaseRestStore):
                 a ``search_model_versions`` call.
 
         Returns:
-            A PagedList of :py:class:`mlflow.entities.model_registry.ModelVersion`
+            A PagedList of :py:class:`qcflow.entities.model_registry.ModelVersion`
             objects that satisfy the search expressions. The pagination token for the next
             page can be obtained via the ``token`` attribute of the object.
 
@@ -402,7 +402,7 @@ class RestStore(BaseRestStore):
         Args:
             name: Registered model name.
             version: Registered model version.
-            tag: :py:class:`mlflow.entities.model_registry.ModelVersionTag` instance to log.
+            tag: :py:class:`qcflow.entities.model_registry.ModelVersionTag` instance to log.
 
         Returns:
             None
@@ -465,7 +465,7 @@ class RestStore(BaseRestStore):
             alias: Name of the alias.
 
         Returns:
-            A single :py:class:`mlflow.entities.model_registry.ModelVersion` object.
+            A single :py:class:`qcflow.entities.model_registry.ModelVersion` object.
         """
         req_body = message_to_json(GetModelVersionByAlias(name=name, alias=alias))
         response_proto = self._call_endpoint(GetModelVersionByAlias, req_body)

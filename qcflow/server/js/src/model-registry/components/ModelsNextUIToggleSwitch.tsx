@@ -4,7 +4,7 @@ import { ModelsNextUIPromoModal } from './ModelsNextUIPromoModal';
 import { Modal, Switch, Typography, useDesignSystemTheme } from '@databricks/design-system';
 import { useNextModelsUIContext } from '../hooks/useNextModelsUI';
 
-const promoModalSeenStorageKey = '_mlflow_model_registry_promo_modal_dismissed';
+const promoModalSeenStorageKey = '_qcflow_model_registry_promo_modal_dismissed';
 
 export const ModelsNextUIToggleSwitch = () => {
   const { usingNextModelsUI, setUsingNextModelsUI } = useNextModelsUIContext();
@@ -37,7 +37,7 @@ export const ModelsNextUIToggleSwitch = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
         <label>{label}</label>
         <Switch
-          componentId="codegen_mlflow_app_src_model-registry_components_modelsnextuitoggleswitch.tsx_39"
+          componentId="codegen_qcflow_app_src_model-registry_components_modelsnextuitoggleswitch.tsx_39"
           checked={usingNextModelsUI}
           aria-label={label}
           onChange={switchNextUI}
@@ -53,7 +53,7 @@ export const ModelsNextUIToggleSwitch = () => {
         }}
       />
       <Modal
-        componentId="codegen_mlflow_app_src_model-registry_components_modelsnextuitoggleswitch.tsx_50"
+        componentId="codegen_qcflow_app_src_model-registry_components_modelsnextuitoggleswitch.tsx_50"
         visible={confirmDisableModalVisible}
         title={
           <FormattedMessage
@@ -78,7 +78,7 @@ export const ModelsNextUIToggleSwitch = () => {
           values={{
             link: (chunks) => (
               <Typography.Link
-                componentId="codegen_mlflow_app_src_model-registry_components_modelsnextuitoggleswitch.tsx_74"
+                componentId="codegen_qcflow_app_src_model-registry_components_modelsnextuitoggleswitch.tsx_74"
                 href="https://forms.gle/aMB4qDrhMeEm2r359"
                 openInNewTab
               >

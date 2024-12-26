@@ -3,8 +3,8 @@ from typing import Optional
 
 from opentelemetry.sdk.trace.export import SpanExporter
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
 
 
 def should_use_otlp_exporter() -> bool:

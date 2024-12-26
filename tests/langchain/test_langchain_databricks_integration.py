@@ -8,7 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema.output_parser import StrOutputParser
 from packaging.version import Version
 
-import mlflow
+import qcflow
 
 _MOCK_CHAT_RESPONSE = {
     "id": "chatcmpl_id",
@@ -20,7 +20,7 @@ _MOCK_CHAT_RESPONSE = {
             "index": 0,
             "message": {
                 "role": "user",
-                "content": "What is MLflow?",
+                "content": "What is QCFlow?",
             },
             "finish_reason": "stop",
             "logprobs": None,
@@ -34,7 +34,7 @@ _MOCK_CHAT_RESPONSE = {
 def mock_client() -> Generator:
     client = mock.MagicMock()
     client.predict.return_value = _MOCK_CHAT_RESPONSE
-    with mock.patch("mlflow.deployments.get_deploy_client", return_value=client):
+    with mock.patch("qcflow.deployments.get_deploy_client", return_value=client):
         yield
 
 
@@ -54,18 +54,18 @@ def test_save_and_load_chat_databricks(model_path):
     prompt = PromptTemplate.from_template("What is {product}?")
     chain = prompt | llm | StrOutputParser()
 
-    mlflow.langchain.save_model(chain, path=model_path)
+    qcflow.langchain.save_model(chain, path=model_path)
 
     with model_path.joinpath("requirements.txt").open() as f:
         reqs = {req.split("==")[0] for req in f.read().split("\n")}
     assert "langchain-databricks" in reqs
 
-    loaded_model = mlflow.langchain.load_model(model_path)
+    loaded_model = qcflow.langchain.load_model(model_path)
     assert loaded_model == chain
 
-    loaded_pyfunc_model = mlflow.pyfunc.load_model(model_path)
-    prediction = loaded_pyfunc_model.predict([{"product": "MLflow"}])
-    assert prediction == ["What is MLflow?"]
+    loaded_pyfunc_model = qcflow.pyfunc.load_model(model_path)
+    prediction = loaded_pyfunc_model.predict([{"product": "QCFlow"}])
+    assert prediction == ["What is QCFlow?"]
 
 
 @pytest.mark.skipif(
@@ -80,11 +80,11 @@ def test_save_and_load_chat_databricks_legacy(model_path):
     prompt = PromptTemplate.from_template("What is {product}?")
     chain = prompt | llm | StrOutputParser()
 
-    mlflow.langchain.save_model(chain, path=model_path)
+    qcflow.langchain.save_model(chain, path=model_path)
 
-    loaded_model = mlflow.langchain.load_model(model_path)
+    loaded_model = qcflow.langchain.load_model(model_path)
     assert loaded_model == chain
 
-    loaded_pyfunc_model = mlflow.pyfunc.load_model(model_path)
-    prediction = loaded_pyfunc_model.predict([{"product": "MLflow"}])
-    assert prediction == ["What is MLflow?"]
+    loaded_pyfunc_model = qcflow.pyfunc.load_model(model_path)
+    prediction = loaded_pyfunc_model.predict([{"product": "QCFlow"}])
+    assert prediction == ["What is QCFlow?"]

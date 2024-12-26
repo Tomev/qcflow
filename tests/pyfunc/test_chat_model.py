@@ -6,15 +6,15 @@ from dataclasses import asdict
 
 import pytest
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.models.model import Model
-from mlflow.models.signature import ModelSignature
-from mlflow.models.utils import load_serving_example
-from mlflow.pyfunc.loaders.chat_model import _ChatModelPyfuncWrapper
-from mlflow.tracing.constant import TraceTagKey
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types.llm import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.models.model import Model
+from qcflow.models.signature import ModelSignature
+from qcflow.models.utils import load_serving_example
+from qcflow.pyfunc.loaders.chat_model import _ChatModelPyfuncWrapper
+from qcflow.tracing.constant import TraceTagKey
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types.llm import (
     CHAT_MODEL_INPUT_SCHEMA,
     CHAT_MODEL_OUTPUT_SCHEMA,
     ChatChoice,
@@ -28,7 +28,7 @@ from mlflow.types.llm import (
     FunctionToolDefinition,
     ToolParamsSchema,
 )
-from mlflow.types.schema import ColSpec, DataType, Schema
+from qcflow.types.schema import ColSpec, DataType, Schema
 
 from tests.helper_functions import (
     expect_status_code,
@@ -117,7 +117,7 @@ def get_mock_response(messages, params):
     }
 
 
-class SimpleChatModel(mlflow.pyfunc.ChatModel):
+class SimpleChatModel(qcflow.pyfunc.ChatModel):
     def predict(
         self, context, messages: list[ChatMessage], params: ChatParams
     ) -> ChatCompletionResponse:
@@ -133,7 +133,7 @@ class SimpleChatModel(mlflow.pyfunc.ChatModel):
             yield ChatCompletionChunk.from_dict(mock_response)
 
 
-class ChatModelWithContext(mlflow.pyfunc.ChatModel):
+class ChatModelWithContext(qcflow.pyfunc.ChatModel):
     def load_context(self, context):
         predict_path = pathlib.Path(context.artifacts["predict_fn"])
         self.predict_fn = pickle.loads(predict_path.read_bytes())
@@ -145,8 +145,8 @@ class ChatModelWithContext(mlflow.pyfunc.ChatModel):
         return ChatCompletionResponse.from_dict(get_mock_response([message], params))
 
 
-class ChatModelWithTrace(mlflow.pyfunc.ChatModel):
-    @mlflow.trace
+class ChatModelWithTrace(qcflow.pyfunc.ChatModel):
+    @qcflow.trace
     def predict(
         self, context, messages: list[ChatMessage], params: ChatParams
     ) -> ChatCompletionResponse:
@@ -154,7 +154,7 @@ class ChatModelWithTrace(mlflow.pyfunc.ChatModel):
         return ChatCompletionResponse.from_dict(mock_response)
 
 
-class ChatModelWithMetadata(mlflow.pyfunc.ChatModel):
+class ChatModelWithMetadata(qcflow.pyfunc.ChatModel):
     def predict(
         self, context, messages: list[ChatMessage], params: ChatParams
     ) -> ChatCompletionResponse:
@@ -165,7 +165,7 @@ class ChatModelWithMetadata(mlflow.pyfunc.ChatModel):
         )
 
 
-class ChatModelWithToolCalling(mlflow.pyfunc.ChatModel):
+class ChatModelWithToolCalling(qcflow.pyfunc.ChatModel):
     def predict(
         self, context, messages: list[ChatMessage], params: ChatParams
     ) -> ChatCompletionResponse:
@@ -202,9 +202,9 @@ class ChatModelWithToolCalling(mlflow.pyfunc.ChatModel):
 
 def test_chat_model_save_load(tmp_path):
     model = SimpleChatModel()
-    mlflow.pyfunc.save_model(python_model=model, path=tmp_path)
+    qcflow.pyfunc.save_model(python_model=model, path=tmp_path)
 
-    loaded_model = mlflow.pyfunc.load_model(tmp_path)
+    loaded_model = qcflow.pyfunc.load_model(tmp_path)
     assert isinstance(loaded_model._model_impl, _ChatModelPyfuncWrapper)
     input_schema = loaded_model.metadata.get_input_schema()
     output_schema = loaded_model.metadata.get_output_schema()
@@ -214,12 +214,12 @@ def test_chat_model_save_load(tmp_path):
 
 def test_chat_model_with_trace(tmp_path):
     model = ChatModelWithTrace()
-    mlflow.pyfunc.save_model(python_model=model, path=tmp_path)
+    qcflow.pyfunc.save_model(python_model=model, path=tmp_path)
 
     # predict() call during saving chat model should not generate a trace
     assert len(get_traces()) == 0
 
-    loaded_model = mlflow.pyfunc.load_model(tmp_path)
+    loaded_model = qcflow.pyfunc.load_model(tmp_path)
     messages = [
         {"role": "system", "content": "You are a helpful assistant"},
         {"role": "user", "content": "Hello!"},
@@ -237,7 +237,7 @@ def test_chat_model_save_throws_with_signature(tmp_path):
     model = SimpleChatModel()
 
     with pytest.raises(MlflowException, match="Please remove the `signature` parameter"):
-        mlflow.pyfunc.save_model(
+        qcflow.pyfunc.save_model(
             python_model=model,
             path=tmp_path,
             signature=ModelSignature(
@@ -257,13 +257,13 @@ def test_chat_model_with_context_saves_successfully(tmp_path):
     predict_path.write_bytes(pickle.dumps(mock_predict))
 
     model = ChatModelWithContext()
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         python_model=model,
         path=model_path,
         artifacts={"predict_fn": str(predict_path)},
     )
 
-    loaded_model = mlflow.pyfunc.load_model(model_path)
+    loaded_model = qcflow.pyfunc.load_model(model_path)
     messages = [{"role": "user", "content": "test"}]
 
     response = loaded_model.predict({"messages": messages})
@@ -290,7 +290,7 @@ def test_chat_model_with_context_saves_successfully(tmp_path):
     ],
 )
 def test_save_throws_on_invalid_output(tmp_path, ret):
-    class BadChatModel(mlflow.pyfunc.ChatModel):
+    class BadChatModel(qcflow.pyfunc.ChatModel):
         def predict(self, context, messages, params) -> ChatCompletionResponse:
             return ret
 
@@ -302,15 +302,15 @@ def test_save_throws_on_invalid_output(tmp_path, ret):
             r"predict\(\) method returns a ChatCompletionResponse object"
         ),
     ):
-        mlflow.pyfunc.save_model(python_model=model, path=tmp_path)
+        qcflow.pyfunc.save_model(python_model=model, path=tmp_path)
 
 
 # test that we can predict with the model
 def test_chat_model_predict(tmp_path):
     model = SimpleChatModel()
-    mlflow.pyfunc.save_model(python_model=model, path=tmp_path)
+    qcflow.pyfunc.save_model(python_model=model, path=tmp_path)
 
-    loaded_model = mlflow.pyfunc.load_model(tmp_path)
+    loaded_model = qcflow.pyfunc.load_model(tmp_path)
     messages = [
         {"role": "system", "content": "You are a helpful assistant"},
         {"role": "user", "content": "Hello!"},
@@ -357,8 +357,8 @@ def test_chat_model_works_in_serving():
     params_subset = {
         "max_tokens": 100,
     }
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=model,
             input_example=(messages, params_subset),
@@ -395,15 +395,15 @@ def test_chat_model_works_with_infer_signature_input_example(tmp_path):
         ],
         **params_subset,
     }
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=model, input_example=input_example
         )
     assert model_info.signature.inputs == CHAT_MODEL_INPUT_SCHEMA
     assert model_info.signature.outputs == CHAT_MODEL_OUTPUT_SCHEMA
-    mlflow_model = Model.load(model_info.model_uri)
+    qcflow_model = Model.load(model_info.model_uri)
     local_path = _download_artifact_from_uri(model_info.model_uri)
-    assert mlflow_model.load_input_example(local_path) == {
+    assert qcflow_model.load_input_example(local_path) == {
         "messages": input_example["messages"],
         **params_subset,
     }
@@ -439,16 +439,16 @@ def test_chat_model_logs_default_metadata_task(tmp_path):
         ],
         **params_subset,
     }
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=model, input_example=input_example
         )
     assert model_info.signature.inputs == CHAT_MODEL_INPUT_SCHEMA
     assert model_info.signature.outputs == CHAT_MODEL_OUTPUT_SCHEMA
     assert model_info.metadata["task"] == "agent/v1/chat"
 
-    with mlflow.start_run():
-        model_info_with_override = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info_with_override = qcflow.pyfunc.log_model(
             "model", python_model=model, input_example=input_example, metadata={"task": None}
         )
     assert model_info_with_override.metadata["task"] is None
@@ -459,15 +459,15 @@ def test_chat_model_works_with_chat_message_input_example(tmp_path):
     input_example = [
         ChatMessage(role="user", content="What is Retrieval-augmented Generation?", name="chat")
     ]
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=model, input_example=input_example
         )
     assert model_info.signature.inputs == CHAT_MODEL_INPUT_SCHEMA
     assert model_info.signature.outputs == CHAT_MODEL_OUTPUT_SCHEMA
-    mlflow_model = Model.load(model_info.model_uri)
+    qcflow_model = Model.load(model_info.model_uri)
     local_path = _download_artifact_from_uri(model_info.model_uri)
-    assert mlflow_model.load_input_example(local_path) == {
+    assert qcflow_model.load_input_example(local_path) == {
         "messages": [message.to_dict() for message in input_example],
     }
 
@@ -502,15 +502,15 @@ def test_chat_model_works_with_infer_signature_multi_input_example(tmp_path):
         ],
         **params_subset,
     }
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=model, input_example=input_example
         )
     assert model_info.signature.inputs == CHAT_MODEL_INPUT_SCHEMA
     assert model_info.signature.outputs == CHAT_MODEL_OUTPUT_SCHEMA
-    mlflow_model = Model.load(model_info.model_uri)
+    qcflow_model = Model.load(model_info.model_uri)
     local_path = _download_artifact_from_uri(model_info.model_uri)
-    assert mlflow_model.load_input_example(local_path) == {
+    assert qcflow_model.load_input_example(local_path) == {
         "messages": input_example["messages"],
         **params_subset,
     }
@@ -534,9 +534,9 @@ def test_chat_model_works_with_infer_signature_multi_input_example(tmp_path):
 
 def test_chat_model_predict_stream(tmp_path):
     model = SimpleChatModel()
-    mlflow.pyfunc.save_model(python_model=model, path=tmp_path)
+    qcflow.pyfunc.save_model(python_model=model, path=tmp_path)
 
-    loaded_model = mlflow.pyfunc.load_model(tmp_path)
+    loaded_model = qcflow.pyfunc.load_model(tmp_path)
     messages = [
         {"role": "system", "content": "You are a helpful assistant"},
         {"role": "user", "content": "Hello!"},
@@ -560,14 +560,14 @@ def test_chat_model_can_receive_and_return_metadata():
     }
 
     model = ChatModelWithMetadata()
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=model,
             input_example=input_example,
         )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     # test that it works for normal pyfunc predict
     response = loaded_model.predict({"messages": messages, **params})
@@ -614,14 +614,14 @@ def test_chat_model_can_use_tool_calls():
     }
 
     model = ChatModelWithToolCalling()
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=model,
             input_example=example,
         )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     response = loaded_model.predict(example)
 
     model_tool_calls = response["choices"][0]["message"]["tool_calls"]
@@ -639,7 +639,7 @@ def test_chat_model_without_context_in_predict():
         choices=[ChatChunkChoice(delta=ChatChoiceDelta(role="assistant", content="hi"))]
     )
 
-    class Model(mlflow.pyfunc.ChatModel):
+    class Model(qcflow.pyfunc.ChatModel):
         def predict(self, messages: list[ChatMessage], params: ChatParams):
             return response
 
@@ -651,9 +651,9 @@ def test_chat_model_without_context_in_predict():
     assert model.predict(messages, ChatParams()) == response
     assert next(iter(model.predict_stream(messages, ChatParams()))) == chunk_response
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model("model", python_model=model, input_example=messages)
-    pyfunc_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model("model", python_model=model, input_example=messages)
+    pyfunc_model = qcflow.pyfunc.load_model(model_info.model_uri)
     input_data = {"messages": [{"role": "user", "content": "hello"}]}
     assert pyfunc_model.predict(input_data) == response.to_dict()
     assert next(iter(pyfunc_model.predict_stream(input_data))) == chunk_response.to_dict()

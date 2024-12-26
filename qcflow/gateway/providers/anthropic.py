@@ -2,15 +2,15 @@ import json
 import time
 from typing import AsyncIterable
 
-from mlflow.gateway.config import AnthropicConfig, RouteConfig
-from mlflow.gateway.constants import (
-    MLFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
-    MLFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS,
+from qcflow.gateway.config import AnthropicConfig, RouteConfig
+from qcflow.gateway.constants import (
+    QCFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS,
+    QCFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS,
 )
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.base import BaseProvider, ProviderAdapter
-from mlflow.gateway.providers.utils import rename_payload_keys, send_request, send_stream_request
-from mlflow.gateway.schemas import chat, completions
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.base import BaseProvider, ProviderAdapter
+from qcflow.gateway.providers.utils import rename_payload_keys, send_request, send_stream_request
+from qcflow.gateway.schemas import chat, completions
 
 
 class AnthropicAdapter(ProviderAdapter):
@@ -25,12 +25,12 @@ class AnthropicAdapter(ProviderAdapter):
                 status_code=422, detail="Cannot set both 'temperature' and 'top_p' parameters."
             )
 
-        max_tokens = payload.get("max_tokens", MLFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS)
-        if max_tokens > MLFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS:
+        max_tokens = payload.get("max_tokens", QCFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS)
+        if max_tokens > QCFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS:
             raise AIGatewayException(
                 status_code=422,
                 detail="Invalid value for max_tokens: cannot exceed "
-                f"{MLFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS}.",
+                f"{QCFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS}.",
             )
         payload["max_tokens"] = max_tokens
 
@@ -164,13 +164,13 @@ class AnthropicAdapter(ProviderAdapter):
                 detail="Cannot set both 'temperature' and 'top_p' parameters. "
                 "Please use only the temperature parameter for your query.",
             )
-        max_tokens = payload.get("max_tokens", MLFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS)
+        max_tokens = payload.get("max_tokens", QCFLOW_AI_GATEWAY_ANTHROPIC_DEFAULT_MAX_TOKENS)
 
-        if max_tokens > MLFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS:
+        if max_tokens > QCFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS:
             raise AIGatewayException(
                 status_code=422,
                 detail="Invalid value for max_tokens: cannot exceed "
-                f"{MLFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS}.",
+                f"{QCFLOW_AI_GATEWAY_ANTHROPIC_MAXIMUM_MAX_TOKENS}.",
             )
 
         payload["max_tokens"] = max_tokens
@@ -178,7 +178,7 @@ class AnthropicAdapter(ProviderAdapter):
         if payload.get("stream", False):
             raise AIGatewayException(
                 status_code=422,
-                detail="Setting the 'stream' parameter to 'true' is not supported with the MLflow "
+                detail="Setting the 'stream' parameter to 'true' is not supported with the QCFlow "
                 "Gateway.",
             )
         n = payload.pop("n", 1)

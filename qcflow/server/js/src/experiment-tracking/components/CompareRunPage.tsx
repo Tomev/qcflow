@@ -88,4 +88,4 @@ const mapStateToProps = (state: any, ownProps: WithRouterNextProps) => {
 
 const CompareRunPage = withRouterNext(connect(mapStateToProps)(CompareRunPageImpl));
 
-export default withErrorBoundary(ErrorUtils.mlflowServices.RUN_TRACKING, CompareRunPage);
+export default withErrorBoundary(ErrorUtils.qcflowServices.RUN_TRACKING, CompareRunPage);

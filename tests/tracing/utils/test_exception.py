@@ -1,7 +1,7 @@
 import pytest
 
-from mlflow.exceptions import MlflowTracingException
-from mlflow.tracing.utils.exception import raise_as_trace_exception
+from qcflow.exceptions import MlflowTracingException
+from qcflow.tracing.utils.exception import raise_as_trace_exception
 
 
 def test_raise_as_trace_exception():

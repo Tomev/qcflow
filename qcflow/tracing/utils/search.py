@@ -3,33 +3,33 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Optional, Union
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 SPANS_COLUMN_NAME = "spans"
 
 if TYPE_CHECKING:
     import pandas
 
-    import mlflow.entities
-    from mlflow.entities import Trace
+    import qcflow.entities
+    from qcflow.entities import Trace
 
 
 def traces_to_df(traces: list[Trace]) -> "pandas.DataFrame":
     """
-    Convert a list of MLflow Traces to a pandas DataFrame with one column called "traces"
+    Convert a list of QCFlow Traces to a pandas DataFrame with one column called "traces"
     containing string representations of each Trace.
     """
     import pandas as pd
 
-    from mlflow.entities.trace import Trace  # import here to avoid circular import
+    from qcflow.entities.trace import Trace  # import here to avoid circular import
 
     rows = [trace.to_pandas_dataframe_row() for trace in traces]
     return pd.DataFrame.from_records(data=rows, columns=Trace.pandas_dataframe_columns())
 
 
 def extract_span_inputs_outputs(
-    traces: Union[list["mlflow.entities.Trace"], "pandas.DataFrame"],
+    traces: Union[list["qcflow.entities.Trace"], "pandas.DataFrame"],
     fields: list[str],
     col_name: Optional[str] = None,
 ) -> "pandas.DataFrame":
@@ -37,11 +37,11 @@ def extract_span_inputs_outputs(
     Extracts the specified input and output fields from the spans contained in the specified traces.
 
     Args:
-        traces: A list of :py:class:`mlflow.entities.Trace` or a pandas DataFrame containing traces.
+        traces: A list of :py:class:`qcflow.entities.Trace` or a pandas DataFrame containing traces.
         fields: A list of field strings of the form 'span_name.[inputs|outputs]' or
             'span_name.[inputs|outputs].field_name'.
         col_name: The name of the column in the traces DataFrame containing the spans. If `traces`
-            is a list of MLflow Traces, this argument should not be provided.
+            is a list of QCFlow Traces, this argument should not be provided.
     """
     try:
         import pandas as pd
@@ -49,7 +49,7 @@ def extract_span_inputs_outputs(
         raise MlflowException(
             message=(
                 "The `pandas` library is not installed. Please install `pandas` to use the"
-                f"`mlflow.tracing.extract` function. Error: {e}"
+                f"`qcflow.tracing.extract` function. Error: {e}"
             ),
         )
 
@@ -59,7 +59,7 @@ def extract_span_inputs_outputs(
         if col_name is not None:
             raise MlflowException(
                 message=(
-                    "If `traces` is a list of MLflow Traces, `col_name` should not be provided."
+                    "If `traces` is a list of QCFlow Traces, `col_name` should not be provided."
                 ),
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -71,7 +71,7 @@ def extract_span_inputs_outputs(
 
     raise MlflowException(
         message=(
-            "`traces` must be a list of MLflow Traces or a pandas DataFrame. Got: {type(traces)}"
+            "`traces` must be a list of QCFlow Traces or a pandas DataFrame. Got: {type(traces)}"
         ),
         error_code=INVALID_PARAMETER_VALUE,
     )
@@ -224,7 +224,7 @@ def _extract_from_traces_pandas_df(
     specified traces DataFrame.
     """
 
-    from mlflow.entities import Span
+    from qcflow.entities import Span
 
     if col_name not in df.columns:
         raise MlflowException(
@@ -253,7 +253,7 @@ def _extract_from_traces_pandas_df(
     return df_with_new_fields
 
 
-def _find_matching_value(field: _ParsedField, spans: list["mlflow.entities.Span"]) -> Optional[Any]:
+def _find_matching_value(field: _ParsedField, spans: list["qcflow.entities.Span"]) -> Optional[Any]:
     """
     Find the value of the field in the list of spans. If the field is not found, return None.
     """
@@ -271,11 +271,11 @@ def _find_matching_value(field: _ParsedField, spans: list["mlflow.entities.Span"
 
 def _extract_spans_from_row(
     row_content: Optional[list[dict[str, Any]]],
-) -> list["mlflow.entities.Span"]:
+) -> list["qcflow.entities.Span"]:
     """
-    Parses and extracts MLflow Spans from the row content of a traces pandas DataFrame.
+    Parses and extracts QCFlow Spans from the row content of a traces pandas DataFrame.
     """
-    from mlflow.entities import Span
+    from qcflow.entities import Span
 
     if row_content is None:
         return []

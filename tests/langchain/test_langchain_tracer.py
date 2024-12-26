@@ -22,24 +22,24 @@ from langchain_core.runnables import RunnableLambda
 from langchain_core.tools import tool
 from packaging.version import Version
 
-import mlflow
-from mlflow.entities import Document as MlflowDocument
-from mlflow.entities import Trace
-from mlflow.entities.span_event import SpanEvent
-from mlflow.entities.span_status import SpanStatus, SpanStatusCode
-from mlflow.exceptions import MlflowException
-from mlflow.langchain import _LangChainModelWrapper
-from mlflow.langchain.langchain_tracer import MlflowLangchainTracer
-from mlflow.pyfunc.context import Context
-from mlflow.tracing.constant import TRACE_SCHEMA_VERSION_KEY, SpanAttributeKey
-from mlflow.tracing.export.inference_table import pop_trace
-from mlflow.tracing.provider import trace_disabled
+import qcflow
+from qcflow.entities import Document as MlflowDocument
+from qcflow.entities import Trace
+from qcflow.entities.span_event import SpanEvent
+from qcflow.entities.span_status import SpanStatus, SpanStatusCode
+from qcflow.exceptions import MlflowException
+from qcflow.langchain import _LangChainModelWrapper
+from qcflow.langchain.langchain_tracer import MlflowLangchainTracer
+from qcflow.pyfunc.context import Context
+from qcflow.tracing.constant import TRACE_SCHEMA_VERSION_KEY, SpanAttributeKey
+from qcflow.tracing.export.inference_table import pop_trace
+from qcflow.tracing.provider import trace_disabled
 
 from tests.tracing.helper import get_traces
 
 # The mock OpenAI endpoint simply echos the prompt back as the completion.
 # So the expected output will be the prompt itself.
-TEST_CONTENT = "What is MLflow?"
+TEST_CONTENT = "What is QCFlow?"
 
 
 def create_openai_llmchain():
@@ -104,7 +104,7 @@ def test_llm_success():
     callback.on_llm_new_token("test", run_id=run_id)
 
     callback.on_llm_end(LLMResult(generations=[[{"text": "generated text"}]]), run_id=run_id)
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert len(trace.data.spans) == 1
     llm_span = trace.data.spans[0]
 
@@ -143,7 +143,7 @@ def test_llm_error():
     mock_error = Exception("mock exception")
     callback.on_llm_error(error=mock_error, run_id=run_id)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     error_event = SpanEvent.from_exception(mock_error)
     assert len(trace.data.spans) == 1
     llm_span = trace.data.spans[0]
@@ -204,7 +204,7 @@ def test_retriever_success():
         ),
     ]
     callback.on_retriever_end(documents, run_id=run_id)
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert len(trace.data.spans) == 1
     retriever_span = trace.data.spans[0]
 
@@ -232,7 +232,7 @@ def test_retriever_error():
     )
     mock_error = Exception("mock exception")
     callback.on_retriever_error(error=mock_error, run_id=run_id)
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert len(trace.data.spans) == 1
     retriever_span = trace.data.spans[0]
     assert retriever_span.inputs == "test query"
@@ -319,7 +319,7 @@ def test_multiple_components():
         outputs={"output": "test output"},
         run_id=chain_run_id,
     )
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert len(trace.data.spans) == 5
     chain_span = trace.data.spans[0]
     assert chain_span.start_time_ns is not None
@@ -377,7 +377,7 @@ def test_e2e_rag_model_tracing_in_serving(mock_databricks_serving_with_tracing_e
     llm_chain = create_openai_llmchain()
 
     request_id = "test_request_id"
-    response, trace_dict = _predict_with_callbacks(llm_chain, request_id, ["MLflow"])
+    response, trace_dict = _predict_with_callbacks(llm_chain, request_id, ["QCFlow"])
 
     assert response == [{"text": TEST_CONTENT}]
     trace = Trace.from_dict(trace_dict)
@@ -393,14 +393,14 @@ def test_e2e_rag_model_tracing_in_serving(mock_databricks_serving_with_tracing_e
         root_span.end_time_ns // 1_000_000
         - (trace.info.timestamp_ms + trace.info.execution_time_ms)
     ) <= 1
-    assert root_span.inputs == {"product": "MLflow"}
+    assert root_span.inputs == {"product": "QCFlow"}
     assert root_span.outputs == {"text": TEST_CONTENT}
     assert root_span.span_type == "CHAIN"
 
     root_span_id = root_span.span_id
     child_span = spans[1]
     assert child_span.parent_id == root_span_id
-    assert child_span.inputs == ["What is MLflow?"]
+    assert child_span.inputs == ["What is QCFlow?"]
     assert child_span.outputs["generations"][0][0]["text"] == TEST_CONTENT
     assert child_span.span_type == "LLM"
 
@@ -550,7 +550,7 @@ def test_tracer_does_not_add_spans_to_trace_after_root_run_has_finished():
     tracer = ExceptionCatchingTracer()
 
     chain.invoke(
-        "What is MLflow?",
+        "What is QCFlow?",
         config={"callbacks": [tracer]},
     )
 
@@ -567,13 +567,13 @@ def test_tracer_noop_when_tracing_disabled(monkeypatch):
     @trace_disabled
     def _predict():
         return model._predict_with_callbacks(
-            ["MLflow"],
+            ["QCFlow"],
             callback_handlers=[MlflowLangchainTracer()],
             convert_chat_responses=True,
         )
 
     mock_logger = MagicMock()
-    monkeypatch.setattr(mlflow.tracking.client, "_logger", mock_logger)
+    monkeypatch.setattr(qcflow.tracking.client, "_logger", mock_logger)
 
     response = _predict()
     assert response == [{"text": TEST_CONTENT}]
@@ -597,20 +597,20 @@ def test_tracer_with_manual_traces():
 
     # Inner spans are created within RunnableLambda
     def foo(s: str):
-        with mlflow.start_span(name="foo_inner") as span:
+        with qcflow.start_span(name="foo_inner") as span:
             span.set_inputs(s)
             s = s.replace("red", "blue")
             s = bar(s)
             span.set_outputs(s)
         return s
 
-    @mlflow.trace
+    @qcflow.trace
     def bar(s):
         return s.replace("blue", "green")
 
     chain = RunnableLambda(foo) | prompt | llm | StrOutputParser()
 
-    @mlflow.trace(name="parent", span_type="SPECIAL")
+    @qcflow.trace(name="parent", span_type="SPECIAL")
     def run(message):
         return chain.invoke(message, config={"callbacks": [MlflowLangchainTracer()]})
 
@@ -618,7 +618,7 @@ def test_tracer_with_manual_traces():
     expected_response = "What is the complementary color of green?"
     assert response == expected_response
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     spans = trace.data.spans
     assert spans[0].name == "parent"

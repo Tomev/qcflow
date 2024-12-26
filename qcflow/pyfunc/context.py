@@ -7,14 +7,14 @@ from typing import Optional
 # This is particularly used to associate logs/traces with a specific prediction request in the
 # caller side. The context variable is intended to be set by the called before invoking the
 # predict method, using the set_prediction_context context manager.
-_PREDICTION_REQUEST_CTX = ContextVar("mlflow_prediction_request_context", default=None)
+_PREDICTION_REQUEST_CTX = ContextVar("qcflow_prediction_request_context", default=None)
 
 
 @dataclass
 class Context:
     # A unique identifier for the current prediction request.
     request_id: Optional[str] = None
-    # Whether the current prediction request is as a part of MLflow model evaluation.
+    # Whether the current prediction request is as a part of QCFlow model evaluation.
     is_evaluate: bool = False
     # The schema of the dependencies to be added into the tag of trace info.
     dependencies_schemas: Optional[dict] = None

@@ -42,7 +42,7 @@ import {
   shouldEnableDifferenceViewCharts,
   shouldEnableImageGridCharts,
   shouldUseNewRunRowsVisibilityModel,
-} from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+} from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 import { RunsChartsConfigureDifferenceChartPreview } from './config/RunsChartsConfigureDifferenceChart.preview';
 import { RunsChartsConfigureDifferenceChart } from './config/RunsChartsConfigureDifferenceChart';
 import type { RunsGroupByConfig } from '../../experiment-page/utils/experimentPage.group-row-utils';
@@ -230,7 +230,7 @@ export const RunsChartsConfigureModal = ({
 
   return (
     <Modal
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsconfiguremodal.tsx_232"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsconfiguremodal.tsx_232"
       visible
       onCancel={onCancel}
       onOk={() => onSubmit(currentFormState)}
@@ -295,7 +295,7 @@ export const RunsChartsConfigureModal = ({
           {!isEditing && (
             <RunsChartsConfigureField title="Chart type">
               <SimpleSelect
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsconfiguremodal.tsx_296"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsconfiguremodal.tsx_296"
                 id="chart-type-select"
                 css={{ width: '100%' }}
                 value={currentFormState.type}

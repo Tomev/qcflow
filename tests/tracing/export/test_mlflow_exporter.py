@@ -3,10 +3,10 @@ from concurrent.futures import ThreadPoolExecutor
 from unittest import mock
 from unittest.mock import MagicMock
 
-from mlflow.entities import LiveSpan
-from mlflow.tracing.export.mlflow import AsyncTraceExportQueue, MlflowSpanExporter, Task
-from mlflow.tracing.fluent import TRACE_BUFFER
-from mlflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.entities import LiveSpan
+from qcflow.tracing.export.qcflow import AsyncTraceExportQueue, MlflowSpanExporter, Task
+from qcflow.tracing.fluent import TRACE_BUFFER
+from qcflow.tracing.trace_manager import InMemoryTraceManager
 
 from tests.tracing.helper import create_mock_otel_span, create_test_trace_info
 
@@ -91,7 +91,7 @@ def test_async_queue_activate_thread_safe(mock_atexit):
         return sum(
             t.is_alive()
             for t in threading.enumerate()
-            if t is not main_thread and t.getName().startswith("MLflowTraceLogging")
+            if t is not main_thread and t.getName().startswith("QCFlowTraceLogging")
         )
 
     # 1. Validate activation

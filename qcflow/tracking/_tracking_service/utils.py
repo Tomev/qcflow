@@ -6,17 +6,17 @@ from functools import partial
 from pathlib import Path
 from typing import Generator, Union
 
-from mlflow.environment_variables import MLFLOW_TRACKING_URI
-from mlflow.store.db.db_types import DATABASE_ENGINES
-from mlflow.store.tracking import DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH
-from mlflow.store.tracking.file_store import FileStore
-from mlflow.store.tracking.rest_store import RestStore
-from mlflow.tracing.provider import reset_tracer_setup
-from mlflow.tracking._tracking_service.registry import TrackingStoreRegistry
-from mlflow.utils.credentials import get_default_host_creds
-from mlflow.utils.databricks_utils import get_databricks_host_creds
-from mlflow.utils.file_utils import path_to_local_file_uri
-from mlflow.utils.uri import _DATABRICKS_UNITY_CATALOG_SCHEME, _OSS_UNITY_CATALOG_SCHEME
+from qcflow.environment_variables import QCFLOW_TRACKING_URI
+from qcflow.store.db.db_types import DATABASE_ENGINES
+from qcflow.store.tracking import DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH
+from qcflow.store.tracking.file_store import FileStore
+from qcflow.store.tracking.rest_store import RestStore
+from qcflow.tracing.provider import reset_tracer_setup
+from qcflow.tracking._tracking_service.registry import TrackingStoreRegistry
+from qcflow.utils.credentials import get_default_host_creds
+from qcflow.utils.databricks_utils import get_databricks_host_creds
+from qcflow.utils.file_utils import path_to_local_file_uri
+from qcflow.utils.uri import _DATABRICKS_UNITY_CATALOG_SCHEME, _OSS_UNITY_CATALOG_SCHEME
 
 _logger = logging.getLogger(__name__)
 _tracking_uri = None
@@ -24,7 +24,7 @@ _tracking_uri = None
 
 def is_tracking_uri_set():
     """Returns True if the tracking URI has been set, False otherwise."""
-    if _tracking_uri or MLFLOW_TRACKING_URI.get():
+    if _tracking_uri or QCFLOW_TRACKING_URI.get():
         return True
     return False
 
@@ -49,10 +49,10 @@ def set_tracking_uri(uri: Union[str, Path]) -> None:
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
 
-        mlflow.set_tracking_uri("file:///tmp/my_tracking")
-        tracking_uri = mlflow.get_tracking_uri()
+        qcflow.set_tracking_uri("file:///tmp/my_tracking")
+        tracking_uri = qcflow.get_tracking_uri()
         print(f"Current tracking uri: {tracking_uri}")
 
     .. code-block:: text
@@ -71,9 +71,9 @@ def set_tracking_uri(uri: Union[str, Path]) -> None:
     if _tracking_uri != uri:
         _tracking_uri = uri
         if _tracking_uri:
-            # Set 'MLFLOW_TRACKING_URI' environment variable
+            # Set 'QCFLOW_TRACKING_URI' environment variable
             # so that subprocess can inherit it.
-            MLFLOW_TRACKING_URI.set(_tracking_uri)
+            QCFLOW_TRACKING_URI.set(_tracking_uri)
 
         # Tracer provider uses tracking URI to determine where to export traces.
         # Tracer provider stores the URI as its state so we need to reset
@@ -110,10 +110,10 @@ def get_tracking_uri() -> str:
 
     .. code-block:: python
 
-        import mlflow
+        import qcflow
 
         # Get the current tracking uri
-        tracking_uri = mlflow.get_tracking_uri()
+        tracking_uri = qcflow.get_tracking_uri()
         print(f"Current tracking uri: {tracking_uri}")
 
     .. code-block:: text
@@ -122,7 +122,7 @@ def get_tracking_uri() -> str:
     """
     if _tracking_uri is not None:
         return _tracking_uri
-    elif uri := MLFLOW_TRACKING_URI.get():
+    elif uri := QCFLOW_TRACKING_URI.get():
         return uri
     else:
         return path_to_local_file_uri(os.path.abspath(DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH))
@@ -133,7 +133,7 @@ def _get_file_store(store_uri, **_):
 
 
 def _get_sqlalchemy_store(store_uri, artifact_uri):
-    from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
+    from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
 
     if artifact_uri is None:
         artifact_uri = DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH
@@ -149,8 +149,8 @@ def _get_databricks_rest_store(store_uri, **_):
 
 
 def _get_databricks_uc_rest_store(store_uri, **_):
-    from mlflow.exceptions import MlflowException
-    from mlflow.version import VERSION
+    from qcflow.exceptions import MlflowException
+    from qcflow.version import VERSION
 
     supported_schemes = [
         scheme
@@ -160,17 +160,17 @@ def _get_databricks_uc_rest_store(store_uri, **_):
     raise MlflowException(
         f"Detected Unity Catalog tracking URI '{store_uri}'. "
         "Setting the tracking URI to a Unity Catalog backend is not supported in the current "
-        f"version of the MLflow client ({VERSION}). "
-        "Please specify a different tracking URI via mlflow.set_tracking_uri, with "
+        f"version of the QCFlow client ({VERSION}). "
+        "Please specify a different tracking URI via qcflow.set_tracking_uri, with "
         "one of the supported schemes: "
         f"{supported_schemes}. If you're trying to access models in the Unity "
-        "Catalog, please upgrade to the latest version of the MLflow Python "
+        "Catalog, please upgrade to the latest version of the QCFlow Python "
         "client, then specify a Unity Catalog model registry URI via "
-        f"mlflow.set_registry_uri('{_DATABRICKS_UNITY_CATALOG_SCHEME}') or "
-        f"mlflow.set_registry_uri('{_DATABRICKS_UNITY_CATALOG_SCHEME}://profile_name') where "
+        f"qcflow.set_registry_uri('{_DATABRICKS_UNITY_CATALOG_SCHEME}') or "
+        f"qcflow.set_registry_uri('{_DATABRICKS_UNITY_CATALOG_SCHEME}://profile_name') where "
         "'profile_name' is the name of the Databricks CLI profile to use for "
         "authentication. A OSS Unity Catalog model registry URI can also be specified via "
-        f"mlflow.set_registry_uri('{_OSS_UNITY_CATALOG_SCHEME}:http://localhost:8080')."
+        f"qcflow.set_registry_uri('{_OSS_UNITY_CATALOG_SCHEME}:http://localhost:8080')."
         "Be sure to leave the registry URI configured to use one of the supported"
         "schemes listed above."
     )

@@ -1,7 +1,7 @@
-from mlflow.dspy.save import FLAVOR_NAME
-from mlflow.tracing.provider import trace_disabled
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import autologging_integration, safe_patch
+from qcflow.dspy.save import FLAVOR_NAME
+from qcflow.tracing.provider import trace_disabled
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import autologging_integration, safe_patch
 
 
 @experimental
@@ -11,15 +11,15 @@ def autolog(
     silent: bool = False,
 ):
     """
-    Enables (or disables) and configures autologging from DSPy to MLflow. Currently, the
-    MLflow DSPy flavor only supports autologging for tracing.
+    Enables (or disables) and configures autologging from DSPy to QCFlow. Currently, the
+    QCFlow DSPy flavor only supports autologging for tracing.
 
     Args:
         log_traces: If ``True``, traces are logged for DSPy models by using. If ``False``,
             no traces are collected during inference. Default to ``True``.
         disable: If ``True``, disables the DSPy autologging integration. If ``False``,
             enables the DSPy autologging integration.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during DSPy
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during DSPy
             autologging. If ``False``, show all events and warnings.
     """
     # NB: The @autologging_integration annotation is used for adding shared logic. However, one
@@ -32,7 +32,7 @@ def autolog(
 
     import dspy
 
-    from mlflow.dspy.callback import MlflowCallback
+    from qcflow.dspy.callback import MlflowCallback
 
     # Enable tracing by setting the MlflowCallback
     if log_traces and not disable:
@@ -77,7 +77,7 @@ def autolog(
         )
 
 
-# This is required by mlflow.autolog()
+# This is required by qcflow.autolog()
 autolog.integration_name = FLAVOR_NAME
 
 

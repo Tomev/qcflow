@@ -4,21 +4,21 @@ from unittest import mock
 import pytest
 
 import docker
-import mlflow
-from mlflow import MlflowClient
-from mlflow.entities import ViewType
-from mlflow.environment_variables import MLFLOW_TRACKING_URI
-from mlflow.exceptions import MlflowException
-from mlflow.legacy_databricks_cli.configure.provider import DatabricksConfig
-from mlflow.projects import ExecutionException, _project_spec
-from mlflow.projects.backend.local import _get_docker_command
-from mlflow.projects.docker import _get_docker_image_uri
-from mlflow.store.tracking import file_store
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DOCKER_IMAGE_ID,
-    MLFLOW_DOCKER_IMAGE_URI,
-    MLFLOW_PROJECT_BACKEND,
-    MLFLOW_PROJECT_ENV,
+import qcflow
+from qcflow import MlflowClient
+from qcflow.entities import ViewType
+from qcflow.environment_variables import QCFLOW_TRACKING_URI
+from qcflow.exceptions import MlflowException
+from qcflow.legacy_databricks_cli.configure.provider import DatabricksConfig
+from qcflow.projects import ExecutionException, _project_spec
+from qcflow.projects.backend.local import _get_docker_command
+from qcflow.projects.docker import _get_docker_image_uri
+from qcflow.store.tracking import file_store
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DOCKER_IMAGE_ID,
+    QCFLOW_DOCKER_IMAGE_URI,
+    QCFLOW_PROJECT_BACKEND,
+    QCFLOW_PROJECT_ENV,
 )
 
 from tests.projects.utils import (
@@ -36,7 +36,7 @@ def _build_uri(base_uri, subdirectory):
 @pytest.mark.parametrize("use_start_run", map(str, [0, 1]))
 def test_docker_project_execution(use_start_run, docker_example_base_image):
     expected_params = {"use_start_run": use_start_run}
-    submitted_run = mlflow.projects.run(
+    submitted_run = qcflow.projects.run(
         TEST_DOCKER_PROJECT_DIR,
         experiment_id=file_store.FileStore.DEFAULT_EXPERIMENT_ID,
         parameters=expected_params,
@@ -46,30 +46,30 @@ def test_docker_project_execution(use_start_run, docker_example_base_image):
     )
     # Validate run contents in the FileStore
     run_id = submitted_run.run_id
-    mlflow_service = MlflowClient()
-    runs = mlflow_service.search_runs(
+    qcflow_service = MlflowClient()
+    runs = qcflow_service.search_runs(
         [file_store.FileStore.DEFAULT_EXPERIMENT_ID], run_view_type=ViewType.ACTIVE_ONLY
     )
     assert len(runs) == 1
     store_run_id = runs[0].info.run_id
     assert run_id == store_run_id
-    run = mlflow_service.get_run(run_id)
+    run = qcflow_service.get_run(run_id)
     assert run.data.params == expected_params
     assert run.data.metrics == {"some_key": 3}
     exact_expected_tags = {
-        MLFLOW_PROJECT_ENV: "docker",
-        MLFLOW_PROJECT_BACKEND: "local",
+        QCFLOW_PROJECT_ENV: "docker",
+        QCFLOW_PROJECT_BACKEND: "local",
     }
     approx_expected_tags = {
-        MLFLOW_DOCKER_IMAGE_URI: "docker-example",
-        MLFLOW_DOCKER_IMAGE_ID: "sha256:",
+        QCFLOW_DOCKER_IMAGE_URI: "docker-example",
+        QCFLOW_DOCKER_IMAGE_ID: "sha256:",
     }
     run_tags = run.data.tags
     for k, v in exact_expected_tags.items():
         assert run_tags[k] == v
     for k, v in approx_expected_tags.items():
         assert run_tags[k].startswith(v)
-    artifacts = mlflow_service.list_artifacts(run_id=run_id)
+    artifacts = qcflow_service.list_artifacts(run_id=run_id)
     assert len(artifacts) == 1
     docker_cmd = submitted_run.command_proc.args[2]
     assert "--memory 1g" in docker_cmd
@@ -79,7 +79,7 @@ def test_docker_project_execution(use_start_run, docker_example_base_image):
 def test_docker_project_execution_async_docker_args(
     docker_example_base_image,
 ):
-    submitted_run = mlflow.projects.run(
+    submitted_run = qcflow.projects.run(
         TEST_DOCKER_PROJECT_DIR,
         experiment_id=file_store.FileStore.DEFAULT_EXPERIMENT_ID,
         parameters={"use_start_run": "0"},
@@ -100,12 +100,12 @@ def test_docker_project_execution_async_docker_args(
 @pytest.mark.parametrize(
     ("tracking_uri", "expected_command_segment"),
     [
-        (None, "-e MLFLOW_TRACKING_URI=/mlflow/tmp/mlruns"),
-        ("http://some-tracking-uri", "-e MLFLOW_TRACKING_URI=http://some-tracking-uri"),
-        ("databricks://some-profile", "-e MLFLOW_TRACKING_URI=databricks "),
+        (None, "-e QCFLOW_TRACKING_URI=/qcflow/tmp/mlruns"),
+        ("http://some-tracking-uri", "-e QCFLOW_TRACKING_URI=http://some-tracking-uri"),
+        ("databricks://some-profile", "-e QCFLOW_TRACKING_URI=databricks "),
     ],
 )
-@mock.patch("mlflow.utils.databricks_utils.ProfileConfigProvider")
+@mock.patch("qcflow.utils.databricks_utils.ProfileConfigProvider")
 def test_docker_project_tracking_uri_propagation(
     ProfileConfigProvider,
     tmp_path,
@@ -122,26 +122,26 @@ def test_docker_project_tracking_uri_propagation(
     local_tracking_dir = os.path.join(tmp_path, "mlruns")
     if tracking_uri is None:
         tracking_uri = local_tracking_dir
-    old_uri = mlflow.get_tracking_uri()
+    old_uri = qcflow.get_tracking_uri()
     try:
-        mlflow.set_tracking_uri(tracking_uri)
+        qcflow.set_tracking_uri(tracking_uri)
         with mock.patch(
-            "mlflow.tracking._tracking_service.utils._get_store",
+            "qcflow.tracking._tracking_service.utils._get_store",
             return_value=file_store.FileStore(local_tracking_dir),
         ):
-            mlflow.projects.run(
+            qcflow.projects.run(
                 TEST_DOCKER_PROJECT_DIR, experiment_id=file_store.FileStore.DEFAULT_EXPERIMENT_ID
             )
     finally:
-        mlflow.set_tracking_uri(old_uri)
+        qcflow.set_tracking_uri(old_uri)
 
 
 def test_docker_uri_mode_validation(docker_example_base_image):
     with pytest.raises(ExecutionException, match="When running on Databricks"):
-        mlflow.projects.run(TEST_DOCKER_PROJECT_DIR, backend="databricks", backend_config={})
+        qcflow.projects.run(TEST_DOCKER_PROJECT_DIR, backend="databricks", backend_config={})
 
 
-@mock.patch("mlflow.projects.docker.get_git_commit")
+@mock.patch("qcflow.projects.docker.get_git_commit")
 def test_docker_image_uri_with_git(get_git_commit_mock):
     get_git_commit_mock.return_value = "1234567890"
     image_uri = _get_docker_image_uri("my_project", "my_workdir")
@@ -149,7 +149,7 @@ def test_docker_image_uri_with_git(get_git_commit_mock):
     get_git_commit_mock.assert_called_with("my_workdir")
 
 
-@mock.patch("mlflow.projects.docker.get_git_commit")
+@mock.patch("qcflow.projects.docker.get_git_commit")
 def test_docker_image_uri_no_git(get_git_commit_mock):
     get_git_commit_mock.return_value = None
     image_uri = _get_docker_image_uri("my_project", "my_workdir")
@@ -160,7 +160,7 @@ def test_docker_image_uri_no_git(get_git_commit_mock):
 def test_docker_valid_project_backend_local():
     work_dir = "./examples/docker"
     project = _project_spec.load_project(work_dir)
-    mlflow.projects.docker.validate_docker_env(project)
+    qcflow.projects.docker.validate_docker_env(project)
 
 
 def test_docker_invalid_project_backend_local():
@@ -168,7 +168,7 @@ def test_docker_invalid_project_backend_local():
     project = _project_spec.load_project(work_dir)
     project.name = None
     with pytest.raises(ExecutionException, match="Project name in MLProject must be specified"):
-        mlflow.projects.docker.validate_docker_env(project)
+        qcflow.projects.docker.validate_docker_env(project)
 
 
 @pytest.mark.parametrize(
@@ -177,7 +177,7 @@ def test_docker_invalid_project_backend_local():
         ("/tmp/mlruns/artifacts", "/tmp/mlruns/artifacts", "/tmp/mlruns/artifacts", True),
         ("s3://my_bucket", None, None, False),
         ("file:///tmp/mlruns/artifacts", "/tmp/mlruns/artifacts", "/tmp/mlruns/artifacts", True),
-        ("./mlruns", os.path.abspath("./mlruns"), "/mlflow/projects/code/mlruns", True),
+        ("./mlruns", os.path.abspath("./mlruns"), "/qcflow/projects/code/mlruns", True),
     ],
 )
 def test_docker_mount_local_artifact_uri(
@@ -198,7 +198,7 @@ def test_docker_mount_local_artifact_uri(
     assert (docker_volume_expected in " ".join(docker_command)) == should_mount
 
 
-@mock.patch("mlflow.utils.databricks_utils.ProfileConfigProvider")
+@mock.patch("qcflow.utils.databricks_utils.ProfileConfigProvider")
 def test_docker_databricks_tracking_cmd_and_envs(ProfileConfigProvider):
     mock_provider = mock.MagicMock()
     mock_provider.get_config.return_value = DatabricksConfig.from_password(
@@ -206,7 +206,7 @@ def test_docker_databricks_tracking_cmd_and_envs(ProfileConfigProvider):
     )
     ProfileConfigProvider.return_value = mock_provider
 
-    cmds, envs = mlflow.projects.docker.get_docker_tracking_cmd_and_envs(
+    cmds, envs = qcflow.projects.docker.get_docker_tracking_cmd_and_envs(
         "databricks://some-profile"
     )
     assert envs == {
@@ -214,7 +214,7 @@ def test_docker_databricks_tracking_cmd_and_envs(ProfileConfigProvider):
         "DATABRICKS_USERNAME": "user",
         "DATABRICKS_PASSWORD": "pass",
         "DATABRICKS_INSECURE": "True",
-        MLFLOW_TRACKING_URI.name: "databricks",
+        QCFLOW_TRACKING_URI.name: "databricks",
     }
     assert cmds == []
 
@@ -305,9 +305,9 @@ entry_points:
     command: python --version
 """
     )
-    submitted_run = mlflow.projects.run(str(tmp_path))
-    run = mlflow.get_run(submitted_run.run_id)
-    assert run.data.tags[MLFLOW_DOCKER_IMAGE_URI] == "my-python"
+    submitted_run = qcflow.projects.run(str(tmp_path))
+    run = qcflow.get_run(submitted_run.run_id)
+    assert run.data.tags[QCFLOW_DOCKER_IMAGE_URI] == "my-python"
 
 
 def test_docker_build_image_remote(tmp_path):
@@ -321,6 +321,6 @@ entry_points:
     command: python --version
 """
     )
-    submitted_run = mlflow.projects.run(str(tmp_path))
-    run = mlflow.get_run(submitted_run.run_id)
-    assert run.data.tags[MLFLOW_DOCKER_IMAGE_URI] == "python:3.9"
+    submitted_run = qcflow.projects.run(str(tmp_path))
+    run = qcflow.get_run(submitted_run.run_id)
+    assert run.data.tags[QCFLOW_DOCKER_IMAGE_URI] == "python:3.9"

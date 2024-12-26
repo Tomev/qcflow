@@ -1,7 +1,7 @@
 import numpy as np
 
-from mlflow.models import ModelSignature
-from mlflow.types import Schema, TensorSpec
+from qcflow.models import ModelSignature
+from qcflow.types import Schema, TensorSpec
 
 
 def get_model_signature(model):

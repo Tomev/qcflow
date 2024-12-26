@@ -9,7 +9,7 @@ from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings import FakeEmbeddings
 from langchain_community.vectorstores import FAISS
 
-from mlflow.models import set_model
+from qcflow.models import set_model
 
 
 def get_fake_chat_model(endpoint="fake-endpoint"):

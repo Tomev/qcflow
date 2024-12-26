@@ -20,14 +20,14 @@ if Version(google.protobuf.__version__).major >= 5:
   from . import databricks_pb2 as databricks__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14model_registry.proto\x12\x06mlflow\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"\x89\x02\n\x0fRegisteredModel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1a\n\x12\x63reation_timestamp\x18\x02 \x01(\x03\x12\x1e\n\x16last_updated_timestamp\x18\x03 \x01(\x03\x12\x0f\n\x07user_id\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12-\n\x0flatest_versions\x18\x06 \x03(\x0b\x32\x14.mlflow.ModelVersion\x12(\n\x04tags\x18\x07 \x03(\x0b\x32\x1a.mlflow.RegisteredModelTag\x12-\n\x07\x61liases\x18\x08 \x03(\x0b\x32\x1c.mlflow.RegisteredModelAlias\"\xd4\x02\n\x0cModelVersion\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x1a\n\x12\x63reation_timestamp\x18\x03 \x01(\x03\x12\x1e\n\x16last_updated_timestamp\x18\x04 \x01(\x03\x12\x0f\n\x07user_id\x18\x05 \x01(\t\x12\x15\n\rcurrent_stage\x18\x06 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x0e\n\x06run_id\x18\t \x01(\t\x12*\n\x06status\x18\n \x01(\x0e\x32\x1a.mlflow.ModelVersionStatus\x12\x16\n\x0estatus_message\x18\x0b \x01(\t\x12%\n\x04tags\x18\x0c \x03(\x0b\x32\x17.mlflow.ModelVersionTag\x12\x10\n\x08run_link\x18\r \x01(\t\x12\x0f\n\x07\x61liases\x18\x0e \x03(\t\"\xd6\x01\n\x15\x43reateRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12(\n\x04tags\x18\x02 \x03(\x0b\x32\x1a.mlflow.RegisteredModelTag\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.mlflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa9\x01\n\x15RenameRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x10\n\x08new_name\x18\x02 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.mlflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xac\x01\n\x15UpdateRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.mlflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"d\n\x15\x44\x65leteRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x94\x01\n\x12GetRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.mlflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xee\x01\n\x16SearchRegisteredModels\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\x12\x18\n\x0bmax_results\x18\x02 \x01(\x03:\x03\x31\x30\x30\x12\x10\n\x08order_by\x18\x03 \x03(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aW\n\x08Response\x12\x32\n\x11registered_models\x18\x01 \x03(\x0b\x32\x17.mlflow.RegisteredModel\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x9e\x01\n\x11GetLatestVersions\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06stages\x18\x02 \x03(\t\x1a\x38\n\x08Response\x12,\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x02\n\x12\x43reateModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06source\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12%\n\x04tags\x18\x04 \x03(\x0b\x32\x17.mlflow.ModelVersionTag\x12\x10\n\x08run_link\x18\x05 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xba\x01\n\x12UpdateModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xec\x01\n\x1bTransitionModelVersionStage\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05stage\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\'\n\x19\x61rchive_existing_versions\x18\x04 \x01(\x08\x42\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"x\n\x12\x44\x65leteModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa2\x01\n\x0fGetModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xe8\x01\n\x13SearchModelVersions\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\x12\x1b\n\x0bmax_results\x18\x02 \x01(\x03:\x06\x32\x30\x30\x30\x30\x30\x12\x10\n\x08order_by\x18\x03 \x03(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aQ\n\x08Response\x12,\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x14.mlflow.ModelVersion\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x96\x01\n\x1aGetModelVersionDownloadUri\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a \n\x08Response\x12\x14\n\x0c\x61rtifact_uri\x18\x01 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"-\n\x0fModelVersionTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"0\n\x12RegisteredModelTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\x8c\x01\n\x15SetRegisteredModelTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa0\x01\n\x12SetModelVersionTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x04 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"z\n\x18\x44\x65leteRegisteredModelTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8e\x01\n\x15\x44\x65leteModelVersionTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"6\n\x14RegisteredModelAlias\x12\r\n\x05\x61lias\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\"\x92\x01\n\x17SetRegisteredModelAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"~\n\x1a\x44\x65leteRegisteredModelAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa7\x01\n\x16GetModelVersionByAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]*R\n\x12ModelVersionStatus\x12\x18\n\x14PENDING_REGISTRATION\x10\x01\x12\x17\n\x13\x46\x41ILED_REGISTRATION\x10\x02\x12\t\n\x05READY\x10\x03\x32\x80\x1e\n\x14ModelRegistryService\x12\xae\x01\n\x15\x63reateRegisteredModel\x12\x1d.mlflow.CreateRegisteredModel\x1a&.mlflow.CreateRegisteredModel.Response\"N\xf2\x86\x19J\n.\n\x04POST\x12 /mlflow/registered-models/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x16\x43reate RegisteredModel\x12\xae\x01\n\x15renameRegisteredModel\x12\x1d.mlflow.RenameRegisteredModel\x1a&.mlflow.RenameRegisteredModel.Response\"N\xf2\x86\x19J\n.\n\x04POST\x12 /mlflow/registered-models/rename\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Rename RegisteredModel\x12\xaf\x01\n\x15updateRegisteredModel\x12\x1d.mlflow.UpdateRegisteredModel\x1a&.mlflow.UpdateRegisteredModel.Response\"O\xf2\x86\x19K\n/\n\x05PATCH\x12 /mlflow/registered-models/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Update RegisteredModel\x12\xb0\x01\n\x15\x64\x65leteRegisteredModel\x12\x1d.mlflow.DeleteRegisteredModel\x1a&.mlflow.DeleteRegisteredModel.Response\"P\xf2\x86\x19L\n0\n\x06\x44\x45LETE\x12 /mlflow/registered-models/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x16\x44\x65lete RegisteredModel\x12\x9e\x01\n\x12getRegisteredModel\x12\x1a.mlflow.GetRegisteredModel\x1a#.mlflow.GetRegisteredModel.Response\"G\xf2\x86\x19\x43\n*\n\x03GET\x12\x1d/mlflow/registered-models/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x13Get RegisteredModel\x12\xb1\x01\n\x16searchRegisteredModels\x12\x1e.mlflow.SearchRegisteredModels\x1a\'.mlflow.SearchRegisteredModels.Response\"N\xf2\x86\x19J\n-\n\x03GET\x12 /mlflow/registered-models/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x17Search RegisteredModels\x12\xef\x01\n\x11getLatestVersions\x12\x19.mlflow.GetLatestVersions\x1a\".mlflow.GetLatestVersions.Response\"\x9a\x01\xf2\x86\x19\x95\x01\n;\n\x04POST\x12-/mlflow/registered-models/get-latest-versions\x1a\x04\x08\x02\x10\x00\n:\n\x03GET\x12-/mlflow/registered-models/get-latest-versions\x1a\x04\x08\x02\x10\x00\x10\x01*\x18Get Latest ModelVersions\x12\x9f\x01\n\x12\x63reateModelVersion\x12\x1a.mlflow.CreateModelVersion\x1a#.mlflow.CreateModelVersion.Response\"H\xf2\x86\x19\x44\n+\n\x04POST\x12\x1d/mlflow/model-versions/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x13\x43reate ModelVersion\x12\xa0\x01\n\x12updateModelVersion\x12\x1a.mlflow.UpdateModelVersion\x1a#.mlflow.UpdateModelVersion.Response\"I\xf2\x86\x19\x45\n,\n\x05PATCH\x12\x1d/mlflow/model-versions/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x13Update ModelVersion\x12\xce\x01\n\x1btransitionModelVersionStage\x12#.mlflow.TransitionModelVersionStage\x1a,.mlflow.TransitionModelVersionStage.Response\"\\\xf2\x86\x19X\n5\n\x04POST\x12\'/mlflow/model-versions/transition-stage\x1a\x04\x08\x02\x10\x00\x10\x01*\x1dTransition ModelVersion Stage\x12\xa1\x01\n\x12\x64\x65leteModelVersion\x12\x1a.mlflow.DeleteModelVersion\x1a#.mlflow.DeleteModelVersion.Response\"J\xf2\x86\x19\x46\n-\n\x06\x44\x45LETE\x12\x1d/mlflow/model-versions/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x13\x44\x65lete ModelVersion\x12\x8f\x01\n\x0fgetModelVersion\x12\x17.mlflow.GetModelVersion\x1a .mlflow.GetModelVersion.Response\"A\xf2\x86\x19=\n\'\n\x03GET\x12\x1a/mlflow/model-versions/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x10Get ModelVersion\x12\xa6\x01\n\x13searchModelVersions\x12\x1b.mlflow.SearchModelVersions\x1a$.mlflow.SearchModelVersions.Response\"L\xf2\x86\x19\x44\n*\n\x03GET\x12\x1d/mlflow/model-versions/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x14Search ModelVersions\xba\x8c\x19\x00\x12\xd8\x01\n\x1agetModelVersionDownloadUri\x12\".mlflow.GetModelVersionDownloadUri\x1a+.mlflow.GetModelVersionDownloadUri.Response\"i\xf2\x86\x19\x65\n4\n\x03GET\x12\'/mlflow/model-versions/get-download-uri\x1a\x04\x08\x02\x10\x00\x10\x01*+Get Download URI For ModelVersion Artifacts\x12\xb1\x01\n\x15setRegisteredModelTag\x12\x1d.mlflow.SetRegisteredModelTag\x1a&.mlflow.SetRegisteredModelTag.Response\"Q\xf2\x86\x19M\n/\n\x04POST\x12!/mlflow/registered-models/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x18Set Registered Model Tag\x12\xa2\x01\n\x12setModelVersionTag\x12\x1a.mlflow.SetModelVersionTag\x1a#.mlflow.SetModelVersionTag.Response\"K\xf2\x86\x19G\n,\n\x04POST\x12\x1e/mlflow/model-versions/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x15Set Model Version Tag\x12\xc2\x01\n\x18\x64\x65leteRegisteredModelTag\x12 .mlflow.DeleteRegisteredModelTag\x1a).mlflow.DeleteRegisteredModelTag.Response\"Y\xf2\x86\x19U\n4\n\x06\x44\x45LETE\x12$/mlflow/registered-models/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x1b\x44\x65lete Registered Model Tag\x12\xb3\x01\n\x15\x64\x65leteModelVersionTag\x12\x1d.mlflow.DeleteModelVersionTag\x1a&.mlflow.DeleteModelVersionTag.Response\"S\xf2\x86\x19O\n1\n\x06\x44\x45LETE\x12!/mlflow/model-versions/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x18\x44\x65lete Model Version Tag\x12\xb7\x01\n\x17setRegisteredModelAlias\x12\x1f.mlflow.SetRegisteredModelAlias\x1a(.mlflow.SetRegisteredModelAlias.Response\"Q\xf2\x86\x19M\n-\n\x04POST\x12\x1f/mlflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1aSet Registered Model Alias\x12\xc5\x01\n\x1a\x64\x65leteRegisteredModelAlias\x12\".mlflow.DeleteRegisteredModelAlias\x1a+.mlflow.DeleteRegisteredModelAlias.Response\"V\xf2\x86\x19R\n/\n\x06\x44\x45LETE\x12\x1f/mlflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1d\x44\x65lete Registered Model Alias\x12\xb3\x01\n\x16getModelVersionByAlias\x12\x1e.mlflow.GetModelVersionByAlias\x1a\'.mlflow.GetModelVersionByAlias.Response\"P\xf2\x86\x19L\n,\n\x03GET\x12\x1f/mlflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1aGet Model Version by AliasB!\n\x14org.mlflow.api.proto\x90\x01\x01\xa0\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14model_registry.proto\x12\x06qcflow\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"\x89\x02\n\x0fRegisteredModel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1a\n\x12\x63reation_timestamp\x18\x02 \x01(\x03\x12\x1e\n\x16last_updated_timestamp\x18\x03 \x01(\x03\x12\x0f\n\x07user_id\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12-\n\x0flatest_versions\x18\x06 \x03(\x0b\x32\x14.qcflow.ModelVersion\x12(\n\x04tags\x18\x07 \x03(\x0b\x32\x1a.qcflow.RegisteredModelTag\x12-\n\x07\x61liases\x18\x08 \x03(\x0b\x32\x1c.qcflow.RegisteredModelAlias\"\xd4\x02\n\x0cModelVersion\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x1a\n\x12\x63reation_timestamp\x18\x03 \x01(\x03\x12\x1e\n\x16last_updated_timestamp\x18\x04 \x01(\x03\x12\x0f\n\x07user_id\x18\x05 \x01(\t\x12\x15\n\rcurrent_stage\x18\x06 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x0e\n\x06run_id\x18\t \x01(\t\x12*\n\x06status\x18\n \x01(\x0e\x32\x1a.qcflow.ModelVersionStatus\x12\x16\n\x0estatus_message\x18\x0b \x01(\t\x12%\n\x04tags\x18\x0c \x03(\x0b\x32\x17.qcflow.ModelVersionTag\x12\x10\n\x08run_link\x18\r \x01(\t\x12\x0f\n\x07\x61liases\x18\x0e \x03(\t\"\xd6\x01\n\x15\x43reateRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12(\n\x04tags\x18\x02 \x03(\x0b\x32\x1a.qcflow.RegisteredModelTag\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.qcflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa9\x01\n\x15RenameRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x10\n\x08new_name\x18\x02 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.qcflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xac\x01\n\x15UpdateRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.qcflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"d\n\x15\x44\x65leteRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x94\x01\n\x12GetRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.qcflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xee\x01\n\x16SearchRegisteredModels\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\x12\x18\n\x0bmax_results\x18\x02 \x01(\x03:\x03\x31\x30\x30\x12\x10\n\x08order_by\x18\x03 \x03(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aW\n\x08Response\x12\x32\n\x11registered_models\x18\x01 \x03(\x0b\x32\x17.qcflow.RegisteredModel\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x9e\x01\n\x11GetLatestVersions\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06stages\x18\x02 \x03(\t\x1a\x38\n\x08Response\x12,\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x02\n\x12\x43reateModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06source\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12%\n\x04tags\x18\x04 \x03(\x0b\x32\x17.qcflow.ModelVersionTag\x12\x10\n\x08run_link\x18\x05 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xba\x01\n\x12UpdateModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xec\x01\n\x1bTransitionModelVersionStage\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05stage\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\'\n\x19\x61rchive_existing_versions\x18\x04 \x01(\x08\x42\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"x\n\x12\x44\x65leteModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa2\x01\n\x0fGetModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xe8\x01\n\x13SearchModelVersions\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\x12\x1b\n\x0bmax_results\x18\x02 \x01(\x03:\x06\x32\x30\x30\x30\x30\x30\x12\x10\n\x08order_by\x18\x03 \x03(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aQ\n\x08Response\x12,\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x14.qcflow.ModelVersion\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x96\x01\n\x1aGetModelVersionDownloadUri\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a \n\x08Response\x12\x14\n\x0c\x61rtifact_uri\x18\x01 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"-\n\x0fModelVersionTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"0\n\x12RegisteredModelTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\x8c\x01\n\x15SetRegisteredModelTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa0\x01\n\x12SetModelVersionTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x04 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"z\n\x18\x44\x65leteRegisteredModelTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8e\x01\n\x15\x44\x65leteModelVersionTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"6\n\x14RegisteredModelAlias\x12\r\n\x05\x61lias\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\"\x92\x01\n\x17SetRegisteredModelAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"~\n\x1a\x44\x65leteRegisteredModelAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa7\x01\n\x16GetModelVersionByAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]*R\n\x12ModelVersionStatus\x12\x18\n\x14PENDING_REGISTRATION\x10\x01\x12\x17\n\x13\x46\x41ILED_REGISTRATION\x10\x02\x12\t\n\x05READY\x10\x03\x32\x80\x1e\n\x14ModelRegistryService\x12\xae\x01\n\x15\x63reateRegisteredModel\x12\x1d.qcflow.CreateRegisteredModel\x1a&.qcflow.CreateRegisteredModel.Response\"N\xf2\x86\x19J\n.\n\x04POST\x12 /qcflow/registered-models/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x16\x43reate RegisteredModel\x12\xae\x01\n\x15renameRegisteredModel\x12\x1d.qcflow.RenameRegisteredModel\x1a&.qcflow.RenameRegisteredModel.Response\"N\xf2\x86\x19J\n.\n\x04POST\x12 /qcflow/registered-models/rename\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Rename RegisteredModel\x12\xaf\x01\n\x15updateRegisteredModel\x12\x1d.qcflow.UpdateRegisteredModel\x1a&.qcflow.UpdateRegisteredModel.Response\"O\xf2\x86\x19K\n/\n\x05PATCH\x12 /qcflow/registered-models/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Update RegisteredModel\x12\xb0\x01\n\x15\x64\x65leteRegisteredModel\x12\x1d.qcflow.DeleteRegisteredModel\x1a&.qcflow.DeleteRegisteredModel.Response\"P\xf2\x86\x19L\n0\n\x06\x44\x45LETE\x12 /qcflow/registered-models/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x16\x44\x65lete RegisteredModel\x12\x9e\x01\n\x12getRegisteredModel\x12\x1a.qcflow.GetRegisteredModel\x1a#.qcflow.GetRegisteredModel.Response\"G\xf2\x86\x19\x43\n*\n\x03GET\x12\x1d/qcflow/registered-models/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x13Get RegisteredModel\x12\xb1\x01\n\x16searchRegisteredModels\x12\x1e.qcflow.SearchRegisteredModels\x1a\'.qcflow.SearchRegisteredModels.Response\"N\xf2\x86\x19J\n-\n\x03GET\x12 /qcflow/registered-models/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x17Search RegisteredModels\x12\xef\x01\n\x11getLatestVersions\x12\x19.qcflow.GetLatestVersions\x1a\".qcflow.GetLatestVersions.Response\"\x9a\x01\xf2\x86\x19\x95\x01\n;\n\x04POST\x12-/qcflow/registered-models/get-latest-versions\x1a\x04\x08\x02\x10\x00\n:\n\x03GET\x12-/qcflow/registered-models/get-latest-versions\x1a\x04\x08\x02\x10\x00\x10\x01*\x18Get Latest ModelVersions\x12\x9f\x01\n\x12\x63reateModelVersion\x12\x1a.qcflow.CreateModelVersion\x1a#.qcflow.CreateModelVersion.Response\"H\xf2\x86\x19\x44\n+\n\x04POST\x12\x1d/qcflow/model-versions/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x13\x43reate ModelVersion\x12\xa0\x01\n\x12updateModelVersion\x12\x1a.qcflow.UpdateModelVersion\x1a#.qcflow.UpdateModelVersion.Response\"I\xf2\x86\x19\x45\n,\n\x05PATCH\x12\x1d/qcflow/model-versions/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x13Update ModelVersion\x12\xce\x01\n\x1btransitionModelVersionStage\x12#.qcflow.TransitionModelVersionStage\x1a,.qcflow.TransitionModelVersionStage.Response\"\\\xf2\x86\x19X\n5\n\x04POST\x12\'/qcflow/model-versions/transition-stage\x1a\x04\x08\x02\x10\x00\x10\x01*\x1dTransition ModelVersion Stage\x12\xa1\x01\n\x12\x64\x65leteModelVersion\x12\x1a.qcflow.DeleteModelVersion\x1a#.qcflow.DeleteModelVersion.Response\"J\xf2\x86\x19\x46\n-\n\x06\x44\x45LETE\x12\x1d/qcflow/model-versions/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x13\x44\x65lete ModelVersion\x12\x8f\x01\n\x0fgetModelVersion\x12\x17.qcflow.GetModelVersion\x1a .qcflow.GetModelVersion.Response\"A\xf2\x86\x19=\n\'\n\x03GET\x12\x1a/qcflow/model-versions/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x10Get ModelVersion\x12\xa6\x01\n\x13searchModelVersions\x12\x1b.qcflow.SearchModelVersions\x1a$.qcflow.SearchModelVersions.Response\"L\xf2\x86\x19\x44\n*\n\x03GET\x12\x1d/qcflow/model-versions/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x14Search ModelVersions\xba\x8c\x19\x00\x12\xd8\x01\n\x1agetModelVersionDownloadUri\x12\".qcflow.GetModelVersionDownloadUri\x1a+.qcflow.GetModelVersionDownloadUri.Response\"i\xf2\x86\x19\x65\n4\n\x03GET\x12\'/qcflow/model-versions/get-download-uri\x1a\x04\x08\x02\x10\x00\x10\x01*+Get Download URI For ModelVersion Artifacts\x12\xb1\x01\n\x15setRegisteredModelTag\x12\x1d.qcflow.SetRegisteredModelTag\x1a&.qcflow.SetRegisteredModelTag.Response\"Q\xf2\x86\x19M\n/\n\x04POST\x12!/qcflow/registered-models/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x18Set Registered Model Tag\x12\xa2\x01\n\x12setModelVersionTag\x12\x1a.qcflow.SetModelVersionTag\x1a#.qcflow.SetModelVersionTag.Response\"K\xf2\x86\x19G\n,\n\x04POST\x12\x1e/qcflow/model-versions/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x15Set Model Version Tag\x12\xc2\x01\n\x18\x64\x65leteRegisteredModelTag\x12 .qcflow.DeleteRegisteredModelTag\x1a).qcflow.DeleteRegisteredModelTag.Response\"Y\xf2\x86\x19U\n4\n\x06\x44\x45LETE\x12$/qcflow/registered-models/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x1b\x44\x65lete Registered Model Tag\x12\xb3\x01\n\x15\x64\x65leteModelVersionTag\x12\x1d.qcflow.DeleteModelVersionTag\x1a&.qcflow.DeleteModelVersionTag.Response\"S\xf2\x86\x19O\n1\n\x06\x44\x45LETE\x12!/qcflow/model-versions/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x18\x44\x65lete Model Version Tag\x12\xb7\x01\n\x17setRegisteredModelAlias\x12\x1f.qcflow.SetRegisteredModelAlias\x1a(.qcflow.SetRegisteredModelAlias.Response\"Q\xf2\x86\x19M\n-\n\x04POST\x12\x1f/qcflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1aSet Registered Model Alias\x12\xc5\x01\n\x1a\x64\x65leteRegisteredModelAlias\x12\".qcflow.DeleteRegisteredModelAlias\x1a+.qcflow.DeleteRegisteredModelAlias.Response\"V\xf2\x86\x19R\n/\n\x06\x44\x45LETE\x12\x1f/qcflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1d\x44\x65lete Registered Model Alias\x12\xb3\x01\n\x16getModelVersionByAlias\x12\x1e.qcflow.GetModelVersionByAlias\x1a\'.qcflow.GetModelVersionByAlias.Response\"P\xf2\x86\x19L\n,\n\x03GET\x12\x1f/qcflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1aGet Model Version by AliasB!\n\x14org.qcflow.api.proto\x90\x01\x01\xa0\x01\x01\xe2?\x02\x10\x01')
 
   _globals = globals()
   _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
   _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'model_registry_pb2', _globals)
   if not _descriptor._USE_C_DESCRIPTORS:
     _globals['DESCRIPTOR']._loaded_options = None
-    _globals['DESCRIPTOR']._serialized_options = b'\n\024org.mlflow.api.proto\220\001\001\240\001\001\342?\002\020\001'
+    _globals['DESCRIPTOR']._serialized_options = b'\n\024org.qcflow.api.proto\220\001\001\240\001\001\342?\002\020\001'
     _globals['_CREATEREGISTEREDMODEL'].fields_by_name['name']._loaded_options = None
     _globals['_CREATEREGISTEREDMODEL'].fields_by_name['name']._serialized_options = b'\370\206\031\001'
     _globals['_CREATEREGISTEREDMODEL']._loaded_options = None
@@ -149,47 +149,47 @@ if Version(google.protobuf.__version__).major >= 5:
     _globals['_GETMODELVERSIONBYALIAS']._loaded_options = None
     _globals['_GETMODELVERSIONBYALIAS']._serialized_options = b'\342?(\n&com.databricks.rpc.RPC[$this.Response]'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['createRegisteredModel']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['createRegisteredModel']._serialized_options = b'\362\206\031J\n.\n\004POST\022 /mlflow/registered-models/create\032\004\010\002\020\000\020\001*\026Create RegisteredModel'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['createRegisteredModel']._serialized_options = b'\362\206\031J\n.\n\004POST\022 /qcflow/registered-models/create\032\004\010\002\020\000\020\001*\026Create RegisteredModel'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['renameRegisteredModel']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['renameRegisteredModel']._serialized_options = b'\362\206\031J\n.\n\004POST\022 /mlflow/registered-models/rename\032\004\010\002\020\000\020\001*\026Rename RegisteredModel'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['renameRegisteredModel']._serialized_options = b'\362\206\031J\n.\n\004POST\022 /qcflow/registered-models/rename\032\004\010\002\020\000\020\001*\026Rename RegisteredModel'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['updateRegisteredModel']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['updateRegisteredModel']._serialized_options = b'\362\206\031K\n/\n\005PATCH\022 /mlflow/registered-models/update\032\004\010\002\020\000\020\001*\026Update RegisteredModel'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['updateRegisteredModel']._serialized_options = b'\362\206\031K\n/\n\005PATCH\022 /qcflow/registered-models/update\032\004\010\002\020\000\020\001*\026Update RegisteredModel'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModel']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModel']._serialized_options = b'\362\206\031L\n0\n\006DELETE\022 /mlflow/registered-models/delete\032\004\010\002\020\000\020\001*\026Delete RegisteredModel'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModel']._serialized_options = b'\362\206\031L\n0\n\006DELETE\022 /qcflow/registered-models/delete\032\004\010\002\020\000\020\001*\026Delete RegisteredModel'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['getRegisteredModel']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getRegisteredModel']._serialized_options = b'\362\206\031C\n*\n\003GET\022\035/mlflow/registered-models/get\032\004\010\002\020\000\020\001*\023Get RegisteredModel'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getRegisteredModel']._serialized_options = b'\362\206\031C\n*\n\003GET\022\035/qcflow/registered-models/get\032\004\010\002\020\000\020\001*\023Get RegisteredModel'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['searchRegisteredModels']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['searchRegisteredModels']._serialized_options = b'\362\206\031J\n-\n\003GET\022 /mlflow/registered-models/search\032\004\010\002\020\000\020\001*\027Search RegisteredModels'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['searchRegisteredModels']._serialized_options = b'\362\206\031J\n-\n\003GET\022 /qcflow/registered-models/search\032\004\010\002\020\000\020\001*\027Search RegisteredModels'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['getLatestVersions']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getLatestVersions']._serialized_options = b'\362\206\031\225\001\n;\n\004POST\022-/mlflow/registered-models/get-latest-versions\032\004\010\002\020\000\n:\n\003GET\022-/mlflow/registered-models/get-latest-versions\032\004\010\002\020\000\020\001*\030Get Latest ModelVersions'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getLatestVersions']._serialized_options = b'\362\206\031\225\001\n;\n\004POST\022-/qcflow/registered-models/get-latest-versions\032\004\010\002\020\000\n:\n\003GET\022-/qcflow/registered-models/get-latest-versions\032\004\010\002\020\000\020\001*\030Get Latest ModelVersions'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['createModelVersion']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['createModelVersion']._serialized_options = b'\362\206\031D\n+\n\004POST\022\035/mlflow/model-versions/create\032\004\010\002\020\000\020\001*\023Create ModelVersion'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['createModelVersion']._serialized_options = b'\362\206\031D\n+\n\004POST\022\035/qcflow/model-versions/create\032\004\010\002\020\000\020\001*\023Create ModelVersion'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['updateModelVersion']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['updateModelVersion']._serialized_options = b'\362\206\031E\n,\n\005PATCH\022\035/mlflow/model-versions/update\032\004\010\002\020\000\020\001*\023Update ModelVersion'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['updateModelVersion']._serialized_options = b'\362\206\031E\n,\n\005PATCH\022\035/qcflow/model-versions/update\032\004\010\002\020\000\020\001*\023Update ModelVersion'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['transitionModelVersionStage']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['transitionModelVersionStage']._serialized_options = b'\362\206\031X\n5\n\004POST\022\'/mlflow/model-versions/transition-stage\032\004\010\002\020\000\020\001*\035Transition ModelVersion Stage'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['transitionModelVersionStage']._serialized_options = b'\362\206\031X\n5\n\004POST\022\'/qcflow/model-versions/transition-stage\032\004\010\002\020\000\020\001*\035Transition ModelVersion Stage'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteModelVersion']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteModelVersion']._serialized_options = b'\362\206\031F\n-\n\006DELETE\022\035/mlflow/model-versions/delete\032\004\010\002\020\000\020\001*\023Delete ModelVersion'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteModelVersion']._serialized_options = b'\362\206\031F\n-\n\006DELETE\022\035/qcflow/model-versions/delete\032\004\010\002\020\000\020\001*\023Delete ModelVersion'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersion']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersion']._serialized_options = b'\362\206\031=\n\'\n\003GET\022\032/mlflow/model-versions/get\032\004\010\002\020\000\020\001*\020Get ModelVersion'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersion']._serialized_options = b'\362\206\031=\n\'\n\003GET\022\032/qcflow/model-versions/get\032\004\010\002\020\000\020\001*\020Get ModelVersion'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['searchModelVersions']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['searchModelVersions']._serialized_options = b'\362\206\031D\n*\n\003GET\022\035/mlflow/model-versions/search\032\004\010\002\020\000\020\001*\024Search ModelVersions\272\214\031\000'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['searchModelVersions']._serialized_options = b'\362\206\031D\n*\n\003GET\022\035/qcflow/model-versions/search\032\004\010\002\020\000\020\001*\024Search ModelVersions\272\214\031\000'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersionDownloadUri']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersionDownloadUri']._serialized_options = b'\362\206\031e\n4\n\003GET\022\'/mlflow/model-versions/get-download-uri\032\004\010\002\020\000\020\001*+Get Download URI For ModelVersion Artifacts'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersionDownloadUri']._serialized_options = b'\362\206\031e\n4\n\003GET\022\'/qcflow/model-versions/get-download-uri\032\004\010\002\020\000\020\001*+Get Download URI For ModelVersion Artifacts'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['setRegisteredModelTag']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['setRegisteredModelTag']._serialized_options = b'\362\206\031M\n/\n\004POST\022!/mlflow/registered-models/set-tag\032\004\010\002\020\000\020\001*\030Set Registered Model Tag'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['setRegisteredModelTag']._serialized_options = b'\362\206\031M\n/\n\004POST\022!/qcflow/registered-models/set-tag\032\004\010\002\020\000\020\001*\030Set Registered Model Tag'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['setModelVersionTag']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['setModelVersionTag']._serialized_options = b'\362\206\031G\n,\n\004POST\022\036/mlflow/model-versions/set-tag\032\004\010\002\020\000\020\001*\025Set Model Version Tag'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['setModelVersionTag']._serialized_options = b'\362\206\031G\n,\n\004POST\022\036/qcflow/model-versions/set-tag\032\004\010\002\020\000\020\001*\025Set Model Version Tag'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModelTag']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModelTag']._serialized_options = b'\362\206\031U\n4\n\006DELETE\022$/mlflow/registered-models/delete-tag\032\004\010\002\020\000\020\001*\033Delete Registered Model Tag'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModelTag']._serialized_options = b'\362\206\031U\n4\n\006DELETE\022$/qcflow/registered-models/delete-tag\032\004\010\002\020\000\020\001*\033Delete Registered Model Tag'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteModelVersionTag']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteModelVersionTag']._serialized_options = b'\362\206\031O\n1\n\006DELETE\022!/mlflow/model-versions/delete-tag\032\004\010\002\020\000\020\001*\030Delete Model Version Tag'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteModelVersionTag']._serialized_options = b'\362\206\031O\n1\n\006DELETE\022!/qcflow/model-versions/delete-tag\032\004\010\002\020\000\020\001*\030Delete Model Version Tag'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['setRegisteredModelAlias']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['setRegisteredModelAlias']._serialized_options = b'\362\206\031M\n-\n\004POST\022\037/mlflow/registered-models/alias\032\004\010\002\020\000\020\001*\032Set Registered Model Alias'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['setRegisteredModelAlias']._serialized_options = b'\362\206\031M\n-\n\004POST\022\037/qcflow/registered-models/alias\032\004\010\002\020\000\020\001*\032Set Registered Model Alias'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModelAlias']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModelAlias']._serialized_options = b'\362\206\031R\n/\n\006DELETE\022\037/mlflow/registered-models/alias\032\004\010\002\020\000\020\001*\035Delete Registered Model Alias'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['deleteRegisteredModelAlias']._serialized_options = b'\362\206\031R\n/\n\006DELETE\022\037/qcflow/registered-models/alias\032\004\010\002\020\000\020\001*\035Delete Registered Model Alias'
     _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersionByAlias']._loaded_options = None
-    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersionByAlias']._serialized_options = b'\362\206\031L\n,\n\003GET\022\037/mlflow/registered-models/alias\032\004\010\002\020\000\020\001*\032Get Model Version by Alias'
+    _globals['_MODELREGISTRYSERVICE'].methods_by_name['getModelVersionByAlias']._serialized_options = b'\362\206\031L\n,\n\003GET\022\037/qcflow/registered-models/alias\032\004\010\002\020\000\020\001*\032Get Model Version by Alias'
     _globals['_MODELVERSIONSTATUS']._serialized_start=4442
     _globals['_MODELVERSIONSTATUS']._serialized_end=4524
     _globals['_REGISTEREDMODEL']._serialized_start=74
@@ -313,7 +313,7 @@ else:
   from . import databricks_pb2 as databricks__pb2
 
 
-  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14model_registry.proto\x12\x06mlflow\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"\x89\x02\n\x0fRegisteredModel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1a\n\x12\x63reation_timestamp\x18\x02 \x01(\x03\x12\x1e\n\x16last_updated_timestamp\x18\x03 \x01(\x03\x12\x0f\n\x07user_id\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12-\n\x0flatest_versions\x18\x06 \x03(\x0b\x32\x14.mlflow.ModelVersion\x12(\n\x04tags\x18\x07 \x03(\x0b\x32\x1a.mlflow.RegisteredModelTag\x12-\n\x07\x61liases\x18\x08 \x03(\x0b\x32\x1c.mlflow.RegisteredModelAlias\"\xd4\x02\n\x0cModelVersion\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x1a\n\x12\x63reation_timestamp\x18\x03 \x01(\x03\x12\x1e\n\x16last_updated_timestamp\x18\x04 \x01(\x03\x12\x0f\n\x07user_id\x18\x05 \x01(\t\x12\x15\n\rcurrent_stage\x18\x06 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x0e\n\x06run_id\x18\t \x01(\t\x12*\n\x06status\x18\n \x01(\x0e\x32\x1a.mlflow.ModelVersionStatus\x12\x16\n\x0estatus_message\x18\x0b \x01(\t\x12%\n\x04tags\x18\x0c \x03(\x0b\x32\x17.mlflow.ModelVersionTag\x12\x10\n\x08run_link\x18\r \x01(\t\x12\x0f\n\x07\x61liases\x18\x0e \x03(\t\"\xd6\x01\n\x15\x43reateRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12(\n\x04tags\x18\x02 \x03(\x0b\x32\x1a.mlflow.RegisteredModelTag\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.mlflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa9\x01\n\x15RenameRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x10\n\x08new_name\x18\x02 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.mlflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xac\x01\n\x15UpdateRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.mlflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"d\n\x15\x44\x65leteRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x94\x01\n\x12GetRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.mlflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xee\x01\n\x16SearchRegisteredModels\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\x12\x18\n\x0bmax_results\x18\x02 \x01(\x03:\x03\x31\x30\x30\x12\x10\n\x08order_by\x18\x03 \x03(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aW\n\x08Response\x12\x32\n\x11registered_models\x18\x01 \x03(\x0b\x32\x17.mlflow.RegisteredModel\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x9e\x01\n\x11GetLatestVersions\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06stages\x18\x02 \x03(\t\x1a\x38\n\x08Response\x12,\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x02\n\x12\x43reateModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06source\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12%\n\x04tags\x18\x04 \x03(\x0b\x32\x17.mlflow.ModelVersionTag\x12\x10\n\x08run_link\x18\x05 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xba\x01\n\x12UpdateModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xec\x01\n\x1bTransitionModelVersionStage\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05stage\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\'\n\x19\x61rchive_existing_versions\x18\x04 \x01(\x08\x42\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"x\n\x12\x44\x65leteModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa2\x01\n\x0fGetModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xe8\x01\n\x13SearchModelVersions\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\x12\x1b\n\x0bmax_results\x18\x02 \x01(\x03:\x06\x32\x30\x30\x30\x30\x30\x12\x10\n\x08order_by\x18\x03 \x03(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aQ\n\x08Response\x12,\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x14.mlflow.ModelVersion\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x96\x01\n\x1aGetModelVersionDownloadUri\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a \n\x08Response\x12\x14\n\x0c\x61rtifact_uri\x18\x01 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"-\n\x0fModelVersionTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"0\n\x12RegisteredModelTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\x8c\x01\n\x15SetRegisteredModelTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa0\x01\n\x12SetModelVersionTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x04 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"z\n\x18\x44\x65leteRegisteredModelTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8e\x01\n\x15\x44\x65leteModelVersionTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"6\n\x14RegisteredModelAlias\x12\r\n\x05\x61lias\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\"\x92\x01\n\x17SetRegisteredModelAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"~\n\x1a\x44\x65leteRegisteredModelAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa7\x01\n\x16GetModelVersionByAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.mlflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]*R\n\x12ModelVersionStatus\x12\x18\n\x14PENDING_REGISTRATION\x10\x01\x12\x17\n\x13\x46\x41ILED_REGISTRATION\x10\x02\x12\t\n\x05READY\x10\x03\x32\x80\x1e\n\x14ModelRegistryService\x12\xae\x01\n\x15\x63reateRegisteredModel\x12\x1d.mlflow.CreateRegisteredModel\x1a&.mlflow.CreateRegisteredModel.Response\"N\xf2\x86\x19J\n.\n\x04POST\x12 /mlflow/registered-models/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x16\x43reate RegisteredModel\x12\xae\x01\n\x15renameRegisteredModel\x12\x1d.mlflow.RenameRegisteredModel\x1a&.mlflow.RenameRegisteredModel.Response\"N\xf2\x86\x19J\n.\n\x04POST\x12 /mlflow/registered-models/rename\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Rename RegisteredModel\x12\xaf\x01\n\x15updateRegisteredModel\x12\x1d.mlflow.UpdateRegisteredModel\x1a&.mlflow.UpdateRegisteredModel.Response\"O\xf2\x86\x19K\n/\n\x05PATCH\x12 /mlflow/registered-models/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Update RegisteredModel\x12\xb0\x01\n\x15\x64\x65leteRegisteredModel\x12\x1d.mlflow.DeleteRegisteredModel\x1a&.mlflow.DeleteRegisteredModel.Response\"P\xf2\x86\x19L\n0\n\x06\x44\x45LETE\x12 /mlflow/registered-models/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x16\x44\x65lete RegisteredModel\x12\x9e\x01\n\x12getRegisteredModel\x12\x1a.mlflow.GetRegisteredModel\x1a#.mlflow.GetRegisteredModel.Response\"G\xf2\x86\x19\x43\n*\n\x03GET\x12\x1d/mlflow/registered-models/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x13Get RegisteredModel\x12\xb1\x01\n\x16searchRegisteredModels\x12\x1e.mlflow.SearchRegisteredModels\x1a\'.mlflow.SearchRegisteredModels.Response\"N\xf2\x86\x19J\n-\n\x03GET\x12 /mlflow/registered-models/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x17Search RegisteredModels\x12\xef\x01\n\x11getLatestVersions\x12\x19.mlflow.GetLatestVersions\x1a\".mlflow.GetLatestVersions.Response\"\x9a\x01\xf2\x86\x19\x95\x01\n;\n\x04POST\x12-/mlflow/registered-models/get-latest-versions\x1a\x04\x08\x02\x10\x00\n:\n\x03GET\x12-/mlflow/registered-models/get-latest-versions\x1a\x04\x08\x02\x10\x00\x10\x01*\x18Get Latest ModelVersions\x12\x9f\x01\n\x12\x63reateModelVersion\x12\x1a.mlflow.CreateModelVersion\x1a#.mlflow.CreateModelVersion.Response\"H\xf2\x86\x19\x44\n+\n\x04POST\x12\x1d/mlflow/model-versions/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x13\x43reate ModelVersion\x12\xa0\x01\n\x12updateModelVersion\x12\x1a.mlflow.UpdateModelVersion\x1a#.mlflow.UpdateModelVersion.Response\"I\xf2\x86\x19\x45\n,\n\x05PATCH\x12\x1d/mlflow/model-versions/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x13Update ModelVersion\x12\xce\x01\n\x1btransitionModelVersionStage\x12#.mlflow.TransitionModelVersionStage\x1a,.mlflow.TransitionModelVersionStage.Response\"\\\xf2\x86\x19X\n5\n\x04POST\x12\'/mlflow/model-versions/transition-stage\x1a\x04\x08\x02\x10\x00\x10\x01*\x1dTransition ModelVersion Stage\x12\xa1\x01\n\x12\x64\x65leteModelVersion\x12\x1a.mlflow.DeleteModelVersion\x1a#.mlflow.DeleteModelVersion.Response\"J\xf2\x86\x19\x46\n-\n\x06\x44\x45LETE\x12\x1d/mlflow/model-versions/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x13\x44\x65lete ModelVersion\x12\x8f\x01\n\x0fgetModelVersion\x12\x17.mlflow.GetModelVersion\x1a .mlflow.GetModelVersion.Response\"A\xf2\x86\x19=\n\'\n\x03GET\x12\x1a/mlflow/model-versions/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x10Get ModelVersion\x12\xa6\x01\n\x13searchModelVersions\x12\x1b.mlflow.SearchModelVersions\x1a$.mlflow.SearchModelVersions.Response\"L\xf2\x86\x19\x44\n*\n\x03GET\x12\x1d/mlflow/model-versions/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x14Search ModelVersions\xba\x8c\x19\x00\x12\xd8\x01\n\x1agetModelVersionDownloadUri\x12\".mlflow.GetModelVersionDownloadUri\x1a+.mlflow.GetModelVersionDownloadUri.Response\"i\xf2\x86\x19\x65\n4\n\x03GET\x12\'/mlflow/model-versions/get-download-uri\x1a\x04\x08\x02\x10\x00\x10\x01*+Get Download URI For ModelVersion Artifacts\x12\xb1\x01\n\x15setRegisteredModelTag\x12\x1d.mlflow.SetRegisteredModelTag\x1a&.mlflow.SetRegisteredModelTag.Response\"Q\xf2\x86\x19M\n/\n\x04POST\x12!/mlflow/registered-models/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x18Set Registered Model Tag\x12\xa2\x01\n\x12setModelVersionTag\x12\x1a.mlflow.SetModelVersionTag\x1a#.mlflow.SetModelVersionTag.Response\"K\xf2\x86\x19G\n,\n\x04POST\x12\x1e/mlflow/model-versions/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x15Set Model Version Tag\x12\xc2\x01\n\x18\x64\x65leteRegisteredModelTag\x12 .mlflow.DeleteRegisteredModelTag\x1a).mlflow.DeleteRegisteredModelTag.Response\"Y\xf2\x86\x19U\n4\n\x06\x44\x45LETE\x12$/mlflow/registered-models/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x1b\x44\x65lete Registered Model Tag\x12\xb3\x01\n\x15\x64\x65leteModelVersionTag\x12\x1d.mlflow.DeleteModelVersionTag\x1a&.mlflow.DeleteModelVersionTag.Response\"S\xf2\x86\x19O\n1\n\x06\x44\x45LETE\x12!/mlflow/model-versions/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x18\x44\x65lete Model Version Tag\x12\xb7\x01\n\x17setRegisteredModelAlias\x12\x1f.mlflow.SetRegisteredModelAlias\x1a(.mlflow.SetRegisteredModelAlias.Response\"Q\xf2\x86\x19M\n-\n\x04POST\x12\x1f/mlflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1aSet Registered Model Alias\x12\xc5\x01\n\x1a\x64\x65leteRegisteredModelAlias\x12\".mlflow.DeleteRegisteredModelAlias\x1a+.mlflow.DeleteRegisteredModelAlias.Response\"V\xf2\x86\x19R\n/\n\x06\x44\x45LETE\x12\x1f/mlflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1d\x44\x65lete Registered Model Alias\x12\xb3\x01\n\x16getModelVersionByAlias\x12\x1e.mlflow.GetModelVersionByAlias\x1a\'.mlflow.GetModelVersionByAlias.Response\"P\xf2\x86\x19L\n,\n\x03GET\x12\x1f/mlflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1aGet Model Version by AliasB!\n\x14org.mlflow.api.proto\x90\x01\x01\xa0\x01\x01\xe2?\x02\x10\x01')
+  DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14model_registry.proto\x12\x06qcflow\x1a\x15scalapb/scalapb.proto\x1a\x10\x64\x61tabricks.proto\"\x89\x02\n\x0fRegisteredModel\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1a\n\x12\x63reation_timestamp\x18\x02 \x01(\x03\x12\x1e\n\x16last_updated_timestamp\x18\x03 \x01(\x03\x12\x0f\n\x07user_id\x18\x04 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12-\n\x0flatest_versions\x18\x06 \x03(\x0b\x32\x14.qcflow.ModelVersion\x12(\n\x04tags\x18\x07 \x03(\x0b\x32\x1a.qcflow.RegisteredModelTag\x12-\n\x07\x61liases\x18\x08 \x03(\x0b\x32\x1c.qcflow.RegisteredModelAlias\"\xd4\x02\n\x0cModelVersion\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\x12\x1a\n\x12\x63reation_timestamp\x18\x03 \x01(\x03\x12\x1e\n\x16last_updated_timestamp\x18\x04 \x01(\x03\x12\x0f\n\x07user_id\x18\x05 \x01(\t\x12\x15\n\rcurrent_stage\x18\x06 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x07 \x01(\t\x12\x0e\n\x06source\x18\x08 \x01(\t\x12\x0e\n\x06run_id\x18\t \x01(\t\x12*\n\x06status\x18\n \x01(\x0e\x32\x1a.qcflow.ModelVersionStatus\x12\x16\n\x0estatus_message\x18\x0b \x01(\t\x12%\n\x04tags\x18\x0c \x03(\x0b\x32\x17.qcflow.ModelVersionTag\x12\x10\n\x08run_link\x18\r \x01(\t\x12\x0f\n\x07\x61liases\x18\x0e \x03(\t\"\xd6\x01\n\x15\x43reateRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12(\n\x04tags\x18\x02 \x03(\x0b\x32\x1a.qcflow.RegisteredModelTag\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.qcflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa9\x01\n\x15RenameRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x10\n\x08new_name\x18\x02 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.qcflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xac\x01\n\x15UpdateRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.qcflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"d\n\x15\x44\x65leteRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x94\x01\n\x12GetRegisteredModel\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x1a=\n\x08Response\x12\x31\n\x10registered_model\x18\x01 \x01(\x0b\x32\x17.qcflow.RegisteredModel:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xee\x01\n\x16SearchRegisteredModels\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\x12\x18\n\x0bmax_results\x18\x02 \x01(\x03:\x03\x31\x30\x30\x12\x10\n\x08order_by\x18\x03 \x03(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aW\n\x08Response\x12\x32\n\x11registered_models\x18\x01 \x03(\x0b\x32\x17.qcflow.RegisteredModel\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x9e\x01\n\x11GetLatestVersions\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06stages\x18\x02 \x03(\t\x1a\x38\n\x08Response\x12,\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x82\x02\n\x12\x43reateModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x14\n\x06source\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x0e\n\x06run_id\x18\x03 \x01(\t\x12%\n\x04tags\x18\x04 \x03(\x0b\x32\x17.qcflow.ModelVersionTag\x12\x10\n\x08run_link\x18\x05 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xba\x01\n\x12UpdateModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xec\x01\n\x1bTransitionModelVersionStage\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05stage\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\'\n\x19\x61rchive_existing_versions\x18\x04 \x01(\x08\x42\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"x\n\x12\x44\x65leteModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa2\x01\n\x0fGetModelVersion\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xe8\x01\n\x13SearchModelVersions\x12\x0e\n\x06\x66ilter\x18\x01 \x01(\t\x12\x1b\n\x0bmax_results\x18\x02 \x01(\x03:\x06\x32\x30\x30\x30\x30\x30\x12\x10\n\x08order_by\x18\x03 \x03(\t\x12\x12\n\npage_token\x18\x04 \x01(\t\x1aQ\n\x08Response\x12,\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x14.qcflow.ModelVersion\x12\x17\n\x0fnext_page_token\x18\x02 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x96\x01\n\x1aGetModelVersionDownloadUri\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a \n\x08Response\x12\x14\n\x0c\x61rtifact_uri\x18\x01 \x01(\t:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"-\n\x0fModelVersionTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"0\n\x12RegisteredModelTag\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\x8c\x01\n\x15SetRegisteredModelTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa0\x01\n\x12SetModelVersionTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05value\x18\x04 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"z\n\x18\x44\x65leteRegisteredModelTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\x8e\x01\n\x15\x44\x65leteModelVersionTag\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x11\n\x03key\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"6\n\x14RegisteredModelAlias\x12\r\n\x05\x61lias\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\t\"\x92\x01\n\x17SetRegisteredModelAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x12\x15\n\x07version\x18\x03 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"~\n\x1a\x44\x65leteRegisteredModelAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\n\n\x08Response:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]\"\xa7\x01\n\x16GetModelVersionByAlias\x12\x12\n\x04name\x18\x01 \x01(\tB\x04\xf8\x86\x19\x01\x12\x13\n\x05\x61lias\x18\x02 \x01(\tB\x04\xf8\x86\x19\x01\x1a\x37\n\x08Response\x12+\n\rmodel_version\x18\x01 \x01(\x0b\x32\x14.qcflow.ModelVersion:+\xe2?(\n&com.databricks.rpc.RPC[$this.Response]*R\n\x12ModelVersionStatus\x12\x18\n\x14PENDING_REGISTRATION\x10\x01\x12\x17\n\x13\x46\x41ILED_REGISTRATION\x10\x02\x12\t\n\x05READY\x10\x03\x32\x80\x1e\n\x14ModelRegistryService\x12\xae\x01\n\x15\x63reateRegisteredModel\x12\x1d.qcflow.CreateRegisteredModel\x1a&.qcflow.CreateRegisteredModel.Response\"N\xf2\x86\x19J\n.\n\x04POST\x12 /qcflow/registered-models/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x16\x43reate RegisteredModel\x12\xae\x01\n\x15renameRegisteredModel\x12\x1d.qcflow.RenameRegisteredModel\x1a&.qcflow.RenameRegisteredModel.Response\"N\xf2\x86\x19J\n.\n\x04POST\x12 /qcflow/registered-models/rename\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Rename RegisteredModel\x12\xaf\x01\n\x15updateRegisteredModel\x12\x1d.qcflow.UpdateRegisteredModel\x1a&.qcflow.UpdateRegisteredModel.Response\"O\xf2\x86\x19K\n/\n\x05PATCH\x12 /qcflow/registered-models/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x16Update RegisteredModel\x12\xb0\x01\n\x15\x64\x65leteRegisteredModel\x12\x1d.qcflow.DeleteRegisteredModel\x1a&.qcflow.DeleteRegisteredModel.Response\"P\xf2\x86\x19L\n0\n\x06\x44\x45LETE\x12 /qcflow/registered-models/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x16\x44\x65lete RegisteredModel\x12\x9e\x01\n\x12getRegisteredModel\x12\x1a.qcflow.GetRegisteredModel\x1a#.qcflow.GetRegisteredModel.Response\"G\xf2\x86\x19\x43\n*\n\x03GET\x12\x1d/qcflow/registered-models/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x13Get RegisteredModel\x12\xb1\x01\n\x16searchRegisteredModels\x12\x1e.qcflow.SearchRegisteredModels\x1a\'.qcflow.SearchRegisteredModels.Response\"N\xf2\x86\x19J\n-\n\x03GET\x12 /qcflow/registered-models/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x17Search RegisteredModels\x12\xef\x01\n\x11getLatestVersions\x12\x19.qcflow.GetLatestVersions\x1a\".qcflow.GetLatestVersions.Response\"\x9a\x01\xf2\x86\x19\x95\x01\n;\n\x04POST\x12-/qcflow/registered-models/get-latest-versions\x1a\x04\x08\x02\x10\x00\n:\n\x03GET\x12-/qcflow/registered-models/get-latest-versions\x1a\x04\x08\x02\x10\x00\x10\x01*\x18Get Latest ModelVersions\x12\x9f\x01\n\x12\x63reateModelVersion\x12\x1a.qcflow.CreateModelVersion\x1a#.qcflow.CreateModelVersion.Response\"H\xf2\x86\x19\x44\n+\n\x04POST\x12\x1d/qcflow/model-versions/create\x1a\x04\x08\x02\x10\x00\x10\x01*\x13\x43reate ModelVersion\x12\xa0\x01\n\x12updateModelVersion\x12\x1a.qcflow.UpdateModelVersion\x1a#.qcflow.UpdateModelVersion.Response\"I\xf2\x86\x19\x45\n,\n\x05PATCH\x12\x1d/qcflow/model-versions/update\x1a\x04\x08\x02\x10\x00\x10\x01*\x13Update ModelVersion\x12\xce\x01\n\x1btransitionModelVersionStage\x12#.qcflow.TransitionModelVersionStage\x1a,.qcflow.TransitionModelVersionStage.Response\"\\\xf2\x86\x19X\n5\n\x04POST\x12\'/qcflow/model-versions/transition-stage\x1a\x04\x08\x02\x10\x00\x10\x01*\x1dTransition ModelVersion Stage\x12\xa1\x01\n\x12\x64\x65leteModelVersion\x12\x1a.qcflow.DeleteModelVersion\x1a#.qcflow.DeleteModelVersion.Response\"J\xf2\x86\x19\x46\n-\n\x06\x44\x45LETE\x12\x1d/qcflow/model-versions/delete\x1a\x04\x08\x02\x10\x00\x10\x01*\x13\x44\x65lete ModelVersion\x12\x8f\x01\n\x0fgetModelVersion\x12\x17.qcflow.GetModelVersion\x1a .qcflow.GetModelVersion.Response\"A\xf2\x86\x19=\n\'\n\x03GET\x12\x1a/qcflow/model-versions/get\x1a\x04\x08\x02\x10\x00\x10\x01*\x10Get ModelVersion\x12\xa6\x01\n\x13searchModelVersions\x12\x1b.qcflow.SearchModelVersions\x1a$.qcflow.SearchModelVersions.Response\"L\xf2\x86\x19\x44\n*\n\x03GET\x12\x1d/qcflow/model-versions/search\x1a\x04\x08\x02\x10\x00\x10\x01*\x14Search ModelVersions\xba\x8c\x19\x00\x12\xd8\x01\n\x1agetModelVersionDownloadUri\x12\".qcflow.GetModelVersionDownloadUri\x1a+.qcflow.GetModelVersionDownloadUri.Response\"i\xf2\x86\x19\x65\n4\n\x03GET\x12\'/qcflow/model-versions/get-download-uri\x1a\x04\x08\x02\x10\x00\x10\x01*+Get Download URI For ModelVersion Artifacts\x12\xb1\x01\n\x15setRegisteredModelTag\x12\x1d.qcflow.SetRegisteredModelTag\x1a&.qcflow.SetRegisteredModelTag.Response\"Q\xf2\x86\x19M\n/\n\x04POST\x12!/qcflow/registered-models/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x18Set Registered Model Tag\x12\xa2\x01\n\x12setModelVersionTag\x12\x1a.qcflow.SetModelVersionTag\x1a#.qcflow.SetModelVersionTag.Response\"K\xf2\x86\x19G\n,\n\x04POST\x12\x1e/qcflow/model-versions/set-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x15Set Model Version Tag\x12\xc2\x01\n\x18\x64\x65leteRegisteredModelTag\x12 .qcflow.DeleteRegisteredModelTag\x1a).qcflow.DeleteRegisteredModelTag.Response\"Y\xf2\x86\x19U\n4\n\x06\x44\x45LETE\x12$/qcflow/registered-models/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x1b\x44\x65lete Registered Model Tag\x12\xb3\x01\n\x15\x64\x65leteModelVersionTag\x12\x1d.qcflow.DeleteModelVersionTag\x1a&.qcflow.DeleteModelVersionTag.Response\"S\xf2\x86\x19O\n1\n\x06\x44\x45LETE\x12!/qcflow/model-versions/delete-tag\x1a\x04\x08\x02\x10\x00\x10\x01*\x18\x44\x65lete Model Version Tag\x12\xb7\x01\n\x17setRegisteredModelAlias\x12\x1f.qcflow.SetRegisteredModelAlias\x1a(.qcflow.SetRegisteredModelAlias.Response\"Q\xf2\x86\x19M\n-\n\x04POST\x12\x1f/qcflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1aSet Registered Model Alias\x12\xc5\x01\n\x1a\x64\x65leteRegisteredModelAlias\x12\".qcflow.DeleteRegisteredModelAlias\x1a+.qcflow.DeleteRegisteredModelAlias.Response\"V\xf2\x86\x19R\n/\n\x06\x44\x45LETE\x12\x1f/qcflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1d\x44\x65lete Registered Model Alias\x12\xb3\x01\n\x16getModelVersionByAlias\x12\x1e.qcflow.GetModelVersionByAlias\x1a\'.qcflow.GetModelVersionByAlias.Response\"P\xf2\x86\x19L\n,\n\x03GET\x12\x1f/qcflow/registered-models/alias\x1a\x04\x08\x02\x10\x00\x10\x01*\x1aGet Model Version by AliasB!\n\x14org.qcflow.api.proto\x90\x01\x01\xa0\x01\x01\xe2?\x02\x10\x01')
 
   _MODELVERSIONSTATUS = DESCRIPTOR.enum_types_by_name['ModelVersionStatus']
   ModelVersionStatus = enum_type_wrapper.EnumTypeWrapper(_MODELVERSIONSTATUS)
@@ -372,14 +372,14 @@ else:
   RegisteredModel = _reflection.GeneratedProtocolMessageType('RegisteredModel', (_message.Message,), {
     'DESCRIPTOR' : _REGISTEREDMODEL,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.RegisteredModel)
     })
   _sym_db.RegisterMessage(RegisteredModel)
 
   ModelVersion = _reflection.GeneratedProtocolMessageType('ModelVersion', (_message.Message,), {
     'DESCRIPTOR' : _MODELVERSION,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.ModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.ModelVersion)
     })
   _sym_db.RegisterMessage(ModelVersion)
 
@@ -388,12 +388,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _CREATEREGISTEREDMODEL_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.CreateRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.CreateRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _CREATEREGISTEREDMODEL,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.CreateRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.CreateRegisteredModel)
     })
   _sym_db.RegisterMessage(CreateRegisteredModel)
   _sym_db.RegisterMessage(CreateRegisteredModel.Response)
@@ -403,12 +403,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _RENAMEREGISTEREDMODEL_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.RenameRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.RenameRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _RENAMEREGISTEREDMODEL,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RenameRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.RenameRegisteredModel)
     })
   _sym_db.RegisterMessage(RenameRegisteredModel)
   _sym_db.RegisterMessage(RenameRegisteredModel.Response)
@@ -418,12 +418,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _UPDATEREGISTEREDMODEL_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.UpdateRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.UpdateRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _UPDATEREGISTEREDMODEL,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.UpdateRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.UpdateRegisteredModel)
     })
   _sym_db.RegisterMessage(UpdateRegisteredModel)
   _sym_db.RegisterMessage(UpdateRegisteredModel.Response)
@@ -433,12 +433,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETEREGISTEREDMODEL_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _DELETEREGISTEREDMODEL,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteRegisteredModel)
     })
   _sym_db.RegisterMessage(DeleteRegisteredModel)
   _sym_db.RegisterMessage(DeleteRegisteredModel.Response)
@@ -448,12 +448,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETREGISTEREDMODEL_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetRegisteredModel.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetRegisteredModel.Response)
       })
     ,
     'DESCRIPTOR' : _GETREGISTEREDMODEL,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetRegisteredModel)
+    # @@protoc_insertion_point(class_scope:qcflow.GetRegisteredModel)
     })
   _sym_db.RegisterMessage(GetRegisteredModel)
   _sym_db.RegisterMessage(GetRegisteredModel.Response)
@@ -463,12 +463,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SEARCHREGISTEREDMODELS_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SearchRegisteredModels.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SearchRegisteredModels.Response)
       })
     ,
     'DESCRIPTOR' : _SEARCHREGISTEREDMODELS,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SearchRegisteredModels)
+    # @@protoc_insertion_point(class_scope:qcflow.SearchRegisteredModels)
     })
   _sym_db.RegisterMessage(SearchRegisteredModels)
   _sym_db.RegisterMessage(SearchRegisteredModels.Response)
@@ -478,12 +478,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETLATESTVERSIONS_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetLatestVersions.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetLatestVersions.Response)
       })
     ,
     'DESCRIPTOR' : _GETLATESTVERSIONS,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetLatestVersions)
+    # @@protoc_insertion_point(class_scope:qcflow.GetLatestVersions)
     })
   _sym_db.RegisterMessage(GetLatestVersions)
   _sym_db.RegisterMessage(GetLatestVersions.Response)
@@ -493,12 +493,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _CREATEMODELVERSION_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.CreateModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.CreateModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _CREATEMODELVERSION,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.CreateModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.CreateModelVersion)
     })
   _sym_db.RegisterMessage(CreateModelVersion)
   _sym_db.RegisterMessage(CreateModelVersion.Response)
@@ -508,12 +508,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _UPDATEMODELVERSION_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.UpdateModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.UpdateModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _UPDATEMODELVERSION,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.UpdateModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.UpdateModelVersion)
     })
   _sym_db.RegisterMessage(UpdateModelVersion)
   _sym_db.RegisterMessage(UpdateModelVersion.Response)
@@ -523,12 +523,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _TRANSITIONMODELVERSIONSTAGE_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.TransitionModelVersionStage.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.TransitionModelVersionStage.Response)
       })
     ,
     'DESCRIPTOR' : _TRANSITIONMODELVERSIONSTAGE,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.TransitionModelVersionStage)
+    # @@protoc_insertion_point(class_scope:qcflow.TransitionModelVersionStage)
     })
   _sym_db.RegisterMessage(TransitionModelVersionStage)
   _sym_db.RegisterMessage(TransitionModelVersionStage.Response)
@@ -538,12 +538,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETEMODELVERSION_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _DELETEMODELVERSION,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteModelVersion)
     })
   _sym_db.RegisterMessage(DeleteModelVersion)
   _sym_db.RegisterMessage(DeleteModelVersion.Response)
@@ -553,12 +553,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETMODELVERSION_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetModelVersion.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetModelVersion.Response)
       })
     ,
     'DESCRIPTOR' : _GETMODELVERSION,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetModelVersion)
+    # @@protoc_insertion_point(class_scope:qcflow.GetModelVersion)
     })
   _sym_db.RegisterMessage(GetModelVersion)
   _sym_db.RegisterMessage(GetModelVersion.Response)
@@ -568,12 +568,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SEARCHMODELVERSIONS_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SearchModelVersions.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SearchModelVersions.Response)
       })
     ,
     'DESCRIPTOR' : _SEARCHMODELVERSIONS,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SearchModelVersions)
+    # @@protoc_insertion_point(class_scope:qcflow.SearchModelVersions)
     })
   _sym_db.RegisterMessage(SearchModelVersions)
   _sym_db.RegisterMessage(SearchModelVersions.Response)
@@ -583,12 +583,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETMODELVERSIONDOWNLOADURI_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetModelVersionDownloadUri.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetModelVersionDownloadUri.Response)
       })
     ,
     'DESCRIPTOR' : _GETMODELVERSIONDOWNLOADURI,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetModelVersionDownloadUri)
+    # @@protoc_insertion_point(class_scope:qcflow.GetModelVersionDownloadUri)
     })
   _sym_db.RegisterMessage(GetModelVersionDownloadUri)
   _sym_db.RegisterMessage(GetModelVersionDownloadUri.Response)
@@ -596,14 +596,14 @@ else:
   ModelVersionTag = _reflection.GeneratedProtocolMessageType('ModelVersionTag', (_message.Message,), {
     'DESCRIPTOR' : _MODELVERSIONTAG,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.ModelVersionTag)
+    # @@protoc_insertion_point(class_scope:qcflow.ModelVersionTag)
     })
   _sym_db.RegisterMessage(ModelVersionTag)
 
   RegisteredModelTag = _reflection.GeneratedProtocolMessageType('RegisteredModelTag', (_message.Message,), {
     'DESCRIPTOR' : _REGISTEREDMODELTAG,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RegisteredModelTag)
+    # @@protoc_insertion_point(class_scope:qcflow.RegisteredModelTag)
     })
   _sym_db.RegisterMessage(RegisteredModelTag)
 
@@ -612,12 +612,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SETREGISTEREDMODELTAG_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SetRegisteredModelTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SetRegisteredModelTag.Response)
       })
     ,
     'DESCRIPTOR' : _SETREGISTEREDMODELTAG,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SetRegisteredModelTag)
+    # @@protoc_insertion_point(class_scope:qcflow.SetRegisteredModelTag)
     })
   _sym_db.RegisterMessage(SetRegisteredModelTag)
   _sym_db.RegisterMessage(SetRegisteredModelTag.Response)
@@ -627,12 +627,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SETMODELVERSIONTAG_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SetModelVersionTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SetModelVersionTag.Response)
       })
     ,
     'DESCRIPTOR' : _SETMODELVERSIONTAG,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SetModelVersionTag)
+    # @@protoc_insertion_point(class_scope:qcflow.SetModelVersionTag)
     })
   _sym_db.RegisterMessage(SetModelVersionTag)
   _sym_db.RegisterMessage(SetModelVersionTag.Response)
@@ -642,12 +642,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETEREGISTEREDMODELTAG_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteRegisteredModelTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteRegisteredModelTag.Response)
       })
     ,
     'DESCRIPTOR' : _DELETEREGISTEREDMODELTAG,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteRegisteredModelTag)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteRegisteredModelTag)
     })
   _sym_db.RegisterMessage(DeleteRegisteredModelTag)
   _sym_db.RegisterMessage(DeleteRegisteredModelTag.Response)
@@ -657,12 +657,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETEMODELVERSIONTAG_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteModelVersionTag.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteModelVersionTag.Response)
       })
     ,
     'DESCRIPTOR' : _DELETEMODELVERSIONTAG,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteModelVersionTag)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteModelVersionTag)
     })
   _sym_db.RegisterMessage(DeleteModelVersionTag)
   _sym_db.RegisterMessage(DeleteModelVersionTag.Response)
@@ -670,7 +670,7 @@ else:
   RegisteredModelAlias = _reflection.GeneratedProtocolMessageType('RegisteredModelAlias', (_message.Message,), {
     'DESCRIPTOR' : _REGISTEREDMODELALIAS,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.RegisteredModelAlias)
+    # @@protoc_insertion_point(class_scope:qcflow.RegisteredModelAlias)
     })
   _sym_db.RegisterMessage(RegisteredModelAlias)
 
@@ -679,12 +679,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _SETREGISTEREDMODELALIAS_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.SetRegisteredModelAlias.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.SetRegisteredModelAlias.Response)
       })
     ,
     'DESCRIPTOR' : _SETREGISTEREDMODELALIAS,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.SetRegisteredModelAlias)
+    # @@protoc_insertion_point(class_scope:qcflow.SetRegisteredModelAlias)
     })
   _sym_db.RegisterMessage(SetRegisteredModelAlias)
   _sym_db.RegisterMessage(SetRegisteredModelAlias.Response)
@@ -694,12 +694,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _DELETEREGISTEREDMODELALIAS_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.DeleteRegisteredModelAlias.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.DeleteRegisteredModelAlias.Response)
       })
     ,
     'DESCRIPTOR' : _DELETEREGISTEREDMODELALIAS,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.DeleteRegisteredModelAlias)
+    # @@protoc_insertion_point(class_scope:qcflow.DeleteRegisteredModelAlias)
     })
   _sym_db.RegisterMessage(DeleteRegisteredModelAlias)
   _sym_db.RegisterMessage(DeleteRegisteredModelAlias.Response)
@@ -709,12 +709,12 @@ else:
     'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
       'DESCRIPTOR' : _GETMODELVERSIONBYALIAS_RESPONSE,
       '__module__' : 'model_registry_pb2'
-      # @@protoc_insertion_point(class_scope:mlflow.GetModelVersionByAlias.Response)
+      # @@protoc_insertion_point(class_scope:qcflow.GetModelVersionByAlias.Response)
       })
     ,
     'DESCRIPTOR' : _GETMODELVERSIONBYALIAS,
     '__module__' : 'model_registry_pb2'
-    # @@protoc_insertion_point(class_scope:mlflow.GetModelVersionByAlias)
+    # @@protoc_insertion_point(class_scope:qcflow.GetModelVersionByAlias)
     })
   _sym_db.RegisterMessage(GetModelVersionByAlias)
   _sym_db.RegisterMessage(GetModelVersionByAlias.Response)
@@ -723,7 +723,7 @@ else:
   if _descriptor._USE_C_DESCRIPTORS == False:
 
     DESCRIPTOR._options = None
-    DESCRIPTOR._serialized_options = b'\n\024org.mlflow.api.proto\220\001\001\240\001\001\342?\002\020\001'
+    DESCRIPTOR._serialized_options = b'\n\024org.qcflow.api.proto\220\001\001\240\001\001\342?\002\020\001'
     _CREATEREGISTEREDMODEL.fields_by_name['name']._options = None
     _CREATEREGISTEREDMODEL.fields_by_name['name']._serialized_options = b'\370\206\031\001'
     _CREATEREGISTEREDMODEL._options = None
@@ -845,47 +845,47 @@ else:
     _GETMODELVERSIONBYALIAS._options = None
     _GETMODELVERSIONBYALIAS._serialized_options = b'\342?(\n&com.databricks.rpc.RPC[$this.Response]'
     _MODELREGISTRYSERVICE.methods_by_name['createRegisteredModel']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['createRegisteredModel']._serialized_options = b'\362\206\031J\n.\n\004POST\022 /mlflow/registered-models/create\032\004\010\002\020\000\020\001*\026Create RegisteredModel'
+    _MODELREGISTRYSERVICE.methods_by_name['createRegisteredModel']._serialized_options = b'\362\206\031J\n.\n\004POST\022 /qcflow/registered-models/create\032\004\010\002\020\000\020\001*\026Create RegisteredModel'
     _MODELREGISTRYSERVICE.methods_by_name['renameRegisteredModel']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['renameRegisteredModel']._serialized_options = b'\362\206\031J\n.\n\004POST\022 /mlflow/registered-models/rename\032\004\010\002\020\000\020\001*\026Rename RegisteredModel'
+    _MODELREGISTRYSERVICE.methods_by_name['renameRegisteredModel']._serialized_options = b'\362\206\031J\n.\n\004POST\022 /qcflow/registered-models/rename\032\004\010\002\020\000\020\001*\026Rename RegisteredModel'
     _MODELREGISTRYSERVICE.methods_by_name['updateRegisteredModel']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['updateRegisteredModel']._serialized_options = b'\362\206\031K\n/\n\005PATCH\022 /mlflow/registered-models/update\032\004\010\002\020\000\020\001*\026Update RegisteredModel'
+    _MODELREGISTRYSERVICE.methods_by_name['updateRegisteredModel']._serialized_options = b'\362\206\031K\n/\n\005PATCH\022 /qcflow/registered-models/update\032\004\010\002\020\000\020\001*\026Update RegisteredModel'
     _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModel']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModel']._serialized_options = b'\362\206\031L\n0\n\006DELETE\022 /mlflow/registered-models/delete\032\004\010\002\020\000\020\001*\026Delete RegisteredModel'
+    _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModel']._serialized_options = b'\362\206\031L\n0\n\006DELETE\022 /qcflow/registered-models/delete\032\004\010\002\020\000\020\001*\026Delete RegisteredModel'
     _MODELREGISTRYSERVICE.methods_by_name['getRegisteredModel']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['getRegisteredModel']._serialized_options = b'\362\206\031C\n*\n\003GET\022\035/mlflow/registered-models/get\032\004\010\002\020\000\020\001*\023Get RegisteredModel'
+    _MODELREGISTRYSERVICE.methods_by_name['getRegisteredModel']._serialized_options = b'\362\206\031C\n*\n\003GET\022\035/qcflow/registered-models/get\032\004\010\002\020\000\020\001*\023Get RegisteredModel'
     _MODELREGISTRYSERVICE.methods_by_name['searchRegisteredModels']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['searchRegisteredModels']._serialized_options = b'\362\206\031J\n-\n\003GET\022 /mlflow/registered-models/search\032\004\010\002\020\000\020\001*\027Search RegisteredModels'
+    _MODELREGISTRYSERVICE.methods_by_name['searchRegisteredModels']._serialized_options = b'\362\206\031J\n-\n\003GET\022 /qcflow/registered-models/search\032\004\010\002\020\000\020\001*\027Search RegisteredModels'
     _MODELREGISTRYSERVICE.methods_by_name['getLatestVersions']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['getLatestVersions']._serialized_options = b'\362\206\031\225\001\n;\n\004POST\022-/mlflow/registered-models/get-latest-versions\032\004\010\002\020\000\n:\n\003GET\022-/mlflow/registered-models/get-latest-versions\032\004\010\002\020\000\020\001*\030Get Latest ModelVersions'
+    _MODELREGISTRYSERVICE.methods_by_name['getLatestVersions']._serialized_options = b'\362\206\031\225\001\n;\n\004POST\022-/qcflow/registered-models/get-latest-versions\032\004\010\002\020\000\n:\n\003GET\022-/qcflow/registered-models/get-latest-versions\032\004\010\002\020\000\020\001*\030Get Latest ModelVersions'
     _MODELREGISTRYSERVICE.methods_by_name['createModelVersion']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['createModelVersion']._serialized_options = b'\362\206\031D\n+\n\004POST\022\035/mlflow/model-versions/create\032\004\010\002\020\000\020\001*\023Create ModelVersion'
+    _MODELREGISTRYSERVICE.methods_by_name['createModelVersion']._serialized_options = b'\362\206\031D\n+\n\004POST\022\035/qcflow/model-versions/create\032\004\010\002\020\000\020\001*\023Create ModelVersion'
     _MODELREGISTRYSERVICE.methods_by_name['updateModelVersion']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['updateModelVersion']._serialized_options = b'\362\206\031E\n,\n\005PATCH\022\035/mlflow/model-versions/update\032\004\010\002\020\000\020\001*\023Update ModelVersion'
+    _MODELREGISTRYSERVICE.methods_by_name['updateModelVersion']._serialized_options = b'\362\206\031E\n,\n\005PATCH\022\035/qcflow/model-versions/update\032\004\010\002\020\000\020\001*\023Update ModelVersion'
     _MODELREGISTRYSERVICE.methods_by_name['transitionModelVersionStage']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['transitionModelVersionStage']._serialized_options = b'\362\206\031X\n5\n\004POST\022\'/mlflow/model-versions/transition-stage\032\004\010\002\020\000\020\001*\035Transition ModelVersion Stage'
+    _MODELREGISTRYSERVICE.methods_by_name['transitionModelVersionStage']._serialized_options = b'\362\206\031X\n5\n\004POST\022\'/qcflow/model-versions/transition-stage\032\004\010\002\020\000\020\001*\035Transition ModelVersion Stage'
     _MODELREGISTRYSERVICE.methods_by_name['deleteModelVersion']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['deleteModelVersion']._serialized_options = b'\362\206\031F\n-\n\006DELETE\022\035/mlflow/model-versions/delete\032\004\010\002\020\000\020\001*\023Delete ModelVersion'
+    _MODELREGISTRYSERVICE.methods_by_name['deleteModelVersion']._serialized_options = b'\362\206\031F\n-\n\006DELETE\022\035/qcflow/model-versions/delete\032\004\010\002\020\000\020\001*\023Delete ModelVersion'
     _MODELREGISTRYSERVICE.methods_by_name['getModelVersion']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['getModelVersion']._serialized_options = b'\362\206\031=\n\'\n\003GET\022\032/mlflow/model-versions/get\032\004\010\002\020\000\020\001*\020Get ModelVersion'
+    _MODELREGISTRYSERVICE.methods_by_name['getModelVersion']._serialized_options = b'\362\206\031=\n\'\n\003GET\022\032/qcflow/model-versions/get\032\004\010\002\020\000\020\001*\020Get ModelVersion'
     _MODELREGISTRYSERVICE.methods_by_name['searchModelVersions']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['searchModelVersions']._serialized_options = b'\362\206\031D\n*\n\003GET\022\035/mlflow/model-versions/search\032\004\010\002\020\000\020\001*\024Search ModelVersions\272\214\031\000'
+    _MODELREGISTRYSERVICE.methods_by_name['searchModelVersions']._serialized_options = b'\362\206\031D\n*\n\003GET\022\035/qcflow/model-versions/search\032\004\010\002\020\000\020\001*\024Search ModelVersions\272\214\031\000'
     _MODELREGISTRYSERVICE.methods_by_name['getModelVersionDownloadUri']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['getModelVersionDownloadUri']._serialized_options = b'\362\206\031e\n4\n\003GET\022\'/mlflow/model-versions/get-download-uri\032\004\010\002\020\000\020\001*+Get Download URI For ModelVersion Artifacts'
+    _MODELREGISTRYSERVICE.methods_by_name['getModelVersionDownloadUri']._serialized_options = b'\362\206\031e\n4\n\003GET\022\'/qcflow/model-versions/get-download-uri\032\004\010\002\020\000\020\001*+Get Download URI For ModelVersion Artifacts'
     _MODELREGISTRYSERVICE.methods_by_name['setRegisteredModelTag']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['setRegisteredModelTag']._serialized_options = b'\362\206\031M\n/\n\004POST\022!/mlflow/registered-models/set-tag\032\004\010\002\020\000\020\001*\030Set Registered Model Tag'
+    _MODELREGISTRYSERVICE.methods_by_name['setRegisteredModelTag']._serialized_options = b'\362\206\031M\n/\n\004POST\022!/qcflow/registered-models/set-tag\032\004\010\002\020\000\020\001*\030Set Registered Model Tag'
     _MODELREGISTRYSERVICE.methods_by_name['setModelVersionTag']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['setModelVersionTag']._serialized_options = b'\362\206\031G\n,\n\004POST\022\036/mlflow/model-versions/set-tag\032\004\010\002\020\000\020\001*\025Set Model Version Tag'
+    _MODELREGISTRYSERVICE.methods_by_name['setModelVersionTag']._serialized_options = b'\362\206\031G\n,\n\004POST\022\036/qcflow/model-versions/set-tag\032\004\010\002\020\000\020\001*\025Set Model Version Tag'
     _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModelTag']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModelTag']._serialized_options = b'\362\206\031U\n4\n\006DELETE\022$/mlflow/registered-models/delete-tag\032\004\010\002\020\000\020\001*\033Delete Registered Model Tag'
+    _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModelTag']._serialized_options = b'\362\206\031U\n4\n\006DELETE\022$/qcflow/registered-models/delete-tag\032\004\010\002\020\000\020\001*\033Delete Registered Model Tag'
     _MODELREGISTRYSERVICE.methods_by_name['deleteModelVersionTag']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['deleteModelVersionTag']._serialized_options = b'\362\206\031O\n1\n\006DELETE\022!/mlflow/model-versions/delete-tag\032\004\010\002\020\000\020\001*\030Delete Model Version Tag'
+    _MODELREGISTRYSERVICE.methods_by_name['deleteModelVersionTag']._serialized_options = b'\362\206\031O\n1\n\006DELETE\022!/qcflow/model-versions/delete-tag\032\004\010\002\020\000\020\001*\030Delete Model Version Tag'
     _MODELREGISTRYSERVICE.methods_by_name['setRegisteredModelAlias']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['setRegisteredModelAlias']._serialized_options = b'\362\206\031M\n-\n\004POST\022\037/mlflow/registered-models/alias\032\004\010\002\020\000\020\001*\032Set Registered Model Alias'
+    _MODELREGISTRYSERVICE.methods_by_name['setRegisteredModelAlias']._serialized_options = b'\362\206\031M\n-\n\004POST\022\037/qcflow/registered-models/alias\032\004\010\002\020\000\020\001*\032Set Registered Model Alias'
     _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModelAlias']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModelAlias']._serialized_options = b'\362\206\031R\n/\n\006DELETE\022\037/mlflow/registered-models/alias\032\004\010\002\020\000\020\001*\035Delete Registered Model Alias'
+    _MODELREGISTRYSERVICE.methods_by_name['deleteRegisteredModelAlias']._serialized_options = b'\362\206\031R\n/\n\006DELETE\022\037/qcflow/registered-models/alias\032\004\010\002\020\000\020\001*\035Delete Registered Model Alias'
     _MODELREGISTRYSERVICE.methods_by_name['getModelVersionByAlias']._options = None
-    _MODELREGISTRYSERVICE.methods_by_name['getModelVersionByAlias']._serialized_options = b'\362\206\031L\n,\n\003GET\022\037/mlflow/registered-models/alias\032\004\010\002\020\000\020\001*\032Get Model Version by Alias'
+    _MODELREGISTRYSERVICE.methods_by_name['getModelVersionByAlias']._serialized_options = b'\362\206\031L\n,\n\003GET\022\037/qcflow/registered-models/alias\032\004\010\002\020\000\020\001*\032Get Model Version by Alias'
     _MODELVERSIONSTATUS._serialized_start=4442
     _MODELVERSIONSTATUS._serialized_end=4524
     _REGISTEREDMODEL._serialized_start=74

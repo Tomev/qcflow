@@ -324,7 +324,7 @@ spark:
       ">= 3.5.0, < dev": ["pyspark[connect]"]
     run: |
       SAGEMAKER_OUT=$(mktemp)
-      if mlflow sagemaker build-and-push-container --no-push --mlflow-home . > $SAGEMAKER_OUT 2>&1; then
+      if qcflow sagemaker build-and-push-container --no-push --qcflow-home . > $SAGEMAKER_OUT 2>&1; then
         echo "Sagemaker container build succeeded.";
       else
         echo "Sagemaker container build failed, output:";
@@ -356,9 +356,9 @@ spark:
       # Build Java package
       # Pyspark 4.0 ('dev' version) exclusively supports Scala 2.13
       if [[ $(python -c "import pyspark;print(pyspark.__version__)") = "4.0.0.dev0" ]]; then
-        python dev/set-mlflow-spark-scala-version.py --scala-version 2.13.10
+        python dev/set-qcflow-spark-scala-version.py --scala-version 2.13.10
       fi
-      pushd mlflow/java/spark
+      pushd qcflow/java/spark
       mvn package -DskipTests -q
       popd
 
@@ -387,7 +387,7 @@ mleap:
       ">= 0.21.0": ["pyspark<3.4"]
     run: |
       SAGEMAKER_OUT=$(mktemp)
-      if mlflow sagemaker build-and-push-container --no-push --mlflow-home . > $SAGEMAKER_OUT 2>&1; then
+      if qcflow sagemaker build-and-push-container --no-push --qcflow-home . > $SAGEMAKER_OUT 2>&1; then
         echo "Sagemaker container build succeeded.";
       else
         echo "Sagemaker container build failed, output:";

@@ -3,19 +3,19 @@
 import sys
 import tempfile
 
-import mlflow
+import qcflow
 
 
 def call_tracking_apis():
-    mlflow.log_metric("some_key", 3)
+    qcflow.log_metric("some_key", 3)
     with tempfile.NamedTemporaryFile("w") as temp_file:
         temp_file.write("Temporary content.")
-        mlflow.log_artifact(temp_file.name)
+        qcflow.log_artifact(temp_file.name)
 
 
 def main(use_start_run):
     if use_start_run:
-        with mlflow.start_run():
+        with qcflow.start_run():
             call_tracking_apis()
     else:
         call_tracking_apis()

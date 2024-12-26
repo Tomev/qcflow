@@ -10,24 +10,24 @@ import pytest
 import sklearn
 import sklearn.neighbors
 
-import mlflow
-from mlflow.models import Model
-from mlflow.models.docker_utils import build_image_from_context
-from mlflow.models.flavor_backend_registry import get_flavor_backend
-from mlflow.utils import PYTHON_VERSION
-from mlflow.utils.env_manager import CONDA, LOCAL, VIRTUALENV
-from mlflow.version import VERSION
+import qcflow
+from qcflow.models import Model
+from qcflow.models.docker_utils import build_image_from_context
+from qcflow.models.flavor_backend_registry import get_flavor_backend
+from qcflow.utils import PYTHON_VERSION
+from qcflow.utils.env_manager import CONDA, LOCAL, VIRTUALENV
+from qcflow.version import VERSION
 
-from tests.pyfunc.docker.conftest import RESOURCE_DIR, get_released_mlflow_version
+from tests.pyfunc.docker.conftest import RESOURCE_DIR, get_released_qcflow_version
 
 
 def assert_dockerfiles_equal(actual_dockerfile_path: Path, expected_dockerfile_path: Path):
     actual_dockerfile = actual_dockerfile_path.read_text().replace(
-        VERSION, get_released_mlflow_version()
+        VERSION, get_released_qcflow_version()
     )
     expected_dockerfile = (
         expected_dockerfile_path.read_text()
-        .replace("${{ MLFLOW_VERSION }}", get_released_mlflow_version())
+        .replace("${{ QCFLOW_VERSION }}", get_released_qcflow_version())
         .replace("${{ PYTHON_VERSION }}", PYTHON_VERSION)
     )
     assert actual_dockerfile == expected_dockerfile, (
@@ -41,11 +41,11 @@ def assert_dockerfiles_equal(actual_dockerfile_path: Path, expected_dockerfile_p
 def save_model(tmp_path):
     knn_model = sklearn.neighbors.KNeighborsClassifier()
     model_path = os.path.join(tmp_path, "model")
-    mlflow.sklearn.save_model(
+    qcflow.sklearn.save_model(
         knn_model,
         path=model_path,
         pip_requirements=[
-            f"mlflow=={get_released_mlflow_version()}",
+            f"qcflow=={get_released_qcflow_version()}",
             f"scikit-learn=={sklearn.__version__}",
         ],  # Skip requirements inference for speed up
     )
@@ -63,8 +63,8 @@ def add_spark_flavor_to_model(model_path):
 class Param:
     expected_dockerfile: str
     env_manager: Optional[str] = None
-    mlflow_home: Optional[str] = None
-    install_mlflow: bool = False
+    qcflow_home: Optional[str] = None
+    install_qcflow: bool = False
     enable_mlserver: bool = False
     # If True, image is built with --model-uri param
     specify_model_uri: bool = True
@@ -77,9 +77,9 @@ class Param:
         Param(expected_dockerfile="Dockerfile_default", env_manager=LOCAL),
         Param(expected_dockerfile="Dockerfile_java_flavor", env_manager=VIRTUALENV),
         Param(expected_dockerfile="Dockerfile_conda", env_manager=CONDA),
-        Param(install_mlflow=True, expected_dockerfile="Dockerfile_install_mlflow"),
+        Param(install_qcflow=True, expected_dockerfile="Dockerfile_install_qcflow"),
         Param(enable_mlserver=True, expected_dockerfile="Dockerfile_enable_mlserver"),
-        Param(mlflow_home=".", expected_dockerfile="Dockerfile_with_mlflow_home"),
+        Param(qcflow_home=".", expected_dockerfile="Dockerfile_with_qcflow_home"),
         Param(specify_model_uri=False, expected_dockerfile="Dockerfile_no_model_uri"),
     ],
 )
@@ -90,10 +90,10 @@ def test_build_image(tmp_path, params):
 
     # Copy the context dir to a temp dir so we can verify the generated Dockerfile
     def _build_image_with_copy(context_dir, image_name):
-        # Replace mlflow dev version in Dockerfile with the latest released one
+        # Replace qcflow dev version in Dockerfile with the latest released one
         dockerfile = Path(context_dir) / "Dockerfile"
         content = dockerfile.read_text()
-        content = content.replace(VERSION, get_released_mlflow_version())
+        content = content.replace(VERSION, get_released_qcflow_version())
         dockerfile.write_text(content)
 
         shutil.copytree(context_dir, dst_dir)
@@ -109,14 +109,14 @@ def test_build_image(tmp_path, params):
 
     dst_dir = tmp_path / "context"
     with mock.patch(
-        "mlflow.models.docker_utils.build_image_from_context",
+        "qcflow.models.docker_utils.build_image_from_context",
         side_effect=_build_image_with_copy,
     ):
         backend.build_image(
             model_uri=model_uri,
             image_name="test_image",
-            mlflow_home=params.mlflow_home,
-            install_mlflow=params.install_mlflow,
+            qcflow_home=params.qcflow_home,
+            install_qcflow=params.install_qcflow,
             enable_mlserver=params.enable_mlserver,
         )
 

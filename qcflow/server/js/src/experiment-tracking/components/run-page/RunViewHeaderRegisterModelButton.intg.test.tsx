@@ -1,7 +1,7 @@
 import { openDropdownMenu } from '@databricks/design-system/test-utils/rtl';
 import { MemoryRouter } from '../../../common/utils/RoutingUtils';
 import { MockedReduxStoreProvider } from '../../../common/utils/TestUtils';
-import { renderWithIntl, act, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, act, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import Utils from '../../../common/utils/Utils';
 import { ReduxState } from '../../../redux-types';
 import { RunViewHeaderRegisterModelButton } from './RunViewHeaderRegisterModelButton';

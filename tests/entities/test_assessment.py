@@ -1,7 +1,7 @@
 import pytest
 
-from mlflow.entities.assessment import Assessment, AssessmentSource
-from mlflow.exceptions import MlflowException
+from qcflow.entities.assessment import Assessment, AssessmentSource
+from qcflow.exceptions import MlflowException
 
 
 def test_assessment_equality():

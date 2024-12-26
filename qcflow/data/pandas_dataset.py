@@ -5,22 +5,22 @@ from typing import Any, Optional, Union
 
 import pandas as pd
 
-from mlflow.data.dataset import Dataset
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.data.digest_utils import compute_pandas_digest
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
-from mlflow.types import Schema
-from mlflow.types.utils import _infer_schema
+from qcflow.data.dataset import Dataset
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.data.digest_utils import compute_pandas_digest
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.types import Schema
+from qcflow.types.utils import _infer_schema
 
 _logger = logging.getLogger(__name__)
 
 
 class PandasDataset(Dataset, PyFuncConvertibleDatasetMixin):
     """
-    Represents a Pandas DataFrame for use with MLflow Tracking.
+    Represents a Pandas DataFrame for use with QCFlow Tracking.
     """
 
     def __init__(
@@ -75,7 +75,7 @@ class PandasDataset(Dataset, PyFuncConvertibleDatasetMixin):
         Returns a string dictionary containing the following fields: name, digest, source, source
         type, schema, and profile.
         """
-        schema = json.dumps({"mlflow_colspec": self.schema.to_dict()}) if self.schema else None
+        schema = json.dumps({"qcflow_colspec": self.schema.to_dict()}) if self.schema else None
         config = super().to_dict()
         config.update(
             {
@@ -126,7 +126,7 @@ class PandasDataset(Dataset, PyFuncConvertibleDatasetMixin):
     @cached_property
     def schema(self) -> Optional[Schema]:
         """
-        An instance of :py:class:`mlflow.types.Schema` representing the tabular dataset. May be
+        An instance of :py:class:`qcflow.types.Schema` representing the tabular dataset. May be
         ``None`` if the schema cannot be inferred from the dataset.
         """
         try:
@@ -138,7 +138,7 @@ class PandasDataset(Dataset, PyFuncConvertibleDatasetMixin):
     def to_pyfunc(self) -> PyFuncInputsOutputs:
         """
         Converts the dataset to a collection of pyfunc inputs and outputs for model
-        evaluation. Required for use with mlflow.evaluate().
+        evaluation. Required for use with qcflow.evaluate().
         """
         if self._targets:
             inputs = self._df.drop(columns=[self._targets])
@@ -150,7 +150,7 @@ class PandasDataset(Dataset, PyFuncConvertibleDatasetMixin):
     def to_evaluation_dataset(self, path=None, feature_names=None) -> EvaluationDataset:
         """
         Converts the dataset to an EvaluationDataset for model evaluation. Required
-        for use with mlflow.evaluate().
+        for use with qcflow.evaluate().
         """
         return EvaluationDataset(
             data=self._df,
@@ -170,7 +170,7 @@ def from_pandas(
     predictions: Optional[str] = None,
 ) -> PandasDataset:
     """
-    Constructs a :py:class:`PandasDataset <mlflow.data.pandas_dataset.PandasDataset>` instance from
+    Constructs a :py:class:`PandasDataset <qcflow.data.pandas_dataset.PandasDataset>` instance from
     a Pandas DataFrame, optional targets, optional predictions, and source.
 
     Args:
@@ -179,10 +179,10 @@ def from_pandas(
             path, an S3 URI, an HTTPS URL, a delta table name with version, or
             spark table etc. ``source`` may be specified as a URI, a path-like string,
             or an instance of
-            :py:class:`DatasetSource <mlflow.data.dataset_source.DatasetSource>`.
+            :py:class:`DatasetSource <qcflow.data.dataset_source.DatasetSource>`.
             If unspecified, the source is assumed to be the code location
             (e.g. notebook cell, script, etc.) where
-            :py:func:`from_pandas <mlflow.data.from_pandas>` is being called.
+            :py:func:`from_pandas <qcflow.data.from_pandas>` is being called.
         targets: An optional target column name for supervised training. This column
             must be present in the dataframe (``df``).
         name: The name of the dataset. If unspecified, a name is generated.
@@ -195,19 +195,19 @@ def from_pandas(
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
         import pandas as pd
 
         x = pd.DataFrame(
             [["tom", 10, 1, 1], ["nick", 15, 0, 1], ["july", 14, 1, 1]],
             columns=["Name", "Age", "Label", "ModelOutput"],
         )
-        dataset = mlflow.data.from_pandas(x, targets="Label", predictions="ModelOutput")
+        dataset = qcflow.data.from_pandas(x, targets="Label", predictions="ModelOutput")
     """
 
-    from mlflow.data.code_dataset_source import CodeDatasetSource
-    from mlflow.data.dataset_source_registry import resolve_dataset_source
-    from mlflow.tracking.context import registry
+    from qcflow.data.code_dataset_source import CodeDatasetSource
+    from qcflow.data.dataset_source_registry import resolve_dataset_source
+    from qcflow.tracking.context import registry
 
     if source is not None:
         if isinstance(source, DatasetSource):

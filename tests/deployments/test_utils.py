@@ -1,14 +1,14 @@
 import pytest
 
-from mlflow.deployments.utils import (
+from qcflow.deployments.utils import (
     get_deployments_target,
     set_deployments_target,
 )
-from mlflow.exceptions import MlflowException
+from qcflow.exceptions import MlflowException
 
 
 def test_set_deployments_target(monkeypatch):
-    monkeypatch.setattr("mlflow.deployments.utils._deployments_target", None)
+    monkeypatch.setattr("qcflow.deployments.utils._deployments_target", None)
 
     valid_target = "databricks"
     set_deployments_target(valid_target)
@@ -26,16 +26,16 @@ def test_set_deployments_target(monkeypatch):
 
 
 def test_get_deployments_target(monkeypatch):
-    monkeypatch.setattr("mlflow.deployments.utils._deployments_target", None)
-    monkeypatch.delenv("MLFLOW_DEPLOYMENTS_TARGET", raising=False)
+    monkeypatch.setattr("qcflow.deployments.utils._deployments_target", None)
+    monkeypatch.delenv("QCFLOW_DEPLOYMENTS_TARGET", raising=False)
 
     with pytest.raises(MlflowException, match="No deployments target has been set"):
         get_deployments_target()
 
     valid_uri = "http://localhost"
-    monkeypatch.setattr("mlflow.deployments.utils._deployments_target", valid_uri)
+    monkeypatch.setattr("qcflow.deployments.utils._deployments_target", valid_uri)
     assert get_deployments_target() == valid_uri
 
-    monkeypatch.delenv("MLFLOW_DEPLOYMENTS_TARGET", raising=False)
+    monkeypatch.delenv("QCFLOW_DEPLOYMENTS_TARGET", raising=False)
     set_deployments_target(valid_uri)
     assert get_deployments_target() == valid_uri

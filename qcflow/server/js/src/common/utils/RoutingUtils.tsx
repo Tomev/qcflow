@@ -45,7 +45,7 @@ const useNavigate = useNavigateDirect;
 
 const Link = LinkDirect;
 
-export const createMLflowRoutePath = (routePath: string) => {
+export const createQCFlowRoutePath = (routePath: string) => {
   return routePath;
 };
 

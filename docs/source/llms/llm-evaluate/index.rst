@@ -1,27 +1,27 @@
 .. meta::
-  :description: LLM evaluation involves assessing how well a model performs on a task. MLflow provides a simple API to evaluate your LLMs with popular metrics.
+  :description: LLM evaluation involves assessing how well a model performs on a task. QCFlow provides a simple API to evaluate your LLMs with popular metrics.
 
 .. _llm-eval:
 
-MLflow LLM Evaluation
+QCFlow LLM Evaluation
 =====================
 
 With the emerging of ChatGPT, LLMs have shown its power of text generation in various fields, such as 
 question answering, translating and text summarization. Evaluating LLMs' performance is slightly different 
 from traditional ML models, as very often there is no single ground truth to compare against. 
-MLflow provides an API :py:func:`mlflow.evaluate()` to help evaluate your LLMs.
+QCFlow provides an API :py:func:`qcflow.evaluate()` to help evaluate your LLMs.
 
-MLflow's LLM evaluation functionality consists of 3 main components:
+QCFlow's LLM evaluation functionality consists of 3 main components:
 
-1. **A model to evaluate**: it can be an MLflow ``pyfunc`` model, a URI pointing to one registered 
-   MLflow model, or any python callable that represents your model, e.g, a HuggingFace text summarization pipeline. 
+1. **A model to evaluate**: it can be an QCFlow ``pyfunc`` model, a URI pointing to one registered 
+   QCFlow model, or any python callable that represents your model, e.g, a HuggingFace text summarization pipeline. 
 2. **Metrics**: the metrics to compute, LLM evaluate will use LLM metrics. 
 3. **Evaluation data**: the data your model is evaluated at, it can be a pandas Dataframe, a python list, a 
-   numpy array or an :py:func:`mlflow.data.dataset.Dataset` instance.
+   numpy array or an :py:func:`qcflow.data.dataset.Dataset` instance.
 
 Full Notebook Guides and Examples
 ---------------------------------
-If you're interested in thorough use-case oriented guides that showcase the simplicity and power of MLflow's evaluate 
+If you're interested in thorough use-case oriented guides that showcase the simplicity and power of QCFlow's evaluate 
 functionality for LLMs, please navigate to the notebook collection below:
 
 .. raw:: html
@@ -31,7 +31,7 @@ functionality for LLMs, please navigate to the notebook collection below:
 Quickstart
 ----------
 
-Below is a simple example that gives an quick overview of how MLflow LLM evaluation works. The example builds
+Below is a simple example that gives an quick overview of how QCFlow LLM evaluation works. The example builds
 a simple question-answering model by wrapping "openai/gpt-4" with custom prompt. You can paste it to
 your IPython or local editor and execute it, and install missing dependencies as prompted. Running the code 
 requires OpenAI API key, if you don't have an OpenAI key, you can set it up by following the `OpenAI guide <https://platform.openai.com/account/api-keys>`_.
@@ -42,7 +42,7 @@ requires OpenAI API key, if you don't have an OpenAI key, you can set it up by f
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import openai
     import os
     import pandas as pd
@@ -51,13 +51,13 @@ requires OpenAI API key, if you don't have an OpenAI key, you can set it up by f
     eval_data = pd.DataFrame(
         {
             "inputs": [
-                "What is MLflow?",
+                "What is QCFlow?",
                 "What is Spark?",
             ],
             "ground_truth": [
-                "MLflow is an open-source platform for managing the end-to-end machine learning (ML) "
+                "QCFlow is an open-source platform for managing the end-to-end machine learning (ML) "
                 "lifecycle. It was developed by Databricks, a company that specializes in big data and "
-                "machine learning solutions. MLflow is designed to address the challenges that data "
+                "machine learning solutions. QCFlow is designed to address the challenges that data "
                 "scientists and machine learning engineers face when developing, training, and deploying "
                 "machine learning models.",
                 "Apache Spark is an open-source, distributed computing system designed for big data "
@@ -70,10 +70,10 @@ requires OpenAI API key, if you don't have an OpenAI key, you can set it up by f
         }
     )
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         system_prompt = "Answer the following question in two sentences"
-        # Wrap "gpt-4" as an MLflow model.
-        logged_model_info = mlflow.openai.log_model(
+        # Wrap "gpt-4" as an QCFlow model.
+        logged_model_info = qcflow.openai.log_model(
             model="gpt-4",
             task=openai.chat.completions,
             artifact_path="model",
@@ -84,7 +84,7 @@ requires OpenAI API key, if you don't have an OpenAI key, you can set it up by f
         )
 
         # Use predefined question-answering metrics to evaluate our model.
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             logged_model_info.model_uri,
             eval_data,
             targets="ground_truth",
@@ -100,11 +100,11 @@ requires OpenAI API key, if you don't have an OpenAI key, you can set it up by f
 LLM Evaluation Metrics
 ----------------------
 
-There are two types of LLM evaluation metrics in MLflow:
+There are two types of LLM evaluation metrics in QCFlow:
 
-1. **Heuristic-based metrics**: These metrics calculate a score for each data record (row in terms of Pandas/Spark dataframe), based on certain functions, such as: Rouge (:py:func:`~mlflow.metrics.rougeL`), Flesch Kincaid (:py:func:`~mlflow.metrics.flesch_kincaid_grade_level`) or Bilingual Evaluation Understudy (BLEU) (:py:func:`~mlflow.metrics.bleu`). These metrics are similar to traditional continuous value metrics. For the list of built-in heuristic metrics and how to define a custom metric with your own function definition, see the `Heuristic-based Metrics <#heuristic-based-metrics>`_ section.
+1. **Heuristic-based metrics**: These metrics calculate a score for each data record (row in terms of Pandas/Spark dataframe), based on certain functions, such as: Rouge (:py:func:`~qcflow.metrics.rougeL`), Flesch Kincaid (:py:func:`~qcflow.metrics.flesch_kincaid_grade_level`) or Bilingual Evaluation Understudy (BLEU) (:py:func:`~qcflow.metrics.bleu`). These metrics are similar to traditional continuous value metrics. For the list of built-in heuristic metrics and how to define a custom metric with your own function definition, see the `Heuristic-based Metrics <#heuristic-based-metrics>`_ section.
 
-2. **LLM-as-a-Judge metrics**: LLM-as-a-Judge is a new type of metric that uses LLMs to score the quality of model outputs. It overcomes the limitations of heuristic-based metrics, which often miss nuances like context and semantic accuracy. LLM-as-a-Judge metrics provides a more human-like evaluation for complex language tasks while being more scalable and cost-effective than human evaluation. MLflow provides various built-in LLM-as-a-Judge metrics and supports creating custom metrics with your own prompt, grading criteria, and reference examples. See the `LLM-as-a-Judge Metrics <#llm-as-a-judge-metrics>`_ section for more details.
+2. **LLM-as-a-Judge metrics**: LLM-as-a-Judge is a new type of metric that uses LLMs to score the quality of model outputs. It overcomes the limitations of heuristic-based metrics, which often miss nuances like context and semantic accuracy. LLM-as-a-Judge metrics provides a more human-like evaluation for complex language tasks while being more scalable and cost-effective than human evaluation. QCFlow provides various built-in LLM-as-a-Judge metrics and supports creating custom metrics with your own prompt, grading criteria, and reference examples. See the `LLM-as-a-Judge Metrics <#llm-as-a-judge-metrics>`_ section for more details.
 
 
 Heuristic-based Metrics
@@ -113,21 +113,21 @@ Heuristic-based Metrics
 Built-in Heuristic Metrics
 **************************
 
-See `this page <https://mlflow.org/docs/latest/python_api/mlflow.metrics.html>`_ for the full list of the built-in heuristic metrics.
+See `this page <https://qcflow.org/docs/latest/python_api/qcflow.metrics.html>`_ for the full list of the built-in heuristic metrics.
 
 .. _llm-eval-default-metrics:
 
 Default Metrics with Pre-defined Model Types
 ********************************************
 
-MLflow LLM evaluation includes default collections of metrics for pre-selected tasks, e.g, "question-answering". Depending on the 
+QCFlow LLM evaluation includes default collections of metrics for pre-selected tasks, e.g, "question-answering". Depending on the 
 LLM use case that you are evaluating, these pre-defined collections can greatly simplify the process of running evaluations. To use
-defaults metrics for pre-selected tasks, specify the ``model_type`` argument in :py:func:`mlflow.evaluate`, as shown by the example 
+defaults metrics for pre-selected tasks, specify the ``model_type`` argument in :py:func:`qcflow.evaluate`, as shown by the example 
 below:
 
 .. code-block:: python
 
-    results = mlflow.evaluate(
+    results = qcflow.evaluate(
         model,
         eval_data,
         targets="ground_truth",
@@ -179,45 +179,45 @@ Use a Custom List of Metrics
 ****************************
 
 Using the pre-defined metrics associated with a given model type is not the only way to generate scoring metrics 
-for LLM evaluation in MLflow. You can specify a custom list of metrics in the `extra_metrics` argument in `mlflow.evaluate`:
+for LLM evaluation in QCFlow. You can specify a custom list of metrics in the `extra_metrics` argument in `qcflow.evaluate`:
 
 * To add additional metrics to the default metrics list of pre-defined model type, keep the `model_type` and add your metrics to ``extra_metrics``:
   
   .. code-block:: python
 
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model,
             eval_data,
             targets="ground_truth",
             model_type="question-answering",
-            extra_metrics=[mlflow.metrics.latency()],
+            extra_metrics=[qcflow.metrics.latency()],
         )
 
-  The above code will evaluate your model using all metrics for "question-answering" model plus :py:func:`mlflow.metrics.latency()`.
+  The above code will evaluate your model using all metrics for "question-answering" model plus :py:func:`qcflow.metrics.latency()`.
 
 * To disable default metric calculation and only calculate your selected metrics, remove the ``model_type`` argument and define the desired metrics. 
 
     .. code-block:: python
 
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model,
             eval_data,
             targets="ground_truth",
-            extra_metrics=[mlflow.metrics.toxicity(), mlflow.metrics.latency()],
+            extra_metrics=[qcflow.metrics.toxicity(), qcflow.metrics.latency()],
         )
 
 
-The full reference for supported evaluation metrics can be found `here <../../python_api/mlflow.html#mlflow.evaluate>`_.
+The full reference for supported evaluation metrics can be found `here <../../python_api/qcflow.html#qcflow.evaluate>`_.
 
 Create Custom heuristic-based LLM Evaluation Metrics
 ****************************************************
 
-This is very similar to creating custom traditional metrics, with the exception of returning a :py:func:`mlflow.metrics.MetricValue` instance.
+This is very similar to creating custom traditional metrics, with the exception of returning a :py:func:`qcflow.metrics.MetricValue` instance.
 Basically you need to:
 
 1. Implement An ``eval_fn`` to define your scoring logic. This function must take in 2 args: ``predictions`` and ``targets``.
-   ``eval_fn`` must return a :py:func:`mlflow.metrics.MetricValue` instance.
-2. Pass ``eval_fn`` and other arguments to the ``mlflow.metrics.make_metric`` API to create the metric. 
+   ``eval_fn`` must return a :py:func:`qcflow.metrics.MetricValue` instance.
+2. Pass ``eval_fn`` and other arguments to the ``qcflow.metrics.make_metric`` API to create the metric. 
 
 The following code creates a dummy per-row metric called ``"over_10_chars"``; if the model output is greater than 10, 
 the score is "yes", otherwise it is "no".
@@ -262,22 +262,22 @@ LLM-as-a-Judge Metrics
 
 LLM-as-a-Judge is a new type of metric that uses LLMs to score the quality of model outputs, providing a more human-like evaluation for complex language tasks while being more scalable and cost-effective than human evaluation.
 
-MLflow supports several builtin LLM-as-a-judge metrics, as well as allowing you to create your own LLM-as-a-judge metrics with custom configurations and prompts.
+QCFlow supports several builtin LLM-as-a-judge metrics, as well as allowing you to create your own LLM-as-a-judge metrics with custom configurations and prompts.
 
 
 Built-in LLM-as-a-Judge metrics
 *******************************
 
-To use built-in LLM-as-a-Judge metrics in MLflow, pass the list of metrics definitions to the ``extra_metrics`` argument in the :py:func:`mlflow.evaluate()` function.
+To use built-in LLM-as-a-Judge metrics in QCFlow, pass the list of metrics definitions to the ``extra_metrics`` argument in the :py:func:`qcflow.evaluate()` function.
 
 The following example uses the built-in answer correctness metric for evaluation, in addition to the latency metric (heuristic):
 
 .. code-block:: python
 
-    from mlflow.metrics import latency
-    from mlflow.metrics.genai import answer_correctness
+    from qcflow.metrics import latency
+    from qcflow.metrics.genai import answer_correctness
 
-    results = mlflow.evaluate(
+    results = qcflow.evaluate(
         eval_data,
         targets="ground_truth",
         extra_metrics=[
@@ -289,21 +289,21 @@ The following example uses the built-in answer correctness metric for evaluation
 
 Here is the list of built-in LLM-as-a-Judge metrics. Click on the link to see the full documentation for each metric:
 
-* :py:func:`~mlflow.metrics.genai.answer_similarity`: Evaluate how similar a model's generated output is compared to the information in the ground truth data.
-* :py:func:`~mlflow.metrics.genai.answer_correctness`: Evaluate how factually correct a model's generated output is based on the information within the ground truth data.
-* :py:func:`~mlflow.metrics.genai.answer_relevance`: Evaluate how relevant the model generated output is to the input (context is ignored).
-* :py:func:`~mlflow.metrics.genai.relevance`: Evaluate how relevant the model generated output is with respect to both the input and the context.
-* :py:func:`~mlflow.metrics.genai.faithfulness`: Evaluate how faithful the model generated output is based on the context provided.
+* :py:func:`~qcflow.metrics.genai.answer_similarity`: Evaluate how similar a model's generated output is compared to the information in the ground truth data.
+* :py:func:`~qcflow.metrics.genai.answer_correctness`: Evaluate how factually correct a model's generated output is based on the information within the ground truth data.
+* :py:func:`~qcflow.metrics.genai.answer_relevance`: Evaluate how relevant the model generated output is to the input (context is ignored).
+* :py:func:`~qcflow.metrics.genai.relevance`: Evaluate how relevant the model generated output is with respect to both the input and the context.
+* :py:func:`~qcflow.metrics.genai.faithfulness`: Evaluate how faithful the model generated output is based on the context provided.
 
 Selecting the Judge Model
 *************************
 
-By default, MLflow will use OpenAI's GPT-4 model as the judge model that scores metrics. You can change the judge model by passing an override to the ``model`` argument within the metric definition.
+By default, QCFlow will use OpenAI's GPT-4 model as the judge model that scores metrics. You can change the judge model by passing an override to the ``model`` argument within the metric definition.
 
 1. SaaS LLM Providers
 #####################
 
-To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parameter in the metrics definition, in the format of ``<provider>:/<model-name>``. Currently, MLflow supports ``["openai", "anthropic", "bedrock", "mistral", "togetherai"]`` as viable LLM providers for any judge model. 
+To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parameter in the metrics definition, in the format of ``<provider>:/<model-name>``. Currently, QCFlow supports ``["openai", "anthropic", "bedrock", "mistral", "togetherai"]`` as viable LLM providers for any judge model. 
 
 
 .. tabs::
@@ -314,18 +314,18 @@ To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parame
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             import os
 
             os.environ["OPENAI_API_KEY"] = "<your-openai-api-key>"
 
-            answer_correctness = mlflow.metrics.genai.answer_correctness(model="openai:/gpt-4o")
+            answer_correctness = qcflow.metrics.genai.answer_correctness(model="openai:/gpt-4o")
 
             # Test the metric definition
             answer_correctness(
-                inputs="What is MLflow?",
-                predictions="MLflow is an innovative full self-driving airship.",
-                targets="MLflow is an open-source platform for managing the end-to-end ML lifecycle.",
+                inputs="What is QCFlow?",
+                predictions="QCFlow is an innovative full self-driving airship.",
+                targets="QCFlow is an open-source platform for managing the end-to-end ML lifecycle.",
             )
 
         Azure OpenAI endpoints can be accessed via the same ``openai:/<model-name>`` URI, by setting the environment variables, such as ``OPENAI_API_BASE``, ``OPENAI_API_TYPE``, etc.
@@ -344,12 +344,12 @@ To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parame
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             import os
 
             os.environ["ANTHROPIC_API_KEY"] = "<your-anthropic-api-key>"
 
-            answer_correctness = mlflow.metrics.genai.answer_correctness(
+            answer_correctness = qcflow.metrics.genai.answer_correctness(
                 model="anthropic:/claude-3-5-sonnet-20241022",
                 # Override default judge parameters to meet Claude endpoint requirements.
                 parameters={"temperature": 0, "max_tokens": 256},
@@ -357,9 +357,9 @@ To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parame
 
             # Test the metric definition
             answer_correctness(
-                inputs="What is MLflow?",
-                predictions="MLflow is an innovative full self-driving airship.",
-                targets="MLflow is an open-source platform for managing the end-to-end ML lifecycle.",
+                inputs="What is QCFlow?",
+                predictions="QCFlow is an innovative full self-driving airship.",
+                targets="QCFlow is an open-source platform for managing the end-to-end ML lifecycle.",
             )
 
     .. tab:: Bedrock
@@ -368,7 +368,7 @@ To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parame
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             import os
 
             os.environ["AWS_REGION"] = "<your-aws-region>"
@@ -382,7 +382,7 @@ To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parame
             # You can also use session token for temporary credentials.
             # os.environ["AWS_SESSION_TOKEN"] = "<your-aws-session-token>"
 
-            answer_correctness = mlflow.metrics.genai.answer_correctness(
+            answer_correctness = qcflow.metrics.genai.answer_correctness(
                 model="bedrock:/anthropic.claude-3-5-sonnet-20241022-v2:0",
                 parameters={
                     "temperature": 0,
@@ -393,9 +393,9 @@ To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parame
 
             # Test the metric definition
             answer_correctness(
-                inputs="What is MLflow?",
-                predictions="MLflow is an innovative full self-driving airship.",
-                targets="MLflow is an open-source platform for managing the end-to-end ML lifecycle.",
+                inputs="What is QCFlow?",
+                predictions="QCFlow is an innovative full self-driving airship.",
+                targets="QCFlow is an open-source platform for managing the end-to-end ML lifecycle.",
             )
 
     .. tab:: Mistral
@@ -404,20 +404,20 @@ To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parame
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             import os
 
             os.environ["MISTRAL_API_KEY"] = "<your-mistral-api-key>"
 
-            answer_correctness = mlflow.metrics.genai.answer_correctness(
+            answer_correctness = qcflow.metrics.genai.answer_correctness(
                 model="mistral:/mistral-small-latest",
             )
 
             # Test the metric definition
             answer_correctness(
-                inputs="What is MLflow?",
-                predictions="MLflow is an innovative full self-driving airship.",
-                targets="MLflow is an open-source platform for managing the end-to-end ML lifecycle.",
+                inputs="What is QCFlow?",
+                predictions="QCFlow is an innovative full self-driving airship.",
+                targets="QCFlow is an open-source platform for managing the end-to-end ML lifecycle.",
             )
 
     .. tab:: TogetherAI
@@ -426,20 +426,20 @@ To use SaaS LLM providers, such as OpenAI or Anthropic, set the ``model`` parame
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             import os
 
             os.environ["TOGETHERAI_API_KEY"] = "<your-togetherai-api-key>"
 
-            answer_correctness = mlflow.metrics.genai.answer_correctness(
+            answer_correctness = qcflow.metrics.genai.answer_correctness(
                 model="togetherai:/togetherai-small-latest",
             )
 
             # Test the metric definition
             answer_correctness(
-                inputs="What is MLflow?",
-                predictions="MLflow is an innovative full self-driving airship.",
-                targets="MLflow is an open-source platform for managing the end-to-end ML lifecycle.",
+                inputs="What is QCFlow?",
+                predictions="QCFlow is an innovative full self-driving airship.",
+                targets="QCFlow is an open-source platform for managing the end-to-end ML lifecycle.",
             )
 
 
@@ -454,29 +454,29 @@ If you are accessing SaaS LLM providers via a proxy endpoint (e.g., for security
 
 .. code-block:: python
 
-    answer_similarity = mlflow.metrics.genai.answer_similarity(
+    answer_similarity = qcflow.metrics.genai.answer_similarity(
         model="openai:/gpt-4o",
         proxy_url="https://my-proxy-endpoint/chat",
         extra_headers={"Group-ID": "my-group-id"},
     )
 
 
-3. MLflow AI Gateway Endpoints
+3. QCFlow AI Gateway Endpoints
 ##############################
 
-`MLflow AI Gateway <../deployments/index.html>`_ is a self-hosted solution that allows you to query various LLM providers in a unified interface. To use an endpoint hosted by MLflow AI Gateway:
+`QCFlow AI Gateway <../deployments/index.html>`_ is a self-hosted solution that allows you to query various LLM providers in a unified interface. To use an endpoint hosted by QCFlow AI Gateway:
 
-1. Start the MLflow AI Gateway server with your LLM setting by following `these steps <../deployments/index.html#quickstart>`_.
-2. Set the MLflow deployment client to target the server address by using :py:func:`~mlflow.deployments.set_deployments_target()`.
+1. Start the QCFlow AI Gateway server with your LLM setting by following `these steps <../deployments/index.html#quickstart>`_.
+2. Set the QCFlow deployment client to target the server address by using :py:func:`~qcflow.deployments.set_deployments_target()`.
 3. Set ``endpoints:/<endpoint-name>`` to the ``model`` parameter in the metrics definition.
 
 .. code-block:: python
 
-    from mlflow.deployments import set_deployments_target
+    from qcflow.deployments import set_deployments_target
 
-    # When the MLflow AI Gateway server is running at http://localhost:5000
+    # When the QCFlow AI Gateway server is running at http://localhost:5000
     set_deployments_target("http://localhost:5000")
-    my_answer_similarity = mlflow.metrics.genai.answer_similarity(
+    my_answer_similarity = qcflow.metrics.genai.answer_similarity(
         model="endpoints:/my-endpoint"
     )
 
@@ -487,17 +487,17 @@ If you have a model hosted on Databricks, you can use it as a judge model by set
 
 .. code-block:: python
 
-    from mlflow.deployments import set_deployments_target
+    from qcflow.deployments import set_deployments_target
 
     set_deployments_target("databricks")
-    llama3_answer_similarity = mlflow.metrics.genai.answer_similarity(
+    llama3_answer_similarity = qcflow.metrics.genai.answer_similarity(
         model="endpoints:/databricks-llama-3-1-405b-instruct"
     )
 
 Overriding Default Judge Parameters
 ***********************************
 
-By default, MLflow queries the judge LLM model with the following parameters:
+By default, QCFlow queries the judge LLM model with the following parameters:
 
 .. code-block:: yaml
 
@@ -509,7 +509,7 @@ However, this might not be suitable for all LLM providers. For example, accessin
 
 .. code-block:: python
 
-    my_answer_similarity = mlflow.metrics.genai.answer_similarity(
+    my_answer_similarity = qcflow.metrics.genai.answer_similarity(
         model="bedrock:/anthropic.claude-3-5-sonnet-20241022-v2:0",
         parameters={
             "temperature": 0,
@@ -524,14 +524,14 @@ Note that the parameters dictionary you pass in the ``parameters`` argument will
 Creating Custom LLM-as-a-Judge Metrics
 **************************************
 
-You can also create your own LLM-as-a-Judge evaluation metrics with :py:func:`mlflow.metrics.genai.make_genai_metric` API, which needs the following information:
+You can also create your own LLM-as-a-Judge evaluation metrics with :py:func:`qcflow.metrics.genai.make_genai_metric` API, which needs the following information:
 
 * ``name``: the name of your custom metric.
 * ``definition``: describe what's the metric doing. 
 * ``grading_prompt``: describe the scoring criteria. 
 * ``examples`` (Optional): a few input/output examples with scores provided; used as a reference for the LLM judge.
 
-See the :py:func:`API documentation <mlflow.metrics.genai.make_genai_metric>` for the full list of the configurations.
+See the :py:func:`API documentation <qcflow.metrics.genai.make_genai_metric>` for the full list of the configurations.
 
 Under the hood, ``definition``, ``grading_prompt``, ``examples`` together with evaluation data and model output will be 
 composed into a long prompt and sent to LLM. If you are familiar with the concept of prompt engineering, 
@@ -541,7 +541,7 @@ output so that LLM, e.g., GPT4 can output the information we want.
 Now let's create a custom GenAI metrics called "professionalism", which measures how professional our model output is. 
 
 Let's first create a few examples with scores, these will be the reference samples LLM judge uses. To create such examples, 
-we will use :py:func:`mlflow.metrics.genai.EvaluationExample` class, which has 4 fields:
+we will use :py:func:`qcflow.metrics.genai.EvaluationExample` class, which has 4 fields:
 
 * input: input text.
 * output: output text.
@@ -550,10 +550,10 @@ we will use :py:func:`mlflow.metrics.genai.EvaluationExample` class, which has 4
 
 .. code-block:: python
 
-    professionalism_example_score_2 = mlflow.metrics.genai.EvaluationExample(
-        input="What is MLflow?",
+    professionalism_example_score_2 = qcflow.metrics.genai.EvaluationExample(
+        input="What is QCFlow?",
         output=(
-            "MLflow is like your friendly neighborhood toolkit for managing your machine learning projects. It helps "
+            "QCFlow is like your friendly neighborhood toolkit for managing your machine learning projects. It helps "
             "you track experiments, package your code and models, and collaborate with your team, making the whole ML "
             "workflow smoother. It's like your Swiss Army knife for machine learning!"
         ),
@@ -563,11 +563,11 @@ we will use :py:func:`mlflow.metrics.genai.EvaluationExample` class, which has 4
             "exclamation points, which make it sound less professional. "
         ),
     )
-    professionalism_example_score_4 = mlflow.metrics.genai.EvaluationExample(
-        input="What is MLflow?",
+    professionalism_example_score_4 = qcflow.metrics.genai.EvaluationExample(
+        input="What is QCFlow?",
         output=(
-            "MLflow is an open-source platform for managing the end-to-end machine learning (ML) lifecycle. It was "
-            "developed by Databricks, a company that specializes in big data and machine learning solutions. MLflow is "
+            "QCFlow is an open-source platform for managing the end-to-end machine learning (ML) lifecycle. It was "
+            "developed by Databricks, a company that specializes in big data and machine learning solutions. QCFlow is "
             "designed to address the challenges that data scientists and machine learning engineers face when "
             "developing, training, and deploying machine learning models.",
         ),
@@ -579,7 +579,7 @@ Now let's define the ``professionalism`` metric, you will see how each field is 
 
 .. code-block:: python
 
-    professionalism = mlflow.metrics.genai.make_genai_metric(
+    professionalism = qcflow.metrics.genai.make_genai_metric(
         name="professionalism",
         definition=(
             "Professionalism refers to the use of a formal, respectful, and appropriate style of communication that is "
@@ -607,34 +607,34 @@ Now let's define the ``professionalism`` metric, you will see how each field is 
 Prepare Your Target Models
 --------------------------
 
-In order to evaluate your model with ``mlflow.evaluate()``, your model has to be one of the following types:
+In order to evaluate your model with ``qcflow.evaluate()``, your model has to be one of the following types:
 
-1. A :py:func:`mlflow.pyfunc.PyFuncModel` instance or a URI pointing to a logged ``mlflow.pyfunc.PyFuncModel`` model. In
-   general we call that MLflow model. The 
+1. A :py:func:`qcflow.pyfunc.PyFuncModel` instance or a URI pointing to a logged ``qcflow.pyfunc.PyFuncModel`` model. In
+   general we call that QCFlow model. The 
 2. A python function that takes in string inputs and outputs a single string. Your callable must match the signature of 
-   :py:func:`mlflow.pyfunc.PyFuncModel.predict` (without ``params`` argument), briefly it should:
+   :py:func:`qcflow.pyfunc.PyFuncModel.predict` (without ``params`` argument), briefly it should:
 
    * Has ``data`` as the only argument, which can be a ``pandas.Dataframe``, ``numpy.ndarray``, python list, dictionary or scipy matrix.
    * Returns one of ``pandas.DataFrame``, ``pandas.Series``, ``numpy.ndarray`` or list. 
-3. An MLflow Deployments endpoint URI pointing to a local `MLflow AI Gateway <../deployments/index.html>`_, `Databricks Foundation Models API <https://docs.databricks.com/en/machine-learning/model-serving/score-foundation-models.html>`_, and `External Models in Databricks Model Serving <https://docs.databricks.com/en/generative-ai/external-models/index.html>`_. 
+3. An QCFlow Deployments endpoint URI pointing to a local `QCFlow AI Gateway <../deployments/index.html>`_, `Databricks Foundation Models API <https://docs.databricks.com/en/machine-learning/model-serving/score-foundation-models.html>`_, and `External Models in Databricks Model Serving <https://docs.databricks.com/en/generative-ai/external-models/index.html>`_. 
 4. Set ``model=None``, and put model outputs in ``data``. Only applicable when the data is a Pandas dataframe.
 
-Evaluating with an MLflow Model
+Evaluating with an QCFlow Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For detailed instruction on how to convert your model into a ``mlflow.pyfunc.PyFuncModel`` instance, please read
-`this doc <https://mlflow.org/docs/latest/python_api/mlflow.pyfunc.html#creating-custom-pyfunc-models>`_. But in short,
-to evaluate your model as an MLflow model, we recommend following the steps below:
+For detailed instruction on how to convert your model into a ``qcflow.pyfunc.PyFuncModel`` instance, please read
+`this doc <https://qcflow.org/docs/latest/python_api/qcflow.pyfunc.html#creating-custom-pyfunc-models>`_. But in short,
+to evaluate your model as an QCFlow model, we recommend following the steps below:
 
-1. Log your model to MLflow server by ``log_model``. Each flavor (``opeanai``, ``pytorch``, ...) 
-   has its own ``log_model`` API, e.g., :py:func:`mlflow.openai.log_model()`:
+1. Log your model to QCFlow server by ``log_model``. Each flavor (``opeanai``, ``pytorch``, ...) 
+   has its own ``log_model`` API, e.g., :py:func:`qcflow.openai.log_model()`:
 
    .. code-block:: python
 
-        with mlflow.start_run():
+        with qcflow.start_run():
             system_prompt = "Answer the following question in two sentences"
-            # Wrap "gpt-4o-mini" as an MLflow model.
-            logged_model_info = mlflow.openai.log_model(
+            # Wrap "gpt-4o-mini" as an QCFlow model.
+            logged_model_info = qcflow.openai.log_model(
                 model="gpt-4o-mini",
                 task=openai.chat.completions,
                 artifact_path="model",
@@ -643,11 +643,11 @@ to evaluate your model as an MLflow model, we recommend following the steps belo
                     {"role": "user", "content": "{question}"},
                 ],
             )
-2. Use the URI of logged model as the model instance in ``mlflow.evaluate()``:
+2. Use the URI of logged model as the model instance in ``qcflow.evaluate()``:
    
    .. code-block:: python
 
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             logged_model_info.model_uri,
             eval_data,
             targets="ground_truth",
@@ -659,14 +659,14 @@ to evaluate your model as an MLflow model, we recommend following the steps belo
 Evaluating with a Custom Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As of MLflow 2.8.0, :py:func:`mlflow.evaluate()` supports evaluating a python function without requiring 
-logging the model to MLflow. This is useful when you don't want to log the model and just want to evaluate
-it. The following example uses :py:func:`mlflow.evaluate()` to evaluate a function. You also need to set
+As of QCFlow 2.8.0, :py:func:`qcflow.evaluate()` supports evaluating a python function without requiring 
+logging the model to QCFlow. This is useful when you don't want to log the model and just want to evaluate
+it. The following example uses :py:func:`qcflow.evaluate()` to evaluate a function. You also need to set
 up OpenAI authentication to run the code below.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import openai
     import pandas as pd
     from typing import List
@@ -674,11 +674,11 @@ up OpenAI authentication to run the code below.
     eval_data = pd.DataFrame(
         {
             "inputs": [
-                "What is MLflow?",
+                "What is QCFlow?",
                 "What is Spark?",
             ],
             "ground_truth": [
-                "MLflow is an open-source platform for managing the end-to-end machine learning (ML) lifecycle. It was developed by Databricks, a company that specializes in big data and machine learning solutions. MLflow is designed to address the challenges that data scientists and machine learning engineers face when developing, training, and deploying machine learning models.",
+                "QCFlow is an open-source platform for managing the end-to-end machine learning (ML) lifecycle. It was developed by Databricks, a company that specializes in big data and machine learning solutions. QCFlow is designed to address the challenges that data scientists and machine learning engineers face when developing, training, and deploying machine learning models.",
                 "Apache Spark is an open-source, distributed computing system designed for big data processing and analytics. It was developed in response to limitations of the Hadoop MapReduce computing model, offering improvements in speed and ease of use. Spark provides libraries for various tasks such as data ingestion, processing, and analysis through its components like Spark SQL for structured data, Spark Streaming for real-time data processing, and MLlib for machine learning tasks",
             ],
         }
@@ -702,8 +702,8 @@ up OpenAI authentication to run the code below.
         return predictions
 
 
-    with mlflow.start_run():
-        results = mlflow.evaluate(
+    with qcflow.start_run():
+        results = qcflow.evaluate(
             model=openai_qa,
             data=eval_data,
             targets="ground_truth",
@@ -728,22 +728,22 @@ up OpenAI authentication to run the code below.
 
 .. _llm-eval-model-endpoint:
 
-Evaluating with an MLflow Deployments Endpoint
+Evaluating with an QCFlow Deployments Endpoint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For MLflow >= 2.11.0, :py:func:`mlflow.evaluate()` supports evaluating a model endpoint by directly passing the MLflow Deployments endpoint URI to the ``model`` argument.
-This is particularly useful when you want to evaluate a deployed model hosted by a local `MLflow AI Gateway <../deployments/index.html>`_,  `Databricks Foundation Models API <https://docs.databricks.com/en/machine-learning/model-serving/score-foundation-models.html>`_, and `External Models in Databricks Model Serving <https://docs.databricks.com/en/generative-ai/external-models/index.html>`_, without implementing custom prediction logic to wrap it as an MLflow model or a python function.
+For QCFlow >= 2.11.0, :py:func:`qcflow.evaluate()` supports evaluating a model endpoint by directly passing the QCFlow Deployments endpoint URI to the ``model`` argument.
+This is particularly useful when you want to evaluate a deployed model hosted by a local `QCFlow AI Gateway <../deployments/index.html>`_,  `Databricks Foundation Models API <https://docs.databricks.com/en/machine-learning/model-serving/score-foundation-models.html>`_, and `External Models in Databricks Model Serving <https://docs.databricks.com/en/generative-ai/external-models/index.html>`_, without implementing custom prediction logic to wrap it as an QCFlow model or a python function.
 
-Please don't forget to set the target deployment client by using :py:func:`mlflow.deployments.set_deployments_target` before calling :py:func:`mlflow.evaluate()` with the endpoint URI, as shown in the example below. Otherwise, you will see an error message like ``MlflowException: No deployments target has been set...``.
+Please don't forget to set the target deployment client by using :py:func:`qcflow.deployments.set_deployments_target` before calling :py:func:`qcflow.evaluate()` with the endpoint URI, as shown in the example below. Otherwise, you will see an error message like ``MlflowException: No deployments target has been set...``.
 
 .. hint::
 
-    When you want to use an endpoint **not** hosted by an MLflow AI Gateway or Databricks, you can create a custom Python function following the :ref:`Evaluating with a Custom Function <llm-eval-custom-function>` guide and use it as the ``model`` argument.
+    When you want to use an endpoint **not** hosted by an QCFlow AI Gateway or Databricks, you can create a custom Python function following the :ref:`Evaluating with a Custom Function <llm-eval-custom-function>` guide and use it as the ``model`` argument.
 
 Supported Input Data Formats
 ****************************
 
-The input data can be either of the following format when using an URI of the MLflow Deployment Endpoint as the model:
+The input data can be either of the following format when using an URI of the QCFlow Deployment Endpoint as the model:
 
 .. list-table::
     :widths: 20 40 40
@@ -761,13 +761,13 @@ The input data can be either of the following format when using an URI of the ML
             pd.DataFrame(
                 {
                     "inputs": [
-                        "What is MLflow?",
+                        "What is QCFlow?",
                         "What is Spark?",
                     ]
                 }
             )
 
-      - For this input format, MLflow will construct the appropriate request payload to the model endpoint type. For example, if your model is a chat endpoint (``llm/v1/chat``), MLflow will wrap your input string with the chat messages format like ``{"messages": [{"role": "user", "content": "What is MLflow?"}]}``. If you want to customize the request payload e.g. including system prompt, please use the next format.
+      - For this input format, QCFlow will construct the appropriate request payload to the model endpoint type. For example, if your model is a chat endpoint (``llm/v1/chat``), QCFlow will wrap your input string with the chat messages format like ``{"messages": [{"role": "user", "content": "What is QCFlow?"}]}``. If you want to customize the request payload e.g. including system prompt, please use the next format.
 
     * - A pandas DataFrame with a dictionary column.
       - 
@@ -779,7 +779,7 @@ The input data can be either of the following format when using an URI of the ML
                         {
                             "messages": [
                                 {"role": "system", "content": "Please answer."},
-                                {"role": "user", "content": "What is MLflow?"},
+                                {"role": "user", "content": "What is QCFlow?"},
                             ],
                             "max_tokens": 100,
                         },
@@ -788,18 +788,18 @@ The input data can be either of the following format when using an URI of the ML
                 }
             )
 
-      - In this format, the dictionary should have the correct request format for your model endpoint. Please refer to the `MLflow Deployments documentation <../deployments/index.html#standard-query-parameters>`_ for more information about the request format for different model endpoint types.
+      - In this format, the dictionary should have the correct request format for your model endpoint. Please refer to the `QCFlow Deployments documentation <../deployments/index.html#standard-query-parameters>`_ for more information about the request format for different model endpoint types.
 
     * - A list of input strings.
       - 
         .. code-block:: python
 
             [
-                "What is MLflow?",
+                "What is QCFlow?",
                 "What is Spark?",
             ]
 
-      - The :py:func:`mlflow.evaluate()` also accepts a list input.
+      - The :py:func:`qcflow.evaluate()` also accepts a list input.
 
     * - A list of request payload (dictionary).
       - 
@@ -809,7 +809,7 @@ The input data can be either of the following format when using an URI of the ML
                 {
                     "messages": [
                         {"role": "system", "content": "Please answer."},
-                        {"role": "user", "content": "What is MLflow?"},
+                        {"role": "user", "content": "What is QCFlow?"},
                     ],
                     "max_tokens": 100,
                 },
@@ -823,7 +823,7 @@ The input data can be either of the following format when using an URI of the ML
 Passing Inference Parameters
 ****************************
 
-You can pass additional inference parameters such as ``max_tokens``, ``temperature``, ``n``, to the model endpoint by setting the ``inference_params`` argument in :py:func:`mlflow.evaluate()`. The ``inference_params`` argument is a dictionary that contains the parameters to be passed to the model endpoint. The specified parameters are used for all the input record in the evaluation dataset.
+You can pass additional inference parameters such as ``max_tokens``, ``temperature``, ``n``, to the model endpoint by setting the ``inference_params`` argument in :py:func:`qcflow.evaluate()`. The ``inference_params`` argument is a dictionary that contains the parameters to be passed to the model endpoint. The specified parameters are used for all the input record in the evaluation dataset.
 
 .. note::
 
@@ -832,35 +832,35 @@ You can pass additional inference parameters such as ``max_tokens``, ``temperatu
 Examples
 ********
 
-**Chat Endpoint hosted by a local** `MLflow AI Gateway <../deployments/index.html>`_
+**Chat Endpoint hosted by a local** `QCFlow AI Gateway <../deployments/index.html>`_
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.deployments import set_deployments_target
+    import qcflow
+    from qcflow.deployments import set_deployments_target
     import pandas as pd
 
-    # Point the client to the local MLflow AI Gateway
+    # Point the client to the local QCFlow AI Gateway
     set_deployments_target("http://localhost:5000")
 
     eval_data = pd.DataFrame(
         {
             # Input data must be a string column and named "inputs".
             "inputs": [
-                "What is MLflow?",
+                "What is QCFlow?",
                 "What is Spark?",
             ],
             # Additional ground truth data for evaluating the answer
             "ground_truth": [
-                "MLflow is an open-source platform ....",
+                "QCFlow is an open-source platform ....",
                 "Apache Spark is an open-source, ...",
             ],
         }
     )
 
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             model="endpoints:/my-chat-endpoint",
             data=eval_data,
             targets="ground_truth",
@@ -872,8 +872,8 @@ Examples
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.deployments import set_deployments_target
+    import qcflow
+    from qcflow.deployments import set_deployments_target
     import pandas as pd
 
     # Point the client to Databricks Foundation Models API
@@ -883,15 +883,15 @@ Examples
         {
             # Input data must be a string column and named "inputs".
             "inputs": [
-                "Write 3 reasons why you should use MLflow?",
+                "Write 3 reasons why you should use QCFlow?",
                 "Can you explain the difference between classification and regression?",
             ],
         }
     )
 
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             model="endpoints:/databricks-mpt-7b-instruct",
             data=eval_data,
             inference_params={"max_tokens": 100, "temperature": 0.0},
@@ -905,29 +905,29 @@ Evaluating `External Models in Databricks Model Serving <https://docs.databricks
 Evaluating with a Static Dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For MLflow >= 2.8.0, :py:func:`mlflow.evaluate()` supports evaluating a static dataset without specifying a model.
-This is useful when you save the model output to a column in a Pandas DataFrame or an MLflow PandasDataset, and
+For QCFlow >= 2.8.0, :py:func:`qcflow.evaluate()` supports evaluating a static dataset without specifying a model.
+This is useful when you save the model output to a column in a Pandas DataFrame or an QCFlow PandasDataset, and
 want to evaluate the static dataset without re-running the model.
 
 If you are using a Pandas DataFrame, you must specify the column name that contains the model output using the
-top-level ``predictions`` parameter in :py:func:`mlflow.evaluate()`:
+top-level ``predictions`` parameter in :py:func:`qcflow.evaluate()`:
 
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import pandas as pd
 
     eval_data = pd.DataFrame(
         {
             "inputs": [
-                "What is MLflow?",
+                "What is QCFlow?",
                 "What is Spark?",
             ],
             "ground_truth": [
-                "MLflow is an open-source platform for managing the end-to-end machine learning (ML) lifecycle. "
+                "QCFlow is an open-source platform for managing the end-to-end machine learning (ML) lifecycle. "
                 "It was developed by Databricks, a company that specializes in big data and machine learning solutions. "
-                "MLflow is designed to address the challenges that data scientists and machine learning engineers "
+                "QCFlow is designed to address the challenges that data scientists and machine learning engineers "
                 "face when developing, training, and deploying machine learning models.",
                 "Apache Spark is an open-source, distributed computing system designed for big data processing and "
                 "analytics. It was developed in response to limitations of the Hadoop MapReduce computing model, "
@@ -936,19 +936,19 @@ top-level ``predictions`` parameter in :py:func:`mlflow.evaluate()`:
                 "Spark Streaming for real-time data processing, and MLlib for machine learning tasks",
             ],
             "predictions": [
-                "MLflow is an open-source platform that provides handy tools to manage Machine Learning workflow "
+                "QCFlow is an open-source platform that provides handy tools to manage Machine Learning workflow "
                 "lifecycle in a simple way",
                 "Spark is a popular open-source distributed computing system designed for big data processing and analytics.",
             ],
         }
     )
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             data=eval_data,
             targets="ground_truth",
             predictions="predictions",
-            extra_metrics=[mlflow.metrics.genai.answer_similarity()],
+            extra_metrics=[qcflow.metrics.genai.answer_similarity()],
             evaluators="default",
         )
         print(f"See aggregated evaluation results below: \n{results.metrics}")
@@ -963,7 +963,7 @@ Viewing Evaluation Results
 View Evaluation Results via Code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``mlflow.evaluate()`` returns the evaluation results as an :py:func:`mlflow.models.EvaluationResult` instance. 
+``qcflow.evaluate()`` returns the evaluation results as an :py:func:`qcflow.models.EvaluationResult` instance. 
 To see the score on selected metrics, you can check:
 
 * ``metrics``: stores the aggregated results, like average/variance across the evaluation dataset. Let's take a second
@@ -971,12 +971,12 @@ To see the score on selected metrics, you can check:
   
   .. code-block:: python
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             data=eval_data,
             targets="ground_truth",
             predictions="predictions",
-            extra_metrics=[mlflow.metrics.genai.answer_similarity()],
+            extra_metrics=[qcflow.metrics.genai.answer_similarity()],
             evaluators="default",
         )
         print(f"See aggregated evaluation results below: \n{results.metrics}")
@@ -985,12 +985,12 @@ To see the score on selected metrics, you can check:
 
   .. code-block:: python
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             data=eval_data,
             targets="ground_truth",
             predictions="predictions",
-            extra_metrics=[mlflow.metrics.genai.answer_similarity()],
+            extra_metrics=[qcflow.metrics.genai.answer_similarity()],
             evaluators="default",
         )
         print(
@@ -999,13 +999,13 @@ To see the score on selected metrics, you can check:
 
 
 
-View Evaluation Results via the MLflow UI
+View Evaluation Results via the QCFlow UI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Your evaluation result is automatically logged into MLflow server, so you can view your evaluation results directly from the
-MLflow UI. To view the evaluation results on MLflow UI, please follow the steps below:
+Your evaluation result is automatically logged into QCFlow server, so you can view your evaluation results directly from the
+QCFlow UI. To view the evaluation results on QCFlow UI, please follow the steps below:
 
-1. Go to the experiment view of your MLflow experiment.
+1. Go to the experiment view of your QCFlow experiment.
 2. Select the "Evaluation" tab.
 3. Select the runs you want to check evaluation results.
 4. Select the metrics from the dropdown menu on the right side. 
@@ -1016,4 +1016,4 @@ Please see the screenshot below for clarity:
 .. figure:: ../../_static/images/llm_evaluate_experiment_view.png
     :width: 1024px
     :align: center
-    :alt: Demo UI of MLflow evaluate
+    :alt: Demo UI of QCFlow evaluate

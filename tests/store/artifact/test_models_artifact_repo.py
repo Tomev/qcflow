@@ -2,17 +2,17 @@ from unittest import mock
 
 import pytest
 
-from mlflow import MlflowClient
-from mlflow.entities.model_registry import ModelVersion
-from mlflow.store.artifact.databricks_models_artifact_repo import DatabricksModelsArtifactRepository
-from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
-from mlflow.store.artifact.unity_catalog_models_artifact_repo import (
+from qcflow import MlflowClient
+from qcflow.entities.model_registry import ModelVersion
+from qcflow.store.artifact.databricks_models_artifact_repo import DatabricksModelsArtifactRepository
+from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
+from qcflow.store.artifact.unity_catalog_models_artifact_repo import (
     UnityCatalogModelsArtifactRepository,
 )
-from mlflow.store.artifact.unity_catalog_oss_models_artifact_repo import (
+from qcflow.store.artifact.unity_catalog_oss_models_artifact_repo import (
     UnityCatalogOSSModelsArtifactRepository,
 )
-from mlflow.utils.os import is_windows
+from qcflow.utils.os import is_windows
 
 from tests.store.artifact.constants import (
     UC_MODELS_ARTIFACT_REPOSITORY,
@@ -47,7 +47,7 @@ def test_models_artifact_repo_init_with_db_profile_inferred_from_context(uri_wit
     with (
         mock.patch(WORKSPACE_MODELS_ARTIFACT_REPOSITORY, autospec=True) as mock_repo,
         mock.patch(
-            "mlflow.store.artifact.utils.models.mlflow.get_registry_uri",
+            "qcflow.store.artifact.utils.models.qcflow.get_registry_uri",
             return_value="databricks://getRegistryUriDefault",
         ),
     ):
@@ -64,7 +64,7 @@ def test_models_artifact_repo_init_with_uc_registry_db_profile_inferred_from_con
     uc_registry_uri = "databricks-uc://getRegistryUriDefault"
     with (
         mock.patch(UC_MODELS_ARTIFACT_REPOSITORY, autospec=True) as mock_repo,
-        mock.patch("mlflow.get_registry_uri", return_value=uc_registry_uri),
+        mock.patch("qcflow.get_registry_uri", return_value=uc_registry_uri),
     ):
         mock_repo.return_value.model_name = "MyModel"
         mock_repo.return_value.model_version = "12"
@@ -79,7 +79,7 @@ def test_models_artifact_repo_init_with_uc_oss_profile_inferred_from_context():
     uc_registry_uri = "uc://getRegistryUriDefault"
     with (
         mock.patch(UC_OSS_MODELS_ARTIFACT_REPOSITORY, autospec=True) as mock_repo,
-        mock.patch("mlflow.get_registry_uri", return_value=uc_registry_uri),
+        mock.patch("qcflow.get_registry_uri", return_value=uc_registry_uri),
     ):
         mock_repo.return_value.model_name = "MyModel"
         mock_repo.return_value.model_version = "12"
@@ -97,11 +97,11 @@ def test_models_artifact_repo_init_with_version_uri_and_not_using_databricks_reg
             MlflowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
         mock.patch(
-            "mlflow.store.artifact.utils.models.mlflow.get_registry_uri",
+            "qcflow.store.artifact.utils.models.qcflow.get_registry_uri",
             return_value=non_databricks_uri,
         ),
         mock.patch(
-            "mlflow.store.artifact.artifact_repository_registry.get_artifact_repository",
+            "qcflow.store.artifact.artifact_repository_registry.get_artifact_repository",
             return_value=None,
         ) as get_repo_mock,
     ):
@@ -134,7 +134,7 @@ def test_models_artifact_repo_init_with_stage_uri_and_not_using_databricks_regis
         get_latest_versions_patch,
         get_model_version_download_uri_patch,
         mock.patch(
-            "mlflow.store.artifact.artifact_repository_registry.get_artifact_repository",
+            "qcflow.store.artifact.artifact_repository_registry.get_artifact_repository",
             return_value=None,
         ) as get_repo_mock,
     ):

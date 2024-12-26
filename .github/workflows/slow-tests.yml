@@ -1,5 +1,5 @@
-# A daily job to run slow tests with MLFLOW_RUN_SLOW_TESTS environment variable set to true.
-name: MLflow Slow Tests
+# A daily job to run slow tests with QCFLOW_RUN_SLOW_TESTS environment variable set to true.
+name: QCFlow Slow Tests
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ on:
     inputs:
       repository:
         description: >
-          [Optional] Repository name with owner. For example, mlflow/mlflow.
+          [Optional] Repository name with owner. For example, qcflow/qcflow.
            Defaults to the repository that triggered a workflow.
         required: false
         default: ""
@@ -35,8 +35,8 @@ defaults:
     shell: bash --noprofile --norc -exo pipefail {0}
 
 env:
-  MLFLOW_RUN_SLOW_TESTS: "true"
-  MLFLOW_HOME: /home/runner/work/mlflow/mlflow
+  QCFLOW_RUN_SLOW_TESTS: "true"
+  QCFLOW_HOME: /home/runner/work/qcflow/qcflow
   PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
 
 jobs:
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     permissions: {}
-    if: (github.event_name == 'schedule' && github.repository == 'mlflow-automation/mlflow') || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    if: (github.event_name == 'schedule' && github.repository == 'qcflow-automation/qcflow') || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
     strategy:
       fail-fast: false
       matrix:

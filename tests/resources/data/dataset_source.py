@@ -1,10 +1,10 @@
 from typing import Any
 from urllib.parse import urlparse
 
-from mlflow.artifacts import download_artifacts
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.artifacts import download_artifacts
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
 class SampleDatasetSource(DatasetSource):

@@ -1,7 +1,7 @@
-mlflow.lightgbm
+qcflow.lightgbm
 ===============
 
-.. automodule:: mlflow.lightgbm
+.. automodule:: qcflow.lightgbm
     :members:
     :undoc-members:
     :show-inheritance:

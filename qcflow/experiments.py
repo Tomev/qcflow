@@ -2,11 +2,11 @@ import os
 
 import click
 
-import mlflow
-from mlflow.entities import ViewType
-from mlflow.tracking import _get_store, fluent
-from mlflow.utils.data_utils import is_uri
-from mlflow.utils.string_utils import _create_table
+import qcflow
+from qcflow.entities import ViewType
+from qcflow.tracking import _get_store, fluent
+from qcflow.utils.data_utils import is_uri
+from qcflow.utils.string_utils import _create_table
 
 EXPERIMENT_ID = click.option("--experiment-id", "-x", type=click.STRING, required=True)
 
@@ -15,7 +15,7 @@ EXPERIMENT_ID = click.option("--experiment-id", "-x", type=click.STRING, require
 def commands():
     """
     Manage experiments. To manage experiments associated with a tracking server, set the
-    MLFLOW_TRACKING_URI environment variable to the URL of the desired server.
+    QCFLOW_TRACKING_URI environment variable to the URL of the desired server.
     """
 
 
@@ -26,7 +26,7 @@ def commands():
     "-l",
     help="Base location for runs to store artifact results. Artifacts will be stored "
     "at $artifact_location/$run_id/artifacts. See "
-    "https://mlflow.org/docs/latest/tracking.html#where-runs-are-recorded for "
+    "https://qcflow.org/docs/latest/tracking.html#where-runs-are-recorded for "
     "more info on the properties of artifact location. "
     "If no location is provided, the tracking server will pick a default.",
 )
@@ -59,7 +59,7 @@ def search_experiments(view):
     Search for experiments in the configured tracking server.
     """
     view_type = ViewType.from_string(view) if view else ViewType.ACTIVE_ONLY
-    experiments = mlflow.search_experiments(view_type=view_type)
+    experiments = qcflow.search_experiments(view_type=view_type)
     table = [
         [
             exp.experiment_id,

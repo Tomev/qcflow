@@ -61,7 +61,7 @@ export const RunNameCellRenderer = React.memo((props: RunNameCellRendererProps) 
         >
           {renderingAsParent && (
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_experiment-page_components_runs_cells_runnamecellrenderer.tsx_46"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_experiment-page_components_runs_cells_runnamecellrenderer.tsx_46"
               css={styles.expanderButton}
               size="small"
               onClick={() => {

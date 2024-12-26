@@ -1,7 +1,7 @@
-mlflow.server
+qcflow.server
 =============
 
-.. automodule:: mlflow.server
+.. automodule:: qcflow.server
     :members: get_app_client
     :undoc-members:
     :show-inheritance:

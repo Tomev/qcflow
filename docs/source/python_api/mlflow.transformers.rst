@@ -1,7 +1,7 @@
-mlflow.transformers
+qcflow.transformers
 ===================
 
-.. automodule:: mlflow.transformers
+.. automodule:: qcflow.transformers
     :members:
     :undoc-members:
     :show-inheritance:

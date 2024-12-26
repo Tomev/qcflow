@@ -163,7 +163,7 @@ export const RunViewMetricCharts = ({
           {showConfigArea && (
             <div css={{ display: 'flex', gap: theme.spacing.sm }}>
               <Input
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewmetriccharts.tsx_165"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewmetriccharts.tsx_165"
                 role="searchbox"
                 prefix={<SearchIcon />}
                 value={search}
@@ -175,7 +175,7 @@ export const RunViewMetricCharts = ({
                 })}
               />
               <Button
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_runviewmetriccharts.tsx_176"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_runviewmetriccharts.tsx_176"
                 icon={
                   anyRunRefreshing ? <Spinner size="small" css={{ marginRight: theme.spacing.sm }} /> : <RefreshIcon />
                 }

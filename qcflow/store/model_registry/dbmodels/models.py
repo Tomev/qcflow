@@ -9,17 +9,17 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import backref, relationship
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModel,
     RegisteredModelAlias,
     RegisteredModelTag,
 )
-from mlflow.entities.model_registry.model_version_stages import STAGE_DELETED_INTERNAL, STAGE_NONE
-from mlflow.entities.model_registry.model_version_status import ModelVersionStatus
-from mlflow.store.db.base_sql_model import Base
-from mlflow.utils.time import get_current_time_millis
+from qcflow.entities.model_registry.model_version_stages import STAGE_DELETED_INTERNAL, STAGE_NONE
+from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
+from qcflow.store.db.base_sql_model import Base
+from qcflow.utils.time import get_current_time_millis
 
 
 class SqlRegisteredModel(Base):
@@ -41,7 +41,7 @@ class SqlRegisteredModel(Base):
             f"{self.creation_time}, {self.last_updated_time})>"
         )
 
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         # SqlRegisteredModel has backref to all "model_versions". Filter latest for each stage.
         latest_versions = {}
         for mv in self.model_versions:
@@ -55,9 +55,9 @@ class SqlRegisteredModel(Base):
             self.creation_time,
             self.last_updated_time,
             self.description,
-            [mvd.to_mlflow_entity() for mvd in latest_versions.values()],
-            [tag.to_mlflow_entity() for tag in self.registered_model_tags],
-            [alias.to_mlflow_entity() for alias in self.registered_model_aliases],
+            [mvd.to_qcflow_entity() for mvd in latest_versions.values()],
+            [tag.to_qcflow_entity() for tag in self.registered_model_tags],
+            [alias.to_qcflow_entity() for alias in self.registered_model_aliases],
         )
 
 
@@ -98,7 +98,7 @@ class SqlModelVersion(Base):
     __table_args__ = (PrimaryKeyConstraint("name", "version", name="model_version_pk"),)
 
     # entity mappers
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         return ModelVersion(
             self.name,
             self.version,
@@ -111,7 +111,7 @@ class SqlModelVersion(Base):
             self.run_id,
             self.status,
             self.status_message,
-            [tag.to_mlflow_entity() for tag in self.model_version_tags],
+            [tag.to_qcflow_entity() for tag in self.model_version_tags],
             self.run_link,
             [],
         )
@@ -137,7 +137,7 @@ class SqlRegisteredModelTag(Base):
         return f"<SqlRegisteredModelTag ({self.name}, {self.key}, {self.value})>"
 
     # entity mappers
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         return RegisteredModelTag(self.key, self.value)
 
 
@@ -172,7 +172,7 @@ class SqlModelVersionTag(Base):
         return f"<SqlModelVersionTag ({self.name}, {self.version}, {self.key}, {self.value})>"
 
     # entity mappers
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         return ModelVersionTag(self.key, self.value)
 
 
@@ -201,5 +201,5 @@ class SqlRegisteredModelAlias(Base):
         return f"<SqlRegisteredModelAlias ({self.name}, {self.alias}, {self.version})>"
 
     # entity mappers
-    def to_mlflow_entity(self):
+    def to_qcflow_entity(self):
         return RegisteredModelAlias(self.alias, self.version)

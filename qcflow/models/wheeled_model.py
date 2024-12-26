@@ -6,23 +6,23 @@ import sys
 
 import yaml
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.environment_variables import MLFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import BAD_REQUEST
-from mlflow.pyfunc.model import MLMODEL_FILE_NAME, Model
-from mlflow.store.artifact.utils.models import _parse_model_uri, get_model_name_and_version
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.annotations import experimental
-from mlflow.utils.environment import (
+import qcflow
+from qcflow import MlflowClient
+from qcflow.environment_variables import QCFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import BAD_REQUEST
+from qcflow.pyfunc.model import MLMODEL_FILE_NAME, Model
+from qcflow.store.artifact.utils.models import _parse_model_uri, get_model_name_and_version
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.annotations import experimental
+from qcflow.utils.environment import (
     _REQUIREMENTS_FILE_NAME,
     _get_pip_deps,
-    _mlflow_additional_pip_env,
+    _qcflow_additional_pip_env,
     _overwrite_pip_deps,
 )
-from mlflow.utils.model_utils import _validate_and_prepare_target_save_path
-from mlflow.utils.uri import get_databricks_profile_uri_from_artifact_uri
+from qcflow.utils.model_utils import _validate_and_prepare_target_save_path
+from qcflow.utils.uri import get_databricks_profile_uri_from_artifact_uri
 
 _WHEELS_FOLDER_NAME = "wheels"
 _ORIGINAL_REQ_FILE_NAME = "original_requirements.txt"
@@ -41,7 +41,7 @@ class WheeledModel:
     def __init__(self, model_uri):
         self._model_uri = model_uri
         databricks_profile_uri = (
-            get_databricks_profile_uri_from_artifact_uri(model_uri) or mlflow.get_registry_uri()
+            get_databricks_profile_uri_from_artifact_uri(model_uri) or qcflow.get_registry_uri()
         )
         client = MlflowClient(registry_uri=databricks_profile_uri)
         self._model_name, _ = get_model_name_and_version(client, model_uri)
@@ -49,7 +49,7 @@ class WheeledModel:
     @classmethod
     def log_model(cls, model_uri, registered_model_name=None):
         """
-        Logs a registered model as an MLflow artifact for the current run. This only operates on
+        Logs a registered model as an QCFlow artifact for the current run. This only operates on
         a model which has been registered to the Model Registry. Given a registered model_uri (
         e.g. models:/<model_name>/<model_version>), this utility re-logs the model along with all
         the required model libraries back to the Model Registry. The required model libraries are
@@ -72,7 +72,7 @@ class WheeledModel:
             :caption: Example
 
             # Given a model uri, log the wheeled model
-            with mlflow.start_run():
+            with qcflow.start_run():
                 WheeledModel.log_model(model_uri)
         """
         parsed_uri = _parse_model_uri(model_uri)
@@ -82,7 +82,7 @@ class WheeledModel:
             registered_model_name=registered_model_name or parsed_uri.name,
         )
 
-    def save_model(self, path, mlflow_model=None):
+    def save_model(self, path, qcflow_model=None):
         """
         Given an existing registered model, saves the model along with it's dependencies stored as
         wheels to a path on the local file system.
@@ -93,15 +93,15 @@ class WheeledModel:
 
         The download_command defaults to downloading only binary packages using the
         `--only-binary=:all:` option. This behavior can be overridden using an environment
-        variable `MLFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS`, which will allows setting
+        variable `QCFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS`, which will allows setting
         different options such as `--prefer-binary`, `--no-binary`, etc.
 
         Args:
             path: Local path where the model is to be saved.
-            mlflow_model: The new :py:mod:`mlflow.models.Model` metadata file to store the
+            qcflow_model: The new :py:mod:`qcflow.models.Model` metadata file to store the
                 updated model metadata.
         """
-        from mlflow.pyfunc import ENV, FLAVOR_NAME, _extract_conda_env
+        from qcflow.pyfunc import ENV, FLAVOR_NAME, _extract_conda_env
 
         path = os.path.abspath(path)
         _validate_and_prepare_target_save_path(path)
@@ -144,11 +144,11 @@ class WheeledModel:
         self._update_conda_env(pip_deps, conda_env_path)
 
         # Update MLModel File
-        mlflow_model = self._update_mlflow_model(
-            original_model_metadata=model_metadata, mlflow_model=mlflow_model
+        qcflow_model = self._update_qcflow_model(
+            original_model_metadata=model_metadata, qcflow_model=qcflow_model
         )
-        mlflow_model.save(model_metadata_path)
-        return mlflow_model
+        qcflow_model.save(model_metadata_path)
+        return qcflow_model
 
     def _update_conda_env(self, new_pip_deps, conda_env_path):
         """
@@ -176,7 +176,7 @@ class WheeledModel:
         with open(conda_env_path, "w") as out:
             yaml.safe_dump(new_conda_env, stream=out, default_flow_style=False)
 
-    def _update_mlflow_model(self, original_model_metadata, mlflow_model):
+    def _update_qcflow_model(self, original_model_metadata, qcflow_model):
         """
         Modifies the MLModel file to reflect updated information such as the run_id,
         utc_time_created. Additionally, this also adds `wheels` to the MLModel file to indicate that
@@ -184,24 +184,24 @@ class WheeledModel:
 
         Args:
             original_model_metadata: The model metadata stored in the original MLmodel file.
-            mlflow_model: :py:mod:`mlflow.models.Model` configuration of the newly created
+            qcflow_model: :py:mod:`qcflow.models.Model` configuration of the newly created
                           wheeled model
         """
 
-        run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
-        if mlflow_model is None:
-            mlflow_model = Model(run_id=run_id)
+        run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
+        if qcflow_model is None:
+            qcflow_model = Model(run_id=run_id)
 
         original_model_metadata.__dict__.update(
-            {k: v for k, v in mlflow_model.__dict__.items() if v}
+            {k: v for k, v in qcflow_model.__dict__.items() if v}
         )
-        mlflow_model.__dict__.update(original_model_metadata.__dict__)
-        mlflow_model.artifact_path = WheeledModel.get_wheel_artifact_path(
-            mlflow_model.artifact_path
+        qcflow_model.__dict__.update(original_model_metadata.__dict__)
+        qcflow_model.artifact_path = WheeledModel.get_wheel_artifact_path(
+            qcflow_model.artifact_path
         )
 
-        mlflow_model.wheels = {_PLATFORM: platform.platform()}
-        return mlflow_model
+        qcflow_model.wheels = {_PLATFORM: platform.platform()}
+        return qcflow_model
 
     @classmethod
     def _download_wheels(cls, pip_requirements_path, dst_path):
@@ -209,7 +209,7 @@ class WheeledModel:
         Downloads all the wheels of the dependencies specified in the requirements.txt file.
         The pip wheel download_command defaults to downloading only binary packages using
         the `--only-binary=:all:` option. This behavior can be overridden using an
-        environment variable `MLFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS`, which will allows
+        environment variable `QCFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS`, which will allows
         setting different options such as `--prefer-binary`, `--no-binary`, etc.
 
         Args:
@@ -219,7 +219,7 @@ class WheeledModel:
         if not os.path.exists(dst_path):
             os.makedirs(dst_path)
 
-        pip_wheel_options = MLFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS.get()
+        pip_wheel_options = QCFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS.get()
 
         try:
             subprocess.run(
@@ -274,7 +274,7 @@ class WheeledModel:
         with open(conda_env_path) as f:
             conda_env = yaml.safe_load(f)
         pip_deps = _get_pip_deps(conda_env)
-        _mlflow_additional_pip_env(pip_deps, pip_requirements_path)
+        _qcflow_additional_pip_env(pip_deps, pip_requirements_path)
 
     @classmethod
     def get_wheel_artifact_path(cls, original_artifact_path):

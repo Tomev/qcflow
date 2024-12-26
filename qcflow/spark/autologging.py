@@ -6,20 +6,20 @@ import uuid
 
 from py4j.java_gateway import CallbackServerParameters
 
-from mlflow import MlflowClient
-from mlflow.exceptions import MlflowException
-from mlflow.spark import FLAVOR_NAME
-from mlflow.tracking.context.abstract_context import RunContextProvider
-from mlflow.tracking.fluent import _get_latest_active_run
-from mlflow.utils import _truncate_and_ellipsize
-from mlflow.utils.autologging_utils import (
+from qcflow import MlflowClient
+from qcflow.exceptions import MlflowException
+from qcflow.spark import FLAVOR_NAME
+from qcflow.tracking.context.abstract_context import RunContextProvider
+from qcflow.tracking.fluent import _get_latest_active_run
+from qcflow.utils import _truncate_and_ellipsize
+from qcflow.utils.autologging_utils import (
     ExceptionSafeClass,
     autologging_is_disabled,
 )
-from mlflow.utils.databricks_utils import get_repl_id as get_databricks_repl_id
-from mlflow.utils.validation import MAX_TAG_VAL_LENGTH
+from qcflow.utils.databricks_utils import get_repl_id as get_databricks_repl_id
+from qcflow.utils.validation import MAX_TAG_VAL_LENGTH
 
-_JAVA_PACKAGE = "org.mlflow.spark.autologging"
+_JAVA_PACKAGE = "org.qcflow.spark.autologging"
 _SPARK_TABLE_INFO_TAG_NAME = "sparkDatasourceInfo"
 
 _logger = logging.getLogger(__name__)
@@ -157,12 +157,12 @@ def _listen_for_spark_activity(spark_context):
             "Exception while attempting to initialize JVM-side state for Spark datasource "
             "autologging. Note that Spark datasource autologging only works with Spark 3.0 "
             "and above. Please create a new Spark session with required Spark version and "
-            "ensure you have the mlflow-spark JAR attached to your Spark session as described "
-            f"in https://mlflow.org/docs/latest/tracking/autolog.html#spark Exception:\n{e}"
+            "ensure you have the qcflow-spark JAR attached to your Spark session as described "
+            f"in https://qcflow.org/docs/latest/tracking/autolog.html#spark Exception:\n{e}"
         )
 
     # Register context provider for Spark autologging
-    from mlflow.tracking.context.registry import _run_context_provider_registry
+    from qcflow.tracking.context.registry import _run_context_provider_registry
 
     _run_context_provider_registry.register(SparkAutologgingContext)
 
@@ -187,9 +187,9 @@ def _get_repl_id():
 class PythonSubscriber(metaclass=ExceptionSafeClass):
     """
     Subscriber, intended to be instantiated once per Python process, that logs Spark table
-    information propagated from Java to the current MLflow run, starting a run if necessary.
-    class implements a Java interface (org.mlflow.spark.autologging.MlflowAutologEventSubscriber,
-    defined in the mlflow-spark package) that's called-into by autologging logic in the JVM in order
+    information propagated from Java to the current QCFlow run, starting a run if necessary.
+    class implements a Java interface (org.qcflow.spark.autologging.MlflowAutologEventSubscriber,
+    defined in the qcflow-spark package) that's called-into by autologging logic in the JVM in order
     to propagate Spark datasource read events to Python.
 
     This class leverages the Py4j callback mechanism to receive callbacks from the JVM, see
@@ -233,7 +233,7 @@ class PythonSubscriber(metaclass=ExceptionSafeClass):
         # because the spark event listener callback (jvm side) does not have the python caller
         # thread information, therefore the tag is set to the latest active run, ignoring threading
         # information. This way, consistent behavior is kept with existing functionality for
-        # Spark in MLflow.
+        # Spark in QCFlow.
         latest_active_run = _get_latest_active_run()
 
         if latest_active_run:

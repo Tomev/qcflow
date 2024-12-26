@@ -29,7 +29,7 @@ export class DirectTransitionFormImpl extends React.Component<Props> {
         {toStage && ACTIVE_STAGES.includes(toStage) && (
           <Form.Item name="archiveExistingVersions" initialValue="true" valuePropName="checked" preserve={false}>
             <Checkbox
-              componentId="codegen_mlflow_app_src_model-registry_components_directtransitionform.tsx_56"
+              componentId="codegen_qcflow_app_src_model-registry_components_directtransitionform.tsx_56"
               data-testid="direct-transition-form-check-box"
             >
               <LegacyTooltip title={archiveExistingVersionToolTipText(toStage)}>

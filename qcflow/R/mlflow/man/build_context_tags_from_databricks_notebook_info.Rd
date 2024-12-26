@@ -10,11 +10,11 @@ build_context_tags_from_databricks_notebook_info(notebook_info)
 \item{notebook_info}{The configuration data from the Databricks Notebook environment}
 }
 \value{
-A list of tags to be set by the run context when creating MLflow runs in the
+A list of tags to be set by the run context when creating QCFlow runs in the
 current Databricks Notebook environment
 }
 \description{
 Retrieves the notebook id, path, url, name, version, and type from the Databricks Notebook
 execution environment and sets them to a list to be used for setting the configured environment
-for executing an MLflow run in R from Databricks.
+for executing an QCFlow run in R from Databricks.
 }

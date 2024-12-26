@@ -1,5 +1,5 @@
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.protos.service_pb2 import InputTag as ProtoInputTag
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.protos.service_pb2 import InputTag as ProtoInputTag
 
 
 class InputTag(_MlflowObject):

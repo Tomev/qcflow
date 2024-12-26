@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 import torch
 
-from mlflow.exceptions import MlflowException
-from mlflow.models import infer_signature
-from mlflow.transformers.llm_inference_utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.models import infer_signature
+from qcflow.transformers.llm_inference_utils import (
     _get_default_task_for_llm_inference_task,
     _get_finish_reason,
     _get_output_and_usage_from_tensor,
@@ -18,7 +18,7 @@ from mlflow.transformers.llm_inference_utils import (
     infer_signature_from_llm_inference_task,
     preprocess_llm_inference_input,
 )
-from mlflow.types.llm import (
+from qcflow.types.llm import (
     CHAT_MODEL_INPUT_SCHEMA,
     CHAT_MODEL_OUTPUT_SCHEMA,
     COMPLETIONS_MODEL_INPUT_SCHEMA,
@@ -203,7 +203,7 @@ def test_preprocess_llm_inference_input(case):
     flavor_config = {"inference_task": task, "source_model_name": "test"}
 
     with mock.patch(
-        "mlflow.transformers.llm_inference_utils._get_stopping_criteria"
+        "qcflow.transformers.llm_inference_utils._get_stopping_criteria"
     ) as mock_get_stopping_criteria:
         data, params = preprocess_llm_inference_input(case.data, case.params, flavor_config)
 

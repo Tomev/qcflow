@@ -21,16 +21,16 @@ import importlib_metadata
 from packaging.requirements import Requirement
 from packaging.version import InvalidVersion, Version
 
-import mlflow
-from mlflow.environment_variables import (
-    _MLFLOW_IN_CAPTURE_MODULE_PROCESS,
-    MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS,
-    MLFLOW_REQUIREMENTS_INFERENCE_TIMEOUT,
+import qcflow
+from qcflow.environment_variables import (
+    _QCFLOW_IN_CAPTURE_MODULE_PROCESS,
+    QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS,
+    QCFLOW_REQUIREMENTS_INFERENCE_TIMEOUT,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.autologging_utils.versioning import _strip_dev_version_suffix
-from mlflow.utils.databricks_utils import (
+from qcflow.exceptions import MlflowException
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.autologging_utils.versioning import _strip_dev_version_suffix
+from qcflow.utils.databricks_utils import (
     get_databricks_env_vars,
     is_in_databricks_runtime,
 )
@@ -237,8 +237,8 @@ def _prune_packages(packages):
     # Ref: https://github.com/run-llama/llama_index/issues/14788#issuecomment-2232107585
     requires = {req for req in requires if not req.startswith("llama-index-")}
 
-    # Do not exclude mlflow's dependencies
-    return packages - (requires - set(_get_requires("mlflow")))
+    # Do not exclude qcflow's dependencies
+    return packages - (requires - set(_get_requires("qcflow")))
 
 
 def _run_command(cmd, timeout_seconds, env=None):
@@ -314,8 +314,8 @@ def _capture_imported_modules(model_uri, flavor, record_full_module=False, extra
     """
     local_model_path = _download_artifact_from_uri(model_uri)
 
-    process_timeout = MLFLOW_REQUIREMENTS_INFERENCE_TIMEOUT.get()
-    raise_on_error = MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS.get()
+    process_timeout = QCFLOW_REQUIREMENTS_INFERENCE_TIMEOUT.get()
+    raise_on_error = QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS.get()
     extra_env_vars = extra_env_vars or {}
 
     # Run `_capture_modules.py` to capture modules imported during the loading procedure
@@ -325,23 +325,23 @@ def _capture_imported_modules(model_uri, flavor, record_full_module=False, extra
         main_env = os.environ.copy()
         # Reset the path variable from the main process so that the subprocess retains all
         # main process configuration that a user has.
-        # See: ``https://github.com/mlflow/mlflow/issues/6905`` for context on minio configuration
+        # See: ``https://github.com/qcflow/qcflow/issues/6905`` for context on minio configuration
         # resolution in a subprocess based on PATH entries.
         main_env["PATH"] = "/usr/sbin:/sbin:" + main_env["PATH"]
         # Add databricks env, for langchain models loading we might need CLI configurations
         if is_in_databricks_runtime():
-            main_env.update(get_databricks_env_vars(mlflow.get_tracking_uri()))
+            main_env.update(get_databricks_env_vars(qcflow.get_tracking_uri()))
 
         record_full_module_args = ["--record-full-module"] if record_full_module else []
 
-        if flavor == mlflow.transformers.FLAVOR_NAME:
+        if flavor == qcflow.transformers.FLAVOR_NAME:
             # Lazily import `_capture_transformers_module` here to avoid circular imports.
-            from mlflow.utils import _capture_transformers_modules
+            from qcflow.utils import _capture_transformers_modules
 
             for module_to_throw in ["tensorflow", "torch"]:
                 # NB: Setting USE_TF or USE_TORCH here as Transformers only checks these env
                 # variable on the first import of the library, which could happen anytime during
-                # the model loading process (or even mlflow import). When these variables are not
+                # the model loading process (or even qcflow import). When these variables are not
                 # set, Transformers import some torch/tensorflow modules even if they are not
                 # used by the model, resulting in false positives in the captured modules.
                 transformer_env = (
@@ -368,7 +368,7 @@ def _capture_imported_modules(model_uri, flavor, record_full_module=False, extra
                         env={
                             **main_env,
                             **transformer_env,
-                            _MLFLOW_IN_CAPTURE_MODULE_PROCESS.name: "true",
+                            _QCFLOW_IN_CAPTURE_MODULE_PROCESS.name: "true",
                             **extra_env_vars,
                         },
                     )
@@ -379,7 +379,7 @@ def _capture_imported_modules(model_uri, flavor, record_full_module=False, extra
                     pass
 
         # Lazily import `_capture_module` here to avoid circular imports.
-        from mlflow.utils import _capture_modules
+        from qcflow.utils import _capture_modules
 
         error_file = os.path.join(tmpdir, "error.txt")
         _run_command(
@@ -401,7 +401,7 @@ def _capture_imported_modules(model_uri, flavor, record_full_module=False, extra
             timeout_seconds=process_timeout,
             env={
                 **main_env,
-                _MLFLOW_IN_CAPTURE_MODULE_PROCESS.name: "true",
+                _QCFLOW_IN_CAPTURE_MODULE_PROCESS.name: "true",
                 **extra_env_vars,
             },
         )
@@ -425,8 +425,8 @@ DATABRICKS_MODULES_TO_PACKAGES = {
     "databricks.automl_runtime": ["databricks-automl-runtime"],
     "databricks.model_monitoring": ["databricks-model-monitoring"],
 }
-MLFLOW_MODULES_TO_PACKAGES = {
-    "mlflow.gateway": ["mlflow[gateway]"],
+QCFLOW_MODULES_TO_PACKAGES = {
+    "qcflow.gateway": ["qcflow[gateway]"],
 }
 _MODULES_TO_PACKAGES = None
 _PACKAGES_TO_MODULES = None
@@ -440,8 +440,8 @@ def _init_modules_to_packages_map():
         # https://importlib-metadata.readthedocs.io/en/latest/using.html#using-importlib-metadata
         _MODULES_TO_PACKAGES = importlib_metadata.packages_distributions()
 
-        # Add mapping for MLflow extras
-        _MODULES_TO_PACKAGES.update(MLFLOW_MODULES_TO_PACKAGES)
+        # Add mapping for QCFlow extras
+        _MODULES_TO_PACKAGES.update(QCFLOW_MODULES_TO_PACKAGES)
 
         # Multiple packages populate the `databricks` module namespace on Databricks; to avoid
         # bundling extraneous Databricks packages into model dependencies, we scope each module
@@ -476,7 +476,7 @@ _PyPIPackageIndex = namedtuple("_PyPIPackageIndex", ["date", "package_names"])
 
 
 def _load_pypi_package_index():
-    with Path(mlflow.__file__).parent.joinpath("pypi_package_index.json").open() as f:
+    with Path(qcflow.__file__).parent.joinpath("pypi_package_index.json").open() as f:
         index_dict = json.load(f)
 
     return _PyPIPackageIndex(
@@ -518,15 +518,15 @@ def _infer_requirements(model_uri, flavor, raise_on_error=False, extra_env_vars=
         # It should be safe to exclude `setuptools` because it's rare to encounter a python
         # environment where `setuptools` is not pre-installed.
         "setuptools",
-        # Exclude a package that provides the mlflow module (e.g. mlflow, mlflow-skinny).
-        # Certain flavors (e.g. pytorch) import mlflow while loading a model, but mlflow should
+        # Exclude a package that provides the qcflow module (e.g. qcflow, qcflow-skinny).
+        # Certain flavors (e.g. pytorch) import qcflow while loading a model, but qcflow should
         # not be counted as a model requirement.
-        *_MODULES_TO_PACKAGES.get("mlflow", []),
+        *_MODULES_TO_PACKAGES.get("qcflow", []),
     ]
     packages = packages - set(excluded_packages)
 
-    # manually exclude mlflow[gateway] as it isn't listed separately in PYPI_PACKAGE_INDEX
-    unrecognized_packages = packages - _PYPI_PACKAGE_INDEX.package_names - {"mlflow[gateway]"}
+    # manually exclude qcflow[gateway] as it isn't listed separately in PYPI_PACKAGE_INDEX
+    unrecognized_packages = packages - _PYPI_PACKAGE_INDEX.package_names - {"qcflow[gateway]"}
     if unrecognized_packages:
         if raise_on_error:
             raise MlflowException(
@@ -590,10 +590,10 @@ def _strip_local_version_label(version):
 
 def _get_pinned_requirement(req_str, version=None, module=None):
     """Returns a string representing a pinned pip requirement to install the specified package and
-    version (e.g. 'mlflow==1.2.3').
+    version (e.g. 'qcflow==1.2.3').
 
     Args:
-        req_str: The package requirement string (e.g. "mlflow" or "mlflow[gateway]").
+        req_str: The package requirement string (e.g. "qcflow" or "qcflow[gateway]").
         version: The version of the package. If None, defaults to the installed version.
         module: The name of the top-level module provided by the package . For example,
             if `package` is 'scikit-learn', `module` should be 'sklearn'. If None, defaults
@@ -611,7 +611,7 @@ def _get_pinned_requirement(req_str, version=None, module=None):
             if not (is_in_databricks_runtime() and package in ("torch", "torchvision")):
                 msg = (
                     f"Found {package} version ({version_raw}) contains a local version label "
-                    f"(+{local_version_label}). MLflow logged a pip requirement for this package "
+                    f"(+{local_version_label}). QCFlow logged a pip requirement for this package "
                     f"as '{package}=={version}' without the local version label to make it "
                     "installable from PyPI. To specify pip requirements containing local version "
                     "labels, please use `conda_env` or `pip_requirements`."
@@ -662,19 +662,19 @@ def _check_requirement_satisfied(requirement_str):
             requirement=requirement_str,
         )
 
-    if pkg_name == "mlflow" and "gateway" in req.extras:
+    if pkg_name == "qcflow" and "gateway" in req.extras:
         try:
-            from mlflow import gateway  # noqa: F401
+            from qcflow import gateway  # noqa: F401
         except ModuleNotFoundError:
             return _MismatchedPackageInfo(
-                package_name="mlflow[gateway]",
+                package_name="qcflow[gateway]",
                 installed_version=None,
                 requirement=requirement_str,
             )
 
     if (
-        pkg_name == "mlflow"
-        and installed_version == mlflow.__version__
+        pkg_name == "qcflow"
+        and installed_version == qcflow.__version__
         and Version(installed_version).is_devrelease
     ):
         return None
@@ -725,7 +725,7 @@ def warn_dependency_requirement_mismatches(model_requirements: list[str]):
             warning_msg = (
                 "Detected one or more mismatches between the model's dependencies and the current "
                 f"Python environment:\n{mismatch_str}\n"
-                "To fix the mismatches, call `mlflow.pyfunc.get_model_dependencies(model_uri)` "
+                "To fix the mismatches, call `qcflow.pyfunc.get_model_dependencies(model_uri)` "
                 "to fetch the model's environment and install dependencies using the resulting "
                 "environment file."
             )

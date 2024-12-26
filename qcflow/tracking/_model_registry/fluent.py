@@ -1,17 +1,17 @@
 from typing import Any, Optional
 
-from mlflow.entities.model_registry import ModelVersion, RegisteredModel
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import ALREADY_EXISTS, RESOURCE_ALREADY_EXISTS, ErrorCode
-from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
-from mlflow.store.model_registry import (
+from qcflow.entities.model_registry import ModelVersion, RegisteredModel
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import ALREADY_EXISTS, RESOURCE_ALREADY_EXISTS, ErrorCode
+from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
+from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_DEFAULT,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
 )
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.client import MlflowClient
-from mlflow.utils import get_results_from_paginated_fn
-from mlflow.utils.logging_utils import eprint
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.client import MlflowClient
+from qcflow.utils import get_results_from_paginated_fn
+from qcflow.utils.logging_utils import eprint
 
 
 def register_model(
@@ -29,7 +29,7 @@ def register_model(
     Args:
         model_uri: URI referring to the MLmodel directory. Use a ``runs:/`` URI if you want to
             record the run ID with the model in model registry (recommended), or pass the
-            local filesystem path of the model if registering a locally-persisted MLflow
+            local filesystem path of the model if registering a locally-persisted QCFlow
             model that was previously saved using ``save_model``.
             ``models:/`` URIs are currently not supported.
         name: Name of the registered model under which to create a new model version. If a
@@ -39,32 +39,32 @@ def register_model(
             being created and is in ``READY`` status. By default, the function
             waits for five minutes. Specify 0 or None to skip waiting.
         tags: A dictionary of key-value pairs that are converted into
-            :py:class:`mlflow.entities.model_registry.ModelVersionTag` objects.
+            :py:class:`qcflow.entities.model_registry.ModelVersionTag` objects.
 
     Returns:
-        Single :py:class:`mlflow.entities.model_registry.ModelVersion` object created by
+        Single :py:class:`qcflow.entities.model_registry.ModelVersion` object created by
         backend.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow.sklearn
-        from mlflow.models import infer_signature
+        import qcflow.sklearn
+        from qcflow.models import infer_signature
         from sklearn.datasets import make_regression
         from sklearn.ensemble import RandomForestRegressor
 
-        mlflow.set_tracking_uri("sqlite:////tmp/mlruns.db")
+        qcflow.set_tracking_uri("sqlite:////tmp/mlruns.db")
         params = {"n_estimators": 3, "random_state": 42}
         X, y = make_regression(n_features=4, n_informative=2, random_state=0, shuffle=False)
-        # Log MLflow entities
-        with mlflow.start_run() as run:
+        # Log QCFlow entities
+        with qcflow.start_run() as run:
             rfr = RandomForestRegressor(**params).fit(X, y)
             signature = infer_signature(X, rfr.predict(X))
-            mlflow.log_params(params)
-            mlflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
+            qcflow.log_params(params)
+            qcflow.sklearn.log_model(rfr, artifact_path="sklearn-model", signature=signature)
         model_uri = f"runs:/{run.info.run_id}/sklearn-model"
-        mv = mlflow.register_model(model_uri, "RandomForestRegressionModel")
+        mv = qcflow.register_model(model_uri, "RandomForestRegressionModel")
         print(f"Name: {mv.name}")
         print(f"Version: {mv.version}")
 
@@ -155,23 +155,23 @@ def search_registered_models(
             matching search results.
 
     Returns:
-        A list of :py:class:`mlflow.entities.model_registry.RegisteredModel` objects
+        A list of :py:class:`qcflow.entities.model_registry.RegisteredModel` objects
         that satisfy the search expressions.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
         from sklearn.linear_model import LogisticRegression
 
-        with mlflow.start_run():
-            mlflow.sklearn.log_model(
+        with qcflow.start_run():
+            qcflow.sklearn.log_model(
                 LogisticRegression(),
                 "Cordoba",
                 registered_model_name="CordobaWeatherForecastModel",
             )
-            mlflow.sklearn.log_model(
+            qcflow.sklearn.log_model(
                 LogisticRegression(),
                 "Boston",
                 registered_model_name="BostonWeatherForecastModel",
@@ -179,7 +179,7 @@ def search_registered_models(
 
         # Get search results filtered by the registered model name
         filter_string = "name = 'CordobaWeatherForecastModel'"
-        results = mlflow.search_registered_models(filter_string=filter_string)
+        results = qcflow.search_registered_models(filter_string=filter_string)
         print("-" * 80)
         for res in results:
             for mv in res.latest_versions:
@@ -188,14 +188,14 @@ def search_registered_models(
         # Get search results filtered by the registered model name that matches
         # prefix pattern
         filter_string = "name LIKE 'Boston%'"
-        results = mlflow.search_registered_models(filter_string=filter_string)
+        results = qcflow.search_registered_models(filter_string=filter_string)
         print("-" * 80)
         for res in results:
             for mv in res.latest_versions:
                 print(f"name={mv.name}; run_id={mv.run_id}; version={mv.version}")
 
         # Get all registered models and order them by ascending order of the names
-        results = mlflow.search_registered_models(order_by=["name ASC"])
+        results = qcflow.search_registered_models(order_by=["name ASC"])
         print("-" * 80)
         for res in results:
             for mv in res.latest_versions:
@@ -250,7 +250,7 @@ def search_model_versions(
             Identifiers
               - ``name``: model name.
               - ``source_path``: model version source path.
-              - ``run_id``: The id of the mlflow run that generates the model version.
+              - ``run_id``: The id of the qcflow run that generates the model version.
               - ``tags.<tag_key>``: model version tag. If ``tag_key`` contains spaces, it must be
                 wrapped with backticks (e.g., ``"tags.`extra key`"``).
 
@@ -268,19 +268,19 @@ def search_model_versions(
             matching search results.
 
     Returns:
-        A list of :py:class:`mlflow.entities.model_registry.ModelVersion` objects
+        A list of :py:class:`qcflow.entities.model_registry.ModelVersion` objects
             that satisfy the search expressions.
 
     .. code-block:: python
         :test:
         :caption: Example
 
-        import mlflow
+        import qcflow
         from sklearn.linear_model import LogisticRegression
 
         for _ in range(2):
-            with mlflow.start_run():
-                mlflow.sklearn.log_model(
+            with qcflow.start_run():
+                qcflow.sklearn.log_model(
                     LogisticRegression(),
                     "Cordoba",
                     registered_model_name="CordobaWeatherForecastModel",
@@ -288,14 +288,14 @@ def search_model_versions(
 
         # Get all versions of the model filtered by name
         filter_string = "name = 'CordobaWeatherForecastModel'"
-        results = mlflow.search_model_versions(filter_string=filter_string)
+        results = qcflow.search_model_versions(filter_string=filter_string)
         print("-" * 80)
         for res in results:
             print(f"name={res.name}; run_id={res.run_id}; version={res.version}")
 
         # Get the version of the model filtered by run_id
         filter_string = "run_id = 'ae9a606a12834c04a8ef1006d0cff779'"
-        results = mlflow.search_model_versions(filter_string=filter_string)
+        results = qcflow.search_model_versions(filter_string=filter_string)
         print("-" * 80)
         for res in results:
             print(f"name={res.name}; run_id={res.run_id}; version={res.version}")

@@ -3,8 +3,8 @@ from typing import Optional
 
 from databricks.sdk.errors.platform import NotFound
 
-from mlflow.entities import FileInfo
-from mlflow.store.artifact.cloud_artifact_repo import CloudArtifactRepository
+from qcflow.entities import FileInfo
+from qcflow.store.artifact.cloud_artifact_repo import CloudArtifactRepository
 
 DOWNLOAD_CHUNK_SIZE = 1024 * 1024 * 1024
 

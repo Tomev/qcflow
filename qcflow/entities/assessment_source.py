@@ -1,8 +1,8 @@
 from typing import Any, Optional
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
 class AssessmentSource(_MlflowObject):
@@ -11,7 +11,7 @@ class AssessmentSource(_MlflowObject):
     """
 
     def __init__(self, source_type: str, source_id: str, metadata: Optional[dict[str, Any]] = None):
-        """Construct a new mlflow.entities.AssessmentSource instance.
+        """Construct a new qcflow.entities.AssessmentSource instance.
 
         Args:
             source_type: The type of the assessment source (AssessmentSourceType).

@@ -1,40 +1,40 @@
 #' @importFrom utils browseURL
-mlflow_view_url <- function(url) {
+qcflow_view_url <- function(url) {
   getOption("page_viewer", browseURL)(url)
 
   invisible(url)
 }
 
-#' Run MLflow User Interface
+#' Run QCFlow User Interface
 #'
-#' Launches the MLflow user interface.
+#' Launches the QCFlow user interface.
 #'
 #' @examples
 #' \dontrun{
-#' library(mlflow)
+#' library(qcflow)
 #'
-#' # launch mlflow ui locally
-#' mlflow_ui()
+#' # launch qcflow ui locally
+#' qcflow_ui()
 #'
-#' # launch mlflow ui for existing mlflow server
-#' mlflow_set_tracking_uri("http://tracking-server:5000")
-#' mlflow_ui()
+#' # launch qcflow ui for existing qcflow server
+#' qcflow_set_tracking_uri("http://tracking-server:5000")
+#' qcflow_ui()
 #' }
 #'
 #' @template roxlate-client
-#' @param ... Optional arguments passed to `mlflow_server()` when `x` is a path to a file store.
+#' @param ... Optional arguments passed to `qcflow_server()` when `x` is a path to a file store.
 #' @export
-mlflow_ui <- function(client, ...) {
-  UseMethod("mlflow_ui")
+qcflow_ui <- function(client, ...) {
+  UseMethod("qcflow_ui")
 }
 
 #' @export
-mlflow_ui.mlflow_client <- function(client, ...) {
-  mlflow_view_url(client$get_host_creds()$host)
+qcflow_ui.qcflow_client <- function(client, ...) {
+  qcflow_view_url(client$get_host_creds()$host)
 }
 
 #' @export
-mlflow_ui.NULL <- function(client, ...) {
-  client <- mlflow_client()
-  mlflow_ui(client)
+qcflow_ui.NULL <- function(client, ...) {
+  client <- qcflow_client()
+  qcflow_ui(client)
 }

@@ -1,13 +1,13 @@
 """
-The ``mlflow.gemini`` module provides an API for tracing the interaction with Gemini models.
+The ``qcflow.gemini`` module provides an API for tracing the interaction with Gemini models.
 """
 
-from mlflow.gemini.autolog import (
+from qcflow.gemini.autolog import (
     patched_class_call,
     patched_module_call,
 )
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import autologging_integration, safe_patch
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import autologging_integration, safe_patch
 
 FLAVOR_NAME = "gemini"
 
@@ -20,14 +20,14 @@ def autolog(
     silent: bool = False,
 ):
     """
-    Enables (or disables) and configures autologging from Gemini to MLflow.
+    Enables (or disables) and configures autologging from Gemini to QCFlow.
     Only synchronous calls are supported. Asynchnorous APIs and streaming are not recorded.
 
     Args:
         log_traces: If ``True``, traces are logged for Gemini models.
             If ``False``, no traces are collected during inference. Default to ``True``.
         disable: If ``True``, disables the Gemini autologging. Default to ``False``.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during Gemini
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during Gemini
             autologging. If ``False``, show all events and warnings.
     """
     import google.generativeai as genai

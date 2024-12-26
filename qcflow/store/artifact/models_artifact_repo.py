@@ -2,22 +2,22 @@ import logging
 import os
 import urllib.parse
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.store.artifact.databricks_models_artifact_repo import DatabricksModelsArtifactRepository
-from mlflow.store.artifact.unity_catalog_models_artifact_repo import (
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.store.artifact.databricks_models_artifact_repo import DatabricksModelsArtifactRepository
+from qcflow.store.artifact.unity_catalog_models_artifact_repo import (
     UnityCatalogModelsArtifactRepository,
 )
-from mlflow.store.artifact.unity_catalog_oss_models_artifact_repo import (
+from qcflow.store.artifact.unity_catalog_oss_models_artifact_repo import (
     UnityCatalogOSSModelsArtifactRepository,
 )
-from mlflow.store.artifact.utils.models import (
+from qcflow.store.artifact.utils.models import (
     get_model_name_and_version,
     is_using_databricks_registry,
 )
-from mlflow.utils.file_utils import write_yaml
-from mlflow.utils.uri import (
+from qcflow.utils.file_utils import write_yaml
+from qcflow.utils.uri import (
     add_databricks_profile_info_to_artifact_uri,
     get_databricks_profile_uri_from_artifact_uri,
     is_databricks_unity_catalog_uri,
@@ -40,10 +40,10 @@ class ModelsArtifactRepository(ArtifactRepository):
     """
 
     def __init__(self, artifact_uri):
-        from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
+        from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 
         super().__init__(artifact_uri)
-        registry_uri = mlflow.get_registry_uri()
+        registry_uri = qcflow.get_registry_uri()
         if is_databricks_unity_catalog_uri(uri=registry_uri):
             self.repo = UnityCatalogModelsArtifactRepository(
                 artifact_uri=artifact_uri, registry_uri=registry_uri
@@ -98,10 +98,10 @@ class ModelsArtifactRepository(ArtifactRepository):
         # Note: to support a registry URI that is different from the tracking URI here,
         # we'll need to add setting of registry URIs via environment variables.
 
-        from mlflow import MlflowClient
+        from qcflow import MlflowClient
 
         databricks_profile_uri = (
-            get_databricks_profile_uri_from_artifact_uri(uri) or mlflow.get_registry_uri()
+            get_databricks_profile_uri_from_artifact_uri(uri) or qcflow.get_registry_uri()
         )
         client = MlflowClient(registry_uri=databricks_profile_uri)
         name, version = get_model_name_and_version(client, uri)
@@ -194,7 +194,7 @@ class ModelsArtifactRepository(ArtifactRepository):
             Absolute path of the local filesystem location containing the desired artifacts.
         """
 
-        from mlflow.models.model import MLMODEL_FILE_NAME
+        from qcflow.models.model import MLMODEL_FILE_NAME
 
         # Pass lineage header info if model is registered in UC
         if isinstance(self.repo, UnityCatalogModelsArtifactRepository):

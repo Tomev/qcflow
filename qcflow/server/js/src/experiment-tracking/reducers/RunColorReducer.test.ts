@@ -1,6 +1,6 @@
 import { fulfilled } from '../../common/utils/ActionUtils';
 import { GET_RUN_API, SEARCH_RUNS_API } from '../actions';
-import { MLFLOW_RUN_COLOR_TAG } from '../constants';
+import { QCFLOW_RUN_COLOR_TAG } from '../constants';
 import {
   RUN_COLOR_ACTION_INITIALIZE_RUN_COLORS,
   RUN_COLOR_ACTION_SET_RUN_COLOR,
@@ -50,7 +50,7 @@ describe('colorByRunUuid reducer', () => {
             runUuid: 'runUuid1',
           },
           data: {
-            tags: [{ key: MLFLOW_RUN_COLOR_TAG, value: '#FF0000' }],
+            tags: [{ key: QCFLOW_RUN_COLOR_TAG, value: '#FF0000' }],
           },
         },
       },
@@ -72,7 +72,7 @@ describe('colorByRunUuid reducer', () => {
               runUuid: 'runUuid1',
             },
             data: {
-              tags: [{ key: MLFLOW_RUN_COLOR_TAG, value: '#FF0000' }],
+              tags: [{ key: QCFLOW_RUN_COLOR_TAG, value: '#FF0000' }],
             },
           },
           {
@@ -80,7 +80,7 @@ describe('colorByRunUuid reducer', () => {
               runUuid: 'runUuid2',
             },
             data: {
-              tags: [{ key: MLFLOW_RUN_COLOR_TAG, value: '#0000AA' }],
+              tags: [{ key: QCFLOW_RUN_COLOR_TAG, value: '#0000AA' }],
             },
           },
         ],

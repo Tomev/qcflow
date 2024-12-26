@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package mlflow.unitycatalog;
+package qcflow.unitycatalog;
 
 import "databricks.proto";
 import "scalapb/scalapb.proto";

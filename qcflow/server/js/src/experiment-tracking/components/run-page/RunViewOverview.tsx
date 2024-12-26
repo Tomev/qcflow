@@ -21,7 +21,7 @@ import { DetailsOverviewMetadataRow } from '../DetailsOverviewMetadataRow';
 import { RunViewRegisteredModelsBox } from './overview/RunViewRegisteredModelsBox';
 import { RunViewLoggedModelsBox } from './overview/RunViewLoggedModelsBox';
 import { RunViewSourceBox } from './overview/RunViewSourceBox';
-import { DetailsOverviewMetadataTable } from '@mlflow/mlflow/src/experiment-tracking/components/DetailsOverviewMetadataTable';
+import { DetailsOverviewMetadataTable } from '@qcflow/qcflow/src/experiment-tracking/components/DetailsOverviewMetadataTable';
 import { DetailsOverviewCopyableIdBox } from '../DetailsOverviewCopyableIdBox';
 import type { RunInfoEntity } from '../../types';
 import type { UseGetRunQueryResponseRunInfo } from './hooks/useGetRunQuery';

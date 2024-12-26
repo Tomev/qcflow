@@ -5,20 +5,20 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModelTag,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.store.model_registry.file_store import FileStore
-from mlflow.utils.file_utils import path_to_local_file_uri, write_yaml
-from mlflow.utils.time import get_current_time_millis
+from qcflow.store.model_registry.file_store import FileStore
+from qcflow.utils.file_utils import path_to_local_file_uri, write_yaml
+from qcflow.utils.time import get_current_time_millis
 
 from tests.helper_functions import random_int, random_str
 
@@ -1291,12 +1291,12 @@ def test_search_registered_model_order_by(store):
     )
     assert res.names == rms
     with mock.patch(
-        "mlflow.store.model_registry.file_store.get_current_time_millis", return_value=1
+        "qcflow.store.model_registry.file_store.get_current_time_millis", return_value=1
     ):
         rm1 = store.create_registered_model("MR1").name
         rm2 = store.create_registered_model("MR2").name
     with mock.patch(
-        "mlflow.store.model_registry.file_store.get_current_time_millis", return_value=2
+        "qcflow.store.model_registry.file_store.get_current_time_millis", return_value=2
     ):
         rm3 = store.create_registered_model("MR3").name
         rm4 = store.create_registered_model("MR4").name
@@ -1544,21 +1544,21 @@ def test_delete_model_deletes_alias(store):
 
 
 def test_pyfunc_model_registry_with_file_store(store):
-    import mlflow
-    from mlflow.pyfunc import PythonModel
+    import qcflow
+    from qcflow.pyfunc import PythonModel
 
     class MyModel(PythonModel):
         def predict(self, context, model_input, params=None):
             return 7
 
-    mlflow.set_registry_uri(path_to_local_file_uri(store.root_directory))
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model("foo", python_model=MyModel(), registered_model_name="model1")
-        mlflow.pyfunc.log_model("foo", python_model=MyModel(), registered_model_name="model2")
-        mlflow.pyfunc.log_model("model", python_model=MyModel(), registered_model_name="model1")
+    qcflow.set_registry_uri(path_to_local_file_uri(store.root_directory))
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model("foo", python_model=MyModel(), registered_model_name="model1")
+        qcflow.pyfunc.log_model("foo", python_model=MyModel(), registered_model_name="model2")
+        qcflow.pyfunc.log_model("model", python_model=MyModel(), registered_model_name="model1")
 
-    with mlflow.start_run():
-        mlflow.log_param("A", "B")
+    with qcflow.start_run():
+        qcflow.log_param("A", "B")
 
         models = store.search_registered_models(max_results=10)
         assert len(models) == 2

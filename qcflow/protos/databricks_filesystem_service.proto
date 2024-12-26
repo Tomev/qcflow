@@ -3,7 +3,7 @@
 syntax = "proto2";
 
 // See go/protostyleguide/packages.
-package mlflow.filesystem;
+package qcflow.filesystem;
 
 import "databricks.proto";
 import "scalapb/scalapb.proto";

@@ -4,8 +4,8 @@ import json
 import logging
 import sys
 
-from mlflow.pyfunc import scoring_server
-from mlflow.pyfunc.model import _log_warning_if_params_not_in_predict_signature
+from qcflow.pyfunc import scoring_server
+from qcflow.pyfunc.model import _log_warning_if_params_not_in_predict_signature
 
 _logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +16,7 @@ args = parser.parse_args()
 
 _logger.info("Loading model from %s", args.model_uri)
 
-model = scoring_server.load_model_with_mlflow_config(args.model_uri)
+model = scoring_server.load_model_with_qcflow_config(args.model_uri)
 input_schema = model.metadata.get_input_schema()
 _logger.info("Loaded model")
 

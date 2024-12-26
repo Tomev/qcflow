@@ -8,7 +8,7 @@ Create Date: 2023-03-23 09:48:27.775166
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
-from mlflow.store.tracking.dbmodels.models import SqlDataset, SqlInputTag, SqlInput
+from qcflow.store.tracking.dbmodels.models import SqlDataset, SqlInputTag, SqlInput
 
 # revision identifiers, used by Alembic.
 revision = "7f2a7d5fae7d"

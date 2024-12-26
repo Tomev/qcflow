@@ -122,7 +122,7 @@ export class RegisterModelForm extends React.Component<Props, State> {
             ]}
           >
             <Input
-              componentId="codegen_mlflow_app_src_model-registry_components_registermodelform.tsx_132"
+              componentId="codegen_qcflow_app_src_model-registry_components_registermodelform.tsx_132"
               placeholder="Input a model name"
             />
           </LegacyForm.Item>

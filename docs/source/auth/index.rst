@@ -1,20 +1,20 @@
 .. _auth:
 
 =====================
-MLflow Authentication
+QCFlow Authentication
 =====================
 
 .. note::
     This feature is still experimental and may change in a future release without warning.
 
-MLflow supports basic HTTP authentication to enable access control over experiments and registered models.
+QCFlow supports basic HTTP authentication to enable access control over experiments and registered models.
 Once enabled, any visitor will be required to login before they can view any resource from the Tracking Server.
 
 .. contents:: Table of Contents
   :local:
   :depth: 2
 
-MLflow Authentication provides Python and REST API for managing users and permissions. 
+QCFlow Authentication provides Python and REST API for managing users and permissions. 
 
 .. toctree::
   :glob:
@@ -25,11 +25,11 @@ MLflow Authentication provides Python and REST API for managing users and permis
 Overview
 ========
 
-To enable MLflow authentication, launch the MLflow UI with the following command:
+To enable QCFlow authentication, launch the QCFlow UI with the following command:
 
 .. code-block:: bash
 
-    mlflow server --app-name basic-auth
+    qcflow server --app-name basic-auth
 
 
 Server admin can choose to disable this feature anytime by restarting the server without the ``app-name`` flag. 
@@ -93,96 +93,96 @@ Required Permissions for accessing experiments:
      - Endpoint
      - Method
      - Required permission
-   * - :ref:`Create Experiment <mlflowMlflowServicecreateExperiment>`
-     - ``2.0/mlflow/experiments/create``
+   * - :ref:`Create Experiment <qcflowMlflowServicecreateExperiment>`
+     - ``2.0/qcflow/experiments/create``
      - ``POST``
      - None
-   * - :ref:`Get Experiment <mlflowMlflowServicegetExperiment>`
-     - ``2.0/mlflow/experiments/get``
+   * - :ref:`Get Experiment <qcflowMlflowServicegetExperiment>`
+     - ``2.0/qcflow/experiments/get``
      - ``GET``
      - can_read
-   * - :ref:`Get Experiment By Name <mlflowMlflowServicegetExperimentByName>`
-     - ``2.0/mlflow/experiments/get-by-name``
+   * - :ref:`Get Experiment By Name <qcflowMlflowServicegetExperimentByName>`
+     - ``2.0/qcflow/experiments/get-by-name``
      - ``GET``
      - can_read
-   * - :ref:`Delete Experiment <mlflowMlflowServicedeleteExperiment>`
-     - ``2.0/mlflow/experiments/delete``
+   * - :ref:`Delete Experiment <qcflowMlflowServicedeleteExperiment>`
+     - ``2.0/qcflow/experiments/delete``
      - ``POST``
      - can_delete
-   * - :ref:`Restore Experiment <mlflowMlflowServicerestoreExperiment>`
-     - ``2.0/mlflow/experiments/restore``
+   * - :ref:`Restore Experiment <qcflowMlflowServicerestoreExperiment>`
+     - ``2.0/qcflow/experiments/restore``
      - ``POST``
      - can_delete
-   * - :ref:`Update Experiment <mlflowMlflowServiceupdateExperiment>`
-     - ``2.0/mlflow/experiments/update``
+   * - :ref:`Update Experiment <qcflowMlflowServiceupdateExperiment>`
+     - ``2.0/qcflow/experiments/update``
      - ``POST``
      - can_update
-   * - :ref:`Search Experiments <mlflowMlflowServicesearchExperiments>`
-     - ``2.0/mlflow/experiments/search``
+   * - :ref:`Search Experiments <qcflowMlflowServicesearchExperiments>`
+     - ``2.0/qcflow/experiments/search``
      - ``POST``
      - None
-   * - :ref:`Search Experiments <mlflowMlflowServicesearchExperiments>`
-     - ``2.0/mlflow/experiments/search``
+   * - :ref:`Search Experiments <qcflowMlflowServicesearchExperiments>`
+     - ``2.0/qcflow/experiments/search``
      - ``GET``
      - None
-   * - :ref:`Set Experiment Tag <mlflowMlflowServicesetExperimentTag>`
-     - ``2.0/mlflow/experiments/set-experiment-tag``
+   * - :ref:`Set Experiment Tag <qcflowMlflowServicesetExperimentTag>`
+     - ``2.0/qcflow/experiments/set-experiment-tag``
      - ``POST``
      - can_update
-   * - :ref:`Create Run <mlflowMlflowServicecreateRun>`
-     - ``2.0/mlflow/runs/create``
+   * - :ref:`Create Run <qcflowMlflowServicecreateRun>`
+     - ``2.0/qcflow/runs/create``
      - ``POST``
      - can_update
-   * - :ref:`Get Run <mlflowMlflowServicegetRun>`
-     - ``2.0/mlflow/runs/get``
+   * - :ref:`Get Run <qcflowMlflowServicegetRun>`
+     - ``2.0/qcflow/runs/get``
      - ``GET``
      - can_read
-   * - :ref:`Update Run <mlflowMlflowServiceupdateRun>`
-     - ``2.0/mlflow/runs/update``
+   * - :ref:`Update Run <qcflowMlflowServiceupdateRun>`
+     - ``2.0/qcflow/runs/update``
      - ``POST``
      - can_update
-   * - :ref:`Delete Run <mlflowMlflowServicedeleteRun>`
-     - ``2.0/mlflow/runs/delete``
+   * - :ref:`Delete Run <qcflowMlflowServicedeleteRun>`
+     - ``2.0/qcflow/runs/delete``
      - ``POST``
      - can_delete
-   * - :ref:`Restore Run <mlflowMlflowServicerestoreRun>`
-     - ``2.0/mlflow/runs/restore``
+   * - :ref:`Restore Run <qcflowMlflowServicerestoreRun>`
+     - ``2.0/qcflow/runs/restore``
      - ``POST``
      - can_delete
-   * - :ref:`Search Runs <mlflowMlflowServicesearchRuns>`
-     - ``2.0/mlflow/runs/search``
+   * - :ref:`Search Runs <qcflowMlflowServicesearchRuns>`
+     - ``2.0/qcflow/runs/search``
      - ``POST``
      - None
-   * - :ref:`Set Tag <mlflowMlflowServicesetTag>`
-     - ``2.0/mlflow/runs/set-tag``
+   * - :ref:`Set Tag <qcflowMlflowServicesetTag>`
+     - ``2.0/qcflow/runs/set-tag``
      - ``POST``
      - can_update
-   * - :ref:`Delete Tag <mlflowMlflowServicedeleteTag>`
-     - ``2.0/mlflow/runs/delete-tag``
+   * - :ref:`Delete Tag <qcflowMlflowServicedeleteTag>`
+     - ``2.0/qcflow/runs/delete-tag``
      - ``POST``
      - can_update
-   * - :ref:`Log Metric <mlflowMlflowServicelogMetric>`
-     - ``2.0/mlflow/runs/log-metric``
+   * - :ref:`Log Metric <qcflowMlflowServicelogMetric>`
+     - ``2.0/qcflow/runs/log-metric``
      - ``POST``
      - can_update
-   * - :ref:`Log Param <mlflowMlflowServicelogParam>`
-     - ``2.0/mlflow/runs/log-parameter``
+   * - :ref:`Log Param <qcflowMlflowServicelogParam>`
+     - ``2.0/qcflow/runs/log-parameter``
      - ``POST``
      - can_update
-   * - :ref:`Log Batch <mlflowMlflowServicelogBatch>`
-     - ``2.0/mlflow/runs/log-batch``
+   * - :ref:`Log Batch <qcflowMlflowServicelogBatch>`
+     - ``2.0/qcflow/runs/log-batch``
      - ``POST``
      - can_update
-   * - :ref:`Log Model <mlflowMlflowServicelogModel>`
-     - ``2.0/mlflow/runs/log-model``
+   * - :ref:`Log Model <qcflowMlflowServicelogModel>`
+     - ``2.0/qcflow/runs/log-model``
      - ``POST``
      - can_update
-   * - :ref:`List Artifacts <mlflowMlflowServicelistArtifacts>`
-     - ``2.0/mlflow/artifacts/list``
+   * - :ref:`List Artifacts <qcflowMlflowServicelistArtifacts>`
+     - ``2.0/qcflow/artifacts/list``
      - ``GET``
      - can_read
-   * - :ref:`Get Metric History <mlflowMlflowServicegetMetricHistory>`
-     - ``2.0/mlflow/metrics/get-history``
+   * - :ref:`Get Metric History <qcflowMlflowServicegetMetricHistory>`
+     - ``2.0/qcflow/metrics/get-history``
      - ``GET``
      - can_read
 
@@ -196,96 +196,96 @@ Required Permissions for accessing registered models:
      - Endpoint
      - Method
      - Required permission
-   * - :ref:`Create Registered Model <mlflowModelRegistryServicecreateRegisteredModel>`
-     - ``2.0/mlflow/registered-models/create``
+   * - :ref:`Create Registered Model <qcflowModelRegistryServicecreateRegisteredModel>`
+     - ``2.0/qcflow/registered-models/create``
      - ``POST``
      - None
-   * - :ref:`Rename Registered Model <mlflowModelRegistryServicerenameRegisteredModel>`
-     - ``2.0/mlflow/registered-models/rename``
+   * - :ref:`Rename Registered Model <qcflowModelRegistryServicerenameRegisteredModel>`
+     - ``2.0/qcflow/registered-models/rename``
      - ``POST``
      - can_update
-   * - :ref:`Update Registered Model <mlflowModelRegistryServiceupdateRegisteredModel>`
-     - ``2.0/mlflow/registered-models/update``
+   * - :ref:`Update Registered Model <qcflowModelRegistryServiceupdateRegisteredModel>`
+     - ``2.0/qcflow/registered-models/update``
      - ``PATCH``
      - can_update
-   * - :ref:`Delete Registered Model <mlflowModelRegistryServicedeleteRegisteredModel>`
-     - ``2.0/mlflow/registered-models/delete``
+   * - :ref:`Delete Registered Model <qcflowModelRegistryServicedeleteRegisteredModel>`
+     - ``2.0/qcflow/registered-models/delete``
      - ``DELETE``
      - can_delete
-   * - :ref:`Get Registered Model <mlflowModelRegistryServicegetRegisteredModel>`
-     - ``2.0/mlflow/registered-models/get``
+   * - :ref:`Get Registered Model <qcflowModelRegistryServicegetRegisteredModel>`
+     - ``2.0/qcflow/registered-models/get``
      - ``GET``
      - can_read
-   * - :ref:`Search Registered Models <mlflowModelRegistryServicesearchRegisteredModels>`
-     - ``2.0/mlflow/registered-models/search``
+   * - :ref:`Search Registered Models <qcflowModelRegistryServicesearchRegisteredModels>`
+     - ``2.0/qcflow/registered-models/search``
      - ``GET``
      - None
-   * - :ref:`Get Latest Versions <mlflowModelRegistryServicegetLatestVersions>`
-     - ``2.0/mlflow/registered-models/get-latest-versions``
+   * - :ref:`Get Latest Versions <qcflowModelRegistryServicegetLatestVersions>`
+     - ``2.0/qcflow/registered-models/get-latest-versions``
      - ``POST``
      - can_read
-   * - :ref:`Get Latest Versions <mlflowModelRegistryServicegetLatestVersions>`
-     - ``2.0/mlflow/registered-models/get-latest-versions``
+   * - :ref:`Get Latest Versions <qcflowModelRegistryServicegetLatestVersions>`
+     - ``2.0/qcflow/registered-models/get-latest-versions``
      - ``GET``
      - can_read
-   * - :ref:`Set Registered Model Tag <mlflowModelRegistryServicesetRegisteredModelTag>`
-     - ``2.0/mlflow/registered-models/set-tag``
+   * - :ref:`Set Registered Model Tag <qcflowModelRegistryServicesetRegisteredModelTag>`
+     - ``2.0/qcflow/registered-models/set-tag``
      - ``POST``
      - can_update
-   * - :ref:`Delete Registered Model Tag <mlflowModelRegistryServicedeleteRegisteredModelTag>`
-     - ``2.0/mlflow/registered-models/delete-tag``
+   * - :ref:`Delete Registered Model Tag <qcflowModelRegistryServicedeleteRegisteredModelTag>`
+     - ``2.0/qcflow/registered-models/delete-tag``
      - ``DELETE``
      - can_update
-   * - :ref:`Set Registered Model Alias <mlflowModelRegistryServicesetRegisteredModelAlias>`
-     - ``2.0/mlflow/registered-models/alias``
+   * - :ref:`Set Registered Model Alias <qcflowModelRegistryServicesetRegisteredModelAlias>`
+     - ``2.0/qcflow/registered-models/alias``
      - ``POST``
      - can_update
-   * - :ref:`Delete Registered Model Alias <mlflowModelRegistryServicedeleteRegisteredModelAlias>`
-     - ``2.0/mlflow/registered-models/alias``
+   * - :ref:`Delete Registered Model Alias <qcflowModelRegistryServicedeleteRegisteredModelAlias>`
+     - ``2.0/qcflow/registered-models/alias``
      - ``DELETE``
      - can_delete
-   * - :ref:`Get Model Version By Alias <mlflowModelRegistryServicegetModelVersionByAlias>`
-     - ``2.0/mlflow/registered-models/alias``
+   * - :ref:`Get Model Version By Alias <qcflowModelRegistryServicegetModelVersionByAlias>`
+     - ``2.0/qcflow/registered-models/alias``
      - ``GET``
      - can_read
-   * - :ref:`Create Model Version <mlflowModelRegistryServicecreateModelVersion>`
-     - ``2.0/mlflow/model-versions/create``
+   * - :ref:`Create Model Version <qcflowModelRegistryServicecreateModelVersion>`
+     - ``2.0/qcflow/model-versions/create``
      - ``POST``
      - can_update
-   * - :ref:`Update Model Version <mlflowModelRegistryServiceupdateModelVersion>`
-     - ``2.0/mlflow/model-versions/update``
+   * - :ref:`Update Model Version <qcflowModelRegistryServiceupdateModelVersion>`
+     - ``2.0/qcflow/model-versions/update``
      - ``PATCH``
      - can_update
-   * - :ref:`Transition Model Version Stage <mlflowModelRegistryServicetransitionModelVersionStage>`
-     - ``2.0/mlflow/model-versions/transition-stage``
+   * - :ref:`Transition Model Version Stage <qcflowModelRegistryServicetransitionModelVersionStage>`
+     - ``2.0/qcflow/model-versions/transition-stage``
      - ``POST``
      - can_update
-   * - :ref:`Delete Model Version <mlflowModelRegistryServicedeleteModelVersion>`
-     - ``2.0/mlflow/model-versions/delete``
+   * - :ref:`Delete Model Version <qcflowModelRegistryServicedeleteModelVersion>`
+     - ``2.0/qcflow/model-versions/delete``
      - ``DELETE``
      - can_delete
-   * - :ref:`Get Model Version <mlflowModelRegistryServicegetModelVersion>`
-     - ``2.0/mlflow/model-versions/get``
+   * - :ref:`Get Model Version <qcflowModelRegistryServicegetModelVersion>`
+     - ``2.0/qcflow/model-versions/get``
      - ``GET``
      - can_read
-   * - :ref:`Search Model Versions <mlflowModelRegistryServicesearchModelVersions>`
-     - ``2.0/mlflow/model-versions/search``
+   * - :ref:`Search Model Versions <qcflowModelRegistryServicesearchModelVersions>`
+     - ``2.0/qcflow/model-versions/search``
      - ``GET``
      - None
-   * - :ref:`Get Model Version Download Uri <mlflowModelRegistryServicegetModelVersionDownloadUri>`
-     - ``2.0/mlflow/model-versions/get-download-uri``
+   * - :ref:`Get Model Version Download Uri <qcflowModelRegistryServicegetModelVersionDownloadUri>`
+     - ``2.0/qcflow/model-versions/get-download-uri``
      - ``GET``
      - can_read
-   * - :ref:`Set Model Version Tag <mlflowModelRegistryServicesetModelVersionTag>`
-     - ``2.0/mlflow/model-versions/set-tag``
+   * - :ref:`Set Model Version Tag <qcflowModelRegistryServicesetModelVersionTag>`
+     - ``2.0/qcflow/model-versions/set-tag``
      - ``POST``
      - can_update
-   * - :ref:`Delete Model Version Tag <mlflowModelRegistryServicedeleteModelVersionTag>`
-     - ``2.0/mlflow/model-versions/delete-tag``
+   * - :ref:`Delete Model Version Tag <qcflowModelRegistryServicedeleteModelVersionTag>`
+     - ``2.0/qcflow/model-versions/delete-tag``
      - ``DELETE``
      - can_delete
 
-MLflow Authentication introduces several new API endpoints to manage users and permissions.
+QCFlow Authentication introduces several new API endpoints to manage users and permissions.
 
 .. list-table::
    :widths: 10 10 10 10
@@ -295,56 +295,56 @@ MLflow Authentication introduces several new API endpoints to manage users and p
      - Endpoint
      - Method
      - Required permission
-   * - :ref:`Create User <mlflowAuthServicecreateUser>`
-     - ``2.0/mlflow/users/create``
+   * - :ref:`Create User <qcflowAuthServicecreateUser>`
+     - ``2.0/qcflow/users/create``
      - ``POST``
      - None
-   * - :ref:`Get User <mlflowAuthServicegetUser>`
-     - ``2.0/mlflow/users/get``
+   * - :ref:`Get User <qcflowAuthServicegetUser>`
+     - ``2.0/qcflow/users/get``
      - ``GET``
      - Only readable by that user
-   * - :ref:`Update User Password <mlflowAuthServiceupdateUserPassword>`
-     - ``2.0/mlflow/users/update-password``
+   * - :ref:`Update User Password <qcflowAuthServiceupdateUserPassword>`
+     - ``2.0/qcflow/users/update-password``
      - ``PATCH``
      - Only updatable by that user
-   * - :ref:`Update User Admin <mlflowAuthServiceupdateUserAdmin>`
-     - ``2.0/mlflow/users/update-admin``
+   * - :ref:`Update User Admin <qcflowAuthServiceupdateUserAdmin>`
+     - ``2.0/qcflow/users/update-admin``
      - ``PATCH``
      - Only admin
-   * - :ref:`Delete User <mlflowAuthServicedeleteUser>`
-     - ``2.0/mlflow/users/delete``
+   * - :ref:`Delete User <qcflowAuthServicedeleteUser>`
+     - ``2.0/qcflow/users/delete``
      - ``DELETE``
      - Only admin
-   * - :ref:`Create Experiment Permission <mlflowAuthServicecreateExperimentPermission>`
-     - ``2.0/mlflow/experiments/permissions/create``
+   * - :ref:`Create Experiment Permission <qcflowAuthServicecreateExperimentPermission>`
+     - ``2.0/qcflow/experiments/permissions/create``
      - ``POST``
      - can_manage
-   * - :ref:`Get Experiment Permission <mlflowAuthServicegetExperimentPermission>`
-     - ``2.0/mlflow/experiments/permissions/get``
+   * - :ref:`Get Experiment Permission <qcflowAuthServicegetExperimentPermission>`
+     - ``2.0/qcflow/experiments/permissions/get``
      - ``GET``
      - can_manage
-   * - :ref:`Update Experiment Permission <mlflowAuthServiceupdateExperimentPermission>`
-     - ``2.0/mlflow/experiments/permissions/update``
+   * - :ref:`Update Experiment Permission <qcflowAuthServiceupdateExperimentPermission>`
+     - ``2.0/qcflow/experiments/permissions/update``
      - ``PATCH``
      - can_manage
-   * - :ref:`Delete Experiment Permission <mlflowAuthServicedeleteExperimentPermission>`
-     - ``2.0/mlflow/experiments/permissions/delete``
+   * - :ref:`Delete Experiment Permission <qcflowAuthServicedeleteExperimentPermission>`
+     - ``2.0/qcflow/experiments/permissions/delete``
      - ``DELETE``
      - can_manage
-   * - :ref:`Create Registered Model Permission <mlflowAuthServicecreateRegisteredModelPermission>`
-     - ``2.0/mlflow/registered-models/permissions/create``
+   * - :ref:`Create Registered Model Permission <qcflowAuthServicecreateRegisteredModelPermission>`
+     - ``2.0/qcflow/registered-models/permissions/create``
      - ``POST``
      - can_manage
-   * - :ref:`Get Registered Model Permission <mlflowAuthServicegetRegisteredModelPermission>`
-     - ``2.0/mlflow/registered-models/permissions/get``
+   * - :ref:`Get Registered Model Permission <qcflowAuthServicegetRegisteredModelPermission>`
+     - ``2.0/qcflow/registered-models/permissions/get``
      - ``GET``
      - can_manage
-   * - :ref:`Update Registered Model Permission <mlflowAuthServiceupdateRegisteredModelPermission>`
-     - ``2.0/mlflow/registered-models/permissions/update``
+   * - :ref:`Update Registered Model Permission <qcflowAuthServiceupdateRegisteredModelPermission>`
+     - ``2.0/qcflow/registered-models/permissions/update``
      - ``PATCH``
      - can_manage
-   * - :ref:`Delete Registered Model Permission <mlflowAuthServicedeleteRegisteredModelPermission>`
-     - ``2.0/mlflow/registered-models/permissions/delete``
+   * - :ref:`Delete Registered Model Permission <qcflowAuthServicedeleteRegisteredModelPermission>`
+     - ``2.0/qcflow/registered-models/permissions/delete``
      - ``DELETE``
      - can_manage
 
@@ -360,32 +360,32 @@ on that experiment, so that the creator can grant or revoke other users' access 
      - Endpoint
      - Method
      - Effect
-   * - :ref:`Create Experiment <mlflowMlflowServicecreateExperiment>`
-     - ``2.0/mlflow/experiments/create``
+   * - :ref:`Create Experiment <qcflowMlflowServicecreateExperiment>`
+     - ``2.0/qcflow/experiments/create``
      - ``POST``
      - Automatically grants ``MANAGE`` permission to the creator.
-   * - :ref:`Create Registered Model <mlflowModelRegistryServicecreateRegisteredModel>`
-     - ``2.0/mlflow/registered-models/create``
+   * - :ref:`Create Registered Model <qcflowModelRegistryServicecreateRegisteredModel>`
+     - ``2.0/qcflow/registered-models/create``
      - ``POST``
      - Automatically grants ``MANAGE`` permission to the creator.
-   * - :ref:`Search Experiments <mlflowMlflowServicesearchExperiments>`
-     - ``2.0/mlflow/experiments/search``
+   * - :ref:`Search Experiments <qcflowMlflowServicesearchExperiments>`
+     - ``2.0/qcflow/experiments/search``
      - ``POST``
      - Only returns experiments which the user has ``READ`` permission on.
-   * - :ref:`Search Experiments <mlflowMlflowServicesearchExperiments>`
-     - ``2.0/mlflow/experiments/search``
+   * - :ref:`Search Experiments <qcflowMlflowServicesearchExperiments>`
+     - ``2.0/qcflow/experiments/search``
      - ``GET``
      - Only returns experiments which the user has ``READ`` permission on.
-   * - :ref:`Search Runs <mlflowMlflowServicesearchRuns>`
-     - ``2.0/mlflow/runs/search``
+   * - :ref:`Search Runs <qcflowMlflowServicesearchRuns>`
+     - ``2.0/qcflow/runs/search``
      - ``POST``
      - Only returns experiments which the user has ``READ`` permission on.
-   * - :ref:`Search Registered Models <mlflowModelRegistryServicesearchRegisteredModels>`
-     - ``2.0/mlflow/registered-models/search``
+   * - :ref:`Search Registered Models <qcflowModelRegistryServicesearchRegisteredModels>`
+     - ``2.0/qcflow/registered-models/search``
      - ``GET``
      - Only returns registered models which the user has ``READ`` permission on.
-   * - :ref:`Search Model Versions <mlflowModelRegistryServicesearchModelVersions>`
-     - ``2.0/mlflow/model-versions/search``
+   * - :ref:`Search Model Versions <qcflowModelRegistryServicesearchModelVersions>`
+     - ``2.0/qcflow/model-versions/search``
      - ``GET``
      - Only returns registered models which the user has ``READ`` permission on.
 
@@ -393,22 +393,22 @@ on that experiment, so that the creator can grant or revoke other users' access 
 Permissions Database
 --------------------
 
-All users and permissions are stored in a database in ``basic_auth.db``, relative to the directory where MLflow server is launched.
+All users and permissions are stored in a database in ``basic_auth.db``, relative to the directory where QCFlow server is launched.
 The location can be changed in the :ref:`configuration <configuration>` file. To run migrations, use the following command:
 
 .. code-block::
 
-    python -m mlflow.server.auth db upgrade --url <database_url>
+    python -m qcflow.server.auth db upgrade --url <database_url>
 
 Admin Users
 -----------
 
-Admin users have unrestricted access to all MLflow resources,
+Admin users have unrestricted access to all QCFlow resources,
 **including creating or deleting users, updating password and admin status of other users,
 granting or revoking permissions from other users, and managing permissions for all 
-MLflow resources,** even if ``NO_PERMISSIONS`` is explicitly set to that admin account.
+QCFlow resources,** even if ``NO_PERMISSIONS`` is explicitly set to that admin account.
 
-MLflow has a built-in admin user that will be created the first time that the MLflow authentication feature is enabled.
+QCFlow has a built-in admin user that will be created the first time that the QCFlow authentication feature is enabled.
 
 .. note::
     It is recommended that you update the default admin password as soon as possible after creation.
@@ -426,18 +426,18 @@ The default admin user credentials are as follows:
      - ``password``
 
 
-Multiple admin users can exist by promoting other users to admin, using the ``2.0/mlflow/users/update-admin`` endpoint.
+Multiple admin users can exist by promoting other users to admin, using the ``2.0/qcflow/users/update-admin`` endpoint.
 
 .. code-block:: bash
     :caption: Example
 
     # authenticate as built-in admin user
-    export MLFLOW_TRACKING_USERNAME=admin
-    export MLFLOW_TRACKING_PASSWORD=password
+    export QCFLOW_TRACKING_USERNAME=admin
+    export QCFLOW_TRACKING_PASSWORD=password
  
 .. code-block:: python
 
-    from mlflow.server import get_app_client
+    from qcflow.server import get_app_client
 
     tracking_uri = "http://localhost:5000/"
 
@@ -449,20 +449,20 @@ Multiple admin users can exist by promoting other users to admin, using the ``2.
 Managing Permissions
 --------------------
 
-MLflow provides :ref:`REST APIs <mlflowAuthServiceCreateUser>` and a client class 
-:py:func:`AuthServiceClient<mlflow.server.auth.client.AuthServiceClient>` to manage users and permissions.
-To instantiate ``AuthServiceClient``, it is recommended that you use :py:func:`mlflow.server.get_app_client`.
+QCFlow provides :ref:`REST APIs <qcflowAuthServiceCreateUser>` and a client class 
+:py:func:`AuthServiceClient<qcflow.server.auth.client.AuthServiceClient>` to manage users and permissions.
+To instantiate ``AuthServiceClient``, it is recommended that you use :py:func:`qcflow.server.get_app_client`.
 
 .. code-block:: bash
     :caption: Example
 
-    export MLFLOW_TRACKING_USERNAME=admin
-    export MLFLOW_TRACKING_PASSWORD=password
+    export QCFLOW_TRACKING_USERNAME=admin
+    export QCFLOW_TRACKING_PASSWORD=password
 
 .. code-block:: python
 
-    from mlflow import MlflowClient
-    from mlflow.server import get_app_client
+    from qcflow import MlflowClient
+    from qcflow.server import get_app_client
 
     tracking_uri = "http://localhost:5000/"
 
@@ -478,16 +478,16 @@ To instantiate ``AuthServiceClient``, it is recommended that you use :py:func:`m
     )
 
 
-Authenticating to MLflow
+Authenticating to QCFlow
 ========================
 
-Using MLflow UI
+Using QCFlow UI
 ---------------
 
-When a user first visits the MLflow UI on a browser, they will be prompted to login. 
+When a user first visits the QCFlow UI on a browser, they will be prompted to login. 
 There is no limit to how many login attempts can be made.
 
-Currently, MLflow UI does not display any information about the current user.
+Currently, QCFlow UI does not display any information about the current user.
 Once a user is logged in, the only way to log out is to close the browser.
 
     .. image:: ../_static/images/auth_prompt.png
@@ -495,39 +495,39 @@ Once a user is logged in, the only way to log out is to close the browser.
 Using Environment Variables
 ---------------------------
 
-MLflow provides two environment variables for authentication: ``MLFLOW_TRACKING_USERNAME`` and ``MLFLOW_TRACKING_PASSWORD``.
+QCFlow provides two environment variables for authentication: ``QCFLOW_TRACKING_USERNAME`` and ``QCFLOW_TRACKING_PASSWORD``.
 To use basic authentication, you must set both environment variables.
 
 .. code-block:: bash
 
-    export MLFLOW_TRACKING_USERNAME=username
-    export MLFLOW_TRACKING_PASSWORD=password
+    export QCFLOW_TRACKING_USERNAME=username
+    export QCFLOW_TRACKING_PASSWORD=password
 
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    mlflow.set_tracking_uri("https://<mlflow_tracking_uri>/")
-    with mlflow.start_run():
+    qcflow.set_tracking_uri("https://<qcflow_tracking_uri>/")
+    with qcflow.start_run():
         ...
 
 Using Credentials File
 ----------------------
 
 You can save your credentials in a file to remove the need for setting environment variables every time.
-The credentials should be saved in ``~/.mlflow/credentials`` using ``INI`` format. Note that the password 
+The credentials should be saved in ``~/.qcflow/credentials`` using ``INI`` format. Note that the password 
 will be stored unencrypted on disk, and is protected only by filesystem permissions.
 
-If the environment variables ``MLFLOW_TRACKING_USERNAME`` and ``MLFLOW_TRACKING_PASSWORD`` are configured,
+If the environment variables ``QCFLOW_TRACKING_USERNAME`` and ``QCFLOW_TRACKING_PASSWORD`` are configured,
 they override any credentials provided in the credentials file.
 
 .. code-block:: ini
     :caption: Credentials file format
 
-    [mlflow]
-    mlflow_tracking_username = username
-    mlflow_tracking_password = password
+    [qcflow]
+    qcflow_tracking_username = username
+    qcflow_tracking_password = password
 
 Using REST API
 --------------
@@ -542,7 +542,7 @@ In Python, you can use the ``requests`` library:
     import requests
 
     response = requests.get(
-        "https://<mlflow_tracking_uri>/",
+        "https://<qcflow_tracking_uri>/",
         auth=("username", "password"),
     )
 
@@ -553,10 +553,10 @@ Creating a New User
 .. important::
     To create a new user, you are required to authenticate with admin privileges.
 
-Using MLflow UI
+Using QCFlow UI
 ---------------
 
-MLflow UI provides a simple page for creating new users at ``<tracking_uri>/signup``.
+QCFlow UI provides a simple page for creating new users at ``<tracking_uri>/signup``.
 
     .. image:: ../_static/images/auth_signup_form.png
 
@@ -572,25 +572,25 @@ In Python, you can use the ``requests`` library:
     import requests
 
     response = requests.post(
-        "https://<mlflow_tracking_uri>/api/2.0/mlflow/users/create",
+        "https://<qcflow_tracking_uri>/api/2.0/qcflow/users/create",
         json={
             "username": "username",
             "password": "password",
         },
     )
 
-Using MLflow AuthServiceClient
+Using QCFlow AuthServiceClient
 ------------------------------
 
-MLflow :py:func:`AuthServiceClient<mlflow.server.auth.client.AuthServiceClient>`
+QCFlow :py:func:`AuthServiceClient<qcflow.server.auth.client.AuthServiceClient>`
 provides a function to create new users easily.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    auth_client = mlflow.server.get_app_client(
-        "basic-auth", tracking_uri="https://<mlflow_tracking_uri>/"
+    auth_client = qcflow.server.get_app_client(
+        "basic-auth", tracking_uri="https://<qcflow_tracking_uri>/"
     )
     auth_client.create_user(username="username", password="password")
 
@@ -599,7 +599,7 @@ provides a function to create new users easily.
 Configuration
 =============
 
-Authentication configuration is located at ``mlflow/server/auth/basic_auth.ini``:
+Authentication configuration is located at ``qcflow/server/auth/basic_auth.ini``:
 
 .. list-table::
    :widths: 10 10
@@ -618,7 +618,7 @@ Authentication configuration is located at ``mlflow/server/auth/basic_auth.ini``
    * - ``authorization_function``
      - Function to authenticate requests
 
-Alternatively, assign the environment variable ``MLFLOW_AUTH_CONFIG_PATH`` to point
+Alternatively, assign the environment variable ``QCFLOW_AUTH_CONFIG_PATH`` to point
 to your custom configuration file.
 
 The ``authorization_function`` setting supports pluggable authentication methods
@@ -639,7 +639,7 @@ to implement a custom authentication method, see ``tests/server/auth/jwt_auth.py
 Connecting to a Centralized Database
 ====================================
 
-By default, MLflow Authentication uses a local SQLite database to store user and permission data.
+By default, QCFlow Authentication uses a local SQLite database to store user and permission data.
 In the case of a multi-node deployment, it is recommended to use a centralized database to store this data.
 
 To connect to a centralized database, you can set the ``database_uri`` configuration variable to the database URL.
@@ -647,27 +647,27 @@ To connect to a centralized database, you can set the ``database_uri`` configura
 .. code-block:: ini
     :caption: Example: ``/path/to/my_auth_config.ini``
 
-    [mlflow]
+    [qcflow]
     database_uri = postgresql://username:password@hostname:port/database
 
-Then, start the MLflow server with the ``MLFLOW_AUTH_CONFIG_PATH`` environment variable
+Then, start the QCFlow server with the ``QCFLOW_AUTH_CONFIG_PATH`` environment variable
 set to the path of your configuration file.
 
 .. code-block:: bash
 
-    MLFLOW_AUTH_CONFIG_PATH=/path/to/my_auth_config.ini mlflow server --app-name basic-auth
+    QCFLOW_AUTH_CONFIG_PATH=/path/to/my_auth_config.ini qcflow server --app-name basic-auth
 
-The database must be created before starting the MLflow server. The database schema will be created automatically
+The database must be created before starting the QCFlow server. The database schema will be created automatically
 when the server starts.
 
 Custom Authentication
 =====================
 
-MLflow authentication is designed to be extensible. If your organization desires more advanced authentication logic 
+QCFlow authentication is designed to be extensible. If your organization desires more advanced authentication logic 
 (e.g., token-based authentication), it is possible to install a third party plugin or to create your own plugin.
 
 Your plugin should be an installable Python package.
-It should include an app factory that extends the MLflow app and, optionally, implement a client to manage permissions.
+It should include an app factory that extends the QCFlow app and, optionally, implement a client to manage permissions.
 The app factory function name will be passed to the ``--app`` argument in Flask CLI.
 See https://flask.palletsprojects.com/en/latest/cli/#application-discovery for more information.
 
@@ -675,7 +675,7 @@ See https://flask.palletsprojects.com/en/latest/cli/#application-discovery for m
     :caption: Example: ``my_auth/__init__.py``
 
     from flask import Flask
-    from mlflow.server import app
+    from qcflow.server import app
 
 
     def create_app(app: Flask = app):
@@ -692,7 +692,7 @@ Then, the plugin should be installed in your Python environment:
 
     pip install my_auth
 
-Then, register your plugin in ``mlflow/setup.py``:
+Then, register your plugin in ``qcflow/setup.py``:
 
 .. code-block:: python
 
@@ -701,16 +701,16 @@ Then, register your plugin in ``mlflow/setup.py``:
         entry_points="""
             ...
 
-            [mlflow.app]
+            [qcflow.app]
             my-auth=my_auth:create_app
 
-            [mlflow.app.client]
+            [qcflow.app.client]
             my-auth=my_auth:MyAuthClient
         """,
     )
 
-Then, you can start the MLflow server:
+Then, you can start the QCFlow server:
 
 .. code-block:: bash
 
-    mlflow server --app-name my-auth
+    qcflow server --app-name my-auth

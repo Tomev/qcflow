@@ -24,9 +24,9 @@ from sqlalchemy import (
     Boolean,
 )
 
-from mlflow.entities.model_registry.model_version_stages import STAGE_NONE
-from mlflow.entities.model_registry.model_version_status import ModelVersionStatus
-from mlflow.store.model_registry.dbmodels.models import SqlRegisteredModel, SqlModelVersion
+from qcflow.entities.model_registry.model_version_stages import STAGE_NONE
+from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
+from qcflow.store.model_registry.dbmodels.models import SqlRegisteredModel, SqlModelVersion
 
 
 _logger = logging.getLogger(__name__)

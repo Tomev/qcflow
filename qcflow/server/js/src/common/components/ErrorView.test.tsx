@@ -1,6 +1,6 @@
 import React from 'react';
 import { ErrorView } from './ErrorView';
-import { renderWithIntl, screen } from '@mlflow/mlflow/src/common/utils/TestUtils.react18';
+import { renderWithIntl, screen } from '@qcflow/qcflow/src/common/utils/TestUtils.react18';
 import { MemoryRouter } from '../utils/RoutingUtils';
 
 describe('ErrorView', () => {

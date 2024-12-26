@@ -1,7 +1,7 @@
-mlflow.anthropic
+qcflow.anthropic
 ================
 
-.. automodule:: mlflow.anthropic
+.. automodule:: qcflow.anthropic
     :members:
     :undoc-members:
     :show-inheritance:

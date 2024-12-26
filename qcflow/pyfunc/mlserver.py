@@ -4,8 +4,8 @@ from typing import Optional
 
 _logger = logging.getLogger(__name__)
 
-MLServerMLflowRuntime = "mlserver_mlflow.MLflowRuntime"
-MLServerDefaultModelName = "mlflow-model"
+MLServerQCFlowRuntime = "mlserver_qcflow.QCFlowRuntime"
+MLServerDefaultModelName = "qcflow-model"
 
 
 def get_cmd(
@@ -40,7 +40,7 @@ def get_cmd(
     if model_version and not cmd_env.get("MLSERVER_MODEL_VERSION"):
         cmd_env["MLSERVER_MODEL_VERSION"] = model_version
 
-    cmd_env["MLSERVER_MODEL_IMPLEMENTATION"] = MLServerMLflowRuntime
+    cmd_env["MLSERVER_MODEL_IMPLEMENTATION"] = MLServerQCFlowRuntime
     cmd_env["MLSERVER_MODEL_URI"] = model_uri
 
     return cmd, cmd_env

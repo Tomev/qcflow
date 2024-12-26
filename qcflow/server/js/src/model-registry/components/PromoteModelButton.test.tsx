@@ -10,7 +10,7 @@ import {
   within,
   fastFillInput,
   renderWithIntl,
-} from '@mlflow/mlflow/src/common/utils/TestUtils.react17';
+} from '@qcflow/qcflow/src/common/utils/TestUtils.react17';
 import { PromoteModelButton } from './PromoteModelButton';
 import { mockModelVersionDetailed, mockRegisteredModelDetailed } from '../test-utils';
 import { Services as ModelRegistryService } from '../services';
@@ -73,7 +73,7 @@ describe('PromoteModelButton', () => {
     renderComponent();
     const buttonElement = screen.getByRole('button', { name: 'Promote model' });
     await user.click(buttonElement);
-    const modalElement = screen.getByText(/Copy your MLflow models/);
+    const modalElement = screen.getByText(/Copy your QCFlow models/);
     expect(modalElement).toBeInTheDocument();
     expect(modalElement).toBeVisible();
   });
@@ -86,7 +86,7 @@ describe('PromoteModelButton', () => {
     await user.click(buttonElement);
     const cancelButtonElement = screen.getByRole('button', { name: 'Cancel' });
     await user.click(cancelButtonElement);
-    const modalElement = screen.getByText(/Copy your MLflow models/);
+    const modalElement = screen.getByText(/Copy your QCFlow models/);
     expect(modalElement).toBeInTheDocument();
     expect(modalElement).not.toBeVisible();
   });

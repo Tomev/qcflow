@@ -2,12 +2,12 @@ import os
 
 from pyspark.sql import SparkSession
 
-import mlflow
-from mlflow.spark.autologging import _SPARK_TABLE_INFO_TAG_NAME
+import qcflow
+from qcflow.spark.autologging import _SPARK_TABLE_INFO_TAG_NAME
 
 
-def _get_mlflow_spark_jar_path():
-    jar_dir = os.path.join(os.path.dirname(mlflow.__file__), "java", "spark", "target")
+def _get_qcflow_spark_jar_path():
+    jar_dir = os.path.join(os.path.dirname(qcflow.__file__), "java", "spark", "target")
     jar_filenames = [
         fname
         for fname in os.listdir(jar_dir)
@@ -35,5 +35,5 @@ def _assert_spark_data_not_logged(run):
 
 
 def _get_or_create_spark_session(jars=None):
-    jar_path = jars if jars is not None else _get_mlflow_spark_jar_path()
+    jar_path = jars if jars is not None else _get_qcflow_spark_jar_path()
     return SparkSession.builder.config("spark.jars", jar_path).master("local[*]").getOrCreate()

@@ -1,9 +1,9 @@
 from typing import Any, Optional
 
-from mlflow.entities._mlflow_object import _MlflowObject
-from mlflow.entities.assessment_source import AssessmentSource
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities.assessment_source import AssessmentSource
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
 class Assessment(_MlflowObject):
@@ -25,7 +25,7 @@ class Assessment(_MlflowObject):
         error_code: Optional[str] = None,
         error_message: Optional[str] = None,
     ):
-        """Construct a new mlflow.entities.Assessment instance.
+        """Construct a new qcflow.entities.Assessment instance.
 
         Args:
             evaluation_id: The ID of the evaluation with which the assessment is associated.

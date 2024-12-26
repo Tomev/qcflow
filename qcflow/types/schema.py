@@ -12,8 +12,8 @@ from typing import Any, Optional, TypedDict, Union, get_args, get_origin
 
 import numpy as np
 
-from mlflow.exceptions import MlflowException
-from mlflow.utils.annotations import experimental
+from qcflow.exceptions import MlflowException
+from qcflow.utils.annotations import experimental
 
 ARRAY_TYPE = "array"
 OBJECT_TYPE = "object"
@@ -22,8 +22,8 @@ ANY_TYPE = "any"
 SPARKML_VECTOR_TYPE = "sparkml_vector"
 ALLOWED_DTYPES = Union["Array", "DataType", "Map", "Object", "AnyType", str]
 EXPECTED_TYPE_MESSAGE = (
-    "Expected mlflow.types.schema.Datatype, mlflow.types.schema.Array, "
-    "mlflow.types.schema.Object, mlflow.types.schema.Map, mlflow.types.schema.AnyType "
+    "Expected qcflow.types.schema.Datatype, qcflow.types.schema.Array, "
+    "qcflow.types.schema.Object, qcflow.types.schema.Map, qcflow.types.schema.AnyType "
     "or str for the '{arg_name}' argument, but got {passed_type}"
 )
 COLSPEC_TYPES = Union["Array", "DataType", "Map", "Object", "AnyType"]
@@ -38,7 +38,7 @@ except ImportError:
 
 class DataType(Enum):
     """
-    MLflow data types.
+    QCFlow data types.
     """
 
     def __new__(cls, value, numpy_type, spark_type, pandas_type=None, python_type=None):
@@ -680,7 +680,7 @@ class AnyType(BaseType):
 
         .. code-block::python
 
-            from mlflow.types.schema import AnyType, Schema, ColSpec
+            from qcflow.types.schema import AnyType, Schema, ColSpec
 
             schema = Schema([ColSpec(type=AnyType(), name="id")])
 
@@ -821,7 +821,7 @@ class TensorInfo:
         # Throw if size information exists flexible numpy data types
         if dtype.char in ["U", "S"] and not dtype.name.isalpha():
             raise MlflowException(
-                "MLflow does not support size information in flexible numpy data types. Use"
+                "QCFlow does not support size information in flexible numpy data types. Use"
                 f' np.dtype("{dtype.name.rstrip(string.digits)}") instead'
             )
 
@@ -1167,7 +1167,7 @@ class ParamSpec:
         """
         Validate that the value has the expected type and shape.
         """
-        from mlflow.models.utils import _enforce_object, _enforce_param_datatype
+        from qcflow.models.utils import _enforce_object, _enforce_param_datatype
 
         def _is_1d_array(value):
             return isinstance(value, (list, np.ndarray)) and np.array(value).ndim == 1

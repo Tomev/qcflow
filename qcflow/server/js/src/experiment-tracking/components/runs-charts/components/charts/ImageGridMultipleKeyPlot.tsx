@@ -7,12 +7,12 @@ import {
   LegacyTooltip,
   Typography,
 } from '@databricks/design-system';
-import { RunColorPill } from '@mlflow/mlflow/src/experiment-tracking/components/experiment-page/components/RunColorPill';
+import { RunColorPill } from '@qcflow/qcflow/src/experiment-tracking/components/experiment-page/components/RunColorPill';
 import { useMemo } from 'react';
 import { RunsChartsImageCardConfig, RunsChartsCardConfig } from '../../runs-charts.types';
 import { RunsChartsRunData } from '../RunsCharts.common';
 import { EmptyImageGridPlot, getImageSize, ImagePlotWithHistory } from './ImageGridPlot.common';
-import { ImageEntity } from '@mlflow/mlflow/src/experiment-tracking/types';
+import { ImageEntity } from '@qcflow/qcflow/src/experiment-tracking/types';
 import { FormattedMessage } from 'react-intl';
 
 export const ImageGridMultipleKeyPlot = ({
@@ -42,7 +42,7 @@ export const ImageGridMultipleKeyPlot = ({
       <Table grid scrollable>
         <TableRow isHeader>
           <TableHeader
-            componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_charts_imagegridmultiplekeyplot.tsx_44"
+            componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_charts_imagegridmultiplekeyplot.tsx_44"
             css={{ minWidth: imageSize + theme.spacing.md }}
           >
             <FormattedMessage
@@ -53,7 +53,7 @@ export const ImageGridMultipleKeyPlot = ({
           {displayRuns.map((run: RunsChartsRunData) => {
             return (
               <TableHeader
-                componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_charts_imagegridmultiplekeyplot.tsx_52"
+                componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_charts_imagegridmultiplekeyplot.tsx_52"
                 key={run.uuid}
                 css={{ minWidth: imageSize + theme.spacing.md }}
               >

@@ -79,7 +79,7 @@ export const RunViewStatusBox = ({ status }: { status: RunInfoEntity['status'] |
 
   return (
     <Tag
-      componentId="codegen_mlflow_app_src_experiment-tracking_components_run-page_overview_runviewstatusbox.tsx_81"
+      componentId="codegen_qcflow_app_src_experiment-tracking_components_run-page_overview_runviewstatusbox.tsx_81"
       css={{ backgroundColor: getTagColor() }}
     >
       {status && <RunStatusIcon status={status} />}{' '}

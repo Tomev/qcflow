@@ -9,7 +9,7 @@
 # https://github.com/databricks/databricks-cli/blob/0.18.0/databricks_cli/configure/provider.py
 #
 # The latest Databricks Runtime does not contain legacy databricks CLI
-# but MLflow still depends on it.
+# but QCFlow still depends on it.
 
 import logging
 import os
@@ -332,7 +332,7 @@ class DatabricksModelServingConfigProvider(DatabricksConfigProvider):
     """Loads from OAuth credentials in the Databricks Model Serving environment."""
 
     def get_config(self):
-        from mlflow.utils.databricks_utils import should_fetch_model_serving_environment_oauth
+        from qcflow.utils.databricks_utils import should_fetch_model_serving_environment_oauth
 
         try:
             if should_fetch_model_serving_environment_oauth():
@@ -346,7 +346,7 @@ class DatabricksModelServingConfigProvider(DatabricksConfigProvider):
 
     @staticmethod
     def _get_databricks_model_serving_config():
-        from mlflow.utils.databricks_utils import get_model_dependency_oauth_token
+        from qcflow.utils.databricks_utils import get_model_dependency_oauth_token
 
         # Since we do not record OAuth expiration time in OAuth file, perform periodic refresh
         # of OAuth environment variable cache here. As currently configured (02/24) OAuth token

@@ -1,44 +1,44 @@
 """
-Exposes functionality for deploying MLflow models to custom serving tools.
+Exposes functionality for deploying QCFlow models to custom serving tools.
 
 Note: model deployment to AWS Sagemaker can currently be performed via the
-:py:mod:`mlflow.sagemaker` module. Model deployment to Azure can be performed by using the
-`azureml library <https://pypi.org/project/azureml-mlflow/>`_.
+:py:mod:`qcflow.sagemaker` module. Model deployment to Azure can be performed by using the
+`azureml library <https://pypi.org/project/azureml-qcflow/>`_.
 
-MLflow does not currently provide built-in support for any other deployment targets, but support
+QCFlow does not currently provide built-in support for any other deployment targets, but support
 for custom targets can be installed via third-party plugins. See a list of known plugins
-`here <https://mlflow.org/docs/latest/plugins.html#deployment-plugins>`_.
+`here <https://qcflow.org/docs/latest/plugins.html#deployment-plugins>`_.
 
 This page largely focuses on the user-facing deployment APIs. For instructions on implementing
 your own plugin for deployment to a custom serving tool, see
-`plugin docs <http://mlflow.org/docs/latest/plugins.html#writing-your-own-mlflow-plugins>`_.
+`plugin docs <http://qcflow.org/docs/latest/plugins.html#writing-your-own-qcflow-plugins>`_.
 """
 
 import contextlib
 import json
 
-from mlflow.deployments.base import BaseDeploymentClient
-from mlflow.deployments.databricks import DatabricksDeploymentClient, DatabricksEndpoint
-from mlflow.deployments.interface import get_deploy_client, run_local
-from mlflow.deployments.openai import OpenAIDeploymentClient
-from mlflow.deployments.utils import get_deployments_target, set_deployments_target
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.deployments.base import BaseDeploymentClient
+from qcflow.deployments.databricks import DatabricksDeploymentClient, DatabricksEndpoint
+from qcflow.deployments.interface import get_deploy_client, run_local
+from qcflow.deployments.openai import OpenAIDeploymentClient
+from qcflow.deployments.utils import get_deployments_target, set_deployments_target
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 with contextlib.suppress(Exception):
     # MlflowDeploymentClient depends on optional dependencies and can't be imported
     # if they are not installed.
-    from mlflow.deployments.mlflow import MlflowDeploymentClient
+    from qcflow.deployments.qcflow import MlflowDeploymentClient
 
 
 class PredictionsResponse(dict):
     """
     Represents the predictions and metadata returned in response to a scoring request, such as a
-    REST API request sent to the ``/invocations`` endpoint of an MLflow Model Server.
+    REST API request sent to the ``/invocations`` endpoint of an QCFlow Model Server.
     """
 
     def get_predictions(self, predictions_format="dataframe", dtype=None):
-        """Get the predictions returned from the MLflow Model Server in the specified format.
+        """Get the predictions returned from the QCFlow Model Server in the specified format.
 
         Args:
             predictions_format: The format in which to return the predictions. Either
@@ -75,13 +75,13 @@ class PredictionsResponse(dict):
             )
 
     def to_json(self, path=None):
-        """Get the JSON representation of the MLflow Predictions Response.
+        """Get the JSON representation of the QCFlow Predictions Response.
 
         Args:
             path: If specified, the JSON representation is written to this file path.
 
         Returns:
-            If ``path`` is unspecified, the JSON representation of the MLflow Predictions
+            If ``path`` is unspecified, the JSON representation of the QCFlow Predictions
             Response. Else, None.
 
         """

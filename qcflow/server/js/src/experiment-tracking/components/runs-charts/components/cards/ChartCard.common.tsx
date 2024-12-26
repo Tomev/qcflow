@@ -260,7 +260,7 @@ export const RunsChartCardWrapperRaw = ({
             {toggles.map((toggle) => {
               return (
                 <Switch
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_262"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_262"
                   key={toggle.toggleLabel}
                   checked={toggle.currentToggle}
                   onChange={toggle.setToggle}
@@ -279,7 +279,7 @@ export const RunsChartCardWrapperRaw = ({
         <DropdownMenu.Root modal={false}>
           <DropdownMenu.Trigger asChild>
             <Button
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-compare_cards_chartcard.common.tsx_158"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-compare_cards_chartcard.common.tsx_158"
               type="tertiary"
               icon={<OverflowIcon />}
               data-testid="experiment-view-compare-runs-card-menu"
@@ -287,14 +287,14 @@ export const RunsChartCardWrapperRaw = ({
           </DropdownMenu.Trigger>
           <DropdownMenu.Content align="end" minWidth={100}>
             <DropdownMenu.Item
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_288"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_288"
               onClick={onEdit}
               data-testid="experiment-view-compare-runs-card-edit"
             >
               Configure
             </DropdownMenu.Item>
             <DropdownMenu.Item
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_291"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_291"
               onClick={onDelete}
               data-testid="experiment-view-compare-runs-card-delete"
             >
@@ -305,7 +305,7 @@ export const RunsChartCardWrapperRaw = ({
                 <DropdownMenu.Separator />
                 {supportedDownloadFormats.includes('csv') && (
                   <DropdownMenu.Item
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_298"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_298"
                     onClick={() => onClickDownload('csv')}
                   >
                     <FormattedMessage
@@ -316,7 +316,7 @@ export const RunsChartCardWrapperRaw = ({
                 )}
                 {supportedDownloadFormats.includes('svg') && (
                   <DropdownMenu.Item
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_316"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_316"
                     onClick={() => onClickDownload('svg')}
                   >
                     <FormattedMessage
@@ -327,7 +327,7 @@ export const RunsChartCardWrapperRaw = ({
                 )}
                 {supportedDownloadFormats.includes('png') && (
                   <DropdownMenu.Item
-                    componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_324"
+                    componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_324"
                     onClick={() => onClickDownload('png')}
                   >
                     <FormattedMessage
@@ -340,7 +340,7 @@ export const RunsChartCardWrapperRaw = ({
             )}
             <DropdownMenu.Separator />
             <DropdownMenu.Item
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_334"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_334"
               disabled={!canMoveUp}
               onClick={onMoveUp}
               data-testid="experiment-view-compare-runs-move-up"
@@ -351,7 +351,7 @@ export const RunsChartCardWrapperRaw = ({
               />
             </DropdownMenu.Item>
             <DropdownMenu.Item
-              componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_344"
+              componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_cards_chartcard.common.tsx_344"
               disabled={!canMoveDown}
               onClick={onMoveDown}
               data-testid="experiment-view-compare-runs-move-down"

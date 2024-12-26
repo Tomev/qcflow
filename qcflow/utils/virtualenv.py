@@ -10,32 +10,32 @@ from typing import Literal, Optional
 
 from packaging.version import Version
 
-import mlflow
-from mlflow.environment_variables import _MLFLOW_TESTING, MLFLOW_ENV_ROOT
-from mlflow.exceptions import MlflowException
-from mlflow.models.model import MLMODEL_FILE_NAME, Model
-from mlflow.utils import env_manager as em
-from mlflow.utils.conda import _PIP_CACHE_DIR
-from mlflow.utils.environment import (
+import qcflow
+from qcflow.environment_variables import _QCFLOW_TESTING, QCFLOW_ENV_ROOT
+from qcflow.exceptions import MlflowException
+from qcflow.models.model import MLMODEL_FILE_NAME, Model
+from qcflow.utils import env_manager as em
+from qcflow.utils.conda import _PIP_CACHE_DIR
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _get_mlflow_env_name,
+    _get_qcflow_env_name,
     _PythonEnv,
 )
-from mlflow.utils.file_utils import remove_on_error
-from mlflow.utils.os import is_windows
-from mlflow.utils.process import _exec_cmd, _join_commands
-from mlflow.utils.requirements_utils import _parse_requirements
+from qcflow.utils.file_utils import remove_on_error
+from qcflow.utils.os import is_windows
+from qcflow.utils.process import _exec_cmd, _join_commands
+from qcflow.utils.requirements_utils import _parse_requirements
 
 _logger = logging.getLogger(__name__)
 
 
-def _get_mlflow_virtualenv_root():
+def _get_qcflow_virtualenv_root():
     """
-    Returns the root directory to store virtualenv environments created by MLflow.
+    Returns the root directory to store virtualenv environments created by QCFlow.
     """
-    return MLFLOW_ENV_ROOT.get()
+    return QCFLOW_ENV_ROOT.get()
 
 
 _DATABRICKS_PYENV_BIN_PATH = "/databricks/.pyenv/bin/pyenv"
@@ -156,24 +156,24 @@ def _install_python(version, pyenv_root=None, capture_output=False):
 
 
 def _get_conda_env_file(model_config):
-    from mlflow.pyfunc import _extract_conda_env
+    from qcflow.pyfunc import _extract_conda_env
 
     for flavor, config in model_config.flavors.items():
-        if flavor == mlflow.pyfunc.FLAVOR_NAME:
-            env = config.get(mlflow.pyfunc.ENV)
+        if flavor == qcflow.pyfunc.FLAVOR_NAME:
+            env = config.get(qcflow.pyfunc.ENV)
             if env:
                 return _extract_conda_env(env)
     return _CONDA_ENV_FILE_NAME
 
 
 def _get_python_env_file(model_config):
-    from mlflow.pyfunc import EnvType
+    from qcflow.pyfunc import EnvType
 
     for flavor, config in model_config.flavors.items():
-        if flavor == mlflow.pyfunc.FLAVOR_NAME:
-            env = config.get(mlflow.pyfunc.ENV)
+        if flavor == qcflow.pyfunc.FLAVOR_NAME:
+            env = config.get(qcflow.pyfunc.ENV)
             if isinstance(env, dict):
-                # Models saved in MLflow >= 2.0 use a dictionary for the pyfunc flavor
+                # Models saved in QCFlow >= 2.0 use a dictionary for the pyfunc flavor
                 # `env` config, where the keys are different environment managers (e.g.
                 # conda, virtualenv) and the values are corresponding environment paths
                 return env[EnvType.VIRTUALENV]
@@ -204,7 +204,7 @@ def _get_python_env(local_model_path):
     else:
         _logger.info(
             "This model is missing %s, which is because it was logged in an older version"
-            "of MLflow (< 1.26.0) that does not support restoring a model environment with "
+            "of QCFlow (< 1.26.0) that does not support restoring a model environment with "
             "virtualenv. Attempting to extract model dependencies from %s and %s instead.",
             _PYTHON_ENV_FILE_NAME,
             _REQUIREMENTS_FILE_NAME,
@@ -227,7 +227,7 @@ def _get_virtualenv_name(python_env, work_dir_path, env_id=None):
         is_constraint=False,
         base_dir=work_dir_path,
     )
-    return _get_mlflow_env_name(
+    return _get_qcflow_env_name(
         str(python_env) + "".join(map(str, sorted(requirements))) + (env_id or "")
     )
 
@@ -281,7 +281,7 @@ def _create_virtualenv(
         )
         env_creation_cmd = ["uv", "venv", env_dir, f"--python={python_env.python}"]
         install_deps_cmd_prefix = "uv pip install --prerelease=allow"
-        if _MLFLOW_TESTING:
+        if _QCFLOW_TESTING:
             os.environ["RUST_LOG"] = "uv=debug"
     with remove_on_error(
         env_dir,
@@ -379,7 +379,7 @@ def _get_or_create_virtualenv(  # noqa: D417
     pip_requirements_override: Optional[list[str]] = None,
     env_manager: Literal["virtualenv", "uv"] = em.UV,
 ):
-    """Restores an MLflow model's environment in a virtual environment and returns a command
+    """Restores an QCFlow model's environment in a virtual environment and returns a command
     to activate it.
 
     Args:
@@ -412,7 +412,7 @@ def _get_or_create_virtualenv(  # noqa: D417
 
     pyenv_root_dir = None
     if env_root_dir is None:
-        virtual_envs_root_path = Path(_get_mlflow_virtualenv_root())
+        virtual_envs_root_path = Path(_get_qcflow_virtualenv_root())
     else:
         virtual_envs_root_path = Path(env_root_dir) / _VIRTUALENV_ENVS_DIR
         if env_manager == em.VIRTUALENV:
@@ -423,7 +423,7 @@ def _get_or_create_virtualenv(  # noqa: D417
     virtual_envs_root_path = (
         Path(env_root_dir) / _VIRTUALENV_ENVS_DIR
         if env_root_dir is not None
-        else Path(_get_mlflow_virtualenv_root())
+        else Path(_get_qcflow_virtualenv_root())
     )
     virtual_envs_root_path.mkdir(parents=True, exist_ok=True)
     env_name = _get_virtualenv_name(python_env, local_model_path, env_id)

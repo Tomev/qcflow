@@ -1,5 +1,5 @@
 """
-The ``mlflow.sagemaker`` module provides an API for deploying MLflow models to Amazon SageMaker.
+The ``qcflow.sagemaker`` module provides an API for deploying QCFlow models to Amazon SageMaker.
 """
 
 import json
@@ -15,36 +15,36 @@ import uuid
 from subprocess import Popen
 from typing import Any, Optional
 
-import mlflow
-import mlflow.version
-from mlflow import mleap, pyfunc
-from mlflow.deployments import BaseDeploymentClient, PredictionsResponse
-from mlflow.environment_variables import (
-    MLFLOW_DEPLOYMENT_FLAVOR_NAME,
-    MLFLOW_SAGEMAKER_DEPLOY_IMG_URL,
+import qcflow
+import qcflow.version
+from qcflow import mleap, pyfunc
+from qcflow.deployments import BaseDeploymentClient, PredictionsResponse
+from qcflow.environment_variables import (
+    QCFLOW_DEPLOYMENT_FLAVOR_NAME,
+    QCFLOW_SAGEMAKER_DEPLOY_IMG_URL,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model
-from mlflow.models.container import (
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model
+from qcflow.models.container import (
     SERVING_ENVIRONMENT,
 )
-from mlflow.models.container import (
+from qcflow.models.container import (
     SUPPORTED_FLAVORS as SUPPORTED_DEPLOYMENT_FLAVORS,
 )
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, RESOURCE_DOES_NOT_EXIST
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.proto_json_utils import dump_input_data
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, RESOURCE_DOES_NOT_EXIST
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.proto_json_utils import dump_input_data
 
-DEFAULT_IMAGE_NAME = "mlflow-pyfunc"
+DEFAULT_IMAGE_NAME = "qcflow-pyfunc"
 DEPLOYMENT_MODE_ADD = "add"
 DEPLOYMENT_MODE_REPLACE = "replace"
 DEPLOYMENT_MODE_CREATE = "create"
 
 DEPLOYMENT_MODES = [DEPLOYMENT_MODE_CREATE, DEPLOYMENT_MODE_ADD, DEPLOYMENT_MODE_REPLACE]
 
-DEFAULT_BUCKET_NAME_PREFIX = "mlflow-sagemaker"
+DEFAULT_BUCKET_NAME_PREFIX = "qcflow-sagemaker"
 
 DEFAULT_SAGEMAKER_INSTANCE_TYPE = "ml.m4.xlarge"
 DEFAULT_SAGEMAKER_INSTANCE_COUNT = 1
@@ -60,12 +60,12 @@ _full_template = "{account}.dkr.ecr.{region}.amazonaws.com/{image}:{version}"
 
 def _get_preferred_deployment_flavor(model_config):
     """
-    Obtains the flavor that MLflow would prefer to use when deploying the model.
+    Obtains the flavor that QCFlow would prefer to use when deploying the model.
     If the model does not contain any supported flavors for deployment, an exception
     will be thrown.
 
     Args:
-        model_config: An MLflow model object
+        model_config: An QCFlow model object
 
     Returns:
         The name of the preferred deployment flavor for the specified model
@@ -95,7 +95,7 @@ def _validate_deployment_flavor(model_config, flavor):
     is not met, an exception is thrown.
 
     Args:
-        model_config: An MLflow Model object
+        model_config: An QCFlow Model object
         flavor: The deployment flavor to validate
     """
     if flavor not in SUPPORTED_DEPLOYMENT_FLAVORS:
@@ -135,7 +135,7 @@ def push_image_to_ecr(image=DEFAULT_IMAGE_NAME):
     my_session = boto3.session.Session()
     region = my_session.region_name or "us-west-2"
     fullname = _full_template.format(
-        account=account, region=region, image=image, version=mlflow.version.VERSION
+        account=account, region=region, image=image, version=qcflow.version.VERSION
     )
     _logger.info("Pushing docker image %s to %s", image, fullname)
     ecr_client = boto3.client("ecr")
@@ -193,34 +193,34 @@ def _deploy(
     tags=None,
 ):
     """
-    Deploy an MLflow model on AWS SageMaker.
+    Deploy an QCFlow model on AWS SageMaker.
     The currently active AWS account must have correct permissions set up.
 
     This function creates a SageMaker endpoint. For more information about the input data
     formats accepted by this endpoint, see the
-    :ref:`MLflow deployment tools documentation <sagemaker_deployment>`.
+    :ref:`QCFlow deployment tools documentation <sagemaker_deployment>`.
 
     Args:
         app_name: Name of the deployed application.
-        model_uri: The location, in URI format, of the MLflow model to deploy to SageMaker.
+        model_uri: The location, in URI format, of the QCFlow model to deploy to SageMaker.
             For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
         execution_role_arn: The name of an IAM role granting the SageMaker service permissions to
-            access the specified Docker image and S3 bucket containing MLflow
+            access the specified Docker image and S3 bucket containing QCFlow
             model artifacts. If unspecified, the currently-assumed role will be
             used. This execution role is passed to the SageMaker service when
-            creating a SageMaker model from the specified MLflow model. It is
+            creating a SageMaker model from the specified QCFlow model. It is
             passed as the ``ExecutionRoleArn`` parameter of the `SageMaker
             CreateModel API call <https://docs.aws.amazon.com/sagemaker/latest/
             dg/API_CreateModel.html>`_. This role is *not* assumed for any other
@@ -233,21 +233,21 @@ def _deploy(
         bucket: S3 bucket where model artifacts will be stored. Defaults to a
             SageMaker-compatible bucket name.
         image_url: URL of the ECR-hosted Docker image the model should be deployed into, produced
-            by ``mlflow sagemaker build-and-push-container``. This parameter can also
-            be specified by the environment variable ``MLFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
+            by ``qcflow sagemaker build-and-push-container``. This parameter can also
+            be specified by the environment variable ``QCFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
         region_name: Name of the AWS region to which to deploy the application.
         mode: The mode in which to deploy the application. Must be one of the following:
 
-            ``mlflow.sagemaker.DEPLOYMENT_MODE_CREATE``
+            ``qcflow.sagemaker.DEPLOYMENT_MODE_CREATE``
                 Create an application with the specified name and model. This fails if an
                 application of the same name already exists.
 
-            ``mlflow.sagemaker.DEPLOYMENT_MODE_REPLACE``
+            ``qcflow.sagemaker.DEPLOYMENT_MODE_REPLACE``
                 If an application of the specified name exists, its model(s) is replaced with
                 the specified model. If no such application exists, it is created with the
                 specified name and model.
 
-            ``mlflow.sagemaker.DEPLOYMENT_MODE_ADD``
+            ``qcflow.sagemaker.DEPLOYMENT_MODE_ADD``
                 Add the specified model to a pre-existing application with the specified name,
                 if one exists. If the application does not exist, a new application is created
                 with the specified name and model. NOTE: If the application **already exists**,
@@ -259,7 +259,7 @@ def _deploy(
 
         archive: If ``True``, any pre-existing SageMaker application resources that become
             inactive (i.e. as a result of deploying in
-            ``mlflow.sagemaker.DEPLOYMENT_MODE_REPLACE`` mode) are preserved.
+            ``qcflow.sagemaker.DEPLOYMENT_MODE_REPLACE`` mode) are preserved.
             These resources may include unused SageMaker models and endpoint configurations
             that were associated with a prior version of the application endpoint. If
             ``False``, these resources are deleted. In order to use ``archive=False``,
@@ -279,7 +279,7 @@ def _deploy(
             .. code-block:: python
                 :caption: Example
 
-                    import mlflow.sagemaker as mfs
+                    import qcflow.sagemaker as mfs
 
                     vpc_config = {
                         "SecurityGroupIds": [
@@ -292,7 +292,7 @@ def _deploy(
                     mfs.deploy(..., vpc_config=vpc_config)
 
         flavor: The name of the flavor of the model to use for deployment. Must be either
-            ``None`` or one of mlflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS. If ``None``,
+            ``None`` or one of qcflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS. If ``None``,
             a flavor is automatically selected from the model's available flavors. If the
             specified flavor is not present or not supported for deployment, an exception
             will be thrown.
@@ -316,7 +316,7 @@ def _deploy(
             .. code-block:: python
                 :caption: Example
 
-                import mlflow.sagemaker as mfs
+                import qcflow.sagemaker as mfs
 
                 data_capture_config = {
                     "EnableCapture": True,
@@ -620,23 +620,23 @@ def deploy_transform_job(
     timeout_seconds=1200,
 ):
     """
-    Deploy an MLflow model on AWS SageMaker and create the corresponding batch transform job.
+    Deploy an QCFlow model on AWS SageMaker and create the corresponding batch transform job.
     The currently active AWS account must have correct permissions set up.
 
     Args:
         job_name: Name of the deployed Sagemaker batch transform job.
-        model_uri: The location, in URI format, of the MLflow model to deploy to SageMaker.
+        model_uri: The location, in URI format, of the QCFlow model to deploy to SageMaker.
             For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
         s3_input_data_type: Input data type for the transform job.
@@ -655,10 +655,10 @@ def deploy_transform_job(
         join_resource: The source of the data to join with the transformed data.
 
         execution_role_arn: The name of an IAM role granting the SageMaker service permissions to
-            access the specified Docker image and S3 bucket containing MLflow
+            access the specified Docker image and S3 bucket containing QCFlow
             model artifacts. If unspecified, the currently-assumed role will be
             used. This execution role is passed to the SageMaker service when
-            creating a SageMaker model from the specified MLflow model. It is
+            creating a SageMaker model from the specified QCFlow model. It is
             passed as the ``ExecutionRoleArn`` parameter of the `SageMaker
             CreateModel API call <https://docs.aws.amazon.com/sagemaker/latest/
             dg/API_CreateModel.html>`_. This role is *not* assumed for any other
@@ -671,8 +671,8 @@ def deploy_transform_job(
         bucket: S3 bucket where model artifacts will be stored. Defaults to a
             SageMaker-compatible bucket name.
         image_url: URL of the ECR-hosted Docker image the model should be deployed into, produced
-            by ``mlflow sagemaker build-and-push-container``. This parameter can also
-            be specified by the environment variable ``MLFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
+            by ``qcflow sagemaker build-and-push-container``. This parameter can also
+            be specified by the environment variable ``QCFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
         region_name: Name of the AWS region to which to deploy the application.
         instance_type: The type of SageMaker ML instance on which to deploy the model. For a list
             of supported instance types, see
@@ -689,7 +689,7 @@ def deploy_transform_job(
             .. code-block:: python
                 :caption: Example
 
-                import mlflow.sagemaker as mfs
+                import qcflow.sagemaker as mfs
 
                 vpc_config = {
                     "SecurityGroupIds": [
@@ -702,7 +702,7 @@ def deploy_transform_job(
                 mfs.deploy_transform_job(..., vpc_config=vpc_config)
 
         flavor: The name of the flavor of the model to use for deployment. Must be either
-            ``None`` or one of mlflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS. If ``None``,
+            ``None`` or one of qcflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS. If ``None``,
             a flavor is automatically selected from the model's available flavors. If the
             specified flavor is not present or not supported for deployment, an exception
             will be thrown.
@@ -941,30 +941,30 @@ def push_model_to_sagemaker(
     flavor=None,
 ):
     """
-    Create a SageMaker Model from an MLflow model artifact.
+    Create a SageMaker Model from an QCFlow model artifact.
     The currently active AWS account must have correct permissions set up.
 
     Args:
         model_name: Name of the Sagemaker model.
-        model_uri: The location, in URI format, of the MLflow model to deploy to SageMaker.
+        model_uri: The location, in URI format, of the QCFlow model to deploy to SageMaker.
             For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
             - ``models:/<model_name>/<model_version>``
             - ``models:/<model_name>/<stage>``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
             artifact-locations>`_.
 
         execution_role_arn: The name of an IAM role granting the SageMaker service permissions to
-            access the specified Docker image and S3 bucket containing MLflow
+            access the specified Docker image and S3 bucket containing QCFlow
             model artifacts. If unspecified, the currently-assumed role will be
             used. This execution role is passed to the SageMaker service when
-            creating a SageMaker model from the specified MLflow model. It is
+            creating a SageMaker model from the specified QCFlow model. It is
             passed as the ``ExecutionRoleArn`` parameter of the `SageMaker
             CreateModel API call <https://docs.aws.amazon.com/sagemaker/latest/
             dg/API_CreateModel.html>`_. This role is *not* assumed for any other
@@ -977,8 +977,8 @@ def push_model_to_sagemaker(
         bucket: S3 bucket where model artifacts will be stored. Defaults to a
             SageMaker-compatible bucket name.
         image_url: URL of the ECR-hosted Docker image the model should be deployed into, produced
-            by ``mlflow sagemaker build-and-push-container``. This parameter can also
-            be specified by the environment variable ``MLFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
+            by ``qcflow sagemaker build-and-push-container``. This parameter can also
+            be specified by the environment variable ``QCFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
         region_name: Name of the AWS region to which to deploy the application.
         vpc_config: A dictionary specifying the VPC configuration to use when creating the
             new SageMaker model. The acceptable values for this parameter are identical
@@ -991,7 +991,7 @@ def push_model_to_sagemaker(
             .. code-block:: python
                 :caption: Example
 
-                import mlflow.sagemaker as mfs
+                import qcflow.sagemaker as mfs
 
                 vpc_config = {
                     "SecurityGroupIds": [
@@ -1004,7 +1004,7 @@ def push_model_to_sagemaker(
                 mfs.push_model_to_sagemaker(..., vpc_config=vpc_config)
 
         flavor: The name of the flavor of the model to use for deployment. Must be either
-            ``None`` or one of mlflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS. If ``None``,
+            ``None`` or one of qcflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS. If ``None``,
             a flavor is automatically selected from the model's available flavors. If the
             specified flavor is not present or not supported for deployment, an exception
             will be thrown.
@@ -1085,38 +1085,38 @@ def run_local(name, model_uri, flavor=None, config=None):
 
     Args:
         name: Name of the local serving application.
-        model_uri: The location, in URI format, of the MLflow model to deploy locally.
+        model_uri: The location, in URI format, of the QCFlow model to deploy locally.
                         For example:
 
                         - ``/Users/me/path/to/local/model``
                         - ``relative/path/to/local/model``
                         - ``s3://my_bucket/path/to/model``
-                        - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+                        - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
                         - ``models:/<model_name>/<model_version>``
                         - ``models:/<model_name>/<stage>``
 
                         For more information about supported URI schemes, see
-                        `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+                        `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
                         artifact-locations>`_.
         flavor: The name of the flavor of the model to use for deployment. Must be either
-                    ``None`` or one of mlflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS.
+                    ``None`` or one of qcflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS.
                     If ``None``, a flavor is automatically selected from the model's available
                     flavors. If the specified flavor is not present or not supported for
                     deployment, an exception will be thrown.
         config: Configuration parameters. The supported parameters are:
 
                     - ``image``: The name of the Docker image to use for model serving. Defaults
-                                    to ``"mlflow-pyfunc"``.
+                                    to ``"qcflow-pyfunc"``.
                     - ``port``: The port at which to expose the model server on the local host.
                                 Defaults to ``5000``.
 
     .. code-block:: python
         :caption: Python example
 
-        from mlflow.models import build_docker
-        from mlflow.deployments import get_deploy_client
+        from qcflow.models import build_docker
+        from qcflow.deployments import get_deploy_client
 
-        build_docker(name="mlflow-pyfunc")
+        build_docker(name="qcflow-pyfunc")
 
         client = get_deploy_client("sagemaker")
         client.run_local(
@@ -1125,20 +1125,20 @@ def run_local(name, model_uri, flavor=None, config=None):
             flavor="python_function",
             config={
                 "port": 5000,
-                "image": "mlflow-pyfunc",
+                "image": "qcflow-pyfunc",
             },
         )
 
     .. code-block:: bash
         :caption:  Command-line example
 
-        mlflow models build-docker --name "mlflow-pyfunc"
-        mlflow deployments run-local --target sagemaker \\
+        qcflow models build-docker --name "qcflow-pyfunc"
+        qcflow deployments run-local --target sagemaker \\
                 --name my-local-deployment \\
                 --model-uri "/mlruns/0/abc/model" \\
                 --flavor python_function \\
                 -C port=5000 \\
-                -C image="mlflow-pyfunc"
+                -C image="qcflow-pyfunc"
     """
     model_path = _download_artifact_from_uri(model_uri)
     model_config_path = os.path.join(model_path, MLMODEL_FILE_NAME)
@@ -1177,7 +1177,7 @@ def target_help():
     """
     return """\
     For detailed documentation on the SageMaker deployment client, please visit
-    https://mlflow.org/docs/latest/python_api/mlflow.sagemaker.html#mlflow.sagemaker.SageMakerDeploymentClient
+    https://qcflow.org/docs/latest/python_api/qcflow.sagemaker.html#qcflow.sagemaker.SageMakerDeploymentClient
 
     The target URI must follow the following formats:
     - sagemaker
@@ -1199,14 +1199,14 @@ def target_help():
 def _get_default_image_url(region_name):
     import boto3
 
-    if env_img := MLFLOW_SAGEMAKER_DEPLOY_IMG_URL.get():
+    if env_img := QCFLOW_SAGEMAKER_DEPLOY_IMG_URL.get():
         return env_img
 
     ecr_client = boto3.client("ecr", region_name=region_name)
     repository_conf = ecr_client.describe_repositories(repositoryNames=[DEFAULT_IMAGE_NAME])[
         "repositories"
     ][0]
-    return (repository_conf["repositoryUri"] + ":{version}").format(version=mlflow.version.VERSION)
+    return (repository_conf["repositoryUri"] + ":{version}").format(version=qcflow.version.VERSION)
 
 
 def _get_account_id(**assume_role_credentials):
@@ -1254,7 +1254,7 @@ def _assume_role_and_get_credentials(assume_role_arn=None):
 
     sts_client = boto3.client("sts")
     sts_response = sts_client.assume_role(
-        RoleArn=assume_role_arn, RoleSessionName="mlflow-sagemaker"
+        RoleArn=assume_role_arn, RoleSessionName="qcflow-sagemaker"
     )
 
     _logger.info("Assuming role %s for deployment!", assume_role_arn)
@@ -1344,7 +1344,7 @@ def _get_deployment_config(flavor_name, env_override=None):
         The deployment configuration as a dictionary
     """
     deployment_config = {
-        MLFLOW_DEPLOYMENT_FLAVOR_NAME.name: flavor_name,
+        QCFLOW_DEPLOYMENT_FLAVOR_NAME.name: flavor_name,
         SERVING_ENVIRONMENT: SAGEMAKER_SERVING_ENVIRONMENT,
     }
     if env_override:
@@ -1452,7 +1452,7 @@ def _create_sagemaker_transform_job(
         model_name: The name to assign the new SageMaker model that will be associated with the
             specified batch transform job.
         model_s3_path: S3 path where we stored the model artifacts.
-        model_uri: URI of the MLflow model to associate with the specified SageMaker batch
+        model_uri: URI of the QCFlow model to associate with the specified SageMaker batch
             transform job.
         image_url: URL of the ECR-hosted docker image the model is being deployed into.
         flavor: The name of the flavor of the model to use for deployment.
@@ -1589,7 +1589,7 @@ def _create_sagemaker_endpoint(  # noqa: D417
         model_name: The name to assign the new SageMaker model that will be associated with the
             specified endpoint.
         model_s3_path: S3 path where we stored the model artifacts.
-        model_uri: URI of the MLflow model to associate with the specified SageMaker endpoint.
+        model_uri: URI of the QCFlow model to associate with the specified SageMaker endpoint.
         image_url: URL of the ECR-hosted docker image the model is being deployed into.
         flavor: The name of the flavor of the model to use for deployment.
         instance_type: The type of SageMaker ML instance on which to deploy the model.
@@ -1715,7 +1715,7 @@ def _update_sagemaker_endpoint(  # noqa: D417
         endpoint_name: The name of the SageMaker endpoint to update.
         model_name: The name to assign the new SageMaker model that will be associated with the
             specified endpoint.
-        model_uri: URI of the MLflow model to associate with the specified SageMaker endpoint.
+        model_uri: URI of the QCFlow model to associate with the specified SageMaker endpoint.
         image_url: URL of the ECR-hosted Docker image the model is being deployed into
         model_s3_path: S3 path where we stored the model artifacts
         flavor: The name of the flavor of the model to use for deployment.
@@ -1723,8 +1723,8 @@ def _update_sagemaker_endpoint(  # noqa: D417
         instance_count: The number of SageMaker ML instances on which to deploy the model.
         vpc_config: A dictionary specifying the VPC configuration to use when creating the
             new SageMaker model associated with this SageMaker endpoint.
-        mode: either mlflow.sagemaker.DEPLOYMENT_MODE_ADD or
-            mlflow.sagemaker.DEPLOYMENT_MODE_REPLACE.
+        mode: either qcflow.sagemaker.DEPLOYMENT_MODE_ADD or
+            qcflow.sagemaker.DEPLOYMENT_MODE_REPLACE.
         role: SageMaker execution ARN role.
         sage_client: A boto3 client for SageMaker.
         s3_client: A boto3 client for S3.
@@ -1876,7 +1876,7 @@ def _create_sagemaker_model(
     Args:
         model_name: The name to assign the new SageMaker model that is created.
         model_s3_path: S3 path where the model artifacts are stored.
-        model_uri: URI of the MLflow model associated with the new SageMaker model.
+        model_uri: URI of the QCFlow model associated with the new SageMaker model.
         flavor: The name of the flavor of the model.
         vpc_config: A dictionary specifying the VPC configuration to use when creating the
             new SageMaker model associated with this SageMaker endpoint.
@@ -2030,11 +2030,11 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
     Initialize a deployment client for SageMaker. The default region and assumed role ARN will
     be set according to the value of the `target_uri`.
 
-    This class is meant to supersede the other ``mlflow.sagemaker`` real-time serving API's.
-    It is also designed to be used through the :py:mod:`mlflow.deployments` module.
+    This class is meant to supersede the other ``qcflow.sagemaker`` real-time serving API's.
+    It is also designed to be used through the :py:mod:`qcflow.deployments` module.
     This means that you can deploy to SageMaker using the
-    `mlflow deployments CLI <https://www.mlflow.org/docs/latest/cli.html#mlflow-deployments>`_ and
-    get a client through the :py:mod:`mlflow.deployments.get_deploy_client` function.
+    `qcflow deployments CLI <https://www.qcflow.org/docs/latest/cli.html#qcflow-deployments>`_ and
+    get a client through the :py:mod:`qcflow.deployments.get_deploy_client` function.
 
     Args:
         target_uri: A URI that follows one of the following formats:
@@ -2147,30 +2147,30 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
 
     def create_deployment(self, name, model_uri, flavor=None, config=None, endpoint=None):
         """
-        Deploy an MLflow model on AWS SageMaker.
+        Deploy an QCFlow model on AWS SageMaker.
         The currently active AWS account must have correct permissions set up.
 
         This function creates a SageMaker endpoint. For more information about the input data
         formats accepted by this endpoint, see the
-        :ref:`MLflow deployment tools documentation <sagemaker_deployment>`.
+        :ref:`QCFlow deployment tools documentation <sagemaker_deployment>`.
 
         Args:
             name: Name of the deployed application.
-            model_uri: The location, in URI format, of the MLflow model to deploy to SageMaker.
+            model_uri: The location, in URI format, of the QCFlow model to deploy to SageMaker.
                 For example:
 
                 - ``/Users/me/path/to/local/model``
                 - ``relative/path/to/local/model``
                 - ``s3://my_bucket/path/to/model``
-                - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+                - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
                 - ``models:/<model_name>/<model_version>``
                 - ``models:/<model_name>/<stage>``
 
                 For more information about supported URI schemes, see
-                `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+                `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
                 artifact-locations>`_.
             flavor: The name of the flavor of the model to use for deployment. Must be either
-                ``None`` or one of mlflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS.
+                ``None`` or one of qcflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS.
                 If ``None``, a flavor is automatically selected from the model's available
                 flavors. If the specified flavor is not present or not supported for
                 deployment, an exception will be thrown.
@@ -2183,9 +2183,9 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
 
                 - ``execution_role_arn``: The name of an IAM role granting the SageMaker
                   service permissions to access the specified Docker image and S3 bucket
-                  containing MLflow model artifacts. If unspecified, the currently-assumed
+                  containing QCFlow model artifacts. If unspecified, the currently-assumed
                   role will be used. This execution role is passed to the SageMaker service
-                  when creating a SageMaker model from the specified MLflow model. It is
+                  when creating a SageMaker model from the specified QCFlow model. It is
                   passed as the ``ExecutionRoleArn`` parameter of the `SageMaker
                   CreateModel API call <https://docs.aws.amazon.com/sagemaker/latest/
                   dg/API_CreateModel.html>`_. This role is *not* assumed for any other
@@ -2197,9 +2197,9 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
                   SageMaker-compatible bucket name.
 
                 - ``image_url``: URL of the ECR-hosted Docker image the model should be
-                  deployed into, produced by ``mlflow sagemaker build-and-push-container``.
+                  deployed into, produced by ``qcflow sagemaker build-and-push-container``.
                   This parameter can also be specified by the environment variable
-                  ``MLFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
+                  ``QCFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
 
                 - ``region_name``: Name of the AWS region to which to deploy the application.
                   If unspecified, use the region name given in the ``target_uri``.
@@ -2208,7 +2208,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
 
                 - ``archive``: If ``True``, any pre-existing SageMaker application resources
                   that become inactive (i.e. as a result of deploying in
-                  ``mlflow.sagemaker.DEPLOYMENT_MODE_REPLACE`` mode) are preserved.
+                  ``qcflow.sagemaker.DEPLOYMENT_MODE_REPLACE`` mode) are preserved.
                   These resources may include unused SageMaker models and endpoint
                   configurations that were associated with a prior version of the
                   application endpoint. If ``False``, these resources are deleted.
@@ -2274,7 +2274,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: python
             :caption: Python example
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             vpc_config = {
                 "SecurityGroupIds": [
@@ -2288,7 +2288,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
                 assume_role_arn="arn:aws:123:role/assumed_role",
                 execution_role_arn="arn:aws:456:role/execution_role",
                 bucket_name="my-s3-bucket",
-                image_url="1234.dkr.ecr.us-east-1.amazonaws.com/mlflow-test:1.23.1",
+                image_url="1234.dkr.ecr.us-east-1.amazonaws.com/qcflow-test:1.23.1",
                 region_name="us-east-1",
                 archive=False,
                 instance_type="ml.m5.4xlarge",
@@ -2310,13 +2310,13 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: bash
             :caption:  Command-line example
 
-            mlflow deployments create --target sagemaker:/us-east-1/arn:aws:123:role/assumed_role \\
+            qcflow deployments create --target sagemaker:/us-east-1/arn:aws:123:role/assumed_role \\
                     --name my-deployment \\
                     --model-uri /mlruns/0/abc/model \\
                     --flavor python_function\\
                     -C execution_role_arn=arn:aws:456:role/execution_role \\
                     -C bucket_name=my-s3-bucket \\
-                    -C image_url=1234.dkr.ecr.us-east-1.amazonaws.com/mlflow-test:1.23.1 \\
+                    -C image_url=1234.dkr.ecr.us-east-1.amazonaws.com/qcflow-test:1.23.1 \\
                     -C region_name=us-east-1 \\
                     -C archive=False \\
                     -C instance_type=ml.m5.4xlarge \\
@@ -2345,7 +2345,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
             bucket=final_config["bucket"],
             image_url=final_config["image_url"],
             region_name=final_config["region_name"],
-            mode=mlflow.sagemaker.DEPLOYMENT_MODE_CREATE,
+            mode=qcflow.sagemaker.DEPLOYMENT_MODE_CREATE,
             archive=final_config["archive"],
             instance_type=final_config["instance_type"],
             instance_count=final_config["instance_count"],
@@ -2370,22 +2370,22 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
 
         Args:
             name: Name of the deployed application.
-            model_uri: The location, in URI format, of the MLflow model to deploy to SageMaker.
+            model_uri: The location, in URI format, of the QCFlow model to deploy to SageMaker.
                 For example:
 
                 - ``/Users/me/path/to/local/model``
                 - ``relative/path/to/local/model``
                 - ``s3://my_bucket/path/to/model``
-                - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+                - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
                 - ``models:/<model_name>/<model_version>``
                 - ``models:/<model_name>/<stage>``
 
                 For more information about supported URI schemes, see
-                `Referencing Artifacts <https://www.mlflow.org/docs/latest/concepts.html#
+                `Referencing Artifacts <https://www.qcflow.org/docs/latest/concepts.html#
                 artifact-locations>`_.
 
             flavor: The name of the flavor of the model to use for deployment. Must be either
-                ``None`` or one of mlflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS.
+                ``None`` or one of qcflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS.
                 If ``None``, a flavor is automatically selected from the model's available
                 flavors. If the specified flavor is not present or not supported for
                 deployment, an exception will be thrown.
@@ -2399,9 +2399,9 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
 
                 - ``execution_role_arn``: The name of an IAM role granting the SageMaker
                   service permissions to access the specified Docker image and S3 bucket
-                  containing MLflow model artifacts. If unspecified, the currently-assumed
+                  containing QCFlow model artifacts. If unspecified, the currently-assumed
                   role will be used. This execution role is passed to the SageMaker service
-                  when creating a SageMaker model from the specified MLflow model. It is
+                  when creating a SageMaker model from the specified QCFlow model. It is
                   passed as the ``ExecutionRoleArn`` parameter of the `SageMaker
                   CreateModel API call <https://docs.aws.amazon.com/sagemaker/latest/
                   dg/API_CreateModel.html>`_. This role is *not* assumed for any other
@@ -2413,9 +2413,9 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
                   SageMaker-compatible bucket name.
 
                 - ``image_url``: URL of the ECR-hosted Docker image the model should be
-                  deployed into, produced by ``mlflow sagemaker build-and-push-container``.
+                  deployed into, produced by ``qcflow sagemaker build-and-push-container``.
                   This parameter can also be specified by the environment variable
-                  ``MLFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
+                  ``QCFLOW_SAGEMAKER_DEPLOY_IMG_URL``.
 
                 - ``region_name``: Name of the AWS region to which to deploy the application.
                   If unspecified, use the region name given in the ``target_uri``.
@@ -2425,13 +2425,13 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
                 - ``mode``: The mode in which to deploy the application.
                   Must be one of the following:
 
-                  ``mlflow.sagemaker.DEPLOYMENT_MODE_REPLACE``
+                  ``qcflow.sagemaker.DEPLOYMENT_MODE_REPLACE``
                       If an application of the specified name exists, its model(s) is
                       replaced with the specified model. If no such application exists,
                       it is created with the specified name and model.
                       This is the default mode.
 
-                  ``mlflow.sagemaker.DEPLOYMENT_MODE_ADD``
+                  ``qcflow.sagemaker.DEPLOYMENT_MODE_ADD``
                       Add the specified model to a pre-existing application with the
                       specified name, if one exists. If the application does not exist,
                       a new application is created with the specified name and model.
@@ -2444,7 +2444,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
 
                 - ``archive``: If ``True``, any pre-existing SageMaker application resources
                   that become inactive (i.e. as a result of deploying in
-                  ``mlflow.sagemaker.DEPLOYMENT_MODE_REPLACE`` mode) are preserved.
+                  ``qcflow.sagemaker.DEPLOYMENT_MODE_REPLACE`` mode) are preserved.
                   These resources may include unused SageMaker models and endpoint
                   configurations that were associated with a prior version of the
                   application endpoint. If ``False``, these resources are deleted.
@@ -2508,7 +2508,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: python
             :caption: Python example
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             vpc_config = {
                 "SecurityGroupIds": [
@@ -2528,7 +2528,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
                 assume_role_arn="arn:aws:123:role/assumed_role",
                 execution_role_arn="arn:aws:456:role/execution_role",
                 bucket_name="my-s3-bucket",
-                image_url="1234.dkr.ecr.us-east-1.amazonaws.com/mlflow-test:1.23.1",
+                image_url="1234.dkr.ecr.us-east-1.amazonaws.com/qcflow-test:1.23.1",
                 region_name="us-east-1",
                 mode="replace",
                 archive=False,
@@ -2552,13 +2552,13 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: bash
             :caption:  Command-line example
 
-            mlflow deployments update --target sagemaker:/us-east-1/arn:aws:123:role/assumed_role \\
+            qcflow deployments update --target sagemaker:/us-east-1/arn:aws:123:role/assumed_role \\
                     --name my-deployment \\
                     --model-uri /mlruns/0/abc/model \\
                     --flavor python_function\\
                     -C execution_role_arn=arn:aws:456:role/execution_role \\
                     -C bucket_name=my-s3-bucket \\
-                    -C image_url=1234.dkr.ecr.us-east-1.amazonaws.com/mlflow-test:1.23.1 \\
+                    -C image_url=1234.dkr.ecr.us-east-1.amazonaws.com/qcflow-test:1.23.1 \\
                     -C region_name=us-east-1 \\
                     -C mode=replace \\
                     -C archive=False \\
@@ -2660,7 +2660,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: python
             :caption: Python example
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             config = dict(
                 assume_role_arn="arn:aws:123:role/assumed_role",
@@ -2675,7 +2675,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: bash
             :caption: Command-line example
 
-            mlflow deployments delete --target sagemaker \\
+            qcflow deployments delete --target sagemaker \\
                     --name my-deployment \\
                     -C assume_role_arn=arn:aws:123:role/assumed_role \\
                     -C region_name=us-east-1 \\
@@ -2722,7 +2722,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: python
             :caption: Python example
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("sagemaker:/us-east-1/arn:aws:123:role/assumed_role")
             client.list_deployments()
@@ -2730,7 +2730,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: bash
             :caption: Command-line example
 
-            mlflow deployments list --target sagemaker:/us-east-1/arn:aws:1234:role/assumed_role
+            qcflow deployments list --target sagemaker:/us-east-1/arn:aws:1234:role/assumed_role
         """
         import boto3
 
@@ -2754,7 +2754,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         with the AWS region and the role ARN in the ``target_uri`` such as
         ``sagemaker:/us-east-1/arn:aws:1234:role/assumed_role``.
 
-        A :py:class:`mlflow.exceptions.MlflowException` will also be thrown when an error occurs
+        A :py:class:`qcflow.exceptions.MlflowException` will also be thrown when an error occurs
         while retrieving the deployment.
 
         Args:
@@ -2767,7 +2767,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: python
             :caption: Python example
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("sagemaker:/us-east-1/arn:aws:123:role/assumed_role")
             client.get_deployment("my-deployment")
@@ -2775,7 +2775,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         .. code-block:: bash
             :caption: Command-line example
 
-            mlflow deployments get --target sagemaker:/us-east-1/arn:aws:1234:role/assumed_role \\
+            qcflow deployments get --target sagemaker:/us-east-1/arn:aws:1234:role/assumed_role \\
                 --name my-deployment
         """
         import boto3
@@ -2804,7 +2804,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         """
         Compute predictions from the specified deployment using the provided PyFunc input.
 
-        The input/output types of this method match the :ref:`MLflow PyFunc prediction
+        The input/output types of this method match the :ref:`QCFlow PyFunc prediction
         interface <pyfunc-inference-api>`.
 
         If a region name needs to be specified, the plugin must be initialized
@@ -2830,7 +2830,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
             :caption: Python example
 
             import pandas as pd
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             df = pd.DataFrame(data=[[1, 2, 3]], columns=["feat1", "feat2", "feat3"])
             client = get_deploy_client("sagemaker:/us-east-1/arn:aws:123:role/assumed_role")
@@ -2843,7 +2843,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
             {"feat1": {"0": 1}, "feat2": {"0": 2}, "feat3": {"0": 3}}
             input
 
-            mlflow deployments predict \\
+            qcflow deployments predict \\
                 --target sagemaker:/us-east-1/arn:aws:1234:role/assumed_role \\
                 --name my-deployment \\
                 --input-path ./input.json
@@ -2882,12 +2882,12 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         creation completes (i.e. until it's possible to create a deployment within the endpoint).
         In the case of conflicts (e.g. if it's not possible to create the specified endpoint
         due to conflict with an existing endpoint), raises a
-        :py:class:`mlflow.exceptions.MlflowException`. See target-specific plugin documentation
+        :py:class:`qcflow.exceptions.MlflowException`. See target-specific plugin documentation
         for additional detail on support for asynchronous creation and other configuration.
 
         Args:
             name: Unique name to use for endpoint. If another endpoint exists with the same
-                        name, raises a :py:class:`mlflow.exceptions.MlflowException`.
+                        name, raises a :py:class:`qcflow.exceptions.MlflowException`.
             config: (optional) Dict containing target-specific configuration for the endpoint.
 
         Returns:
@@ -2938,7 +2938,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
     def get_endpoint(self, endpoint):
         """
         Returns a dictionary describing the specified endpoint, throwing a
-        py:class:`mlflow.exception.MlflowException` if no endpoint exists with the provided
+        py:class:`qcflow.exception.MlflowException` if no endpoint exists with the provided
         name.
         The dict is guaranteed to contain an 'name' key containing the endpoint name.
         The other fields of the returned dictionary and their types may vary across targets.

@@ -306,7 +306,7 @@ export const prepareRunsGridData = ({
     const duration = Utils.getDuration(runInfo.startTime, runInfo.endTime);
     const runName = Utils.getRunName(runInfo) || runInfo.runUuid;
 
-    // Extract visible tags (i.e. those not prefixed with "mlflow.")
+    // Extract visible tags (i.e. those not prefixed with "qcflow.")
     const visibleTags = Utils.getVisibleTagValues(tags).map(([key, value]) => ({
       key,
       value,

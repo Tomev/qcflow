@@ -21,11 +21,11 @@ export const PROMPT_TEMPLATE_EXAMPLES = [
     variables: [
       {
         name: 'user_question',
-        value: 'Is MLflow open source?',
+        value: 'Is QCFlow open source?',
       },
       {
         name: 'documentation',
-        value: 'MLflow is an open source platform for managing the end-to-end machine learning lifecycle.',
+        value: 'QCFlow is an open source platform for managing the end-to-end machine learning lifecycle.',
       },
     ],
   },

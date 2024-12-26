@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from mlflow.protos.mlflow_artifacts_pb2 import (
+from qcflow.protos.qcflow_artifacts_pb2 import (
     CreateMultipartUpload as ProtoCreateMultipartUpload,
 )
-from mlflow.protos.mlflow_artifacts_pb2 import (
+from qcflow.protos.qcflow_artifacts_pb2 import (
     MultipartUploadCredential as ProtoMultipartUploadCredential,
 )
 

@@ -72,8 +72,8 @@ export const ModelTraceExplorerFrameRenderer = ({
       )}
       <iframe
         title="Model Trace Explorer"
-        // Include the current mlflow version as a query parameter to bust the browser cache
-        // generated and prevent https://github.com/mlflow/mlflow/issues/13829.
+        // Include the current qcflow version as a query parameter to bust the browser cache
+        // generated and prevent https://github.com/qcflow/qcflow/issues/13829.
         src={`static-files/lib/ml-model-trace-renderer/index.html?version=${Version}`}
         ref={iframeRef}
         css={{

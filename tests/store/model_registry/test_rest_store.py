@@ -4,10 +4,10 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities.model_registry import ModelVersion, ModelVersionTag, RegisteredModelTag
-from mlflow.entities.model_registry.model_version_status import ModelVersionStatus
-from mlflow.exceptions import MlflowException
-from mlflow.protos.model_registry_pb2 import (
+from qcflow.entities.model_registry import ModelVersion, ModelVersionTag, RegisteredModelTag
+from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
+from qcflow.exceptions import MlflowException
+from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
     CreateRegisteredModel,
     DeleteModelVersion,
@@ -30,9 +30,9 @@ from mlflow.protos.model_registry_pb2 import (
     UpdateModelVersion,
     UpdateRegisteredModel,
 )
-from mlflow.store.model_registry.rest_store import RestStore
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.rest_utils import MlflowHostCreds
+from qcflow.store.model_registry.rest_store import RestStore
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.rest_utils import MlflowHostCreds
 
 from tests.helper_functions import mock_http_request_200, mock_http_request_403_200
 
@@ -48,7 +48,7 @@ def store(creds):
 
 
 def _args(host_creds, endpoint, method, json_body):
-    res = {"host_creds": host_creds, "endpoint": f"/api/2.0/mlflow/{endpoint}", "method": method}
+    res = {"host_creds": host_creds, "endpoint": f"/api/2.0/qcflow/{endpoint}", "method": method}
     if method == "GET":
         res["params"] = json.loads(json_body)
     else:
@@ -427,7 +427,7 @@ def test_get_model_version_by_alias(store, creds):
 
 
 @mock.patch(
-    "mlflow.store.model_registry.abstract_store.AWAIT_MODEL_VERSION_CREATE_SLEEP_INTERVAL_SECONDS",
+    "qcflow.store.model_registry.abstract_store.AWAIT_MODEL_VERSION_CREATE_SLEEP_INTERVAL_SECONDS",
     1,
 )
 def test_await_model_version_creation_pending(store):

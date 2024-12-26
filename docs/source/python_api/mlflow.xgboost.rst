@@ -1,7 +1,7 @@
-mlflow.xgboost
+qcflow.xgboost
 ==============
 
-.. automodule:: mlflow.xgboost
+.. automodule:: qcflow.xgboost
     :members:
     :undoc-members:
     :show-inheritance:

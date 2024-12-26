@@ -7,8 +7,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.schema import CreateTable, MetaData
 
-import mlflow
-from mlflow.environment_variables import MLFLOW_TRACKING_URI
+import qcflow
+from qcflow.environment_variables import QCFLOW_TRACKING_URI
 
 pytestmark = pytest.mark.notrackingurimock
 
@@ -18,7 +18,7 @@ def get_database_dialect(uri):
 
 
 def get_tracking_uri():
-    return MLFLOW_TRACKING_URI.get()
+    return QCFLOW_TRACKING_URI.get()
 
 
 def dump_schema(db_uri):
@@ -113,14 +113,14 @@ def test_schema_equal(a, b, expected):
 
 
 def initialize_database():
-    with mlflow.start_run():
+    with qcflow.start_run():
         pass
 
 
 def get_schema_update_command(dialect):
     this_script = Path(__file__).relative_to(Path.cwd())
     docker_compose_yml = this_script.parent / "compose.yml"
-    return f"docker compose -f {docker_compose_yml} run --rm mlflow-{dialect} python {this_script}"
+    return f"docker compose -f {docker_compose_yml} run --rm qcflow-{dialect} python {this_script}"
 
 
 def test_schema_is_up_to_date():
@@ -157,9 +157,9 @@ Manually copy & paste the expected schema in {rel_path} or run the following com
 
 def main():
     tracking_uri = get_tracking_uri()
-    assert tracking_uri, f"Environment variable {MLFLOW_TRACKING_URI} must be set"
+    assert tracking_uri, f"Environment variable {QCFLOW_TRACKING_URI} must be set"
     get_database_dialect(tracking_uri)  # Ensure `tracking_uri` is a database URI
-    mlflow.set_tracking_uri(tracking_uri)
+    qcflow.set_tracking_uri(tracking_uri)
     initialize_database()
     schema_path = get_schema_path(tracking_uri)
     existing_schema = schema_path.read_text()

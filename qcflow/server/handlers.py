@@ -17,7 +17,7 @@ from flask import Response, current_app, jsonify, request, send_file
 from google.protobuf import descriptor
 from google.protobuf.json_format import ParseError
 
-from mlflow.entities import (
+from qcflow.entities import (
     DatasetInput,
     ExperimentTag,
     FileInfo,
@@ -26,20 +26,20 @@ from mlflow.entities import (
     RunTag,
     ViewType,
 )
-from mlflow.entities.model_registry import ModelVersionTag, RegisteredModelTag
-from mlflow.entities.multipart_upload import MultipartUploadPart
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.environment_variables import MLFLOW_DEPLOYMENTS_TARGET
-from mlflow.exceptions import MlflowException, _UnsupportedMultipartUploadException
-from mlflow.models import Model
-from mlflow.protos import databricks_pb2
-from mlflow.protos.databricks_pb2 import (
+from qcflow.entities.model_registry import ModelVersionTag, RegisteredModelTag
+from qcflow.entities.multipart_upload import MultipartUploadPart
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.environment_variables import QCFLOW_DEPLOYMENTS_TARGET
+from qcflow.exceptions import MlflowException, _UnsupportedMultipartUploadException
+from qcflow.models import Model
+from qcflow.protos import databricks_pb2
+from qcflow.protos.databricks_pb2 import (
     BAD_REQUEST,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
 )
-from mlflow.protos.mlflow_artifacts_pb2 import (
+from qcflow.protos.qcflow_artifacts_pb2 import (
     AbortMultipartUpload,
     CompleteMultipartUpload,
     CreateMultipartUpload,
@@ -48,10 +48,10 @@ from mlflow.protos.mlflow_artifacts_pb2 import (
     MlflowArtifactsService,
     UploadArtifact,
 )
-from mlflow.protos.mlflow_artifacts_pb2 import (
+from qcflow.protos.qcflow_artifacts_pb2 import (
     ListArtifacts as ListArtifactsMlflowArtifacts,
 )
-from mlflow.protos.model_registry_pb2 import (
+from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
     CreateRegisteredModel,
     DeleteModelVersion,
@@ -75,7 +75,7 @@ from mlflow.protos.model_registry_pb2 import (
     UpdateModelVersion,
     UpdateRegisteredModel,
 )
-from mlflow.protos.service_pb2 import (
+from qcflow.protos.service_pb2 import (
     CreateExperiment,
     CreateRun,
     DeleteExperiment,
@@ -110,26 +110,26 @@ from mlflow.protos.service_pb2 import (
     UpdateExperiment,
     UpdateRun,
 )
-from mlflow.server.validation import _validate_content_type
-from mlflow.store.artifact.artifact_repo import MultipartUploadMixin
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.db.db_types import DATABASE_ENGINES
-from mlflow.tracing.artifact_utils import (
+from qcflow.server.validation import _validate_content_type
+from qcflow.store.artifact.artifact_repo import MultipartUploadMixin
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.db.db_types import DATABASE_ENGINES
+from qcflow.tracing.artifact_utils import (
     TRACE_DATA_FILE_NAME,
     get_artifact_uri_for_trace,
 )
-from mlflow.tracking._model_registry import utils as registry_utils
-from mlflow.tracking._model_registry.registry import ModelRegistryStoreRegistry
-from mlflow.tracking._tracking_service import utils
-from mlflow.tracking._tracking_service.registry import TrackingStoreRegistry
-from mlflow.tracking.registry import UnsupportedModelRegistryStoreURIException
-from mlflow.utils.file_utils import local_file_uri_to_path
-from mlflow.utils.mime_type_utils import _guess_mime_type
-from mlflow.utils.promptlab_utils import _create_promptlab_run_impl
-from mlflow.utils.proto_json_utils import message_to_json, parse_dict
-from mlflow.utils.string_utils import is_string_type
-from mlflow.utils.uri import is_local_uri, validate_path_is_safe, validate_query_string
-from mlflow.utils.validation import (
+from qcflow.tracking._model_registry import utils as registry_utils
+from qcflow.tracking._model_registry.registry import ModelRegistryStoreRegistry
+from qcflow.tracking._tracking_service import utils
+from qcflow.tracking._tracking_service.registry import TrackingStoreRegistry
+from qcflow.tracking.registry import UnsupportedModelRegistryStoreURIException
+from qcflow.utils.file_utils import local_file_uri_to_path
+from qcflow.utils.mime_type_utils import _guess_mime_type
+from qcflow.utils.promptlab_utils import _create_promptlab_run_impl
+from qcflow.utils.proto_json_utils import message_to_json, parse_dict
+from qcflow.utils.string_utils import is_string_type
+from qcflow.utils.uri import is_local_uri, validate_path_is_safe, validate_query_string
+from qcflow.utils.validation import (
     _validate_batch_log_api_req,
     invalid_value,
     missing_value,
@@ -139,7 +139,7 @@ _logger = logging.getLogger(__name__)
 _tracking_store = None
 _model_registry_store = None
 _artifact_repo = None
-STATIC_PREFIX_ENV_VAR = "_MLFLOW_STATIC_PREFIX"
+STATIC_PREFIX_ENV_VAR = "_QCFLOW_STATIC_PREFIX"
 MAX_RUNS_GET_METRIC_HISTORY_BULK = 100
 MAX_RESULTS_PER_RUN = 2500
 MAX_RESULTS_GET_METRIC_HISTORY = 25000
@@ -156,13 +156,13 @@ class TrackingStoreRegistryWrapper(TrackingStoreRegistry):
 
     @classmethod
     def _get_file_store(cls, store_uri, artifact_uri):
-        from mlflow.store.tracking.file_store import FileStore
+        from qcflow.store.tracking.file_store import FileStore
 
         return FileStore(store_uri, artifact_uri)
 
     @classmethod
     def _get_sqlalchemy_store(cls, store_uri, artifact_uri):
-        from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
+        from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
 
         return SqlAlchemyStore(store_uri, artifact_uri)
 
@@ -178,13 +178,13 @@ class ModelRegistryStoreRegistryWrapper(ModelRegistryStoreRegistry):
 
     @classmethod
     def _get_file_store(cls, store_uri):
-        from mlflow.store.model_registry.file_store import FileStore
+        from qcflow.store.model_registry.file_store import FileStore
 
         return FileStore(store_uri)
 
     @classmethod
     def _get_sqlalchemy_store(cls, store_uri):
-        from mlflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
+        from qcflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
 
         return SqlAlchemyStore(store_uri)
 
@@ -193,12 +193,12 @@ _tracking_store_registry = TrackingStoreRegistryWrapper()
 _model_registry_store_registry = ModelRegistryStoreRegistryWrapper()
 
 
-def _get_artifact_repo_mlflow_artifacts():
+def _get_artifact_repo_qcflow_artifacts():
     """
-    Get an artifact repository specified by ``--artifacts-destination`` option for ``mlflow server``
+    Get an artifact repository specified by ``--artifacts-destination`` option for ``qcflow server``
     command.
     """
-    from mlflow.server import ARTIFACTS_DESTINATION_ENV_VAR
+    from qcflow.server import ARTIFACTS_DESTINATION_ENV_VAR
 
     global _artifact_repo
     if _artifact_repo is None:
@@ -216,9 +216,9 @@ def _get_trace_artifact_repo(trace_info: TraceInfo):
     artifact_uri = get_artifact_uri_for_trace(trace_info)
 
     if _is_servable_proxied_run_artifact_root(artifact_uri):
-        # If the artifact location is a proxied run artifact root (e.g. mlflow-artifacts://...),
+        # If the artifact location is a proxied run artifact root (e.g. qcflow-artifacts://...),
         # we need to resolve it to the actual artifact location.
-        from mlflow.server import ARTIFACTS_DESTINATION_ENV_VAR
+        from qcflow.server import ARTIFACTS_DESTINATION_ENV_VAR
 
         path = _get_proxied_run_artifact_destination_path(artifact_uri)
         if not path:
@@ -242,11 +242,11 @@ def _get_trace_artifact_repo(trace_info: TraceInfo):
 def _is_serving_proxied_artifacts():
     """
     Returns:
-        True if the MLflow server is serving proxied artifacts (i.e. acting as a proxy for
+        True if the QCFlow server is serving proxied artifacts (i.e. acting as a proxy for
         artifact upload / download / list operations), as would be enabled by specifying the
         --serve-artifacts configuration option. False otherwise.
     """
-    from mlflow.server import SERVE_ARTIFACTS_ENV_VAR
+    from qcflow.server import SERVE_ARTIFACTS_ENV_VAR
 
     return os.environ.get(SERVE_ARTIFACTS_ENV_VAR, "false") == "true"
 
@@ -256,9 +256,9 @@ def _is_servable_proxied_run_artifact_root(run_artifact_root):
     Determines whether or not the following are true:
 
     - The specified Run artifact root is a proxied artifact root (i.e. an artifact root with scheme
-      ``http``, ``https``, or ``mlflow-artifacts``).
+      ``http``, ``https``, or ``qcflow-artifacts``).
 
-    - The MLflow server is capable of resolving and accessing the underlying storage location
+    - The QCFlow server is capable of resolving and accessing the underlying storage location
       corresponding to the proxied artifact root, allowing it to fulfill artifact list and
       download requests by using this storage location directly.
 
@@ -267,28 +267,28 @@ def _is_servable_proxied_run_artifact_root(run_artifact_root):
 
     Returns:
         True if the specified Run artifact root refers to proxied artifacts that can be
-        served by this MLflow server (i.e. the server has access to the destination and
+        served by this QCFlow server (i.e. the server has access to the destination and
         can respond to list and download requests for the artifact). False otherwise.
     """
     parsed_run_artifact_root = urllib.parse.urlparse(run_artifact_root)
     # NB: If the run artifact root is a proxied artifact root (has scheme `http`, `https`, or
-    # `mlflow-artifacts`) *and* the MLflow server is configured to serve artifacts, the MLflow
+    # `qcflow-artifacts`) *and* the QCFlow server is configured to serve artifacts, the QCFlow
     # server always assumes that it has access to the underlying storage location for the proxied
     # artifacts. This may not always be accurate. For example:
     #
-    # An organization may initially use the MLflow server to serve Tracking API requests and proxy
-    # access to artifacts stored in Location A (via `mlflow server --serve-artifacts`). Then, for
+    # An organization may initially use the QCFlow server to serve Tracking API requests and proxy
+    # access to artifacts stored in Location A (via `qcflow server --serve-artifacts`). Then, for
     # scalability and / or security purposes, the organization may decide to store artifacts in a
-    # new location B and set up a separate server (e.g. `mlflow server --artifacts-only`) to proxy
+    # new location B and set up a separate server (e.g. `qcflow server --artifacts-only`) to proxy
     # access to artifacts stored in Location B.
     #
     # In this scenario, requests for artifacts stored in Location B that are sent to the original
-    # MLflow server will fail if the original MLflow server does not have access to Location B
+    # QCFlow server will fail if the original QCFlow server does not have access to Location B
     # because it will assume that it can serve all proxied artifacts regardless of the underlying
-    # location. Such failures can be remediated by granting the original MLflow server access to
+    # location. Such failures can be remediated by granting the original QCFlow server access to
     # Location B.
     return (
-        parsed_run_artifact_root.scheme in ["http", "https", "mlflow-artifacts"]
+        parsed_run_artifact_root.scheme in ["http", "https", "qcflow-artifacts"]
         and _is_serving_proxied_artifacts()
     )
 
@@ -299,7 +299,7 @@ def _get_proxied_run_artifact_destination_path(proxied_artifact_root, relative_p
 
     Args:
         proxied_artifact_root: The Run artifact root location (URI) with scheme ``http``,
-            ``https``, or `mlflow-artifacts` that can be resolved by the MLflow server to a
+            ``https``, or `qcflow-artifacts` that can be resolved by the QCFlow server to a
             concrete storage location.
         relative_path: The relative path of the destination within the specified
             ``proxied_artifact_root``. If ``None``, the destination is assumed to be
@@ -309,24 +309,24 @@ def _get_proxied_run_artifact_destination_path(proxied_artifact_root, relative_p
         The storage location of the specified artifact.
     """
     parsed_proxied_artifact_root = urllib.parse.urlparse(proxied_artifact_root)
-    assert parsed_proxied_artifact_root.scheme in ["http", "https", "mlflow-artifacts"]
+    assert parsed_proxied_artifact_root.scheme in ["http", "https", "qcflow-artifacts"]
 
-    if parsed_proxied_artifact_root.scheme == "mlflow-artifacts":
-        # If the proxied artifact root is an `mlflow-artifacts` URI, the run artifact root path is
+    if parsed_proxied_artifact_root.scheme == "qcflow-artifacts":
+        # If the proxied artifact root is an `qcflow-artifacts` URI, the run artifact root path is
         # simply the path component of the URI, since the fully-qualified format of an
-        # `mlflow-artifacts` URI is `mlflow-artifacts://<netloc>/path/to/artifact`
+        # `qcflow-artifacts` URI is `qcflow-artifacts://<netloc>/path/to/artifact`
         proxied_run_artifact_root_path = parsed_proxied_artifact_root.path.lstrip("/")
     else:
-        # In this case, the proxied artifact root is an HTTP(S) URL referring to an mlflow-artifacts
+        # In this case, the proxied artifact root is an HTTP(S) URL referring to an qcflow-artifacts
         # API route that can be used to download the artifact. These routes are always anchored at
-        # `/api/2.0/mlflow-artifacts/artifacts`. Accordingly, we split the path on this route anchor
+        # `/api/2.0/qcflow-artifacts/artifacts`. Accordingly, we split the path on this route anchor
         # and interpret the rest of the path (everything after the route anchor) as the run artifact
         # root path
-        mlflow_artifacts_http_route_anchor = "/api/2.0/mlflow-artifacts/artifacts/"
-        assert mlflow_artifacts_http_route_anchor in parsed_proxied_artifact_root.path
+        qcflow_artifacts_http_route_anchor = "/api/2.0/qcflow-artifacts/artifacts/"
+        assert qcflow_artifacts_http_route_anchor in parsed_proxied_artifact_root.path
 
         proxied_run_artifact_root_path = parsed_proxied_artifact_root.path.split(
-            mlflow_artifacts_http_route_anchor
+            qcflow_artifacts_http_route_anchor
         )[1].lstrip("/")
 
     return (
@@ -337,7 +337,7 @@ def _get_proxied_run_artifact_destination_path(proxied_artifact_root, relative_p
 
 
 def _get_tracking_store(backend_store_uri=None, default_artifact_root=None):
-    from mlflow.server import ARTIFACT_ROOT_ENV_VAR, BACKEND_STORE_URI_ENV_VAR
+    from qcflow.server import ARTIFACT_ROOT_ENV_VAR, BACKEND_STORE_URI_ENV_VAR
 
     global _tracking_store
     if _tracking_store is None:
@@ -349,7 +349,7 @@ def _get_tracking_store(backend_store_uri=None, default_artifact_root=None):
 
 
 def _get_model_registry_store(registry_store_uri=None):
-    from mlflow.server import BACKEND_STORE_URI_ENV_VAR, REGISTRY_STORE_URI_ENV_VAR
+    from qcflow.server import BACKEND_STORE_URI_ENV_VAR, REGISTRY_STORE_URI_ENV_VAR
 
     global _model_registry_store
     if _model_registry_store is None:
@@ -459,7 +459,7 @@ def _validate_param_against_schema(schema, param, value, proto_parsing_succeeded
             If the proto was successfully parsed, we assume all of the types of the parameters in
             the request body were correctly specified, and thus we skip validating types. If proto
             parsing failed, then we validate types in addition to the rest of the schema. For
-            details, see https://github.com/mlflow/mlflow/pull/5458#issuecomment-1080880870.
+            details, see https://github.com/qcflow/qcflow/pull/5458#issuecomment-1080880870.
     """
 
     for f in schema:
@@ -566,7 +566,7 @@ def _send_artifact(artifact_repository, path):
     return _response_with_file_attachment_headers(file_path, file_sender_response)
 
 
-def catch_mlflow_exception(func):
+def catch_qcflow_exception(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -586,9 +586,9 @@ def _disable_unless_serve_artifacts(func):
         if not _is_serving_proxied_artifacts():
             return Response(
                 (
-                    f"Endpoint: {request.url_rule} disabled due to the mlflow server running "
+                    f"Endpoint: {request.url_rule} disabled due to the qcflow server running "
                     "with `--no-serve-artifacts`. To enable artifacts server functionality, "
-                    "run `mlflow server` with `--serve-artifacts`"
+                    "run `qcflow server` with `--serve-artifacts`"
                 ),
                 503,
             )
@@ -600,14 +600,14 @@ def _disable_unless_serve_artifacts(func):
 def _disable_if_artifacts_only(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        from mlflow.server import ARTIFACTS_ONLY_ENV_VAR
+        from qcflow.server import ARTIFACTS_ONLY_ENV_VAR
 
         if os.environ.get(ARTIFACTS_ONLY_ENV_VAR):
             return Response(
                 (
-                    f"Endpoint: {request.url_rule} disabled due to the mlflow server running "
+                    f"Endpoint: {request.url_rule} disabled due to the qcflow server running "
                     "in `--artifacts-only` mode. To enable tracking server functionality, run "
-                    "`mlflow server` without `--artifacts-only`"
+                    "`qcflow server` without `--artifacts-only`"
                 ),
                 503,
             )
@@ -616,7 +616,7 @@ def _disable_if_artifacts_only(func):
     return wrapper
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def get_artifact_handler():
     run_id = request.args.get("run_id") or request.args.get("run_uuid")
     path = request.args["path"]
@@ -624,7 +624,7 @@ def get_artifact_handler():
     run = _get_tracking_store().get_run(run_id)
 
     if _is_servable_proxied_run_artifact_root(run.info.artifact_uri):
-        artifact_repo = _get_artifact_repo_mlflow_artifacts()
+        artifact_repo = _get_artifact_repo_qcflow_artifacts()
         artifact_path = _get_proxied_run_artifact_destination_path(
             proxied_artifact_root=run.info.artifact_uri,
             relative_path=path,
@@ -645,7 +645,7 @@ def _not_implemented():
 # Tracking Server APIs
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _create_experiment():
     request_message = _get_request_message(
@@ -677,7 +677,7 @@ def _create_experiment():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_experiment():
     request_message = _get_request_message(
@@ -696,7 +696,7 @@ def get_experiment_impl(request_message):
     return response_message
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_experiment_by_name():
     request_message = _get_request_message(
@@ -717,7 +717,7 @@ def _get_experiment_by_name():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_experiment():
     request_message = _get_request_message(
@@ -730,7 +730,7 @@ def _delete_experiment():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _restore_experiment():
     request_message = _get_request_message(
@@ -744,7 +744,7 @@ def _restore_experiment():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _update_experiment():
     request_message = _get_request_message(
@@ -764,7 +764,7 @@ def _update_experiment():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _create_run():
     request_message = _get_request_message(
@@ -792,7 +792,7 @@ def _create_run():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _update_run():
     request_message = _get_request_message(
@@ -815,7 +815,7 @@ def _update_run():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_run():
     request_message = _get_request_message(
@@ -828,7 +828,7 @@ def _delete_run():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _restore_run():
     request_message = _get_request_message(
@@ -841,7 +841,7 @@ def _restore_run():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _log_metric():
     request_message = _get_request_message(
@@ -868,7 +868,7 @@ def _log_metric():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _log_param():
     request_message = _get_request_message(
@@ -888,7 +888,7 @@ def _log_param():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _log_inputs():
     request_message = _get_request_message(
@@ -911,7 +911,7 @@ def _log_inputs():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _set_experiment_tag():
     request_message = _get_request_message(
@@ -930,7 +930,7 @@ def _set_experiment_tag():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _set_tag():
     request_message = _get_request_message(
@@ -950,7 +950,7 @@ def _set_tag():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_tag():
     request_message = _get_request_message(
@@ -967,7 +967,7 @@ def _delete_tag():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_run():
     request_message = _get_request_message(
@@ -986,7 +986,7 @@ def get_run_impl(request_message):
     return response_message
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _search_runs():
     request_message = _get_request_message(
@@ -1026,7 +1026,7 @@ def search_runs_impl(request_message):
     return response_message
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _list_artifacts():
     request_message = _get_request_message(
@@ -1066,24 +1066,24 @@ def list_artifacts_impl(request_message):
     return response_message
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def _list_artifacts_for_proxied_run_artifact_root(proxied_artifact_root, relative_path=None):
     """
     Lists artifacts from the specified ``relative_path`` within the specified proxied Run artifact
-    root (i.e. a Run artifact root with scheme ``http``, ``https``, or ``mlflow-artifacts``).
+    root (i.e. a Run artifact root with scheme ``http``, ``https``, or ``qcflow-artifacts``).
 
     Args:
         proxied_artifact_root: The Run artifact root location (URI) with scheme ``http``,
-                               ``https``, or ``mlflow-artifacts`` that can be resolved by the
-                               MLflow server to a concrete storage location.
+                               ``https``, or ``qcflow-artifacts`` that can be resolved by the
+                               QCFlow server to a concrete storage location.
         relative_path: The relative path within the specified ``proxied_artifact_root`` under
                        which to list artifact contents. If ``None``, artifacts are listed from
                        the ``proxied_artifact_root`` directory.
     """
     parsed_proxied_artifact_root = urllib.parse.urlparse(proxied_artifact_root)
-    assert parsed_proxied_artifact_root.scheme in ["http", "https", "mlflow-artifacts"]
+    assert parsed_proxied_artifact_root.scheme in ["http", "https", "qcflow-artifacts"]
 
-    artifact_destination_repo = _get_artifact_repo_mlflow_artifacts()
+    artifact_destination_repo = _get_artifact_repo_qcflow_artifacts()
     artifact_destination_path = _get_proxied_run_artifact_destination_path(
         proxied_artifact_root=proxied_artifact_root,
         relative_path=relative_path,
@@ -1102,7 +1102,7 @@ def _list_artifacts_for_proxied_run_artifact_root(proxied_artifact_root, relativ
     return artifact_entities
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_metric_history():
     request_message = _get_request_message(
@@ -1121,7 +1121,7 @@ def _get_metric_history():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def get_metric_history_bulk_handler():
     MAX_HISTORY_RESULTS = 25000
@@ -1218,7 +1218,7 @@ def _get_sampled_steps_from_steps(
     return set(sampled_steps)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def get_metric_history_bulk_interval_handler():
     request_message = _get_request_message(
@@ -1328,7 +1328,7 @@ def get_metric_history_bulk_interval_impl(request_message):
     return response_message
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def search_datasets_handler():
     request_message = _get_request_message(
@@ -1370,9 +1370,9 @@ def search_datasets_impl(request_message):
         return _not_implemented()
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def gateway_proxy_handler():
-    target_uri = MLFLOW_DEPLOYMENTS_TARGET.get()
+    target_uri = QCFLOW_DEPLOYMENTS_TARGET.get()
     if not target_uri:
         # Pretend an empty gateway service is running
         return {"endpoints": []}
@@ -1400,7 +1400,7 @@ def gateway_proxy_handler():
         )
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def create_promptlab_run_handler():
     def assert_arg_exists(arg_name, arg):
@@ -1437,8 +1437,8 @@ def create_promptlab_run_handler():
     model_output_parameters = [
         Param(param.get("key"), param.get("value")) for param in raw_model_output_parameters
     ]
-    mlflow_version = args.get("mlflow_version")
-    assert_arg_exists("mlflow_version", mlflow_version)
+    qcflow_version = args.get("qcflow_version")
+    assert_arg_exists("qcflow_version", qcflow_version)
     user_id = args.get("user_id", "unknown")
 
     # use current time if not provided
@@ -1458,7 +1458,7 @@ def create_promptlab_run_handler():
         model_input=model_input,
         model_output=model_output,
         model_output_parameters=model_output_parameters,
-        mlflow_version=mlflow_version,
+        qcflow_version=qcflow_version,
         user_id=user_id,
         start_time=start_time,
     )
@@ -1469,7 +1469,7 @@ def create_promptlab_run_handler():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def upload_artifact_handler():
     args = request.args
     run_uuid = args.get("run_uuid")
@@ -1507,7 +1507,7 @@ def upload_artifact_handler():
 
     def _log_artifact_to_repo(file, run, dirname, artifact_dir):
         if _is_servable_proxied_run_artifact_root(run.info.artifact_uri):
-            artifact_repo = _get_artifact_repo_mlflow_artifacts()
+            artifact_repo = _get_artifact_repo_qcflow_artifacts()
             path_to_log = (
                 os.path.join(run.info.experiment_id, run.info.run_id, "artifacts", dirname)
                 if dirname
@@ -1533,7 +1533,7 @@ def upload_artifact_handler():
     return Response(mimetype="application/json")
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _search_experiments():
     request_message = _get_request_message(
@@ -1562,12 +1562,12 @@ def _search_experiments():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def _get_artifact_repo(run):
     return get_artifact_repository(run.info.artifact_uri)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _log_batch():
     def _assert_metrics_fields_present(metrics):
@@ -1606,7 +1606,7 @@ def _log_batch():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _log_model():
     request_message = _get_request_message(
@@ -1632,7 +1632,7 @@ def _log_model():
             error_code=INVALID_PARAMETER_VALUE,
         )
     _get_tracking_store().record_logged_model(
-        run_id=request_message.run_id, mlflow_model=Model.from_dict(model)
+        run_id=request_message.run_id, qcflow_model=Model.from_dict(model)
     )
     response_message = LogModel.Response()
     response = Response(mimetype="application/json")
@@ -1649,7 +1649,7 @@ def _wrap_response(response_message):
 # Model Registry APIs
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _create_registered_model():
     request_message = _get_request_message(
@@ -1669,7 +1669,7 @@ def _create_registered_model():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_registered_model():
     request_message = _get_request_message(
@@ -1680,7 +1680,7 @@ def _get_registered_model():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _update_registered_model():
     request_message = _get_request_message(
@@ -1699,7 +1699,7 @@ def _update_registered_model():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _rename_registered_model():
     request_message = _get_request_message(
@@ -1718,7 +1718,7 @@ def _rename_registered_model():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_registered_model():
     request_message = _get_request_message(
@@ -1728,7 +1728,7 @@ def _delete_registered_model():
     return _wrap_response(DeleteRegisteredModel.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _search_registered_models():
     request_message = _get_request_message(
@@ -1757,7 +1757,7 @@ def _search_registered_models():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_latest_versions():
     request_message = _get_request_message(
@@ -1775,7 +1775,7 @@ def _get_latest_versions():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _set_registered_model_tag():
     request_message = _get_request_message(
@@ -1791,7 +1791,7 @@ def _set_registered_model_tag():
     return _wrap_response(SetRegisteredModelTag.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_registered_model_tag():
     request_message = _get_request_message(
@@ -1810,23 +1810,23 @@ def _delete_registered_model_tag():
 def _validate_non_local_source_contains_relative_paths(source: str):
     """
     Validation check to ensure that sources that are provided that conform to the schemes:
-    http, https, or mlflow-artifacts do not contain relative path designations that are intended
+    http, https, or qcflow-artifacts do not contain relative path designations that are intended
     to access local file system paths on the tracking server.
 
     Example paths that this validation function is intended to find and raise an Exception if
     passed:
-    "mlflow-artifacts://host:port/../../../../"
-    "http://host:port/api/2.0/mlflow-artifacts/artifacts/../../../../"
-    "https://host:port/api/2.0/mlflow-artifacts/artifacts/../../../../"
+    "qcflow-artifacts://host:port/../../../../"
+    "http://host:port/api/2.0/qcflow-artifacts/artifacts/../../../../"
+    "https://host:port/api/2.0/qcflow-artifacts/artifacts/../../../../"
     "/models/artifacts/../../../"
     "s3:/my_bucket/models/path/../../other/path"
     "file://path/to/../../../../some/where/you/should/not/be"
-    "mlflow-artifacts://host:port/..%2f..%2f..%2f..%2f"
-    "http://host:port/api/2.0/mlflow-artifacts/artifacts%00"
+    "qcflow-artifacts://host:port/..%2f..%2f..%2f..%2f"
+    "http://host:port/api/2.0/qcflow-artifacts/artifacts%00"
     """
     invalid_source_error_message = (
         f"Invalid model version source: '{source}'. If supplying a source as an http, https, "
-        "local file path, ftp, objectstore, or mlflow-artifacts uri, an absolute path must be "
+        "local file path, ftp, objectstore, or qcflow-artifacts uri, an absolute path must be "
         "provided without relative path references present. "
         "Please provide an absolute path."
     )
@@ -1870,7 +1870,7 @@ def _validate_source(source: str, run_id: str) -> None:
     _validate_non_local_source_contains_relative_paths(source)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _create_model_version():
     request_message = _get_request_message(
@@ -1899,7 +1899,7 @@ def _create_model_version():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def get_model_version_artifact_handler():
     name = request.args.get("name")
@@ -1908,7 +1908,7 @@ def get_model_version_artifact_handler():
     path = validate_path_is_safe(path)
     artifact_uri = _get_model_registry_store().get_model_version_download_uri(name, version)
     if _is_servable_proxied_run_artifact_root(artifact_uri):
-        artifact_repo = _get_artifact_repo_mlflow_artifacts()
+        artifact_repo = _get_artifact_repo_qcflow_artifacts()
         artifact_path = _get_proxied_run_artifact_destination_path(
             proxied_artifact_root=artifact_uri,
             relative_path=path,
@@ -1920,7 +1920,7 @@ def get_model_version_artifact_handler():
     return _send_artifact(artifact_repo, artifact_path)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_model_version():
     request_message = _get_request_message(
@@ -1938,7 +1938,7 @@ def _get_model_version():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _update_model_version():
     request_message = _get_request_message(
@@ -1960,7 +1960,7 @@ def _update_model_version():
     return _wrap_response(UpdateModelVersion.Response(model_version=model_version.to_proto()))
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _transition_stage():
     request_message = _get_request_message(
@@ -1983,7 +1983,7 @@ def _transition_stage():
     )
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_model_version():
     request_message = _get_request_message(
@@ -1999,7 +1999,7 @@ def _delete_model_version():
     return _wrap_response(DeleteModelVersion.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_model_version_download_uri():
     request_message = _get_request_message(GetModelVersionDownloadUri())
@@ -2010,7 +2010,7 @@ def _get_model_version_download_uri():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _search_model_versions():
     request_message = _get_request_message(
@@ -2044,7 +2044,7 @@ def search_model_versions_impl(request_message):
     return response_message
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _set_model_version_tag():
     request_message = _get_request_message(
@@ -2063,7 +2063,7 @@ def _set_model_version_tag():
     return _wrap_response(SetModelVersionTag.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_model_version_tag():
     request_message = _get_request_message(
@@ -2082,7 +2082,7 @@ def _delete_model_version_tag():
     return _wrap_response(DeleteModelVersionTag.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _set_registered_model_alias():
     request_message = _get_request_message(
@@ -2101,7 +2101,7 @@ def _set_registered_model_alias():
     return _wrap_response(SetRegisteredModelAlias.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_registered_model_alias():
     request_message = _get_request_message(
@@ -2117,7 +2117,7 @@ def _delete_registered_model_alias():
     return _wrap_response(DeleteRegisteredModelAlias.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_model_version_by_alias():
     request_message = _get_request_message(
@@ -2135,19 +2135,19 @@ def _get_model_version_by_alias():
     return _wrap_response(response_message)
 
 
-# MLflow Artifacts APIs
+# QCFlow Artifacts APIs
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_unless_serve_artifacts
 def _download_artifact(artifact_path):
     """
-    A request handler for `GET /mlflow-artifacts/artifacts/<artifact_path>` to download an artifact
+    A request handler for `GET /qcflow-artifacts/artifacts/<artifact_path>` to download an artifact
     from `artifact_path` (a relative path from the root artifact directory).
     """
     artifact_path = validate_path_is_safe(artifact_path)
     tmp_dir = tempfile.TemporaryDirectory()
-    artifact_repo = _get_artifact_repo_mlflow_artifacts()
+    artifact_repo = _get_artifact_repo_qcflow_artifacts()
     dst = artifact_repo.download_artifacts(artifact_path, tmp_dir.name)
 
     # Ref: https://stackoverflow.com/a/24613980/6943581
@@ -2163,11 +2163,11 @@ def _download_artifact(artifact_path):
     return _response_with_file_attachment_headers(artifact_path, file_sender_response)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_unless_serve_artifacts
 def _upload_artifact(artifact_path):
     """
-    A request handler for `PUT /mlflow-artifacts/artifacts/<artifact_path>` to upload an artifact
+    A request handler for `PUT /qcflow-artifacts/artifacts/<artifact_path>` to upload an artifact
     to `artifact_path` (a relative path from the root artifact directory).
     """
     artifact_path = validate_path_is_safe(artifact_path)
@@ -2182,22 +2182,22 @@ def _upload_artifact(artifact_path):
                     break
                 f.write(chunk)
 
-        artifact_repo = _get_artifact_repo_mlflow_artifacts()
+        artifact_repo = _get_artifact_repo_qcflow_artifacts()
         artifact_repo.log_artifact(tmp_path, artifact_path=head or None)
 
     return _wrap_response(UploadArtifact.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_unless_serve_artifacts
-def _list_artifacts_mlflow_artifacts():
+def _list_artifacts_qcflow_artifacts():
     """
-    A request handler for `GET /mlflow-artifacts/artifacts?path=<value>` to list artifacts in `path`
+    A request handler for `GET /qcflow-artifacts/artifacts?path=<value>` to list artifacts in `path`
     (a relative path from the root artifact directory).
     """
     request_message = _get_request_message(ListArtifactsMlflowArtifacts())
     path = validate_path_is_safe(request_message.path) if request_message.HasField("path") else None
-    artifact_repo = _get_artifact_repo_mlflow_artifacts()
+    artifact_repo = _get_artifact_repo_qcflow_artifacts()
     files = []
     for file_info in artifact_repo.list_artifacts(path):
         basename = posixpath.basename(file_info.path)
@@ -2210,16 +2210,16 @@ def _list_artifacts_mlflow_artifacts():
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_unless_serve_artifacts
-def _delete_artifact_mlflow_artifacts(artifact_path):
+def _delete_artifact_qcflow_artifacts(artifact_path):
     """
-    A request handler for `DELETE /mlflow-artifacts/artifacts?path=<value>` to delete artifacts in
+    A request handler for `DELETE /qcflow-artifacts/artifacts?path=<value>` to delete artifacts in
     `path` (a relative path from the root artifact directory).
     """
     artifact_path = validate_path_is_safe(artifact_path)
     _get_request_message(DeleteArtifact())
-    artifact_repo = _get_artifact_repo_mlflow_artifacts()
+    artifact_repo = _get_artifact_repo_qcflow_artifacts()
     artifact_repo.delete_artifacts(artifact_path)
     response_message = DeleteArtifact.Response()
     response = Response(mimetype="application/json")
@@ -2227,9 +2227,9 @@ def _delete_artifact_mlflow_artifacts(artifact_path):
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 def _graphql():
-    from mlflow.server.graphql.graphql_schema_extensions import schema
+    from qcflow.server.graphql.graphql_schema_extensions import schema
 
     # Extracting the query, variables, and operationName from the request
     request_json = _get_request_json()
@@ -2255,11 +2255,11 @@ def _validate_support_multipart_upload(artifact_repo):
         raise _UnsupportedMultipartUploadException()
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_unless_serve_artifacts
 def _create_multipart_upload_artifact(artifact_path):
     """
-    A request handler for `POST /mlflow-artifacts/mpu/create` to create a multipart upload
+    A request handler for `POST /qcflow-artifacts/mpu/create` to create a multipart upload
     to `artifact_path` (a relative path from the root artifact directory).
     """
     artifact_path = validate_path_is_safe(artifact_path)
@@ -2274,7 +2274,7 @@ def _create_multipart_upload_artifact(artifact_path):
     path = request_message.path
     num_parts = request_message.num_parts
 
-    artifact_repo = _get_artifact_repo_mlflow_artifacts()
+    artifact_repo = _get_artifact_repo_qcflow_artifacts()
     _validate_support_multipart_upload(artifact_repo)
 
     create_response = artifact_repo.create_multipart_upload(
@@ -2288,11 +2288,11 @@ def _create_multipart_upload_artifact(artifact_path):
     return response
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_unless_serve_artifacts
 def _complete_multipart_upload_artifact(artifact_path):
     """
-    A request handler for `POST /mlflow-artifacts/mpu/complete` to complete a multipart upload
+    A request handler for `POST /qcflow-artifacts/mpu/complete` to complete a multipart upload
     to `artifact_path` (a relative path from the root artifact directory).
     """
     artifact_path = validate_path_is_safe(artifact_path)
@@ -2309,7 +2309,7 @@ def _complete_multipart_upload_artifact(artifact_path):
     upload_id = request_message.upload_id
     parts = [MultipartUploadPart.from_proto(part) for part in request_message.parts]
 
-    artifact_repo = _get_artifact_repo_mlflow_artifacts()
+    artifact_repo = _get_artifact_repo_qcflow_artifacts()
     _validate_support_multipart_upload(artifact_repo)
 
     artifact_repo.complete_multipart_upload(
@@ -2321,11 +2321,11 @@ def _complete_multipart_upload_artifact(artifact_path):
     return _wrap_response(CompleteMultipartUpload.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_unless_serve_artifacts
 def _abort_multipart_upload_artifact(artifact_path):
     """
-    A request handler for `POST /mlflow-artifacts/mpu/abort` to abort a multipart upload
+    A request handler for `POST /qcflow-artifacts/mpu/abort` to abort a multipart upload
     to `artifact_path` (a relative path from the root artifact directory).
     """
     artifact_path = validate_path_is_safe(artifact_path)
@@ -2340,7 +2340,7 @@ def _abort_multipart_upload_artifact(artifact_path):
     path = request_message.path
     upload_id = request_message.upload_id
 
-    artifact_repo = _get_artifact_repo_mlflow_artifacts()
+    artifact_repo = _get_artifact_repo_qcflow_artifacts()
     _validate_support_multipart_upload(artifact_repo)
 
     artifact_repo.abort_multipart_upload(
@@ -2351,14 +2351,14 @@ def _abort_multipart_upload_artifact(artifact_path):
     return _wrap_response(AbortMultipartUpload.Response())
 
 
-# MLflow Tracing APIs
+# QCFlow Tracing APIs
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _start_trace():
     """
-    A request handler for `POST /mlflow/traces` to create a new TraceInfo record in tracking store.
+    A request handler for `POST /qcflow/traces` to create a new TraceInfo record in tracking store.
     """
     request_message = _get_request_message(
         StartTrace(),
@@ -2382,11 +2382,11 @@ def _start_trace():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _end_trace(request_id):
     """
-    A request handler for `PATCH /mlflow/traces/{request_id}` to mark an existing TraceInfo
+    A request handler for `PATCH /qcflow/traces/{request_id}` to mark an existing TraceInfo
     record completed in tracking store.
     """
     request_message = _get_request_message(
@@ -2412,11 +2412,11 @@ def _end_trace(request_id):
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _get_trace_info(request_id):
     """
-    A request handler for `GET /mlflow/traces/{request_id}/info` to retrieve
+    A request handler for `GET /qcflow/traces/{request_id}/info` to retrieve
     an existing TraceInfo record from tracking store.
     """
     trace_info = _get_tracking_store().get_trace_info(request_id)
@@ -2424,11 +2424,11 @@ def _get_trace_info(request_id):
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _search_traces():
     """
-    A request handler for `GET /mlflow/traces` to search for TraceInfo records in tracking store.
+    A request handler for `GET /qcflow/traces` to search for TraceInfo records in tracking store.
     """
     request_message = _get_request_message(
         SearchTraces(),
@@ -2461,11 +2461,11 @@ def _search_traces():
     return _wrap_response(response_message)
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_traces():
     """
-    A request handler for `POST /mlflow/traces/delete-traces` to delete TraceInfo records
+    A request handler for `POST /qcflow/traces/delete-traces` to delete TraceInfo records
     from tracking store.
     """
     request_message = _get_request_message(
@@ -2498,11 +2498,11 @@ def _delete_traces():
     return _wrap_response(DeleteTraces.Response(traces_deleted=traces_deleted))
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _set_trace_tag(request_id):
     """
-    A request handler for `PATCH /mlflow/traces/{request_id}/tags` to set tags on a TraceInfo record
+    A request handler for `PATCH /qcflow/traces/{request_id}/tags` to set tags on a TraceInfo record
     """
     request_message = _get_request_message(
         SetTraceTag(),
@@ -2515,11 +2515,11 @@ def _set_trace_tag(request_id):
     return _wrap_response(SetTraceTag.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def _delete_trace_tag(request_id):
     """
-    A request handler for `DELETE /mlflow/traces/{request_id}/tags` to delete tags from a TraceInfo
+    A request handler for `DELETE /qcflow/traces/{request_id}/tags` to delete tags from a TraceInfo
     record.
     """
     request_message = _get_request_message(
@@ -2532,7 +2532,7 @@ def _delete_trace_tag(request_id):
     return _wrap_response(DeleteTraceTag.Response())
 
 
-@catch_mlflow_exception
+@catch_qcflow_exception
 @_disable_if_artifacts_only
 def get_trace_artifact_handler():
     request_id = request.args.get("request_id")
@@ -2577,9 +2577,9 @@ def _add_static_prefix(route):
 
 def _get_paths(base_path):
     """
-    A service endpoints base path is typically something like /mlflow/experiment.
-    We should register paths like /api/2.0/mlflow/experiment and
-    /ajax-api/2.0/mlflow/experiment in the Flask router.
+    A service endpoints base path is typically something like /qcflow/experiment.
+    We should register paths like /api/2.0/qcflow/experiment and
+    /ajax-api/2.0/qcflow/experiment in the Flask router.
     """
     base_path = _convert_path_parameter_to_flask_format(base_path)
     return [_get_rest_path(base_path), _get_ajax_path(base_path)]
@@ -2589,10 +2589,10 @@ def _convert_path_parameter_to_flask_format(path):
     """
     Converts path parameter format to Flask compatible format.
 
-    Some protobuf endpoint paths contain parameters like /mlflow/trace/{request_id}.
+    Some protobuf endpoint paths contain parameters like /qcflow/trace/{request_id}.
     This can be interpreted correctly by gRPC framework like Armeria, but Flask does
     not understand it. Instead, we need to specify it with a different format,
-    like /mlflow/trace/<request_id>.
+    like /qcflow/trace/<request_id>.
     """
     return re.sub(r"{(\w+)}", r"<\1>", path)
 
@@ -2677,15 +2677,15 @@ HANDLERS = {
     SetRegisteredModelAlias: _set_registered_model_alias,
     DeleteRegisteredModelAlias: _delete_registered_model_alias,
     GetModelVersionByAlias: _get_model_version_by_alias,
-    # MLflow Artifacts APIs
+    # QCFlow Artifacts APIs
     DownloadArtifact: _download_artifact,
     UploadArtifact: _upload_artifact,
-    ListArtifactsMlflowArtifacts: _list_artifacts_mlflow_artifacts,
-    DeleteArtifact: _delete_artifact_mlflow_artifacts,
+    ListArtifactsMlflowArtifacts: _list_artifacts_qcflow_artifacts,
+    DeleteArtifact: _delete_artifact_qcflow_artifacts,
     CreateMultipartUpload: _create_multipart_upload_artifact,
     CompleteMultipartUpload: _complete_multipart_upload_artifact,
     AbortMultipartUpload: _abort_multipart_upload_artifact,
-    # MLflow Tracing APIs
+    # QCFlow Tracing APIs
     StartTrace: _start_trace,
     EndTrace: _end_trace,
     GetTraceInfo: _get_trace_info,

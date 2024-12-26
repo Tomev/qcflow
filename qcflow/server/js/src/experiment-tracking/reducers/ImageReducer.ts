@@ -1,13 +1,13 @@
-import { fulfilled } from '@mlflow/mlflow/src/common/utils/ActionUtils';
-import Utils from '@mlflow/mlflow/src/common/utils/Utils';
-import { LIST_IMAGES_API, ListImagesAction } from '@mlflow/mlflow/src/experiment-tracking/actions';
+import { fulfilled } from '@qcflow/qcflow/src/common/utils/ActionUtils';
+import Utils from '@qcflow/qcflow/src/common/utils/Utils';
+import { LIST_IMAGES_API, ListImagesAction } from '@qcflow/qcflow/src/experiment-tracking/actions';
 import {
   IMAGE_COMPRESSED_FILE_EXTENSION,
   IMAGE_FILE_EXTENSION,
-  MLFLOW_LOGGED_IMAGE_ARTIFACTS_PATH,
-} from '@mlflow/mlflow/src/experiment-tracking/constants';
-import { ArtifactFileInfo, ImageEntity } from '@mlflow/mlflow/src/experiment-tracking/types';
-import { AsyncFulfilledAction } from '@mlflow/mlflow/src/redux-types';
+  QCFLOW_LOGGED_IMAGE_ARTIFACTS_PATH,
+} from '@qcflow/qcflow/src/experiment-tracking/constants';
+import { ArtifactFileInfo, ImageEntity } from '@qcflow/qcflow/src/experiment-tracking/types';
+import { AsyncFulfilledAction } from '@qcflow/qcflow/src/redux-types';
 
 const IMAGE_FILEPATH_DELIMITERS = ['%', '+'];
 
@@ -66,7 +66,7 @@ export const imagesByRunUuid = (
               return acc;
             }
             const { imageKey, step, timestamp, fileKey, extension, isCompressed } = parseImageFile(
-              file.path.slice((MLFLOW_LOGGED_IMAGE_ARTIFACTS_PATH + '/').length),
+              file.path.slice((QCFLOW_LOGGED_IMAGE_ARTIFACTS_PATH + '/').length),
             );
 
             // Double check extension of image files

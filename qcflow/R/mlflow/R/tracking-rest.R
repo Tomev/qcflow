@@ -1,13 +1,13 @@
-mlflow_rest_path <- function(version) {
+qcflow_rest_path <- function(version) {
   switch(
     version,
-    "2.0" = "api/2.0/mlflow"
+    "2.0" = "api/2.0/qcflow"
   )
 }
 
 #' @importFrom httr timeout
-mlflow_rest_timeout <- function() {
-  timeout(getOption("mlflow.rest.timeout", 60))
+qcflow_rest_timeout <- function() {
+  timeout(getOption("qcflow.rest.timeout", 60))
 }
 
 try_parse_response_as_text <- function(response) {
@@ -33,7 +33,7 @@ get_rest_config <- function(host_creds) {
   if (!is.na(auth_header)) {
     headers$Authorization <- auth_header
   }
-  headers$`User-Agent` <- paste("mlflow-r-client", utils::packageVersion("mlflow"), sep = "/")
+  headers$`User-Agent` <- paste("qcflow-r-client", utils::packageVersion("qcflow"), sep = "/")
   is_insecure <- as.logical(host_creds$insecure)
   list(
     headers = headers,
@@ -46,28 +46,28 @@ get_rest_config <- function(host_creds) {
 }
 
 #' @importFrom httr GET POST add_headers config content
-mlflow_rest <- function( ..., client, query = NULL, data = NULL, verb = "GET", version = "2.0",
+qcflow_rest <- function( ..., client, query = NULL, data = NULL, verb = "GET", version = "2.0",
                          max_rate_limit_interval=60) {
   host_creds <- client$get_host_creds()
   rest_config <- get_rest_config(host_creds)
   args <- list(...)
   api_url <- file.path(
     host_creds$host,
-    mlflow_rest_path(version),
+    qcflow_rest_path(version),
     paste(args, collapse = "/")
   )
   req_headers <- do.call(add_headers, rest_config$headers)
   get_response <- switch(
     verb,
     GET = function() {
-      GET( api_url, query = query, mlflow_rest_timeout(), config = rest_config$config,
+      GET( api_url, query = query, qcflow_rest_timeout(), config = rest_config$config,
            req_headers)
     },
     POST = function(){
       POST( api_url,
             body = if (is.null(data)) NULL else rapply(data, as.character, how = "replace"),
             encode = "json",
-            mlflow_rest_timeout(),
+            qcflow_rest_timeout(),
             config = rest_config$config,
             req_headers
       )
@@ -76,7 +76,7 @@ mlflow_rest <- function( ..., client, query = NULL, data = NULL, verb = "GET", v
       httr::PATCH( api_url,
             body = if (is.null(data)) NULL else rapply(data, as.character, how = "replace"),
             encode = "json",
-            mlflow_rest_timeout(),
+            qcflow_rest_timeout(),
             config = rest_config$config,
             req_headers
       )
@@ -85,7 +85,7 @@ mlflow_rest <- function( ..., client, query = NULL, data = NULL, verb = "GET", v
       httr::DELETE(api_url,
               body = if (is.null(data)) NULL else rapply(data, as.character, how = "replace"),
               encode = "json",
-              mlflow_rest_timeout(),
+              qcflow_rest_timeout(),
               config = rest_config$config,
               req_headers
       )

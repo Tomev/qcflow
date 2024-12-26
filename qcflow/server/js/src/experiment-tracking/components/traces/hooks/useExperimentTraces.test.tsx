@@ -188,9 +188,9 @@ describe('useExperimentTraces', () => {
     jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
       const traces = [
         // First two traces reference the same run, third trace references another one, last one does not have any run
-        generateMockTrace('trace-1', 0, [{ key: 'mlflow.sourceRun', value: 'run-1' }]),
-        generateMockTrace('trace-2', 0, [{ key: 'mlflow.sourceRun', value: 'run-1' }]),
-        generateMockTrace('trace-3', 0, [{ key: 'mlflow.sourceRun', value: 'run-2' }]),
+        generateMockTrace('trace-1', 0, [{ key: 'qcflow.sourceRun', value: 'run-1' }]),
+        generateMockTrace('trace-2', 0, [{ key: 'qcflow.sourceRun', value: 'run-1' }]),
+        generateMockTrace('trace-3', 0, [{ key: 'qcflow.sourceRun', value: 'run-2' }]),
         generateMockTrace('trace-4', 0),
       ];
       return Promise.resolve({ traces });
@@ -248,7 +248,7 @@ describe('useExperimentTraces', () => {
       testExperimentIds,
       expect.anything(),
       undefined,
-      "request_metadata.`mlflow.sourceRun`='test-run-id'",
+      "request_metadata.`qcflow.sourceRun`='test-run-id'",
     );
   });
 
@@ -266,7 +266,7 @@ describe('useExperimentTraces', () => {
       testExperimentIds,
       expect.anything(),
       undefined,
-      'tags.test_tag="xyz" AND request_metadata.`mlflow.sourceRun`=\'test-run-id\'',
+      'tags.test_tag="xyz" AND request_metadata.`qcflow.sourceRun`=\'test-run-id\'',
     );
   });
 

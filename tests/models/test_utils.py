@@ -9,12 +9,12 @@ import pytest
 import sklearn.neighbors as knn
 from sklearn import datasets
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.entities.model_registry import ModelVersion
-from mlflow.exceptions import MlflowException
-from mlflow.models import add_libraries_to_model
-from mlflow.models.utils import (
+import qcflow
+from qcflow import MlflowClient
+from qcflow.entities.model_registry import ModelVersion
+from qcflow.exceptions import MlflowException
+from qcflow.models import add_libraries_to_model
+from qcflow.models.utils import (
     _config_context,
     _convert_llm_input_data,
     _enforce_array,
@@ -26,8 +26,8 @@ from mlflow.models.utils import (
     _validate_model_code_from_notebook,
     get_model_version_from_model_uri,
 )
-from mlflow.types import DataType
-from mlflow.types.schema import Array, Object, Property
+from qcflow.types import DataType
+from qcflow.types.schema import Array, Object, Property
 
 ModelWithData = namedtuple("ModelWithData", ["model", "inference_data"])
 
@@ -53,9 +53,9 @@ def test_adding_libraries_to_model_default(sklearn_knn_model):
     wheeled_model_uri = f"models:/{model_name}/2"
 
     # Log a model
-    with mlflow.start_run():
-        run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             artifact_path,
             registered_model_name=model_name,
@@ -77,16 +77,16 @@ def test_adding_libraries_to_model_new_run(sklearn_knn_model):
     wheeled_model_uri = f"models:/{model_name}/2"
 
     # Log a model
-    with mlflow.start_run():
-        original_run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        original_run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             artifact_path,
             registered_model_name=model_name,
         )
 
-    with mlflow.start_run():
-        wheeled_run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
+    with qcflow.start_run():
+        wheeled_run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
         wheeled_model_info = add_libraries_to_model(model_uri)
     assert original_run_id != wheeled_run_id
     assert wheeled_model_info.run_id == wheeled_run_id
@@ -104,16 +104,16 @@ def test_adding_libraries_to_model_run_id_passed(sklearn_knn_model):
     wheeled_model_uri = f"models:/{model_name}/2"
 
     # Log a model
-    with mlflow.start_run():
-        original_run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        original_run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             artifact_path,
             registered_model_name=model_name,
         )
 
-    with mlflow.start_run():
-        wheeled_run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
+    with qcflow.start_run():
+        wheeled_run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
 
     wheeled_model_info = add_libraries_to_model(model_uri, run_id=wheeled_run_id)
     assert original_run_id != wheeled_run_id
@@ -133,15 +133,15 @@ def test_adding_libraries_to_model_new_model_name(sklearn_knn_model):
     wheeled_model_uri = f"models:/{wheeled_model_name}/1"
 
     # Log a model
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             artifact_path,
             registered_model_name=model_name,
         )
 
-    with mlflow.start_run():
-        new_run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
+    with qcflow.start_run():
+        new_run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
         wheeled_model_info = add_libraries_to_model(
             model_uri, registered_model_name=wheeled_model_name
         )
@@ -160,9 +160,9 @@ def test_adding_libraries_to_model_when_version_source_None(sklearn_knn_model):
     model_uri = f"models:/{model_name}/1"
 
     # Log a model
-    with mlflow.start_run():
-        original_run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        original_run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             artifact_path,
             registered_model_name=model_name,
@@ -172,11 +172,11 @@ def test_adding_libraries_to_model_when_version_source_None(sklearn_knn_model):
     assert model_version_without_source.run_id is None
     with mock.patch.object(
         MlflowClient, "get_model_version", return_value=model_version_without_source
-    ) as mlflow_client_mock:
+    ) as qcflow_client_mock:
         wheeled_model_info = add_libraries_to_model(model_uri)
         assert wheeled_model_info.run_id is not None
         assert wheeled_model_info.run_id != original_run_id
-        mlflow_client_mock.assert_called_once_with(model_name, "1")
+        qcflow_client_mock.assert_called_once_with(model_name, "1")
 
 
 @pytest.mark.parametrize(
@@ -442,7 +442,7 @@ def test_model_code_validation():
     # Invalid code with dbutils
     invalid_code = "dbutils.library.restartPython()\nsome_python_variable = 5"
 
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         _validate_model_code_from_notebook(invalid_code)
         mock_warning.assert_called_once_with(
             "The model file uses 'dbutils' commands which are not supported. To ensure your "
@@ -453,7 +453,7 @@ def test_model_code_validation():
     # Code with commented magic commands displays warning
     warning_code = "# dbutils.library.restartPython()\n# MAGIC %run ../wheel_installer"
 
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         _validate_model_code_from_notebook(warning_code)
         mock_warning.assert_called_once_with(
             "The model file uses magic commands which have been commented out. To ensure your code "
@@ -462,8 +462,8 @@ def test_model_code_validation():
         )
 
     # Code with commented pip magic commands does not warn
-    warning_code = "# MAGIC %pip install mlflow"
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    warning_code = "# MAGIC %pip install qcflow"
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         _validate_model_code_from_notebook(warning_code)
         mock_warning.assert_not_called()
 
@@ -490,9 +490,9 @@ def test_model_code_validation():
 
 def test_config_context():
     with _config_context("tests/langchain/config.yml"):
-        assert mlflow.models.model_config.__mlflow_model_config__ == "tests/langchain/config.yml"
+        assert qcflow.models.model_config.__qcflow_model_config__ == "tests/langchain/config.yml"
 
-    assert mlflow.models.model_config.__mlflow_model_config__ is None
+    assert qcflow.models.model_config.__qcflow_model_config__ is None
 
 
 def test_flatten_nested_params():

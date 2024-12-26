@@ -179,7 +179,7 @@ export const TraceDataDrawer = ({
       }}
     >
       <Drawer.Content
-        componentId="codegen_mlflow_app_src_experiment-tracking_components_traces_tracedatadrawer.tsx_222"
+        componentId="codegen_qcflow_app_src_experiment-tracking_components_traces_tracedatadrawer.tsx_222"
         width="85vw"
         title={title}
         expandContentToFullHeight

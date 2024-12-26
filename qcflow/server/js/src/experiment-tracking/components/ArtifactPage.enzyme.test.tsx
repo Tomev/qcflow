@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { shallowWithIntl, mountWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.enzyme';
+import { shallowWithIntl, mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 import { ArtifactPageImpl, ConnectedArtifactPage } from './ArtifactPage';
 import { ArtifactNode } from '../utils/ArtifactUtils';
 import { Provider } from 'react-redux';
@@ -240,8 +240,8 @@ describe('ArtifactPage', () => {
     const getLoggedModelRunTag = (models: any) =>
       models.length > 0
         ? {
-            'mlflow.log-model.history': (RunTag as any).fromJs({
-              key: 'mlflow.log-model.history',
+            'qcflow.log-model.history': (RunTag as any).fromJs({
+              key: 'qcflow.log-model.history',
               value: JSON.stringify(models),
             }),
           }

@@ -2,12 +2,12 @@ import time
 from contextlib import contextmanager
 from typing import Any
 
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.config import MosaicMLConfig, RouteConfig
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.base import BaseProvider
-from mlflow.gateway.providers.utils import rename_payload_keys, send_request
-from mlflow.gateway.schemas import chat, completions, embeddings
+from qcflow.exceptions import MlflowException
+from qcflow.gateway.config import MosaicMLConfig, RouteConfig
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.base import BaseProvider
+from qcflow.gateway.providers.utils import rename_payload_keys, send_request
+from qcflow.gateway.schemas import chat, completions, embeddings
 
 
 class MosaicMLProvider(BaseProvider):

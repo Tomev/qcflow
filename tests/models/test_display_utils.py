@@ -2,10 +2,10 @@ from unittest import mock
 
 import pytest
 
-from mlflow.models import infer_signature
-from mlflow.models.display_utils import should_render_agent_eval_template
-from mlflow.models.rag_signatures import StringResponse
-from mlflow.types.llm import (
+from qcflow.models import infer_signature
+from qcflow.models.display_utils import should_render_agent_eval_template
+from qcflow.models.rag_signatures import StringResponse
+from qcflow.types.llm import (
     ChatChoice,
     ChatCompletionRequest,
     ChatCompletionResponse,
@@ -18,7 +18,7 @@ _CHAT_REQUEST = ChatCompletionRequest(
             role="user",
             content="What is the primary function of control rods in a nuclear reactor?",
         ),
-        ChatMessage(role="user", content="What is MLflow?"),
+        ChatMessage(role="user", content="What is QCFlow?"),
     ]
 ).to_dict()
 _CHAT_RESPONSE = ChatCompletionResponse(
@@ -27,21 +27,21 @@ _CHAT_RESPONSE = ChatCompletionResponse(
             index=0,
             message=ChatMessage(
                 role="assistant",
-                content="MLflow is an open source platform for the machine learning lifecycle.",
+                content="QCFlow is an open source platform for the machine learning lifecycle.",
             ),
         )
     ]
 ).to_dict()
 
 _STRING_RESPONSE = StringResponse(
-    content="MLflow is an open source platform for the machine learning lifecycle."
+    content="QCFlow is an open source platform for the machine learning lifecycle."
 )
 
 
 @pytest.fixture
 def enable_databricks_env():
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_in_databricks_runtime", return_value=True),
+        mock.patch("qcflow.utils.databricks_utils.is_in_databricks_runtime", return_value=True),
         mock.patch("IPython.get_ipython", return_value=True),
     ):
         yield
@@ -68,14 +68,14 @@ def test_should_not_render_eval_template_generic_signature(enable_databricks_env
 
 
 def test_should_not_render_eval_template_outside_databricks_env():
-    with mock.patch("mlflow.utils.databricks_utils.is_in_databricks_runtime", return_value=False):
+    with mock.patch("qcflow.utils.databricks_utils.is_in_databricks_runtime", return_value=False):
         with mock.patch("IPython.get_ipython", return_value=True):
             signature = infer_signature(_CHAT_REQUEST, _STRING_RESPONSE)
             assert not should_render_agent_eval_template(signature)
 
 
 def test_should_not_render_eval_template_outside_notebook_env():
-    with mock.patch("mlflow.utils.databricks_utils.is_in_databricks_runtime", return_value=True):
+    with mock.patch("qcflow.utils.databricks_utils.is_in_databricks_runtime", return_value=True):
         with mock.patch("IPython.get_ipython", return_value=None):
             signature = infer_signature(_CHAT_REQUEST, _STRING_RESPONSE)
             assert not should_render_agent_eval_template(signature)

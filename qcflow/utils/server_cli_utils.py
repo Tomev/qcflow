@@ -1,5 +1,5 @@
 """
-Utilities for MLflow cli server config validation and resolving.
+Utilities for QCFlow cli server config validation and resolving.
 NOTE: these functions are intended to be used as utilities for the cli click-based interface.
 Do not use for any other purpose as the potential Exceptions being raised will be misleading
 for users.
@@ -7,9 +7,9 @@ for users.
 
 import click
 
-from mlflow.store.tracking import DEFAULT_ARTIFACTS_URI, DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH
-from mlflow.utils.logging_utils import eprint
-from mlflow.utils.uri import is_local_uri
+from qcflow.store.tracking import DEFAULT_ARTIFACTS_URI, DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH
+from qcflow.utils.logging_utils import eprint
+from qcflow.utils.uri import is_local_uri
 
 
 def resolve_default_artifact_root(
@@ -37,10 +37,10 @@ def resolve_default_artifact_root(
 
 def _is_default_backend_store_uri(backend_store_uri: str) -> bool:
     """Utility function to validate if the configured backend store uri location is set as the
-    default value for MLflow server.
+    default value for QCFlow server.
 
     Args:
-        backend_store_uri: The value set for the backend store uri for MLflow server artifact
+        backend_store_uri: The value set for the backend store uri for QCFlow server artifact
             handling.
 
     Returns:

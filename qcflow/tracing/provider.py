@@ -1,8 +1,8 @@
 """
-This module provides a set of functions to manage the global tracer provider for MLflow tracing.
+This module provides a set of functions to manage the global tracer provider for QCFlow tracing.
 
-Every tracing operation in MLflow *MUST* be managed through this module, instead of directly
-using the OpenTelemetry APIs. This is because MLflow needs to control the initialization of the
+Every tracing operation in QCFlow *MUST* be managed through this module, instead of directly
+using the OpenTelemetry APIs. This is because QCFlow needs to control the initialization of the
 tracer provider and ensure that it won't interfere with the other external libraries that might
 use OpenTelemetry e.g. PromptFlow, Snowpark.
 """
@@ -17,26 +17,26 @@ from opentelemetry import context as context_api
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 
-from mlflow.exceptions import MlflowTracingException
-from mlflow.tracing.constant import SpanAttributeKey
-from mlflow.tracing.utils.exception import raise_as_trace_exception
-from mlflow.tracing.utils.once import Once
-from mlflow.tracing.utils.otlp import get_otlp_exporter, should_use_otlp_exporter
-from mlflow.utils.databricks_utils import (
+from qcflow.exceptions import MlflowTracingException
+from qcflow.tracing.constant import SpanAttributeKey
+from qcflow.tracing.utils.exception import raise_as_trace_exception
+from qcflow.tracing.utils.once import Once
+from qcflow.tracing.utils.otlp import get_otlp_exporter, should_use_otlp_exporter
+from qcflow.utils.databricks_utils import (
     is_in_databricks_model_serving_environment,
-    is_mlflow_tracing_enabled_in_model_serving,
+    is_qcflow_tracing_enabled_in_model_serving,
 )
 
 if TYPE_CHECKING:
-    from mlflow.entities import Span
+    from qcflow.entities import Span
 
 # Global tracer provider instance. We manage the tracer provider by ourselves instead of using
 # the global tracer provider provided by OpenTelemetry.
-_MLFLOW_TRACER_PROVIDER = None
+_QCFLOW_TRACER_PROVIDER = None
 
 # Once() object ensures a function is executed only once in a process.
 # Note that it doesn't work as expected in a distributed environment.
-_MLFLOW_TRACER_PROVIDER_INITIALIZED = Once()
+_QCFLOW_TRACER_PROVIDER_INITIALIZED = Once()
 
 _logger = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ def start_detached_span(
         parent: The parent OpenTelemetry span. If not provided, the span will be created as a root
                 span.
         experiment_id: The ID of the experiment. This is used to associate the span with a specific
-            experiment in MLflow.
+            experiment in QCFlow.
         start_time_ns: The start time of the span in nanoseconds.
             If not provided, the current timestamp is used.
 
@@ -96,7 +96,7 @@ def set_span_in_context(span: "Span") -> contextvars.Token:
     Set the given OpenTelemetry span as the active span in the current context.
 
     Args:
-        span: An MLflow span object to set as the active span.
+        span: An QCFlow span object to set as the active span.
 
     Returns:
         A token object that will be required when detaching the span from the context.
@@ -124,17 +124,17 @@ def _get_tracer(module_name: str):
     Other simultaneous calls to this function will block until the initialization is done.
     """
     # Initiate tracer provider only once in the application lifecycle
-    _MLFLOW_TRACER_PROVIDER_INITIALIZED.do_once(_setup_tracer_provider)
-    return _MLFLOW_TRACER_PROVIDER.get_tracer(module_name)
+    _QCFLOW_TRACER_PROVIDER_INITIALIZED.do_once(_setup_tracer_provider)
+    return _QCFLOW_TRACER_PROVIDER.get_tracer(module_name)
 
 
 def _get_trace_exporter():
     """
     Get the exporter instance that is used by the current tracer provider.
     """
-    if _MLFLOW_TRACER_PROVIDER:
-        processors = _MLFLOW_TRACER_PROVIDER._active_span_processor._span_processors
-        # There should be only one processor used for MLflow tracing
+    if _QCFLOW_TRACER_PROVIDER:
+        processors = _QCFLOW_TRACER_PROVIDER._active_span_processor._span_processors
+        # There should be only one processor used for QCFlow tracing
         processor = processors[0]
         return processor.span_exporter
 
@@ -145,46 +145,46 @@ def _setup_tracer_provider(disabled=False):
 
     Note that this function ALWAYS updates the global tracer provider, regardless of the current
     state. It is the caller's responsibility to ensure that the tracer provider is initialized
-    only once, and update the _MLFLOW_TRACER_PROVIDER_INITIALIZED flag accordingly.
+    only once, and update the _QCFLOW_TRACER_PROVIDER_INITIALIZED flag accordingly.
     """
-    global _MLFLOW_TRACER_PROVIDER
+    global _QCFLOW_TRACER_PROVIDER
 
     if disabled:
-        _MLFLOW_TRACER_PROVIDER = trace.NoOpTracerProvider()
+        _QCFLOW_TRACER_PROVIDER = trace.NoOpTracerProvider()
         return
 
     if should_use_otlp_exporter():
         # Export to OpenTelemetry Collector when configured
-        from mlflow.tracing.processor.otel import OtelSpanProcessor
+        from qcflow.tracing.processor.otel import OtelSpanProcessor
 
         exporter = get_otlp_exporter()
         processor = OtelSpanProcessor(exporter)
 
     elif is_in_databricks_model_serving_environment():
         # Export to Inference Table when running in Databricks Model Serving
-        if not is_mlflow_tracing_enabled_in_model_serving():
-            _MLFLOW_TRACER_PROVIDER = trace.NoOpTracerProvider()
+        if not is_qcflow_tracing_enabled_in_model_serving():
+            _QCFLOW_TRACER_PROVIDER = trace.NoOpTracerProvider()
             return
 
-        from mlflow.tracing.export.inference_table import InferenceTableSpanExporter
-        from mlflow.tracing.processor.inference_table import InferenceTableSpanProcessor
+        from qcflow.tracing.export.inference_table import InferenceTableSpanExporter
+        from qcflow.tracing.processor.inference_table import InferenceTableSpanProcessor
 
         exporter = InferenceTableSpanExporter()
         processor = InferenceTableSpanProcessor(exporter)
 
     else:
-        # Default to MLflow Tracking Server
-        from mlflow.tracing.export.mlflow import MlflowSpanExporter
-        from mlflow.tracing.processor.mlflow import MlflowSpanProcessor
+        # Default to QCFlow Tracking Server
+        from qcflow.tracing.export.qcflow import MlflowSpanExporter
+        from qcflow.tracing.processor.qcflow import MlflowSpanProcessor
 
         exporter = MlflowSpanExporter()
         processor = MlflowSpanProcessor(exporter)
 
     tracer_provider = TracerProvider()
     tracer_provider.add_span_processor(processor)
-    _MLFLOW_TRACER_PROVIDER = tracer_provider
+    _QCFLOW_TRACER_PROVIDER = tracer_provider
 
-    from mlflow.tracing.utils.token import suppress_token_detach_warning_to_debug_level
+    from qcflow.tracing.utils.token import suppress_token_detach_warning_to_debug_level
 
     # Demote the "Failed to detach context" log raised by the OpenTelemetry logger to DEBUG
     # level so that it does not show up in the user's console. This warning may indicate
@@ -212,29 +212,29 @@ def disable():
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
 
-        @mlflow.trace
+        @qcflow.trace
         def f():
             return 0
 
 
         # Tracing is enabled by default
         f()
-        assert len(mlflow.search_traces()) == 1
+        assert len(qcflow.search_traces()) == 1
 
         # Disable tracing
-        mlflow.tracing.disable()
+        qcflow.tracing.disable()
         f()
-        assert len(mlflow.search_traces()) == 1
+        assert len(qcflow.search_traces()) == 1
 
     """
     if not is_tracing_enabled():
         return
 
     _setup_tracer_provider(disabled=True)
-    _MLFLOW_TRACER_PROVIDER_INITIALIZED.done = True
+    _QCFLOW_TRACER_PROVIDER_INITIALIZED.done = True
 
 
 @raise_as_trace_exception
@@ -247,35 +247,35 @@ def enable():
     .. code-block:: python
         :test:
 
-        import mlflow
+        import qcflow
 
 
-        @mlflow.trace
+        @qcflow.trace
         def f():
             return 0
 
 
         # Tracing is enabled by default
         f()
-        assert len(mlflow.search_traces()) == 1
+        assert len(qcflow.search_traces()) == 1
 
         # Disable tracing
-        mlflow.tracing.disable()
+        qcflow.tracing.disable()
         f()
-        assert len(mlflow.search_traces()) == 1
+        assert len(qcflow.search_traces()) == 1
 
         # Re-enable tracing
-        mlflow.tracing.enable()
+        qcflow.tracing.enable()
         f()
-        assert len(mlflow.search_traces()) == 2
+        assert len(qcflow.search_traces()) == 2
 
     """
-    if is_tracing_enabled() and _MLFLOW_TRACER_PROVIDER_INITIALIZED.done:
+    if is_tracing_enabled() and _QCFLOW_TRACER_PROVIDER_INITIALIZED.done:
         _logger.info("Tracing is already enabled")
         return
 
     _setup_tracer_provider()
-    _MLFLOW_TRACER_PROVIDER_INITIALIZED.done = True
+    _QCFLOW_TRACER_PROVIDER_INITIALIZED.done = True
 
 
 def trace_disabled(f):
@@ -286,7 +286,7 @@ def trace_disabled(f):
 
         @trace_disabled
         def f():
-            with mlflow.start_span("my_span") as span:
+            with qcflow.start_span("my_span") as span:
                 span.set_attribute("my_key", "my_value")
 
             return
@@ -333,15 +333,15 @@ def trace_disabled(f):
 
 def reset_tracer_setup():
     """
-    Reset the flags that indicates whether the MLflow tracer provider has been initialized.
+    Reset the flags that indicates whether the QCFlow tracer provider has been initialized.
     This ensures that the tracer provider is re-initialized when next tracing
     operation is performed.
     """
     # Set NoOp tracer provider to reset the global tracer to the initial state.
     _setup_tracer_provider(disabled=True)
-    # Flip _MLFLOW_TRACE_PROVIDER_INITIALIZED flag to False so that
+    # Flip _QCFLOW_TRACE_PROVIDER_INITIALIZED flag to False so that
     # the next tracing operation will re-initialize the provider.
-    _MLFLOW_TRACER_PROVIDER_INITIALIZED.done = False
+    _QCFLOW_TRACER_PROVIDER_INITIALIZED.done = False
 
 
 @raise_as_trace_exception
@@ -354,7 +354,7 @@ def is_tracing_enabled() -> bool:
     1. The default state (before any tracing operation)
     2. The tracer is not either ProxyTracer or NoOpTracer
     """
-    if not _MLFLOW_TRACER_PROVIDER_INITIALIZED.done:
+    if not _QCFLOW_TRACER_PROVIDER_INITIALIZED.done:
         return True
 
     tracer = _get_tracer(__name__)

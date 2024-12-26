@@ -3,10 +3,10 @@ from typing import Any, Optional, Union
 
 import yaml
 
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
-__mlflow_model_config__ = None
+__qcflow_model_config__ = None
 
 
 class ModelConfig:
@@ -20,7 +20,7 @@ class ModelConfig:
     .. code-block:: python
         :caption: Example usage in model code
 
-        from mlflow.models import ModelConfig
+        from qcflow.models import ModelConfig
 
         # Load the configuration from a dictionary
         config = ModelConfig(development_config={"key1": "value1"})
@@ -38,7 +38,7 @@ class ModelConfig:
     .. code-block:: python
         :caption: Example yaml usage in model code
 
-        from mlflow.models import ModelConfig
+        from qcflow.models import ModelConfig
 
         # Load the configuration from a file
         config = ModelConfig(development_config="config.yaml")
@@ -52,18 +52,18 @@ class ModelConfig:
     .. code-block:: python
         :caption: Example to use ModelConfig when logging model as code: agent.py
 
-        import mlflow
-        from mlflow.models import ModelConfig
+        import qcflow
+        from qcflow.models import ModelConfig
 
         config = ModelConfig(development_config={"key1": "value1"})
 
 
-        class TestModel(mlflow.pyfunc.PythonModel):
+        class TestModel(qcflow.pyfunc.PythonModel):
             def predict(self, context, model_input, params=None):
                 return config.get("key1")
 
 
-        mlflow.models.set_model(TestModel())
+        qcflow.models.set_model(TestModel())
 
 
     But this development_config configuration file will be overridden when logging a model.
@@ -76,21 +76,21 @@ class ModelConfig:
         :caption: Example to use agent.py to log the model: deploy.py
 
         model_config = {"key1": "value2"}
-        with mlflow.start_run():
-            model_info = mlflow.pyfunc.log_model(
+        with qcflow.start_run():
+            model_info = qcflow.pyfunc.log_model(
                 artifact_path="model", python_model="agent.py", model_config=model_config
             )
 
-        loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+        loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
         # This will print "value2" as the model_config passed in while logging the model
         print(loaded_model.predict(None))
     """
 
     def __init__(self, *, development_config: Optional[Union[str, dict[str, Any]]] = None):
-        config = globals().get("__mlflow_model_config__", None)
-        # Here mlflow_model_config have 3 states:
-        # 1. None, this means if the mlflow_model_config is None, use development_config if
+        config = globals().get("__qcflow_model_config__", None)
+        # Here qcflow_model_config have 3 states:
+        # 1. None, this means if the qcflow_model_config is None, use development_config if
         # available
         # 2. "", Empty string, this means the users explicitly didn't set the model config
         # while logging the model so if ModelConfig is used, it should throw an error
@@ -147,4 +147,4 @@ class ModelConfig:
 
 
 def _set_model_config(model_config):
-    globals()["__mlflow_model_config__"] = model_config
+    globals()["__qcflow_model_config__"] = model_config

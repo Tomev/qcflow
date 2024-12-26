@@ -1,10 +1,10 @@
-package org.mlflow.tracking.creds;
+package org.qcflow.tracking.creds;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import org.mlflow.tracking.MlflowClientException;
+import org.qcflow.tracking.MlflowClientException;
 
 public class HostCredsProviderChainTest {
   private boolean refreshCalled = false;

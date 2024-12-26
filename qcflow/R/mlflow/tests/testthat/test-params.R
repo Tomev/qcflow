@@ -1,9 +1,9 @@
 context("Params")
 
-test_that("mlflow can read typed command line parameters", {
-  mlflow_clear_test_dir("mlruns")
+test_that("qcflow can read typed command line parameters", {
+  qcflow_clear_test_dir("mlruns")
 
-  mlflow_cli(
+  qcflow_cli(
     "run",
     "examples/",
     "--entry-point",
@@ -26,8 +26,8 @@ test_that("mlflow can read typed command line parameters", {
 })
 
 test_that("ml_param() type checking works", {
-  expect_identical(mlflow_param("p1", "a", "string"), "a")
-  expect_identical(mlflow_param("p2", 42, "integer"), 42L)
-  expect_identical(mlflow_param("p3", 42L), 42L)
-  expect_identical(mlflow_param("p4", 12), 12)
+  expect_identical(qcflow_param("p1", "a", "string"), "a")
+  expect_identical(qcflow_param("p2", 42, "integer"), 42L)
+  expect_identical(qcflow_param("p3", 42L), 42L)
+  expect_identical(qcflow_param("p4", 12), 12)
 })

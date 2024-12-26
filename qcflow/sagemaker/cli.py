@@ -4,12 +4,12 @@ import tempfile
 
 import click
 
-import mlflow
-import mlflow.models.docker_utils
-import mlflow.sagemaker
-from mlflow.sagemaker import DEFAULT_IMAGE_NAME as IMAGE
-from mlflow.utils import cli_args
-from mlflow.utils import env_manager as em
+import qcflow
+import qcflow.models.docker_utils
+import qcflow.sagemaker
+from qcflow.sagemaker import DEFAULT_IMAGE_NAME as IMAGE
+from qcflow.utils import cli_args
+from qcflow.utils import env_manager as em
 
 
 @click.group("sagemaker")
@@ -17,7 +17,7 @@ def commands():
     """
     Serve models on SageMaker.
 
-    To serve a model associated with a run on a tracking server, set the MLFLOW_TRACKING_URI
+    To serve a model associated with a run on a tracking server, set the QCFLOW_TRACKING_URI
     environment variable to the URL of the desired server.
     """
 
@@ -87,7 +87,7 @@ def commands():
 @click.option(
     "--instance-type",
     "-t",
-    default=mlflow.sagemaker.DEFAULT_SAGEMAKER_INSTANCE_TYPE,
+    default=qcflow.sagemaker.DEFAULT_SAGEMAKER_INSTANCE_TYPE,
     help="The type of SageMaker ML instance on which to perform the batch transform job."
     " For a list of supported instance types, see"
     " https://aws.amazon.com/sagemaker/pricing/instance-types/.",
@@ -95,7 +95,7 @@ def commands():
 @click.option(
     "--instance-count",
     "-c",
-    default=mlflow.sagemaker.DEFAULT_SAGEMAKER_INSTANCE_COUNT,
+    default=qcflow.sagemaker.DEFAULT_SAGEMAKER_INSTANCE_COUNT,
     help="The number of SageMaker ML instances on which to perform the batch transform job",
 )
 @click.option(
@@ -112,7 +112,7 @@ def commands():
     default=None,
     help=(
         "The name of the flavor to use for deployment. Must be one of the following: "
-        f"{mlflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS}. If unspecified, a flavor will be "
+        f"{qcflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS}. If unspecified, a flavor will be "
         "automatically selected from the model's available flavors."
     ),
 )
@@ -188,7 +188,7 @@ def deploy_transform_job(
         with open(vpc_config) as f:
             vpc_config = json.load(f)
 
-    mlflow.sagemaker.deploy_transform_job(
+    qcflow.sagemaker.deploy_transform_job(
         job_name=job_name,
         model_uri=model_uri,
         s3_input_data_type=input_data_type,
@@ -266,7 +266,7 @@ def terminate_transform_job(job_name, region_name, archive, asynchronous, timeou
     either the termination process completes (definitively succeeds or fails) or the specified
     timeout elapses.
     """
-    mlflow.sagemaker.terminate_transform_job(
+    qcflow.sagemaker.terminate_transform_job(
         job_name=job_name,
         region_name=region_name,
         archive=archive,
@@ -302,7 +302,7 @@ def terminate_transform_job(job_name, region_name, archive, asynchronous, timeou
         "The name of the flavor to use for deployment. Must be one of the following:"
         " {supported_flavors}. If unspecified, a flavor will be automatically selected"
         " from the model's available flavors.".format(
-            supported_flavors=mlflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS
+            supported_flavors=qcflow.sagemaker.SUPPORTED_DEPLOYMENT_FLAVORS
         )
     ),
 )
@@ -317,14 +317,14 @@ def push_model_to_sagemaker(
     flavor,
 ):
     """
-    Push an MLflow model to Sagemaker model registry. Current active AWS account needs to have
+    Push an QCFlow model to Sagemaker model registry. Current active AWS account needs to have
     correct permissions setup.
     """
     if vpc_config is not None:
         with open(vpc_config) as f:
             vpc_config = json.load(f)
 
-    mlflow.sagemaker.push_model_to_sagemaker(
+    qcflow.sagemaker.push_model_to_sagemaker(
         model_name=model_name,
         model_uri=model_uri,
         execution_role_arn=execution_role_arn,
@@ -341,39 +341,39 @@ def push_model_to_sagemaker(
 @click.option("--push/--no-push", default=True, help="Push the container to AWS ECR if set.")
 @click.option("--container", "-c", default=IMAGE, help="image name")
 @cli_args.ENV_MANAGER
-@cli_args.MLFLOW_HOME
-def build_and_push_container(build, push, container, env_manager, mlflow_home):
+@cli_args.QCFLOW_HOME
+def build_and_push_container(build, push, container, env_manager, qcflow_home):
     """
-    Build new MLflow Sagemaker image, assign it a name, and push to ECR.
+    Build new QCFlow Sagemaker image, assign it a name, and push to ECR.
 
-    This function builds an MLflow Docker image.
+    This function builds an QCFlow Docker image.
     The image is built locally and it requires Docker to run.
     The image is pushed to ECR under current active AWS account and to current active AWS region.
     """
-    from mlflow.models import docker_utils
+    from qcflow.models import docker_utils
 
     env_manager = env_manager or em.VIRTUALENV
     if not (build or push):
         click.echo("skipping both build and push, have nothing to do!")
     if build:
         sagemaker_image_entrypoint = (
-            "import sys; from mlflow.models import container as C; "
+            "import sys; from qcflow.models import container as C; "
             f"C._init(sys.argv[1], '{env_manager}')"
         )
 
         setup_container = (
             "# Install minimal serving dependencies\n"
-            'RUN python -c "from mlflow.models.container import _install_pyfunc_deps;'
+            'RUN python -c "from qcflow.models.container import _install_pyfunc_deps;'
             '_install_pyfunc_deps(None, False)"'
         )
 
         with tempfile.TemporaryDirectory() as tmp:
             docker_utils.generate_dockerfile(
-                base_image=mlflow.models.docker_utils.UBUNTU_BASE_IMAGE,
+                base_image=qcflow.models.docker_utils.UBUNTU_BASE_IMAGE,
                 output_dir=tmp,
                 entrypoint=sagemaker_image_entrypoint,
                 env_manager=env_manager,
-                mlflow_home=os.path.abspath(mlflow_home) if mlflow_home else None,
+                qcflow_home=os.path.abspath(qcflow_home) if qcflow_home else None,
                 model_install_steps=setup_container,
                 # Create a conda env or virtualenv at runtime after the model is loaded
                 disable_env_creation_at_runtime=False,
@@ -381,4 +381,4 @@ def build_and_push_container(build, push, container, env_manager, mlflow_home):
 
             docker_utils.build_image_from_context(tmp, image_name=container)
     if push:
-        mlflow.sagemaker.push_image_to_ecr(container)
+        qcflow.sagemaker.push_image_to_ecr(container)

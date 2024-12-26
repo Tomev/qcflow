@@ -1,4 +1,4 @@
-from mlflow.recipes.regression.v1.recipe import (
+from qcflow.recipes.regression.v1.recipe import (
     RegressionRecipe as RecipeImpl,
 )
 

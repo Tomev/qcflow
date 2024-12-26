@@ -1,10 +1,10 @@
-from mlflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.code_dataset_source import CodeDatasetSource
 
 
 def test_code_dataset_source_from_path():
     tags = {
-        "mlflow_source_type": "NOTEBOOK",
-        "mlflow_source_name": "some_random_notebook_path",
+        "qcflow_source_type": "NOTEBOOK",
+        "qcflow_source_name": "some_random_notebook_path",
     }
     code_datasource = CodeDatasetSource(tags)
     assert code_datasource.to_dict() == {

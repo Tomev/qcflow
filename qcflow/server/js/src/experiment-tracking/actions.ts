@@ -17,8 +17,8 @@ import { stringify as queryStringStringify } from 'qs';
 import { fetchEvaluationTableArtifact } from './sdk/EvaluationArtifactService';
 import type { EvaluationDataReduxState } from './reducers/EvaluationDataReducer';
 import { ArtifactListFilesResponse, EvaluationArtifactTable, KeyValueEntity } from './types';
-import { MLFLOW_PUBLISHED_VERSION } from '../common/mlflow-published-version';
-import { MLFLOW_LOGGED_IMAGE_ARTIFACTS_PATH } from './constants';
+import { QCFLOW_PUBLISHED_VERSION } from '../common/qcflow-published-version';
+import { QCFLOW_LOGGED_IMAGE_ARTIFACTS_PATH } from './constants';
 export const RUNS_SEARCH_MAX_RESULTS = 100;
 
 export const SEARCH_EXPERIMENTS_API = 'SEARCH_EXPERIMENTS_API';
@@ -144,7 +144,7 @@ export const uploadArtifactApi = (runUuid: any, filePath: any, fileContent: any)
     path: filePath,
   });
   const request = fetchEndpoint({
-    relativeUrl: `ajax-api/2.0/mlflow/upload-artifact?${queryParams}`,
+    relativeUrl: `ajax-api/2.0/qcflow/upload-artifact?${queryParams}`,
     method: 'POST',
     body: JSON.stringify(fileContent),
     success: jsonBigIntResponseParser,
@@ -195,7 +195,7 @@ export const setCompareExperiments = ({ comparedExperimentIds, hasComparedExperi
   };
 };
 
-export const getParentRunTagName = () => 'mlflow.parentRunId';
+export const getParentRunTagName = () => 'qcflow.parentRunId';
 
 export const getParentRunIdsToFetch = (runs: any) => {
   const parentsToFetch = new Set();
@@ -444,9 +444,9 @@ export const listImagesApi = (runUuid: string, autorefresh = false, id = getUUID
       type: LIST_IMAGES_API,
       payload: MlflowService.listArtifacts({
         run_uuid: runUuid,
-        path: MLFLOW_LOGGED_IMAGE_ARTIFACTS_PATH,
+        path: QCFLOW_LOGGED_IMAGE_ARTIFACTS_PATH,
       }),
-      meta: { id: id, runUuid: runUuid, path: MLFLOW_LOGGED_IMAGE_ARTIFACTS_PATH },
+      meta: { id: id, runUuid: runUuid, path: QCFLOW_LOGGED_IMAGE_ARTIFACTS_PATH },
     });
   };
 };
@@ -493,7 +493,7 @@ export const getMetricHistoryApiBulk = (
     { arrayFormat: 'repeat' },
   );
   const request = fetchEndpoint({
-    relativeUrl: `ajax-api/2.0/mlflow/metrics/get-history-bulk?${queryParams}`,
+    relativeUrl: `ajax-api/2.0/qcflow/metrics/get-history-bulk?${queryParams}`,
     success: jsonBigIntResponseParser,
   });
   return {
@@ -686,7 +686,7 @@ export const createPromptLabRunApi = ({
     model_input: modelInput,
     model_output: modelOutput,
     model_output_parameters: tupleToKeyValue(modelOutputParameters),
-    mlflow_version: MLFLOW_PUBLISHED_VERSION,
+    qcflow_version: QCFLOW_PUBLISHED_VERSION,
   };
   return {
     type: CREATE_PROMPT_LAB_RUN,

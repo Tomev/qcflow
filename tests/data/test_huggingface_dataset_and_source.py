@@ -5,46 +5,46 @@ import datasets
 import pandas as pd
 import pytest
 
-import mlflow.data
-import mlflow.data.huggingface_dataset
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.dataset_source_registry import get_dataset_source_from_json
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.huggingface_dataset import HuggingFaceDataset
-from mlflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.types.schema import Schema
-from mlflow.types.utils import _infer_schema
+import qcflow.data
+import qcflow.data.huggingface_dataset
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.dataset_source_registry import get_dataset_source_from_json
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.huggingface_dataset import HuggingFaceDataset
+from qcflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
+from qcflow.exceptions import MlflowException
+from qcflow.types.schema import Schema
+from qcflow.types.utils import _infer_schema
 
 
 def test_from_huggingface_dataset_constructs_expected_dataset():
     ds = datasets.load_dataset("rotten_tomatoes", split="train")
-    mlflow_ds = mlflow.data.from_huggingface(ds, path="rotten_tomatoes")
+    qcflow_ds = qcflow.data.from_huggingface(ds, path="rotten_tomatoes")
 
-    assert isinstance(mlflow_ds, HuggingFaceDataset)
-    assert mlflow_ds.ds == ds
-    assert mlflow_ds.schema == _infer_schema(ds.to_pandas())
-    assert mlflow_ds.profile == {
+    assert isinstance(qcflow_ds, HuggingFaceDataset)
+    assert qcflow_ds.ds == ds
+    assert qcflow_ds.schema == _infer_schema(ds.to_pandas())
+    assert qcflow_ds.profile == {
         "num_rows": ds.num_rows,
         "dataset_size": ds.dataset_size,
         "size_in_bytes": ds.size_in_bytes,
     }
 
-    assert isinstance(mlflow_ds.source, HuggingFaceDatasetSource)
+    assert isinstance(qcflow_ds.source, HuggingFaceDatasetSource)
 
     with pytest.raises(KeyError, match="Found duplicated arguments*"):
         # Test that we raise an error if the same key is specified in both
         # `HuggingFaceDatasetSource` and `kwargs`.
-        mlflow_ds.source.load(path="dummy_path")
+        qcflow_ds.source.load(path="dummy_path")
 
-    reloaded_ds = mlflow_ds.source.load()
+    reloaded_ds = qcflow_ds.source.load()
     assert reloaded_ds.builder_name == ds.builder_name
     assert reloaded_ds.config_name == ds.config_name
     assert reloaded_ds.split == ds.split == "train"
     assert reloaded_ds.num_rows == ds.num_rows
 
-    reloaded_mlflow_ds = mlflow.data.from_huggingface(reloaded_ds, path="rotten_tomatoes")
-    assert reloaded_mlflow_ds.digest == mlflow_ds.digest
+    reloaded_qcflow_ds = qcflow.data.from_huggingface(reloaded_ds, path="rotten_tomatoes")
+    assert reloaded_qcflow_ds.digest == qcflow_ds.digest
 
 
 def test_from_huggingface_dataset_constructs_expected_dataset_with_revision():
@@ -58,41 +58,41 @@ def test_from_huggingface_dataset_constructs_expected_dataset_with_revision():
         trust_remote_code=True,
     )
 
-    mlflow_ds_new = mlflow.data.from_huggingface(
+    qcflow_ds_new = qcflow.data.from_huggingface(
         ds, path="rotten_tomatoes", revision=revision, trust_remote_code=True
     )
 
-    ds = mlflow_ds_new.source.load()
+    ds = qcflow_ds_new.source.load()
     assert any(revision in cs for cs in ds.info.download_checksums)
 
 
 def test_from_huggingface_dataset_constructs_expected_dataset_with_data_files():
     data_files = {"train": "prompts.csv"}
     ds = datasets.load_dataset("fka/awesome-chatgpt-prompts", data_files=data_files, split="train")
-    mlflow_ds = mlflow.data.from_huggingface(
+    qcflow_ds = qcflow.data.from_huggingface(
         ds, path="fka/awesome-chatgpt-prompts", data_files=data_files
     )
 
-    assert isinstance(mlflow_ds, HuggingFaceDataset)
-    assert mlflow_ds.ds == ds
-    assert mlflow_ds.schema == _infer_schema(ds.to_pandas())
-    assert mlflow_ds.profile == {
+    assert isinstance(qcflow_ds, HuggingFaceDataset)
+    assert qcflow_ds.ds == ds
+    assert qcflow_ds.schema == _infer_schema(ds.to_pandas())
+    assert qcflow_ds.profile == {
         "num_rows": ds.num_rows,
         "dataset_size": ds.dataset_size,
         "size_in_bytes": ds.size_in_bytes,
     }
 
-    assert isinstance(mlflow_ds.source, HuggingFaceDatasetSource)
-    reloaded_ds = mlflow_ds.source.load()
+    assert isinstance(qcflow_ds.source, HuggingFaceDatasetSource)
+    reloaded_ds = qcflow_ds.source.load()
     assert reloaded_ds.builder_name == ds.builder_name
     assert reloaded_ds.config_name == ds.config_name
     assert reloaded_ds.split == ds.split == "train"
     assert reloaded_ds.num_rows == ds.num_rows
 
-    reloaded_mlflow_ds = mlflow.data.from_huggingface(
+    reloaded_qcflow_ds = qcflow.data.from_huggingface(
         reloaded_ds, path="fka/awesome-chatgpt-prompts", data_files=data_files
     )
-    assert reloaded_mlflow_ds.digest == mlflow_ds.digest
+    assert reloaded_qcflow_ds.digest == qcflow_ds.digest
 
 
 def test_from_huggingface_dataset_constructs_expected_dataset_with_data_dir(tmp_path):
@@ -101,41 +101,41 @@ def test_from_huggingface_dataset_constructs_expected_dataset_with_data_dir(tmp_
     os.makedirs(tmp_path / data_dir)
     df.to_csv(tmp_path / data_dir / "my_data.csv")
     ds = datasets.load_dataset(str(tmp_path), data_dir=data_dir, name="default", split="train")
-    mlflow_ds = mlflow.data.from_huggingface(ds, path=str(tmp_path), data_dir=data_dir)
+    qcflow_ds = qcflow.data.from_huggingface(ds, path=str(tmp_path), data_dir=data_dir)
 
-    assert mlflow_ds.ds == ds
-    assert mlflow_ds.schema == _infer_schema(ds.to_pandas())
-    assert mlflow_ds.profile == {
+    assert qcflow_ds.ds == ds
+    assert qcflow_ds.schema == _infer_schema(ds.to_pandas())
+    assert qcflow_ds.profile == {
         "num_rows": ds.num_rows,
         "dataset_size": ds.dataset_size,
         "size_in_bytes": ds.size_in_bytes,
     }
 
-    assert isinstance(mlflow_ds.source, HuggingFaceDatasetSource)
-    reloaded_ds = mlflow_ds.source.load()
+    assert isinstance(qcflow_ds.source, HuggingFaceDatasetSource)
+    reloaded_ds = qcflow_ds.source.load()
     assert reloaded_ds.builder_name == ds.builder_name
     assert reloaded_ds.config_name == ds.config_name
     assert reloaded_ds.split == ds.split == "train"
     assert reloaded_ds.num_rows == ds.num_rows
 
-    reloaded_mlflow_ds = mlflow.data.from_huggingface(
+    reloaded_qcflow_ds = qcflow.data.from_huggingface(
         reloaded_ds, path=str(tmp_path), data_dir=data_dir
     )
-    assert reloaded_mlflow_ds.digest == mlflow_ds.digest
+    assert reloaded_qcflow_ds.digest == qcflow_ds.digest
 
 
 def test_from_huggingface_dataset_respects_user_specified_name_and_digest():
     ds = datasets.load_dataset("rotten_tomatoes", split="train")
-    mlflow_ds = mlflow.data.from_huggingface(
+    qcflow_ds = qcflow.data.from_huggingface(
         ds, path="rotten_tomatoes", name="myname", digest="mydigest"
     )
-    assert mlflow_ds.name == "myname"
-    assert mlflow_ds.digest == "mydigest"
+    assert qcflow_ds.name == "myname"
+    assert qcflow_ds.digest == "mydigest"
 
 
 def test_from_huggingface_dataset_digest_is_consistent_for_large_ordered_datasets(tmp_path):
     assert (
-        mlflow.data.huggingface_dataset._MAX_ROWS_FOR_DIGEST_COMPUTATION_AND_SCHEMA_INFERENCE
+        qcflow.data.huggingface_dataset._MAX_ROWS_FOR_DIGEST_COMPUTATION_AND_SCHEMA_INFERENCE
         < 200000
     )
 
@@ -150,8 +150,8 @@ def test_from_huggingface_dataset_digest_is_consistent_for_large_ordered_dataset
     df.to_csv(tmp_path / data_dir / "my_data.csv")
 
     ds = datasets.load_dataset(str(tmp_path), data_dir=data_dir, name="default", split="train")
-    mlflow_ds = mlflow.data.from_huggingface(ds, path=str(tmp_path), data_dir=data_dir)
-    assert mlflow_ds.digest == "1dda4ce8"
+    qcflow_ds = qcflow.data.from_huggingface(ds, path=str(tmp_path), data_dir=data_dir)
+    assert qcflow_ds.digest == "1dda4ce8"
 
 
 def test_from_huggingface_dataset_throws_for_dataset_dict():
@@ -161,34 +161,34 @@ def test_from_huggingface_dataset_throws_for_dataset_dict():
     with pytest.raises(
         MlflowException, match="must be an instance of `datasets.Dataset`.*DatasetDict"
     ):
-        mlflow.data.from_huggingface(ds, path="rotten_tomatoes")
+        qcflow.data.from_huggingface(ds, path="rotten_tomatoes")
 
 
 def test_from_huggingface_dataset_no_source_specified():
     ds = datasets.load_dataset("rotten_tomatoes", split="train")
-    mlflow_ds = mlflow.data.from_huggingface(ds)
+    qcflow_ds = qcflow.data.from_huggingface(ds)
 
-    assert isinstance(mlflow_ds, HuggingFaceDataset)
+    assert isinstance(qcflow_ds, HuggingFaceDataset)
 
-    assert isinstance(mlflow_ds.source, CodeDatasetSource)
-    assert "mlflow.source.name" in mlflow_ds.source.to_json()
+    assert isinstance(qcflow_ds.source, CodeDatasetSource)
+    assert "qcflow.source.name" in qcflow_ds.source.to_json()
 
 
 def test_dataset_conversion_to_json():
     ds = datasets.load_dataset("rotten_tomatoes", split="train")
-    mlflow_ds = mlflow.data.from_huggingface(ds, path="rotten_tomatoes")
+    qcflow_ds = qcflow.data.from_huggingface(ds, path="rotten_tomatoes")
 
-    dataset_json = mlflow_ds.to_json()
+    dataset_json = qcflow_ds.to_json()
     parsed_json = json.loads(dataset_json)
     assert parsed_json.keys() <= {"name", "digest", "source", "source_type", "schema", "profile"}
-    assert parsed_json["name"] == mlflow_ds.name
-    assert parsed_json["digest"] == mlflow_ds.digest
-    assert parsed_json["source"] == mlflow_ds.source.to_json()
-    assert parsed_json["source_type"] == mlflow_ds.source._get_source_type()
-    assert parsed_json["profile"] == json.dumps(mlflow_ds.profile)
+    assert parsed_json["name"] == qcflow_ds.name
+    assert parsed_json["digest"] == qcflow_ds.digest
+    assert parsed_json["source"] == qcflow_ds.source.to_json()
+    assert parsed_json["source_type"] == qcflow_ds.source._get_source_type()
+    assert parsed_json["profile"] == json.dumps(qcflow_ds.profile)
 
-    schema_json = json.dumps(json.loads(parsed_json["schema"])["mlflow_colspec"])
-    assert Schema.from_json(schema_json) == mlflow_ds.schema
+    schema_json = json.dumps(json.loads(parsed_json["schema"])["qcflow_colspec"])
+    assert Schema.from_json(schema_json) == qcflow_ds.schema
 
 
 def test_dataset_source_conversion_to_json():
@@ -197,12 +197,12 @@ def test_dataset_source_conversion_to_json():
         split="train",
         revision="c33cbf965006dba64f134f7bef69c53d5d0d285d",
     )
-    mlflow_ds = mlflow.data.from_huggingface(
+    qcflow_ds = qcflow.data.from_huggingface(
         ds,
         path="rotten_tomatoes",
         revision="c33cbf965006dba64f134f7bef69c53d5d0d285d",
     )
-    source = mlflow_ds.source
+    source = qcflow_ds.source
 
     source_json = source.to_json()
     parsed_source = json.loads(source_json)
@@ -228,7 +228,7 @@ def test_to_evaluation_dataset():
     import numpy as np
 
     ds = datasets.load_dataset("rotten_tomatoes", split="train")
-    dataset = mlflow.data.from_huggingface(ds, path="rotten_tomatoes", targets="label")
+    dataset = qcflow.data.from_huggingface(ds, path="rotten_tomatoes", targets="label")
 
     evaluation_dataset = dataset.to_evaluation_dataset()
     assert isinstance(evaluation_dataset, EvaluationDataset)

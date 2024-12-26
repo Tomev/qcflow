@@ -2,15 +2,15 @@ from unittest import mock
 
 import pytest
 
-from mlflow import MlflowClient, register_model
-from mlflow.entities.model_registry import ModelVersion, RegisteredModel
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow import MlflowClient, register_model
+from qcflow.entities.model_registry import ModelVersion, RegisteredModel
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import (
     ALREADY_EXISTS,
     INTERNAL_ERROR,
     RESOURCE_ALREADY_EXISTS,
 )
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
 
 
 def test_register_model_with_runs_uri():
@@ -18,7 +18,7 @@ def test_register_model_with_runs_uri():
         MlflowClient, "create_registered_model", return_value=RegisteredModel("Model 1")
     )
     get_uri_patch = mock.patch(
-        "mlflow.store.artifact.runs_artifact_repo.RunsArtifactRepository.get_underlying_uri",
+        "qcflow.store.artifact.runs_artifact_repo.RunsArtifactRepository.get_underlying_uri",
         return_value="s3:/path/to/source",
     )
     create_version_patch = mock.patch.object(
@@ -86,7 +86,7 @@ def test_register_model_with_existing_registered_model(error_code):
         )
 
 
-def test_register_model_with_unexpected_mlflow_exception_in_create_registered_model():
+def test_register_model_with_unexpected_qcflow_exception_in_create_registered_model():
     with mock.patch.object(
         MlflowClient,
         "create_registered_model",
@@ -112,7 +112,7 @@ def test_register_model_with_tags():
         MlflowClient, "create_registered_model", return_value=RegisteredModel("Model 1")
     )
     get_uri_patch = mock.patch(
-        "mlflow.store.artifact.runs_artifact_repo.RunsArtifactRepository.get_underlying_uri",
+        "qcflow.store.artifact.runs_artifact_repo.RunsArtifactRepository.get_underlying_uri",
         return_value="s3:/path/to/source",
     )
     create_version_patch = mock.patch.object(

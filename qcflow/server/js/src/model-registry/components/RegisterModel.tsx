@@ -186,7 +186,7 @@ export class RegisterModelImpl extends React.Component<RegisterModelImplProps, R
   renderFooter() {
     return [
       <Button
-        componentId="codegen_mlflow_app_src_model-registry_components_registermodel.tsx_242"
+        componentId="codegen_qcflow_app_src_model-registry_components_registermodel.tsx_242"
         key="back"
         onClick={this.hideRegisterModal}
       >
@@ -196,7 +196,7 @@ export class RegisterModelImpl extends React.Component<RegisterModelImplProps, R
         />
       </Button>,
       <Button
-        componentId="codegen_mlflow_app_src_model-registry_components_registermodel.tsx_248"
+        componentId="codegen_qcflow_app_src_model-registry_components_registermodel.tsx_248"
         key="submit"
         type="primary"
         onClick={() => this.handleRegisterModel()}
@@ -215,7 +215,7 @@ export class RegisterModelImpl extends React.Component<RegisterModelImplProps, R
         {showButton && (
           <LegacyTooltip title={this.props.tooltip || null} placement="left">
             <Button
-              componentId="codegen_mlflow_app_src_model-registry_components_registermodel.tsx_261"
+              componentId="codegen_qcflow_app_src_model-registry_components_registermodel.tsx_261"
               className="register-model-btn"
               type={buttonType}
               onClick={this.showRegisterModal}

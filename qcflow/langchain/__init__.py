@@ -1,11 +1,11 @@
 """
-The ``mlflow.langchain`` module provides an API for logging and loading LangChain models.
+The ``qcflow.langchain`` module provides an API for logging and loading LangChain models.
 This module exports multivariate LangChain models in the langchain flavor and univariate
 LangChain models in the pyfunc flavor:
 
 LangChain (native) format
     This is the main flavor that can be accessed with LangChain APIs.
-:py:mod:`mlflow.pyfunc`
+:py:mod:`qcflow.pyfunc`
     Produced for use by generic pyfunc-based deployment tools and for batch inference.
 
 .. _LangChain:
@@ -26,12 +26,12 @@ import pandas as pd
 import yaml
 from packaging.version import Version
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.exceptions import MlflowException
-from mlflow.langchain.databricks_dependencies import _detect_databricks_dependencies
-from mlflow.langchain.runnables import _load_runnables, _save_runnables
-from mlflow.langchain.utils import (
+import qcflow
+from qcflow import pyfunc
+from qcflow.exceptions import MlflowException
+from qcflow.langchain.databricks_dependencies import _detect_databricks_dependencies
+from qcflow.langchain.runnables import _load_runnables, _save_runnables
+from qcflow.langchain.utils import (
     _BASE_LOAD_KEY,
     _MODEL_LOAD_KEY,
     _RUNNABLE_LOAD_KEY,
@@ -42,55 +42,55 @@ from mlflow.langchain.utils import (
     patch_langchain_type_to_cls_dict,
     register_pydantic_v1_serializer_cm,
 )
-from mlflow.models import Model, ModelInputExample, ModelSignature, get_model_info
-from mlflow.models.dependencies_schemas import (
+from qcflow.models import Model, ModelInputExample, ModelSignature, get_model_info
+from qcflow.models.dependencies_schemas import (
     _clear_dependencies_schemas,
     _get_dependencies_schema_from_model,
     _get_dependencies_schemas,
 )
-from mlflow.models.model import MLMODEL_FILE_NAME, MODEL_CODE_PATH, MODEL_CONFIG
-from mlflow.models.resources import DatabricksFunction, Resource, _ResourceBuilder
-from mlflow.models.signature import _infer_signature_from_input_example
-from mlflow.models.utils import (
+from qcflow.models.model import MLMODEL_FILE_NAME, MODEL_CODE_PATH, MODEL_CONFIG
+from qcflow.models.resources import DatabricksFunction, Resource, _ResourceBuilder
+from qcflow.models.signature import _infer_signature_from_input_example
+from qcflow.models.utils import (
     _convert_llm_input_data,
     _load_model_code_path,
     _save_example,
 )
-from mlflow.pyfunc import FLAVOR_NAME as PYFUNC_FLAVOR_NAME
-from mlflow.tracing.provider import trace_disabled
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types.schema import ColSpec, DataType, Schema
-from mlflow.utils.annotations import experimental
-from mlflow.utils.autologging_utils import (
+from qcflow.pyfunc import FLAVOR_NAME as PYFUNC_FLAVOR_NAME
+from qcflow.tracing.provider import trace_disabled
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types.schema import ColSpec, DataType, Schema
+from qcflow.utils.annotations import experimental
+from qcflow.utils.autologging_utils import (
     autologging_integration,
     autologging_is_disabled,
     safe_patch,
 )
-from mlflow.utils.databricks_utils import (
+from qcflow.utils.databricks_utils import (
     _get_databricks_serverless_env_vars,
     is_in_databricks_model_serving_environment,
     is_in_databricks_serverless_runtime,
-    is_mlflow_tracing_enabled_in_model_serving,
+    is_qcflow_tracing_enabled_in_model_serving,
 )
-from mlflow.utils.docstring_utils import (
+from qcflow.utils.docstring_utils import (
     LOG_MODEL_PARAM_DOCS,
     docstring_version_compatibility_warning,
     format_docstring,
 )
-from mlflow.utils.environment import (
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _PYTHON_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _process_conda_env,
     _process_pip_requirements,
     _PythonEnv,
     _validate_env_arguments,
 )
-from mlflow.utils.file_utils import get_total_file_size, write_to
-from mlflow.utils.model_utils import (
+from qcflow.utils.file_utils import get_total_file_size, write_to
+from qcflow.utils.model_utils import (
     _add_code_from_conf_to_system_path,
     _get_flavor_configuration,
     _validate_and_copy_code_paths,
@@ -98,9 +98,9 @@ from mlflow.utils.model_utils import (
     _validate_and_get_model_config_from_file,
     _validate_and_prepare_target_save_path,
 )
-from mlflow.utils.requirements_utils import _get_pinned_requirement
+from qcflow.utils.requirements_utils import _get_pinned_requirement
 
-logger = logging.getLogger(mlflow.__name__)
+logger = logging.getLogger(qcflow.__name__)
 
 FLAVOR_NAME = "langchain"
 _MODEL_TYPE_KEY = "model_type"
@@ -109,7 +109,7 @@ _MODEL_TYPE_KEY = "model_type"
 def get_default_pip_requirements():
     """
     Returns:
-        A list of default pip requirements for MLflow Models produced by this flavor.
+        A list of default pip requirements for QCFlow Models produced by this flavor.
         Calls to :func:`save_model()` and :func:`log_model()` produce a pip environment
         that, at a minimum, contains these requirements.
     """
@@ -121,10 +121,10 @@ def get_default_pip_requirements():
 def get_default_conda_env():
     """
     Returns:
-        The default Conda environment for MLflow Models produced by calls to
+        The default Conda environment for QCFlow Models produced by calls to
         :func:`save_model()` and :func:`log_model()`.
     """
-    return _mlflow_conda_env(additional_pip_deps=get_default_pip_requirements())
+    return _qcflow_conda_env(additional_pip_deps=get_default_pip_requirements())
 
 
 @experimental
@@ -136,7 +136,7 @@ def save_model(
     path,
     conda_env=None,
     code_paths=None,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     pip_requirements=None,
@@ -157,30 +157,30 @@ def save_model(
             `Agent <https://python.langchain.com/docs/modules/agents/>`_,
             `retriever <https://python.langchain.com/docs/modules/data_connection/retrievers/>`_,
             or `RunnableSequence <https://python.langchain.com/docs/modules/chains/foundational/sequential_chains#using-lcel>`_,
-            or a path containing the `LangChain model code <https://github.com/mlflow/mlflow/blob/master/examples/langchain/chain_as_code_driver.py>`
+            or a path containing the `LangChain model code <https://github.com/qcflow/qcflow/blob/master/examples/langchain/chain_as_code_driver.py>`
             for the above types. When using model as path, make sure to set the model
-            by using :func:`mlflow.models.set_model()`.
+            by using :func:`qcflow.models.set_model()`.
 
             .. Note:: Experimental: Using model as path may change or be removed in a future
                         release without warning.
         path: Local path where the serialized model (as YAML) is to be saved.
         conda_env: {{ conda_env }}
         code_paths: {{ code_paths }}
-        mlflow_model: :py:mod:`mlflow.models.Model` this flavor is being added to.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
+        qcflow_model: :py:mod:`qcflow.models.Model` this flavor is being added to.
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
             If not specified, the model signature would be set according to
             `lc_model.input_keys` and `lc_model.output_keys` as columns names, and
             `DataType.string` as the column type.
             Alternatively, you can explicitly specify the model signature.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 chain = LLMChain(llm=llm, prompt=prompt)
                 prediction = chain.run(input_str)
@@ -209,7 +209,7 @@ def save_model(
         persist_dir: The directory where the object is stored. The `loader_fn`
             takes this string as the argument to load the object.
             This is optional for models containing objects that aren't natively
-            serialized by LangChain. MLflow logs the content in this directory as
+            serialized by LangChain. QCFlow logs the content in this directory as
             artifacts in the subdirectory named `persist_dir_data`.
 
             Here is the code snippet for logging a RetrievalQA chain with `loader_fn`
@@ -235,8 +235,8 @@ def save_model(
                     return vectorstore.as_retriever()
 
 
-                with mlflow.start_run() as run:
-                    logged_model = mlflow.langchain.log_model(
+                with qcflow.start_run() as run:
+                    logged_model = qcflow.langchain.log_model(
                         qa,
                         artifact_path="retrieval_qa",
                         loader_fn=load_retriever,
@@ -284,9 +284,9 @@ def save_model(
 
     code_dir_subpath = _validate_and_copy_code_paths(code_paths, path)
 
-    if mlflow_model is None:
-        mlflow_model = Model()
-    saved_example = _save_example(mlflow_model, input_example, path, example_no_conversion)
+    if qcflow_model is None:
+        qcflow_model = Model()
+    saved_example = _save_example(qcflow_model, input_example, path, example_no_conversion)
 
     if signature is None:
         if saved_example is not None:
@@ -323,16 +323,16 @@ def save_model(
             )
 
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if metadata is not None:
-        mlflow_model.metadata = metadata
+        qcflow_model.metadata = metadata
 
     with _get_dependencies_schemas() as dependencies_schemas:
         schema = dependencies_schemas.to_dict()
         if schema is not None:
-            if mlflow_model.metadata is None:
-                mlflow_model.metadata = {}
-            mlflow_model.metadata.update(schema)
+            if qcflow_model.metadata is None:
+                qcflow_model.metadata = {}
+            qcflow_model.metadata.update(schema)
 
     if streamable is None:
         streamable = hasattr(lc_model, "stream")
@@ -347,8 +347,8 @@ def save_model(
         }
 
     pyfunc.add_to_model(
-        mlflow_model,
-        loader_module="mlflow.langchain",
+        qcflow_model,
+        loader_module="qcflow.langchain",
         conda_env=_CONDA_ENV_FILE_NAME,
         python_env=_PYTHON_ENV_FILE_NAME,
         code=code_dir_subpath,
@@ -360,7 +360,7 @@ def save_model(
     )
 
     needs_databricks_auth = False
-    if Version(langchain.__version__) >= Version("0.0.311") and mlflow_model.resources is None:
+    if Version(langchain.__version__) >= Version("0.0.311") and qcflow_model.resources is None:
         if databricks_resources := _detect_databricks_dependencies(lc_model):
             logger.info(
                 "Attempting to auto-detect Databricks resource dependencies for the "
@@ -368,16 +368,16 @@ def save_model(
                 "best-effort and may not capture all dependencies of your langchain "
                 "model, resulting in authorization errors when serving or querying "
                 "your model. We recommend that you explicitly pass `resources` "
-                "to mlflow.langchain.log_model() to ensure authorization to "
+                "to qcflow.langchain.log_model() to ensure authorization to "
                 "dependent resources succeeds when the model is deployed."
             )
             serialized_databricks_resources = _ResourceBuilder.from_resources(databricks_resources)
-            mlflow_model.resources = serialized_databricks_resources
+            qcflow_model.resources = serialized_databricks_resources
             needs_databricks_auth = any(
                 isinstance(r, DatabricksFunction) for r in databricks_resources
             )
 
-    mlflow_model.add_flavor(
+    qcflow_model.add_flavor(
         FLAVOR_NAME,
         langchain_version=langchain.__version__,
         code=code_dir_subpath,
@@ -385,8 +385,8 @@ def save_model(
         **flavor_conf,
     )
     if size := get_total_file_size(path):
-        mlflow_model.model_size_bytes = size
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.model_size_bytes = size
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
     if conda_env is None:
         if pip_requirements is None:
@@ -396,7 +396,7 @@ def save_model(
                 if needs_databricks_auth and is_in_databricks_serverless_runtime()
                 else None
             )
-            inferred_reqs = mlflow.models.infer_pip_requirements(
+            inferred_reqs = qcflow.models.infer_pip_requirements(
                 str(path), FLAVOR_NAME, fallback=default_reqs, extra_env_vars=extra_env_vars
             )
             default_reqs = sorted(set(inferred_reqs).union(default_reqs))
@@ -444,16 +444,16 @@ def log_model(
     resources: Optional[Union[list[Resource], str]] = None,
 ):
     """
-    Log a LangChain model as an MLflow artifact for the current run.
+    Log a LangChain model as an QCFlow artifact for the current run.
 
     Args:
         lc_model: A LangChain model, which could be a
             `Chain <https://python.langchain.com/docs/modules/chains/>`_,
             `Agent <https://python.langchain.com/docs/modules/agents/>`_, or
             `retriever <https://python.langchain.com/docs/modules/data_connection/retrievers/>`_
-            or a path containing the `LangChain model code <https://github.com/mlflow/mlflow/blob/master/examples/langchain/chain_as_code_driver.py>`
+            or a path containing the `LangChain model code <https://github.com/qcflow/qcflow/blob/master/examples/langchain/chain_as_code_driver.py>`
             for the above types. When using model as path, make sure to set the model
-            by using :func:`mlflow.models.set_model()`.
+            by using :func:`qcflow.models.set_model()`.
 
             .. Note:: Experimental: Using model as path may change or be removed in a future
                                     release without warning.
@@ -464,22 +464,22 @@ def log_model(
             future release without warning. If given, create a model
             version under ``registered_model_name``, also creating a
             registered model if one with the given name does not exist.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
             describes model input and output
-            :py:class:`Schema <mlflow.types.Schema>`.
+            :py:class:`Schema <qcflow.types.Schema>`.
             If not specified, the model signature would be set according to
             `lc_model.input_keys` and `lc_model.output_keys` as columns names, and
             `DataType.string` as the column type.
             Alternatively, you can explicitly specify the model signature.
             The model signature can be :py:func:`inferred
-            <mlflow.models.infer_signature>` from datasets with valid model input
+            <qcflow.models.infer_signature>` from datasets with valid model input
             (e.g. the training dataset with target column omitted) and valid model
             output (e.g. model predictions generated on the training dataset),
             for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 chain = LLMChain(llm=llm, prompt=prompt)
                 prediction = chain.run(input_str)
@@ -512,7 +512,7 @@ def log_model(
         persist_dir: The directory where the object is stored. The `loader_fn`
             takes this string as the argument to load the object.
             This is optional for models containing objects that aren't natively
-            serialized by LangChain. MLflow logs the content in this directory as
+            serialized by LangChain. QCFlow logs the content in this directory as
             artifacts in the subdirectory named `persist_dir_data`.
 
             Here is the code snippet for logging a RetrievalQA chain with `loader_fn`
@@ -538,8 +538,8 @@ def log_model(
                     return vectorstore.as_retriever()
 
 
-                with mlflow.start_run() as run:
-                    logged_model = mlflow.langchain.log_model(
+                with qcflow.start_run() as run:
+                    logged_model = qcflow.langchain.log_model(
                         qa,
                         artifact_path="retrieval_qa",
                         loader_fn=load_retriever,
@@ -568,12 +568,12 @@ def log_model(
             but dependency auto-inference is best-effort and may miss some dependencies.
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.langchain,
+        flavor=qcflow.langchain,
         registered_model_name=registered_model_name,
         lc_model=lc_model,
         conda_env=conda_env,
@@ -615,7 +615,7 @@ def _save_model(model, path, loader_fn, persist_dir):
 
 @patch_langchain_type_to_cls_dict
 def _load_model(local_model_path, flavor_conf):
-    from mlflow.langchain._langchain_autolog import _update_langchain_model_config
+    from qcflow.langchain._langchain_autolog import _update_langchain_model_config
 
     # model_type is not accurate as the class can be subclass
     # of supported types, we define _MODEL_LOAD_KEY to ensure
@@ -627,15 +627,15 @@ def _load_model(local_model_path, flavor_conf):
         elif model_load_fn == _BASE_LOAD_KEY:
             model = _load_base_lcs(local_model_path, flavor_conf)
         else:
-            raise mlflow.MlflowException(
+            raise qcflow.MlflowException(
                 "Failed to load LangChain model. Unknown model type: "
                 f"{flavor_conf.get(_MODEL_TYPE_KEY)}"
             )
-    # To avoid double logging, we set _mlflow_model_logged to True
+    # To avoid double logging, we set _qcflow_model_logged to True
     # when the model is loaded
     if not autologging_is_disabled(FLAVOR_NAME):
         if _update_langchain_model_config(model):
-            model._mlflow_model_logged = True
+            model._qcflow_model_logged = True
             model.run_id = get_model_info(local_model_path).run_id
     return model
 
@@ -671,14 +671,14 @@ class _LangChainModelWrapper:
             is_in_databricks_model_serving_environment()
             # TODO: This env var was once used for controlling whether or not to inject the
             #   tracer in Databricks model serving. However, now we have the new env var
-            #   `ENABLE_MLFLOW_TRACING` to control that. We don't remove this condition
+            #   `ENABLE_QCFLOW_TRACING` to control that. We don't remove this condition
             #   right now in the interest of caution, but we should remove this condition
             #   after making sure that the functionality is stable.
-            and os.environ.get("MLFLOW_ENABLE_TRACE_IN_SERVING", "false").lower() == "true"
+            and os.environ.get("QCFLOW_ENABLE_TRACE_IN_SERVING", "false").lower() == "true"
             # if this is False, tracing is disabled and we shouldn't inject the tracer
-            and is_mlflow_tracing_enabled_in_model_serving()
+            and is_qcflow_tracing_enabled_in_model_serving()
         ):
-            from mlflow.langchain.langchain_tracer import MlflowLangchainTracer
+            from qcflow.langchain.langchain_tracer import MlflowLangchainTracer
 
             callbacks = [MlflowLangchainTracer()]
         else:
@@ -687,7 +687,7 @@ class _LangChainModelWrapper:
         return self._predict_with_callbacks(data, params, callback_handlers=callbacks)
 
     def _update_dependencies_schemas_in_prediction_context(self, callback_handlers):
-        from mlflow.langchain.langchain_tracer import MlflowLangchainTracer
+        from qcflow.langchain.langchain_tracer import MlflowLangchainTracer
 
         if (
             callback_handlers
@@ -722,7 +722,7 @@ class _LangChainModelWrapper:
         Returns:
             Model predictions.
         """
-        from mlflow.langchain.api_request_parallel_processor import process_api_requests
+        from qcflow.langchain.api_request_parallel_processor import process_api_requests
 
         self._update_dependencies_schemas_in_prediction_context(callback_handlers)
         messages, return_first_element = self._prepare_predict_messages(data)
@@ -754,7 +754,7 @@ class _LangChainModelWrapper:
             return [data], True
         if isinstance(data, list):
             return data, False
-        raise mlflow.MlflowException.invalid_parameter_value(
+        raise qcflow.MlflowException.invalid_parameter_value(
             "Input must be a pandas DataFrame or a list "
             f"for model {self.lc_model.__class__.__name__}"
         )
@@ -786,7 +786,7 @@ class _LangChainModelWrapper:
         Returns:
             An iterator of model prediction chunks.
         """
-        from mlflow.langchain.api_request_parallel_processor import (
+        from qcflow.langchain.api_request_parallel_processor import (
             process_stream_request,
         )
 
@@ -815,7 +815,7 @@ class _LangChainModelWrapper:
         Returns:
             An iterator of model prediction chunks.
         """
-        from mlflow.langchain.api_request_parallel_processor import (
+        from qcflow.langchain.api_request_parallel_processor import (
             process_stream_request,
         )
 
@@ -834,7 +834,7 @@ def _load_pyfunc(path: str, model_config: Optional[dict[str, Any]] = None):  # n
     """Load PyFunc implementation for LangChain. Called by ``pyfunc.load_model``.
 
     Args:
-        path: Local filesystem path to the MLflow Model with the ``langchain`` flavor.
+        path: Local filesystem path to the QCFlow Model with the ``langchain`` flavor.
     """
     return _LangChainModelWrapper(_load_model_from_local_fs(path, model_config), path)
 
@@ -886,15 +886,15 @@ def load_model(model_uri, dst_path=None):
     Load a LangChain model from a local file or a run.
 
     Args:
-        model_uri: The location, in URI format, of the MLflow model. For example:
+        model_uri: The location, in URI format, of the QCFlow model. For example:
 
             - ``/Users/me/path/to/local/model``
             - ``relative/path/to/local/model``
             - ``s3://my_bucket/path/to/model``
-            - ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+            - ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 
             For more information about supported URI schemes, see
-            `Referencing Artifacts <https://www.mlflow.org/docs/latest/tracking.html#
+            `Referencing Artifacts <https://www.qcflow.org/docs/latest/tracking.html#
             artifact-locations>`_.
         dst_path: The local filesystem path to which to download the model artifact.
             This directory must already exist. If unspecified, a local output
@@ -915,7 +915,7 @@ def _patch_runnable_cls(cls):
     Args:
         cls: The class to patch.
     """
-    from mlflow.langchain._langchain_autolog import patched_inference
+    from qcflow.langchain._langchain_autolog import patched_inference
 
     patch_functions = ["invoke", "batch", "stream", "ainvoke", "abatch", "astream"]
     for func_name in patch_functions:
@@ -972,26 +972,26 @@ def autolog(
     log_traces=True,
 ):
     """
-    Enables (or disables) and configures autologging from Langchain to MLflow.
+    Enables (or disables) and configures autologging from Langchain to QCFlow.
 
     Args:
         log_input_examples: If ``True``, input examples from inference data are collected and
             logged along with Langchain model artifacts during inference. If
             ``False``, input examples are not logged.
-            Note: Input examples are MLflow model attributes
+            Note: Input examples are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
         log_model_signatures: If ``True``,
-            :py:class:`ModelSignatures <mlflow.models.ModelSignature>`
+            :py:class:`ModelSignatures <qcflow.models.ModelSignature>`
             describing model inputs and outputs are collected and logged along
             with Langchain model artifacts during inference. If ``False``,
             signatures are not logged.
-            Note: Model signatures are MLflow model attributes
+            Note: Model signatures are QCFlow model attributes
             and are only collected if ``log_models`` is also ``True``.
-        log_models: If ``True``, langchain models are logged as MLflow model artifacts.
+        log_models: If ``True``, langchain models are logged as QCFlow model artifacts.
             If ``False``, langchain models are not logged.
-            Input examples and model signatures, which are attributes of MLflow models,
+            Input examples and model signatures, which are attributes of QCFlow models,
             are also omitted when ``log_models`` is ``False``.
-        log_datasets: If ``True``, dataset information is logged to MLflow Tracking
+        log_datasets: If ``True``, dataset information is logged to QCFlow Tracking
             if applicable. If ``False``, dataset information is not logged.
         disable: If ``True``, disables the Langchain autologging integration. If ``False``,
             enables the Langchain autologging integration.
@@ -999,9 +999,9 @@ def autolog(
             If ``False``, autologged content is logged to the active fluent run,
             which may be user-created.
         disable_for_unsupported_versions: If ``True``, disable autologging for versions of
-            langchain that have not been tested against this version of the MLflow
+            langchain that have not been tested against this version of the QCFlow
             client or are incompatible.
-        silent: If ``True``, suppress all event logs and warnings from MLflow during Langchain
+        silent: If ``True``, suppress all event logs and warnings from QCFlow during Langchain
             autologging. If ``False``, show all events and warnings during Langchain
             autologging.
         registered_model_name: If given, each time a model is trained, it is registered as a
@@ -1016,7 +1016,7 @@ def autolog(
             MlflowLangchainTracer as a callback during inference. If ``False``, no traces are
             collected during inference. Default to ``True``.
     """
-    from mlflow.langchain._langchain_autolog import patched_inference
+    from qcflow.langchain._langchain_autolog import patched_inference
 
     # avoid duplicate patching
     patched_classes = set()

@@ -6,10 +6,10 @@ from unittest import mock
 import pydantic
 import pytest
 
-import mlflow
-from mlflow.models.signature import _extract_type_hints
-from mlflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, Property, Schema
-from mlflow.types.type_hints import PYDANTIC_V1_OR_OLDER, _is_pydantic_type_hint
+import qcflow
+from qcflow.models.signature import _extract_type_hints
+from qcflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, Property, Schema
+from qcflow.types.type_hints import PYDANTIC_V1_OR_OLDER, _is_pydantic_type_hint
 
 
 class CustomExample(pydantic.BaseModel):
@@ -157,14 +157,14 @@ def test_pyfunc_model_infer_signature_from_type_hints(
         kwargs["python_model"] = predict
     elif model_type == "python_model":
 
-        class TestModel(mlflow.pyfunc.PythonModel):
+        class TestModel(qcflow.pyfunc.PythonModel):
             def predict(self, context, model_input: type_hint, params=None) -> type_hint:
                 return model_input
 
         kwargs["python_model"] = TestModel()
     elif model_type == "python_model_no_context":
 
-        class TestModel(mlflow.pyfunc.PythonModel):
+        class TestModel(qcflow.pyfunc.PythonModel):
             def predict(self, model_input: type_hint, params=None) -> type_hint:
                 return model_input
 
@@ -172,11 +172,11 @@ def test_pyfunc_model_infer_signature_from_type_hints(
 
     if has_input_example:
         kwargs["input_example"] = input_example
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model("test_model", **kwargs)
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model("test_model", **kwargs)
     assert model_info.signature._is_signature_from_type_hint is True
     assert model_info.signature.inputs == expected_schema
-    pyfunc_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc_model = qcflow.pyfunc.load_model(model_info.model_uri)
     if _is_pydantic_type_hint(type_hint):
         if PYDANTIC_V1_OR_OLDER:
             assert pyfunc_model.predict(input_example).dict() == input_example
@@ -190,9 +190,9 @@ def test_pyfunc_model_infer_signature_from_type_hints_errors():
     def predict(model_input: int) -> int:
         return model_input
 
-    with mlflow.start_run():
-        with mock.patch("mlflow.models.signature._logger.warning") as mock_warning:
-            mlflow.pyfunc.log_model("test_model", python_model=predict, input_example="string")
+    with qcflow.start_run():
+        with mock.patch("qcflow.models.signature._logger.warning") as mock_warning:
+            qcflow.pyfunc.log_model("test_model", python_model=predict, input_example="string")
         assert (
             "Input example is not compatible with the type hint of the `predict` function."
             in mock_warning.call_args[0][0]
@@ -202,9 +202,9 @@ def test_pyfunc_model_infer_signature_from_type_hints_errors():
         return model_input
 
     output_hints = _extract_type_hints(predict, 0).output
-    with mlflow.start_run():
-        with mock.patch("mlflow.models.signature._logger.warning") as mock_warning:
-            model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        with mock.patch("qcflow.models.signature._logger.warning") as mock_warning:
+            model_info = qcflow.pyfunc.log_model(
                 "test_model", python_model=predict, input_example=123
             )
         assert (
@@ -220,9 +220,9 @@ def test_pyfunc_model_infer_signature_from_type_hints_for_python_3_10():
     def predict(model_input: int | str) -> int | str:
         return model_input
 
-    with mlflow.start_run():
-        model_info1 = mlflow.pyfunc.log_model("test_model", python_model=predict, input_example=123)
-        model_info2 = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info1 = qcflow.pyfunc.log_model("test_model", python_model=predict, input_example=123)
+        model_info2 = qcflow.pyfunc.log_model(
             "test_model", python_model=predict, input_example="string"
         )
 
@@ -243,15 +243,15 @@ set_model(predict)
 """
     elif model_type == "python_model":
         model_def = f"""
-class TestModel(mlflow.pyfunc.PythonModel):
+class TestModel(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input: {type_hint}, params=None) -> {type_hint}:
         return model_input
 
 set_model(TestModel())
 """
     file_content = f"""
-import mlflow
-from mlflow.models import set_model
+import qcflow
+from qcflow.models import set_model
 
 import datetime
 import pydantic
@@ -323,12 +323,12 @@ def test_pyfunc_model_with_type_hints_code_based_logging(
     if has_input_example:
         kwargs["input_example"] = input_example
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model("test_model", **kwargs)
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model("test_model", **kwargs)
 
     assert model_info.signature is not None
     assert model_info.signature._is_signature_from_type_hint is True
-    pyfunc_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc_model = qcflow.pyfunc.load_model(model_info.model_uri)
     assert pyfunc_model.predict(input_example) == input_example
 
 
@@ -336,8 +336,8 @@ def test_functional_python_model_only_input_type_hints():
     def python_model(x: list[str]):
         return x
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=python_model, input_example=["a"]
         )
     assert model_info.signature.inputs == Schema([ColSpec(type=Array(DataType.string))])
@@ -348,8 +348,8 @@ def test_functional_python_model_only_output_type_hints():
     def python_model(x) -> list[str]:
         return x
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=python_model, input_example=["a"]
         )
     assert model_info.signature is None
@@ -361,21 +361,21 @@ class CallableObject:
 
 
 def test_functional_python_model_callable_object():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=CallableObject(), input_example=["a"]
         )
     assert model_info.signature.inputs == Schema([ColSpec(type=Array(DataType.string))])
     assert model_info.signature.outputs == Schema([ColSpec(type=Array(DataType.string))])
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     assert loaded_model.predict(["a", "b"]) == ["a", "b"]
 
 
 def test_invalid_type_hint_in_python_model():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, model_input: list[object], params=None) -> str:
             return model_input[0]
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         with pytest.warns(UserWarning, match=r"Unsupported type hint"):
-            mlflow.pyfunc.log_model("model", python_model=MyModel())
+            qcflow.pyfunc.log_model("model", python_model=MyModel())

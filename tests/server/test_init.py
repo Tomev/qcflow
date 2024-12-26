@@ -3,19 +3,19 @@ from unittest import mock
 
 import pytest
 
-from mlflow import server
-from mlflow.exceptions import MlflowException
+from qcflow import server
+from qcflow.exceptions import MlflowException
 
 
 @pytest.fixture
 def mock_exec_cmd():
-    with mock.patch("mlflow.server._exec_cmd") as m:
+    with mock.patch("qcflow.server._exec_cmd") as m:
         yield m
 
 
 def test_find_app_custom_app_plugin():
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
-    assert server._find_app("custom_app") == "mlflow_test_plugin.app:custom_app"
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
+    assert server._find_app("custom_app") == "qcflow_test_plugin.app:custom_app"
 
 
 def test_find_app_non_existing_app():
@@ -32,9 +32,9 @@ def test_build_waitress_command():
         "waitress",
         "--host=localhost",
         "--port=5000",
-        "--ident=mlflow",
+        "--ident=qcflow",
         "--call",
-        "mlflow.server:app",
+        "qcflow.server:app",
     ]
     assert server._build_waitress_command(
         "", "localhost", "5000", f"{server.__name__}:app", is_factory=False
@@ -44,8 +44,8 @@ def test_build_waitress_command():
         "waitress",
         "--host=localhost",
         "--port=5000",
-        "--ident=mlflow",
-        "mlflow.server:app",
+        "--ident=qcflow",
+        "qcflow.server:app",
     ]
 
 
@@ -60,7 +60,7 @@ def test_build_gunicorn_command():
         "localhost:5000",
         "-w",
         "4",
-        "mlflow.server:app",
+        "qcflow.server:app",
     ]
 
 

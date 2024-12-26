@@ -3,8 +3,8 @@ from typing import Optional, Union
 
 import numpy as np
 
-from mlflow.utils.annotations import experimental
-from mlflow.utils.validation import _is_numeric
+from qcflow.utils.annotations import experimental
+from qcflow.utils.validation import _is_numeric
 
 
 def standard_aggregations(scores):

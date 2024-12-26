@@ -5,20 +5,20 @@ from typing import Any, Optional, Union
 
 import numpy as np
 
-from mlflow.data.dataset import Dataset
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.data.digest_utils import compute_numpy_digest
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
-from mlflow.data.schema import TensorDatasetSchema
-from mlflow.types.utils import _infer_schema
+from qcflow.data.dataset import Dataset
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.data.digest_utils import compute_numpy_digest
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
+from qcflow.data.schema import TensorDatasetSchema
+from qcflow.types.utils import _infer_schema
 
 _logger = logging.getLogger(__name__)
 
 
 class NumpyDataset(Dataset, PyFuncConvertibleDatasetMixin):
     """
-    Represents a NumPy dataset for use with MLflow Tracking.
+    Represents a NumPy dataset for use with QCFlow Tracking.
     """
 
     def __init__(
@@ -119,7 +119,7 @@ class NumpyDataset(Dataset, PyFuncConvertibleDatasetMixin):
     @cached_property
     def schema(self) -> Optional[TensorDatasetSchema]:
         """
-        MLflow TensorSpec schema representing the dataset features and targets (optional).
+        QCFlow TensorSpec schema representing the dataset features and targets (optional).
         """
         try:
             features_schema = _infer_schema(self._features)
@@ -134,14 +134,14 @@ class NumpyDataset(Dataset, PyFuncConvertibleDatasetMixin):
     def to_pyfunc(self) -> PyFuncInputsOutputs:
         """
         Converts the dataset to a collection of pyfunc inputs and outputs for model
-        evaluation. Required for use with mlflow.evaluate().
+        evaluation. Required for use with qcflow.evaluate().
         """
         return PyFuncInputsOutputs(self._features, self._targets)
 
     def to_evaluation_dataset(self, path=None, feature_names=None) -> EvaluationDataset:
         """
         Converts the dataset to an EvaluationDataset for model evaluation. Required
-        for use with mlflow.sklearn.evaluate().
+        for use with qcflow.sklearn.evaluate().
         """
         return EvaluationDataset(
             data=self._features,
@@ -159,7 +159,7 @@ def from_numpy(
     digest: Optional[str] = None,
 ) -> NumpyDataset:
     """
-    Constructs a :py:class:`NumpyDataset <mlflow.data.numpy_dataset.NumpyDataset>` object from
+    Constructs a :py:class:`NumpyDataset <qcflow.data.numpy_dataset.NumpyDataset>` object from
     NumPy features, optional targets, and source. If the source is path like, then this will
     construct a DatasetSource object from the source path. Otherwise, the source is assumed to
     be a DatasetSource object.
@@ -169,9 +169,9 @@ def from_numpy(
         source: The source from which the numpy data was derived, e.g. a filesystem path, an S3 URI,
             an HTTPS URL, a delta table name with version, or spark table etc. ``source`` may be
             specified as a URI, a path-like string, or an instance of
-            :py:class:`DatasetSource <mlflow.data.dataset_source.DatasetSource>`. If unspecified,
+            :py:class:`DatasetSource <qcflow.data.dataset_source.DatasetSource>`. If unspecified,
             the source is assumed to be the code location (e.g. notebook cell, script, etc.) where
-            :py:func:`from_numpy <mlflow.data.from_numpy>` is being called.
+            :py:func:`from_numpy <qcflow.data.from_numpy>` is being called.
         targets: Optional NumPy targets, represented as an np.ndarray or dictionary of named
             np.ndarrays.
         name: The name of the dataset. If unspecified, a name is generated.
@@ -181,18 +181,18 @@ def from_numpy(
         :test:
         :caption: Basic Example
 
-        import mlflow
+        import qcflow
         import numpy as np
 
         x = np.random.uniform(size=[2, 5, 4])
         y = np.random.randint(2, size=[2])
-        dataset = mlflow.data.from_numpy(x, targets=y)
+        dataset = qcflow.data.from_numpy(x, targets=y)
 
     .. code-block:: python
         :test:
         :caption: Dict Example
 
-        import mlflow
+        import qcflow
         import numpy as np
 
         x = {
@@ -200,11 +200,11 @@ def from_numpy(
             "feature_2": np.random.uniform(size=[2, 5, 4]),
         }
         y = np.random.randint(2, size=[2])
-        dataset = mlflow.data.from_numpy(x, targets=y)
+        dataset = qcflow.data.from_numpy(x, targets=y)
     """
-    from mlflow.data.code_dataset_source import CodeDatasetSource
-    from mlflow.data.dataset_source_registry import resolve_dataset_source
-    from mlflow.tracking.context import registry
+    from qcflow.data.code_dataset_source import CodeDatasetSource
+    from qcflow.data.dataset_source_registry import resolve_dataset_source
+    from qcflow.tracking.context import registry
 
     if source is not None:
         if isinstance(source, DatasetSource):

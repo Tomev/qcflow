@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import orm, Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship, backref, declarative_base
-from mlflow.utils.mlflow_tags import MLFLOW_USER
+from qcflow.utils.qcflow_tags import QCFLOW_USER
 
 # revision identifiers, used by Alembic.
 revision = "90e64c465722"
@@ -50,12 +50,12 @@ def upgrade():
 
         tag_exists = False
         for tag in run.tags:
-            if tag.key == MLFLOW_USER:
+            if tag.key == QCFLOW_USER:
                 tag_exists = True
         if tag_exists:
             continue
 
-        session.merge(SqlTag(run_uuid=run.run_uuid, key=MLFLOW_USER, value=run.user_id))
+        session.merge(SqlTag(run_uuid=run.run_uuid, key=QCFLOW_USER, value=run.user_id))
     session.commit()
 
 

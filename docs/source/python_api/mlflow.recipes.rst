@@ -1,15 +1,15 @@
 .. _recipes-apis:
 
-mlflow.recipes
+qcflow.recipes
 ================
 
-.. automodule:: mlflow.recipes
+.. automodule:: qcflow.recipes
 
-.. autoclass:: mlflow.recipes.Recipe()
+.. autoclass:: qcflow.recipes.Recipe()
     :members:
     :undoc-members:
     :special-members: __new__
 
-.. autoclass:: mlflow.recipes.recipe.BaseRecipe()
+.. autoclass:: qcflow.recipes.recipe.BaseRecipe()
     :members:
     :undoc-members:

@@ -6,23 +6,23 @@ from datetime import datetime
 from functools import lru_cache
 from mimetypes import guess_type
 
-from mlflow.entities import FileInfo
-from mlflow.entities.multipart_upload import (
+from qcflow.entities import FileInfo
+from qcflow.entities.multipart_upload import (
     CreateMultipartUploadResponse,
     MultipartUploadCredential,
 )
-from mlflow.environment_variables import (
-    MLFLOW_BOTO_CLIENT_ADDRESSING_STYLE,
-    MLFLOW_S3_ENDPOINT_URL,
-    MLFLOW_S3_IGNORE_TLS,
-    MLFLOW_S3_UPLOAD_EXTRA_ARGS,
+from qcflow.environment_variables import (
+    QCFLOW_BOTO_CLIENT_ADDRESSING_STYLE,
+    QCFLOW_S3_ENDPOINT_URL,
+    QCFLOW_S3_IGNORE_TLS,
+    QCFLOW_S3_UPLOAD_EXTRA_ARGS,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repo import (
+from qcflow.exceptions import MlflowException
+from qcflow.store.artifact.artifact_repo import (
     ArtifactRepository,
     MultipartUploadMixin,
 )
-from mlflow.utils.file_utils import relative_path_to_artifact_path
+from qcflow.utils.file_utils import relative_path_to_artifact_path
 
 _MAX_CACHE_SECONDS = 300
 
@@ -89,8 +89,8 @@ def _get_s3_client(
     s3_endpoint_url=None,
 ):
     if not s3_endpoint_url:
-        s3_endpoint_url = MLFLOW_S3_ENDPOINT_URL.get()
-    do_verify = not MLFLOW_S3_IGNORE_TLS.get()
+        s3_endpoint_url = QCFLOW_S3_ENDPOINT_URL.get()
+    do_verify = not QCFLOW_S3_IGNORE_TLS.get()
 
     # The valid verify argument value is None/False/path to cert bundle file, See
     # https://github.com/boto/boto3/blob/73865126cad3938ca80a2f567a1c79cb248169a7/
@@ -98,14 +98,14 @@ def _get_s3_client(
     verify = None if do_verify else False
 
     # NOTE: If you need to specify this env variable, please file an issue at
-    # https://github.com/mlflow/mlflow/issues so we know your use-case!
-    signature_version = os.environ.get("MLFLOW_EXPERIMENTAL_S3_SIGNATURE_VERSION", "s3v4")
+    # https://github.com/qcflow/qcflow/issues so we know your use-case!
+    signature_version = os.environ.get("QCFLOW_EXPERIMENTAL_S3_SIGNATURE_VERSION", "s3v4")
 
     # Invalidate cache every `_MAX_CACHE_SECONDS`
     timestamp = int(_get_utcnow_timestamp() / _MAX_CACHE_SECONDS)
 
     if not addressing_style:
-        addressing_style = MLFLOW_BOTO_CLIENT_ADDRESSING_STYLE.get()
+        addressing_style = QCFLOW_BOTO_CLIENT_ADDRESSING_STYLE.get()
 
     return _cached_get_s3_client(
         signature_version,
@@ -150,7 +150,7 @@ class S3ArtifactRepository(ArtifactRepository, MultipartUploadMixin):
 
     @staticmethod
     def get_s3_file_upload_extra_args():
-        s3_file_upload_extra_args = MLFLOW_S3_UPLOAD_EXTRA_ARGS.get()
+        s3_file_upload_extra_args = QCFLOW_S3_UPLOAD_EXTRA_ARGS.get()
         if s3_file_upload_extra_args:
             return json.loads(s3_file_upload_extra_args)
         else:

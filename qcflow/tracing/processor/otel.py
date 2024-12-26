@@ -7,15 +7,15 @@ from opentelemetry.sdk.trace import ReadableSpan as OTelReadableSpan
 from opentelemetry.sdk.trace import Span as OTelSpan
 from opentelemetry.sdk.trace.export import BatchSpanProcessor, SpanExporter
 
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, SpanAttributeKey
-from mlflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, SpanAttributeKey
+from qcflow.tracing.trace_manager import InMemoryTraceManager
 
 
 class OtelSpanProcessor(BatchSpanProcessor):
     """
-    SpanProcessor implementation to export MLflow traces to a OpenTelemetry collector.
+    SpanProcessor implementation to export QCFlow traces to a OpenTelemetry collector.
 
     Extending OpenTelemetry BatchSpanProcessor to add some custom hooks to be executed when a span
     is started or ended (before exporting).

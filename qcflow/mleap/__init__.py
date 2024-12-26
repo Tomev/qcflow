@@ -1,10 +1,10 @@
 """
-The ``mlflow.mleap`` module provides an API for saving Spark MLLib models using the
+The ``qcflow.mleap`` module provides an API for saving Spark MLLib models using the
 `MLeap <https://github.com/combust/mleap>`_ persistence mechanism.
 
 .. warning:
 
-    The mleap flavor is deprecated and will be removed in a future release of MLflow.
+    The mleap flavor is deprecated and will be removed in a future release of QCFlow.
 
 .. note:
 
@@ -19,22 +19,22 @@ import pathlib
 import sys
 import traceback
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelInputExample, ModelSignature
-from mlflow.models.model import MLMODEL_FILE_NAME
-from mlflow.models.utils import _save_example
-from mlflow.utils import reraise
-from mlflow.utils.annotations import deprecated, keyword_only
-from mlflow.utils.file_utils import path_to_local_file_uri
-from mlflow.utils.os import is_windows
+import qcflow
+from qcflow.exceptions import MlflowException
+from qcflow.models import Model, ModelInputExample, ModelSignature
+from qcflow.models.model import MLMODEL_FILE_NAME
+from qcflow.models.utils import _save_example
+from qcflow.utils import reraise
+from qcflow.utils.annotations import deprecated, keyword_only
+from qcflow.utils.file_utils import path_to_local_file_uri
+from qcflow.utils.os import is_windows
 
 FLAVOR_NAME = "mleap"
 
 _logger = logging.getLogger(__name__)
 
 
-@deprecated(alternative="mlflow.onnx", since="2.6.0")
+@deprecated(alternative="qcflow.onnx", since="2.6.0")
 @keyword_only
 def log_model(
     spark_model,
@@ -46,7 +46,7 @@ def log_model(
     metadata=None,
 ):
     """
-    Log a Spark MLLib model in MLeap format as an MLflow artifact
+    Log a Spark MLLib model in MLeap format as an QCFlow artifact
     for the current run. The logged model will have the MLeap flavor.
 
     .. note::
@@ -64,16 +64,16 @@ def log_model(
         registered_model_name: If given, create a model version under
             ``registered_model_name``, also creating a registered model if one
             with the given name does not exist.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -82,15 +82,15 @@ def log_model(
         metadata: {{ metadata }}
 
     Returns:
-        A :py:class:`ModelInfo <mlflow.models.model.ModelInfo>` instance that contains the
+        A :py:class:`ModelInfo <qcflow.models.model.ModelInfo>` instance that contains the
         metadata of the logged model.
 
 
     .. code-block:: python
         :caption: Example
 
-        import mlflow
-        import mlflow.mleap
+        import qcflow
+        import qcflow.mleap
         import pyspark
         from pyspark.ml import Pipeline
         from pyspark.ml.classification import LogisticRegression
@@ -118,16 +118,16 @@ def log_model(
         pipeline = Pipeline(stages=[tokenizer, hashingTF, lr])
         model = pipeline.fit(training)
         # log parameters
-        mlflow.log_param("max_iter", 10)
-        mlflow.log_param("reg_param", 0.001)
+        qcflow.log_param("max_iter", 10)
+        qcflow.log_param("reg_param", 0.001)
         # log the Spark MLlib model in MLeap format
-        mlflow.mleap.log_model(
+        qcflow.mleap.log_model(
             spark_model=model, sample_input=test_df, artifact_path="mleap-model"
         )
     """
     return Model.log(
         artifact_path=artifact_path,
-        flavor=mlflow.mleap,
+        flavor=qcflow.mleap,
         spark_model=spark_model,
         sample_input=sample_input,
         registered_model_name=registered_model_name,
@@ -137,13 +137,13 @@ def log_model(
     )
 
 
-@deprecated(alternative="mlflow.onnx", since="2.6.0")
+@deprecated(alternative="qcflow.onnx", since="2.6.0")
 @keyword_only
 def save_model(
     spark_model,
     sample_input,
     path,
-    mlflow_model=None,
+    qcflow_model=None,
     signature: ModelSignature = None,
     input_example: ModelInputExample = None,
     metadata=None,
@@ -164,17 +164,17 @@ def save_model(
         sample_input: Sample PySpark DataFrame input that the model can evaluate. This is
             required by MLeap for data schema inference.
         path: Local path where the model is to be saved.
-        mlflow_model: :py:mod:`mlflow.models.Model` to which this flavor is being added.
-        signature: :py:class:`ModelSignature <mlflow.models.ModelSignature>`
-            describes model input and output :py:class:`Schema <mlflow.types.Schema>`.
-            The model signature can be :py:func:`inferred <mlflow.models.infer_signature>`
+        qcflow_model: :py:mod:`qcflow.models.Model` to which this flavor is being added.
+        signature: :py:class:`ModelSignature <qcflow.models.ModelSignature>`
+            describes model input and output :py:class:`Schema <qcflow.types.Schema>`.
+            The model signature can be :py:func:`inferred <qcflow.models.infer_signature>`
             from datasets with valid model input (e.g. the training dataset with target
             column omitted) and valid model output (e.g. model predictions generated on
             the training dataset), for example:
 
             .. code-block:: python
 
-                from mlflow.models import infer_signature
+                from qcflow.models import infer_signature
 
                 train = df.drop_column("target_label")
                 predictions = ...  # compute model predictions
@@ -182,29 +182,29 @@ def save_model(
         input_example: {{ input_example }}
         metadata: {{ metadata }}
     """
-    if mlflow_model is None:
-        mlflow_model = Model()
+    if qcflow_model is None:
+        qcflow_model = Model()
 
     add_to_model(
-        mlflow_model=mlflow_model, path=path, spark_model=spark_model, sample_input=sample_input
+        qcflow_model=qcflow_model, path=path, spark_model=spark_model, sample_input=sample_input
     )
     if signature is not None:
-        mlflow_model.signature = signature
+        qcflow_model.signature = signature
     if input_example is not None:
-        _save_example(mlflow_model, input_example, path)
+        _save_example(qcflow_model, input_example, path)
     if metadata is not None:
-        mlflow_model.metadata = metadata
-    mlflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
+        qcflow_model.metadata = metadata
+    qcflow_model.save(os.path.join(path, MLMODEL_FILE_NAME))
 
 
-@deprecated(alternative="mlflow.onnx", since="2.6.0")
+@deprecated(alternative="qcflow.onnx", since="2.6.0")
 @keyword_only
-def add_to_model(mlflow_model, path, spark_model, sample_input):
+def add_to_model(qcflow_model, path, spark_model, sample_input):
     """
-    Add the MLeap flavor to an existing MLflow model.
+    Add the MLeap flavor to an existing QCFlow model.
 
     Args:
-        mlflow_model: :py:mod:`mlflow.models.Model` to which this flavor is being added.
+        qcflow_model: :py:mod:`qcflow.models.Model` to which this flavor is being added.
         path: Path of the model to which this flavor is being added.
         spark_model: Spark PipelineModel to be saved. This model must be MLeap-compatible and
             cannot contain any custom transformers.
@@ -263,12 +263,12 @@ def add_to_model(mlflow_model, path, spark_model, sample_input):
         _logger.warning(
             "Detected old mleap version %s. Support for logging models in mleap format with "
             "mleap versions 0.15.0 and below is deprecated and will be removed in a future "
-            "MLflow release. Please upgrade to a newer mleap version.",
+            "QCFlow release. Please upgrade to a newer mleap version.",
             mleap_version,
         )
     except AttributeError:
         mleap_version = mleap.version
-    mlflow_model.add_flavor(FLAVOR_NAME, mleap_version=mleap_version, model_data=mleap_datapath_sub)
+    qcflow_model.add_flavor(FLAVOR_NAME, mleap_version=mleap_version, model_data=mleap_datapath_sub)
 
 
 def _handle_py4j_error(reraised_error_type, reraised_error_text):

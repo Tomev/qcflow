@@ -1,17 +1,17 @@
 from abc import ABC, abstractmethod
 from typing import AsyncIterable
 
-from mlflow.gateway.base_models import ConfigModel
-from mlflow.gateway.config import RouteConfig
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.schemas import chat, completions, embeddings
-from mlflow.utils.annotations import developer_stable
+from qcflow.gateway.base_models import ConfigModel
+from qcflow.gateway.config import RouteConfig
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.schemas import chat, completions, embeddings
+from qcflow.utils.annotations import developer_stable
 
 
 @developer_stable
 class BaseProvider(ABC):
     """
-    Base class for MLflow Gateway providers.
+    Base class for QCFlow Gateway providers.
     """
 
     NAME: str = ""

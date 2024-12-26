@@ -1,12 +1,12 @@
 import warnings
 from typing import Any, Optional
 
-from mlflow.data.artifact_dataset_sources import register_artifact_dataset_sources
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.data.http_dataset_source import HTTPDatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
-from mlflow.utils.plugins import get_entry_points
+from qcflow.data.artifact_dataset_sources import register_artifact_dataset_sources
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.data.http_dataset_source import HTTPDatasetSource
+from qcflow.exceptions import MlflowException
+from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
+from qcflow.utils.plugins import get_entry_points
 
 
 class DatasetSourceRegistry:
@@ -14,7 +14,7 @@ class DatasetSourceRegistry:
         self.sources = []
 
     def register(self, source: DatasetSource):
-        """Registers a DatasetSource for use with MLflow Tracking.
+        """Registers a DatasetSource for use with QCFlow Tracking.
 
         Args:
             source: The DatasetSource to register.
@@ -24,9 +24,9 @@ class DatasetSourceRegistry:
     def register_entrypoints(self):
         """
         Registers dataset sources defined as Python entrypoints. For reference, see
-        https://mlflow.org/docs/latest/plugins.html#defining-a-plugin.
+        https://qcflow.org/docs/latest/plugins.html#defining-a-plugin.
         """
-        for entrypoint in get_entry_points("mlflow.dataset_source"):
+        for entrypoint in get_entry_points("qcflow.dataset_source"):
             try:
                 self.register(entrypoint.load())
             except (AttributeError, ImportError) as exc:
@@ -40,7 +40,7 @@ class DatasetSourceRegistry:
         self, raw_source: Any, candidate_sources: Optional[list[DatasetSource]] = None
     ) -> DatasetSource:
         """Resolves a raw source object, such as a string URI, to a DatasetSource for use with
-        MLflow Tracking.
+        QCFlow Tracking.
 
         Args:
             raw_source: The raw source, e.g. a string like "s3://mybucket/path/to/iris/data" or a
@@ -76,7 +76,7 @@ class DatasetSourceRegistry:
             source_class_names_str = ", ".join([source.__name__ for source in matching_sources])
             warnings.warn(
                 f"The specified dataset source can be interpreted in multiple ways:"
-                f" {source_class_names_str}. MLflow will assume that this is a"
+                f" {source_class_names_str}. QCFlow will assume that this is a"
                 f" {matching_sources[-1].__name__} source.",
                 stacklevel=2,
             )
@@ -118,7 +118,7 @@ class DatasetSourceRegistry:
 
 
 def register_dataset_source(source: DatasetSource):
-    """Registers a DatasetSource for use with MLflow Tracking.
+    """Registers a DatasetSource for use with QCFlow Tracking.
 
     Args:
         source: The DatasetSource to register.
@@ -130,7 +130,7 @@ def resolve_dataset_source(
     raw_source: Any, candidate_sources: Optional[list[DatasetSource]] = None
 ) -> DatasetSource:
     """Resolves a raw source object, such as a string URI, to a DatasetSource for use with
-    MLflow Tracking.
+    QCFlow Tracking.
 
     Args:
         raw_source: The raw source, e.g. a string like "s3://mybucket/path/to/iris/data" or a
@@ -188,31 +188,31 @@ _dataset_source_registry.register(HTTPDatasetSource)
 _dataset_source_registry.register_entrypoints()
 
 try:
-    from mlflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
+    from qcflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
 
     _dataset_source_registry.register(HuggingFaceDatasetSource)
 except ImportError:
     pass
 try:
-    from mlflow.data.spark_dataset_source import SparkDatasetSource
+    from qcflow.data.spark_dataset_source import SparkDatasetSource
 
     _dataset_source_registry.register(SparkDatasetSource)
 except ImportError:
     pass
 try:
-    from mlflow.data.delta_dataset_source import DeltaDatasetSource
+    from qcflow.data.delta_dataset_source import DeltaDatasetSource
 
     _dataset_source_registry.register(DeltaDatasetSource)
 except ImportError:
     pass
 try:
-    from mlflow.data.code_dataset_source import CodeDatasetSource
+    from qcflow.data.code_dataset_source import CodeDatasetSource
 
     _dataset_source_registry.register(CodeDatasetSource)
 except ImportError:
     pass
 try:
-    from mlflow.data.uc_volume_dataset_source import UCVolumeDatasetSource
+    from qcflow.data.uc_volume_dataset_source import UCVolumeDatasetSource
 
     _dataset_source_registry.register(UCVolumeDatasetSource)
 except ImportError:

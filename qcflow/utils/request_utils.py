@@ -1,6 +1,6 @@
-# DO NO IMPORT MLFLOW IN THIS FILE.
+# DO NO IMPORT QCFLOW IN THIS FILE.
 # This file is imported by download_cloud_file_chunk.py.
-# Importing mlflow is time-consuming and we want to avoid that in artifact download subprocesses.
+# Importing qcflow is time-consuming and we want to avoid that in artifact download subprocesses.
 import os
 import random
 from functools import lru_cache
@@ -137,14 +137,14 @@ def _cached_get_request_session(
         retry = JitteredRetry(**retry_kwargs)
     else:
         retry = Retry(**retry_kwargs)
-    from mlflow.environment_variables import (
-        MLFLOW_HTTP_POOL_CONNECTIONS,
-        MLFLOW_HTTP_POOL_MAXSIZE,
+    from qcflow.environment_variables import (
+        QCFLOW_HTTP_POOL_CONNECTIONS,
+        QCFLOW_HTTP_POOL_MAXSIZE,
     )
 
     adapter = HTTPAdapter(
-        pool_connections=MLFLOW_HTTP_POOL_CONNECTIONS.get(),
-        pool_maxsize=MLFLOW_HTTP_POOL_MAXSIZE.get(),
+        pool_connections=QCFLOW_HTTP_POOL_CONNECTIONS.get(),
+        pool_maxsize=QCFLOW_HTTP_POOL_MAXSIZE.get(),
         max_retries=retry,
     )
     session = requests.Session()
@@ -229,9 +229,9 @@ def _get_http_response_with_retries(  # noqa: D417
         respect_retry_after_header,
     )
 
-    # the environment variable is hardcoded here to avoid importing mlflow.
+    # the environment variable is hardcoded here to avoid importing qcflow.
     # however, documentation is available in environment_variables.py
-    env_value = os.getenv("MLFLOW_ALLOW_HTTP_REDIRECTS", "true").lower() in ["true", "1"]
+    env_value = os.getenv("QCFLOW_ALLOW_HTTP_REDIRECTS", "true").lower() in ["true", "1"]
     allow_redirects = env_value if allow_redirects is None else allow_redirects
 
     return session.request(method, url, allow_redirects=allow_redirects, **kwargs)

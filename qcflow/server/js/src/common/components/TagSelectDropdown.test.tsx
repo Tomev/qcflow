@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event-14';
 import { Control, useForm } from 'react-hook-form';
 
 import { KeyValueEntity } from '../../experiment-tracking/types';
-import { screen, waitFor, act, selectAntdOption } from '@mlflow/mlflow/src/common/utils/TestUtils.react17';
-import { renderWithIntl } from '@mlflow/mlflow/src/common/utils/TestUtils.react17';
+import { screen, waitFor, act, selectAntdOption } from '@qcflow/qcflow/src/common/utils/TestUtils.react17';
+import { renderWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.react17';
 
 import { TagKeySelectDropdown } from './TagSelectDropdown';
 

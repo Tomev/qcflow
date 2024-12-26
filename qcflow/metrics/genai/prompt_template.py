@@ -14,7 +14,7 @@ class PromptTemplate:
 
         .. code-block:: python
 
-            from mlflow.metrics.genai.prompt_template import PromptTemplate
+            from qcflow.metrics.genai.prompt_template import PromptTemplate
 
             # Instantiation using initializer
             prompt = PromptTemplate(template_str="Say {foo} {baz}")

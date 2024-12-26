@@ -2,50 +2,50 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import requests
 
-from mlflow import MlflowException
-from mlflow.deployments import BaseDeploymentClient
-from mlflow.deployments.constants import (
-    MLFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
+from qcflow import MlflowException
+from qcflow.deployments import BaseDeploymentClient
+from qcflow.deployments.constants import (
+    QCFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
 )
-from mlflow.deployments.server.constants import (
-    MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE,
-    MLFLOW_DEPLOYMENTS_ENDPOINTS_BASE,
-    MLFLOW_DEPLOYMENTS_QUERY_SUFFIX,
+from qcflow.deployments.server.constants import (
+    QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE,
+    QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE,
+    QCFLOW_DEPLOYMENTS_QUERY_SUFFIX,
 )
-from mlflow.deployments.utils import resolve_endpoint_url
-from mlflow.environment_variables import (
-    MLFLOW_DEPLOYMENT_PREDICT_TIMEOUT,
-    MLFLOW_HTTP_REQUEST_TIMEOUT,
+from qcflow.deployments.utils import resolve_endpoint_url
+from qcflow.environment_variables import (
+    QCFLOW_DEPLOYMENT_PREDICT_TIMEOUT,
+    QCFLOW_HTTP_REQUEST_TIMEOUT,
 )
-from mlflow.protos.databricks_pb2 import BAD_REQUEST
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.utils.annotations import experimental
-from mlflow.utils.credentials import get_default_host_creds
-from mlflow.utils.rest_utils import augmented_raise_for_status, http_request
-from mlflow.utils.uri import join_paths
+from qcflow.protos.databricks_pb2 import BAD_REQUEST
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.utils.annotations import experimental
+from qcflow.utils.credentials import get_default_host_creds
+from qcflow.utils.rest_utils import augmented_raise_for_status, http_request
+from qcflow.utils.uri import join_paths
 
 if TYPE_CHECKING:
-    from mlflow.deployments.server.config import Endpoint
+    from qcflow.deployments.server.config import Endpoint
 
 
 @experimental
 class MlflowDeploymentClient(BaseDeploymentClient):
     """
-    Client for interacting with the MLflow AI Gateway.
+    Client for interacting with the QCFlow AI Gateway.
 
     Example:
 
-    First, start the MLflow AI Gateway:
+    First, start the QCFlow AI Gateway:
 
     .. code-block:: bash
 
-        mlflow gateway start --config-path path/to/config.yaml
+        qcflow gateway start --config-path path/to/config.yaml
 
     Then, create a client and use it to interact with the server:
 
     .. code-block:: python
 
-        from mlflow.deployments import get_deploy_client
+        from qcflow.deployments import get_deploy_client
 
         client = get_deploy_client("http://localhost:5000")
         endpoints = client.list_endpoints()
@@ -90,7 +90,7 @@ class MlflowDeploymentClient(BaseDeploymentClient):
     def get_deployment(self, name, endpoint=None):
         """
         .. warning::
-            This method is not implemented for `MLflowDeploymentClient`.
+            This method is not implemented for `QCFlowDeploymentClient`.
         """
         raise NotImplementedError
 
@@ -132,8 +132,8 @@ class MlflowDeploymentClient(BaseDeploymentClient):
             host_creds=get_default_host_creds(self.target_uri),
             endpoint=route,
             method=method,
-            timeout=MLFLOW_HTTP_REQUEST_TIMEOUT.get() if timeout is None else timeout,
-            retry_codes=MLFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
+            timeout=QCFLOW_HTTP_REQUEST_TIMEOUT.get() if timeout is None else timeout,
+            retry_codes=QCFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
             raise_on_status=False,
             **call_kwargs,
         )
@@ -143,7 +143,7 @@ class MlflowDeploymentClient(BaseDeploymentClient):
     @experimental
     def get_endpoint(self, endpoint) -> "Endpoint":
         """
-        Gets a specified endpoint configured for the MLflow AI Gateway.
+        Gets a specified endpoint configured for the QCFlow AI Gateway.
 
         Args:
             endpoint: The name of the endpoint to retrieve.
@@ -155,7 +155,7 @@ class MlflowDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("http://localhost:5000")
             endpoint = client.get_endpoint(endpoint="chat")
@@ -166,10 +166,10 @@ class MlflowDeploymentClient(BaseDeploymentClient):
                 "endpoint_url": "http://localhost:5000/gateway/chat/invocations",
             }
         """
-        # Delayed import to avoid importing mlflow.gateway in the module scope
-        from mlflow.deployments.server.config import Endpoint
+        # Delayed import to avoid importing qcflow.gateway in the module scope
+        from qcflow.deployments.server.config import Endpoint
 
-        route = join_paths(MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE, endpoint)
+        route = join_paths(QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE, endpoint)
         response = self._call_endpoint("GET", route)
         return Endpoint(
             **{
@@ -179,12 +179,12 @@ class MlflowDeploymentClient(BaseDeploymentClient):
         )
 
     def _list_endpoints(self, page_token=None) -> "PagedList[Endpoint]":
-        # Delayed import to avoid importing mlflow.gateway in the module scope
-        from mlflow.deployments.server.config import Endpoint
+        # Delayed import to avoid importing qcflow.gateway in the module scope
+        from qcflow.deployments.server.config import Endpoint
 
         params = None if page_token is None else {"page_token": page_token}
         response_json = self._call_endpoint(
-            "GET", MLFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE, json_body=params
+            "GET", QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE, json_body=params
         )
         routes = [
             Endpoint(
@@ -204,7 +204,7 @@ class MlflowDeploymentClient(BaseDeploymentClient):
     @experimental
     def list_endpoints(self) -> "list[Endpoint]":
         """
-        List endpoints configured for the MLflow AI Gateway.
+        List endpoints configured for the QCFlow AI Gateway.
 
         Returns:
             A list of ``Endpoint`` objects.
@@ -213,7 +213,7 @@ class MlflowDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("http://localhost:5000")
 
@@ -255,7 +255,7 @@ class MlflowDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("http://localhost:5000")
 
@@ -291,7 +291,7 @@ class MlflowDeploymentClient(BaseDeploymentClient):
 
         .. code-block:: python
 
-            from mlflow.deployments import get_deploy_client
+            from qcflow.deployments import get_deploy_client
 
             client = get_deploy_client("http://localhost:5000")
             client.predict(
@@ -304,11 +304,11 @@ class MlflowDeploymentClient(BaseDeploymentClient):
             )
         """
         query_route = join_paths(
-            MLFLOW_DEPLOYMENTS_ENDPOINTS_BASE, endpoint, MLFLOW_DEPLOYMENTS_QUERY_SUFFIX
+            QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE, endpoint, QCFLOW_DEPLOYMENTS_QUERY_SUFFIX
         )
         try:
             return self._call_endpoint(
-                "POST", query_route, inputs, MLFLOW_DEPLOYMENT_PREDICT_TIMEOUT.get()
+                "POST", query_route, inputs, QCFLOW_DEPLOYMENT_PREDICT_TIMEOUT.get()
             )
         except MlflowException as e:
             if isinstance(e.__cause__, requests.exceptions.Timeout):
@@ -318,7 +318,7 @@ class MlflowDeploymentClient(BaseDeploymentClient):
                         "query. Please evaluate the available parameters for the query "
                         "that you are submitting. Some parameter values and inputs can "
                         "increase the computation time beyond the allowable route "
-                        f"timeout of {MLFLOW_DEPLOYMENT_PREDICT_TIMEOUT} "
+                        f"timeout of {QCFLOW_DEPLOYMENT_PREDICT_TIMEOUT} "
                         "seconds."
                     ),
                     error_code=BAD_REQUEST,

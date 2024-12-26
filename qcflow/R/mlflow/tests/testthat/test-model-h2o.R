@@ -17,17 +17,17 @@ testthat_model_dir <- tempfile("model_")
 
 teardown({
   h2o::h2o.shutdown(prompt = FALSE)
-  mlflow_clear_test_dir(testthat_model_dir)
+  qcflow_clear_test_dir(testthat_model_dir)
 })
 
-test_that("mlflow can save model", {
-  mlflow_save_model(model, testthat_model_dir)
+test_that("qcflow can save model", {
+  qcflow_save_model(model, testthat_model_dir)
   expect_true(dir.exists(testthat_model_dir))
 })
 
 test_that("can load model and predict with rfunc backend", {
-  saved_model <- mlflow_load_model(testthat_model_dir)
-  prediction <- mlflow_predict(saved_model, test)
+  saved_model <- qcflow_load_model(testthat_model_dir)
+  prediction <- qcflow_predict(saved_model, test)
   expect_equal(
     prediction,
     as.data.frame(h2o::h2o.predict(model, h2o::as.h2o(test)))
@@ -35,12 +35,12 @@ test_that("can load model and predict with rfunc backend", {
 })
 
 test_that("can print model correctly after it is loaded", {
-  saved_model <- mlflow_load_model(testthat_model_dir)
+  saved_model <- qcflow_load_model(testthat_model_dir)
   expect_equal(capture_output(print(model)), capture_output(print(saved_model)))
 })
 
 test_that("can load and predict with python pyfunct and h2o backend", {
-  pyfunc <- reticulate::import("mlflow.pyfunc")
+  pyfunc <- reticulate::import("qcflow.pyfunc")
   py_model <- pyfunc$load_model(testthat_model_dir)
 
   expected <- as.data.frame(h2o::h2o.predict(model, h2o::as.h2o(test)))
@@ -50,8 +50,8 @@ test_that("can load and predict with python pyfunct and h2o backend", {
     as.data.frame(py_model$predict(test)), expected
   )
 
-  mlflow.h2o <- reticulate::import("mlflow.h2o")
-  h2o_native_model <- mlflow.h2o$load_model(testthat_model_dir)
+  qcflow.h2o <- reticulate::import("qcflow.h2o")
+  h2o_native_model <- qcflow.h2o$load_model(testthat_model_dir)
   h2o <- reticulate::import("h2o")
 
   expect_equivalent(
@@ -83,17 +83,17 @@ test_that("Can predict with cli backend", {
   }
 
   write.csv(test[, predictors], temp_in_csv, row.names = FALSE)
-  mlflow_cli(
+  qcflow_cli(
     "models", "predict", "-m", testthat_model_dir, "-i", temp_in_csv,
-    "-o", temp_out, "-t", "csv", "--install-mlflow"
+    "-o", temp_out, "-t", "csv", "--install-qcflow"
   )
   check_output()
 
   # json records
   jsonlite::write_json(list(dataframe_records = test[, predictors]), temp_in_json)
-  mlflow_cli(
+  qcflow_cli(
     "models", "predict", "-m", testthat_model_dir, "-i", temp_in_json, "-o", temp_out,
-    "-t", "json", "--install-mlflow"
+    "-t", "json", "--install-qcflow"
   )
   check_output()
 
@@ -102,10 +102,10 @@ test_that("Can predict with cli backend", {
     columns = colnames(test), index = row.names(test), data = as.matrix(test)
   )
   jsonlite::write_json(list(dataframe_split = mtcars_split), temp_in_json_split)
-  mlflow_cli(
+  qcflow_cli(
     "models", "predict", "-m", testthat_model_dir, "-i", temp_in_json_split,
     "-o", temp_out, "-t",
-    "json", "--install-mlflow"
+    "json", "--install-qcflow"
   )
   check_output()
 })

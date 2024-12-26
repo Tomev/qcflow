@@ -10,7 +10,7 @@ repos:
     rev: "v2.7.1"
     hooks:
       - id: prettier
-        files: '^(?!CHANGELOG.md|mlflow/pypi_package_index.json|docs/|mlflow/server/js/).+\.(js|md|json|ya?ml)$'
+        files: '^(?!CHANGELOG.md|qcflow/pypi_package_index.json|docs/|qcflow/server/js/).+\.(js|md|json|ya?ml)$'
         args: ["--no-config", "--print-width", "100"]
         require_serial: true
   - repo: local
@@ -70,9 +70,9 @@ repos:
         stages: [prepare-commit-msg]
         require_serial: true
 
-      - id: mlflow-typo
-        name: mlflow-typo
-        entry: dev/mlflow-typo.sh
+      - id: qcflow-typo
+        name: qcflow-typo
+        entry: dev/qcflow-typo.sh
         language: system
         stages: [pre-commit]
         require_serial: true
@@ -124,7 +124,7 @@ repos:
       - id: mlver
         name: ml-package-versions-consistency
         entry: "python dev/update_ml_package_versions.py --skip-yml"
-        files: '^(mlflow/ml-package-versions\.yml|mlflow/ml_package_versions\.py)$'
+        files: '^(qcflow/ml-package-versions\.yml|qcflow/ml_package_versions\.py)$'
         language: system
         stages: [pre-commit]
         require_serial: true

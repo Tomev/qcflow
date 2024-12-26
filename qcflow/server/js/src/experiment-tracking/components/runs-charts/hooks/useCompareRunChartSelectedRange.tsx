@@ -4,7 +4,7 @@ import { SampledMetricsByRunUuidState } from '../../../types';
 import { isNumber, isString, isUndefined } from 'lodash';
 import { RunsChartsLineChartXAxisType } from '../components/RunsCharts.common';
 import { RunsChartsLineCardConfig } from '../runs-charts.types';
-import { shouldEnableManualRangeControls } from '@mlflow/mlflow/src/common/utils/FeatureUtils';
+import { shouldEnableManualRangeControls } from '@qcflow/qcflow/src/common/utils/FeatureUtils';
 
 /**
  * Hook used in compare run charts. It's responsible for converting selected range

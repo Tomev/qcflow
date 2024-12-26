@@ -30,7 +30,7 @@ export const RunsChartsNoDataFoundIndicator = () => {
             values={{
               link: (chunks) => (
                 <Typography.Link
-                  componentId="codegen_mlflow_app_src_experiment-tracking_components_runs-charts_components_runschartsnodatafoundindicator.tsx_31"
+                  componentId="codegen_qcflow_app_src_experiment-tracking_components_runs-charts_components_runschartsnodatafoundindicator.tsx_31"
                   onClick={hideEmptyCharts}
                 >
                   {chunks}
