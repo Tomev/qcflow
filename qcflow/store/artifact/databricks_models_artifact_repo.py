@@ -10,7 +10,7 @@ from qcflow.environment_variables import (
     QCFLOW_ENABLE_MULTIPART_DOWNLOAD,
     QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.store.artifact.utils.models import (
@@ -56,18 +56,18 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
 
     def __init__(self, artifact_uri):
         if not is_using_databricks_registry(artifact_uri):
-            raise MlflowException(
+            raise QCFlowException(
                 message="A valid databricks profile is required to instantiate this repository",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         super().__init__(artifact_uri)
-        from qcflow.tracking.client import MlflowClient
+        from qcflow.tracking.client import QCFlowClient
 
         self.databricks_profile_uri = (
             get_databricks_profile_uri_from_artifact_uri(artifact_uri) or qcflow.get_registry_uri()
         )
         warn_on_deprecated_cross_workspace_registry_uri(self.databricks_profile_uri)
-        client = MlflowClient(registry_uri=self.databricks_profile_uri)
+        client = QCFlowClient(registry_uri=self.databricks_profile_uri)
         self.model_name, self.model_version = get_model_name_and_version(client, artifact_uri)
         # Use an isolated thread pool executor for chunk uploads/downloads to avoid a deadlock
         # caused by waiting for a chunk-upload/download task within a file-upload/download task.
@@ -97,7 +97,7 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
                 response.raise_for_status()
                 json_response = json.loads(response.text)
             except Exception:
-                raise MlflowException(
+                raise QCFlowException(
                     f"API request to list files under path `{path}` failed with status code "
                     f"{response.status_code}. Response body: {response.text}"
                 )
@@ -129,7 +129,7 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
         try:
             json_response = json.loads(response.text)
         except ValueError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"API request to get presigned uri to for file under path `{path}` failed with"
                 f" status code {response.status_code}. Response body: {response.text}"
             )
@@ -204,13 +204,13 @@ class DatabricksModelsArtifactRepository(ArtifactRepository):
                 )
 
         except Exception as err:
-            raise MlflowException(err)
+            raise QCFlowException(err)
 
     def log_artifact(self, local_file, artifact_path=None):
-        raise MlflowException("This repository does not support logging artifacts.")
+        raise QCFlowException("This repository does not support logging artifacts.")
 
     def log_artifacts(self, local_dir, artifact_path=None):
-        raise MlflowException("This repository does not support logging artifacts.")
+        raise QCFlowException("This repository does not support logging artifacts.")
 
     def delete_artifacts(self, artifact_path=None):
         raise NotImplementedError("This artifact repository does not support deleting artifacts")

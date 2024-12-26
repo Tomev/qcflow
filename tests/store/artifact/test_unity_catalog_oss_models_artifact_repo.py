@@ -4,7 +4,7 @@ from unittest.mock import ANY
 
 from requests import Response
 
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
 from qcflow.store.artifact.unity_catalog_oss_models_artifact_repo import (
     UnityCatalogOSSModelsArtifactRepository,
@@ -55,7 +55,7 @@ def test_uc_models_artifact_repo_scoped_token_oss(monkeypatch):
     with (
         mock.patch("qcflow.utils.oss_registry_utils.get_oss_host_creds"),
         mock.patch.object(
-            MlflowClient, "get_model_version_download_uri", return_value=artifact_location
+            QCFlowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
         mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch(

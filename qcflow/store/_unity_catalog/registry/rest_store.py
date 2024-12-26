@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 import qcflow
 from qcflow.entities import Run
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR
 from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     MODEL_VERSION_OPERATION_READ_WRITE,
@@ -62,7 +62,7 @@ from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     UpdateRegisteredModelResponse,
 )
 from qcflow.protos.databricks_uc_registry_service_pb2 import UcModelRegistryService
-from qcflow.protos.service_pb2 import GetRun, MlflowService
+from qcflow.protos.service_pb2 import GetRun, QCFlowService
 from qcflow.store._unity_catalog.lineage.constants import (
     _DATABRICKS_LINEAGE_ID_HEADER,
     _DATABRICKS_ORG_ID_HEADER,
@@ -102,7 +102,7 @@ from qcflow.utils.rest_utils import (
 )
 from qcflow.utils.uri import is_fuse_or_uc_volumes_uri
 
-_TRACKING_METHOD_TO_INFO = extract_api_info_for_service(MlflowService, _REST_API_PATH_PREFIX)
+_TRACKING_METHOD_TO_INFO = extract_api_info_for_service(QCFlowService, _REST_API_PATH_PREFIX)
 _METHOD_TO_INFO = extract_api_info_for_service(UcModelRegistryService, _REST_API_PATH_PREFIX)
 _METHOD_TO_ALL_INFO = extract_all_api_info_for_service(
     UcModelRegistryService, _REST_API_PATH_PREFIX
@@ -125,7 +125,7 @@ def _raise_unsupported_arg(arg_name, message=None):
     ]
     if message is not None:
         messages.append(message)
-    raise MlflowException(" ".join(messages))
+    raise QCFlowException(" ".join(messages))
 
 
 def _raise_unsupported_method(method, message=None):
@@ -134,7 +134,7 @@ def _raise_unsupported_method(method, message=None):
     ]
     if message is not None:
         messages.append(message)
-    raise MlflowException(" ".join(messages))
+    raise QCFlowException(" ".join(messages))
 
 
 def _load_model(local_model_dir):
@@ -146,7 +146,7 @@ def _load_model(local_model_dir):
     try:
         return Model.load(local_model_dir)
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             "Unable to load model metadata. Ensure the source path of the model "
             "being registered points to a valid QCFlow model directory "
             "(see https://qcflow.org/docs/latest/models.html#storage-format) containing a "
@@ -166,7 +166,7 @@ def get_feature_dependencies(model_dir):
         model_info.flavors.get("python_function", {}).get("loader_module")
         == qcflow.models.model._DATABRICKS_FS_LOADER_MODULE
     ):
-        raise MlflowException(
+        raise QCFlowException(
             "This model was packaged by Databricks Feature Store and can only be registered on a "
             "Databricks cluster."
         )
@@ -564,7 +564,7 @@ class UcModelRegistryStore(BaseRestStore):
         )
         try:
             verify_rest_response(response, endpoint)
-        except MlflowException:
+        except QCFlowException:
             _logger.warning(
                 f"Unable to fetch model version's source run (with ID {run_id}) "
                 "from tracking server. The source run may be deleted or inaccessible to the "
@@ -645,12 +645,12 @@ class UcModelRegistryStore(BaseRestStore):
             " for details on how to log a model with a signature"
         )
         if model.signature is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Model passed for registration did not contain any signature metadata. "
                 f"{signature_required_explanation}"
             )
         if model.signature.outputs is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Model passed for registration contained a signature that includes only inputs. "
                 f"{signature_required_explanation}"
             )
@@ -687,7 +687,7 @@ class UcModelRegistryStore(BaseRestStore):
         try:
             qcflow.transformers.persist_pretrained_model(local_model_path)
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 "Failed to download the model weights from the HuggingFace hub and cannot register "
                 "the model in the Unity Catalog. Please ensure that the model was saved with the "
                 "correct reference to the HuggingFace hub repository and that you have access to "
@@ -705,7 +705,7 @@ class UcModelRegistryStore(BaseRestStore):
                     artifact_uri=source, tracking_uri=self.tracking_uri
                 )
             except Exception as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Unable to download model artifacts from source artifact location "
                     f"'{source}' in order to upload them to Unity Catalog. Please ensure "
                     f"the source artifact location exists and that you can download from "
@@ -847,7 +847,7 @@ class UcModelRegistryStore(BaseRestStore):
             method="transition_model_version_stage",
             message="We recommend using aliases instead of stages for more flexible model "
             "deployment management. You can set an alias on a registered model using "
-            "`MlflowClient().set_registered_model_alias(name, alias, version)` and load a model "
+            "`QCFlowClient().set_registered_model_alias(name, alias, version)` and load a model "
             "version by alias using the URI 'models:/your_model_name@your_alias', e.g. "
             "`qcflow.pyfunc.load_model('models:/your_model_name@your_alias')`.",
         )

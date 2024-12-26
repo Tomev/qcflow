@@ -13,7 +13,7 @@ import {
   ModelGatewayService,
 } from '../sdk/ModelGatewayService';
 import { EvaluationArtifactTable } from '../types';
-import { searchMlflowDeploymentsRoutesApi } from './ModelGatewayActions';
+import { searchQCFlowDeploymentsRoutesApi } from './ModelGatewayActions';
 import {
   PROMPTLAB_METADATA_COLUMN_LATENCY,
   PROMPTLAB_METADATA_COLUMN_TOTAL_TOKENS,
@@ -208,5 +208,5 @@ export const evaluatePromptTableValue = ({
 };
 
 export const searchAllPromptLabAvailableEndpoints = () => async (dispatch: ThunkDispatch) => {
-  return dispatch(searchMlflowDeploymentsRoutesApi());
+  return dispatch(searchQCFlowDeploymentsRoutesApi());
 };

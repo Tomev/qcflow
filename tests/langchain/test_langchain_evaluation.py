@@ -7,7 +7,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.evaluation import evaluate
 from qcflow.models.evaluation.evaluators.default import DefaultEvaluator
 from qcflow.tracing.constant import TraceMetadataKey
@@ -102,7 +102,7 @@ def test_langchain_evaluate_fails_with_an_exception():
     with (
         mock.patch("qcflow.langchain.log_model") as log_model_mock,
         mock.patch.object(
-            DefaultEvaluator, "evaluate", side_effect=MlflowException("evaluate mock error")
+            DefaultEvaluator, "evaluate", side_effect=QCFlowException("evaluate mock error")
         ),
     ):
 
@@ -110,7 +110,7 @@ def test_langchain_evaluate_fails_with_an_exception():
             return [chain.invoke({"question": input}) for input in inputs["question"]]
 
         with qcflow.start_run():
-            with pytest.raises(MlflowException, match="evaluate mock error"):
+            with pytest.raises(QCFlowException, match="evaluate mock error"):
                 evaluate(
                     model,
                     data=_EVAL_DATA,

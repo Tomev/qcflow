@@ -10,7 +10,7 @@ from qcflow.data.evaluation_dataset import EvaluationDataset
 from qcflow.data.pyfunc_dataset_mixin import PyFuncInputsOutputs
 from qcflow.data.schema import TensorDatasetSchema
 from qcflow.data.tensorflow_dataset import TensorFlowDataset
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.types.utils import _infer_schema
 
 from tests.resources.data.dataset_source import SampleDatasetSource
@@ -22,17 +22,17 @@ def test_dataset_construction_validates_features_and_targets():
     tf_tensor = tf.convert_to_tensor(x)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="features' must be an instance of tf.data.Dataset or a TensorFlow Tensor.*NoneType",
     ):
         qcflow.data.from_tensorflow(features=None)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="features' must be an instance of tf.data.Dataset or a TensorFlow Tensor.*str",
     ):
         qcflow.data.from_tensorflow(features="foo")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="features' must be an instance of tf.data.Dataset or a TensorFlow Tensor.*str",
     ):
         qcflow.data.from_tensorflow(features="foo", targets=tf_tensor)
@@ -40,7 +40,7 @@ def test_dataset_construction_validates_features_and_targets():
     qcflow.data.from_tensorflow(features=tf_tensor, targets=tf_tensor)
     qcflow.data.from_tensorflow(features=tf_tensor, targets=None)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             "If 'features' is a TensorFlow Tensor, then 'targets' must also be a TensorFlow"
             " Tensor.*str"
@@ -48,7 +48,7 @@ def test_dataset_construction_validates_features_and_targets():
     ):
         qcflow.data.from_tensorflow(features=tf_tensor, targets="foo")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             "If 'features' is a TensorFlow Tensor, then 'targets' must also be a TensorFlow"
             " Tensor.*Dataset"
@@ -59,7 +59,7 @@ def test_dataset_construction_validates_features_and_targets():
     qcflow.data.from_tensorflow(features=tf_dataset, targets=tf_dataset)
     qcflow.data.from_tensorflow(features=tf_dataset, targets=None)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             "If 'features' is an instance of tf.data.Dataset, then 'targets' must also be an"
             " instance of tf.data.Dataset.*str"
@@ -67,7 +67,7 @@ def test_dataset_construction_validates_features_and_targets():
     ):
         qcflow.data.from_tensorflow(features=tf_dataset, targets="foo")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             "If 'features' is an instance of tf.data.Dataset, then 'targets' must also be an"
             " instance of tf.data.Dataset.*Tensor"
@@ -321,7 +321,7 @@ def test_to_evaluation_dataset_with_tensorflow_dataset_data():
         features=x_tf_data, source=source, targets=y_tf_data, name="testname"
     )
     with pytest.raises(
-        MlflowException, match="Data must be a Tensor to convert to an EvaluationDataset"
+        QCFlowException, match="Data must be a Tensor to convert to an EvaluationDataset"
     ):
         dataset.to_evaluation_dataset()
 

@@ -3,7 +3,7 @@ import os
 import posixpath
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.autologging_utils import (
     ExceptionSafeAbstractClass,
 )
@@ -22,7 +22,7 @@ _CHECKPOINT_GLOBAL_STEP_PREFIX = "global_step_"
 _WEIGHT_ONLY_CHECKPOINT_SUFFIX = ".weights"
 
 
-class MlflowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
+class QCFlowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
     """Callback base class for automatic model checkpointing to QCFlow.
 
     You must implement "save_checkpoint" method to save the model as the checkpoint file.
@@ -71,12 +71,12 @@ class MlflowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
 
         if self.save_best_only:
             if self.monitor is None:
-                raise MlflowException(
+                raise QCFlowException(
                     "If checkpoint 'save_best_only' config is set to True, you need to set "
                     "'monitor' config as well."
                 )
             if self.mode not in ["min", "max"]:
-                raise MlflowException(
+                raise QCFlowException(
                     "If checkpoint 'save_best_only' config is set to True, you need to set "
                     "'mode' config and available modes includes 'min' and 'max', but you set "
                     f"'mode' to '{self.mode}'."
@@ -166,15 +166,15 @@ class MlflowModelCheckpointCallbackBase(metaclass=ExceptionSafeAbstractClass):
 
 
 def download_checkpoint_artifact(run_id=None, epoch=None, global_step=None, dst_path=None):
-    from qcflow.client import MlflowClient
+    from qcflow.client import QCFlowClient
     from qcflow.utils.qcflow_tags import LATEST_CHECKPOINT_ARTIFACT_TAG_KEY
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     if run_id is None:
         run = qcflow.active_run()
         if run is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "There is no active run, please provide the 'run_id' argument for "
                 "'load_checkpoint' invocation."
             )
@@ -184,12 +184,12 @@ def download_checkpoint_artifact(run_id=None, epoch=None, global_step=None, dst_
 
     latest_checkpoint_artifact_path = run.data.tags.get(LATEST_CHECKPOINT_ARTIFACT_TAG_KEY)
     if latest_checkpoint_artifact_path is None:
-        raise MlflowException("There is no logged checkpoint artifact in the current run.")
+        raise QCFlowException("There is no logged checkpoint artifact in the current run.")
 
     checkpoint_filename = posixpath.basename(latest_checkpoint_artifact_path)
 
     if epoch is not None and global_step is not None:
-        raise MlflowException(
+        raise QCFlowException(
             "Only one of 'epoch' and 'global_step' can be set for 'load_checkpoint'."
         )
     elif global_step is not None:

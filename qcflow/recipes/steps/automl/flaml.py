@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from sklearn.base import BaseEstimator
 
 import qcflow
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.models import EvaluationMetric
 from qcflow.models.evaluation.evaluators.classifier import _get_binary_classifier_metrics
 from qcflow.models.evaluation.evaluators.regressor import _get_regressor_metrics
@@ -126,7 +126,7 @@ def _create_model_automl(
     try:
         from flaml import AutoML
     except ImportError:
-        raise MlflowException("Please install FLAML to use AutoML!")
+        raise QCFlowException("Please install FLAML to use AutoML!")
 
     try:
         if primary_metric in _QCFLOW_TO_FLAML_METRICS and primary_metric in evaluation_metrics:
@@ -147,7 +147,7 @@ def _create_model_automl(
                 _load_custom_metrics(recipe_root, [evaluation_metrics[primary_metric]])[0],
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"There is no FLAML alternative or custom metric for {primary_metric} metric."
             )
 
@@ -164,7 +164,7 @@ def _create_model_automl(
         automl.fit(X, y, **automl_settings)
         qcflow.autolog(disable=False, log_models=False)
         if automl.model is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "AutoML (FLAML) could not train a suitable algorithm. "
                 "Maybe you should increase `time_budget_secs`parameter "
                 "to give AutoML process more time."
@@ -172,6 +172,6 @@ def _create_model_automl(
         return automl.model.estimator, automl.best_config
     except Exception as e:
         _logger.warning(e, exc_info=e, stack_info=True)
-        raise MlflowException(
+        raise QCFlowException(
             f"Error has occurred during training of AutoML model using FLAML: {e!r}"
         )

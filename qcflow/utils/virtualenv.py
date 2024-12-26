@@ -12,7 +12,7 @@ from packaging.version import Version
 
 import qcflow
 from qcflow.environment_variables import _QCFLOW_TESTING, QCFLOW_ENV_ROOT
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.model import MLMODEL_FILE_NAME, Model
 from qcflow.utils import env_manager as em
 from qcflow.utils.conda import _PIP_CACHE_DIR
@@ -50,7 +50,7 @@ def _is_pyenv_available():
 
 def _validate_pyenv_is_available():
     """
-    Validates pyenv is available. If not, throws an `MlflowException` with a brief instruction on
+    Validates pyenv is available. If not, throws an `QCFlowException` with a brief instruction on
     how to install pyenv.
     """
     url = (
@@ -59,7 +59,7 @@ def _validate_pyenv_is_available():
         else "https://github.com/pyenv-win/pyenv-win#installation"
     )
     if not _is_pyenv_available():
-        raise MlflowException(
+        raise QCFlowException(
             f"Could not find the pyenv binary. See {url} for installation instructions."
         )
 
@@ -73,11 +73,11 @@ def _is_virtualenv_available():
 
 def _validate_virtualenv_is_available():
     """
-    Validates virtualenv is available. If not, throws an `MlflowException` with a brief instruction
+    Validates virtualenv is available. If not, throws an `QCFlowException` with a brief instruction
     on how to install virtualenv.
     """
     if not _is_virtualenv_available():
-        raise MlflowException(
+        raise QCFlowException(
             "Could not find the virtualenv binary. Run `pip install virtualenv` to install "
             "virtualenv."
         )
@@ -106,7 +106,7 @@ def _find_latest_installable_python_version(version_prefix):
     semantic_versions = filter(_SEMANTIC_VERSION_REGEX.match, map(str.strip, lines))
     matched = [v for v in semantic_versions if v.startswith(version_prefix)]
     if not matched:
-        raise MlflowException(f"Could not find python version that matches {version_prefix}")
+        raise QCFlowException(f"Could not find python version that matches {version_prefix}")
     return sorted(matched, key=Version)[-1]
 
 
@@ -150,7 +150,7 @@ def _install_python(version, pyenv_root=None, capture_output=False):
         # pyenv-win doesn't provide the `pyenv root` command
         pyenv_root = os.getenv("PYENV_ROOT")
         if pyenv_root is None:
-            raise MlflowException("Environment variable 'PYENV_ROOT' must be set")
+            raise QCFlowException("Environment variable 'PYENV_ROOT' must be set")
         path_to_bin = ("python.exe",)
     return Path(pyenv_root).joinpath("versions", version, *path_to_bin)
 
@@ -184,7 +184,7 @@ def _get_python_env(local_model_path):
     """Constructs `_PythonEnv` from the model artifacts stored in `local_model_path`. If
     `python_env.yaml` is available, use it, otherwise extract model dependencies from `conda.yaml`.
     If `conda.yaml` contains conda dependencies except `python`, `pip`, `setuptools`, and, `wheel`,
-    an `MlflowException` is thrown because conda dependencies cannot be installed in a virtualenv
+    an `QCFlowException` is thrown because conda dependencies cannot be installed in a virtualenv
     environment.
 
     Args:
@@ -250,7 +250,7 @@ def _create_virtualenv(
     pip_requirements_override: Optional[list[str]] = None,
 ):
     if env_manager not in {em.VIRTUALENV, em.UV}:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Invalid value for `env_manager`: {env_manager}. "
             f"Must be one of `{em.VIRTUALENV}, {em.UV}`"
         )

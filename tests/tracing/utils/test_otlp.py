@@ -2,7 +2,7 @@ import pytest
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter as GrpcExporter
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter as HttpExporter
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.tracing.utils.otlp import get_otlp_exporter, should_use_otlp_exporter
 
 _TEST_HTTP_OTLP_ENDPOINT = "http://127.0.0.1:4317/v1/traces"
@@ -47,5 +47,5 @@ def test_get_otlp_exporter_success(endpoint, protocol, expected_type, monkeypatc
 def test_get_otlp_exporter_invalid_protocol(monkeypatch):
     monkeypatch.setenv("OTEL_EXPORTER_OTLP_TRACES_PROTOCOL", _TEST_HTTP_OTLP_ENDPOINT)
 
-    with pytest.raises(MlflowException, match="Unsupported OTLP protocol"):
+    with pytest.raises(QCFlowException, match="Unsupported OTLP protocol"):
         get_otlp_exporter()

@@ -9,7 +9,7 @@ from qcflow.models.utils import _contains_params
 from qcflow.types.schema import ColSpec, DataType, Schema, TensorSpec
 from qcflow.utils.annotations import deprecated
 from qcflow.utils.os import is_windows
-from qcflow.utils.timeout import MlflowTimeoutError, run_with_timeout
+from qcflow.utils.timeout import QCFlowTimeoutError, run_with_timeout
 
 _logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ def infer_or_get_default_signature(
                 pipeline, example, model_config, flavor_config, timeout
             )
         except Exception as e:
-            if isinstance(e, MlflowTimeoutError):
+            if isinstance(e, QCFlowTimeoutError):
                 msg = (
                     "Attempted to generate a signature for the saved pipeline but prediction timed "
                     f"out after {timeout} seconds. Falling back to the default signature for the "

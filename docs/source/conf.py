@@ -382,7 +382,7 @@ nitpick_ignore = [
     ("py:class", "qcflow.models.evaluation.base.EvaluationMetric"),
     ("py:class", "qcflow.models.evaluation.base.EvaluationResult"),
     ("py:class", "qcflow.models.evaluation.validation.MetricThreshold"),
-    ("py:class", "MlflowInferableDataset"),
+    ("py:class", "QCFlowInferableDataset"),
     ("py:class", "csr_matrix"),
     ("py:class", "csc_matrix"),
     ("py:class", "datetime.datetime"),

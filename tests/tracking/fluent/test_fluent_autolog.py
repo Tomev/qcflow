@@ -375,7 +375,7 @@ def test_last_active_run_retrieves_autologged_run():
 def test_extra_tags_qcflow_autolog():
     from sklearn.ensemble import RandomForestRegressor
 
-    from qcflow.exceptions import MlflowException
+    from qcflow.exceptions import QCFlowException
     from qcflow.utils.qcflow_tags import QCFLOW_AUTOLOGGING
 
     qcflow.autolog(extra_tags={"test_tag": "autolog", QCFLOW_AUTOLOGGING: "123"})
@@ -385,7 +385,7 @@ def test_extra_tags_qcflow_autolog():
     assert autolog_run.data.tags["test_tag"] == "autolog"
     assert autolog_run.data.tags[QCFLOW_AUTOLOGGING] == "sklearn"
 
-    with pytest.raises(MlflowException, match="Invalid `extra_tags` type"):
+    with pytest.raises(QCFlowException, match="Invalid `extra_tags` type"):
         qcflow.autolog(extra_tags="test_tag")
 
 

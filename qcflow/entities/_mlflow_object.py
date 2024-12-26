@@ -2,7 +2,7 @@ import pprint
 from abc import abstractmethod
 
 
-class _MlflowObject:
+class _QCFlowObject:
     def __iter__(self):
         # Iterate through list of properties and yield as key -> value
         for prop in self._properties():
@@ -31,20 +31,20 @@ class _MlflowObject:
 
 
 def to_string(obj):
-    return _MlflowObjectPrinter().to_string(obj)
+    return _QCFlowObjectPrinter().to_string(obj)
 
 
 def get_classname(obj):
     return type(obj).__name__
 
 
-class _MlflowObjectPrinter:
+class _QCFlowObjectPrinter:
     def __init__(self):
         super().__init__()
         self.printer = pprint.PrettyPrinter()
 
     def to_string(self, obj):
-        if isinstance(obj, _MlflowObject):
+        if isinstance(obj, _QCFlowObject):
             return f"<{get_classname(obj)}: {self._entity_to_string(obj)}>"
         return self.printer.pformat(obj)
 

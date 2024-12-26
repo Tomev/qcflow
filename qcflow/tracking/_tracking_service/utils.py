@@ -149,7 +149,7 @@ def _get_databricks_rest_store(store_uri, **_):
 
 
 def _get_databricks_uc_rest_store(store_uri, **_):
-    from qcflow.exceptions import MlflowException
+    from qcflow.exceptions import QCFlowException
     from qcflow.version import VERSION
 
     supported_schemes = [
@@ -157,7 +157,7 @@ def _get_databricks_uc_rest_store(store_uri, **_):
         for scheme in _tracking_store_registry._registry
         if scheme not in {_DATABRICKS_UNITY_CATALOG_SCHEME, _OSS_UNITY_CATALOG_SCHEME}
     ]
-    raise MlflowException(
+    raise QCFlowException(
         f"Detected Unity Catalog tracking URI '{store_uri}'. "
         "Setting the tracking URI to a Unity Catalog backend is not supported in the current "
         f"version of the QCFlow client ({VERSION}). "

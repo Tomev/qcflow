@@ -17,7 +17,7 @@ from qcflow.environment_variables import (
     QCFLOW_S3_IGNORE_TLS,
     QCFLOW_S3_UPLOAD_EXTRA_ARGS,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repo import (
     ArtifactRepository,
     MultipartUploadMixin,
@@ -233,7 +233,7 @@ class S3ArtifactRepository(ArtifactRepository, MultipartUploadMixin):
     @staticmethod
     def _verify_listed_object_contains_artifact_path_prefix(listed_object_path, artifact_path):
         if not listed_object_path.startswith(artifact_path):
-            raise MlflowException(
+            raise QCFlowException(
                 "The path of the listed S3 object does not begin with the specified"
                 f" artifact path. Artifact path: {artifact_path}. Object path:"
                 f" {listed_object_path}."

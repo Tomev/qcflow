@@ -12,7 +12,7 @@ from qcflow.data.digest_utils import get_normalized_md5_digest
 from qcflow.data.evaluation_dataset import EvaluationDataset
 from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
 from qcflow.data.spark_dataset_source import SparkDatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
 from qcflow.types import Schema
 from qcflow.types.utils import _infer_schema
@@ -39,13 +39,13 @@ class SparkDataset(Dataset, PyFuncConvertibleDatasetMixin):
         predictions: Optional[str] = None,
     ):
         if targets is not None and targets not in df.columns:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The specified Spark dataset does not contain the specified targets column"
                 f" '{targets}'.",
                 INVALID_PARAMETER_VALUE,
             )
         if predictions is not None and predictions not in df.columns:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The specified Spark dataset does not contain the specified predictions column"
                 f" '{predictions}'.",
                 INVALID_PARAMETER_VALUE,
@@ -195,7 +195,7 @@ class SparkDataset(Dataset, PyFuncConvertibleDatasetMixin):
         df = self._df.limit(10000).toPandas()
         if self._targets is not None:
             if self._targets not in df.columns:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to convert Spark dataset to pyfunc inputs and outputs because"
                     f" the pandas representation of the Spark dataset does not contain the"
                     f" specified targets column '{self._targets}'.",
@@ -256,7 +256,7 @@ def load_delta(
     )
 
     if (path, table_name).count(None) != 1:
-        raise MlflowException(
+        raise QCFlowException(
             "Must specify exactly one of `table_name` or `path`.",
             INVALID_PARAMETER_VALUE,
         )
@@ -349,13 +349,13 @@ def from_spark(
     from qcflow.tracking.context import registry
 
     if (path, table_name, sql).count(None) < 2:
-        raise MlflowException(
+        raise QCFlowException(
             "Must specify at most one of `path`, `table_name`, or `sql`.",
             INVALID_PARAMETER_VALUE,
         )
 
     if (sql, version).count(None) == 0:
-        raise MlflowException(
+        raise QCFlowException(
             "`version` may not be specified when `sql` is specified. `version` may only be"
             " specified when `table_name` or `path` is specified.",
             INVALID_PARAMETER_VALUE,
@@ -370,7 +370,7 @@ def from_spark(
         elif version is None:
             source = SparkDatasetSource(path=path)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Version '{version}' was specified, but the path '{path}' does not refer"
                 f" to a Delta table.",
                 INVALID_PARAMETER_VALUE,
@@ -385,7 +385,7 @@ def from_spark(
         elif version is None:
             source = SparkDatasetSource(table_name=table_name)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Version '{version}' was specified, but could not find a Delta table with name"
                 f" '{table_name}'.",
                 INVALID_PARAMETER_VALUE,

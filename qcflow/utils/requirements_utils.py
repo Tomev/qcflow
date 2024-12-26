@@ -27,7 +27,7 @@ from qcflow.environment_variables import (
     QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS,
     QCFLOW_REQUIREMENTS_INFERENCE_TIMEOUT,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
 from qcflow.utils.autologging_utils.versioning import _strip_dev_version_suffix
 from qcflow.utils.databricks_utils import (
@@ -243,7 +243,7 @@ def _prune_packages(packages):
 
 def _run_command(cmd, timeout_seconds, env=None):
     """
-    Runs the specified command. If it exits with non-zero status, `MlflowException` is raised.
+    Runs the specified command. If it exits with non-zero status, `QCFlowException` is raised.
     """
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
     timer = Timer(timeout_seconds, proc.kill)
@@ -261,7 +261,7 @@ def _run_command(cmd, timeout_seconds, env=None):
                     f"stderr: {stderr}",
                 ]
             )
-            raise MlflowException(msg)
+            raise QCFlowException(msg)
     finally:
         if timer.is_alive():
             timer.cancel()
@@ -375,7 +375,7 @@ def _capture_imported_modules(model_uri, flavor, record_full_module=False, extra
                     with open(output_file) as f:
                         return f.read().splitlines()
 
-                except MlflowException:
+                except QCFlowException:
                     pass
 
         # Lazily import `_capture_module` here to avoid circular imports.
@@ -411,7 +411,7 @@ def _capture_imported_modules(model_uri, flavor, record_full_module=False, extra
                 errors = f.read()
             if errors:
                 if raise_on_error:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Encountered an error while capturing imported modules: {errors}"
                     )
                 _logger.warning(errors)
@@ -529,7 +529,7 @@ def _infer_requirements(model_uri, flavor, raise_on_error=False, extra_env_vars=
     unrecognized_packages = packages - _PYPI_PACKAGE_INDEX.package_names - {"qcflow[gateway]"}
     if unrecognized_packages:
         if raise_on_error:
-            raise MlflowException(
+            raise QCFlowException(
                 "Failed to infer requirements for the model due to unrecognized packages: "
                 f"{unrecognized_packages}"
             )

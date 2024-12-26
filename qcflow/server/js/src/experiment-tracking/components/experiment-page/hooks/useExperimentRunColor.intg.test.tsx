@@ -8,7 +8,7 @@ import {
   useInitializeExperimentRunColors,
   useSaveExperimentRunColor,
 } from './useExperimentRunColor';
-import { MlflowService } from '../../../sdk/MlflowService';
+import { QCFlowService } from '../../../sdk/QCFlowService';
 import { ThunkDispatch } from '../../../../redux-types';
 import { searchRunsApi } from '../../../actions';
 import userEventGlobal from '@testing-library/user-event-14';
@@ -108,7 +108,7 @@ describe('useExperimentRunColor - integration test', () => {
     fireEvent.input(findColorPicker(whichPicker), { target: { value: color } });
 
   beforeEach(() => {
-    jest.spyOn(MlflowService, 'setTag').mockImplementation(() => Promise.resolve());
+    jest.spyOn(QCFlowService, 'setTag').mockImplementation(() => Promise.resolve());
   });
 
   test('should change colors for both runs and group', async () => {
@@ -123,7 +123,7 @@ describe('useExperimentRunColor - integration test', () => {
     });
 
     // Assert that the color was saved in the API
-    expect(MlflowService.setTag).toHaveBeenLastCalledWith({
+    expect(QCFlowService.setTag).toHaveBeenLastCalledWith({
       key: 'qcflow.runColor',
       run_uuid: run_1_uuid,
       value: '#ff0000',
@@ -140,7 +140,7 @@ describe('useExperimentRunColor - integration test', () => {
     });
 
     // Assert that the color was saved in the API
-    expect(MlflowService.setTag).toHaveBeenLastCalledWith({
+    expect(QCFlowService.setTag).toHaveBeenLastCalledWith({
       key: 'qcflow.runColor',
       run_uuid: run_2_uuid,
       value: '#00ff00',
@@ -162,7 +162,7 @@ describe('useExperimentRunColor - integration test', () => {
 
   test('should use initialized values for runs and intercept API responses with updated colors', async () => {
     // Mock the API response for the first run
-    jest.spyOn(MlflowService, 'searchRuns').mockImplementation(() =>
+    jest.spyOn(QCFlowService, 'searchRuns').mockImplementation(() =>
       Promise.resolve({
         runs: [
           {

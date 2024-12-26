@@ -16,7 +16,7 @@ from qcflow.environment_variables import (
     QCFLOW_TRACKING_URI,
     QCFLOW_TRACKING_USERNAME,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.db.db_types import DATABASE_ENGINES
 from qcflow.store.tracking.file_store import FileStore
 from qcflow.store.tracking.rest_store import RestStore
@@ -209,7 +209,7 @@ def test_get_store_databricks_profile(monkeypatch):
     # that anyway, so just check if we raise a relevant exception.
     store = _get_store()
     assert isinstance(store, RestStore)
-    with pytest.raises(MlflowException, match="mycoolprofile"):
+    with pytest.raises(QCFlowException, match="mycoolprofile"):
         store.get_host_creds()
 
 
@@ -397,8 +397,8 @@ def test_set_tracking_uri_update_trace_provider():
 def test_get_store_raises_on_uc_uri(store_uri):
     set_tracking_uri(store_uri)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Setting the tracking URI to a Unity Catalog backend is not "
         "supported in the current version of the QCFlow client",
     ):
-        qcflow.tracking.MlflowClient()
+        qcflow.tracking.QCFlowClient()

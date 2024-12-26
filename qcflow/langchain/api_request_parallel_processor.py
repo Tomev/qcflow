@@ -30,7 +30,7 @@ import langchain.chains
 from langchain.callbacks.base import BaseCallbackHandler
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.langchain.utils.chat import (
     transform_request_json_for_chat_if_necessary,
     try_transform_response_iter_to_chat_format,
@@ -285,7 +285,7 @@ def process_api_requests(
 
         # after finishing, log final status
         if status_tracker.num_tasks_failed > 0:
-            raise qcflow.MlflowException(
+            raise qcflow.QCFlowException(
                 f"{status_tracker.num_tasks_failed} tasks failed. Errors: {errors}"
             )
 
@@ -303,7 +303,7 @@ def process_stream_request(
     Process single stream request.
     """
     if not hasattr(lc_model, "stream"):
-        raise MlflowException(
+        raise QCFlowException(
             f"Model {lc_model.__class__.__name__} does not support streaming prediction output. "
             "No `stream` method found."
         )

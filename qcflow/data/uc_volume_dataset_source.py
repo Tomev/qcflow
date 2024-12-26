@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from qcflow.data.dataset_source import DatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 _logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class UCVolumeDatasetSource(DatasetSource):
                 self.path += "/" if not self.path.endswith("/") else ""
             except Exception:
                 # Neither file nor directory exists, we throw an exception.
-                raise MlflowException(f"{self.path} does not exist in Databricks Unified Catalog.")
+                raise QCFlowException(f"{self.path} does not exist in Databricks Unified Catalog.")
 
     @staticmethod
     def _get_source_type() -> str:

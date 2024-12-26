@@ -6,7 +6,7 @@ import keras
 import numpy as np
 import pandas as pd
 
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.models import Model
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
@@ -40,7 +40,7 @@ class KerasModelWrapper:
 
         supported_input_types = (np.ndarray, list, tuple, dict)
         if not isinstance(data, supported_input_types):
-            raise MlflowException(
+            raise QCFlowException(
                 f"`data` must be one of: {[x.__name__ for x in supported_input_types]}, but "
                 f"received type: {type(data)}.",
                 INVALID_PARAMETER_VALUE,
@@ -58,7 +58,7 @@ def _load_keras_model(path, model_conf, custom_objects=None, **load_model_kwargs
         try:
             import tensorflow as tf
         except ImportError:
-            raise MlflowException(
+            raise QCFlowException(
                 "`tensorflow` must be installed if you want to load an exported Keras 3 model, "
                 "please install `tensorflow` by `pip install tensorflow`."
             )
@@ -152,7 +152,7 @@ def _load_pyfunc(path):
     elif os.path.isfile(model_meta_path2):
         model_conf = Model.load(model_meta_path2)
     else:
-        raise MlflowException(f"Cannot find file {MLMODEL_FILE_NAME} for the logged model.")
+        raise QCFlowException(f"Cannot find file {MLMODEL_FILE_NAME} for the logged model.")
 
     save_exported_model = model_conf.flavors["keras"].get("save_exported_model")
 

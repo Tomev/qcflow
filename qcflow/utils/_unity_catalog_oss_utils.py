@@ -6,7 +6,7 @@ from qcflow.entities.model_registry import (
     RegisteredModel,
     RegisteredModelSearch,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     ModelVersionInfo,
     ModelVersionStatus,
@@ -78,18 +78,18 @@ def parse_model_name(filter):
     if match:
         model_name_str = match.group(1)
     elif trimmed_filter == "":
-        raise MlflowException(
+        raise QCFlowException(
             "Missing filter: please specify a filter parameter in the format `name = 'model_name'`."
         )
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Unsupported filter query : `{trimmed_filter}`."
             + " Please specify your filter parameter in "
             + "the format `name = 'model_name'`."
         )
     parts = model_name_str.split(".")
     if len(parts) != 3 or not all(parts):
-        raise MlflowException(
+        raise QCFlowException(
             "Bad model name: please specify all three levels of the model in the"
             "form `catalog_name.schema_name.model_name`"
         )

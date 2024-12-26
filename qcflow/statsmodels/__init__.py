@@ -23,7 +23,7 @@ import yaml
 
 import qcflow
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _infer_signature_from_input_example
@@ -359,7 +359,7 @@ class _StatsmodelsModelWrapper:
             if dataframe.shape[0] != 1 or not (
                 "start" in dataframe.columns and "end" in dataframe.columns
             ):
-                raise MlflowException(
+                raise QCFlowException(
                     "prediction dataframes for a TimeSeriesModel must have exactly one row"
                     + " and include columns called start and end"
                 )

@@ -188,7 +188,7 @@ plugin:
        Users who install the example plugin and set a tracking URI of the form ``file-plugin://<path>`` will use the custom AbstractStore
        implementation defined in ``PluginFileStore``. The full tracking URI is passed to the ``PluginFileStore`` constructor.
      - `FileStore <https://github.com/qcflow/qcflow/blob/branch-1.5/qcflow/store/tracking/file_store.py#L80>`_
-   * - Plugins for defining artifact read/write APIs like ``qcflow.log_artifact``, ``MlflowClient.download_artifacts`` for a specified
+   * - Plugins for defining artifact read/write APIs like ``qcflow.log_artifact``, ``QCFlowClient.download_artifacts`` for a specified
        artifact URI scheme (e.g. the scheme used by your in-house blob storage system).
      - qcflow.artifact_repository
      - The entry point value (e.g. ``qcflow_test_plugin.local_artifact:PluginLocalArtifactRepository``) specifies a custom subclass of
@@ -519,7 +519,7 @@ QCFlow model logging code example:
 .. code-block:: python
 
     import qcflow
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
     from transformers import pipeline
 
     qcflow.set_tracking_uri("<your qcflow tracking server uri>")

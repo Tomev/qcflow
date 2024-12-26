@@ -26,7 +26,7 @@ from packaging.version import Version
 import qcflow
 from qcflow import pyfunc
 from qcflow.environment_variables import QCFLOW_DEFAULT_PREDICTION_DEVICE
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.ml_package_versions import _ML_PACKAGE_VERSIONS
 from qcflow.models import Model, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
@@ -234,7 +234,7 @@ def log_model(
         import numpy as np
         import torch
         import qcflow
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
         from qcflow.models import infer_signature
 
         # Define model, loss, and optimizer
@@ -275,7 +275,7 @@ def log_model(
         print(f"run_id: {run.info.run_id}")
         for artifact_path in ["model/data", "scripted_model/data"]:
             artifacts = [
-                f.path for f in MlflowClient().list_artifacts(run.info.run_id, artifact_path)
+                f.path for f in QCFlowClient().list_artifacts(run.info.run_id, artifact_path)
             ]
             print(f"artifacts: {artifacts}")
 
@@ -599,7 +599,7 @@ def _load_model(path, device=None, **kwargs):
             try:
                 kwargs["pickle_module"] = importlib.import_module(pickle_module_name)
             except ImportError as exc:
-                raise MlflowException(
+                raise QCFlowException(
                     message=(
                         "Failed to import the pickle module that was used to save the PyTorch"
                         f" model. Pickle module name: `{pickle_module_name}`"
@@ -993,7 +993,7 @@ def autolog(
         from torchvision.datasets import MNIST
 
         import qcflow.pytorch
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
 
 
         class MNISTModel(L.LightningModule):
@@ -1023,7 +1023,7 @@ def autolog(
 
         def print_auto_logged_info(r):
             tags = {k: v for k, v in r.data.tags.items() if not k.startswith("qcflow.")}
-            artifacts = [f.path for f in MlflowClient().list_artifacts(r.info.run_id, "model")]
+            artifacts = [f.path for f in QCFlowClient().list_artifacts(r.info.run_id, "model")]
             print(f"run_id: {r.info.run_id}")
             print(f"artifacts: {artifacts}")
             print(f"params: {r.data.params}")
@@ -1192,7 +1192,7 @@ __all__ = [
 ]
 
 try:
-    from qcflow.pytorch._lightning_autolog import MlflowModelCheckpointCallback  # noqa: F401
+    from qcflow.pytorch._lightning_autolog import QCFlowModelCheckpointCallback  # noqa: F401
 
     __all__.append("QCFlowModelCheckpointCallback")
 except ImportError:

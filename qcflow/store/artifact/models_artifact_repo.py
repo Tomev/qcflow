@@ -3,7 +3,7 @@ import os
 import urllib.parse
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.store.artifact.databricks_models_artifact_repo import DatabricksModelsArtifactRepository
 from qcflow.store.artifact.unity_catalog_models_artifact_repo import (
@@ -98,12 +98,12 @@ class ModelsArtifactRepository(ArtifactRepository):
         # Note: to support a registry URI that is different from the tracking URI here,
         # we'll need to add setting of registry URIs via environment variables.
 
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
 
         databricks_profile_uri = (
             get_databricks_profile_uri_from_artifact_uri(uri) or qcflow.get_registry_uri()
         )
-        client = MlflowClient(registry_uri=databricks_profile_uri)
+        client = QCFlowClient(registry_uri=databricks_profile_uri)
         name, version = get_model_name_and_version(client, uri)
         download_uri = client.get_model_version_download_uri(name, version)
 
@@ -224,4 +224,4 @@ class ModelsArtifactRepository(ArtifactRepository):
         self.repo._download_file(remote_file_path, local_path)
 
     def delete_artifacts(self, artifact_path=None):
-        raise MlflowException("Not implemented yet")
+        raise QCFlowException("Not implemented yet")

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING, Any, Literal, NamedTuple, Optional, Union
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 SPANS_COLUMN_NAME = "spans"
@@ -46,7 +46,7 @@ def extract_span_inputs_outputs(
     try:
         import pandas as pd
     except ImportError as e:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "The `pandas` library is not installed. Please install `pandas` to use the"
                 f"`qcflow.tracing.extract` function. Error: {e}"
@@ -57,7 +57,7 @@ def extract_span_inputs_outputs(
 
     if isinstance(traces, list):
         if col_name is not None:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "If `traces` is a list of QCFlow Traces, `col_name` should not be provided."
                 ),
@@ -69,7 +69,7 @@ def extract_span_inputs_outputs(
     if isinstance(traces, pd.DataFrame):
         return _extract_from_traces_pandas_df(df=traces, col_name=col_name, fields=parsed_fields)
 
-    raise MlflowException(
+    raise QCFlowException(
         message=(
             "`traces` must be a list of QCFlow Traces or a pandas DataFrame. Got: {type(traces)}"
         ),
@@ -155,7 +155,7 @@ class _FieldParser:
             self.next()
             span_name = self.consume_until_char_or_end(_BACKTICK)
             if self.peek() != _BACKTICK:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Expected closing backtick: {self.field!r}"
                 )
             self.next()
@@ -163,7 +163,7 @@ class _FieldParser:
             span_name = self.consume_until_char_or_end(".")
 
         if self.peek() != ".":
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Expected dot after span name: {self.field!r}"
             )
         self.next()
@@ -172,7 +172,7 @@ class _FieldParser:
     def _parse_field_type(self) -> str:
         field_type = self.consume_until_char_or_end(".")
         if field_type not in ("inputs", "outputs"):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Invalid field type: {field_type!r}. Expected 'inputs' or 'outputs'."
             )
 
@@ -185,14 +185,14 @@ class _FieldParser:
             self.next()
             field_name = self.consume_until_char_or_end(_BACKTICK)
             if self.peek() != _BACKTICK:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Expected closing backtick: {self.field!r}"
                 )
             self.next()
 
             # There should be no more characters after the closing backtick
             if self.has_next():
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Unexpected characters after closing backtick: {self.field!r}"
                 )
 
@@ -227,7 +227,7 @@ def _extract_from_traces_pandas_df(
     from qcflow.entities import Span
 
     if col_name not in df.columns:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Column '{col_name}' not found in traces DataFrame."
                 f" Available columns: {df.columns}"
@@ -283,7 +283,7 @@ def _extract_spans_from_row(
     try:
         return [Span.from_dict(span_dict) for span_dict in row_content]
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Failed to extract spans from traces DataFrame row content: {row_content}."
                 f" Error: {e}"

@@ -9,7 +9,7 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.legacy_databricks_cli.configure.provider import (
     DatabricksConfig,
     DatabricksModelServingConfigProvider,
@@ -62,20 +62,20 @@ def test_databricks_registry_profile(ProfileConfigProvider):
 
 
 def test_databricks_no_creds_found():
-    with pytest.raises(MlflowException, match="Reading Databricks credential configuration failed"):
+    with pytest.raises(QCFlowException, match="Reading Databricks credential configuration failed"):
         databricks_utils.get_databricks_host_creds()
 
 
 def test_databricks_no_creds_found_in_model_serving(monkeypatch):
     monkeypatch.setenv("IS_IN_DB_MODEL_SERVING_ENV", "true")
     with pytest.raises(
-        MlflowException, match="Reading Databricks credential configuration in model serving failed"
+        QCFlowException, match="Reading Databricks credential configuration in model serving failed"
     ):
         databricks_utils.get_databricks_host_creds()
 
 
 def test_databricks_single_slash_in_uri_scheme_throws():
-    with pytest.raises(MlflowException, match="URI is formatted incorrectly"):
+    with pytest.raises(QCFlowException, match="URI is formatted incorrectly"):
         databricks_utils.get_databricks_host_creds("databricks:/profile:path")
 
 
@@ -97,7 +97,7 @@ def test_get_model_dependency_token(oauth_file):
 
 
 def test_get_model_dependency_oauth_token_model_serving_throws():
-    with pytest.raises(MlflowException, match="Unable to read Oauth credentials"):
+    with pytest.raises(QCFlowException, match="Unable to read Oauth credentials"):
         databricks_utils.get_model_dependency_oauth_token()
 
 
@@ -477,7 +477,7 @@ def test_get_qcflow_credential_context_by_run_id():
             return_value="databricks://path/to/profile",
         ) as mock_get_databricks_profile,
         mock.patch(
-            "qcflow.utils.databricks_utils.MlflowCredentialContext"
+            "qcflow.utils.databricks_utils.QCFlowCredentialContext"
         ) as mock_credential_context,
     ):
         get_qcflow_credential_context_by_run_id(run_id="abc")
@@ -536,7 +536,7 @@ def test_get_databricks_runtime_major_minor_version(
 def test_get_dbr_major_minor_version_throws_on_invalid_version_key(monkeypatch):
     # minor version is not allowed to be a string
     monkeypatch.setenv("DATABRICKS_RUNTIME_VERSION", "12.x")
-    with pytest.raises(MlflowException, match="Failed to parse databricks runtime version"):
+    with pytest.raises(QCFlowException, match="Failed to parse databricks runtime version"):
         get_databricks_runtime_major_minor_version()
 
 

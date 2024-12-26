@@ -8,7 +8,7 @@ from unittest import mock
 import pytest
 from click.testing import CliRunner
 
-from qcflow import MlflowClient, cli
+from qcflow import QCFlowClient, cli
 from qcflow.utils import process
 
 from tests.integration.utils import invoke_cli_runner
@@ -69,7 +69,7 @@ def test_run_local_experiment_specification(experiment_name):
         ],
     )
 
-    client = MlflowClient()
+    client = QCFlowClient()
     experiment_id = client.get_experiment_by_name(experiment_name).experiment_id
 
     invoke_cli_runner(

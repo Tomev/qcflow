@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.config import Route, RouteModelInfo
 from qcflow.metrics.genai.model_utils import (
     _parse_model_uri,
@@ -79,18 +79,18 @@ def test_parse_model_uri():
 
 
 def test_parse_model_uri_throws_for_malformed():
-    with pytest.raises(MlflowException, match="Malformed model uri"):
+    with pytest.raises(QCFlowException, match="Malformed model uri"):
         _parse_model_uri("gpt-4o-mini")
 
 
 def test_score_model_on_payload_throws_for_invalid():
-    with pytest.raises(MlflowException, match="Unknown model uri prefix"):
+    with pytest.raises(QCFlowException, match="Unknown model uri prefix"):
         score_model_on_payload("myprovider:/gpt-4o-mini", "")
 
 
 def test_score_model_openai_without_key():
     with pytest.raises(
-        MlflowException, match="OpenAI API key must be set in the ``OPENAI_API_KEY``"
+        QCFlowException, match="OpenAI API key must be set in the ``OPENAI_API_KEY``"
     ):
         score_model_on_payload("openai:/gpt-4o-mini", "")
 
@@ -541,5 +541,5 @@ def test_call_deployments_api_no_endpoint_type(set_deployment_envs):
 
 
 def test_call_deployments_api_str_input_requires_endpoint_type(set_deployment_envs):
-    with pytest.raises(MlflowException, match="If string input is provided,"):
+    with pytest.raises(QCFlowException, match="If string input is provided,"):
         call_deployments_api("my-endpoint", "my prompt", endpoint_type=None)

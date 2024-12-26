@@ -26,7 +26,7 @@ from qcflow.tracing.utils import (
     maybe_get_dependencies_schemas,
     maybe_get_request_id,
 )
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.tracking.context.databricks_repo_context import DatabricksRepoRunContext
 from qcflow.tracking.context.git_context import GitRunContext
 from qcflow.tracking.context.registry import resolve_tags
@@ -37,16 +37,16 @@ from qcflow.utils.qcflow_tags import TRACE_RESOLVE_TAGS_ALLOWLIST
 _logger = logging.getLogger(__name__)
 
 
-class MlflowSpanProcessor(SimpleSpanProcessor):
+class QCFlowSpanProcessor(SimpleSpanProcessor):
     """
     Defines custom hooks to be executed when a span is started or ended (before exporting).
 
     This processor is used when the tracing destination is QCFlow Tracking Server.
     """
 
-    def __init__(self, span_exporter: SpanExporter, client: Optional[MlflowClient] = None):
+    def __init__(self, span_exporter: SpanExporter, client: Optional[QCFlowClient] = None):
         self.span_exporter = span_exporter
-        self._client = client or MlflowClient()
+        self._client = client or QCFlowClient()
         self._trace_manager = InMemoryTraceManager.get_instance()
 
         # We issue a warning when a trace is created under the default experiment.

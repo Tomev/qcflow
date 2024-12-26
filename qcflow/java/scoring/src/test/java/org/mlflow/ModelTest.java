@@ -19,7 +19,7 @@ public class ModelTest {
       Assert.assertTrue(model.getFlavor(MLeapFlavor.FLAVOR_NAME, MLeapFlavor.class).isPresent());
       Assert.assertTrue(model.getUtcTimeCreated().isPresent());
       Assert.assertTrue(model.getModelUuid().isPresent());
-      Assert.assertTrue(model.getMlflowVersion().isPresent());
+      Assert.assertTrue(model.getQCFlowVersion().isPresent());
     } catch (IOException e) {
       e.printStackTrace();
       Assert.fail("Encountered an exception while reading the model from a configuration path!");
@@ -39,11 +39,11 @@ public class ModelTest {
   }
 
   @Test
-  public void testModelIsLoadedCorrectlyWhenMlflowVersionDoesNotExist() {
+  public void testModelIsLoadedCorrectlyWhenQCFlowVersionDoesNotExist() {
     String configPath = getClass().getResource("sample_model_root/MLmodel.no.qcflow_version").getFile();
     try {
       Model model = Model.fromConfigPath(configPath);
-      Assert.assertFalse(model.getMlflowVersion().isPresent());
+      Assert.assertFalse(model.getQCFlowVersion().isPresent());
     } catch (IOException e) {
       e.printStackTrace();
       Assert.fail("Encountered an exception while reading the model from a configuration path!");

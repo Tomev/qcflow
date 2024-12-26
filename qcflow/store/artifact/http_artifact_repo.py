@@ -16,7 +16,7 @@ from qcflow.environment_variables import (
     QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
     QCFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE,
 )
-from qcflow.exceptions import MlflowException, _UnsupportedMultipartUploadException
+from qcflow.exceptions import QCFlowException, _UnsupportedMultipartUploadException
 from qcflow.store.artifact.artifact_repo import (
     ArtifactRepository,
     MultipartUploadMixin,
@@ -206,7 +206,7 @@ class HttpArtifactRepository(ArtifactRepository, MultipartUploadMixin):
 
             parts, errors = _complete_futures(futures, local_file)
             if errors:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to upload at least one part of {local_file}. Errors: {errors}"
                 )
 

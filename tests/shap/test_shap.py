@@ -10,7 +10,7 @@ from sklearn.datasets import load_diabetes, load_iris
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 
 ModelWithExplanation = namedtuple(
     "ModelWithExplanation", ["model", "X", "shap_values", "base_values"]
@@ -21,7 +21,7 @@ def yield_artifacts(run_id, path=None):
     """
     Yields all artifacts in the specified run.
     """
-    client = MlflowClient()
+    client = QCFlowClient()
     for item in client.list_artifacts(run_id, path):
         if item.is_dir:
             yield from yield_artifacts(run_id, item.path)

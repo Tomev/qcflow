@@ -86,9 +86,9 @@ implementation via this default callback, you can write your own callback to log
 Using the Predefined Callback
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-QCFlow offers a predefined callback :py:class:`qcflow.tensorflow.MlflowCallback` that you can use or
+QCFlow offers a predefined callback :py:class:`qcflow.tensorflow.QCFlowCallback` that you can use or
 extend to log information to QCFlow. The callback function provides the same functionality as autologging
-and is suitable for users willing to have a better control of the experiment. Using ``qcflow.tensorflow.MlflowCallback``
+and is suitable for users willing to have a better control of the experiment. Using ``qcflow.tensorflow.QCFlowCallback``
 is the same as other Keras callbacks:
 
 .. code-block:: python
@@ -99,10 +99,10 @@ is the same as other Keras callbacks:
             label,
             batch_size=5,
             epochs=2,
-            callbacks=[qcflow.tensorflow.MlflowCallback()],
+            callbacks=[qcflow.tensorflow.QCFlowCallback()],
         )
 
-You can change the logging frequency in :py:class:`qcflow.tensorflow.MlflowCallback` by setting
+You can change the logging frequency in :py:class:`qcflow.tensorflow.QCFlowCallback` by setting
 ``log_every_epoch`` and ``log_every_n_steps``, by default metrics are logged per epoch. Please refer to
 the API documentation for more details.
 
@@ -122,7 +122,7 @@ in log scale:
     import math
     import qcflow
 
-    class MlflowCallback(keras.callbacks.Callback):
+    class QCFlowCallback(keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None):
             logs = logs or {}
             for k, v in logs.items():

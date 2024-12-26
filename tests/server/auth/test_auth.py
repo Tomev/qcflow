@@ -14,9 +14,9 @@ import pytest
 import requests
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.environment_variables import QCFLOW_TRACKING_PASSWORD, QCFLOW_TRACKING_USERNAME
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import (
     RESOURCE_DOES_NOT_EXIST,
     UNAUTHENTICATED,
@@ -45,7 +45,7 @@ def client(request, tmp_path):
         extra_env=getattr(request, "param", {}),
         app="qcflow.server.auth:create_app",
     ) as url:
-        yield MlflowClient(url)
+        yield QCFlowClient(url)
 
 
 def test_authenticate(client, monkeypatch):
@@ -53,7 +53,7 @@ def test_authenticate(client, monkeypatch):
     monkeypatch.delenvs(
         [QCFLOW_TRACKING_USERNAME.name, QCFLOW_TRACKING_PASSWORD.name], raising=False
     )
-    with pytest.raises(MlflowException, match=r"You are not authenticated.") as exception_context:
+    with pytest.raises(QCFlowException, match=r"You are not authenticated.") as exception_context:
         client.search_experiments()
     assert exception_context.value.error_code == ErrorCode.Name(UNAUTHENTICATED)
 
@@ -326,7 +326,7 @@ def test_create_and_delete_registered_model(client, monkeypatch):
 
     # trying to create a model with the same name should fail
     with User(username1, password1, monkeypatch):
-        with pytest.raises(MlflowException, match=r"RESOURCE_ALREADY_EXISTS"):
+        with pytest.raises(QCFlowException, match=r"RESOURCE_ALREADY_EXISTS"):
             client.create_registered_model("test_model")
 
     # delete the registered model
@@ -403,7 +403,7 @@ def test_proxy_log_artifacts(monkeypatch, tmp_path):
                 break
 
             qcflow.set_tracking_uri(url)
-            client = MlflowClient(url)
+            client = QCFlowClient(url)
             tmp_file = tmp_path / "test.txt"
             tmp_file.touch()
             username1, password1 = create_user(url)

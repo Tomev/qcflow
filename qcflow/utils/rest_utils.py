@@ -19,7 +19,7 @@ from qcflow.exceptions import (
     ERROR_CODE_TO_HTTP_STATUS,
     INVALID_PARAMETER_VALUE,
     InvalidUrlException,
-    MlflowException,
+    QCFlowException,
     RestException,
     get_error_code,
 )
@@ -61,7 +61,7 @@ def http_request(
     The function parses the API response (assumed to be JSON) into a Python object and returns it.
 
     Args:
-        host_creds: A :py:class:`qcflow.rest_utils.MlflowHostCreds` object containing
+        host_creds: A :py:class:`qcflow.rest_utils.QCFlowHostCreds` object containing
             hostname and optional authentication.
         endpoint: A string for service endpoint, e.g. "/path/to/object".
         method: A string indicating the method to use, e.g. "GET", "POST", "PUT".
@@ -157,7 +157,7 @@ def http_request(
     elif host_creds.token:
         auth_str = f"Bearer {host_creds.token}"
     elif host_creds.client_secret:
-        raise MlflowException(
+        raise QCFlowException(
             "To use OAuth authentication, set environmental variable "
             f"'{QCFLOW_ENABLE_DB_SDK.name}' to true",
             error_code=CUSTOMER_UNAUTHORIZED,
@@ -201,7 +201,7 @@ def http_request(
             **kwargs,
         )
     except requests.exceptions.Timeout as to:
-        raise MlflowException(
+        raise QCFlowException(
             f"API request to {url} failed with timeout exception {to}."
             " To increase the timeout, set the environment variable "
             f"{QCFLOW_HTTP_REQUEST_TIMEOUT!s} to a larger value."
@@ -209,7 +209,7 @@ def http_request(
     except requests.exceptions.InvalidURL as iu:
         raise InvalidUrlException(f"Invalid url: {url}") from iu
     except Exception as e:
-        raise MlflowException(f"API request to {url} failed with exception {e}")
+        raise QCFlowException(f"API request to {url} failed with exception {e}")
 
 
 def _can_parse_as_json_object(string):
@@ -243,7 +243,7 @@ def verify_rest_response(response, endpoint):
                 f"API request to endpoint {endpoint} "
                 f"failed with error code {response.status_code} != 200"
             )
-            raise MlflowException(
+            raise QCFlowException(
                 f"{base_msg}. Response body: '{response.text}'",
                 error_code=get_error_code(response.status_code),
             )
@@ -255,7 +255,7 @@ def verify_rest_response(response, endpoint):
             "API request to endpoint was successful but the response body was not "
             "in a valid JSON format"
         )
-        raise MlflowException(f"{base_msg}. Response body: '{response.text}'")
+        raise QCFlowException(f"{base_msg}. Response body: '{response.text}'")
 
     return response
 
@@ -264,20 +264,20 @@ def _validate_max_retries(max_retries):
     max_retry_limit = _QCFLOW_HTTP_REQUEST_MAX_RETRIES_LIMIT.get()
 
     if max_retry_limit < 0:
-        raise MlflowException(
+        raise QCFlowException(
             message=f"The current maximum retry limit is invalid ({max_retry_limit}). "
             "Cannot be negative.",
             error_code=INVALID_PARAMETER_VALUE,
         )
     if max_retries >= max_retry_limit:
-        raise MlflowException(
+        raise QCFlowException(
             message=f"The configured max_retries value ({max_retries}) is "
             f"in excess of the maximum allowable retries ({max_retry_limit})",
             error_code=INVALID_PARAMETER_VALUE,
         )
 
     if max_retries < 0:
-        raise MlflowException(
+        raise QCFlowException(
             message=f"The max_retries value must be either 0 a positive integer. Got {max_retries}",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -287,14 +287,14 @@ def _validate_backoff_factor(backoff_factor):
     max_backoff_factor_limit = _QCFLOW_HTTP_REQUEST_MAX_BACKOFF_FACTOR_LIMIT.get()
 
     if max_backoff_factor_limit < 0:
-        raise MlflowException(
+        raise QCFlowException(
             message="The current maximum backoff factor limit is invalid "
             f"({max_backoff_factor_limit}). Cannot be negative.",
             error_code=INVALID_PARAMETER_VALUE,
         )
 
     if backoff_factor >= max_backoff_factor_limit:
-        raise MlflowException(
+        raise QCFlowException(
             message=f"The configured backoff_factor value ({backoff_factor}) is in excess "
             "of the maximum allowable backoff_factor limit "
             f"({max_backoff_factor_limit})",
@@ -302,7 +302,7 @@ def _validate_backoff_factor(backoff_factor):
         )
 
     if backoff_factor < 0:
-        raise MlflowException(
+        raise QCFlowException(
             message="The backoff_factor value must be either 0 a positive integer. "
             f"Got {backoff_factor}",
             error_code=INVALID_PARAMETER_VALUE,
@@ -387,7 +387,7 @@ def call_endpoints(host_creds, endpoints, json_body, response_proto, extra_heade
                 raise e
 
 
-class MlflowHostCreds:
+class QCFlowHostCreds:
     """
     Provides a hostname and optional authentication for talking to an QCFlow tracking server.
 
@@ -441,12 +441,12 @@ class MlflowHostCreds:
         use_secret_scope_token=False,
     ):
         if not host:
-            raise MlflowException(
-                message="host is a required parameter for MlflowHostCreds",
+            raise QCFlowException(
+                message="host is a required parameter for QCFlowHostCreds",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         if ignore_tls_verification and (server_cert_path is not None):
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "When 'ignore_tls_verification' is true then 'server_cert_path' "
                     "must not be set! This error may have occurred because the "

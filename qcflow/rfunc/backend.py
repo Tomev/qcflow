@@ -4,7 +4,7 @@ import re
 import subprocess
 import sys
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import FlavorBackend
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
 from qcflow.utils.string_utils import quote
@@ -44,7 +44,7 @@ class RFuncBackend(FlavorBackend):
         Return the prediction results as a JSON.
         """
         if pip_requirements_override is not None:
-            raise MlflowException("pip_requirements_override is not supported in the R backend.")
+            raise QCFlowException("pip_requirements_override is not supported in the R backend.")
         model_path = _download_artifact_from_uri(model_uri)
         str_cmd = (
             "qcflow:::qcflow_rfunc_predict(model_path = '{0}', input_path = {1}, "

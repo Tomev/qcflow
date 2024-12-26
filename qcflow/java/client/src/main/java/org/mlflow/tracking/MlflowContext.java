@@ -2,7 +2,7 @@ package org.qcflow.tracking;
 
 import org.qcflow.api.proto.Service.*;
 import org.qcflow.tracking.utils.DatabricksContext;
-import org.qcflow.tracking.utils.MlflowTagConstants;
+import org.qcflow.tracking.utils.QCFlowTagConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,10 +12,10 @@ import java.util.function.Consumer;
 
 /**
  * Main entrypoint used to start QCFlow runs to log to. This is a higher level interface than
- * {@code MlflowClient} and provides convenience methods to keep track of active runs and to set
- * default tags on runs which are created through {@code MlflowContext}
+ * {@code QCFlowClient} and provides convenience methods to keep track of active runs and to set
+ * default tags on runs which are created through {@code QCFlowContext}
  *
- * On construction, MlflowContext will choose a default experiment ID to log to depending on your
+ * On construction, QCFlowContext will choose a default experiment ID to log to depending on your
  * environment. To log to a different experiment, use {@link #setExperimentId(String)} or
  * {@link #setExperimentName(String)}
  *
@@ -23,46 +23,46 @@ import java.util.function.Consumer;
  * For example:
  *   <pre>
  *   // Uses the URI set in the QCFLOW_TRACKING_URI environment variable.
- *   // To use your own tracking uri set it in the call to "new MlflowContext("tracking-uri")"
- *   MlflowContext qcflow = new MlflowContext();
+ *   // To use your own tracking uri set it in the call to "new QCFlowContext("tracking-uri")"
+ *   QCFlowContext qcflow = new QCFlowContext();
  *   ActiveRun run = qcflow.startRun("run-name");
  *   run.logParam("alpha", "0.5");
  *   run.logMetric("MSE", 0.0);
  *   run.endRun();
  *   </pre>
  */
-public class MlflowContext {
-  private MlflowClient client;
+public class QCFlowContext {
+  private QCFlowClient client;
   private String experimentId;
   // Cache the default experiment ID for a repo notebook to avoid sending
   // extraneous API requests
   private static String defaultRepoNotebookExperimentId;
-  private static final Logger logger = LoggerFactory.getLogger(MlflowContext.class);
+  private static final Logger logger = LoggerFactory.getLogger(QCFlowContext.class);
 
 
   /**
-   * Constructs a {@code MlflowContext} with a MlflowClient based on the QCFLOW_TRACKING_URI
+   * Constructs a {@code QCFlowContext} with a QCFlowClient based on the QCFLOW_TRACKING_URI
    * environment variable.
    */
-  public MlflowContext() {
-    this(new MlflowClient());
+  public QCFlowContext() {
+    this(new QCFlowClient());
   }
 
   /**
-   * Constructs a {@code MlflowContext} which points to the specified trackingUri.
+   * Constructs a {@code QCFlowContext} which points to the specified trackingUri.
    *
    * @param trackingUri The URI to log to.
    */
-  public MlflowContext(String trackingUri) {
-    this(new MlflowClient(trackingUri));
+  public QCFlowContext(String trackingUri) {
+    this(new QCFlowClient(trackingUri));
   }
 
   /**
-   * Constructs a {@code MlflowContext} which points to the specified trackingUri.
+   * Constructs a {@code QCFlowContext} which points to the specified trackingUri.
    *
    * @param client The client used to log runs.
    */
-  public MlflowContext(MlflowClient client) {
+  public QCFlowContext(QCFlowClient client) {
     this.client = client;
     this.experimentId = getDefaultExperimentId();
   }
@@ -72,7 +72,7 @@ public class MlflowContext {
    *
    * @return the client used to log runs.
    */
-  public MlflowClient getClient() {
+  public QCFlowClient getClient() {
     return this.client;
   }
 
@@ -81,7 +81,7 @@ public class MlflowContext {
    * @param experimentName the name of the experiment to log runs to.
    * @throws IllegalArgumentException if the experiment name does not match an existing experiment
    */
-  public MlflowContext setExperimentName(String experimentName) throws IllegalArgumentException {
+  public QCFlowContext setExperimentName(String experimentName) throws IllegalArgumentException {
     Optional<Experiment> experimentOpt = client.getExperimentByName(experimentName);
     if (!experimentOpt.isPresent()) {
       throw new IllegalArgumentException(
@@ -95,7 +95,7 @@ public class MlflowContext {
    * Sets the experiment to log runs to by ID.
    * @param experimentId the id of the experiment to log runs to.
    */
-  public MlflowContext setExperimentId(String experimentId) {
+  public QCFlowContext setExperimentId(String experimentId) {
     this.experimentId = experimentId;
     return this;
   }
@@ -143,12 +143,12 @@ public class MlflowContext {
   public ActiveRun startRun(String runName, String parentRunId) {
     Map<String, String> tags = new HashMap<>();
     if (runName != null) {
-      tags.put(MlflowTagConstants.RUN_NAME, runName);
+      tags.put(QCFlowTagConstants.RUN_NAME, runName);
     }
-    tags.put(MlflowTagConstants.USER, System.getProperty("user.name"));
-    tags.put(MlflowTagConstants.SOURCE_TYPE, "LOCAL");
+    tags.put(QCFlowTagConstants.USER, System.getProperty("user.name"));
+    tags.put(QCFlowTagConstants.SOURCE_TYPE, "LOCAL");
     if (parentRunId != null) {
-      tags.put(MlflowTagConstants.PARENT_RUN_ID, parentRunId);
+      tags.put(QCFlowTagConstants.PARENT_RUN_ID, parentRunId);
     }
 
     // Add tags from DatabricksContext if they exist
@@ -219,14 +219,14 @@ public class MlflowContext {
       CreateExperiment.Builder request = CreateExperiment.newBuilder();
       request.setName(notebookPath);
       request.addTags(ExperimentTag.newBuilder()
-              .setKey(MlflowTagConstants.QCFLOW_EXPERIMENT_SOURCE_TYPE)
+              .setKey(QCFlowTagConstants.QCFLOW_EXPERIMENT_SOURCE_TYPE)
               .setValue("REPO_NOTEBOOK")
       );
       request.addTags(ExperimentTag.newBuilder()
-              .setKey(MlflowTagConstants.QCFLOW_EXPERIMENT_SOURCE_ID)
+              .setKey(QCFlowTagConstants.QCFLOW_EXPERIMENT_SOURCE_ID)
               .setValue(notebookId)
       );
-      String experimentId = (new MlflowClient()).createExperiment(request.build());
+      String experimentId = (new QCFlowClient()).createExperiment(request.build());
       defaultRepoNotebookExperimentId = experimentId;
       return experimentId;
 
@@ -250,6 +250,6 @@ public class MlflowContext {
         return notebookId;
       }
     }
-    return MlflowClient.DEFAULT_EXPERIMENT_ID;
+    return QCFlowClient.DEFAULT_EXPERIMENT_ID;
   }
 }

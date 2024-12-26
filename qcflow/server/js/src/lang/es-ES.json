@@ -3830,7 +3830,7 @@
     "description" : "Text for the HTTP/HF location link in the experiment run dataset drawer"
   },
   "VwFPMZ" : {
-    "defaultMessage" : "Cree un <modelServingDocLink>punto de servicio de modelos</modelServingDocLink> para servir su modelo tras una interfaz de API REST. Puede seguir utilizando el <legacyLink>servicio de modelos MLFlow heredados</legacyLink> hasta enero de 2024. Haga clic en <button>este enlace</button> para activarlo.",
+    "defaultMessage" : "Cree un <modelServingDocLink>punto de servicio de modelos</modelServingDocLink> para servir su modelo tras una interfaz de API REST. Puede seguir utilizando el <legacyLink>servicio de modelos QCFlow heredados</legacyLink> hasta enero de 2024. Haga clic en <button>este enlace</button> para activarlo.",
     "description" : "Link to allow enabling of serving V1 when endpoints UI is available"
   },
   "Vz5kN2" : {

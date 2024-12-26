@@ -519,14 +519,14 @@ def autolog(
 
         import paddle
         import qcflow
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
 
 
         def show_run_data(run_id):
             run = qcflow.get_run(run_id)
             print(f"params: {run.data.params}")
             print(f"metrics: {run.data.metrics}")
-            client = MlflowClient()
+            client = QCFlowClient()
             artifacts = [f.path for f in client.list_artifacts(run.info.run_id, "model")]
             print(f"artifacts: {artifacts}")
 

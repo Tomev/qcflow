@@ -22,7 +22,7 @@ from qcflow.entities.model_registry.model_version_stages import (
     get_canonical_stage,
 )
 from qcflow.environment_variables import QCFLOW_REGISTRY_DIR
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_ALREADY_EXISTS,
@@ -75,12 +75,12 @@ def _default_root_dir():
 def _validate_model_name(name):
     _original_validate_model_name(name)
     if contains_path_separator(name):
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid name: '{name}'. Registered model name cannot contain path separator",
             INVALID_PARAMETER_VALUE,
         )
     if contains_percent(name):
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid name: '{name}'. Registered model name cannot contain '%' character",
             INVALID_PARAMETER_VALUE,
         )
@@ -147,7 +147,7 @@ class FileStore(AbstractStore):
     def _validate_registered_model_does_not_exist(self, name):
         model_path = self._get_registered_model_path(name)
         if exists(model_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model (name={name}) already exists.",
                 RESOURCE_ALREADY_EXISTS,
             )
@@ -263,7 +263,7 @@ class FileStore(AbstractStore):
         """
         model_path = self._get_registered_model_path(name)
         if not exists(model_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model with name={name} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -292,7 +292,7 @@ class FileStore(AbstractStore):
                         self.set_model_version_tag(new_name, mv.version, tag)
             shutil.rmtree(model_path)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model (name={new_name}) already exists.",
                 RESOURCE_ALREADY_EXISTS,
             )
@@ -312,7 +312,7 @@ class FileStore(AbstractStore):
         """
         meta_dir = self._get_registered_model_path(name)
         if not exists(meta_dir):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model with name={name} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -362,14 +362,14 @@ class FileStore(AbstractStore):
             obtained via the ``token`` attribute of the object.
         """
         if not isinstance(max_results, int) or max_results < 1:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for max_results. It must be a positive integer,"
                 f" but got {max_results}",
                 INVALID_PARAMETER_VALUE,
             )
 
         if max_results > SEARCH_REGISTERED_MODEL_MAX_RESULTS_THRESHOLD:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for request parameter max_results. It must be at most "
                 f"{SEARCH_REGISTERED_MODEL_MAX_RESULTS_THRESHOLD}, but got value {max_results}",
                 INVALID_PARAMETER_VALUE,
@@ -400,7 +400,7 @@ class FileStore(AbstractStore):
         _validate_model_name(name)
         model_path = self._get_registered_model_path(name)
         if not exists(model_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model with name={name} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -421,7 +421,7 @@ class FileStore(AbstractStore):
         """
         registered_model_path = self._get_registered_model_path(name)
         if not exists(registered_model_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model with name={name} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -446,7 +446,7 @@ class FileStore(AbstractStore):
         _validate_tag_name(tag_name)
         registered_model_path = self._get_registered_model_path(name)
         if not exists(registered_model_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model with name={name} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -557,7 +557,7 @@ class FileStore(AbstractStore):
     def _get_model_version_dir(self, name, version):
         registered_model_path = self._get_registered_model_path(name)
         if not exists(registered_model_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model with name={name} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -643,7 +643,7 @@ class FileStore(AbstractStore):
                     parsed_model_uri.name, parsed_model_uri.version
                 )
             except Exception as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Unable to fetch model from model URI source artifact location '{source}'."
                     f"Error: {e}"
                 ) from e
@@ -687,7 +687,7 @@ class FileStore(AbstractStore):
                     "s" if more_retries > 1 else "",
                 )
                 if more_retries == 0:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Model Version creation error (name={name}). Error: {e}. Giving up after "
                         f"{self.CREATE_MODEL_VERSION_RETRIES} attempts."
                     )
@@ -737,7 +737,7 @@ class FileStore(AbstractStore):
                 "Model version transition cannot archive existing model versions "
                 "because '{}' is not an Active stage. Valid stages are {}"
             )
-            raise MlflowException(msg_tpl.format(stage, DEFAULT_STAGES_FOR_GET_LATEST_VERSIONS))
+            raise QCFlowException(msg_tpl.format(stage, DEFAULT_STAGES_FOR_GET_LATEST_VERSIONS))
 
         last_updated_time = get_current_time_millis()
         model_versions = []
@@ -782,13 +782,13 @@ class FileStore(AbstractStore):
         _validate_model_version(version)
         registered_model_version_dir = self._get_model_version_dir(name, version)
         if not exists(registered_model_version_dir):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Model Version (name={name}, version={version}) not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
         model_version = self._get_file_model_version_from_dir(registered_model_version_dir)
         if model_version.current_stage == STAGE_DELETED_INTERNAL:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Model Version (name={name}, version={version}) not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -862,14 +862,14 @@ class FileStore(AbstractStore):
 
         """
         if not isinstance(max_results, int) or max_results < 1:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for max_results. It must be a positive integer,"
                 f" but got {max_results}",
                 INVALID_PARAMETER_VALUE,
             )
 
         if max_results > SEARCH_MODEL_VERSION_MAX_RESULTS_THRESHOLD:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for request parameter max_results. It must be at most "
                 f"{SEARCH_MODEL_VERSION_MAX_RESULTS_THRESHOLD}, but got value {max_results}",
                 INVALID_PARAMETER_VALUE,
@@ -945,7 +945,7 @@ class FileStore(AbstractStore):
         _validate_model_alias_name(alias)
         registered_model_path = self._get_registered_model_path(name)
         if not exists(registered_model_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model with name={name} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -1005,7 +1005,7 @@ class FileStore(AbstractStore):
             version = read_file(os.path.dirname(alias_path), os.path.basename(alias_path))
             return self.get_model_version(name, version)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered model alias {alias} not found.", INVALID_PARAMETER_VALUE
             )
 

@@ -91,7 +91,7 @@ export const getSampledMetricHistoryBulkAction =
       queryParamsInput['end_step'] = end_step.toString();
     }
 
-    // We are not using MlflowService because this endpoint requires
+    // We are not using QCFlowService because this endpoint requires
     // special query string treatment
     const queryParams = queryStringStringify(
       queryParamsInput,

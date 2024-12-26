@@ -3,7 +3,7 @@ from typing import Any
 
 from packaging.version import Version
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 MAX_ROWS = 10000
@@ -96,7 +96,7 @@ def get_normalized_md5_digest(elements: list[Any]) -> str:
     """
 
     if not elements:
-        raise MlflowException(
+        raise QCFlowException(
             "No hashable elements were provided for md5 digest creation",
             INVALID_PARAMETER_VALUE,
         )

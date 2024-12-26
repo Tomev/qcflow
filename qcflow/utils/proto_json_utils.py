@@ -12,7 +12,7 @@ from typing import Any, Optional
 from google.protobuf.descriptor import FieldDescriptor
 from google.protobuf.json_format import MessageToJson, ParseDict
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 _PROTOBUF_INT64_FIELDS = [
     FieldDescriptor.TYPE_INT64,
@@ -197,12 +197,12 @@ class NumpyEncoder(JSONEncoder):
             return super().default(o)
 
 
-class MlflowInvalidInputException(MlflowException):
+class QCFlowInvalidInputException(QCFlowException):
     def __init__(self, message):
         super().__init__(f"Invalid input. {message}", error_code=BAD_REQUEST)
 
 
-class MlflowFailedTypeConversion(MlflowInvalidInputException):
+class QCFlowFailedTypeConversion(QCFlowInvalidInputException):
     def __init__(self, col_name, col_type, ex):
         super().__init__(
             message=f"Data is not compatible with model signature. "
@@ -265,7 +265,7 @@ def cast_df_types_according_to_schema(pdf, schema):
                 else:
                     pdf[col_name] = pdf[col_name].astype(col_type, copy=False)
             except Exception as ex:
-                raise MlflowFailedTypeConversion(col_name, col_type, ex)
+                raise QCFlowFailedTypeConversion(col_name, col_type, ex)
     return pdf
 
 
@@ -289,13 +289,13 @@ def dataframe_from_parsed_json(decoded_input, pandas_orient, schema=None):
                 typemessage = "dictionary"
             else:
                 typemessage = f"type {type(decoded_input)}"
-            raise MlflowInvalidInputException(
+            raise QCFlowInvalidInputException(
                 f"Dataframe records format must be a list of records. Got {typemessage}."
             )
         try:
             pdf = pd.DataFrame(data=decoded_input)
         except Exception as ex:
-            raise MlflowInvalidInputException(
+            raise QCFlowInvalidInputException(
                 f"Provided dataframe_records field is not a valid dataframe representation in "
                 f"'records' format. Error: '{ex}'"
             )
@@ -305,14 +305,14 @@ def dataframe_from_parsed_json(decoded_input, pandas_orient, schema=None):
                 typemessage = "list"
             else:
                 typemessage = f"type {type(decoded_input)}"
-            raise MlflowInvalidInputException(
+            raise QCFlowInvalidInputException(
                 f"Dataframe split format must be a dictionary. Got {typemessage}."
             )
         keys = set(decoded_input.keys())
         missing_data = "data" not in keys
         extra_keys = keys.difference({"columns", "data", "index"})
         if missing_data or extra_keys:
-            raise MlflowInvalidInputException(
+            raise QCFlowInvalidInputException(
                 f"Dataframe split format must have 'data' field and optionally 'columns' "
                 f"and 'index' fields. Got {keys}.'"
             )
@@ -323,7 +323,7 @@ def dataframe_from_parsed_json(decoded_input, pandas_orient, schema=None):
                 data=decoded_input["data"],
             )
         except Exception as ex:
-            raise MlflowInvalidInputException(
+            raise QCFlowInvalidInputException(
                 f"Provided dataframe_split field is not a valid dataframe representation in "
                 f"'split' format. Error: '{ex}'"
             )
@@ -413,12 +413,12 @@ def convert_data_type(data, spec):
                 return _enforce_map(data, spec.type, required=spec.required)
             elif isinstance(spec.type, AnyType):
                 return data
-    except MlflowException as e:
-        raise MlflowInvalidInputException(e.message)
+    except QCFlowException as e:
+        raise QCFlowInvalidInputException(e.message)
     except Exception as ex:
-        raise MlflowInvalidInputException(f"{ex}")
+        raise QCFlowInvalidInputException(f"{ex}")
 
-    raise MlflowInvalidInputException(
+    raise QCFlowInvalidInputException(
         f"Failed to convert data type for data `{data}` with spec `{spec}`."
     )
 
@@ -441,7 +441,7 @@ def _cast_schema_type(input_data, schema=None):
         elif not schema.has_input_names() and not (
             isinstance(input_data, list) or np.isscalar(input_data)
         ):
-            raise MlflowInvalidInputException(
+            raise QCFlowInvalidInputException(
                 "Failed to parse input data. This model contains an un-named "
                 " model signature which expects a single n-dimensional array or "
                 "a single value as input, however, an input of type "
@@ -470,7 +470,7 @@ def _cast_schema_type(input_data, schema=None):
         try:
             input_data = convert_data_type(input_data, spec)
         except Exception as e:
-            raise MlflowInvalidInputException(
+            raise QCFlowInvalidInputException(
                 f"Failed to convert data `{input_data}` to type `{spec}` defined "
                 "in the model signature."
             ) from e
@@ -483,7 +483,7 @@ def parse_instances_data(data, schema=None):
     from qcflow.types.schema import Array
 
     if "instances" not in data:
-        raise MlflowInvalidInputException("Expecting data to have `instances` as key.")
+        raise QCFlowInvalidInputException("Expecting data to have `instances` as key.")
     data = data["instances"]
     # List[Dict]
     if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
@@ -519,7 +519,7 @@ def parse_instances_data(data, schema=None):
         if check_cols:
             expected_len = len(check_data[check_cols[0]])
             if not all(len(check_data[col]) == expected_len for col in check_cols[1:]):
-                raise MlflowInvalidInputException(
+                raise QCFlowInvalidInputException(
                     "The length of values for each input/column name are not the same"
                 )
     return data
@@ -555,10 +555,10 @@ def parse_tf_serving_input(inp_dict, schema=None):
     """
 
     if "signature_name" in inp_dict:
-        raise MlflowInvalidInputException('"signature_name" parameter is currently not supported')
+        raise QCFlowInvalidInputException('"signature_name" parameter is currently not supported')
 
     if not (list(inp_dict.keys()) == ["instances"] or list(inp_dict.keys()) == ["inputs"]):
-        raise MlflowInvalidInputException(
+        raise QCFlowInvalidInputException(
             'One of "instances" and "inputs" must be specified (not both or any other keys).'
             f"Received: {list(inp_dict.keys())}"
         )
@@ -577,11 +577,11 @@ def parse_tf_serving_input(inp_dict, schema=None):
         else:
             # items already in column format, convert values to tensor
             return _cast_schema_type(inp_dict["inputs"], schema)
-    except MlflowException as e:
+    except QCFlowException as e:
         raise e
     except Exception as e:
         # Add error into message to provide details for serving usage
-        raise MlflowInvalidInputException(
+        raise QCFlowInvalidInputException(
             f"Ensure that the input is a valid JSON-formatted string.\nError: {e!r}"
         ) from e
 
@@ -607,7 +607,7 @@ def get_jsonable_input(name, data):
     if isinstance(data, np.ndarray):
         return data.tolist()
     else:
-        raise MlflowException(f"Incompatible input type:{type(data)} for input {name}.")
+        raise QCFlowException(f"Incompatible input type:{type(data)} for input {name}.")
 
 
 def dump_input_data(data, inputs_key="inputs", params: Optional[dict[str, Any]] = None):
@@ -640,7 +640,7 @@ def dump_input_data(data, inputs_key="inputs", params: Optional[dict[str, Any]] 
 
     if params is not None:
         if not isinstance(params, dict):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Params must be a dictionary. Got type '{type(params).__name__}'."
             )
         # if post_data is not dictionary, params should be included in post_data directly

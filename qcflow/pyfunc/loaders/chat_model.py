@@ -2,7 +2,7 @@ import inspect
 import logging
 from typing import Any, Generator, Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.utils import _convert_llm_ndarray_to_list
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR
 from qcflow.pyfunc.model import (
@@ -54,7 +54,7 @@ class _ChatModelPyfuncWrapper:
                 for k, v in model_input.to_dict(orient="list").items()
             }
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "Unsupported model input type. Expected a dict or pandas.DataFrame, "
                 f"but got {type(model_input)} instead.",
                 error_code=INTERNAL_ERROR,
@@ -87,7 +87,7 @@ class _ChatModelPyfuncWrapper:
 
     def _response_to_dict(self, response: ChatCompletionResponse) -> dict[str, Any]:
         if not isinstance(response, ChatCompletionResponse):
-            raise MlflowException(
+            raise QCFlowException(
                 "Model returned an invalid response. Expected a ChatCompletionResponse, but "
                 f"got {type(response)} instead.",
                 error_code=INTERNAL_ERROR,
@@ -96,7 +96,7 @@ class _ChatModelPyfuncWrapper:
 
     def _streaming_response_to_dict(self, response: ChatCompletionChunk) -> dict[str, Any]:
         if not isinstance(response, ChatCompletionChunk):
-            raise MlflowException(
+            raise QCFlowException(
                 "Model returned an invalid response. Expected a ChatCompletionChunk, but "
                 f"got {type(response)} instead.",
                 error_code=INTERNAL_ERROR,

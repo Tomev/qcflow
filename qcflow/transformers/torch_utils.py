@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ def _deserialize_torch_dtype(dtype_str: str) -> torch.dtype:
     try:
         import torch
     except ImportError as e:
-        raise MlflowException(
+        raise QCFlowException(
             "Unable to determine if the value supplied by the argument "
             "torch_dtype is valid since torch is not installed.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -49,7 +49,7 @@ def _deserialize_torch_dtype(dtype_str: str) -> torch.dtype:
     if isinstance(dtype, torch.dtype):
         return dtype
 
-    raise MlflowException(
+    raise QCFlowException(
         f"The value '{dtype_str}' is not a valid torch.dtype",
         error_code=INVALID_PARAMETER_VALUE,
     )

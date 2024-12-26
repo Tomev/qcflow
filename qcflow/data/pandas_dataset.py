@@ -10,7 +10,7 @@ from qcflow.data.dataset_source import DatasetSource
 from qcflow.data.digest_utils import compute_pandas_digest
 from qcflow.data.evaluation_dataset import EvaluationDataset
 from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.types import Schema
 from qcflow.types.utils import _infer_schema
@@ -46,13 +46,13 @@ class PandasDataset(Dataset, PyFuncConvertibleDatasetMixin):
                 must be present in the dataframe (``df``).
         """
         if targets is not None and targets not in df.columns:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The specified pandas DataFrame does not contain the specified targets column"
                 f" '{targets}'.",
                 INVALID_PARAMETER_VALUE,
             )
         if predictions is not None and predictions not in df.columns:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The specified pandas DataFrame does not contain the specified predictions column"
                 f" '{predictions}'.",
                 INVALID_PARAMETER_VALUE,

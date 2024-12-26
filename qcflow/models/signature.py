@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from qcflow.environment_variables import _QCFLOW_TESTING
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.utils import _contains_params, _Example
@@ -39,11 +39,11 @@ if TYPE_CHECKING:
     try:
         import pyspark.sql.dataframe
 
-        MlflowInferableDataset = Union[
+        QCFlowInferableDataset = Union[
             pd.DataFrame, np.ndarray, dict[str, np.ndarray], pyspark.sql.dataframe.DataFrame
         ]
     except ImportError:
-        MlflowInferableDataset = Union[pd.DataFrame, np.ndarray, dict[str, np.ndarray]]
+        QCFlowInferableDataset = Union[pd.DataFrame, np.ndarray, dict[str, np.ndarray]]
 
 _logger = logging.getLogger(__name__)
 
@@ -164,7 +164,7 @@ class ModelSignature:
 
 def infer_signature(
     model_input: Any = None,
-    model_output: "MlflowInferableDataset" = None,
+    model_output: "QCFlowInferableDataset" = None,
     params: Optional[dict[str, Any]] = None,
 ) -> ModelSignature:
     """
@@ -320,7 +320,7 @@ def _extract_type_hints(f, input_arg_index):
 
     arg_names = _get_arg_names(f)
     if len(arg_names) - 1 < input_arg_index:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"The specified input argument index ({input_arg_index}) is out of range for the "
             "function signature: {}".format(input_arg_index, arg_names)
         )
@@ -580,7 +580,7 @@ def set_signature(
         signature, ModelSignature
     ), "The signature argument must be a ModelSignature object"
     if ModelsArtifactRepository.is_models_uri(model_uri):
-        raise MlflowException(
+        raise QCFlowException(
             f'Failed to set signature on "{model_uri}". '
             + "Model URIs with the `models:/` scheme are not supported.",
             INVALID_PARAMETER_VALUE,
@@ -593,7 +593,7 @@ def set_signature(
             artifact_uri=append_to_uri_path(resolved_uri, MLMODEL_FILE_NAME)
         )
     except Exception as ex:
-        raise MlflowException(
+        raise QCFlowException(
             f'Failed to download an "{MLMODEL_FILE_NAME}" model file from "{model_uri}"',
             RESOURCE_DOES_NOT_EXIST,
         ) from ex

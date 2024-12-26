@@ -7,7 +7,7 @@ import time
 import cloudpickle
 from packaging.version import Version
 
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.recipes.artifacts import DataframeArtifact, TransformerArtifact
 from qcflow.recipes.cards import BaseCard
 from qcflow.recipes.step import BaseStep, StepClass
@@ -50,14 +50,14 @@ def _get_output_feature_names(transformer, num_features, input_features):
 def _validate_user_code_output(transformer_fn):
     transformer = transformer_fn()
     if transformer is not None and not (hasattr(transformer, "fit") and callable(transformer.fit)):
-        raise MlflowException(
+        raise QCFlowException(
             message="The transformer provided doesn't have a fit method."
         ) from None
 
     if transformer is not None and not (
         hasattr(transformer, "transform") and callable(transformer.transform)
     ):
-        raise MlflowException(
+        raise QCFlowException(
             message="The transformer provided doesn't have a transform method."
         ) from None
 
@@ -73,13 +73,13 @@ class TransformStep(BaseStep):
         self.target_col = self.step_config.get("target_col")
         self.positive_class = self.step_config.get("positive_class")
         if self.target_col is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing target_col config in recipe config.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         if "using" in self.step_config:
             if self.step_config["using"] not in ["custom"]:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid transform step configuration value {self.step_config['using']} for "
                     f"key 'using'. Supported values are: ['custom']",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -119,7 +119,7 @@ class TransformStep(BaseStep):
             return Pipeline(steps=[("identity", FunctionTransformer())])
 
         if "transformer_method" not in self.step_config and self.step_config["using"] == "custom":
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing 'transformer_method' configuration in the transform step, "
                 "which is using 'custom'.",
                 error_code=INVALID_PARAMETER_VALUE,

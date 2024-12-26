@@ -12,7 +12,7 @@ from sklearn.datasets import fetch_california_housing, load_diabetes
 
 import qcflow
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
 from qcflow.utils import PYTHON_VERSION
 from qcflow.utils.model_utils import _get_flavor_configuration
@@ -150,7 +150,7 @@ def test_log_explanation_doesnt_create_autologged_run():
         with qcflow.start_run() as run:
             qcflow.shap.log_explanation(model.predict, X)
 
-        run_data = MlflowClient().get_run(run.info.run_id).data
+        run_data = QCFlowClient().get_run(run.info.run_id).data
         metrics, params, tags = run_data.metrics, run_data.params, run_data.tags
         assert not metrics
         assert not params

@@ -322,7 +322,7 @@ def test_transformers_trainer_does_not_autolog_sklearn(transformers_trainer):
     )
     assert len(pipe("This is wonderful!")[0]["label"]) > 5  # Checking for 'LABEL_0' or 'LABEL_1'
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     runs = client.search_runs([exp.experiment_id])
     assert len(runs) == 1
 
@@ -357,7 +357,7 @@ def test_transformers_autolog_adheres_to_global_behavior_using_trainer(transform
     assert len(preds) == 2
     assert all(x["score"] > 0 for x in preds)
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     runs = client.search_runs([exp.experiment_id])
     assert len(runs) == 1
 
@@ -395,7 +395,7 @@ def test_active_autolog_no_setfit_logging_followed_by_successful_sklearn_autolog
 
     # Assert only the sklearn KMeans model was logged to the experiment
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     runs = client.search_runs([exp.experiment_id])
     assert len(runs) == 1
     assert runs[0].info == logged_sklearn_data.info
@@ -431,7 +431,7 @@ def test_active_autolog_allows_subsequent_sklearn_autolog(iris_data, transformer
 
     # Assert only the sklearn KMeans model was logged to the experiment
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     runs = client.search_runs([exp.experiment_id])
     assert len(runs) == 2
     sklearn_run = [x for x in runs if x.info.run_id == run.info.run_id]
@@ -473,7 +473,7 @@ def test_disabled_sklearn_autologging_does_not_revert_to_enabled_with_setfit(
     assert logged_sklearn_data.data.params == {}
     assert logged_sklearn_data.data.metrics == {}
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     runs = client.search_runs([exp.experiment_id])
 
     assert len(runs) == 1
@@ -516,7 +516,7 @@ def test_disable_sklearn_autologging_does_not_revert_with_trainer(iris_data, tra
     assert logged_sklearn_data.data.params == {}
     assert logged_sklearn_data.data.metrics == {}
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     runs = client.search_runs([exp.experiment_id])
 
     assert len(runs) == 2
@@ -545,7 +545,7 @@ def test_trainer_hyperparameter_tuning_does_not_log_sklearn_model(
     )
     assert len(pipe("This is wonderful!")[0]["label"]) > 5  # checking for 'LABEL_0' or 'LABEL_1'
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     runs = client.search_runs([exp.experiment_id])
 
     assert len(runs) == 1
@@ -572,7 +572,7 @@ def test_trainer_hyperparameter_tuning_functional_does_not_log_sklearn_model(
     )
     assert len(pipe("This is wonderful!")[0]["label"]) > 5  # checking for 'LABEL_0' or 'LABEL_1'
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     runs = client.search_runs([exp.experiment_id])
 
     assert len(runs) == 1

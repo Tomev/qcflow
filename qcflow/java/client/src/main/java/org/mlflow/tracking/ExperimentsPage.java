@@ -11,7 +11,7 @@ public class ExperimentsPage implements Page<Experiment> {
   private final String token;
   private final List<Experiment> experiments;
 
-  private final MlflowClient client;
+  private final QCFlowClient client;
   private final String searchFilter;
   private final ViewType experimentViewType;
   private final List<String> orderBy;
@@ -26,7 +26,7 @@ public class ExperimentsPage implements Page<Experiment> {
                   ViewType experimentViewType,
                   int maxResults,
                   List<String> orderBy,
-                  MlflowClient client) {
+                  QCFlowClient client) {
     this.experiments = Collections.unmodifiableList(experiments);
     this.token = token;
     this.searchFilter = searchFilter;

@@ -3,7 +3,7 @@ import re
 
 import yaml
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.version import VERSION as __version__
 
 
@@ -50,7 +50,7 @@ class _PromptlabModel:
         elif route_type == "llm/v1/chat":
             return {"messages": [{"content": prompt, "role": "user"}]}
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "Error when constructing gateway query: "
                 f"Unsupported route type for _PromptlabModel: {route_type}"
             )
@@ -65,7 +65,7 @@ class _PromptlabModel:
         elif route_type == "llm/v1/chat":
             return response["choices"][0]["message"]["content"]
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "Error when parsing gateway response: "
                 f"Unsupported route type for _PromptlabModel: {route_type}"
             )

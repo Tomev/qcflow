@@ -8,7 +8,7 @@ from qcflow.data.http_dataset_source import HTTPDatasetSource
 from qcflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
 from qcflow.data.meta_dataset import MetaDataset
 from qcflow.data.uc_volume_dataset_source import UCVolumeDatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.types import DataType
 from qcflow.types.schema import ColSpec, Schema
 
@@ -84,10 +84,10 @@ def test_meta_dataset_with_uc_source():
     with (
         patch(
             "qcflow.data.uc_volume_dataset_source.UCVolumeDatasetSource._verify_uc_path_is_valid",
-            side_effect=MlflowException(f"{path} does not exist in Databricks Unified Catalog."),
+            side_effect=QCFlowException(f"{path} does not exist in Databricks Unified Catalog."),
         ),
         pytest.raises(
-            MlflowException, match=f"{path} does not exist in Databricks Unified Catalog."
+            QCFlowException, match=f"{path} does not exist in Databricks Unified Catalog."
         ),
     ):
         uc_volume_source = UCVolumeDatasetSource(path)

@@ -2,7 +2,7 @@ import { last } from 'lodash';
 import { render, screen, waitFor } from '@testing-library/react';
 import ArtifactPage from './ArtifactPage';
 import { MockedReduxStoreProvider } from '../../common/utils/TestUtils';
-import { MlflowService } from '../sdk/MlflowService';
+import { QCFlowService } from '../sdk/QCFlowService';
 import { ArtifactNode } from '../utils/ArtifactUtils';
 import { IntlProvider } from 'react-intl';
 import userEvent from '@testing-library/user-event-14';
@@ -112,7 +112,7 @@ const createRunTagsForFile = (baseFileName: string): Record<string, KeyValueEnti
 
 describe('Artifact page, artifact files rendering integration test', () => {
   beforeEach(() => {
-    jest.spyOn(MlflowService, 'listArtifacts').mockResolvedValue({});
+    jest.spyOn(QCFlowService, 'listArtifacts').mockResolvedValue({});
     jest.spyOn(Services, 'searchRegisteredModels').mockResolvedValue({ registered_models: [] });
   });
   it.each(artifactTestCases)('renders artifact file: %s', async (fileName) => {

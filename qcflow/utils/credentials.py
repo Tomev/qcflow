@@ -14,13 +14,13 @@ from qcflow.environment_variables import (
     QCFLOW_TRACKING_TOKEN,
     QCFLOW_TRACKING_USERNAME,
 )
-from qcflow.exceptions import MlflowException
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.exceptions import QCFlowException
+from qcflow.utils.rest_utils import QCFlowHostCreds
 
 _logger = logging.getLogger(__name__)
 
 
-class MlflowCreds(NamedTuple):
+class QCFlowCreds(NamedTuple):
     username: Optional[str]
     password: Optional[str]
 
@@ -49,10 +49,10 @@ def _read_qcflow_creds_from_env() -> tuple[Optional[str], Optional[str]]:
     return QCFLOW_TRACKING_USERNAME.get(), QCFLOW_TRACKING_PASSWORD.get()
 
 
-def read_qcflow_creds() -> MlflowCreds:
+def read_qcflow_creds() -> QCFlowCreds:
     username_file, password_file = _read_qcflow_creds_from_file()
     username_env, password_env = _read_qcflow_creds_from_env()
-    return MlflowCreds(
+    return QCFlowCreds(
         username=username_env or username_file,
         password=password_env or password_file,
     )
@@ -60,7 +60,7 @@ def read_qcflow_creds() -> MlflowCreds:
 
 def get_default_host_creds(store_uri):
     creds = read_qcflow_creds()
-    return MlflowHostCreds(
+    return QCFlowHostCreds(
         host=store_uri,
         username=creds.username,
         password=creds.password,
@@ -103,7 +103,7 @@ def login(backend: str = "databricks", interactive: bool = True) -> None:
         _databricks_login(interactive)
         set_tracking_uri("databricks")
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Currently only 'databricks' backend is supported, received `backend={backend}`."
         )
 
@@ -130,7 +130,7 @@ def _validate_databricks_auth():
             f"Successfully connected to QCFlow hosted tracking server! Host: {w.config.host}."
         )
     except Exception as e:
-        raise MlflowException(f"Failed to validate databricks credentials: {e}")
+        raise QCFlowException(f"Failed to validate databricks credentials: {e}")
 
 
 def _overwrite_or_create_databricks_profile(
@@ -195,7 +195,7 @@ def _databricks_login(interactive):
         if interactive:
             _logger.info("No valid Databricks credentials found, please enter your credentials...")
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "No valid Databricks credentials found while running in non-interactive mode."
             )
 
@@ -228,4 +228,4 @@ def _databricks_login(interactive):
         _validate_databricks_auth()
     except Exception as e:
         # If user entered invalid auth, we will raise an error and ask users to retry.
-        raise MlflowException(f"`qcflow.login()` failed with error: {e}")
+        raise QCFlowException(f"`qcflow.login()` failed with error: {e}")

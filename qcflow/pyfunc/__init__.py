@@ -432,7 +432,7 @@ from qcflow.environment_variables import (
     QCFLOW_MODEL_ENV_DOWNLOADING_TEMP_DIR,
     QCFLOW_SCORING_SERVER_REQUEST_TIMEOUT,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.dependencies_schemas import (
     _clear_dependencies_schemas,
@@ -674,7 +674,7 @@ def _validate_params(params, model_metadata):
         params_schema = model_metadata.get_params_schema()
         return _enforce_params_schema(params, params_schema)
     if params:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "This model was not logged with a params schema and does not support "
             "providing the params argument."
             "Please log the model with qcflow >= 2.6.0 and specify a params schema.",
@@ -692,7 +692,7 @@ def _validate_prediction_input(data: PyFuncInput, params, input_schema, params_s
             data = _enforce_schema(data, input_schema, flavor)
         except Exception as e:
             # Include error in message for backwards compatibility
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Failed to enforce schema of data '{data}' "
                 f"with schema '{input_schema}'. "
                 f"Error: {e}",
@@ -729,15 +729,15 @@ class PyFuncModel:
         predict_stream_fn: Optional[str] = None,
     ):
         if not hasattr(model_impl, predict_fn):
-            raise MlflowException(f"Model implementation is missing required {predict_fn} method.")
+            raise QCFlowException(f"Model implementation is missing required {predict_fn} method.")
         if not model_meta:
-            raise MlflowException("Model is missing metadata.")
+            raise QCFlowException("Model is missing metadata.")
         self._model_meta = model_meta
         self.__model_impl = model_impl
         self._predict_fn = getattr(model_impl, predict_fn)
         if predict_stream_fn:
             if not hasattr(model_impl, predict_stream_fn):
-                raise MlflowException(
+                raise QCFlowException(
                     f"Model implementation is missing required {predict_stream_fn} method."
                 )
             self._predict_stream_fn = getattr(model_impl, predict_stream_fn)
@@ -852,7 +852,7 @@ class PyFuncModel:
         """
 
         if self._predict_stream_fn is None:
-            raise MlflowException("This model does not support predict_stream method.")
+            raise QCFlowException("This model does not support predict_stream method.")
 
         self.input_schema = self.metadata.get_input_schema()
         self.params_schema = self.metadata.get_params_schema()
@@ -865,7 +865,7 @@ class PyFuncModel:
             # but `enforce_schema` might convert single input into a list like `[single_input]`
             # so extract the first element in the list.
             if len(data) != 1:
-                raise MlflowException(
+                raise QCFlowException(
                     f"'predict_stream' requires single input, but it got input data {data}"
                 )
             data = data[0]
@@ -928,7 +928,7 @@ class PyFuncModel:
             if python_model is None:
                 raise AttributeError("Expected python_model attribute not to be None.")
         except AttributeError as e:
-            raise MlflowException("Unable to retrieve base model object from pyfunc.") from e
+            raise QCFlowException("Unable to retrieve base model object from pyfunc.") from e
         return python_model
 
     def __eq__(self, other):
@@ -940,7 +940,7 @@ class PyFuncModel:
     def metadata(self):
         """Model metadata."""
         if self._model_meta is None:
-            raise MlflowException("Model is missing metadata.")
+            raise QCFlowException("Model is missing metadata.")
         return self._model_meta
 
     @experimental
@@ -1058,7 +1058,7 @@ def load_model(
 
     conf = model_meta.flavors.get(FLAVOR_NAME)
     if conf is None:
-        raise MlflowException(
+        raise QCFlowException(
             f'Model does not have the "{FLAVOR_NAME}" flavor',
             RESOURCE_DOES_NOT_EXIST,
         )
@@ -1088,7 +1088,7 @@ def load_model(
         # raise the error with the following note if "databricks" presents in the error. All non-
         # databricks module errors will just be re-raised.
         if conf[MAIN] == _DATABRICKS_FS_LOADER_MODULE and e.name.startswith("databricks"):
-            raise MlflowException(
+            raise QCFlowException(
                 f"{e.msg}; "
                 "Note: qcflow.pyfunc.load_model is not supported for Feature Store models. "
                 "spark_udf() and predict() will not work as expected. Use "
@@ -1142,7 +1142,7 @@ class _ServedPyFuncModel(PyFuncModel):
     @property
     def pid(self):
         if self._server_pid is None:
-            raise MlflowException("Served PyFunc Model is missing server process ID.")
+            raise QCFlowException("Served PyFunc Model is missing server process ID.")
         return self._server_pid
 
     @property
@@ -1227,7 +1227,7 @@ def _load_model_or_server(
         server_output, _ = scoring_server_proc.communicate(timeout=15)
         if isinstance(server_output, bytes):
             server_output = server_output.decode("UTF-8")
-        raise MlflowException(
+        raise QCFlowException(
             "QCFlow model server failed to launch, server process stdout and stderr are:\n"
             + server_output
         ) from e
@@ -1269,7 +1269,7 @@ def _get_model_dependencies(model_uri, format="pip"):
                 pip_deps_index = index
                 break
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "No pip section found in conda.yaml file in the model directory.",
                 error_code=RESOURCE_DOES_NOT_EXIST,
             )
@@ -1291,7 +1291,7 @@ def _get_model_dependencies(model_uri, format="pip"):
     elif format == "conda":
         return get_conda_yaml_path()
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Illegal format argument '{format}'.", error_code=INVALID_PARAMETER_VALUE
         )
 
@@ -1434,7 +1434,7 @@ def _cast_output_spec_to_spark_type(spec):
     elif isinstance(spec, TensorSpec):
         data_type = DataType.from_numpy_type(spec.type)
         if data_type is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Model output tensor spec type {spec.type} is not supported in spark_udf.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -1444,13 +1444,13 @@ def _cast_output_spec_to_spark_type(spec):
         elif len(spec.shape) == 2:
             return ArrayType(ArrayType(data_type.to_spark()))
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "Only 1D or 2D tensors are supported as spark_udf "
                 f"return value, but model output '{spec.name}' has shape {spec.shape}.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Unknown schema output spec {spec}.", error_code=INVALID_PARAMETER_VALUE
         )
 
@@ -1504,7 +1504,7 @@ def _convert_array_values(values, result_type):
     from pyspark.sql.types import ArrayType, StructType
 
     if not isinstance(result_type, ArrayType):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"result_type must be ArrayType, got {result_type.simpleString()}",
         )
 
@@ -1520,7 +1520,7 @@ def _convert_array_values(values, result_type):
     if isinstance(result_type.elementType, StructType):
         return [_convert_struct_values(v, result_type.elementType) for v in values]
 
-    raise MlflowException.invalid_parameter_value(
+    raise QCFlowException.invalid_parameter_value(
         "Unsupported array type field with element type "
         f"{result_type.elementType.simpleString()} in Array type.",
     )
@@ -1626,12 +1626,12 @@ def _convert_struct_values(
     from pyspark.sql.types import ArrayType, StructType
 
     if not isinstance(result_type, StructType):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"result_type must be StructType, got {result_type.simpleString()}",
         )
 
     if not isinstance(result, (dict, pandas.DataFrame)):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Unsupported result type {type(result)}, expected dict or pandas DataFrame",
         )
 
@@ -1670,7 +1670,7 @@ def _convert_struct_values(
             else:
                 field_values = _convert_struct_values(field_values, field_type)
         else:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Unsupported field type {field_type.simpleString()} in struct type.",
             )
         result_dict[field_name] = field_values
@@ -1719,16 +1719,16 @@ def _verify_prebuilt_env(spark, local_model_path, env_archive_path):
     platform_machine = dbconnect_udf_sandbox_info.platform_machine
 
     if prebuilt_env_sha != env_sha:
-        raise MlflowException(
+        raise QCFlowException(
             f"The prebuilt env '{env_archive_path}' does not match the model required environment."
         )
     if prebuilt_runtime_version != runtime_version:
-        raise MlflowException(
+        raise QCFlowException(
             f"The prebuilt env '{env_archive_path}' runtime version '{prebuilt_runtime_version}' "
             f"does not match UDF sandbox runtime version {runtime_version}."
         )
     if prebuilt_platform_machine != platform_machine:
-        raise MlflowException(
+        raise QCFlowException(
             f"The prebuilt env '{env_archive_path}' platform machine '{prebuilt_platform_machine}' "
             f"does not match UDF sandbox platform machine {platform_machine}."
         )
@@ -1795,7 +1795,7 @@ def _download_prebuilt_env_if_needed(prebuilt_env_uri):
                 os.remove(local_model_env_path)
             raise
 
-    raise MlflowException(
+    raise QCFlowException(
         f"Unsupported prebuilt env file path '{prebuilt_env_uri}', "
         f"invalid scheme: '{parsed_url.scheme}'."
     )
@@ -2074,7 +2074,7 @@ def spark_udf(
 
     if prebuilt_env_uri:
         if env_manager is not None:
-            raise MlflowException(
+            raise QCFlowException(
                 "If 'prebuilt_env_uri' parameter is set, 'env_manager' parameter can't be set."
             )
         env_manager = _EnvManager.VIRTUALENV
@@ -2113,7 +2113,7 @@ def spark_udf(
     if use_dbconnect_artifact:
         udf_sandbox_info = get_dbconnect_udf_sandbox_info(spark)
         if Version(udf_sandbox_info.qcflow_version) < Version("2.18.0"):
-            raise MlflowException(
+            raise QCFlowException(
                 "Using 'qcflow.pyfunc.spark_udf' in Databricks Serverless or in remote "
                 "Databricks Connect requires UDF sandbox image installed with QCFlow "
                 "of version >= 2.18.0"
@@ -2121,7 +2121,7 @@ def spark_udf(
         # `udf_sandbox_info.runtime_version` format is like '<major_version>.<minor_version>'.
         # It's safe to apply `Version`.
         if Version(udf_sandbox_info.runtime_version).major < 16:
-            raise MlflowException(
+            raise QCFlowException(
                 "Using 'qcflow.pyfunc.spark_udf' in Databricks Serverless or in remote "
                 "Databricks Connect requires Databricks runtime version >= 16.0."
             )
@@ -2144,7 +2144,7 @@ def spark_udf(
         and not is_dbconnect_mode
         and env_manager in (_EnvManager.VIRTUALENV, _EnvManager.CONDA)
     ):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Environment manager {env_manager!r} is not supported in Spark Connect "
             "client environment if it connects to non-Databricks Spark cluster.",
         )
@@ -2158,7 +2158,7 @@ def spark_udf(
         prebuilt_env_uri = _download_prebuilt_env_if_needed(prebuilt_env_uri)
         _verify_prebuilt_env(spark, local_model_path, prebuilt_env_uri)
     if use_dbconnect_artifact and env_manager == _EnvManager.CONDA:
-        raise MlflowException(
+        raise QCFlowException(
             "Databricks connect mode or Databricks Serverless python REPL doesn't "
             "support env_manager 'conda'."
         )
@@ -2275,7 +2275,7 @@ def spark_udf(
             result_type = _parse_spark_datatype(result_type)
 
     if not _check_udf_return_type(result_type):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"""Invalid 'spark_udf' result type: {result_type}.
 It must be one of the following types:
 Primitive types:
@@ -2308,7 +2308,7 @@ Compound types:
                 if len(args) > len(names):
                     args = args[: len(names)]
                 if len(args) < len(required_names):
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Model input is missing required columns. Expected {len(names)} required"
                         f" input columns {names}, but the model received only {len(args)} "
                         "unnamed input columns (Since the columns were passed unnamed they are"
@@ -2363,7 +2363,7 @@ Compound types:
             result = result.select_dtypes([bool, np.bool_]).astype(bool)
 
         if len(result.columns) == 0:
-            raise MlflowException(
+            raise QCFlowException(
                 message="The model did not produce any values compatible with the requested "
                 f"type '{elem_type}'. Consider requesting udf with StringType or "
                 "Arraytype(StringType).",
@@ -2512,7 +2512,7 @@ Compound types:
                     else:
                         err_msg += "QCFlow model server output:\n"
                     err_msg += "".join(server_tail_logs)
-                    raise MlflowException(err_msg) from e
+                    raise QCFlowException(err_msg) from e
 
                 def batch_predict_fn(pdf, params=None):
                     if "params" in inspect.signature(client.invoke).parameters:
@@ -2580,7 +2580,7 @@ Compound types:
         if len(args) == 0:
             input_schema = model_metadata.get_input_schema()
             if input_schema and len(input_schema.optional_input_names()) > 0:
-                raise MlflowException(
+                raise QCFlowException(
                     message="Cannot apply UDF without column names specified when"
                     " model signature contains optional columns.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -2590,7 +2590,7 @@ Compound types:
                     input_names = input_schema.input_names()
                     return udf(*input_names)
                 else:
-                    raise MlflowException(
+                    raise QCFlowException(
                         message="Cannot apply udf because no column names specified. The udf "
                         f"expects {len(input_schema.inputs)} columns with types: "
                         "{input_schema.inputs}. Input column names could not be inferred from the"
@@ -2598,7 +2598,7 @@ Compound types:
                         error_code=INVALID_PARAMETER_VALUE,
                     )
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     "Attempting to apply udf on zero columns because no column names were "
                     "specified as arguments or inferred from the model signature.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -2611,7 +2611,7 @@ Compound types:
 
 def _validate_function_python_model(python_model):
     if not (isinstance(python_model, PythonModel) or callable(python_model)):
-        raise MlflowException(
+        raise QCFlowException(
             "`python_model` must be a PythonModel instance, callable object, or path to a script "
             "that uses set_model() to set a PythonModel instance or callable object.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -2620,7 +2620,7 @@ def _validate_function_python_model(python_model):
     if callable(python_model):
         num_args = len(inspect.signature(python_model).parameters)
         if num_args != 1:
-            raise MlflowException(
+            raise QCFlowException(
                 "When `python_model` is a callable object, it must accept exactly one argument. "
                 f"Found {num_args} arguments.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -2854,7 +2854,7 @@ def save_model(
             if callable(python_model) and all(
                 a is None for a in (input_example, pip_requirements, extra_pip_requirements)
             ):
-                raise MlflowException(
+                raise QCFlowException(
                     "If `python_model` is a callable object, at least one of `input_example`, "
                     "`pip_requirements`, or `extra_pip_requirements` must be specified."
                 )
@@ -2864,7 +2864,7 @@ def save_model(
         raise TypeError(f"save_model() got unexpected keyword arguments: {kwargs}")
 
     if code_path is not None and code_paths is not None:
-        raise MlflowException(
+        raise QCFlowException(
             "Both `code_path` and `code_paths` have been specified, which is not permitted."
         )
     if code_path is not None:
@@ -2891,7 +2891,7 @@ def save_model(
     first_argument_set_specified = any(item is not None for item in first_argument_set.values())
     second_argument_set_specified = any(item is not None for item in second_argument_set.values())
     if first_argument_set_specified and second_argument_set_specified:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"The following sets of parameters cannot be specified together:"
                 f" {first_argument_set.keys()}  and {second_argument_set.keys()}."
@@ -2905,7 +2905,7 @@ def save_model(
             "Either `loader_module` or `python_model` must be specified. A `loader_module` "
             "should be a python module. A `python_model` should be a subclass of PythonModel"
         )
-        raise MlflowException(message=msg, error_code=INVALID_PARAMETER_VALUE)
+        raise QCFlowException(message=msg, error_code=INVALID_PARAMETER_VALUE)
 
     if qcflow_model is None:
         qcflow_model = Model()
@@ -2913,7 +2913,7 @@ def save_model(
     signature_from_type_hints = None
     if isinstance(python_model, ChatModel):
         if signature is not None:
-            raise MlflowException(
+            raise QCFlowException(
                 "ChatModel subclasses have a standard signature that is set "
                 "automatically. Please remove the `signature` parameter from "
                 "the call to log_model() or save_model().",
@@ -2971,7 +2971,7 @@ def save_model(
         else:
             output = python_model.predict(messages, params)
         if not isinstance(output, ChatCompletionResponse):
-            raise MlflowException(
+            raise QCFlowException(
                 "Failed to save ChatModel. Please ensure that the model's predict() method "
                 "returns a ChatCompletionResponse object. If your predict() method currently "
                 "returns a dict, you can instantiate a ChatCompletionResponse using "

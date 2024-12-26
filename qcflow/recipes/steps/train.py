@@ -13,7 +13,7 @@ import yaml
 import qcflow
 from qcflow.entities import SourceType, ViewType
 from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME
-from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.models import Model
 from qcflow.recipes.artifacts import (
     DataframeArtifact,
@@ -47,7 +47,7 @@ from qcflow.recipes.utils.tracking import (
     log_code_snapshot,
 )
 from qcflow.recipes.utils.wrapped_recipe_model import WrappedRecipeModel
-from qcflow.tracking import MlflowClient
+from qcflow.tracking import QCFlowClient
 from qcflow.tracking.fluent import _get_experiment_id
 from qcflow.utils.databricks_utils import get_databricks_env_vars, get_databricks_run_url
 from qcflow.utils.file_utils import TempDir
@@ -79,7 +79,7 @@ class TrainStep(BaseStep):
     def _validate_and_apply_step_config(self):
         if "using" in self.step_config:
             if self.step_config["using"] not in ["custom", "automl/flaml"]:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid train step configuration value {self.step_config['using']} for "
                     f"key 'using'. Supported values are: ['custom', 'automl/flaml']",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -93,7 +93,7 @@ class TrainStep(BaseStep):
             ):
                 self.step_config["tuning_enabled"] = self.step_config["tuning"]["enabled"]
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     "The 'tuning' configuration in the train step must include an "
                     "'enabled' key whose value is either true or false.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -105,7 +105,7 @@ class TrainStep(BaseStep):
                     if 0 < sample_fraction <= 1.0:
                         self.step_config["sample_fraction"] = sample_fraction
                     else:
-                        raise MlflowException(
+                        raise QCFlowException(
                             "The tuning 'sample_fraction' configuration in the train step "
                             "must be between 0 and 1.",
                             error_code=INVALID_PARAMETER_VALUE,
@@ -120,13 +120,13 @@ class TrainStep(BaseStep):
                     self.step_config["tuning"]["parallelism"] = 1
 
                 if "max_trials" not in self.step_config["tuning"]:
-                    raise MlflowException(
+                    raise QCFlowException(
                         "The 'max_trials' configuration in the train step must be provided.",
                         error_code=INVALID_PARAMETER_VALUE,
                     )
 
                 if "parameters" not in self.step_config["tuning"]:
-                    raise MlflowException(
+                    raise QCFlowException(
                         "The 'parameters' configuration in the train step must be provided "
                         " when tuning is enabled.",
                         error_code=INVALID_PARAMETER_VALUE,
@@ -140,13 +140,13 @@ class TrainStep(BaseStep):
 
         self.target_col = self.step_config.get("target_col")
         if self.target_col is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing target_col config in recipe config.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         self.recipe = self.step_config.get("recipe")
         if self.recipe is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing recipe config in recipe config.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -155,7 +155,7 @@ class TrainStep(BaseStep):
         self.rebalance_training_data = self.step_config.get("rebalance_training_data", True)
         self.skip_data_profiling = self.step_config.get("skip_data_profiling", False)
         if "estimator_method" not in self.step_config and self.step_config["using"] == "custom":
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing 'estimator_method' configuration in the train step, "
                 "which is using 'custom'.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -180,7 +180,7 @@ class TrainStep(BaseStep):
             {metric.name: metric.greater_is_better for metric in custom_metrics}
         )
         if self.primary_metric is not None and self.primary_metric not in self.evaluation_metrics:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The primary metric '{self.primary_metric}' is a custom metric, but its"
                 " corresponding custom metric configuration is missing from `recipe.yaml`.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -202,7 +202,7 @@ class TrainStep(BaseStep):
                 param_details_to_pass.pop("distribution")
                 search_space[param_name] = hp_tuning_fn(param_name, **param_details_to_pass)
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Parameter {param_name} must contain either a list of 'values' or a "
                     f"'distribution' following hyperopt parameter expressions",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -704,7 +704,7 @@ class TrainStep(BaseStep):
     def _get_leaderboard_df(self, run, eval_metrics):
         import pandas as pd
 
-        qcflow_client = MlflowClient()
+        qcflow_client = QCFlowClient()
         exp_id = _get_experiment_id()
 
         primary_metric_greater_is_better = self.evaluation_metrics[
@@ -1099,7 +1099,7 @@ class TrainStep(BaseStep):
         try:
             from hyperopt import SparkTrials, Trials, fmin, space_eval
         except ModuleNotFoundError:
-            raise MlflowException(
+            raise QCFlowException(
                 "Hyperopt not installed and is required if tuning is enabled",
                 error_code=BAD_REQUEST,
             )
@@ -1108,7 +1108,7 @@ class TrainStep(BaseStep):
         def objective(X_train, y_train, validation_df, hyperparameter_args, on_worker=False):
             run_name = self.tracking_config.run_name
             if on_worker:
-                client = MlflowClient()
+                client = QCFlowClient()
                 parent_tags = client.get_run(parent_run_id).data.tags
                 child_run = client.create_run(
                     _get_experiment_id(),

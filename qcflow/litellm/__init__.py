@@ -145,8 +145,8 @@ def _append_qcflow_callbacks(callbacks):
 
 def _remove_qcflow_callbacks(callbacks):
     try:
-        from litellm.integrations.qcflow import MlflowLogger
+        from litellm.integrations.qcflow import QCFlowLogger
 
-        return [cb for cb in callbacks if not (cb == "qcflow" or isinstance(cb, MlflowLogger))]
+        return [cb for cb in callbacks if not (cb == "qcflow" or isinstance(cb, QCFlowLogger))]
     except ImportError:
         return callbacks

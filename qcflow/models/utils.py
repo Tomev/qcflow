@@ -20,7 +20,7 @@ import pandas as pd
 import pydantic
 
 import qcflow
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.models import Model
 from qcflow.models.model_config import _set_model_config
 from qcflow.store.artifact.utils.models import get_model_name_and_version
@@ -134,7 +134,7 @@ def _is_scalar(x):
 def _validate_params(params):
     try:
         _infer_param_schema(params)
-    except MlflowException:
+    except QCFlowException:
         _logger.warning(f"Invalid params found in input example: {params}")
         raise
 
@@ -284,7 +284,7 @@ class _Example:
             import pyspark.sql
 
             if isinstance(input_example, pyspark.sql.DataFrame):
-                raise MlflowException(
+                raise QCFlowException(
                     "Examples can not be provided as Spark Dataframe. "
                     "Please make sure your example is of a small size and "
                     "turn it into a pandas DataFrame."
@@ -315,7 +315,7 @@ class _Example:
             """
             if any(isinstance(values, np.ndarray) for values in model_input.values()):
                 if not all(isinstance(values, np.ndarray) for values in model_input.values()):
-                    raise MlflowException.invalid_parameter_value(
+                    raise QCFlowException.invalid_parameter_value(
                         "Mixed types in dictionary are not supported as input examples. "
                         "Found numpy arrays and other types."
                     )
@@ -377,7 +377,7 @@ class _Example:
             self.info["type"] = "json_object"
             self.serving_input = {INPUTS: model_input}
         else:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Expected one of the following types:\n"
                 "- pandas.DataFrame\n"
                 "- numpy.ndarray\n"
@@ -545,7 +545,7 @@ def _get_qcflow_model_input_example_dict(qcflow_model: Model, path: str):
         "sparse_matrix_csr",
         "json_object",
     ]:
-        raise MlflowException(f"This version of qcflow can not load example of type {example_type}")
+        raise QCFlowException(f"This version of qcflow can not load example of type {example_type}")
     path = os.path.join(path, qcflow_model.saved_input_example_info[INPUT_EXAMPLE_PATH])
     with open(path) as handle:
         return json.load(handle)
@@ -622,7 +622,7 @@ def _read_example(qcflow_model: Model, path: str):
         return _read_sparse_matrix_from_json(input_example, example_type)
     if example_type == "dataframe":
         return dataframe_from_parsed_json(input_example, pandas_orient="split", schema=input_schema)
-    raise MlflowException(
+    raise QCFlowException(
         "Malformed input example metadata. The 'type' field must be one of "
         "'dataframe', 'ndarray', 'sparse_matrix_csc', 'sparse_matrix_csr' or 'json_object'."
     )
@@ -717,18 +717,18 @@ def _enforce_tensor_spec(
         return values
 
     if len(expected_shape) != len(actual_shape):
-        raise MlflowException(
+        raise QCFlowException(
             f"Shape of input {actual_shape} does not match expected shape {expected_shape}."
         )
     for expected, actual in zip(expected_shape, actual_shape):
         if expected == -1:
             continue
         if expected != actual:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Shape of input {actual_shape} does not match expected shape {expected_shape}."
             )
     if clean_tensor_type(actual_type) != expected_type:
-        raise MlflowException(
+        raise QCFlowException(
             f"dtype of input {actual_type} does not match expected dtype {expected_type}"
         )
     return values
@@ -788,7 +788,7 @@ def _enforce_qcflow_datatype(name, values: pd.Series, t: DataType):
         try:
             return values.astype(np.dtype("datetime64[ns]"), errors="raise")
         except ValueError as e:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Failed to convert column {name} from type {values.dtype} to {t}."
             ) from e
 
@@ -803,7 +803,7 @@ def _enforce_qcflow_datatype(name, values: pd.Series, t: DataType):
         try:
             return pd.to_numeric(values, errors="raise")
         except ValueError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Failed to convert column {name} from type {values.dtype} to {t}."
             )
 
@@ -856,7 +856,7 @@ def _enforce_qcflow_datatype(name, values: pd.Series, t: DataType):
                 "handling-integers-with-missing-values>`_ for more details."
             )
 
-        raise MlflowException(
+        raise QCFlowException(
             f"Incompatible input types for column {name}. "
             f"Can not safely convert {values.dtype} to {numpy_type}.{hint}"
         )
@@ -895,19 +895,19 @@ def _enforce_param_datatype(value: Any, dtype: DataType):
         try:
             datetime_value = np.datetime64(value).item()
             if isinstance(datetime_value, int):
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Failed to convert value to `{dtype}`. "
                     f"It must be convertible to datetime.date/datetime, got `{value}`"
                 )
             return datetime_value
         except ValueError as e:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Failed to convert value `{value}` from type `{type(value)}` to `{dtype}`"
             ) from e
 
     # Note that np.isscalar(datetime.date(...)) is False
     if not np.isscalar(value):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Value must be a scalar for type `{dtype}`, got `{value}`"
         )
 
@@ -921,11 +921,11 @@ def _enforce_param_datatype(value: Any, dtype: DataType):
         try:
             return dtype.to_python()(value)
         except ValueError as e:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Failed to convert value `{value}` from type `{type(value)}` to `{dtype}`"
             ) from e
 
-    raise MlflowException.invalid_parameter_value(
+    raise QCFlowException.invalid_parameter_value(
         f"Can not safely convert `{type(value)}` to `{dtype}` for value `{value}`"
     )
 
@@ -957,7 +957,7 @@ def _enforce_named_col_schema(pf_input: pd.DataFrame, input_schema: Schema):
         required = input_dict[name].required
         if name not in pf_input:
             if required:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The input column '{name}' is required by the model "
                     "signature but missing from the input data."
                 )
@@ -976,7 +976,7 @@ def _enforce_named_col_schema(pf_input: pd.DataFrame, input_schema: Schema):
 
 def _reshape_and_cast_pandas_column_values(name, pd_series, tensor_spec):
     if tensor_spec.shape[0] != -1 or -1 in tensor_spec.shape[1:]:
-        raise MlflowException(
+        raise QCFlowException(
             "For pandas dataframe input, the first dimension of shape must be a variable "
             "dimension and other dimensions must be fixed, but in model signature the shape "
             f"of {'input ' + name if name else 'the unnamed input'} is {tensor_spec.shape}."
@@ -988,7 +988,7 @@ def _reshape_and_cast_pandas_column_values(name, pd_series, tensor_spec):
                 return _enforce_tensor_spec(
                     np.array(pd_series, dtype=tensor_spec.type).reshape(shape), tensor_spec
                 )
-        raise MlflowException(
+        raise QCFlowException(
             f"The input pandas dataframe column '{name}' contains scalar "
             "values, which requires the shape to be (-1,) or (-1, 1), but got tensor spec "
             f"shape of {tensor_spec.shape}.",
@@ -1012,9 +1012,9 @@ def _reshape_and_cast_pandas_column_values(name, pd_series, tensor_spec):
                 tensor_spec.type
             )
         except ValueError:
-            raise MlflowException(reshape_err_msg, error_code=INVALID_PARAMETER_VALUE)
+            raise QCFlowException(reshape_err_msg, error_code=INVALID_PARAMETER_VALUE)
         if len(reshaped_numpy_arr) != len(pd_series):
-            raise MlflowException(reshape_err_msg, error_code=INVALID_PARAMETER_VALUE)
+            raise QCFlowException(reshape_err_msg, error_code=INVALID_PARAMETER_VALUE)
         return reshaped_numpy_arr
     elif isinstance(pd_series[0], np.ndarray):
         reshape_err_msg = (
@@ -1028,12 +1028,12 @@ def _reshape_and_cast_pandas_column_values(name, pd_series, tensor_spec):
             # numpy array column.
             reshaped_numpy_arr = np.vstack(pd_series.tolist()).reshape(tensor_spec.shape)
         except ValueError:
-            raise MlflowException(reshape_err_msg, error_code=INVALID_PARAMETER_VALUE)
+            raise QCFlowException(reshape_err_msg, error_code=INVALID_PARAMETER_VALUE)
         if len(reshaped_numpy_arr) != len(pd_series):
-            raise MlflowException(reshape_err_msg, error_code=INVALID_PARAMETER_VALUE)
+            raise QCFlowException(reshape_err_msg, error_code=INVALID_PARAMETER_VALUE)
         return reshaped_numpy_arr
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "Because the model signature requires tensor spec input, the input "
             "pandas dataframe values should be either scalar value, python list "
             "containing scalar values or numpy array containing scalar values, "
@@ -1056,7 +1056,7 @@ def _enforce_tensor_schema(pf_input: PyFuncInput, input_schema: Schema):
             new_pf_input = {}
             for col_name, tensor_spec in zip(input_schema.input_names(), input_schema.inputs):
                 if not isinstance(pf_input[col_name], np.ndarray):
-                    raise MlflowException(
+                    raise QCFlowException(
                         "This model contains a tensor-based model signature with input names,"
                         " which suggests a dictionary input mapping input name to a numpy"
                         f" array, but a dict with value type {type(pf_input[col_name])} was found.",
@@ -1071,7 +1071,7 @@ def _enforce_tensor_schema(pf_input: PyFuncInput, input_schema: Schema):
                     col_name, pd_series, tensor_spec
                 )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "This model contains a tensor-based model signature with input names, which"
                 " suggests a dictionary input mapping input name to tensor, or a pandas"
                 " DataFrame input containing columns mapping input name to flattened list value"
@@ -1083,14 +1083,14 @@ def _enforce_tensor_schema(pf_input: PyFuncInput, input_schema: Schema):
         if isinstance(pf_input, pd.DataFrame):
             num_input_columns = len(pf_input.columns)
             if pf_input.empty:
-                raise MlflowException("Input DataFrame is empty.")
+                raise QCFlowException("Input DataFrame is empty.")
             elif num_input_columns == 1:
                 new_pf_input = _reshape_and_cast_pandas_column_values(
                     None, pf_input[pf_input.columns[0]], tensor_spec
                 )
             else:
                 if tensor_spec.shape != (-1, num_input_columns):
-                    raise MlflowException(
+                    raise QCFlowException(
                         "This model contains a model signature with an unnamed input. Since the "
                         "input data is a pandas DataFrame containing multiple columns, "
                         "the input shape must be of the structure "
@@ -1105,7 +1105,7 @@ def _enforce_tensor_schema(pf_input: PyFuncInput, input_schema: Schema):
         elif isinstance(pf_input, np.ndarray) or _is_sparse_matrix(pf_input):
             new_pf_input = _enforce_tensor_spec(pf_input, tensor_spec)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "This model contains a tensor-based model signature with no input names,"
                 " which suggests a numpy array input or a pandas dataframe input with"
                 f" proper column values, but an input of type {type(pf_input)} was found.",
@@ -1193,7 +1193,7 @@ def _enforce_schema(pf_input: PyFuncInput, input_schema: Schema, flavor: Optiona
                     else:
                         pf_input = pd.DataFrame(pf_input)
                 except Exception as e:
-                    raise MlflowException(
+                    raise QCFlowException(
                         "This model contains a column-based signature, which suggests a DataFrame"
                         " input. There was an error casting the input data to a DataFrame:"
                         f" {e}"
@@ -1208,7 +1208,7 @@ def _enforce_schema(pf_input: PyFuncInput, input_schema: Schema, flavor: Optiona
                         lambda row: convert_complex_types_pyspark_to_pandas(row, field.dataType)
                     )
         if not isinstance(pf_input, pd.DataFrame):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Expected input to be DataFrame. Found: {type(pf_input).__name__}"
             )
 
@@ -1237,7 +1237,7 @@ def _enforce_schema(pf_input: PyFuncInput, input_schema: Schema, flavor: Optiona
             message = f"Model is missing inputs {missing_cols}."
             if extra_cols:
                 message += f" Note that there were extra inputs: {extra_cols}"
-            raise MlflowException(message)
+            raise QCFlowException(message)
         if extra_cols:
             _logger.warning(
                 "Found extra inputs in the model input that are not defined in the model "
@@ -1247,7 +1247,7 @@ def _enforce_schema(pf_input: PyFuncInput, input_schema: Schema, flavor: Optiona
         # The model signature does not specify column names => we can only verify column count.
         num_actual_columns = len(pf_input.columns)
         if num_actual_columns < len(input_schema.inputs):
-            raise MlflowException(
+            raise QCFlowException(
                 "Model inference is missing inputs. The model signature declares "
                 "{} inputs  but the provided value only has "
                 "{} inputs. Note: the inputs were not named in the signature so we can "
@@ -1293,7 +1293,7 @@ def _enforce_pyspark_dataframe_schema(
         New PySpark DataFrame that conforms to the model's input schema.
     """
     if not HAS_PYSPARK:
-        raise MlflowException("PySpark is not installed. Cannot handle a PySpark DataFrame.")
+        raise QCFlowException("PySpark is not installed. Cannot handle a PySpark DataFrame.")
     new_pf_input = original_pf_input.alias("pf_input_copy")
     if input_schema.has_input_names():
         _enforce_named_col_schema(pf_input_as_pandas, input_schema)
@@ -1326,15 +1326,15 @@ def _enforce_datatype(data: Any, dtype: DataType, required=True):
         return None
 
     if not isinstance(dtype, DataType):
-        raise MlflowException(f"Expected dtype to be DataType, got {type(dtype).__name__}")
+        raise QCFlowException(f"Expected dtype to be DataType, got {type(dtype).__name__}")
     if not np.isscalar(data):
-        raise MlflowException(f"Expected data to be scalar, got {type(data).__name__}")
+        raise QCFlowException(f"Expected data to be scalar, got {type(data).__name__}")
     # Reuse logic in _enforce_qcflow_datatype for type conversion
     pd_series = pd.Series(data)
     try:
         pd_series = _enforce_qcflow_datatype("", pd_series, dtype)
-    except MlflowException:
-        raise MlflowException(
+    except QCFlowException:
+        raise QCFlowException(
             f"Failed to enforce schema of data `{data}` with dtype `{dtype.name}`"
         )
     return pd_series[0]
@@ -1351,7 +1351,7 @@ def _enforce_array(data: Any, arr: Array, required: bool = True):
             return data
 
     if not isinstance(data, (list, np.ndarray)):
-        raise MlflowException(f"Expected data to be list or numpy array, got {type(data).__name__}")
+        raise QCFlowException(f"Expected data to be list or numpy array, got {type(data).__name__}")
 
     data_enforced = [_enforce_type(x, arr.dtype, required=required) for x in data]
 
@@ -1372,12 +1372,12 @@ def _enforce_object(data: dict[str, Any], obj: Object, required: bool = True):
     if not required and (data is None or data == {}):
         return data
     if not isinstance(data, dict):
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to enforce schema of '{data}' with type '{obj}'. "
             f"Expected data to be dictionary, got {type(data).__name__}"
         )
     if not isinstance(obj, Object):
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to enforce schema of '{data}' with type '{obj}'. "
             f"Expected obj to be Object, got {type(obj).__name__}"
         )
@@ -1385,16 +1385,16 @@ def _enforce_object(data: dict[str, Any], obj: Object, required: bool = True):
     required_props = {k for k, prop in properties.items() if prop.required}
     missing_props = required_props - set(data.keys())
     if missing_props:
-        raise MlflowException(f"Missing required properties: {missing_props}")
+        raise QCFlowException(f"Missing required properties: {missing_props}")
     if invalid_props := data.keys() - properties.keys():
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid properties not defined in the schema found: {invalid_props}"
         )
     for k, v in data.items():
         try:
             data[k] = _enforce_property(v, properties[k])
-        except MlflowException as e:
-            raise MlflowException(
+        except QCFlowException as e:
+            raise QCFlowException(
                 f"Failed to enforce schema for key `{k}`. "
                 f"Expected type {properties[k].to_dict()[k]['type']}, "
                 f"received type {type(v).__name__}"
@@ -1407,10 +1407,10 @@ def _enforce_map(data: Any, map_type: Map, required: bool = True):
         return data
 
     if not isinstance(data, dict):
-        raise MlflowException(f"Expected data to be a dict, got {type(data).__name__}")
+        raise QCFlowException(f"Expected data to be a dict, got {type(data).__name__}")
 
     if not all(isinstance(k, str) for k in data):
-        raise MlflowException("Expected all keys in the map type data are string type.")
+        raise QCFlowException("Expected all keys in the map type data are string type.")
 
     return {k: _enforce_type(v, map_type.value_type, required=required) for k, v in data.items()}
 
@@ -1426,7 +1426,7 @@ def _enforce_type(data: Any, data_type: Union[DataType, Array, Object, Map], req
         return _enforce_map(data, data_type, required=required)
     if isinstance(data_type, AnyType):
         return data
-    raise MlflowException(f"Invalid data type: {data_type!r}")
+    raise QCFlowException(f"Invalid data type: {data_type!r}")
 
 
 def validate_schema(data: PyFuncInput, expected_schema: Schema) -> None:
@@ -1448,7 +1448,7 @@ def validate_schema(data: PyFuncInput, expected_schema: Schema) -> None:
         expected_schema: Expected Schema of the input data.
 
     Raises:
-        qcflow.exceptions.MlflowException: when the input data does not match the schema.
+        qcflow.exceptions.QCFlowException: when the input data does not match the schema.
 
     .. code-block:: python
         :caption: Example usage of validate_schema
@@ -1558,12 +1558,12 @@ def get_model_version_from_model_uri(model_uri):
     models:/<model_name>/<model_version/stage/latest>.
     """
     import qcflow
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
     databricks_profile_uri = (
         get_databricks_profile_uri_from_artifact_uri(model_uri) or qcflow.get_registry_uri()
     )
-    client = MlflowClient(registry_uri=databricks_profile_uri)
+    client = QCFlowClient(registry_uri=databricks_profile_uri)
     (name, version) = get_model_name_and_version(client, model_uri)
     return client.get_model_version(name, version)
 
@@ -1584,11 +1584,11 @@ def _enforce_params_schema(params: Optional[dict[str, Any]], schema: Optional[Pa
         return {}
     params = {} if params is None else params
     if not isinstance(params, dict):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Parameters must be a dictionary. Got type '{type(params).__name__}'.",
         )
     if not isinstance(schema, ParamSchema):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Parameters schema must be an instance of ParamSchema. "
             f"Got type '{type(schema).__name__}'.",
         )
@@ -1617,13 +1617,13 @@ def _enforce_params_schema(params: Optional[dict[str, Any]], schema: Optional[Pa
                 params[param_spec.name] = ParamSpec.validate_param_spec(
                     params[param_spec.name], param_spec
                 )
-            except MlflowException as e:
+            except QCFlowException as e:
                 invalid_params.add((param_spec.name, e.message))
         else:
             params[param_spec.name] = param_spec.default
 
     if invalid_params:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Invalid parameters found: {invalid_params!r}",
         )
 
@@ -1787,7 +1787,7 @@ def _validate_and_get_model_code_path(model_code_path: str, temp_dir: str) -> st
         _, ext = os.path.splitext(model_code_path)
         additional_message = f" Perhaps you meant '{model_code_path}.py'?" if not ext else ""
 
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"The provided model path '{model_code_path}' does not exist. "
             f"Ensure the file path is valid and try again.{additional_message}"
         )
@@ -1804,7 +1804,7 @@ def _validate_and_get_model_code_path(model_code_path: str, temp_dir: str) -> st
             response = w.workspace.export(path=model_code_path, format=ExportFormat.SOURCE)
             decoded_content = base64.b64decode(response.content)
         except Exception:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"The provided model path '{model_code_path}' is not a valid Python file path or a "
                 "Databricks Notebook file path containing the code for defining the chain "
                 "instance. Ensure the file path is valid and try again."
@@ -1890,18 +1890,18 @@ def _load_model_code_path(code_path: str, model_config: Optional[Union[str, dict
             with _mock_dbutils(module.__dict__):
                 spec.loader.exec_module(module)
         except ImportError as e:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Failed to import code model from {code_path}. Error: {e!s}"
             ) from e
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Failed to run user code from {code_path}. "
                 f"Error: {e!s}. "
                 "Review the stack trace for more information."
             ) from e
 
     if qcflow.models.model.__qcflow_model__ is None:
-        raise MlflowException(
+        raise QCFlowException(
             "If the model is logged as code, ensure the model is set using "
             "qcflow.models.set_model() within the code file code file."
         )

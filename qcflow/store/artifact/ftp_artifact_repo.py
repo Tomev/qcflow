@@ -7,7 +7,7 @@ from ftplib import FTP
 from urllib.parse import unquote
 
 from qcflow.entities.file_info import FileInfo
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.utils.file_utils import relative_path_to_artifact_path
 
@@ -130,4 +130,4 @@ class FTPArtifactRepository(ArtifactRepository):
                 ftp.retrbinary("RETR " + remote_full_path, f.write)
 
     def delete_artifacts(self, artifact_path=None):
-        raise MlflowException("Not implemented yet")
+        raise QCFlowException("Not implemented yet")

@@ -571,7 +571,7 @@ class Utils {
 
   /**
    * Renders the source name and entry point into a string. Used for sorting.
-   * @param run MlflowMessages.RunInfo
+   * @param run QCFlowMessages.RunInfo
    */
   static formatSource(tags: any) {
     const sourceName = Utils.getSourceName(tags);
@@ -608,7 +608,7 @@ class Utils {
 
   /**
    * Renders the run name into a string.
-   * @param runTags Object of tag name to MlflowMessages.RunTag instance
+   * @param runTags Object of tag name to QCFlowMessages.RunTag instance
    */
   static getRunDisplayName(runInfo: any, runUuid: any) {
     return Utils.getRunName(runInfo) || 'Run ' + runUuid;

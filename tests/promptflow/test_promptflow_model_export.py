@@ -5,7 +5,7 @@ from promptflow import load_flow
 from pyspark.sql import SparkSession
 
 import qcflow
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.deployments import PredictionsResponse
 from qcflow.models.utils import load_serving_example
 from qcflow.pyfunc.scoring_server import CONTENT_TYPE_JSON
@@ -128,7 +128,7 @@ def test_promptflow_model_sparkudf_predict(spark):
 def test_unsupported_class():
     mock_model = object()
     with pytest.raises(
-        MlflowException, match="only supports instance defined with 'flow.dag.yaml' file"
+        QCFlowException, match="only supports instance defined with 'flow.dag.yaml' file"
     ):
         with qcflow.start_run():
             qcflow.promptflow.log_model(mock_model, "mock_model_path")

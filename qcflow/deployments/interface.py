@@ -4,7 +4,7 @@ from logging import Logger
 from qcflow.deployments.base import BaseDeploymentClient
 from qcflow.deployments.plugin_manager import DeploymentPlugins
 from qcflow.deployments.utils import get_deployments_target, parse_target_uri
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 plugin_store = DeploymentPlugins()
 plugin_store.register("sagemaker", "qcflow.sagemaker")
@@ -49,7 +49,7 @@ def get_deploy_client(target_uri=None):
     if not target_uri:
         try:
             target_uri = get_deployments_target()
-        except MlflowException:
+        except QCFlowException:
             _logger.info(
                 "No deployments target has been set. Please either set the QCFlow deployments "
                 "target via `qcflow.deployments.set_deployments_target()` or set the environment "

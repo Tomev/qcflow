@@ -10,7 +10,7 @@ from autogen import Agent, ConversableAgent
 from autogen.logger.base_logger import BaseLogger
 from openai.types.chat import ChatCompletion
 
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities.span import NoOpSpan, Span, SpanType
 from qcflow.entities.span_event import SpanEvent
 from qcflow.entities.span_status import SpanStatus, SpanStatusCode
@@ -54,9 +54,9 @@ class ChatState:
         self.pending_spans = []
 
 
-class MlflowAutogenLogger(BaseLogger):
+class QCFlowAutogenLogger(BaseLogger):
     def __init__(self):
-        self._client = MlflowClient()
+        self._client = QCFlowClient()
         self._chat_state = ChatState()
 
     def start(self) -> str:

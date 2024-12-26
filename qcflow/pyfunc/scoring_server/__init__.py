@@ -29,7 +29,7 @@ from qcflow.environment_variables import QCFLOW_SCORING_SERVER_REQUEST_TIMEOUT
 # qcflow in the model's conda environment (inside) can differ. We should therefore keep qcflow
 # dependencies to the minimum here.
 # ALl of the qcflow dependencies below need to be backwards compatible.
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.pyfunc.model import _log_warning_if_params_not_in_predict_signature
 from qcflow.types import ParamSchema, Schema
 from qcflow.utils import reraise
@@ -37,7 +37,7 @@ from qcflow.utils.annotations import deprecated
 from qcflow.utils.file_utils import path_to_local_file_uri
 from qcflow.utils.os import is_windows
 from qcflow.utils.proto_json_utils import (
-    MlflowInvalidInputException,
+    QCFlowInvalidInputException,
     NumpyEncoder,
     _get_jsonable_obj,
     dataframe_from_parsed_json,
@@ -116,7 +116,7 @@ def infer_and_parse_json_input(json_input, schema: Schema = None):
         try:
             decoded_input = json.loads(json_input)
         except json.decoder.JSONDecodeError as ex:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "Failed to parse input from JSON. Ensure that input is a valid JSON"
                     f" formatted string. Error: '{ex}'. Input: \n{json_input}\n"
@@ -127,7 +127,7 @@ def infer_and_parse_json_input(json_input, schema: Schema = None):
         format_keys = set(decoded_input.keys()).intersection(SUPPORTED_FORMATS)
         if len(format_keys) != 1:
             message = f"Received dictionary with input fields: {list(decoded_input.keys())}"
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"{REQUIRED_INPUT_FORMAT}. {message}. {SCORING_PROTOCOL_CHANGE_INFO}",
                 error_code=BAD_REQUEST,
             )
@@ -143,13 +143,13 @@ def infer_and_parse_json_input(json_input, schema: Schema = None):
             )
     elif isinstance(decoded_input, list):
         message = "Received a list"
-        raise MlflowException(
+        raise QCFlowException(
             message=f"{REQUIRED_INPUT_FORMAT}. {message}. {SCORING_PROTOCOL_CHANGE_INFO}",
             error_code=BAD_REQUEST,
         )
     else:
         message = f"Received unexpected input type '{type(decoded_input)}'"
-        raise MlflowException(
+        raise QCFlowException(
             message=f"{REQUIRED_INPUT_FORMAT}. {message}.", error_code=BAD_REQUEST
         )
 
@@ -169,7 +169,7 @@ def _decode_json_input(json_input):
     try:
         decoded_input = json.loads(json_input)
     except json.decoder.JSONDecodeError as ex:
-        raise MlflowInvalidInputException(
+        raise QCFlowInvalidInputException(
             "Ensure that input is a valid JSON formatted string. "
             f"Error: '{ex!r}'\nInput: \n{json_input}\n"
         ) from ex
@@ -177,9 +177,9 @@ def _decode_json_input(json_input):
     if isinstance(decoded_input, dict):
         return decoded_input
     if isinstance(decoded_input, list):
-        raise MlflowInvalidInputException(f"{REQUIRED_INPUT_FORMAT}. Received a list.")
+        raise QCFlowInvalidInputException(f"{REQUIRED_INPUT_FORMAT}. Received a list.")
 
-    raise MlflowInvalidInputException(
+    raise QCFlowInvalidInputException(
         f"{REQUIRED_INPUT_FORMAT}. Received unexpected input type '{type(decoded_input)}."
     )
 
@@ -219,7 +219,7 @@ def infer_and_parse_data(data, schema: Schema = None):
     format_keys = set(data.keys()).intersection(SUPPORTED_FORMATS)
     if len(format_keys) != 1:
         message = f"Received dictionary with input fields: {list(data.keys())}"
-        raise MlflowException(
+        raise QCFlowException(
             message=f"{REQUIRED_INPUT_FORMAT}. {message}. {SCORING_PROTOCOL_CHANGE_INFO}",
             error_code=BAD_REQUEST,
         )
@@ -267,7 +267,7 @@ def unwrapped_predictions_to_json(raw_predictions, output):
 
 def predictions_to_json(raw_predictions, output, metadata=None):
     if metadata and "predictions" in metadata:
-        raise MlflowException(
+        raise QCFlowException(
             "metadata cannot contain 'predictions' key", error_code=INVALID_PARAMETER_VALUE
         )
     predictions = _get_jsonable_obj(raw_predictions, pandas_orient="records")
@@ -290,10 +290,10 @@ def _handle_serving_error(error_message, error_code, include_traceback=True):
         traceback_buf = StringIO()
         traceback.print_exc(file=traceback_buf)
         traceback_str = traceback_buf.getvalue()
-        e = MlflowException(message=error_message, error_code=error_code, stack_trace=traceback_str)
+        e = QCFlowException(message=error_message, error_code=error_code, stack_trace=traceback_str)
     else:
-        e = MlflowException(message=error_message, error_code=error_code)
-    reraise(MlflowException, e)
+        e = QCFlowException(message=error_message, error_code=error_code)
+    reraise(QCFlowException, e)
 
 
 class InvocationsResponse(NamedTuple):
@@ -367,7 +367,7 @@ def invocations(data, content_type, model, input_schema):
         else:
             _log_warning_if_params_not_in_predict_signature(_logger, params)
             raw_predictions = model.predict(data)
-    except MlflowException as e:
+    except QCFlowException as e:
         if "Failed to enforce schema" in e.message:
             _logger.warning(
                 "If using `instances` as input key, we internally convert "
@@ -379,7 +379,7 @@ def invocations(data, content_type, model, input_schema):
         e.message = f"Failed to predict data '{data}'. \nError: {e.message}"
         raise e
     except Exception:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "Encountered an unexpected error while evaluating the model. Verify"
                 " that the serialized input Dataframe is compatible with the model for"

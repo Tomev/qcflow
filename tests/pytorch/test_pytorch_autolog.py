@@ -13,8 +13,8 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 import qcflow
 import qcflow.pytorch
-from qcflow import MlflowClient
-from qcflow.exceptions import MlflowException
+from qcflow import QCFlowClient
+from qcflow.exceptions import QCFlowException
 from qcflow.pytorch._lightning_autolog import _get_optimizer_name
 from qcflow.utils.file_utils import TempDir
 
@@ -29,7 +29,7 @@ def pytorch_model():
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
     trainer.fit(model, dm)
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(client.search_runs(["0"])[0].info.run_id)
     return trainer, run
 
@@ -42,7 +42,7 @@ def pytorch_model_without_validation():
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
     trainer.fit(model, dm)
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(client.search_runs(["0"])[0].info.run_id)
     return trainer, run
 
@@ -56,7 +56,7 @@ def pytorch_model_with_steps_logged(request):
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
     trainer.fit(model, dm)
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(client.search_runs(["0"])[0].info.run_id)
     return trainer, run, log_every_n_epoch, log_every_n_step
 
@@ -70,7 +70,7 @@ def pytorch_multi_optimizer_model(request):
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
     trainer.fit(model, dm)
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(client.search_runs(["0"])[0].info.run_id)
     return trainer, run, log_every_n_epoch, log_every_n_step
 
@@ -83,10 +83,10 @@ def test_pytorch_autolog_log_models_configuration(log_models):
     dm.setup(stage="fit")
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
     trainer.fit(model, dm)
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(client.search_runs(["0"])[0].info.run_id)
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [f.path for f in client.list_artifacts(run_id)]
     assert ("model" in artifacts) == log_models
 
@@ -121,7 +121,7 @@ def test_pytorch_autolog_logs_expected_data(pytorch_model):
     # Checking if metrics are logged.
     # When autolog is configured with the default configuration to not log on steps,
     # then all metrics are logged per epoch, including step based metrics.
-    client = MlflowClient()
+    client = QCFlowClient()
     for metric_key in [
         "loss",
         "train_acc",
@@ -140,7 +140,7 @@ def test_pytorch_autolog_logs_expected_data(pytorch_model):
     assert data.params["optimizer_name"] == "Adam"
 
     # Testing model_summary.txt is saved
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = client.list_artifacts(run.info.run_id)
     artifacts = (x.path for x in artifacts)
     assert "model_summary.txt" in artifacts
@@ -150,7 +150,7 @@ def test_pytorch_autolog_logs_expected_metrics_without_validation(pytorch_model_
     trainer, run = pytorch_model_without_validation
     assert not trainer.enable_validation
 
-    client = MlflowClient()
+    client = QCFlowClient()
     for metric_key in ["loss", "train_acc"]:
         assert metric_key in run.data.metrics
         metric_history = client.get_metric_history(run.info.run_id, metric_key)
@@ -171,7 +171,7 @@ def test_pytorch_autolog_logging_forked_metrics_on_step_and_epoch(
     num_logged_steps = trainer.global_step // log_every_n_step
     num_logged_epochs = NUM_EPOCHS // log_every_n_epoch
 
-    client = MlflowClient()
+    client = QCFlowClient()
     for metric_key, expected_len in [
         ("train_acc", num_logged_epochs),
         ("loss", num_logged_steps),
@@ -198,7 +198,7 @@ def test_pytorch_autolog_log_on_step_with_multiple_optimizers(
     num_logged_steps = NUM_EPOCHS * len(trainer.train_dataloader) // log_every_n_step
     num_logged_epochs = NUM_EPOCHS // log_every_n_epoch
 
-    client = MlflowClient()
+    client = QCFlowClient()
     for metric_key, expected_len in [
         ("loss", num_logged_epochs),
         ("loss_step", num_logged_steps),
@@ -220,7 +220,7 @@ def test_pytorch_autolog_raises_error_when_step_logging_unsupported():
     dm = IrisDataModule()
     trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
     with pytest.raises(
-        MlflowException, match="log_every_n_step is only supported for PyTorch-Lightning >= 1.1.0"
+        QCFlowException, match="log_every_n_step is only supported for PyTorch-Lightning >= 1.1.0"
     ):
         trainer.fit(model, dm)
 
@@ -272,7 +272,7 @@ def pytorch_model_with_callback(patience):
         )
         trainer.fit(model, dm)
 
-        client = MlflowClient()
+        client = QCFlowClient()
         run = client.get_run(client.search_runs(["0"])[0].info.run_id)
 
     return trainer, run
@@ -281,7 +281,7 @@ def pytorch_model_with_callback(patience):
 @pytest.mark.parametrize("patience", [3])
 def test_pytorch_early_stop_artifacts_logged(pytorch_model_with_callback):
     _, run = pytorch_model_with_callback
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = client.list_artifacts(run.info.run_id)
     artifacts = (x.path for x in artifacts)
     assert "restored_model_checkpoint" in artifacts
@@ -291,7 +291,7 @@ def test_pytorch_early_stop_artifacts_logged(pytorch_model_with_callback):
 def test_pytorch_autolog_model_can_load_from_artifact(pytorch_model_with_callback):
     _, run = pytorch_model_with_callback
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = client.list_artifacts(run_id)
     artifacts = (x.path for x in artifacts)
     assert "model" in artifacts
@@ -325,10 +325,10 @@ def test_pytorch_with_early_stopping_autolog_log_models_configuration_with(log_m
         )
         trainer.fit(model, dm)
 
-        client = MlflowClient()
+        client = QCFlowClient()
         run = client.get_run(client.search_runs(["0"])[0].info.run_id)
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [f.path for f in client.list_artifacts(run_id)]
     assert ("restored_model_checkpoint" in artifacts) == log_models
 
@@ -347,7 +347,7 @@ def test_pytorch_early_stop_params_logged(pytorch_model_with_callback, patience)
 
 def test_pytorch_autolog_non_early_stop_callback_does_not_log(pytorch_model):
     trainer, run = pytorch_model
-    client = MlflowClient()
+    client = QCFlowClient()
     loss_metric_history = client.get_metric_history(run.info.run_id, "loss")
     val_loss_metric_history = client.get_metric_history(run.info.run_id, "val_loss")
     assert trainer.max_epochs == NUM_EPOCHS
@@ -365,7 +365,7 @@ def pytorch_model_tests():
     with qcflow.start_run() as run:
         trainer.fit(model, datamodule=dm)
         trainer.test(datamodule=dm)
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(run.info.run_id)
     return trainer, run
 
@@ -419,7 +419,7 @@ def test_pytorch_autologging_supports_data_parallel_execution():
         trainer.fit(model, datamodule=dm)
         trainer.test(datamodule=dm)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(run.info.run_id)
 
     # Checking if metrics are logged
@@ -435,7 +435,7 @@ def test_pytorch_autologging_supports_data_parallel_execution():
     assert data.params["optimizer_name"] == "Adam"
 
     # Testing model_summary.txt is saved
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = client.list_artifacts(run.info.run_id)
     artifacts = [x.path for x in artifacts]
     assert "model" in artifacts
@@ -453,7 +453,7 @@ def test_autolog_registering_model():
     with qcflow.start_run():
         trainer.fit(model, dm)
 
-        registered_model = MlflowClient().get_registered_model(registered_model_name)
+        registered_model = QCFlowClient().get_registered_model(registered_model_name)
         assert registered_model.name == registered_model_name
 
 

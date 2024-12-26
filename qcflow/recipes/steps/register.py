@@ -4,7 +4,7 @@ from typing import Any
 
 import qcflow
 from qcflow.entities import SourceType
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.recipes.artifacts import ModelVersionArtifact, RegisteredModelVersionInfo
 from qcflow.recipes.cards import BaseCard
 from qcflow.recipes.step import BaseStep, StepClass
@@ -41,7 +41,7 @@ class RegisterStep(BaseStep):
 
         self.register_model_name = self.step_config.get("model_name")
         if self.register_model_name is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing 'model_name' config in register step config.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -90,7 +90,7 @@ class RegisterStep(BaseStep):
                 path=str(Path(output_directory) / _REGISTERED_MV_INFO_FILE)
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Model registration on {self.model_uri} failed because it "
                 "is not validated. Bypass by setting allow_non_validated_model to True. "
             )

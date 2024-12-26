@@ -23,7 +23,7 @@ from qcflow.environment_variables import (
     QCFLOW_DEPLOYMENT_FLAVOR_NAME,
     QCFLOW_SAGEMAKER_DEPLOY_IMG_URL,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model
 from qcflow.models.container import (
     SERVING_ENVIRONMENT,
@@ -75,7 +75,7 @@ def _get_preferred_deployment_flavor(model_config):
     elif pyfunc.FLAVOR_NAME in model_config.flavors:
         return pyfunc.FLAVOR_NAME
     else:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "The specified model does not contain any of the supported flavors for"
                 " deployment. The model contains the following flavors: {model_flavors}."
@@ -99,7 +99,7 @@ def _validate_deployment_flavor(model_config, flavor):
         flavor: The deployment flavor to validate
     """
     if flavor not in SUPPORTED_DEPLOYMENT_FLAVORS:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"The specified flavor: `{flavor}` is not supported for deployment."
                 f" Please use one of the supported flavors: {SUPPORTED_DEPLOYMENT_FLAVORS}"
@@ -107,7 +107,7 @@ def _validate_deployment_flavor(model_config, flavor):
             error_code=INVALID_PARAMETER_VALUE,
         )
     elif flavor not in model_config.flavors:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "The specified model does not contain the specified deployment flavor:"
                 f" `{flavor}`. Please use one of the following deployment flavors"
@@ -359,7 +359,7 @@ def _deploy(
     import boto3
 
     if (not archive) and (not synchronous):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "Resources must be archived when `deploy()` is executed in non-synchronous mode."
                 " Either set `synchronous=True` or `archive=True`."
@@ -368,7 +368,7 @@ def _deploy(
         )
 
     if mode not in DEPLOYMENT_MODES:
-        raise MlflowException(
+        raise QCFlowException(
             message="`mode` must be one of: {deployment_modes}".format(
                 deployment_modes=",".join(DEPLOYMENT_MODES)
             ),
@@ -378,7 +378,7 @@ def _deploy(
     model_path = _download_artifact_from_uri(model_uri)
     model_config_path = os.path.join(model_path, MLMODEL_FILE_NAME)
     if not os.path.exists(model_config_path):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Failed to find {MLMODEL_FILE_NAME} configuration within the specified model's "
                 "root directory."
@@ -400,7 +400,7 @@ def _deploy(
 
     endpoint_exists = _find_endpoint(endpoint_name=app_name, sage_client=sage_client) is not None
     if endpoint_exists and mode == DEPLOYMENT_MODE_CREATE:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"You are attempting to deploy an application with name: {app_name} in"
                 f" '{DEPLOYMENT_MODE_CREATE}' mode. However, an application with the same name"
@@ -481,7 +481,7 @@ def _deploy(
                 operation_status.message,
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "The deployment operation failed with the following error message:"
                 f' "{operation_status.message}"'
             )
@@ -529,7 +529,7 @@ def _delete(
     import boto3
 
     if (not archive) and (not synchronous):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "Resources must be archived when `delete()` is executed in non-synchronous mode."
                 " Either set `synchronous=True` or `archive=True`."
@@ -584,7 +584,7 @@ def _delete(
                 operation_status.message,
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "The deletion operation failed with the following error message:"
                 f' "{operation_status.message}"'
             )
@@ -726,7 +726,7 @@ def deploy_transform_job(
     import boto3
 
     if (not archive) and (not synchronous):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "Resources must be archived when `deploy_transform_job()`"
                 " is executed in non-synchronous mode."
@@ -738,7 +738,7 @@ def deploy_transform_job(
     model_path = _download_artifact_from_uri(model_uri)
     model_config_path = os.path.join(model_path, MLMODEL_FILE_NAME)
     if not os.path.exists(model_config_path):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Failed to find {MLMODEL_FILE_NAME} configuration within the specified model's"
                 " root directory."
@@ -762,7 +762,7 @@ def deploy_transform_job(
         _find_transform_job(job_name=job_name, sage_client=sage_client) is not None
     )
     if transform_job_exists:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"You are attempting to deploy a batch transform job with name: {job_name}. "
                 "However, a batch transform job with the same name already exists."
@@ -823,7 +823,7 @@ def deploy_transform_job(
                 operation_status.message,
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "The batch transform job failed with the following error message:"
                 f' "{operation_status.message}"'
             )
@@ -869,7 +869,7 @@ def terminate_transform_job(
     import boto3
 
     if (not archive) and (not synchronous):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "Resources must be archived when `terminate_transform_job()`"
                 " is executed in non-synchronous mode."
@@ -921,7 +921,7 @@ def terminate_transform_job(
                 operation_status.message,
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "The termination operation failed with the following error message:"
                 f' "{operation_status.message}"'
             )
@@ -1014,7 +1014,7 @@ def push_model_to_sagemaker(
     model_path = _download_artifact_from_uri(model_uri)
     model_config_path = os.path.join(model_path, MLMODEL_FILE_NAME)
     if not os.path.exists(model_config_path):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Failed to find {MLMODEL_FILE_NAME} configuration within the specified model's"
                 " root directory."
@@ -1035,7 +1035,7 @@ def push_model_to_sagemaker(
     sage_client = boto3.client("sagemaker", region_name=region_name, **assume_role_credentials)
 
     if _does_model_exist(model_name=model_name, sage_client=sage_client):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"You are attempting to create a Sagemaker model with name: {model_name}. "
                 "However, a model with the same name already exists."
@@ -1413,7 +1413,7 @@ def _prepare_sagemaker_tags(
         return config_tags
 
     if SAGEMAKER_APP_NAME_TAG_KEY in sagemaker_tags:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Duplicate tag provided for '{SAGEMAKER_APP_NAME_TAG_KEY}'"
         )
     parsed = [{"Key": key, "Value": str(value)} for key, value in sagemaker_tags.items()]
@@ -2048,7 +2048,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
               `assumed_role_arn`.
 
             When an `assumed_role_arn` is provided without a `region_name`,
-            an MlflowException will be raised.
+            an QCFlowException will be raised.
     """
 
     def __init__(self, target_uri):
@@ -2082,7 +2082,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
             self.assumed_role_arn = self.assumed_role_arn.strip("/")
 
         if self.region_name.startswith("arn"):
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "It looks like the target_uri contains an IAM role ARN without a region name.\n"
                     "A region name must be provided when the target_uri contains a role ARN.\n"
@@ -2580,13 +2580,13 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
             self._apply_custom_config(final_config, config)
 
         if model_uri is None:
-            raise MlflowException(
+            raise QCFlowException(
                 message="A model_uri must be provided when updating a SageMaker deployment",
                 error_code=INVALID_PARAMETER_VALUE,
             )
 
         if final_config["mode"] not in [DEPLOYMENT_MODE_ADD, DEPLOYMENT_MODE_REPLACE]:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Invalid mode `{final_config['mode']}` for deployment"
                     " to a pre-existing application"
@@ -2754,7 +2754,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         with the AWS region and the role ARN in the ``target_uri`` such as
         ``sagemaker:/us-east-1/arn:aws:1234:role/assumed_role``.
 
-        A :py:class:`qcflow.exceptions.MlflowException` will also be thrown when an error occurs
+        A :py:class:`qcflow.exceptions.QCFlowException` will also be thrown when an error occurs
         while retrieving the deployment.
 
         Args:
@@ -2790,7 +2790,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
             )
             return sage_client.describe_endpoint(EndpointName=name)
         except Exception as exc:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"There was an error while retrieving the deployment: {exc}\n"
             )
 
@@ -2866,7 +2866,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
             response_body = response["Body"].read().decode("utf-8")
             return PredictionsResponse.from_json(response_body)
         except Exception as exc:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"There was an error while getting model prediction: {exc}\n"
             )
 
@@ -2882,12 +2882,12 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
         creation completes (i.e. until it's possible to create a deployment within the endpoint).
         In the case of conflicts (e.g. if it's not possible to create the specified endpoint
         due to conflict with an existing endpoint), raises a
-        :py:class:`qcflow.exceptions.MlflowException`. See target-specific plugin documentation
+        :py:class:`qcflow.exceptions.QCFlowException`. See target-specific plugin documentation
         for additional detail on support for asynchronous creation and other configuration.
 
         Args:
             name: Unique name to use for endpoint. If another endpoint exists with the same
-                        name, raises a :py:class:`qcflow.exceptions.MlflowException`.
+                        name, raises a :py:class:`qcflow.exceptions.QCFlowException`.
             config: (optional) Dict containing target-specific configuration for the endpoint.
 
         Returns:
@@ -2938,7 +2938,7 @@ class SageMakerDeploymentClient(BaseDeploymentClient):
     def get_endpoint(self, endpoint):
         """
         Returns a dictionary describing the specified endpoint, throwing a
-        py:class:`qcflow.exception.MlflowException` if no endpoint exists with the provided
+        py:class:`qcflow.exception.QCFlowException` if no endpoint exists with the provided
         name.
         The dict is guaranteed to contain an 'name' key containing the endpoint name.
         The other fields of the returned dictionary and their types may vary across targets.

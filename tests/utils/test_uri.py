@@ -3,7 +3,7 @@ import posixpath
 
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.db.db_types import DATABASE_ENGINES
 from qcflow.utils.os import is_windows
 from qcflow.utils.uri import (
@@ -40,7 +40,7 @@ def test_extract_db_type_from_uri():
         assert legit_db == get_uri_scheme(uri.format(with_driver))
 
     for unsupported_db in ["a", "aa", "sql"]:
-        with pytest.raises(MlflowException, match="Invalid database engine"):
+        with pytest.raises(QCFlowException, match="Invalid database engine"):
             extract_db_type_from_uri(unsupported_db)
 
 
@@ -70,7 +70,7 @@ def test_get_db_info_from_uri(server_uri, result):
     ["databricks:/profile:prefix", "databricks:/", "databricks://"],
 )
 def test_get_db_info_from_uri_errors_no_netloc(server_uri):
-    with pytest.raises(MlflowException, match="URI is formatted incorrectly"):
+    with pytest.raises(QCFlowException, match="URI is formatted incorrectly"):
         get_db_info_from_uri(server_uri)
 
 
@@ -87,7 +87,7 @@ def test_get_db_info_from_uri_errors_no_netloc(server_uri):
     ],
 )
 def test_get_db_info_from_uri_errors_invalid_profile(server_uri):
-    with pytest.raises(MlflowException, match="Unsupported Databricks profile"):
+    with pytest.raises(QCFlowException, match="Unsupported Databricks profile"):
         get_db_info_from_uri(server_uri)
 
 
@@ -110,7 +110,7 @@ def test_is_local_uri():
     assert not is_local_uri("databricks:whatever")
     assert not is_local_uri("databricks://whatever")
 
-    with pytest.raises(MlflowException, match="is not a valid remote uri."):
+    with pytest.raises(QCFlowException, match="is not a valid remote uri."):
         is_local_uri("file://myhostname/path/to/file")
 
 
@@ -249,7 +249,7 @@ def test_append_to_uri_path_handles_special_uri_characters_in_posixpaths():
     ],
 )
 def test_append_to_uri_throws_for_malicious_query_string_in_uri(uri):
-    with pytest.raises(MlflowException, match=r"Invalid query string"):
+    with pytest.raises(QCFlowException, match=r"Invalid query string"):
         append_to_uri_path(uri)
 
 
@@ -519,7 +519,7 @@ def test_get_databricks_profile_uri_from_artifact_uri(uri, result, result_scheme
     ],
 )
 def test_get_databricks_profile_uri_from_artifact_uri_error_cases(uri):
-    with pytest.raises(MlflowException, match="Unsupported Databricks profile"):
+    with pytest.raises(QCFlowException, match="Unsupported Databricks profile"):
         get_databricks_profile_uri_from_artifact_uri(uri)
 
 
@@ -621,7 +621,7 @@ def test_add_databricks_profile_info_to_artifact_uri(artifact_uri, profile_uri, 
     ],
 )
 def test_add_databricks_profile_info_to_artifact_uri_errors(artifact_uri, profile_uri):
-    with pytest.raises(MlflowException, match="Unsupported Databricks profile"):
+    with pytest.raises(QCFlowException, match="Unsupported Databricks profile"):
         add_databricks_profile_info_to_artifact_uri(artifact_uri, profile_uri)
 
 
@@ -666,7 +666,7 @@ def test_dbfs_hdfs_uri_to_fuse_path(uri, result):
     ["some/relative/local/path", "s3:/some/s3/path", "C:/cool/windows/path"],
 )
 def test_dbfs_hdfs_uri_to_fuse_path_raises(path):
-    with pytest.raises(MlflowException, match="did not start with expected DBFS URI prefix"):
+    with pytest.raises(QCFlowException, match="did not start with expected DBFS URI prefix"):
         dbfs_hdfs_uri_to_fuse_path(path)
 
 
@@ -803,7 +803,7 @@ def test_validate_path_is_safe_windows_good(path):
     ],
 )
 def test_validate_path_is_safe_bad(path):
-    with pytest.raises(MlflowException, match="Invalid path"):
+    with pytest.raises(QCFlowException, match="Invalid path"):
         validate_path_is_safe(path)
 
 
@@ -899,7 +899,7 @@ def test_validate_path_is_safe_bad(path):
     ],
 )
 def test_validate_path_is_safe_windows_bad(path):
-    with pytest.raises(MlflowException, match="Invalid path"):
+    with pytest.raises(QCFlowException, match="Invalid path"):
         validate_path_is_safe(path)
 
 

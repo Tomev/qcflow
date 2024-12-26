@@ -5,7 +5,7 @@ from qcflow.environment_variables import (
     QCFLOW_HUGGINGFACE_DISABLE_ACCELERATE_FEATURES,
     QCFLOW_HUGGINGFACE_MODEL_MAX_SHARD_SIZE,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_STATE
 from qcflow.transformers.flavor_config import FlavorKey, get_peft_base_model, is_peft_model
 
@@ -125,7 +125,7 @@ def load_model_and_components_from_huggingface_hub(flavor_conf, accelerate_conf,
     model_revision = flavor_conf.get(FlavorKey.MODEL_REVISION)
 
     if not model_revision:
-        raise MlflowException(
+        raise QCFlowException(
             "The model was saved with 'save_pretrained' set to False, but the commit hash is not "
             "found in the saved metadata. Loading the model with the different version may cause "
             "inconsistency issue and security risk.",
@@ -162,7 +162,7 @@ def _load_component(flavor_conf, name, local_path=None, repo_id=None):
         trust_remote = False
     else:
         if local_path is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"A custom component `{component_name}` was specified, "
                 "but no local config file was found to retrieve the "
                 "definition. Make sure your model was saved with "
@@ -222,7 +222,7 @@ def _load_class_from_transformers_config(model_name_or_path, revision=None):
         ]
 
         if len(auto_classes) == 0:
-            raise MlflowException(f"Couldn't find a loader class for {class_name}")
+            raise QCFlowException(f"Couldn't find a loader class for {class_name}")
 
         auto_class = auto_classes[0]
         cls = getattr(transformers, auto_class)
@@ -291,7 +291,7 @@ def _try_load_model_with_device(model_class, model_name_or_path, load_kwargs):
     except OSError as e:
         revision = load_kwargs.get("revision")
         if f"{revision} is not a valid git identifier" in str(e):
-            raise MlflowException(
+            raise QCFlowException(
                 f"The model was saved with a HuggingFace Hub repository name '{model_name_or_path}'"
                 f"and a commit hash '{revision}', but the commit is not found in the repository. "
             )

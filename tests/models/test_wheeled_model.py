@@ -12,7 +12,7 @@ from sklearn import datasets
 
 import qcflow
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.model import METADATA_FILES
 from qcflow.models.utils import load_serving_example
 from qcflow.models.wheeled_model import _ORIGINAL_REQ_FILE_NAME, _WHEELS_FOLDER_NAME, WheeledModel
@@ -235,7 +235,7 @@ def test_logging_and_saving_wheeled_model_throws(tmp_path, sklearn_knn_model):
     match = "Model libraries are already added"
 
     # Log wheeled model
-    with pytest.raises(MlflowException, match=re.escape(match)):
+    with pytest.raises(QCFlowException, match=re.escape(match)):
         with qcflow.start_run():
             WheeledModel.log_model(
                 model_uri=wheeled_model_uri,
@@ -243,7 +243,7 @@ def test_logging_and_saving_wheeled_model_throws(tmp_path, sklearn_knn_model):
 
     # Saved a wheeled model
     saved_model_path = os.path.join(tmp_path, "test")
-    with pytest.raises(MlflowException, match=re.escape(match)):
+    with pytest.raises(QCFlowException, match=re.escape(match)):
         with qcflow.start_run():
             WheeledModel(wheeled_model_uri).save_model(saved_model_path)
 
@@ -252,14 +252,14 @@ def test_log_model_with_non_model_uri():
     model_uri = "runs:/beefe0b6b5bd4acf9938244cdc006b64/model"
 
     # Log with wheels
-    with pytest.raises(MlflowException, match=_improper_model_uri_msg(model_uri)):
+    with pytest.raises(QCFlowException, match=_improper_model_uri_msg(model_uri)):
         with qcflow.start_run():
             WheeledModel.log_model(
                 model_uri=model_uri,
             )
 
     # Save with wheels
-    with pytest.raises(MlflowException, match=_improper_model_uri_msg(model_uri)):
+    with pytest.raises(QCFlowException, match=_improper_model_uri_msg(model_uri)):
         with qcflow.start_run():
             WheeledModel(model_uri)
 
@@ -374,7 +374,7 @@ def test_wheel_download_override_option_works(tmp_path, monkeypatch):
 
     # Default option fails to download wheel
     with pytest.raises(
-        MlflowException, match="An error occurred while downloading the dependency wheels"
+        QCFlowException, match="An error occurred while downloading the dependency wheels"
     ):
         WheeledModel._download_wheels(requirements_file, wheel_dir)
 
@@ -388,7 +388,7 @@ def test_wheel_download_dependency_conflicts(tmp_path):
     reqs_file = tmp_path / "requirements.txt"
     reqs_file.write_text("qcflow==2.15.0\nqcflow==2.16.0")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         # Ensure the error message contains conflict details
         match=r"Cannot install qcflow==2\.15\.0 and qcflow==2\.16\.0.+The conflict is caused by",
     ):

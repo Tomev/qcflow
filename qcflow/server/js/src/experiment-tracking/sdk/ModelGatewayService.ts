@@ -1,7 +1,7 @@
 import invariant from 'invariant';
 import { getJson } from '../../common/utils/FetchUtils';
-import { MlflowService } from './MlflowService';
-import { ModelGatewayRouteTask } from './MlflowEnums';
+import { QCFlowService } from './QCFlowService';
+import { ModelGatewayRouteTask } from './QCFlowEnums';
 import { GatewayErrorWrapper } from '../utils/LLMGatewayUtils';
 import { fetchEndpoint, HTTPMethods } from '../../common/utils/FetchUtils';
 import { parseEndpointEvaluationResponse } from '../utils/LLMGatewayUtils';
@@ -108,7 +108,7 @@ export interface ModelGatewayRouteLegacy {
   model: ModelGatewayModelInfo;
 }
 
-export interface MlflowDeploymentsEndpoint {
+export interface QCFlowDeploymentsEndpoint {
   name: string;
   endpoint_type: ModelGatewayRouteTask;
   endpoint_url: string;
@@ -132,11 +132,11 @@ export interface ModelGatewayRoute {
   /**
    * QCFlow deployments URL of the endpoint
    */
-  qcflowDeployment?: MlflowDeploymentsEndpoint;
+  qcflowDeployment?: QCFlowDeploymentsEndpoint;
 }
 
-export interface SearchMlflowDeploymentsModelRoutesResponse {
-  endpoints: MlflowDeploymentsEndpoint[];
+export interface SearchQCFlowDeploymentsModelRoutesResponse {
+  endpoints: QCFlowDeploymentsEndpoint[];
 }
 
 const gatewayErrorHandler = ({
@@ -185,7 +185,7 @@ export class ModelGatewayService {
       ...data.parameters,
     };
 
-    return MlflowService.gatewayProxyPost({
+    return QCFlowService.gatewayProxyPost({
       gateway_path: route.qcflowDeployment.endpoint_url.substring(1),
       json_data: processed_data,
     }) as Promise<ModelGatewayResponseType>;

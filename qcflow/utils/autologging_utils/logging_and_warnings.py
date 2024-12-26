@@ -230,13 +230,13 @@ def set_qcflow_events_and_warnings_behavior_globally(
 
     """
 
-    with _SetMlflowEventsAndWarningsBehaviorGlobally(
+    with _SetQCFlowEventsAndWarningsBehaviorGlobally(
         disable_event_logs, disable_warnings, reroute_warnings
     ):
         yield
 
 
-class _SetMlflowEventsAndWarningsBehaviorGlobally:
+class _SetQCFlowEventsAndWarningsBehaviorGlobally:
     _lock = RLock()
     _disable_event_logs_count = 0
     _disable_warnings_count = 0
@@ -249,45 +249,45 @@ class _SetMlflowEventsAndWarningsBehaviorGlobally:
 
     def __enter__(self):
         try:
-            with _SetMlflowEventsAndWarningsBehaviorGlobally._lock:
+            with _SetQCFlowEventsAndWarningsBehaviorGlobally._lock:
                 if self._disable_event_logs:
-                    if _SetMlflowEventsAndWarningsBehaviorGlobally._disable_event_logs_count <= 0:
+                    if _SetQCFlowEventsAndWarningsBehaviorGlobally._disable_event_logs_count <= 0:
                         logging_utils.disable_logging()
-                    _SetMlflowEventsAndWarningsBehaviorGlobally._disable_event_logs_count += 1
+                    _SetQCFlowEventsAndWarningsBehaviorGlobally._disable_event_logs_count += 1
 
                 if self._disable_warnings:
-                    if _SetMlflowEventsAndWarningsBehaviorGlobally._disable_warnings_count <= 0:
+                    if _SetQCFlowEventsAndWarningsBehaviorGlobally._disable_warnings_count <= 0:
                         _WARNINGS_CONTROLLER.set_qcflow_warnings_disablement_state_globally(
                             disabled=True
                         )
-                    _SetMlflowEventsAndWarningsBehaviorGlobally._disable_warnings_count += 1
+                    _SetQCFlowEventsAndWarningsBehaviorGlobally._disable_warnings_count += 1
 
                 if self._reroute_warnings:
-                    if _SetMlflowEventsAndWarningsBehaviorGlobally._reroute_warnings_count <= 0:
+                    if _SetQCFlowEventsAndWarningsBehaviorGlobally._reroute_warnings_count <= 0:
                         _WARNINGS_CONTROLLER.set_qcflow_warnings_rerouting_state_globally(
                             rerouted=True
                         )
-                    _SetMlflowEventsAndWarningsBehaviorGlobally._reroute_warnings_count += 1
+                    _SetQCFlowEventsAndWarningsBehaviorGlobally._reroute_warnings_count += 1
         except Exception:
             pass
 
     def __exit__(self, *args, **kwargs):
         try:
-            with _SetMlflowEventsAndWarningsBehaviorGlobally._lock:
+            with _SetQCFlowEventsAndWarningsBehaviorGlobally._lock:
                 if self._disable_event_logs:
-                    _SetMlflowEventsAndWarningsBehaviorGlobally._disable_event_logs_count -= 1
+                    _SetQCFlowEventsAndWarningsBehaviorGlobally._disable_event_logs_count -= 1
                 if self._disable_warnings:
-                    _SetMlflowEventsAndWarningsBehaviorGlobally._disable_warnings_count -= 1
+                    _SetQCFlowEventsAndWarningsBehaviorGlobally._disable_warnings_count -= 1
                 if self._reroute_warnings:
-                    _SetMlflowEventsAndWarningsBehaviorGlobally._reroute_warnings_count -= 1
+                    _SetQCFlowEventsAndWarningsBehaviorGlobally._reroute_warnings_count -= 1
 
-                if _SetMlflowEventsAndWarningsBehaviorGlobally._disable_event_logs_count <= 0:
+                if _SetQCFlowEventsAndWarningsBehaviorGlobally._disable_event_logs_count <= 0:
                     logging_utils.enable_logging()
-                if _SetMlflowEventsAndWarningsBehaviorGlobally._disable_warnings_count <= 0:
+                if _SetQCFlowEventsAndWarningsBehaviorGlobally._disable_warnings_count <= 0:
                     _WARNINGS_CONTROLLER.set_qcflow_warnings_disablement_state_globally(
                         disabled=False
                     )
-                if _SetMlflowEventsAndWarningsBehaviorGlobally._reroute_warnings_count <= 0:
+                if _SetQCFlowEventsAndWarningsBehaviorGlobally._reroute_warnings_count <= 0:
                     _WARNINGS_CONTROLLER.set_qcflow_warnings_rerouting_state_globally(
                         rerouted=False
                     )

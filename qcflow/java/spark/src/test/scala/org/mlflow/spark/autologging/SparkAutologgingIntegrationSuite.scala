@@ -4,7 +4,7 @@ import java.io.File
 import java.nio.file.{Files, Path, Paths}
 import java.util.UUID
 
-import org.apache.spark.qcflow.MlflowSparkAutologgingTestUtils
+import org.apache.spark.qcflow.QCFlowSparkAutologgingTestUtils
 import org.apache.spark.sql.execution.ui.SparkListenerSQLExecutionEnd
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
@@ -16,7 +16,7 @@ import org.scalatest.matchers.should.Matchers
 
 import scala.collection.mutable.ArrayBuffer
 
-private[autologging] class MockSubscriber extends MlflowAutologEventSubscriber {
+private[autologging] class MockSubscriber extends QCFlowAutologEventSubscriber {
   private val uuid: String = UUID.randomUUID().toString
   override def replId: String = {
     uuid
@@ -98,11 +98,11 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    MlflowAutologEventPublisher.init()
+    QCFlowAutologEventPublisher.init()
   }
 
   override def afterEach(): Unit = {
-    MlflowAutologEventPublisher.stop()
+    QCFlowAutologEventPublisher.stop()
     super.afterEach()
   }
 
@@ -110,32 +110,32 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
     s"${Paths.get("file:", absolutePath).toString}"
   }
 
-  test("MlflowAutologEventPublisher can be idempotently initialized & stopped within " +
+  test("QCFlowAutologEventPublisher can be idempotently initialized & stopped within " +
     "single thread") {
     // We expect a listener to already be created by calling init() in beforeEach
-    val listeners0 = MlflowSparkAutologgingTestUtils.getListeners(spark)
+    val listeners0 = QCFlowSparkAutologgingTestUtils.getListeners(spark)
     assert(listeners0.length == 1)
     val listener0 = listeners0.head
     // Call init() again, verify listener is unchanged
-    MlflowAutologEventPublisher.init()
-    val listeners1 = MlflowSparkAutologgingTestUtils.getListeners(spark)
+    QCFlowAutologEventPublisher.init()
+    val listeners1 = QCFlowSparkAutologgingTestUtils.getListeners(spark)
     assert(listeners1.length == 1)
     val listener1 = listeners1.head
     assert(listener0 == listener1)
     // Call stop() multiple times
-    MlflowAutologEventPublisher.stop()
-    assert(MlflowSparkAutologgingTestUtils.getListeners(spark).isEmpty)
-    MlflowAutologEventPublisher.stop()
-    assert(MlflowSparkAutologgingTestUtils.getListeners(spark).isEmpty)
+    QCFlowAutologEventPublisher.stop()
+    assert(QCFlowSparkAutologgingTestUtils.getListeners(spark).isEmpty)
+    QCFlowAutologEventPublisher.stop()
+    assert(QCFlowSparkAutologgingTestUtils.getListeners(spark).isEmpty)
     // Call init() after stop(), verify that we create a new listener
-    MlflowAutologEventPublisher.init()
-    val listeners2 = MlflowSparkAutologgingTestUtils.getListeners(spark)
+    QCFlowAutologEventPublisher.init()
+    val listeners2 = QCFlowSparkAutologgingTestUtils.getListeners(spark)
     assert(listeners2.length == 1)
     val listener2 = listeners2.head
     assert(listener2 != listener1)
   }
 
-  test("MlflowAutologEventPublisher triggers publishEvent with appropriate arguments " +
+  test("QCFlowAutologEventPublisher triggers publishEvent with appropriate arguments " +
     "when reading datasources corresponding to different formats") {
       val formatToTestDFs = formatToTablePath.map { case (format, tablePath) =>
         val baseDf = spark.read.format(format).option("inferSchema", "true")
@@ -152,10 +152,10 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
         formatToTestDFs.foreach { case (format, dfs) =>
           dfs.foreach { df =>
             df.printSchema()
-            MlflowAutologEventPublisher.init()
+            QCFlowAutologEventPublisher.init()
             val subscriber = spy(new MockSubscriber())
-            MlflowAutologEventPublisher.register(subscriber)
-            assert(MlflowAutologEventPublisher.subscribers.size == 1)
+            QCFlowAutologEventPublisher.register(subscriber)
+            assert(QCFlowAutologEventPublisher.subscribers.size == 1)
             // Read DF
             df.collect()
             // Verify events logged
@@ -164,12 +164,12 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
             val expectedPath = getFileUri(tablePath)
             verify(subscriber, times(1)).notify(any(), any(), any())
             verify(subscriber, times(1)).notify(expectedPath, "unknown", format)
-            MlflowAutologEventPublisher.stop()
+            QCFlowAutologEventPublisher.stop()
           }
         }
   }
 
-  test("MlflowAutologEventPublisher triggers publishEvent with appropriate arguments " +
+  test("QCFlowAutologEventPublisher triggers publishEvent with appropriate arguments " +
     "when reading a JOIN of two tables") {
     val formats = formatToTablePath.keys
     val leftFormat = formats.head
@@ -178,9 +178,9 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
     val rightPath = formatToTablePath(rightFormat)
     val leftDf = spark.read.format(leftFormat).load(leftPath)
     val rightDf = spark.read.format(rightFormat).load(rightPath)
-    MlflowAutologEventPublisher.init()
+    QCFlowAutologEventPublisher.init()
     val subscriber = spy(new MockSubscriber())
-    MlflowAutologEventPublisher.register(subscriber)
+    QCFlowAutologEventPublisher.register(subscriber)
     leftDf.join(rightDf).collect()
     // Sleep to let the SparkListener trigger read
     Thread.sleep(1000)
@@ -189,21 +189,21 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
     verify(subscriber, times(1)).notify(getFileUri(rightPath), "unknown", rightFormat)
   }
 
-  test("MlflowAutologEventPublisher can publish to working subscribers even when " +
+  test("QCFlowAutologEventPublisher can publish to working subscribers even when " +
     "others are broken") {
-    MlflowAutologEventPublisher.stop()
+    QCFlowAutologEventPublisher.stop()
     val subscriber = spy(new MockSubscriber())
     // Publish to a broken subscriber, then a working one, and finally another broken one
     val subscriberSeq = Seq(new BrokenSubscriber(), subscriber, new BrokenSubscriber())
-    object MockPublisher extends MlflowAutologEventPublisherImpl {
+    object MockPublisher extends QCFlowAutologEventPublisherImpl {
       // Override subscriber iteration logic to yield subscribers in the desired order
-      override def getSubscribers: Seq[(String, MlflowAutologEventSubscriber)] = {
+      override def getSubscribers: Seq[(String, QCFlowAutologEventSubscriber)] = {
         subscriberSeq.map(subscriber => (subscriber.replId, subscriber))
       }
     }
     // Disable GC of dead subscribers so that they get published-to
     MockPublisher.init(gcDeadSubscribersIntervalSec = 10000)
-    val listeners1 = MlflowSparkAutologgingTestUtils.getListeners(spark)
+    val listeners1 = QCFlowSparkAutologgingTestUtils.getListeners(spark)
     assert(listeners1.length == 1)
 
     val (format, path) = formatToTablePath.head
@@ -220,8 +220,8 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
 
   test("Exceptions while extracting datasource information from Spark query plan " +
     "do not fail the query") {
-    MlflowAutologEventPublisher.stop()
-    object MockPublisher extends MlflowAutologEventPublisherImpl {
+    QCFlowAutologEventPublisher.stop()
+    object MockPublisher extends QCFlowAutologEventPublisherImpl {
       // Return a custom listener that throws while processing SparkListenerSQLExecutionEnd events
       override def getSparkDataSourceListener: SparkDataSourceListener = {
         new SparkDataSourceListener {
@@ -240,25 +240,25 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
     df.collect()
   }
 
-  test("MlflowAutologEventPublisher correctly unregisters broken subscribers") {
-    MlflowAutologEventPublisher.register(new BrokenSubscriber())
+  test("QCFlowAutologEventPublisher correctly unregisters broken subscribers") {
+    QCFlowAutologEventPublisher.register(new BrokenSubscriber())
     Thread.sleep(2000)
-    assert(MlflowAutologEventPublisher.subscribers.isEmpty)
+    assert(QCFlowAutologEventPublisher.subscribers.isEmpty)
   }
 
   test("Subscriber registration fails if init() not called") {
-    MlflowAutologEventPublisher.stop()
+    QCFlowAutologEventPublisher.stop()
     intercept[RuntimeException] {
-      MlflowAutologEventPublisher.register(new MockSubscriber())
+      QCFlowAutologEventPublisher.register(new MockSubscriber())
     }
   }
 
-  test("Initializing MlflowAutologEventPublisher fails if SparkSession doesn't exixt") {
-    MlflowAutologEventPublisher.stop()
+  test("Initializing QCFlowAutologEventPublisher fails if SparkSession doesn't exixt") {
+    QCFlowAutologEventPublisher.stop()
     spark.stop()
     try {
       intercept[RuntimeException] {
-        MlflowAutologEventPublisher.init()
+        QCFlowAutologEventPublisher.init()
       }
     } finally {
       spark = getOrCreateSparkSession()
@@ -267,42 +267,42 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
 
   test("Delegates to repl-ID-aware listener if REPL ID property is set in SparkContext") {
     // Verify instance created by init() in beforeEach is not REPL-ID-aware
-    assert(MlflowAutologEventPublisher.sparkQueryListener.isInstanceOf[SparkDataSourceListener])
-    assert(!MlflowAutologEventPublisher.sparkQueryListener.isInstanceOf[ReplAwareSparkDataSourceListener])
+    assert(QCFlowAutologEventPublisher.sparkQueryListener.isInstanceOf[SparkDataSourceListener])
+    assert(!QCFlowAutologEventPublisher.sparkQueryListener.isInstanceOf[ReplAwareSparkDataSourceListener])
     // Call stop, update SparkContext to contain repl ID property, call init(), verify instance is
     // REPL-ID-aware
-    MlflowAutologEventPublisher.stop()
-    assert(MlflowSparkAutologgingTestUtils.getListeners(spark).isEmpty)
+    QCFlowAutologEventPublisher.stop()
+    assert(QCFlowSparkAutologgingTestUtils.getListeners(spark).isEmpty)
     val sc = spark.sparkContext
     sc.setLocalProperty("spark.databricks.replId", "myCoolReplId")
-    MlflowAutologEventPublisher.init()
-    assert(MlflowAutologEventPublisher.sparkQueryListener.isInstanceOf[ReplAwareSparkDataSourceListener])
+    QCFlowAutologEventPublisher.init()
+    assert(QCFlowAutologEventPublisher.sparkQueryListener.isInstanceOf[ReplAwareSparkDataSourceListener])
     sc.setLocalProperty("spark.databricks.replId", null)
-    MlflowAutologEventPublisher.stop()
-    MlflowAutologEventPublisher.init()
-    assert(MlflowAutologEventPublisher.sparkQueryListener.isInstanceOf[SparkDataSourceListener])
+    QCFlowAutologEventPublisher.stop()
+    QCFlowAutologEventPublisher.init()
+    assert(QCFlowAutologEventPublisher.sparkQueryListener.isInstanceOf[SparkDataSourceListener])
   }
 
   test("Delegates to repl-ID-aware listener if Databricks cluster ID is set in Spark Conf") {
     // Verify instance created by init() in beforeEach is not REPL-ID-aware
-    assert(MlflowAutologEventPublisher.sparkQueryListener.isInstanceOf[SparkDataSourceListener])
-    assert(!MlflowAutologEventPublisher.sparkQueryListener.isInstanceOf[ReplAwareSparkDataSourceListener])
-    MlflowAutologEventPublisher.stop()
+    assert(QCFlowAutologEventPublisher.sparkQueryListener.isInstanceOf[SparkDataSourceListener])
+    assert(!QCFlowAutologEventPublisher.sparkQueryListener.isInstanceOf[ReplAwareSparkDataSourceListener])
+    QCFlowAutologEventPublisher.stop()
 
     spark.conf.set("spark.databricks.clusterUsageTags.clusterId", "myCoolClusterId")
-    MlflowAutologEventPublisher.init()
-    assert(MlflowAutologEventPublisher.sparkQueryListener.isInstanceOf[ReplAwareSparkDataSourceListener])
+    QCFlowAutologEventPublisher.init()
+    assert(QCFlowAutologEventPublisher.sparkQueryListener.isInstanceOf[ReplAwareSparkDataSourceListener])
   }
 
   test("repl-ID-aware listener publishes events with expected REPL IDs") {
-    MlflowAutologEventPublisher.stop()
+    QCFlowAutologEventPublisher.stop()
 
     // Create a ReplAwareSparkDataSourceListener that uses a DatasourceAttributeExtractor instead
     // of a ReplAwareDatasourceAttributeExtractor for testing, since
     // ReplAwareDatasourceAttributeExtractor requires Databricks-specific packages that are not
     // available in OSS test environments
     class ReplAwareSparkDataSourceListenerWithDefaultDatasourceAttributeExtractor(
-        publisher: MlflowAutologEventPublisherImpl = MlflowAutologEventPublisher)
+        publisher: QCFlowAutologEventPublisherImpl = QCFlowAutologEventPublisher)
       extends ReplAwareSparkDataSourceListener(publisher) {
       override protected def getDatasourceAttributeExtractor: DatasourceAttributeExtractorBase = {
         DatasourceAttributeExtractor
@@ -311,7 +311,7 @@ class SparkAutologgingSuite extends AnyFunSuite with Matchers with BeforeAndAfte
 
     // Create and initialize a publisher that uses the ReplAwareSparkDataSourceListener containing
     // the DatasourceAttributeExtractor defined above
-    object MockReplAwarePublisher extends MlflowAutologEventPublisherImpl {
+    object MockReplAwarePublisher extends QCFlowAutologEventPublisherImpl {
       override def getSparkDataSourceListener: SparkDataSourceListener = {
         new ReplAwareSparkDataSourceListenerWithDefaultDatasourceAttributeExtractor(this)
       }

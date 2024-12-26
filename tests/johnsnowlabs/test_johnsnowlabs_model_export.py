@@ -581,7 +581,7 @@ def test_log_model_calls_register_model(tmp_path, jsl_model):
 #     expected_uri,
 # ):
 #     def mock_spark_session_load(path):
-#         raise Exception("MlflowDbfsClient operation failed!")
+#         raise Exception("QCFlowDbfsClient operation failed!")
 #
 #     mock_spark_session = mock.Mock()
 #     mock_read_spark_session = mock.Mock()
@@ -613,7 +613,7 @@ def test_log_model_calls_register_model(tmp_path, jsl_model):
 #         "qcflow.spark._HadoopFileSystem.is_filesystem_available",
 #         return_value=qcflowdbfs_available,
 #     ), mock.patch(
-#         "qcflow.utils.databricks_utils.MlflowCredentialContext", autospec=True
+#         "qcflow.utils.databricks_utils.QCFlowCredentialContext", autospec=True
 #     ), mock.patch(
 #         "qcflow.utils.databricks_utils._get_dbutils",
 #         mock_get_dbutils,
@@ -646,7 +646,7 @@ def test_log_model_calls_register_model(tmp_path, jsl_model):
 # ):
 #     def mock_spark_session_load(path):
 #         if dummy_read_shows_qcflowdbfs_available:
-#             raise Exception("MlflowdbfsClient operation failed!")
+#             raise Exception("QCFlowdbfsClient operation failed!")
 #         else:
 #             raise Exception("qcflowdbfs filesystem not found")
 #
@@ -676,9 +676,9 @@ def test_log_model_calls_register_model(tmp_path, jsl_model):
 #         return_value="dbfs:/databricks/qcflow-tracking/a/b",
 #     ), mock.patch(
 #         "qcflow.spark._HadoopFileSystem.is_filesystem_available",
-#         side_effect=Exception("MlflowDbfsClient operation failed!"),
+#         side_effect=Exception("QCFlowDbfsClient operation failed!"),
 #     ), mock.patch(
-#         "qcflow.utils.databricks_utils.MlflowCredentialContext", autospec=True
+#         "qcflow.utils.databricks_utils.QCFlowCredentialContext", autospec=True
 #     ), mock.patch(
 #         "qcflow.utils.databricks_utils._get_dbutils",
 #         mock_get_dbutils,

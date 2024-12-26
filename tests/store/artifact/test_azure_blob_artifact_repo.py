@@ -8,7 +8,7 @@ import pytest
 from azure.storage.blob import BlobPrefix, BlobProperties, BlobServiceClient
 
 from qcflow.entities.multipart_upload import MultipartUploadPart
-from qcflow.exceptions import MlflowException, MlflowTraceDataCorrupted
+from qcflow.exceptions import QCFlowException, QCFlowTraceDataCorrupted
 from qcflow.store.artifact.artifact_repo import try_read_trace_data
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 from qcflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
@@ -365,7 +365,7 @@ def test_download_artifact_throws_value_error_when_listed_blobs_do_not_contain_a
     mock_client.get_container_client().walk_blobs.side_effect = get_mock_listing
 
     with pytest.raises(
-        MlflowException, match="Azure blob does not begin with the specified artifact path"
+        QCFlowException, match="Azure blob does not begin with the specified artifact path"
     ):
         repo.download_artifacts("")
 
@@ -399,7 +399,7 @@ def test_complete_multipart_upload(mock_client, tmp_path):
 
 def test_trace_data(mock_client, tmp_path):
     repo = AzureBlobArtifactRepository(TEST_URI, mock_client)
-    with pytest.raises(MlflowException, match=r"Trace data not found for path="):
+    with pytest.raises(QCFlowException, match=r"Trace data not found for path="):
         repo.download_trace_data()
     trace_data_path = tmp_path.joinpath("traces.json")
     trace_data_path.write_text("invalid data")
@@ -408,7 +408,7 @@ def test_trace_data(mock_client, tmp_path):
             "qcflow.store.artifact.artifact_repo.try_read_trace_data",
             side_effect=lambda x: try_read_trace_data(trace_data_path),
         ),
-        pytest.raises(MlflowTraceDataCorrupted, match=r"Trace data is corrupted for path="),
+        pytest.raises(QCFlowTraceDataCorrupted, match=r"Trace data is corrupted for path="),
     ):
         repo.download_trace_data()
 

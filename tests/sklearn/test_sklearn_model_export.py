@@ -25,7 +25,7 @@ import qcflow.sklearn
 import qcflow.utils
 from qcflow import pyfunc
 from qcflow.entities.model_registry.model_version import ModelVersion, ModelVersionStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelSignature
 from qcflow.models.utils import _read_example, load_serving_example
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, ErrorCode
@@ -157,7 +157,7 @@ def test_model_save_behavior_with_preexisting_folders(sklearn_knn_model, tmp_pat
     sklearn_model_path = tmp_path / "sklearn_model_filled_exists"
     sklearn_model_path.mkdir()
     (sklearn_model_path / "foo.txt").write_text("dummy content")
-    with pytest.raises(MlflowException, match="already exists and is not empty"):
+    with pytest.raises(QCFlowException, match="already exists and is not empty"):
         qcflow.sklearn.save_model(sk_model=sklearn_knn_model, path=sklearn_model_path)
 
 
@@ -498,7 +498,7 @@ def test_model_log_persists_requirements_in_qcflow_model_directory(
 def test_model_save_throws_exception_if_serialization_format_is_unrecognized(
     sklearn_knn_model, model_path
 ):
-    with pytest.raises(MlflowException, match="Unrecognized serialization format") as exc:
+    with pytest.raises(QCFlowException, match="Unrecognized serialization format") as exc:
         qcflow.sklearn.save_model(
             sk_model=sklearn_knn_model.model,
             path=model_path,

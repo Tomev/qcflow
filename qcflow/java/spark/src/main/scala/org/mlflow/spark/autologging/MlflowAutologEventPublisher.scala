@@ -13,11 +13,11 @@ import scala.util.{Try, Success, Failure}
 import scala.util.control.NonFatal
 
 /**
-  * Object exposing the actual implementation of MlflowAutologEventPublisher.
+  * Object exposing the actual implementation of QCFlowAutologEventPublisher.
   * We opt for this pattern (an object extending a trait) so that we can mock methods of the
   * trait in testing
   */
-object MlflowAutologEventPublisher extends MlflowAutologEventPublisherImpl {
+object QCFlowAutologEventPublisher extends QCFlowAutologEventPublisherImpl {
 
 }
 
@@ -27,13 +27,13 @@ object MlflowAutologEventPublisher extends MlflowAutologEventPublisherImpl {
  * https://docs.google.com/document/d/11nhwZtj-rps0stxuIioFBM9lkvIh_ua45cAFy_PqdHU/edit for more
  * details.
  */
-private[autologging] trait MlflowAutologEventPublisherImpl {
+private[autologging] trait QCFlowAutologEventPublisherImpl {
   private val logger = LoggerFactory.getLogger(getClass)
 
   private[autologging] var sparkQueryListener: SparkListener = _
   private val executor = new ScheduledThreadPoolExecutor(1)
   private[autologging] val subscribers =
-    new ConcurrentHashMap[String, MlflowAutologEventSubscriber]()
+    new ConcurrentHashMap[String, QCFlowAutologEventSubscriber]()
   private var scheduledTask: ScheduledFuture[_] = _
 
   def spark: SparkSession = {
@@ -109,7 +109,7 @@ private[autologging] trait MlflowAutologEventPublisherImpl {
     }
   }
 
-  def register(subscriber: MlflowAutologEventSubscriber): Unit = synchronized {
+  def register(subscriber: QCFlowAutologEventSubscriber): Unit = synchronized {
     if (sparkQueryListener == null) {
       throw new RuntimeException("Please call init() before attempting to register a subscriber")
     }
@@ -118,7 +118,7 @@ private[autologging] trait MlflowAutologEventPublisherImpl {
 
   // Exposed for testing - in particular, so that we can iterate over subscribers in a specific
   // order within tests
-  private[autologging] def getSubscribers: Seq[(String, MlflowAutologEventSubscriber)] = {
+  private[autologging] def getSubscribers: Seq[(String, QCFlowAutologEventSubscriber)] = {
     subscribers.asScala.toSeq
   }
 

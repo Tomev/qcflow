@@ -1,6 +1,6 @@
 import { type ModelTraceInfo } from '@databricks/web-shared/model-trace-explorer';
 import { useEditKeyValueTagsModal } from '../../../../common/hooks/useEditKeyValueTagsModal';
-import { MlflowService } from '../../../sdk/MlflowService';
+import { QCFlowService } from '../../../sdk/QCFlowService';
 import { KeyValueEntity } from '../../../types';
 import { useCallback } from 'react';
 import { QCFLOW_INTERNAL_PREFIX } from '../../../../common/utils/TagUtils';
@@ -39,8 +39,8 @@ export const useEditExperimentTraceTags = ({
 
       // Fire all requests at once
       const updateRequests = Promise.all([
-        ...addedOrModifiedTags.map(({ key, value }) => MlflowService.setExperimentTraceTag(requestId, key, value)),
-        ...deletedTags.map(({ key }) => MlflowService.deleteExperimentTraceTag(requestId, key)),
+        ...addedOrModifiedTags.map(({ key, value }) => QCFlowService.setExperimentTraceTag(requestId, key, value)),
+        ...deletedTags.map(({ key }) => QCFlowService.deleteExperimentTraceTag(requestId, key)),
       ]);
 
       return updateRequests;

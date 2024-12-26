@@ -8,9 +8,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { I18nUtils } from './i18n/I18nUtils';
-import { MLFlowRoot } from './app';
+import { QCFlowRoot } from './app';
 
-ReactDOM.render(<MLFlowRoot />, document.getElementById('root'));
+ReactDOM.render(<QCFlowRoot />, document.getElementById('root'));
 
 const windowOnError = (message: any, source: any, lineno: any, colno: any, error: any) => {
   // eslint-disable-next-line no-console -- TODO(FEINF-3587)

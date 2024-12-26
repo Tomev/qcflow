@@ -4,7 +4,7 @@ import { LegacySkeleton } from '@databricks/design-system';
 import ErrorModal from './experiment-tracking/components/modals/ErrorModal';
 import AppErrorBoundary from './common/components/error-boundaries/AppErrorBoundary';
 import { HashRouter, Route, Routes, createLazyRouteElement } from './common/utils/RoutingUtils';
-import { MlflowHeader } from './common/components/MlflowHeader';
+import { QCFlowHeader } from './common/components/QCFlowHeader';
 
 // Route definition imports:
 import { getRouteDefs as getExperimentTrackingRouteDefs } from './experiment-tracking/route-defs';
@@ -21,7 +21,7 @@ const landingRoute = {
   pageId: 'qcflow.experiments.list',
 };
 
-export const MlflowRouter = ({
+export const QCFlowRouter = ({
   isDarkTheme,
   setIsDarkTheme,
 }: {
@@ -41,7 +41,7 @@ export const MlflowRouter = ({
       <ErrorModal />
       <HashRouter>
         <AppErrorBoundary>
-          <MlflowHeader isDarkTheme={isDarkTheme} setIsDarkTheme={setIsDarkTheme} />
+          <QCFlowHeader isDarkTheme={isDarkTheme} setIsDarkTheme={setIsDarkTheme} />
           <React.Suspense fallback={<LegacySkeleton />}>
             <Routes>
               {routes.map(({ element, pageId, path }) => (

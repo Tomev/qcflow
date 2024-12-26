@@ -2,12 +2,12 @@ package org.qcflow.artifacts;
 
 import java.net.URI;
 
-import org.qcflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.tracking.creds.QCFlowHostCredsProvider;
 
 public class ArtifactRepositoryFactory {
-  private final MlflowHostCredsProvider hostCredsProvider;
+  private final QCFlowHostCredsProvider hostCredsProvider;
 
-  public ArtifactRepositoryFactory(MlflowHostCredsProvider hostCredsProvider) {
+  public ArtifactRepositoryFactory(QCFlowHostCredsProvider hostCredsProvider) {
     this.hostCredsProvider = hostCredsProvider;
   }
 

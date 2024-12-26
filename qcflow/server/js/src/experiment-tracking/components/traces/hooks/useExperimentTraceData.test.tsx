@@ -1,5 +1,5 @@
 import { renderHook, cleanup, waitFor } from '@testing-library/react';
-import { MlflowService } from '../../../sdk/MlflowService';
+import { QCFlowService } from '../../../sdk/QCFlowService';
 import { ModelSpanType, ModelTraceStatus, type ModelTraceData } from '@databricks/web-shared/model-trace-explorer';
 import { useExperimentTraceData } from './useExperimentTraceData';
 import Utils from '../../../../common/utils/Utils';
@@ -39,7 +39,7 @@ describe('useExperimentTraceData', () => {
 
   const renderTestHook = (skip?: boolean) => renderHook(() => useExperimentTraceData(testRequestId, skip));
   test('fetches trace data', async () => {
-    jest.spyOn(MlflowService, 'getExperimentTraceData').mockImplementation(() => Promise.resolve(mockTraceData));
+    jest.spyOn(QCFlowService, 'getExperimentTraceData').mockImplementation(() => Promise.resolve(mockTraceData));
 
     // Render the hook and wait for the traces to be fetched.
     const { result } = renderTestHook();
@@ -54,7 +54,7 @@ describe('useExperimentTraceData', () => {
 
   test('returns error when necessary', async () => {
     jest
-      .spyOn(MlflowService, 'getExperimentTraceData')
+      .spyOn(QCFlowService, 'getExperimentTraceData')
       .mockImplementation(() => Promise.reject(new Error('Some error')));
 
     // Render the hook and wait for the traces to be fetched.
@@ -68,7 +68,7 @@ describe('useExperimentTraceData', () => {
   });
 
   test('shows error when data is badly formatted', async () => {
-    jest.spyOn(MlflowService, 'getExperimentTraceData').mockImplementation(() => Promise.resolve(mockMangledTraceData));
+    jest.spyOn(QCFlowService, 'getExperimentTraceData').mockImplementation(() => Promise.resolve(mockMangledTraceData));
     jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.spyOn(Utils, 'logErrorAndNotifyUser');
 
@@ -82,8 +82,8 @@ describe('useExperimentTraceData', () => {
   });
 
   test("doesn't dispatch a network request if skip argument is provided", async () => {
-    jest.spyOn(MlflowService, 'getExperimentTraceData');
+    jest.spyOn(QCFlowService, 'getExperimentTraceData');
     renderTestHook(true);
-    expect(MlflowService.getExperimentTraceData).not.toBeCalled();
+    expect(QCFlowService.getExperimentTraceData).not.toBeCalled();
   });
 });

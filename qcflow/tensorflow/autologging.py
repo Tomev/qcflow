@@ -168,7 +168,7 @@ def extract_tf_keras_input_example(input_training_data):
         a slice of type ndarray or
         dict (str -> ndarray) limited to
         ``qcflow.utils.autologging_utils.INPUT_EXAMPLE_SAMPLE_ROWS``.
-        Throws ``MlflowException`` exception, if input_training_data is unsupported.
+        Throws ``QCFlowException`` exception, if input_training_data is unsupported.
         Returns `None` if the type of input_training_data is unsupported.
     """
     input_data_slice = None

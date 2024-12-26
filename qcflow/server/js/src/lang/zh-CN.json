@@ -6213,7 +6213,7 @@
     "description" : "Dropdown text to display columns names that could to be rendered for the experiment runs table"
   },
   "nyHcAz" : {
-    "defaultMessage" : "MLFlow 部署返回了以下错误：“{errorMessage}”",
+    "defaultMessage" : "QCFlow 部署返回了以下错误：“{errorMessage}”",
     "description" : "Experiment page > QCFlow deployment error message"
   },
   "o1BTcp" : {

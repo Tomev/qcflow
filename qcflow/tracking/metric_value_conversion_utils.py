@@ -1,6 +1,6 @@
 import sys
 
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 
 
 def _is_module_imported(module_name: str) -> bool:
@@ -11,7 +11,7 @@ def _try_get_item(x):
     try:
         return x.item()
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to convert metric value to float: {e}",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -85,7 +85,7 @@ def convert_metric_value_to_float_if_tensorflow_tensor(x):
         try:
             return float(x)
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Failed to convert metric value to float: {e!r}",
                 error_code=INVALID_PARAMETER_VALUE,
             )

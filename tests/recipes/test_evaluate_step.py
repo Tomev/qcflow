@@ -7,7 +7,7 @@ import pytest
 from sklearn.datasets import load_diabetes, load_iris
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.steps.evaluate import EvaluateStep
 from qcflow.recipes.steps.split import _OUTPUT_TEST_FILE_NAME, _OUTPUT_VALIDATION_FILE_NAME
 from qcflow.recipes.steps.train import TrainStep
@@ -94,7 +94,7 @@ def weighted_mean_squared_error_func(eval_df, builtin_metrics):
     evaluate_step.run(str(evaluate_step_output_dir))
 
     logged_metrics = (
-        qcflow.tracking.MlflowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
+        qcflow.tracking.QCFlowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
     )
     assert "test_weighted_mean_squared_error" in logged_metrics
     model_validation_status_path = evaluate_step_output_dir.joinpath("model_validation_status")
@@ -165,7 +165,7 @@ steps:
     evaluate_step.run(str(evaluate_step_output_dir))
 
     logged_metrics = (
-        qcflow.tracking.MlflowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
+        qcflow.tracking.QCFlowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
     )
     assert "test_mean_squared_error" in logged_metrics
     assert "test_root_mean_squared_error" in logged_metrics
@@ -199,7 +199,7 @@ steps:
     evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     evaluate_step._validate_and_apply_step_config()
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Validation criteria contain undefined metrics: \['undefined_metric'\]",
     ):
         evaluate_step._validate_validation_criteria()
@@ -239,7 +239,7 @@ def one(eval_df, builtin_metrics):
     evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     evaluate_step_output_dir = tmp_recipe_exec_path.joinpath("steps", "evaluate", "outputs")
     evaluate_step_output_dir.mkdir(parents=True)
-    with pytest.raises(MlflowException, match="Failed to load custom metric functions") as exc:
+    with pytest.raises(QCFlowException, match="Failed to load custom metric functions") as exc:
         evaluate_step.run(str(evaluate_step_output_dir))
     assert isinstance(exc.value.__cause__, AttributeError)
     assert "weighted_mean_squared_error" in str(exc.value.__cause__)
@@ -274,7 +274,7 @@ custom_metrics:
     evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     evaluate_step_output_dir = tmp_recipe_exec_path.joinpath("steps", "evaluate", "outputs")
     evaluate_step_output_dir.mkdir(parents=True)
-    with pytest.raises(MlflowException, match="Failed to load custom metric functions") as exc:
+    with pytest.raises(QCFlowException, match="Failed to load custom metric functions") as exc:
         evaluate_step.run(str(evaluate_step_output_dir))
     assert isinstance(exc.value.__cause__, ModuleNotFoundError)
     assert "No module named 'steps.custom_metrics'" in str(exc.value.__cause__)
@@ -331,7 +331,7 @@ def root_mean_squared_error(eval_df, builtin_metrics):
             ["mean_absolute_error", "root_mean_squared_error"],
         )
     logged_metrics = (
-        qcflow.tracking.MlflowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
+        qcflow.tracking.QCFlowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
     )
     assert "test_root_mean_squared_error" in logged_metrics
     assert logged_metrics["test_root_mean_squared_error"] == 1

@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 import torch
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import infer_signature
 from qcflow.transformers.llm_inference_utils import (
     _get_default_task_for_llm_inference_task,
@@ -36,7 +36,7 @@ def test_infer_signature_from_llm_inference_task():
     assert signature.outputs == CHAT_MODEL_OUTPUT_SCHEMA
 
     signature = infer_signature("hello", "world")
-    with pytest.raises(MlflowException, match=r".*llm/v1/completions.*signature"):
+    with pytest.raises(QCFlowException, match=r".*llm/v1/completions.*signature"):
         infer_signature_from_llm_inference_task("llm/v1/completions", signature)
 
 
@@ -66,7 +66,7 @@ def test_apply_chat_template():
     prompt = convert_messages_to_prompt(data1, DummyTokenizer())
     assert prompt == "one two"
 
-    with pytest.raises(MlflowException, match=r"Input messages should be list of"):
+    with pytest.raises(QCFlowException, match=r"Input messages should be list of"):
         convert_messages_to_prompt([["one", "two"]], DummyTokenizer())
 
 
@@ -217,14 +217,14 @@ def test_preprocess_llm_inference_input(case):
 
 def test_preprocess_llm_inference_input_raise_if_key_invalid():
     # Missing input key
-    with pytest.raises(MlflowException, match=r"Transformer model saved with"):
+    with pytest.raises(QCFlowException, match=r"Transformer model saved with"):
         preprocess_llm_inference_input(
             pd.DataFrame({"invalid_key": [1, 2, 3]}),
             flavor_config={"inference_task": "llm/v1/completions"},
         )
 
     # Unmatched key (should be "messages" for chat task)
-    with pytest.raises(MlflowException, match=r"Transformer model saved with"):
+    with pytest.raises(QCFlowException, match=r"Transformer model saved with"):
         preprocess_llm_inference_input(
             pd.DataFrame({"prompt": ["Hi"]}), flavor_config={"inference_task": "llm/v1/chat"}
         )

@@ -265,7 +265,7 @@ validate_serving_input(model_uri, serving_payload)`;
 
   renderPyfuncCodeSnippet() {
     if (this.state.loader_module === 'qcflow.spark') {
-      return this.renderMlflowSparkCodeSnippet();
+      return this.renderQCFlowSparkCodeSnippet();
     }
     const { runUuid, path } = this.props;
     const modelPath = `runs:/${runUuid}/${path}`;
@@ -293,7 +293,7 @@ validate_serving_input(model_uri, serving_payload)`;
     );
   }
 
-  renderMlflowSparkCodeSnippet() {
+  renderQCFlowSparkCodeSnippet() {
     const { runUuid, path } = this.props;
     const modelPath = `runs:/${runUuid}/${path}`;
     return (

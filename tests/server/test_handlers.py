@@ -13,7 +13,7 @@ from qcflow.entities.model_registry import (
     RegisteredModelTag,
 )
 from qcflow.entities.trace_info import TraceInfo
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE, ErrorCode
 from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
@@ -239,7 +239,7 @@ def test_can_block_post_request_with_invalid_content_type():
     request.content_type = "text/plain"
     request.get_json = mock.MagicMock()
     request.get_json.return_value = {"name": "hello"}
-    with pytest.raises(MlflowException, match=r"Bad Request. Content-Type"):
+    with pytest.raises(QCFlowException, match=r"Bad Request. Content-Type"):
         _get_request_message(CreateExperiment(), flask_request=request)
 
 
@@ -249,7 +249,7 @@ def test_can_block_post_request_with_missing_content_type():
     request.content_type = None
     request.get_json = mock.MagicMock()
     request.get_json.return_value = {"name": "hello"}
-    with pytest.raises(MlflowException, match=r"Bad Request. Content-Type"):
+    with pytest.raises(QCFlowException, match=r"Bad Request. Content-Type"):
         _get_request_message(CreateExperiment(), flask_request=request)
 
 
@@ -279,7 +279,7 @@ def test_log_batch_api_req(mock_get_request_json):
 def test_catch_qcflow_exception():
     @catch_qcflow_exception
     def test_handler():
-        raise MlflowException("test error", error_code=INTERNAL_ERROR)
+        raise QCFlowException("test error", error_code=INTERNAL_ERROR)
 
     response = test_handler()
     json_response = json.loads(response.get_data())
@@ -860,7 +860,7 @@ def test_local_file_read_write_by_pass_vulnerability(uri):
         ).info.artifact_uri = f"http://host/{run_id}/artifacts/abc"
 
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=(
                 "the run_id request parameter has to be specified and the local "
                 "path has to be contained within the artifact directory of the "

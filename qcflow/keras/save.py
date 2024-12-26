@@ -11,7 +11,7 @@ import yaml
 
 import qcflow
 from qcflow import pyfunc
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.models import (
     Model,
     ModelInputExample,
@@ -76,7 +76,7 @@ def _export_keras_model(model, path, signature):
     try:
         import tensorflow as tf
     except ImportError:
-        raise MlflowException(
+        raise QCFlowException(
             "`tensorflow` must be installed if you want to export a Keras 3 model, please "
             "install `tensorflow` by `pip install tensorflow`, or set `save_exported_model=False`."
         )
@@ -162,18 +162,18 @@ def save_model(
     else:
         num_inputs = len(signature.inputs.inputs)
         if num_inputs == 0:
-            raise MlflowException(
+            raise QCFlowException(
                 "The model signature's input schema must contain at least one field.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         for field in signature.inputs.inputs:
             if not isinstance(field, TensorSpec):
-                raise MlflowException(
+                raise QCFlowException(
                     "All fields in the model signature's input schema must be of type TensorSpec.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
             if field.shape[0] != -1:
-                raise MlflowException(
+                raise QCFlowException(
                     "All input schema' first dimension should be -1, which represents the dynamic "
                     "batch dimension.",
                     error_code=INVALID_PARAMETER_VALUE,

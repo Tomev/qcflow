@@ -2,7 +2,7 @@ import time
 
 import qcflow
 from qcflow.entities import Metric, Param
-from qcflow.tracking import MlflowClient
+from qcflow.tracking import QCFlowClient
 from qcflow.utils.autologging_utils.metrics_queue import (
     add_to_metrics_queue,
     flush_metrics_queue,
@@ -21,7 +21,7 @@ def patched_add_hparams(original, self, hparam_dict, metric_dict, *args, **kwarg
         metrics_arr = [
             Metric(key, value, int(time.time() * 1000), 0) for key, value in metric_dict.items()
         ]
-        MlflowClient().log_batch(run_id=run_id, metrics=metrics_arr, params=params_arr, tags=[])
+        QCFlowClient().log_batch(run_id=run_id, metrics=metrics_arr, params=params_arr, tags=[])
 
     return original(self, hparam_dict, metric_dict, *args, **kwargs)
 

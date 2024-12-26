@@ -12,7 +12,7 @@ from typing import Any, Optional, TypedDict, Union, get_args, get_origin
 
 import numpy as np
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.annotations import experimental
 
 ARRAY_TYPE = "array"
@@ -172,19 +172,19 @@ class Property(BaseType):
             required: Whether this property is required
         """
         if not isinstance(name, str):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Expected name to be a string, got type {type(name).__name__}"
             )
         self._name = name
         try:
             self._dtype = DataType[dtype] if isinstance(dtype, str) else dtype
         except KeyError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported type '{dtype}', expected instance of DataType, Array, Object, Map or "
                 f"one of {[t.name for t in DataType]}"
             )
         if not isinstance(self.dtype, (DataType, Array, Object, Map, AnyType)):
-            raise MlflowException(
+            raise QCFlowException(
                 EXPECTED_TYPE_MESSAGE.format(arg_name="dtype", passed_type=self.dtype)
             )
         self._required = required
@@ -239,12 +239,12 @@ class Property(BaseType):
         Example: {"property_name": {"type": "string", "required": True}}
         """
         if len(kwargs) != 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Expected Property JSON to contain a single key as name, got {len(kwargs)} keys."
             )
         name, dic = kwargs.popitem()
         if not {"type"} <= set(dic.keys()):
-            raise MlflowException(f"Missing keys in Property `{name}`. Expected to find key `type`")
+            raise QCFlowException(f"Missing keys in Property `{name}`. Expected to find key `type`")
         required = dic.pop("required", True)
         dtype = dic["type"]
         if dtype == ARRAY_TYPE:
@@ -299,22 +299,22 @@ class Property(BaseType):
         if isinstance(other, AnyType):
             return Property(name=self.name, dtype=self.dtype, required=False)
         if not isinstance(other, Property):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Can't merge property with non-property type: {type(other).__name__}"
             )
         if self.name != other.name:
-            raise MlflowException("Can't merge properties with different names")
+            raise QCFlowException("Can't merge properties with different names")
         required = self.required and other.required
         if isinstance(self.dtype, DataType) and isinstance(other.dtype, DataType):
             if self.dtype == other.dtype:
                 return Property(name=self.name, dtype=self.dtype, required=required)
-            raise MlflowException(f"Properties are incompatible for {self.dtype} and {other.dtype}")
+            raise QCFlowException(f"Properties are incompatible for {self.dtype} and {other.dtype}")
 
         if isinstance(self.dtype, (Array, Object, Map, AnyType)):
             obj = self.dtype._merge(other.dtype)
             return Property(name=self.name, dtype=obj, required=required)
 
-        raise MlflowException("Properties are incompatible")
+        raise QCFlowException("Properties are incompatible")
 
 
 class Object(BaseType):
@@ -329,22 +329,22 @@ class Object(BaseType):
 
     def _check_properties(self, properties):
         if not isinstance(properties, list):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Expected properties to be a list, got type {type(properties).__name__}"
             )
         if len(properties) == 0:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Creating Object with empty properties is not allowed."
             )
         if any(not isinstance(v, Property) for v in properties):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Expected values to be instance of Property"
             )
         # check duplicated property names
         names = [prop.name for prop in properties]
         duplicates = {name for name in names if names.count(name) > 1}
         if len(duplicates) > 0:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Found duplicated property names: {duplicates}"
             )
 
@@ -385,15 +385,15 @@ class Object(BaseType):
         Example: {"type": "object", "properties": {"property_name": {"type": "string"}}}
         """
         if not {"properties", "type"} <= set(kwargs.keys()):
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing keys in Object JSON. Expected to find keys `properties` and `type`"
             )
         if kwargs["type"] != OBJECT_TYPE:
-            raise MlflowException("Type mismatch, Object expects `object` as the type")
+            raise QCFlowException("Type mismatch, Object expects `object` as the type")
         if not isinstance(kwargs["properties"], dict) or any(
             not isinstance(prop, dict) for prop in kwargs["properties"].values()
         ):
-            raise MlflowException("Expected properties to be a dictionary of Property JSON")
+            raise QCFlowException("Expected properties to be a dictionary of Property JSON")
         return cls(
             [Property.from_json_dict(**{name: prop}) for name, prop in kwargs["properties"].items()]
         )
@@ -442,7 +442,7 @@ class Object(BaseType):
                 ]
             )
         if not isinstance(other, Object):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Can't merge object with non-object type: {type(other).__name__}"
             )
         if self == other:
@@ -476,12 +476,12 @@ class Array(BaseType):
         try:
             self._dtype = DataType[dtype] if isinstance(dtype, str) else dtype
         except KeyError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported type '{dtype}', expected instance of DataType, Array, Object, Map or "
                 f"one of {[t.name for t in DataType]}"
             )
         if not isinstance(self.dtype, (Array, DataType, Object, Map, AnyType)):
-            raise MlflowException(
+            raise QCFlowException(
                 EXPECTED_TYPE_MESSAGE.format(arg_name="dtype", passed_type=self.dtype)
             )
 
@@ -510,15 +510,15 @@ class Array(BaseType):
         Example: {"type": "array", "items": "string"}
         """
         if not {"items", "type"} <= set(kwargs.keys()):
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing keys in Array JSON. Expected to find keys `items` and `type`"
             )
         if kwargs["type"] != ARRAY_TYPE:
-            raise MlflowException("Type mismatch, Array expects `array` as the type")
+            raise QCFlowException("Type mismatch, Array expects `array` as the type")
         if not isinstance(kwargs["items"], dict):
-            raise MlflowException("Expected items to be a dictionary of Object JSON")
+            raise QCFlowException("Expected items to be a dictionary of Object JSON")
         if not {"type"} <= set(kwargs["items"].keys()):
-            raise MlflowException("Missing keys in Array's items JSON. Expected to find key `type`")
+            raise QCFlowException("Missing keys in Array's items JSON. Expected to find key `type`")
 
         if kwargs["items"]["type"] == OBJECT_TYPE:
             item_type = Object.from_json_dict(**kwargs["items"])
@@ -542,11 +542,11 @@ class Array(BaseType):
         if isinstance(other, AnyType) or self == other:
             return deepcopy(self)
         if not isinstance(other, Array):
-            raise MlflowException(f"Can't merge array with non-array type: {type(other).__name__}")
+            raise QCFlowException(f"Can't merge array with non-array type: {type(other).__name__}")
         if isinstance(self.dtype, DataType):
             if self.dtype == other.dtype:
                 return Array(dtype=self.dtype)
-            raise MlflowException(
+            raise QCFlowException(
                 f"Array types are incompatible for {self} with dtype={self.dtype} and "
                 f"{other} with dtype={other.dtype}"
             )
@@ -554,7 +554,7 @@ class Array(BaseType):
         if isinstance(self.dtype, (Array, Object, Map, AnyType)):
             return Array(dtype=self.dtype._merge(other.dtype))
 
-        raise MlflowException(f"Array type {self!r} and {other!r} are incompatible")
+        raise QCFlowException(f"Array type {self!r} and {other!r} are incompatible")
 
 
 class SparkMLVector(Array):
@@ -581,7 +581,7 @@ class SparkMLVector(Array):
     def _merge(self, arr: BaseType) -> SparkMLVector:
         if isinstance(arr, SparkMLVector):
             return deepcopy(self)
-        raise MlflowException("SparkML vector type can't be merged with another Array type.")
+        raise QCFlowException("SparkML vector type can't be merged with another Array type.")
 
 
 class Map(BaseType):
@@ -593,12 +593,12 @@ class Map(BaseType):
         try:
             self._value_type = DataType[value_type] if isinstance(value_type, str) else value_type
         except KeyError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported value type '{value_type}', expected instance of DataType, Array, "
                 f"Object, Map or one of {[t.name for t in DataType]}"
             )
         if not isinstance(self._value_type, (Array, Map, DataType, Object, AnyType)):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 EXPECTED_TYPE_MESSAGE.format(arg_name="value_type", passed_type=self._value_type)
             )
 
@@ -631,15 +631,15 @@ class Map(BaseType):
         Example: {"type": "map", "values": "string"}
         """
         if not {"values", "type"} <= set(kwargs.keys()):
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing keys in Array JSON. Expected to find keys `items` and `type`"
             )
         if kwargs["type"] != MAP_TYPE:
-            raise MlflowException("Type mismatch, Map expects `map` as the type")
+            raise QCFlowException("Type mismatch, Map expects `map` as the type")
         if not isinstance(kwargs["values"], dict):
-            raise MlflowException("Expected values to be a dictionary of Object JSON")
+            raise QCFlowException("Expected values to be a dictionary of Object JSON")
         if not {"type"} <= set(kwargs["values"].keys()):
-            raise MlflowException("Missing keys in Map's items JSON. Expected to find key `type`")
+            raise QCFlowException("Missing keys in Map's items JSON. Expected to find key `type`")
         if kwargs["values"]["type"] == OBJECT_TYPE:
             return cls(value_type=Object.from_json_dict(**kwargs["values"]))
         if kwargs["values"]["type"] == ARRAY_TYPE:
@@ -656,11 +656,11 @@ class Map(BaseType):
         if isinstance(other, AnyType) or self == other:
             return deepcopy(self)
         if not isinstance(other, Map):
-            raise MlflowException(f"Can't merge map with non-map type: {type(other).__name__}")
+            raise QCFlowException(f"Can't merge map with non-map type: {type(other).__name__}")
         if isinstance(self.value_type, DataType):
             if self.value_type == other.value_type:
                 return Map(value_type=self.value_type)
-            raise MlflowException(
+            raise QCFlowException(
                 f"Map types are incompatible for {self} with value_type={self.value_type} and "
                 f"{other} with value_type={other.value_type}"
             )
@@ -668,7 +668,7 @@ class Map(BaseType):
         if isinstance(self.value_type, (Array, Object, Map, AnyType)):
             return Map(value_type=self.value_type._merge(other.value_type))
 
-        raise MlflowException(f"Map type {self!r} and {other!r} are incompatible")
+        raise QCFlowException(f"Map type {self!r} and {other!r} are incompatible")
 
 
 @experimental
@@ -708,7 +708,7 @@ class AnyType(BaseType):
         if isinstance(other, DataType):
             return other
         if not isinstance(other, BaseType):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Can't merge AnyType with {type(other).__name__}, "
                 "it must be a BaseType or DataType"
             )
@@ -733,7 +733,7 @@ class ColSpec:
         try:
             self._type = DataType[type] if isinstance(type, str) else type
         except KeyError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported type '{type}', expected instance of DataType or "
                 f"one of {[t.name for t in DataType]}"
             )
@@ -787,7 +787,7 @@ class ColSpec:
         optional `name` and `required` keys.
         """
         if not {"type"} <= set(kwargs.keys()):
-            raise MlflowException("Missing keys in ColSpec JSON. Expected to find key `type`")
+            raise QCFlowException("Missing keys in ColSpec JSON. Expected to find key `type`")
         if kwargs["type"] not in [ARRAY_TYPE, OBJECT_TYPE, MAP_TYPE, SPARKML_VECTOR_TYPE, ANY_TYPE]:
             return cls(**kwargs)
         name = kwargs.pop("name", None)
@@ -820,7 +820,7 @@ class TensorInfo:
             )
         # Throw if size information exists flexible numpy data types
         if dtype.char in ["U", "S"] and not dtype.name.isalpha():
-            raise MlflowException(
+            raise QCFlowException(
                 "QCFlow does not support size information in flexible numpy data types. Use"
                 f' np.dtype("{dtype.name.rstrip(string.digits)}") instead'
             )
@@ -857,7 +857,7 @@ class TensorInfo:
         The dictionary is expected to contain `dtype` and `shape` keys.
         """
         if not {"dtype", "shape"} <= set(kwargs.keys()):
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing keys in TensorSpec JSON. Expected to find keys `dtype` and `shape`"
             )
         tensor_type = np.dtype(kwargs["dtype"])
@@ -919,11 +919,11 @@ class TensorSpec:
         The dictionary is expected to contain `type` and `tensor-spec` keys.
         """
         if not {"tensor-spec", "type"} <= set(kwargs.keys()):
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing keys in TensorSpec JSON. Expected to find keys `tensor-spec` and `type`"
             )
         if kwargs["type"] != "tensor":
-            raise MlflowException("Type mismatch, TensorSpec expects `tensor` as the type")
+            raise QCFlowException("Type mismatch, TensorSpec expects `tensor` as the type")
         tensor_info = TensorInfo.from_json_dict(**kwargs["tensor-spec"])
         return cls(
             tensor_info.dtype, tensor_info.shape, kwargs["name"] if "name" in kwargs else None
@@ -957,16 +957,16 @@ class Schema:
 
     def __init__(self, inputs: list[Union[ColSpec, TensorSpec]]):
         if not isinstance(inputs, list):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Inputs of Schema must be a list, got type {type(inputs).__name__}"
             )
         if not inputs:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Creating Schema with empty inputs is not allowed."
             )
 
         if not (all(x.name is None for x in inputs) or all(x.name is not None for x in inputs)):
-            raise MlflowException(
+            raise QCFlowException(
                 "Creating Schema with a combination of named and unnamed inputs "
                 f"is not allowed. Got input names {[x.name for x in inputs]}"
             )
@@ -974,7 +974,7 @@ class Schema:
             all(isinstance(x, TensorSpec) for x in inputs)
             or all(isinstance(x, ColSpec) for x in inputs)
         ):
-            raise MlflowException(
+            raise QCFlowException(
                 "Creating Schema with a combination of {0} and {1} is not supported. "
                 "Please choose one of {0} or {1}".format(ColSpec.__class__, TensorSpec.__class__)
             )
@@ -983,12 +983,12 @@ class Schema:
             and len(inputs) > 1
             and any(x.name is None for x in inputs)
         ):
-            raise MlflowException(
+            raise QCFlowException(
                 "Creating Schema with multiple unnamed TensorSpecs is not supported. "
                 "Please provide names for each TensorSpec."
             )
         if all(x.name is None for x in inputs) and any(x.required is False for x in inputs):
-            raise MlflowException(
+            raise QCFlowException(
                 "Creating Schema with unnamed optional inputs is not supported. "
                 "Please name all inputs or make all inputs required."
             )
@@ -1033,13 +1033,13 @@ class Schema:
     def input_types_dict(self) -> dict[str, Union[DataType, np.dtype, Array, Object]]:
         """Maps column names to types, iff this schema declares names."""
         if not self.has_input_names():
-            raise MlflowException("Cannot get input types as a dict for schema without names.")
+            raise QCFlowException("Cannot get input types as a dict for schema without names.")
         return {x.name: x.type for x in self.inputs}
 
     def input_dict(self) -> dict[str, Union[ColSpec, TensorSpec]]:
         """Maps column names to inputs, iff this schema declares names."""
         if not self.has_input_names():
-            raise MlflowException("Cannot get input dict for schema without names.")
+            raise QCFlowException("Cannot get input dict for schema without names.")
         return {x.name: x for x in self.inputs}
 
     def numpy_types(self) -> list[np.dtype]:
@@ -1048,17 +1048,17 @@ class Schema:
             return [x.type for x in self.inputs]
         if all(isinstance(x.type, DataType) for x in self.inputs):
             return [x.type.to_numpy() for x in self.inputs]
-        raise MlflowException(
+        raise QCFlowException(
             "Failed to get numpy types as some of the inputs types are not DataType."
         )
 
     def pandas_types(self) -> list[np.dtype]:
         """Convenience shortcut to get the datatypes as pandas types. Unsupported by TensorSpec."""
         if self.is_tensor_spec():
-            raise MlflowException("TensorSpec only supports numpy types, use numpy_types() instead")
+            raise QCFlowException("TensorSpec only supports numpy types, use numpy_types() instead")
         if all(isinstance(x.type, DataType) for x in self.inputs):
             return [x.type.to_pandas() for x in self.inputs]
-        raise MlflowException(
+        raise QCFlowException(
             "Failed to get pandas types as some of the inputs types are not DataType."
         )
 
@@ -1069,7 +1069,7 @@ class Schema:
         Unsupported by TensorSpec.
         """
         if self.is_tensor_spec():
-            raise MlflowException("TensorSpec cannot be converted to spark dataframe")
+            raise QCFlowException("TensorSpec cannot be converted to spark dataframe")
         if len(self.inputs) == 1 and self.inputs[0].name is None:
             return self.inputs[0].type.to_spark()
         from pyspark.sql.types import StructField, StructType
@@ -1134,14 +1134,14 @@ class ParamSpec:
             self._dtype = DataType[dtype] if isinstance(dtype, str) else dtype
         except KeyError:
             supported_types = [t.name for t in DataType if t.name != "binary"]
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Unsupported type '{dtype}', expected instance of DataType or "
                 f"one of {supported_types}",
             )
         if not isinstance(self.dtype, (DataType, Object)):
             raise TypeError(f"'dtype' must be DataType, Object or str, got {self.dtype}")
         if self.dtype == DataType.binary:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Binary type is not supported for parameters, ParamSpec '{self.name}'"
                 "has dtype 'binary'",
             )
@@ -1173,7 +1173,7 @@ class ParamSpec:
             return isinstance(value, (list, np.ndarray)) and np.array(value).ndim == 1
 
         if shape == (-1,) and not _is_1d_array(value):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Value must be a 1D array with shape (-1,) for param {spec}, "
                 f"received {type(value).__name__} with ndim {np.array(value).ndim}",
             )
@@ -1194,11 +1194,11 @@ class ParamSpec:
             elif shape == (-1,):
                 return [_enforce_param_datatype(v, value_type) for v in value]
         except Exception as e:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Failed to validate type and shape for {spec}, error: {e}"
             )
 
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Shape must be None for scalar or dictionary value, or (-1,) for 1D array value "
             f"for ParamSpec {spec}), received {shape}",
         )
@@ -1281,7 +1281,7 @@ class ParamSpec:
         required_keys2 = {"name", "type", "default"}
 
         if not (required_keys1.issubset(kwargs) or required_keys2.issubset(kwargs)):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Missing keys in ParamSpec JSON. Expected to find "
                 "keys `name`, `type`(or `dtype`) and `default`. "
                 f"Received keys: {kwargs.keys()}"
@@ -1305,11 +1305,11 @@ class ParamSchema:
 
     def __init__(self, params: list[ParamSpec]):
         if not all(isinstance(x, ParamSpec) for x in params):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"ParamSchema inputs only accept {ParamSchema.__class__}"
             )
         if duplicates := self._find_duplicates(params):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Duplicated parameters found in schema: {duplicates}"
             )
         self._params = params
@@ -1412,7 +1412,7 @@ def convert_dataclass_to_schema(dataclass):
                 is_optional = True
                 effective_type = next(t for t in get_args(field_type) if t is not type(None))
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     "Only Optional[...] is supported as a Union type in dataclass fields"
                 )
 
@@ -1434,7 +1434,7 @@ def convert_dataclass_to_schema(dataclass):
                         )
                     )
                 else:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"List field type {list_type} is not supported in dataclass"
                         f" {dataclass.__name__}"
                     )
@@ -1459,7 +1459,7 @@ def convert_dataclass_to_schema(dataclass):
                 )
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported field type {effective_type} in dataclass {dataclass.__name__}"
             )
 

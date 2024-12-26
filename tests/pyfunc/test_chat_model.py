@@ -7,7 +7,7 @@ from dataclasses import asdict
 import pytest
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.model import Model
 from qcflow.models.signature import ModelSignature
 from qcflow.models.utils import load_serving_example
@@ -236,7 +236,7 @@ def test_chat_model_with_trace(tmp_path):
 def test_chat_model_save_throws_with_signature(tmp_path):
     model = SimpleChatModel()
 
-    with pytest.raises(MlflowException, match="Please remove the `signature` parameter"):
+    with pytest.raises(QCFlowException, match="Please remove the `signature` parameter"):
         qcflow.pyfunc.save_model(
             python_model=model,
             path=tmp_path,
@@ -296,7 +296,7 @@ def test_save_throws_on_invalid_output(tmp_path, ret):
 
     model = BadChatModel()
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             "Failed to save ChatModel. Please ensure that the model's "
             r"predict\(\) method returns a ChatCompletionResponse object"

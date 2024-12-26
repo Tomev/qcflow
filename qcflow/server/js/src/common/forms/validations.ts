@@ -5,7 +5,7 @@
  * annotations are already looking good, please remove this comment.
  */
 
-import { MlflowService } from '../../experiment-tracking/sdk/MlflowService';
+import { QCFlowService } from '../../experiment-tracking/sdk/QCFlowService';
 import { Services as ModelRegistryService } from '../../model-registry/services';
 
 export const getExperimentNameValidator = (getExistingExperimentNames: any) => {
@@ -21,7 +21,7 @@ export const getExperimentNameValidator = (getExistingExperimentNames: any) => {
       callback(`Experiment "${value}" already exists.`);
     } else {
       // on-demand validation whether experiment already exists in deleted state
-      MlflowService.getExperimentByName({ experiment_name: value })
+      QCFlowService.getExperimentByName({ experiment_name: value })
         .then((res) =>
           callback(`Experiment "${value}" already exists in deleted state.
                                  You can restore the experiment, or permanently delete the

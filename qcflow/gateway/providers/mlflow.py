@@ -2,7 +2,7 @@ import time
 
 from pydantic import BaseModel, StrictFloat, StrictStr, ValidationError, validator
 
-from qcflow.gateway.config import MlflowModelServingConfig, RouteConfig
+from qcflow.gateway.config import QCFlowModelServingConfig, RouteConfig
 from qcflow.gateway.constants import QCFLOW_SERVING_RESPONSE_KEY
 from qcflow.gateway.exceptions import AIGatewayException
 from qcflow.gateway.providers.base import BaseProvider
@@ -49,17 +49,17 @@ class EmbeddingsResponse(BaseModel):
             return predictions
 
 
-class MlflowModelServingProvider(BaseProvider):
+class QCFlowModelServingProvider(BaseProvider):
     NAME = "QCFlow Model Serving"
-    CONFIG_TYPE = MlflowModelServingConfig
+    CONFIG_TYPE = QCFlowModelServingConfig
 
     def __init__(self, config: RouteConfig) -> None:
         super().__init__(config)
         if config.model.config is None or not isinstance(
-            config.model.config, MlflowModelServingConfig
+            config.model.config, QCFlowModelServingConfig
         ):
             raise TypeError(f"Invalid config type {config.model.config}")
-        self.qcflow_config: MlflowModelServingConfig = config.model.config
+        self.qcflow_config: QCFlowModelServingConfig = config.model.config
         self.headers = {"Content-Type": "application/json"}
 
     @staticmethod

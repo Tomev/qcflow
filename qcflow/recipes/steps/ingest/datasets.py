@@ -10,7 +10,7 @@ from typing import Any, Optional, Union
 from urllib.parse import urlparse
 
 from qcflow.artifacts import download_artifacts
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
 from qcflow.store.artifact.artifact_repo import (
     _NUM_DEFAULT_CPUS,
@@ -74,7 +74,7 @@ class _Dataset:
             A `_Dataset` instance representing the configured dataset.
         """
         if not cls.handles_format(dataset_config.get("using")):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid format {dataset_config.get('using')} for dataset {cls}",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -130,7 +130,7 @@ class _Dataset:
         try:
             return dataset_config[key]
         except KeyError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The `{key}` configuration key must be specified for dataset with"
                 f" using '{dataset_config.get('using')}' format"
             ) from None
@@ -200,7 +200,7 @@ class _LocationBasedDataset(_Dataset):
                 for locaton in dataset_location
             ]
         else:
-            raise MlflowException(f"Unsupported location type: {type(dataset_location)}")
+            raise QCFlowException(f"Unsupported location type: {type(dataset_location)}")
 
     @staticmethod
     def _sanitize_local_dataset_location_if_necessary(
@@ -268,7 +268,7 @@ class _DownloadThenConvertDataset(_LocationBasedDataset):
                         pathlib.Path(local_dataset_path).glob(f"*.{self.dataset_format}")
                     )
                 if len(dataset_file_paths) == 0:
-                    raise MlflowException(
+                    raise QCFlowException(
                         message=(
                             "Did not find any data files with the specified format"
                             f" '{self.dataset_format}' in the resolved data directory with path"
@@ -281,7 +281,7 @@ class _DownloadThenConvertDataset(_LocationBasedDataset):
                 if self.dataset_format != "custom" and not local_dataset_path.endswith(
                     f".{self.dataset_format}"
                 ):
-                    raise MlflowException(
+                    raise QCFlowException(
                         message=(
                             f"Resolved data file with path '{local_dataset_path}' does not have the"
                             f" expected format '{self.dataset_format}'."
@@ -334,7 +334,7 @@ class _DownloadThenConvertDataset(_LocationBasedDataset):
                 except Exception as e:
                     failed_downloads.append(repr(e))
             if len(failed_downloads) > 0:
-                raise MlflowException(
+                raise QCFlowException(
                     "During downloading of the datasets a number "
                     + f"of errors have occurred: {failed_downloads}"
                 )
@@ -462,7 +462,7 @@ class CustomDataset(_PandasConvertibleDataset):
 
         ingested_df = func(*args)
         if not isinstance(ingested_df, pd.DataFrame):
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "The `ingested_data` is not a DataFrame, please make sure "
                     f"'{_USER_DEFINED_INGEST_STEP_MODULE}.{self.loader_method}' "
@@ -480,7 +480,7 @@ class CustomDataset(_PandasConvertibleDataset):
                 self.loader_method,
             )
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "Failed to import custom dataset loader function"
                     f" '{_USER_DEFINED_INGEST_STEP_MODULE}.{self.loader_method}' for"
@@ -493,10 +493,10 @@ class CustomDataset(_PandasConvertibleDataset):
             return self._validate_user_code_output(
                 loader_method, local_data_file_path, self.dataset_format
             )
-        except MlflowException as e:
+        except QCFlowException as e:
             raise e
         except NotImplementedError:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Unable to load data file at path '{local_data_file_path}' with format"
                     f" '{self.dataset_format}' using custom loader method"
@@ -507,7 +507,7 @@ class CustomDataset(_PandasConvertibleDataset):
                 error_code=INVALID_PARAMETER_VALUE,
             ) from None
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Unable to load data file at path '{local_data_file_path}' with format"
                     f" '{self.dataset_format}' using custom loader method"
@@ -565,7 +565,7 @@ class _SparkDatasetMixin:
                 _logger.debug("Creating new spark session")
             return spark_session
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Encountered an error while searching for an active Spark session to"
                     f" load the dataset with format '{self.dataset_format}'. Please create a"
@@ -649,7 +649,7 @@ class SparkSqlDataset(_SparkDatasetMixin, _Dataset):
 
     def resolve_to_parquet(self, dst_path: str):
         if self.location is None and self.sql is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Either location or sql configuration key must be specified for "
                 "dataset with format spark_sql"
             ) from None

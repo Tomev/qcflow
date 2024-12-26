@@ -17,10 +17,10 @@ from langchain_core.runnables import RunnableSequence
 from tenacity import RetryCallState
 
 import qcflow
-from qcflow import MlflowClient
-from qcflow.entities import Document as MlflowDocument
+from qcflow import QCFlowClient
+from qcflow.entities import Document as QCFlowDocument
 from qcflow.entities import LiveSpan, SpanEvent, SpanStatus, SpanStatusCode, SpanType
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.langchain.utils.chat import (
     convert_lc_generation_to_chat_message,
     convert_lc_message_to_chat_message,
@@ -72,7 +72,7 @@ def should_attach_span_to_context(func_name: str, instance: Any) -> bool:
     return True
 
 
-class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstractClass):
+class QCFlowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstractClass):
     """
     Callback for auto-logging traces.
     We need to inherit ExceptionSafeAbstractClass to avoid invalid new
@@ -97,7 +97,7 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
         # NB: The tracer can handle multiple traces in parallel under multi-threading scenarios.
         # DO NOT use instance variables to manage the state of single trace.
         super().__init__()
-        self._qcflow_client = MlflowClient()
+        self._qcflow_client = QCFlowClient()
         # run_id: (LiveSpan, OTel token)
         self._run_span_mapping: dict[str, SpanWithToken] = {}
         self._prediction_context = prediction_context
@@ -106,7 +106,7 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
     def _get_span_by_run_id(self, run_id: UUID) -> Optional[LiveSpan]:
         if span_with_token := self._run_span_mapping.get(str(run_id), None):
             return span_with_token.span
-        raise MlflowException(f"Span for run_id {run_id!s} not found.")
+        raise QCFlowException(f"Span for run_id {run_id!s} not found.")
 
     def _start_span(
         self,
@@ -185,7 +185,7 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
             st = self._run_span_mapping.pop(str(run_id), None)
             if self._set_span_in_context:
                 if st.token is None:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Token for span {st.span} is not found. "
                         "Cannot detach the span from context."
                     )
@@ -481,8 +481,8 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
         """Run when Retriever ends running."""
         retriever_span = self._get_span_by_run_id(run_id)
         try:
-            # attempt to convert documents to MlflowDocument
-            documents = [MlflowDocument.from_langchain_document(doc) for doc in documents]
+            # attempt to convert documents to QCFlowDocument
+            documents = [QCFlowDocument.from_langchain_document(doc) for doc in documents]
         except Exception as e:
             _logger.debug(
                 f"Failed to convert LangChain Document to QCFlow Document: {e}",
@@ -558,7 +558,7 @@ class MlflowLangchainTracer(BaseCallbackHandler, metaclass=ExceptionSafeAbstract
         """Run on arbitrary text."""
         try:
             span = self._get_span_by_run_id(run_id)
-        except MlflowException:
+        except QCFlowException:
             _logger.warning("Span not found for text event. Skipping text event logging.")
         else:
             span.add_event(

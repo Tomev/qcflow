@@ -10,9 +10,9 @@ import sklearn.neighbors as knn
 from sklearn import datasets
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities.model_registry import ModelVersion
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import add_libraries_to_model
 from qcflow.models.utils import (
     _config_context,
@@ -171,7 +171,7 @@ def test_adding_libraries_to_model_when_version_source_None(sklearn_knn_model):
     model_version_without_source = ModelVersion(name=model_name, version=1, creation_timestamp=124)
     assert model_version_without_source.run_id is None
     with mock.patch.object(
-        MlflowClient, "get_model_version", return_value=model_version_without_source
+        QCFlowClient, "get_model_version", return_value=model_version_without_source
     ) as qcflow_client_mock:
         wheeled_model_info = add_libraries_to_model(model_uri)
         assert wheeled_model_info.run_id is not None
@@ -199,11 +199,11 @@ def test_enforce_datatype(data, data_type):
 
 
 def test_enforce_datatype_with_errors():
-    with pytest.raises(MlflowException, match=r"Expected dtype to be DataType, got str"):
+    with pytest.raises(QCFlowException, match=r"Expected dtype to be DataType, got str"):
         _enforce_datatype("string", "string")
 
     with pytest.raises(
-        MlflowException, match=r"Failed to enforce schema of data `123` with dtype `string`"
+        QCFlowException, match=r"Failed to enforce schema of data `123` with dtype `string`"
     ):
         _enforce_datatype(123, DataType.string)
 
@@ -238,23 +238,23 @@ def test_enforce_object():
 
 
 def test_enforce_object_with_errors():
-    with pytest.raises(MlflowException, match=r"Expected data to be dictionary, got list"):
+    with pytest.raises(QCFlowException, match=r"Expected data to be dictionary, got list"):
         _enforce_object(["some_sentence"], Object([Property("a", DataType.string)]))
 
-    with pytest.raises(MlflowException, match=r"Expected obj to be Object, got Property"):
+    with pytest.raises(QCFlowException, match=r"Expected obj to be Object, got Property"):
         _enforce_object({"a": "some_sentence"}, Property("a", DataType.string))
 
     obj = Object([Property("a", DataType.string), Property("b", DataType.string, required=False)])
-    with pytest.raises(MlflowException, match=r"Missing required properties: {'a'}"):
+    with pytest.raises(QCFlowException, match=r"Missing required properties: {'a'}"):
         _enforce_object({}, obj)
 
     with pytest.raises(
-        MlflowException, match=r"Invalid properties not defined in the schema found: {'c'}"
+        QCFlowException, match=r"Invalid properties not defined in the schema found: {'c'}"
     ):
         _enforce_object({"a": "some_sentence", "c": "some_sentence"}, obj)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to enforce schema for key `a`. Expected type string, received type int",
     ):
         _enforce_object({"a": 1}, obj)
@@ -308,11 +308,11 @@ def test_enforce_property():
 
 def test_enforce_property_with_errors():
     with pytest.raises(
-        MlflowException, match=r"Failed to enforce schema of data `123` with dtype `string`"
+        QCFlowException, match=r"Failed to enforce schema of data `123` with dtype `string`"
     ):
         _enforce_property(123, Property("a", DataType.string))
 
-    with pytest.raises(MlflowException, match=r"Missing required properties: {'a'}"):
+    with pytest.raises(QCFlowException, match=r"Missing required properties: {'a'}"):
         _enforce_property(
             {"b": ["some_sentence1", "some_sentence2"]},
             Property(
@@ -322,7 +322,7 @@ def test_enforce_property_with_errors():
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to enforce schema for key `a`. Expected type string, received type list",
     ):
         _enforce_property(
@@ -393,26 +393,26 @@ def test_enforce_array_on_numpy_array(data, schema):
 
 
 def test_enforce_array_with_errors():
-    with pytest.raises(MlflowException, match=r"Expected data to be list or numpy array, got str"):
+    with pytest.raises(QCFlowException, match=r"Expected data to be list or numpy array, got str"):
         _enforce_array("abc", Array(DataType.string))
 
     with pytest.raises(
-        MlflowException, match=r"Failed to enforce schema of data `123` with dtype `string`"
+        QCFlowException, match=r"Failed to enforce schema of data `123` with dtype `string`"
     ):
         _enforce_array([123, 456, 789], Array(DataType.string))
 
     # Nested array with mixed type elements
     with pytest.raises(
-        MlflowException, match=r"Failed to enforce schema of data `1` with dtype `string`"
+        QCFlowException, match=r"Failed to enforce schema of data `1` with dtype `string`"
     ):
         _enforce_array([["a", "b"], [1, 2]], Array(Array(DataType.string)))
 
     # Nested array with different nest level
-    with pytest.raises(MlflowException, match=r"Expected data to be list or numpy array, got str"):
+    with pytest.raises(QCFlowException, match=r"Expected data to be list or numpy array, got str"):
         _enforce_array([["a", "b"], "c"], Array(Array(DataType.string)))
 
     # Missing priperties in Object
-    with pytest.raises(MlflowException, match=r"Missing required properties: {'b'}"):
+    with pytest.raises(QCFlowException, match=r"Missing required properties: {'b'}"):
         _enforce_array(
             [
                 {"a": "some_sentence1", "b": "some_sentence2"},
@@ -423,7 +423,7 @@ def test_enforce_array_with_errors():
 
     # Extra properties
     with pytest.raises(
-        MlflowException, match=r"Invalid properties not defined in the schema found: {'c'}"
+        QCFlowException, match=r"Invalid properties not defined in the schema found: {'c'}"
     ):
         _enforce_array(
             [
@@ -610,7 +610,7 @@ def test_convert_llm_input_data(data, target, target_type):
     ],
 )
 def test_validate_and_get_model_code_path_not_found(model_path, error_message, tmp_path):
-    with pytest.raises(MlflowException, match=error_message):
+    with pytest.raises(QCFlowException, match=error_message):
         _validate_and_get_model_code_path(model_path, tmp_path)
 
 

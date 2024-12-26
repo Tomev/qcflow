@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from packaging.version import Version
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos import facet_feature_statistics_pb2
 from qcflow.recipes.cards import histogram_generator
 
@@ -22,7 +22,7 @@ def get_facet_type_from_numpy_type(dtype):
     """Converts a Numpy dtype to the FeatureNameStatistics.Type proto enum."""
     fs_proto = facet_feature_statistics_pb2.FeatureNameStatistics
     if dtype.char in np.typecodes["Complex"]:
-        raise MlflowException(
+        raise QCFlowException(
             "Found type complex, but expected one of: int, long, float, string, bool"
         )
     elif dtype.char in np.typecodes["AllFloat"]:
@@ -111,7 +111,7 @@ def convert_to_dataset_feature_statistics(
     try:
         quantiles = df.select_dtypes(include="number").quantile(quantiles_to_get)
     except Exception:
-        raise MlflowException("Error in generating quantiles")
+        raise QCFlowException("Error in generating quantiles")
 
     for key in df:
         pandas_describe_key = pandas_describe[key]
@@ -244,7 +244,7 @@ def get_facets_polyfills() -> str:
     A JS polyfill/monkey-patching function that fixes issue where objectURL passed as a
     "base" argument to the URL constructor ends up in a "invalid URL" exception.
 
-    Polymer is using parent's URL in its internal asset URL resolution system, while MLFLow
+    Polymer is using parent's URL in its internal asset URL resolution system, while QCFLow
     artifact rendering engine uses object URLs to display iframed artifacts code. This ends up
     in object URL being used in `new URL()` constructor which needs to be patched.
 

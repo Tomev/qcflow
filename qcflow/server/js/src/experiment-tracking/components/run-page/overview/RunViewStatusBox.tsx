@@ -2,12 +2,12 @@ import { Tag, Typography, useDesignSystemTheme } from '@databricks/design-system
 import { RunInfoEntity } from '../../../types';
 import { RunStatusIcon } from '../../RunStatusIcon';
 import { FormattedMessage } from 'react-intl';
-import type { MlflowRunStatus } from '../../../../graphql/__generated__/graphql';
+import type { QCFlowRunStatus } from '../../../../graphql/__generated__/graphql';
 
 /**
  * Displays run status cell in run detail overview.
  */
-export const RunViewStatusBox = ({ status }: { status: RunInfoEntity['status'] | MlflowRunStatus | null }) => {
+export const RunViewStatusBox = ({ status }: { status: RunInfoEntity['status'] | QCFlowRunStatus | null }) => {
   const { theme } = useDesignSystemTheme();
   const getTagColor = () => {
     if (status === 'FINISHED') {

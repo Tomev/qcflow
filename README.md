@@ -2,7 +2,7 @@
 
 [![Apache 2 License](https://img.shields.io/badge/license-Apache%202-brightgreen.svg?style=for-the-badge&logo=apache)](https://github.com/qcflow/qcflow/blob/master/LICENSE.txt)
 
-QCFlow is an open-source platform, repurposed from [MLFlow](https://github.com/qcflow) to assist quantum computing practitioners and teams in handling the challenges of quantum computing projects tracking. QCFlow focuses on the complete process of quantum computations, ensuring that each phase is manageable, traceable, and reproducible.
+QCFlow is an open-source platform, repurposed from [QCFlow](https://github.com/qcflow) to assist quantum computing practitioners and teams in handling the challenges of quantum computing projects tracking. QCFlow focuses on the complete process of quantum computations, ensuring that each phase is manageable, traceable, and reproducible.
 
 ---
 

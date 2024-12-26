@@ -13,8 +13,8 @@ from packaging.version import Version
 import qcflow
 from qcflow.entities import RunTag
 from qcflow.entities.run_status import RunStatus
-from qcflow.exceptions import MlflowException
-from qcflow.langchain.langchain_tracer import MlflowLangchainTracer, should_attach_span_to_context
+from qcflow.exceptions import QCFlowException
+from qcflow.langchain.langchain_tracer import QCFlowLangchainTracer, should_attach_span_to_context
 from qcflow.langchain.runnables import get_runnable_steps
 from qcflow.tracking.context import registry as context_registry
 from qcflow.utils import name_utils
@@ -88,7 +88,7 @@ def patched_inference(func_name, original, self, *args, **kwargs):
     should_trace = not IS_PATCHING_DISABLED_FOR_TRACING.get() and config.log_traces
 
     if should_trace:
-        tracer = MlflowLangchainTracer(
+        tracer = QCFlowLangchainTracer(
             set_span_in_context=should_attach_span_to_context(func_name, self)
         )
         args, kwargs = _get_args_with_qcflow_tracer(tracer, func_name, args, kwargs)
@@ -192,7 +192,7 @@ def _get_runnable_config_with_callback(
 
 def _inject_callback(
     original_callbacks: Union[list[BaseCallbackHandler], BaseCallbackManager],
-    new_callback: MlflowLangchainTracer,
+    new_callback: QCFlowLangchainTracer,
 ) -> Union[list, BaseCallbackManager]:
     """
     Inject a callback into the original callbacks.
@@ -260,12 +260,12 @@ def _setup_autolog_run(config, model):
     elif active_run := qcflow.active_run():
         run_id = active_run.info.run_id
         tags = _resolve_tags(config.extra_tags, active_run)
-        qcflow.MlflowClient().log_batch(run_id, tags=[RunTag(k, str(v)) for k, v in tags.items()])
+        qcflow.QCFlowClient().log_batch(run_id, tags=[RunTag(k, str(v)) for k, v in tags.items()])
         should_terminate_run = False
     else:
         from qcflow.tracking.fluent import _get_experiment_id
 
-        run = qcflow.MlflowClient().create_run(
+        run = qcflow.QCFlowClient().create_run(
             experiment_id=_get_experiment_id(),
             run_name="langchain-" + name_utils._generate_random_name(),
             tags=_resolve_tags(config.extra_tags),
@@ -281,7 +281,7 @@ def _setup_autolog_run(config, model):
         raise
     finally:
         if should_terminate_run:
-            qcflow.MlflowClient().set_terminated(run_id, status=run_status)
+            qcflow.QCFlowClient().set_terminated(run_id, status=run_status)
 
 
 def _resolve_tags(extra_tags, active_run=None):
@@ -308,14 +308,14 @@ def _get_input_data_from_function(func_name, model, args, kwargs):
         inference_func = getattr(model, func_name)
         # A guard to make sure `param_name` is the first argument of inference function
         if next(iter(inspect.signature(inference_func).parameters.keys())) != param_name:
-            input_example_exc = MlflowException(
+            input_example_exc = QCFlowException(
                 "Inference function signature changes, please contact QCFlow team to "
                 "fix langchain autologging.",
             )
         else:
             return args[0] if len(args) > 0 else kwargs.get(param_name)
     else:
-        input_example_exc = MlflowException(
+        input_example_exc = QCFlowException(
             f"Unsupported inference function. Only support {list(func_param_name_mapping.keys())}."
         )
     _logger.warning(
@@ -331,7 +331,7 @@ def _convert_data_to_dict(data, key):
         return {key: data}
     if isinstance(data, str):
         return {key: [data]}
-    raise MlflowException("Unsupported data type.")
+    raise QCFlowException("Unsupported data type.")
 
 
 def _combine_input_and_output(input, output, session_id, func_name):

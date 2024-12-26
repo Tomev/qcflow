@@ -4,7 +4,7 @@ import time
 from typing import Any
 
 import qcflow
-from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.recipes.artifacts import DataframeArtifact, RegisteredModelVersionInfo
 from qcflow.recipes.cards import BaseCard
 from qcflow.recipes.step import BaseStep, StepClass
@@ -46,12 +46,12 @@ class PredictStep(BaseStep):
         required_configuration_keys = ["using", "location"]
         for key in required_configuration_keys:
             if key not in self.step_config:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The `{key}` configuration key must be specified for the predict step.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
         if self.step_config["using"] not in {"parquet", "delta", "table"}:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid `using` in predict step configuration.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -60,7 +60,7 @@ class PredictStep(BaseStep):
                 register_config = self.step_config["model_registry"]
                 model_name = register_config["model_name"]
             except KeyError:
-                raise MlflowException(
+                raise QCFlowException(
                     "No model specified for batch scoring: model_registry does not have "
                     "`model_uri` and does not have `model_name` configuration key.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -131,7 +131,7 @@ class PredictStep(BaseStep):
                 _logger.info("Creating new spark session")
                 spark = _create_local_spark_session_for_recipes()
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "Encountered an error while getting or creating an active Spark session to"
                     " score dataset with spark UDF."
@@ -188,7 +188,7 @@ class PredictStep(BaseStep):
                     # swallow spark failures
                     pass
         if output_populated:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Output location `{output_location}` using format `{output_format}` is "
                     "already populated. To overwrite, please change the spark `save_mode` in "

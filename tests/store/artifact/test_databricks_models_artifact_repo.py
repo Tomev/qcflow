@@ -5,11 +5,11 @@ from unittest.mock import ANY
 import pytest
 import requests
 
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import FileInfo
 from qcflow.entities.model_registry import ModelVersion
 from qcflow.environment_variables import QCFLOW_MULTIPART_DOWNLOAD_CHUNK_SIZE
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.databricks_models_artifact_repo import (
     DatabricksModelsArtifactRepository,
 )
@@ -63,7 +63,7 @@ def test_init_with_stage_uri_containing_profile(stage_uri_with_profile):
         "run12345",
     )
     get_latest_versions_patch = mock.patch.object(
-        MlflowClient, "get_latest_versions", return_value=[model_version_detailed]
+        QCFlowClient, "get_latest_versions", return_value=[model_version_detailed]
     )
     with get_latest_versions_patch:
         repo = DatabricksModelsArtifactRepository(stage_uri_with_profile)
@@ -85,7 +85,7 @@ def test_init_with_stage_uri_containing_profile(stage_uri_with_profile):
 )
 def test_init_with_invalid_artifact_uris(invalid_artifact_uri):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="A valid databricks profile is required to instantiate this repository",
     ):
         DatabricksModelsArtifactRepository(invalid_artifact_uri)
@@ -125,7 +125,7 @@ def test_init_with_stage_uri_and_profile_is_inferred(stage_uri_without_profile):
         "run12345",
     )
     get_latest_versions_patch = mock.patch.object(
-        MlflowClient, "get_latest_versions", return_value=[model_version_detailed]
+        QCFlowClient, "get_latest_versions", return_value=[model_version_detailed]
     )
     with (
         get_latest_versions_patch,
@@ -153,7 +153,7 @@ def test_init_with_valid_uri_but_no_profile(valid_profileless_artifact_uri):
         return_value=None,
     ):
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="A valid databricks profile is required to instantiate this repository",
         ):
             DatabricksModelsArtifactRepository(valid_profileless_artifact_uri)
@@ -204,7 +204,7 @@ def test_list_artifacts(databricks_model_artifact_repo):
         return_value=list_artifact_dir_bad_response_mock,
     ) as call_endpoint_mock:
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"API request to list files under path `` failed with status code 404. "
             "Response body: An error occurred",
         ):
@@ -344,7 +344,7 @@ def test_parallelized_download_file_using_http_uri_with_error_downloads(
             "qcflow.utils.file_utils.download_chunk", side_effect=Exception("Retry failed")
         ) as mock_download_chunk,
     ):
-        with pytest.raises(MlflowException, match="Retry failed"):
+        with pytest.raises(QCFlowException, match="Retry failed"):
             databricks_model_artifact_repo._download_file(remote_file_path, "")
 
         mock_download_chunk.assert_called_with(
@@ -403,18 +403,18 @@ def test_parallelized_download_file_using_http_uri_with_failed_downloads(
 
 def test_download_file_get_request_fail(databricks_model_artifact_repo):
     with mock.patch(DATABRICKS_MODEL_ARTIFACT_REPOSITORY + "._call_endpoint") as call_endpoint_mock:
-        call_endpoint_mock.side_effect = MlflowException("MOCK ERROR")
-        with pytest.raises(MlflowException, match=r".+"):
+        call_endpoint_mock.side_effect = QCFlowException("MOCK ERROR")
+        with pytest.raises(QCFlowException, match=r".+"):
             databricks_model_artifact_repo.download_artifacts("Something")
 
 
 def test_log_artifact_fail(databricks_model_artifact_repo):
-    with pytest.raises(MlflowException, match="This repository does not support logging artifacts"):
+    with pytest.raises(QCFlowException, match="This repository does not support logging artifacts"):
         databricks_model_artifact_repo.log_artifact("Some file")
 
 
 def test_log_artifacts_fail(databricks_model_artifact_repo):
-    with pytest.raises(MlflowException, match="This repository does not support logging artifacts"):
+    with pytest.raises(QCFlowException, match="This repository does not support logging artifacts"):
         databricks_model_artifact_repo.log_artifacts("Some dir")
 
 

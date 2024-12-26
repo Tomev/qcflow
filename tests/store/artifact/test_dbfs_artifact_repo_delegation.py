@@ -9,14 +9,14 @@ from qcflow.store.artifact.dbfs_artifact_repo import (
     DbfsRestArtifactRepository,
 )
 from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 
 
 @pytest.fixture
 def host_creds_mock():
     with mock.patch(
         "qcflow.store.artifact.dbfs_artifact_repo._get_host_creds_from_default_store",
-        return_value=lambda: MlflowHostCreds("http://host"),
+        return_value=lambda: QCFlowHostCreds("http://host"),
     ):
         yield
 

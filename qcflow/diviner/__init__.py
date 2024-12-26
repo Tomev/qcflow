@@ -28,7 +28,7 @@ import yaml
 import qcflow
 from qcflow import pyfunc
 from qcflow.environment_variables import QCFLOW_DFS_TMP
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _infer_signature_from_input_example
@@ -232,7 +232,7 @@ def _save_diviner_model(diviner_model, path, **kwargs) -> bool:
         # Exception within QCFlow when attempting to copy the temporary write files from DFS to
         # the file system path provided.
         if not os.path.isabs(path):
-            raise MlflowException(
+            raise QCFlowException(
                 "The save path provided must be a relative path. "
                 f"The path submitted, '{path}' is an absolute path."
             )
@@ -342,7 +342,7 @@ def _load_pyfunc(path):
     flavor_conf = _get_flavor_configuration(local_path, FLAVOR_NAME)
 
     if flavor_conf.get(_SPARK_MODEL_INDICATOR):
-        raise MlflowException(
+        raise QCFlowException(
             "The model being loaded was fit in Spark. Diviner models fit in "
             "Spark do not support loading as pyfunc."
         )
@@ -501,7 +501,7 @@ class _DivinerModelWrapper:
         horizon = conf.get("horizon", None)
         n_periods = conf.get("n_periods", None)
         if n_periods and horizon and n_periods != horizon:
-            raise MlflowException(
+            raise QCFlowException(
                 "The provided prediction configuration contains both `n_periods` and `horizon` "
                 "with different values. Please provide only one of these integer values.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -511,7 +511,7 @@ class _DivinerModelWrapper:
                 n_periods = horizon
 
         if not n_periods:
-            raise MlflowException(
+            raise QCFlowException(
                 "The provided prediction configuration Pandas DataFrame does not contain either "
                 "the `n_periods` or `horizon` columns. At least one of these must be specified "
                 f"with a valid integer value. Configuration schema: {schema}.",
@@ -519,7 +519,7 @@ class _DivinerModelWrapper:
             )
 
         if not isinstance(n_periods, int):
-            raise MlflowException(
+            raise QCFlowException(
                 "The `n_periods` column contains invalid data. Supplied type must be an integer. "
                 f"Type supplied: {type(n_periods)}",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -528,7 +528,7 @@ class _DivinerModelWrapper:
         frequency = conf.get("frequency", None)
 
         if isinstance(self.diviner_model, GroupedProphet) and not frequency:
-            raise MlflowException(
+            raise QCFlowException(
                 "Diviner's GroupedProphet model requires a `frequency` value to be submitted in "
                 "Pandas date_range format. The submitted configuration Pandas DataFrame does not "
                 f"contain a `frequency` column. Configuration schema: {schema}.",
@@ -539,7 +539,7 @@ class _DivinerModelWrapper:
         predict_groups = conf.get("groups", None)
 
         if predict_groups and not isinstance(predict_groups, list):
-            raise MlflowException(
+            raise QCFlowException(
                 "Specifying a group subset for prediction requires groups to be defined as a "
                 f"[List[(Tuple|List)[<group_keys>]]. Submitted group type: {type(predict_groups)}.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -585,7 +585,7 @@ class _DivinerModelWrapper:
                     groups=predict_groups, n_periods=n_periods, **predict_conf
                 )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The Diviner model instance type '{type(self.diviner_model)}' is not supported "
                 f"in version {qcflow.__version__} of QCFlow.",
                 error_code=INVALID_PARAMETER_VALUE,

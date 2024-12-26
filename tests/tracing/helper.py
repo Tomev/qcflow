@@ -10,7 +10,7 @@ import qcflow
 from qcflow.entities import Trace, TraceData, TraceInfo
 from qcflow.entities.trace_status import TraceStatus
 from qcflow.ml_package_versions import FLAVOR_TO_MODULE_NAME
-from qcflow.tracing.processor.qcflow import MlflowSpanProcessor
+from qcflow.tracing.processor.qcflow import QCFlowSpanProcessor
 from qcflow.tracing.provider import _get_tracer
 from qcflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
 from qcflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS, get_autolog_function
@@ -120,12 +120,12 @@ def create_test_trace_info(
 
 def get_traces(experiment_id=DEFAULT_EXPERIMENT_ID) -> list[Trace]:
     # Get all traces from the backend
-    return qcflow.MlflowClient().search_traces(experiment_ids=[experiment_id])
+    return qcflow.QCFlowClient().search_traces(experiment_ids=[experiment_id])
 
 
 def purge_traces(experiment_id=DEFAULT_EXPERIMENT_ID):
     # Delete all traces from the backend
-    qcflow.tracking.MlflowClient().delete_traces(
+    qcflow.tracking.QCFlowClient().delete_traces(
         experiment_id=experiment_id, max_traces=1000, max_timestamp_millis=0
     )
 
@@ -139,7 +139,7 @@ def get_tracer_tracking_uri() -> Optional[str]:
         tracer = tracer._tracer
     span_processor = tracer.span_processor._span_processors[0]
 
-    if isinstance(span_processor, MlflowSpanProcessor):
+    if isinstance(span_processor, QCFlowSpanProcessor):
         return span_processor._client.tracking_uri
 
 

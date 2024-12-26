@@ -13,7 +13,7 @@ from qcflow.environment_variables import (
     QCFLOW_KERBEROS_USER,
     QCFLOW_PYARROW_EXTRA_CONF,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.projects import env_type
 from qcflow.projects.backend.abstract_backend import AbstractBackend
 from qcflow.projects.submitted_run import LocalSubmittedRun
@@ -99,7 +99,7 @@ class LocalBackend(AbstractBackend):
             env_manager = _env_type_to_env_manager(project.env_type)
         else:
             if project.env_type == env_type.PYTHON and env_manager == _EnvManager.CONDA:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     "python_env project cannot be executed using conda. Set `--env-manager` to "
                     "'virtualenv' or 'local' to execute this project."
                 )
@@ -113,7 +113,7 @@ class LocalBackend(AbstractBackend):
                 validate_docker_installation,
             )
 
-            tracking.MlflowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "docker")
+            tracking.QCFlowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "docker")
             validate_docker_env(project)
             validate_docker_installation()
             image = build_docker_image(
@@ -134,7 +134,7 @@ class LocalBackend(AbstractBackend):
         # Synchronously create a conda environment (even though this may take some time)
         # to avoid failures due to multiple concurrent attempts to create the same conda env.
         elif env_manager == _EnvManager.VIRTUALENV:
-            tracking.MlflowClient().set_tag(
+            tracking.QCFlowClient().set_tag(
                 active_run.info.run_id, QCFLOW_PROJECT_ENV, "virtualenv"
             )
             command_separator = " && "
@@ -170,7 +170,7 @@ class LocalBackend(AbstractBackend):
             )
             command_args += [activate_cmd]
         elif env_manager == _EnvManager.CONDA:
-            tracking.MlflowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "conda")
+            tracking.QCFlowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "conda")
             command_separator = " && "
             conda_env = get_or_create_conda_env(project.env_config_path)
             command_args += conda_env.get_activate_command()
@@ -326,7 +326,7 @@ def _get_docker_command(image, active_run, docker_args=None, volumes=None, user_
                 # User wants to copy an environment variable from system environment
                 system_var = os.environ.get(user_entry)
                 if system_var is None:
-                    raise MlflowException(
+                    raise QCFlowException(
                         "This project expects the {} environment variables to "
                         "be set on the machine running the project, but {} was "
                         "not set. Please ensure all expected environment variables "

@@ -1,13 +1,13 @@
 import warnings
 from abc import ABCMeta
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.utils.plugins import get_entry_points
 from qcflow.utils.uri import get_uri_scheme
 
 
-class UnsupportedModelRegistryStoreURIException(MlflowException):
+class UnsupportedModelRegistryStoreURIException(QCFlowException):
     """Exception thrown when building a model registry store with an unsupported URI"""
 
     def __init__(self, unsupported_uri, supported_uri_schemes):

@@ -19,11 +19,11 @@ from qcflow.environment_variables import (
     QCFLOW_TRACKING_TOKEN,
     QCFLOW_TRACKING_USERNAME,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 from qcflow.store.artifact.http_artifact_repo import HttpArtifactRepository
 from qcflow.utils.credentials import get_default_host_creds
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 
 
 @pytest.mark.parametrize("scheme", ["http", "https"])
@@ -266,7 +266,7 @@ def test_list_artifacts_malicious_path(http_artifact_repo, path):
             200,
         ),
     ):
-        with pytest.raises(MlflowException, match="Invalid path"):
+        with pytest.raises(QCFlowException, match="Invalid path"):
             http_artifact_repo.list_artifacts()
 
 
@@ -360,7 +360,7 @@ def test_default_host_creds(monkeypatch):
     client_cert_path = "client_cert_path"
     server_cert_path = "server_cert_path"
 
-    expected_host_creds = MlflowHostCreds(
+    expected_host_creds = QCFlowHostCreds(
         host=artifact_uri,
         username=username,
         password=password,

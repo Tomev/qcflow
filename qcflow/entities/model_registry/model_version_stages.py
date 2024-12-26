@@ -1,4 +1,4 @@
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 STAGE_NONE = "None"
@@ -16,7 +16,7 @@ _CANONICAL_MAPPING = {stage.lower(): stage for stage in ALL_STAGES}
 def get_canonical_stage(stage):
     key = stage.lower()
     if key not in _CANONICAL_MAPPING:
-        raise MlflowException(
+        raise QCFlowException(
             "Invalid Model Version stage: {}. Value must be one of {}.".format(
                 stage, ", ".join(ALL_STAGES)
             ),

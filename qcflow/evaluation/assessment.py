@@ -2,14 +2,14 @@ import numbers
 import time
 from typing import Any, Optional, Union
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.assessment import Assessment as AssessmentEntity
 from qcflow.entities.assessment_source import AssessmentSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
-class Assessment(_MlflowObject):
+class Assessment(_QCFlowObject):
     """
     Assessment data associated with an evaluation result.
     """
@@ -38,13 +38,13 @@ class Assessment(_MlflowObject):
                 the assessment.
         """
         if (value is None) == (error_code is None):
-            raise MlflowException(
+            raise QCFlowException(
                 "Exactly one of value or error_code must be specified for an assessment.",
                 INVALID_PARAMETER_VALUE,
             )
 
         if value is not None and error_message is not None:
-            raise MlflowException(
+            raise QCFlowException(
                 "error_message cannot be specified when value is specified.",
                 INVALID_PARAMETER_VALUE,
             )
@@ -142,7 +142,7 @@ class Assessment(_MlflowObject):
     def _to_entity(self, evaluation_id: str) -> AssessmentEntity:
         # We require that the source be specified for an assessment before sending it to the backend
         if self._source is None:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Assessment source must be specified."
                     f"Got empty source for assessment with name {self._name}"

@@ -21,7 +21,7 @@ import requests
 
 import qcflow.experiments
 import qcflow.pyfunc
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.artifacts import download_artifacts
 from qcflow.data.pandas_dataset import from_pandas
 from qcflow.entities import (
@@ -36,7 +36,7 @@ from qcflow.entities import (
 )
 from qcflow.entities.trace_data import TraceData
 from qcflow.entities.trace_status import TraceStatus
-from qcflow.exceptions import MlflowException, RestException
+from qcflow.exceptions import QCFlowException, RestException
 from qcflow.models import Model
 from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST, ErrorCode
 from qcflow.server.handlers import _get_sampled_steps_from_steps
@@ -78,7 +78,7 @@ def qcflow_client(request, tmp_path):
         ]
 
     with _init_server(backend_uri, root_artifact_uri=tmp_path.as_uri()) as url:
-        yield MlflowClient(url)
+        yield QCFlowClient(url)
 
 
 @pytest.fixture
@@ -603,12 +603,12 @@ def test_delete_tag(qcflow_client):
     qcflow_client.delete_tag(run_id, "taggity")
     run = qcflow_client.get_run(run_id)
     assert "taggity" not in run.data.tags
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         qcflow_client.delete_tag("fake_run_id", "taggity")
-    with pytest.raises(MlflowException, match="No tag with name: fakeTag"):
+    with pytest.raises(QCFlowException, match="No tag with name: fakeTag"):
         qcflow_client.delete_tag(run_id, "fakeTag")
     qcflow_client.delete_run(run_id)
-    with pytest.raises(MlflowException, match=f"The run {run_id} must be in"):
+    with pytest.raises(QCFlowException, match=f"The run {run_id} must be in"):
         qcflow_client.delete_tag(run_id, "taggity")
 
 
@@ -784,7 +784,7 @@ def test_search_pagination(qcflow_client):
 def test_search_validation(qcflow_client):
     experiment_id = qcflow_client.create_experiment("search_validation")
     with pytest.raises(
-        MlflowException, match=r"Invalid value 123456789 for parameter 'max_results' supplied"
+        QCFlowException, match=r"Invalid value 123456789 for parameter 'max_results' supplied"
     ):
         qcflow_client.search_runs([experiment_id], max_results=123456789)
 
@@ -1841,7 +1841,7 @@ def test_gateway_proxy_handler_rejects_invalid_requests(qcflow_client):
         root_artifact_uri=qcflow_client.tracking_uri,
         extra_env={"QCFLOW_DEPLOYMENTS_TARGET": "http://localhost:5001"},
     ) as url:
-        patched_client = MlflowClient(url)
+        patched_client = QCFlowClient(url)
 
         response = requests.post(
             f"{patched_client.tracking_uri}/ajax-api/2.0/qcflow/gateway-proxy",
@@ -1994,7 +1994,7 @@ def test_get_run_and_experiment_graphql(qcflow_client):
 def test_start_and_end_trace(qcflow_client):
     experiment_id = qcflow_client.create_experiment("start end trace")
 
-    # Trace CRUD APIs are not directly exposed as public API of MlflowClient,
+    # Trace CRUD APIs are not directly exposed as public API of QCFlowClient,
     # so we use the underlying tracking client to test them.
     client = qcflow_client._tracking_client
 
@@ -2322,7 +2322,7 @@ def test_list_artifacts_graphql(qcflow_client, tmp_path):
         f"{qcflow_client.tracking_uri}/graphql",
         json={
             "query": f"""
-                fragment FilesFragment on MlflowListArtifactsResponse {{
+                fragment FilesFragment on QCFlowListArtifactsResponse {{
                     files {{
                         path
                         isDir

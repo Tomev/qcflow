@@ -109,7 +109,7 @@ public class Model {
 
 
   /** @return The version of QCFlow with which the model was saved */
-  public Optional<String> getMlflowVersion() {
+  public Optional<String> getQCFlowVersion() {
     return Optional.ofNullable(this.qcflowVersion);
   }
 

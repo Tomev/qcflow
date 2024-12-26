@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 import numpy as np
 import pandas as pd
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import ModelSignature
 from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
 from qcflow.transformers.flavor_config import FlavorKey
@@ -74,7 +74,7 @@ def infer_signature_from_llm_inference_task(
     inferred_signature = _SIGNATURE_FOR_LLM_INFERENCE_TASK[inference_task]
 
     if signature is not None and signature != inferred_signature:
-        raise MlflowException(
+        raise QCFlowException(
             f"When `task` is specified as `{inference_task}`, the signature would "
             "be set by QCFlow. Please do not set the signature."
         )
@@ -92,7 +92,7 @@ def convert_messages_to_prompt(messages: list[dict], tokenizer) -> str:
         The prompt string contains the messages.
     """
     if not (isinstance(messages, list) and all(isinstance(msg, dict) for msg in messages)):
-        raise MlflowException(
+        raise QCFlowException(
             f"Input messages should be list of dictionaries, but got: {type(messages)}.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -100,7 +100,7 @@ def convert_messages_to_prompt(messages: list[dict], tokenizer) -> str:
     try:
         return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     except Exception as e:
-        raise MlflowException(f"Failed to apply chat template: {e}")
+        raise QCFlowException(f"Failed to apply chat template: {e}")
 
 
 def preprocess_llm_inference_input(
@@ -128,7 +128,7 @@ def preprocess_llm_inference_input(
         # Convert single value to list for consistency with DataFrame
         data = {k: [v] for k, v in data.items()}
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "Input data for a Transformer model logged with `llm/v1/chat` or `llm/v1/completions`"
             f"task is expected to be a pandas DataFrame or a dictionary, but got: {type(data)}.",
             error_code=BAD_REQUEST,
@@ -141,7 +141,7 @@ def preprocess_llm_inference_input(
     task = flavor_config[_LLM_INFERENCE_TASK_KEY]
     input_col = _LLM_INFERENCE_TASK_TO_DATA_FIELD.get(task)
     if input_col not in data:
-        raise MlflowException(
+        raise QCFlowException(
             f"Transformer model saved with `{task}` task excepts `{input_col}`"
             "to be passed as input data.",
             error_code=BAD_REQUEST,

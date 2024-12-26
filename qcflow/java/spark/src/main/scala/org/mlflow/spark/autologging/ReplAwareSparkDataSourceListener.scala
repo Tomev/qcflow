@@ -13,7 +13,7 @@ import scala.collection.mutable
  * and notify subscribers. Used in REPL-ID aware environments (e.g. Databricks)
  */
 class ReplAwareSparkDataSourceListener(
-    publisher: MlflowAutologEventPublisherImpl = MlflowAutologEventPublisher)
+    publisher: QCFlowAutologEventPublisherImpl = QCFlowAutologEventPublisher)
   extends SparkDataSourceListener(publisher) {
   private val executionIdToReplId = mutable.Map[Long, String]()
 

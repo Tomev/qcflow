@@ -4,7 +4,7 @@ from typing import Optional
 from qcflow.entities.evaluation import Evaluation as EvaluationEntity
 from qcflow.evaluation.evaluation import Evaluation
 from qcflow.evaluation.utils import evaluations_to_dataframes
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.tracking.fluent import _get_or_start_run
 
 
@@ -26,7 +26,7 @@ def log_evaluations(
     if not evaluations:
         return []
 
-    client = MlflowClient()
+    client = QCFlowClient()
     evaluation_entities = [
         evaluation._to_entity(run_id=run_id, evaluation_id=uuid.uuid4().hex)
         for evaluation in evaluations

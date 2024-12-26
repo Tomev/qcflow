@@ -7,7 +7,7 @@ from packaging.version import Version
 from sklearn.pipeline import Pipeline as sk_Pipeline
 
 import qcflow
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
 from qcflow.models.evaluation.default_evaluator import (
     BuiltInEvaluator,
@@ -89,7 +89,7 @@ class ShapEvaluator(BuiltInEvaluator):
 
         algorithm = self.evaluator_config.get("explainability_algorithm", None)
         if algorithm is not None and algorithm not in _SUPPORTED_SHAP_ALGORITHMS:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"Specified explainer algorithm {algorithm} is unsupported. Currently only "
                 f"support {','.join(_SUPPORTED_SHAP_ALGORITHMS)} algorithms.",
                 error_code=INVALID_PARAMETER_VALUE,

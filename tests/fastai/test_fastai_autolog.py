@@ -15,8 +15,8 @@ from torch import nn, optim
 
 import qcflow
 import qcflow.fastai
-from qcflow import MlflowClient
-from qcflow.fastai.callback import __MlflowFastaiCallback
+from qcflow import QCFlowClient
+from qcflow.fastai.callback import __QCFlowFastaiCallback
 from qcflow.utils.autologging_utils import BatchMetricsLogger
 
 mpl.use("Agg")
@@ -125,7 +125,7 @@ def fastai_random_tabular_data_run(iris_data, fit_variant):
     else:
         model.fit(NUM_EPOCHS)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     return model, client.get_run(client.search_runs(["0"])[0].info.run_id)
 
 
@@ -178,7 +178,7 @@ def test_fastai_autolog_logs_expected_data(fastai_random_tabular_data_run, fit_v
         assert "mom" in data.params
 
     # Testing model_summary.txt is saved
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = client.list_artifacts(run.info.run_id)
     artifacts = (x.path for x in artifacts)
     assert "module_summary.txt" in artifacts
@@ -196,7 +196,7 @@ def test_fastai_autolog_opt_func_expected_data(iris_data, fit_variant):
     else:
         model.fit(NUM_EPOCHS)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     data = client.get_run(client.search_runs(["0"])[0].info.run_id).data
 
     assert "opt_func" in data.params
@@ -214,7 +214,7 @@ def test_fastai_autolog_log_models_configuration(log_models, iris_data):
     model = fastai_tabular_model(iris_data)
     model.fit(NUM_EPOCHS)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run_id = client.search_runs(["0"])[0].info.run_id
     artifacts = client.list_artifacts(run_id)
     artifacts = [x.path for x in artifacts]
@@ -223,7 +223,7 @@ def test_fastai_autolog_log_models_configuration(log_models, iris_data):
 
 @pytest.mark.parametrize("fit_variant", ["fit_one_cycle", "fine_tune"])
 def test_fastai_autolog_logs_default_params(fastai_random_tabular_data_run, fit_variant):
-    client = MlflowClient()
+    client = QCFlowClient()
     run_id = client.search_runs(["0"])[0].info.run_id
     artifacts = client.list_artifacts(run_id)
     artifacts = [x.path for x in artifacts]
@@ -240,7 +240,7 @@ def test_fastai_autolog_logs_default_params(fastai_random_tabular_data_run, fit_
 @pytest.mark.parametrize("fit_variant", ["fit", "fit_one_cycle"])
 def test_fastai_autolog_model_can_load_from_artifact(fastai_random_tabular_data_run):
     run_id = fastai_random_tabular_data_run[1].info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = client.list_artifacts(run_id)
     artifacts = (x.path for x in artifacts)
     assert "model" in artifacts
@@ -269,7 +269,7 @@ def get_fastai_random_data_run_with_callback(iris_data, fit_variant, callback, p
     else:
         model.fit(NUM_EPOCHS)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     return model, client.get_run(client.search_runs(["0"])[0].info.run_id)
 
 
@@ -286,7 +286,7 @@ def fastai_random_data_run_with_callback(iris_data, fit_variant, callback, patie
 def test_fastai_autolog_save_and_early_stop_logs(fastai_random_data_run_with_callback):
     model, run = fastai_random_data_run_with_callback
 
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "valid_loss")
     num_of_epochs = len(model.recorder.values)
 
@@ -319,7 +319,7 @@ def test_fastai_autolog_early_stop_logs(fastai_random_data_run_with_callback, pa
     assert "early_stop_min_delta" in params
     assert params["early_stop_min_delta"] == f"-{MIN_DELTA}"
 
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "valid_loss")
     num_of_epochs = len(model.recorder.values)
 
@@ -343,7 +343,7 @@ def test_fastai_autolog_early_stop_no_stop_does_not_log(
     assert params["early_stop_min_delta"] == f"-{MIN_DELTA}"
 
     num_of_epochs = len(model.recorder.values)
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "valid_loss")
     # Check the test epoch numbers are correct
     assert num_of_epochs == NUM_EPOCHS
@@ -364,7 +364,7 @@ def test_fastai_autolog_non_early_stop_callback_does_not_log(fastai_random_data_
     assert "restored_epoch" not in metrics
     assert "early_stop_min_delta" not in params
     num_of_epochs = len(model.recorder.values)
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "valid_loss")
     # Check the test epoch numbers are correct
     assert num_of_epochs == NUM_EPOCHS
@@ -407,7 +407,7 @@ def test_fastai_autolog_batch_metrics_logger_logs_expected_metrics(
 
 
 def test_callback_is_picklable():
-    cb = __MlflowFastaiCallback(
+    cb = __QCFlowFastaiCallback(
         BatchMetricsLogger(run_id="1234"), log_models=True, is_fine_tune=False
     )
     pickle.dumps(cb)
@@ -420,5 +420,5 @@ def test_autolog_registering_model(iris_data):
         model = fastai_tabular_model(iris_data)
         model.fit(NUM_EPOCHS)
 
-        registered_model = MlflowClient().get_registered_model(registered_model_name)
+        registered_model = QCFlowClient().get_registered_model(registered_model_name)
         assert registered_model.name == registered_model_name

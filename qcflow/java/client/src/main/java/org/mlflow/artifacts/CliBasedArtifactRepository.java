@@ -21,10 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.qcflow.api.proto.Service;
-import org.qcflow.tracking.MlflowClientException;
-import org.qcflow.tracking.creds.MlflowHostCreds;
-import org.qcflow.tracking.creds.DatabricksMlflowHostCreds;
-import org.qcflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.tracking.QCFlowClientException;
+import org.qcflow.tracking.creds.QCFlowHostCreds;
+import org.qcflow.tracking.creds.DatabricksQCFlowHostCreds;
+import org.qcflow.tracking.creds.QCFlowHostCredsProvider;
 
 /**
  * Shells out to the 'qcflow' command line utility to upload, download, and list artifacts. This
@@ -55,12 +55,12 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
 
   // Used to pass credentials as environment variables
   // (e.g., QCFLOW_TRACKING_URI or DATABRICKS_HOST) to the qcflow process.
-  private final MlflowHostCredsProvider hostCredsProvider;
+  private final QCFlowHostCredsProvider hostCredsProvider;
 
   public CliBasedArtifactRepository(
       String artifactBaseDir,
       String runId,
-      MlflowHostCredsProvider hostCredsProvider) {
+      QCFlowHostCredsProvider hostCredsProvider) {
     this.artifactBaseDir = artifactBaseDir;
     this.runId = runId;
     this.hostCredsProvider = hostCredsProvider;
@@ -68,12 +68,12 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
 
   @Override
   public void logArtifact(File localFile, String artifactPath) {
-    checkMlflowAccessible();
+    checkQCFlowAccessible();
     if (!localFile.exists()) {
-      throw new MlflowClientException("Local file does not exist: " + localFile);
+      throw new QCFlowClientException("Local file does not exist: " + localFile);
     }
     if (localFile.isDirectory()) {
-      throw new MlflowClientException("Local path points to a directory. Use logArtifacts" +
+      throw new QCFlowClientException("Local path points to a directory. Use logArtifacts" +
         " instead: " + localFile);
     }
 
@@ -81,7 +81,7 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
       "log-artifact", "--local-file", localFile.toString());
     List<String> command = appendRunIdArtifactPath(baseCommand, runId, artifactPath);
     String tag = "log file " + localFile + " to " + getTargetIdentifier(artifactPath);
-    forkMlflowProcess(command, tag);
+    forkQCFlowProcess(command, tag);
   }
 
   @Override
@@ -91,12 +91,12 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
 
   @Override
   public void logArtifacts(File localDir, String artifactPath) {
-    checkMlflowAccessible();
+    checkQCFlowAccessible();
     if (!localDir.exists()) {
-      throw new MlflowClientException("Local file does not exist: " + localDir);
+      throw new QCFlowClientException("Local file does not exist: " + localDir);
     }
     if (localDir.isFile()) {
-      throw new MlflowClientException("Local path points to a file. Use logArtifact" +
+      throw new QCFlowClientException("Local path points to a file. Use logArtifact" +
         " instead: " + localDir);
     }
 
@@ -104,7 +104,7 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
       "log-artifacts", "--local-dir", localDir.toString());
     List<String> command = appendRunIdArtifactPath(baseCommand, runId, artifactPath);
     String tag = "log dir " + localDir + " to " + getTargetIdentifier(artifactPath);
-    forkMlflowProcess(command, tag);
+    forkQCFlowProcess(command, tag);
   }
 
   @Override
@@ -114,11 +114,11 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
 
   @Override
   public File downloadArtifacts(String artifactPath) {
-    checkMlflowAccessible();
+    checkQCFlowAccessible();
     String tag = "download artifacts for " + getTargetIdentifier(artifactPath);
     List<String> command = appendRunIdArtifactPath(
       Lists.newArrayList("download"), runId, artifactPath);
-    String stdOutput = forkMlflowProcess(command, tag);
+    String stdOutput = forkQCFlowProcess(command, tag);
     String[] splits = stdOutput.split(System.lineSeparator());
     return new File(splits[splits.length-1].trim());
   }
@@ -130,11 +130,11 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
 
   @Override
   public List<Service.FileInfo> listArtifacts(String artifactPath) {
-    checkMlflowAccessible();
+    checkQCFlowAccessible();
     String tag = "list artifacts in " + getTargetIdentifier(artifactPath);
     List<String> command = appendRunIdArtifactPath(
       Lists.newArrayList("list"), runId, artifactPath);
-    String jsonOutput = forkMlflowProcess(command, tag);
+    String jsonOutput = forkQCFlowProcess(command, tag);
     return parseFileInfos(jsonOutput);
   }
 
@@ -146,16 +146,16 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
   /**
    * Only available in the CliBasedArtifactRepository. Downloads an artifact to the local
    * filesystem when provided with an artifact uri. This method should not be used directly
-   * by the user. Please use {@link org.qcflow.tracking.MlflowClient}
+   * by the user. Please use {@link org.qcflow.tracking.QCFlowClient}
    *
    * @param artifactUri Artifact uri
    * @return Directory/file of the artifact
    */
   public File downloadArtifactFromUri(String artifactUri) {
-    checkMlflowAccessible();
+    checkQCFlowAccessible();
     String tag = "download artifacts for " + artifactUri;
     List<String> command = Lists.newArrayList("download", "--artifact-uri", artifactUri);
-    String localPath = forkMlflowProcess(command, tag).trim();
+    String localPath = forkQCFlowProcess(command, tag).trim();
     return new File(localPath);
   }
 
@@ -175,7 +175,7 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
         JsonFormat.parser().merge(fileInfoJson, builder);
         fileInfos.add(builder.build());
       } catch (InvalidProtocolBufferException e) {
-        throw new MlflowClientException("Failed to deserialize JSON into FileInfo: " + json, e);
+        throw new QCFlowClientException("Failed to deserialize JSON into FileInfo: " + json, e);
       }
     }
     return fileInfos;
@@ -185,22 +185,22 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
    * Checks whether the 'qcflow' executable is available, and throws a nice error if not.
    * If this method has ever run successfully before (in the entire JVM), we will not rerun it.
    */
-  private void checkMlflowAccessible() {
+  private void checkQCFlowAccessible() {
     if (qcflowSuccessfullyLoaded.get()) {
       return;
     }
 
     try {
       String tag = "get qcflow version";
-      forkMlflowProcess(Lists.newArrayList("--help"), tag);
+      forkQCFlowProcess(Lists.newArrayList("--help"), tag);
       logger.info("Found local qcflow executable");
       qcflowSuccessfullyLoaded.set(true);
-    } catch (MlflowClientException e) {
+    } catch (QCFlowClientException e) {
       String errorMessage = String.format("Failed to exec '%s -m %s', needed to" +
           " access artifacts within the non-Java-native artifact store at '%s'. Please make" +
           " sure qcflow is available on your local system path (e.g., from 'pip install qcflow')",
         PYTHON_EXECUTABLE, PYTHON_COMMAND, artifactBaseDir);
-      throw new MlflowClientException(errorMessage, e);
+      throw new QCFlowClientException(errorMessage, e);
     }
   }
 
@@ -211,19 +211,19 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
    * @param tag User-facing tag which will be used to identify what we were trying to do
    *            in the case of a failure.
    * @return raw stdout of the process, decoded as a utf-8 string
-   * @throws MlflowClientException if the process exits with a non-zero exit code, or anything
+   * @throws QCFlowClientException if the process exits with a non-zero exit code, or anything
    *                               else goes wrong.
    */
-  private String forkMlflowProcess(List<String> qcflowCommand, String tag) {
+  private String forkQCFlowProcess(List<String> qcflowCommand, String tag) {
     String stdout;
     Process process = null;
     try {
-      MlflowHostCreds hostCreds = hostCredsProvider.getHostCreds();
+      QCFlowHostCreds hostCreds = hostCredsProvider.getHostCreds();
       List<String> fullCommand = Lists.newArrayList(PYTHON_EXECUTABLE, "-m", PYTHON_COMMAND);
       fullCommand.addAll(qcflowCommand);
       ProcessBuilder pb = new ProcessBuilder(fullCommand);
-      if (hostCreds instanceof DatabricksMlflowHostCreds) {
-        setProcessEnvironmentDatabricks(pb.environment(), (DatabricksMlflowHostCreds) hostCreds);
+      if (hostCreds instanceof DatabricksQCFlowHostCreds) {
+        setProcessEnvironmentDatabricks(pb.environment(), (DatabricksQCFlowHostCreds) hostCreds);
       } else {
         setProcessEnvironment(pb.environment(), hostCreds);
       }
@@ -231,18 +231,18 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
       stdout = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
       int exitValue = process.waitFor();
       if (exitValue != 0) {
-        throw new MlflowClientException("Failed to " + tag + ". Error: " +
+        throw new QCFlowClientException("Failed to " + tag + ". Error: " +
           getErrorBestEffort(process));
       }
     } catch (IOException | InterruptedException e) {
-      throw new MlflowClientException("Failed to fork qcflow process to " + tag +
+      throw new QCFlowClientException("Failed to fork qcflow process to " + tag +
         ". Process stderr: " + getErrorBestEffort(process), e);
     }
     return stdout;
   }
 
   @VisibleForTesting
-  void setProcessEnvironment(Map<String, String> environment, MlflowHostCreds hostCreds) {
+  void setProcessEnvironment(Map<String, String> environment, QCFlowHostCreds hostCreds) {
     environment.put("QCFLOW_TRACKING_URI", hostCreds.getHost());
     if (hostCreds.getUsername() != null) {
       environment.put("QCFLOW_TRACKING_USERNAME", hostCreds.getUsername());
@@ -261,7 +261,7 @@ public class CliBasedArtifactRepository implements ArtifactRepository {
   @VisibleForTesting
   void setProcessEnvironmentDatabricks(
       Map<String, String> environment,
-      DatabricksMlflowHostCreds hostCreds) {
+      DatabricksQCFlowHostCreds hostCreds) {
     environment.put("DATABRICKS_HOST", hostCreds.getHost());
     if (hostCreds.getUsername() != null) {
       environment.put("DATABRICKS_USERNAME", hostCreds.getUsername());

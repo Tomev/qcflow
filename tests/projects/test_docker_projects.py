@@ -5,10 +5,10 @@ import pytest
 
 import docker
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import ViewType
 from qcflow.environment_variables import QCFLOW_TRACKING_URI
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.legacy_databricks_cli.configure.provider import DatabricksConfig
 from qcflow.projects import ExecutionException, _project_spec
 from qcflow.projects.backend.local import _get_docker_command
@@ -46,7 +46,7 @@ def test_docker_project_execution(use_start_run, docker_example_base_image):
     )
     # Validate run contents in the FileStore
     run_id = submitted_run.run_id
-    qcflow_service = MlflowClient()
+    qcflow_service = QCFlowClient()
     runs = qcflow_service.search_runs(
         [file_store.FileStore.DEFAULT_EXPERIMENT_ID], run_view_type=ViewType.ACTIVE_ONLY
     )
@@ -259,7 +259,7 @@ def test_docker_user_specified_env_vars(volumes, environment, expected, os_envir
     monkeypatch.setenvs(os_environ)
     if "should_crash" in expected:
         expected.remove("should_crash")
-        with pytest.raises(MlflowException, match="This project expects"):
+        with pytest.raises(QCFlowException, match="This project expects"):
             _get_docker_command(image, active_run, None, volumes, environment)
     else:
         docker_command = _get_docker_command(image, active_run, None, volumes, environment)

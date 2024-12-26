@@ -18,7 +18,7 @@ import pytest
 import qcflow
 import qcflow.tracking.context.registry
 import qcflow.tracking.fluent
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.data.http_dataset_source import HTTPDatasetSource
 from qcflow.data.pandas_dataset import from_pandas
 from qcflow.entities import (
@@ -39,7 +39,7 @@ from qcflow.environment_variables import (
     QCFLOW_REGISTRY_URI,
     QCFLOW_RUN_ID,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.entities.paged_list import PagedList
 from qcflow.store.model_registry import (
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
@@ -203,14 +203,14 @@ def test_get_experiment_id_from_env(monkeypatch):
     name = f"random experiment {random.randint(1, 1e6)}"
     monkeypatch.delenv(QCFLOW_EXPERIMENT_ID.name, raising=False)
     monkeypatch.setenv(QCFLOW_EXPERIMENT_NAME.name, name)
-    assert MlflowClient().get_experiment_by_name(name) is None
+    assert QCFlowClient().get_experiment_by_name(name) is None
     assert _get_experiment_id_from_env() is not None
 
     # assert experiment creation from encapsulating function
     name = f"random experiment {random.randint(1, 1e6)}"
     monkeypatch.delenv(QCFLOW_EXPERIMENT_ID.name, raising=False)
     monkeypatch.setenv(QCFLOW_EXPERIMENT_NAME.name, name)
-    assert MlflowClient().get_experiment_by_name(name) is None
+    assert QCFlowClient().get_experiment_by_name(name) is None
     assert _get_experiment_id() is not None
 
     # assert raises from conflicting experiment_ids
@@ -221,7 +221,7 @@ def test_get_experiment_id_from_env(monkeypatch):
     monkeypatch.delenv(QCFLOW_EXPERIMENT_NAME.name, raising=False)
     monkeypatch.setenv(QCFLOW_EXPERIMENT_ID.name, random_id)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             f"The provided {QCFLOW_EXPERIMENT_ID} environment variable value "
             f"`{random_id}` does not exist in the tracking server"
@@ -236,7 +236,7 @@ def test_get_experiment_id_from_env(monkeypatch):
     assert exp_id != random_id
     monkeypatch.setenvs({QCFLOW_EXPERIMENT_ID.name: random_id, QCFLOW_EXPERIMENT_NAME.name: name})
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             f"The provided {QCFLOW_EXPERIMENT_ID} environment variable value "
             f"`{random_id}` does not match the experiment id"
@@ -419,7 +419,7 @@ def test_search_registered_models(tmp_path):
 
     tag_values = ["x", "x", "y"]
     for tag, model_name in zip_longest(tag_values, model_names):
-        MlflowClient().create_registered_model(model_name, tags={"tag": tag} if tag else None)
+        QCFlowClient().create_registered_model(model_name, tags={"tag": tag} if tag else None)
 
     # max_results is unspecified
     models = qcflow.search_registered_models()
@@ -469,12 +469,12 @@ def test_search_model_versions(tmp_path):
         b_model_version_names = ["BModel" for i in range(num_b_model_versions)]
         model_version_names = b_model_version_names + a_model_version_names
 
-        MlflowClient().create_registered_model(name="AModel")
-        MlflowClient().create_registered_model(name="BModel")
+        QCFlowClient().create_registered_model(name="AModel")
+        QCFlowClient().create_registered_model(name="BModel")
 
         tag_values = ["x", "x", "y"]
         for tag, model_name in zip_longest(tag_values, model_version_names):
-            MlflowClient().create_model_version(
+            QCFlowClient().create_model_version(
                 name=model_name, source="foo/bar", tags={"tag": tag} if tag else None
             )
 
@@ -553,7 +553,7 @@ def test_start_run_defaults(empty_active_run_stack):
         qcflow_tags.QCFLOW_RUN_NAME: run_name,
     }
 
-    create_run_patch = mock.patch.object(MlflowClient, "create_run")
+    create_run_patch = mock.patch.object(QCFlowClient, "create_run")
 
     with multi_context(
         experiment_id_patch,
@@ -564,10 +564,10 @@ def test_start_run_defaults(empty_active_run_stack):
         create_run_patch,
     ):
         active_run = start_run(run_name=run_name)
-        MlflowClient.create_run.assert_called_once_with(
+        QCFlowClient.create_run.assert_called_once_with(
             experiment_id=mock_experiment_id, tags=expected_tags, run_name="my name"
         )
-        assert is_from_run(active_run, MlflowClient.create_run.return_value)
+        assert is_from_run(active_run, QCFlowClient.create_run.return_value)
 
 
 def test_start_run_defaults_databricks_notebook(
@@ -622,7 +622,7 @@ def test_start_run_defaults_databricks_notebook(
         qcflow_tags.QCFLOW_DATABRICKS_WORKSPACE_ID: mock_workspace_id,
     }
 
-    create_run_patch = mock.patch.object(MlflowClient, "create_run")
+    create_run_patch = mock.patch.object(QCFlowClient, "create_run")
 
     with multi_context(
         experiment_id_patch,
@@ -637,17 +637,17 @@ def test_start_run_defaults_databricks_notebook(
         create_run_patch,
     ):
         active_run = start_run()
-        MlflowClient.create_run.assert_called_once_with(
+        QCFlowClient.create_run.assert_called_once_with(
             experiment_id=mock_experiment_id, tags=expected_tags, run_name=None
         )
-        assert is_from_run(active_run, MlflowClient.create_run.return_value)
+        assert is_from_run(active_run, QCFlowClient.create_run.return_value)
 
 
 @pytest.mark.parametrize(
     "experiment_id", [("a", "b"), {"a", "b"}, ["a", "b"], {"a": 1}, [], (), {}]
 )
 def test_start_run_raises_invalid_experiment_id(experiment_id):
-    with pytest.raises(MlflowException, match="Invalid experiment id: "):
+    with pytest.raises(QCFlowException, match="Invalid experiment id: "):
         start_run(experiment_id=experiment_id)
 
 
@@ -686,7 +686,7 @@ def test_start_run_creates_new_run_with_user_specified_tags():
         "num_layers": 7,
     }
 
-    create_run_patch = mock.patch.object(MlflowClient, "create_run")
+    create_run_patch = mock.patch.object(QCFlowClient, "create_run")
 
     with multi_context(
         experiment_id_patch,
@@ -697,10 +697,10 @@ def test_start_run_creates_new_run_with_user_specified_tags():
         create_run_patch,
     ):
         active_run = start_run(tags=user_specified_tags)
-        MlflowClient.create_run.assert_called_once_with(
+        QCFlowClient.create_run.assert_called_once_with(
             experiment_id=mock_experiment_id, tags=expected_tags, run_name=None
         )
-        assert is_from_run(active_run, MlflowClient.create_run.return_value)
+        assert is_from_run(active_run, QCFlowClient.create_run.return_value)
 
 
 @pytest.mark.usefixtures(empty_active_run_stack.__name__)
@@ -739,7 +739,7 @@ def test_start_run_with_parent():
         qcflow_tags.QCFLOW_PARENT_RUN_ID: parent_run.info.run_id,
     }
 
-    create_run_patch = mock.patch.object(MlflowClient, "create_run")
+    create_run_patch = mock.patch.object(QCFlowClient, "create_run")
 
     with multi_context(
         active_run_stack_patch,
@@ -748,10 +748,10 @@ def test_start_run_with_parent():
         source_name_patch,
     ):
         active_run = start_run(experiment_id=mock_experiment_id, nested=True)
-        MlflowClient.create_run.assert_called_once_with(
+        QCFlowClient.create_run.assert_called_once_with(
             experiment_id=mock_experiment_id, tags=expected_tags, run_name=None
         )
-        assert is_from_run(active_run, MlflowClient.create_run.return_value)
+        assert is_from_run(active_run, QCFlowClient.create_run.return_value)
 
 
 @pytest.mark.usefixtures(empty_active_run_stack.__name__)
@@ -767,7 +767,7 @@ def test_start_run_with_parent_id():
 @pytest.mark.usefixtures(empty_active_run_stack.__name__)
 def test_start_run_with_invalid_parent_id():
     with qcflow.start_run() as run:
-        with pytest.raises(MlflowException, match=f"Current run with UUID {run.info.run_id}"):
+        with pytest.raises(QCFlowException, match=f"Current run with UUID {run.info.run_id}"):
             with qcflow.start_run(nested=True, parent_run_id="hello"):
                 pass
 
@@ -785,11 +785,11 @@ def test_start_run_existing_run(empty_active_run_stack):
     run_id = uuid.uuid4().hex
     mock_get_store = mock.patch("qcflow.tracking.fluent._get_store")
 
-    with mock_get_store, mock.patch.object(MlflowClient, "get_run", return_value=mock_run):
+    with mock_get_store, mock.patch.object(QCFlowClient, "get_run", return_value=mock_run):
         active_run = start_run(run_id)
 
         assert is_from_run(active_run, mock_run)
-        MlflowClient.get_run.assert_called_with(run_id)
+        QCFlowClient.get_run.assert_called_with(run_id)
 
 
 def test_start_run_existing_run_from_environment(empty_active_run_stack, monkeypatch):
@@ -800,11 +800,11 @@ def test_start_run_existing_run_from_environment(empty_active_run_stack, monkeyp
     monkeypatch.setenv(QCFLOW_RUN_ID.name, run_id)
     mock_get_store = mock.patch("qcflow.tracking.fluent._get_store")
 
-    with mock_get_store, mock.patch.object(MlflowClient, "get_run", return_value=mock_run):
+    with mock_get_store, mock.patch.object(QCFlowClient, "get_run", return_value=mock_run):
         active_run = start_run()
 
         assert is_from_run(active_run, mock_run)
-        MlflowClient.get_run.assert_called_with(run_id)
+        QCFlowClient.get_run.assert_called_with(run_id)
 
 
 def test_start_run_existing_run_from_environment_with_set_environment(
@@ -815,10 +815,10 @@ def test_start_run_existing_run_from_environment_with_set_environment(
 
     run_id = uuid.uuid4().hex
     monkeypatch.setenv(QCFLOW_RUN_ID.name, run_id)
-    with mock.patch.object(MlflowClient, "get_run", return_value=mock_run):
+    with mock.patch.object(QCFlowClient, "get_run", return_value=mock_run):
         set_experiment("test-run")
         with pytest.raises(
-            MlflowException, match="active run ID does not match environment run ID"
+            QCFlowException, match="active run ID does not match environment run ID"
         ):
             start_run()
 
@@ -830,15 +830,15 @@ def test_start_run_existing_run_deleted(empty_active_run_stack):
     run_id = uuid.uuid4().hex
 
     match = f"Cannot start run with ID {run_id} because it is in the deleted state"
-    with mock.patch.object(MlflowClient, "get_run", return_value=mock_run):
-        with pytest.raises(MlflowException, match=match):
+    with mock.patch.object(QCFlowClient, "get_run", return_value=mock_run):
+        with pytest.raises(QCFlowException, match=match):
             start_run(run_id)
 
 
 def test_start_existing_run_status(empty_active_run_stack):
     run_id = qcflow.start_run().info.run_id
     qcflow.end_run()
-    assert MlflowClient().get_run(run_id).info.status == RunStatus.to_string(RunStatus.FINISHED)
+    assert QCFlowClient().get_run(run_id).info.status == RunStatus.to_string(RunStatus.FINISHED)
     restarted_run = qcflow.start_run(run_id)
     assert restarted_run.info.status == RunStatus.to_string(RunStatus.RUNNING)
 
@@ -846,12 +846,12 @@ def test_start_existing_run_status(empty_active_run_stack):
 def test_start_existing_run_end_time(empty_active_run_stack):
     run_id = qcflow.start_run().info.run_id
     qcflow.end_run()
-    run_obj_info = MlflowClient().get_run(run_id).info
+    run_obj_info = QCFlowClient().get_run(run_id).info
     old_end = run_obj_info.end_time
     assert run_obj_info.status == RunStatus.to_string(RunStatus.FINISHED)
     qcflow.start_run(run_id)
     qcflow.end_run()
-    run_obj_info = MlflowClient().get_run(run_id).info
+    run_obj_info = QCFlowClient().get_run(run_id).info
     assert run_obj_info.end_time > old_end
 
 
@@ -886,7 +886,7 @@ def test_start_run_with_description(empty_active_run_stack):
         qcflow_tags.QCFLOW_RUN_NOTE: description,
     }
 
-    create_run_patch = mock.patch.object(MlflowClient, "create_run")
+    create_run_patch = mock.patch.object(QCFlowClient, "create_run")
 
     with multi_context(
         experiment_id_patch,
@@ -897,10 +897,10 @@ def test_start_run_with_description(empty_active_run_stack):
         create_run_patch,
     ):
         active_run = start_run(description=description)
-        MlflowClient.create_run.assert_called_once_with(
+        QCFlowClient.create_run.assert_called_once_with(
             experiment_id=mock_experiment_id, tags=expected_tags, run_name=None
         )
-        assert is_from_run(active_run, MlflowClient.create_run.return_value)
+        assert is_from_run(active_run, QCFlowClient.create_run.return_value)
 
 
 def test_start_run_conflicting_description():
@@ -911,7 +911,7 @@ def test_start_run_conflicting_description():
         f"Remove the key {qcflow_tags.QCFLOW_RUN_NOTE} from the tags or omit the description."
     )
 
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         start_run(tags=invalid_tags, description=description)
 
 
@@ -935,7 +935,7 @@ def test_start_run_resumes_existing_run_and_sets_description_twice():
 
     run_id = qcflow.start_run().info.run_id
     qcflow.end_run()
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         qcflow.start_run(run_id, tags=invalid_tags, description=description)
 
 
@@ -943,7 +943,7 @@ def test_get_run():
     run_id = uuid.uuid4().hex
     mock_run = mock.Mock()
     mock_run.info.user_id = "my_user_id"
-    with mock.patch.object(MlflowClient, "get_run", return_value=mock_run):
+    with mock.patch.object(QCFlowClient, "get_run", return_value=mock_run):
         run = get_run(run_id)
         assert run.info.user_id == "my_user_id"
 
@@ -1058,7 +1058,7 @@ def test_search_runs_by_non_existing_experiment_name():
 def test_search_runs_by_experiment_id_and_name():
     """When both experiment_ids and experiment_names are used, it should throw an exception"""
     err_msg = "Only experiment_ids or experiment_names can be used, but not both"
-    with pytest.raises(MlflowException, match=err_msg):
+    with pytest.raises(QCFlowException, match=err_msg):
         search_runs(experiment_ids=["id"], experiment_names=["name"])
 
 
@@ -1187,14 +1187,14 @@ def test_delete_tag():
     Confirm that fluent API delete tags actually works.
     """
     qcflow.set_tag("a", "b")
-    run = MlflowClient().get_run(qcflow.active_run().info.run_id)
+    run = QCFlowClient().get_run(qcflow.active_run().info.run_id)
     assert "a" in run.data.tags
     qcflow.delete_tag("a")
-    run = MlflowClient().get_run(qcflow.active_run().info.run_id)
+    run = QCFlowClient().get_run(qcflow.active_run().info.run_id)
     assert "a" not in run.data.tags
-    with pytest.raises(MlflowException, match="No tag with name"):
+    with pytest.raises(QCFlowException, match="No tag with name"):
         qcflow.delete_tag("a")
-    with pytest.raises(MlflowException, match="No tag with name"):
+    with pytest.raises(QCFlowException, match="No tag with name"):
         qcflow.delete_tag("b")
     qcflow.end_run()
 
@@ -1222,14 +1222,14 @@ def test_set_experiment_tag():
     tag_counter = 0
     with start_run() as active_run:
         test_experiment = active_run.info.experiment_id
-        current_experiment = qcflow.tracking.MlflowClient().get_experiment(test_experiment)
+        current_experiment = qcflow.tracking.QCFlowClient().get_experiment(test_experiment)
         assert len(current_experiment.tags) == 0
         for tag_key, tag_value in test_tags.items():
             qcflow.set_experiment_tag(tag_key, tag_value)
             tag_counter += 1
-            current_experiment = qcflow.tracking.MlflowClient().get_experiment(test_experiment)
+            current_experiment = qcflow.tracking.QCFlowClient().get_experiment(test_experiment)
             assert tag_counter == len(current_experiment.tags)
-        finished_experiment = qcflow.tracking.MlflowClient().get_experiment(test_experiment)
+        finished_experiment = qcflow.tracking.QCFlowClient().get_experiment(test_experiment)
         assert len(finished_experiment.tags) == len(test_tags)
         for tag_key, tag_value in test_tags.items():
             assert str(test_tags[tag_key] == tag_value)
@@ -1239,10 +1239,10 @@ def test_set_experiment_tags():
     exact_expected_tags = {"name_1": "c", "name_2": "b", "nested/nested/name": 5}
     with start_run() as active_run:
         test_experiment = active_run.info.experiment_id
-        current_experiment = qcflow.tracking.MlflowClient().get_experiment(test_experiment)
+        current_experiment = qcflow.tracking.QCFlowClient().get_experiment(test_experiment)
         assert len(current_experiment.tags) == 0
         qcflow.set_experiment_tags(exact_expected_tags)
-    finished_experiment = qcflow.tracking.MlflowClient().get_experiment(test_experiment)
+    finished_experiment = qcflow.tracking.QCFlowClient().get_experiment(test_experiment)
     # Validate tags
     assert len(finished_experiment.tags) == len(exact_expected_tags)
     for tag_key, tag_value in finished_experiment.tags.items():
@@ -1256,7 +1256,7 @@ def test_log_input(tmp_path):
     dataset = from_pandas(df, source=path)
     with start_run() as run:
         qcflow.log_input(dataset, "train", {"foo": "baz"})
-    dataset_inputs = MlflowClient().get_run(run.info.run_id).inputs.dataset_inputs
+    dataset_inputs = QCFlowClient().get_run(run.info.run_id).inputs.dataset_inputs
 
     assert len(dataset_inputs) == 1
     assert dataset_inputs[0].dataset.name == "dataset"
@@ -1281,7 +1281,7 @@ def test_log_input(tmp_path):
     # ensure log_input also works without tags
     with start_run() as run:
         qcflow.log_input(dataset, "train")
-    dataset_inputs = MlflowClient().get_run(run.info.run_id).inputs.dataset_inputs
+    dataset_inputs = QCFlowClient().get_run(run.info.run_id).inputs.dataset_inputs
 
     assert len(dataset_inputs) == 1
     assert dataset_inputs[0].dataset.name == "dataset"
@@ -1309,7 +1309,7 @@ def test_log_input_metadata_only():
 
     with start_run() as run:
         qcflow.log_input(dataset, "train")
-    dataset_inputs = MlflowClient().get_run(run.info.run_id).inputs.dataset_inputs
+    dataset_inputs = QCFlowClient().get_run(run.info.run_id).inputs.dataset_inputs
     assert len(dataset_inputs) == 1
     assert dataset_inputs[0].dataset.name == "dataset"
     assert dataset_inputs[0].dataset.digest is not None
@@ -1357,12 +1357,12 @@ def test_log_metric_async():
 
 def test_log_metric_async_throws():
     with qcflow.start_run():
-        with pytest.raises(MlflowException, match="Please specify value as a valid double"):
+        with pytest.raises(QCFlowException, match="Please specify value as a valid double"):
             qcflow.log_metric(
                 "async single metric", step=1, value="single metric value", synchronous=False
             ).wait()
 
-        with pytest.raises(MlflowException, match="Please specify value as a valid double"):
+        with pytest.raises(QCFlowException, match="Please specify value as a valid double"):
             qcflow.log_metrics(
                 metrics={f"async batch metric {num}": "batch metric value" for num in range(2)},
                 step=1,
@@ -1390,11 +1390,11 @@ def test_log_param_async():
 def test_log_param_async_throws():
     with qcflow.start_run():
         qcflow.log_param("async single param", value="1", synchronous=False).wait()
-        with pytest.raises(MlflowException, match=".*Changing param values is not allowed.*"):
+        with pytest.raises(QCFlowException, match=".*Changing param values is not allowed.*"):
             qcflow.log_param("async single param", value="2", synchronous=False).wait()
 
         qcflow.log_params({"async batch param": "2"}, synchronous=False).wait()
-        with pytest.raises(MlflowException, match=".*Changing param values is not allowed.*"):
+        with pytest.raises(QCFlowException, match=".*Changing param values is not allowed.*"):
             qcflow.log_params({"async batch param": "3"}, synchronous=False).wait()
 
 
@@ -1416,7 +1416,7 @@ def test_flush_async_logging(flush_within_run):
     if not flush_within_run:
         qcflow.flush_async_logging()
 
-    metric_history = qcflow.MlflowClient().get_metric_history(run.info.run_id, "dummy")
+    metric_history = qcflow.QCFlowClient().get_metric_history(run.info.run_id, "dummy")
     assert len(metric_history) == 100
 
     # Ensure logging worker threads are cleaned up after flushing
@@ -1495,7 +1495,7 @@ def test_set_experiment_thread_safety(tmp_path):
     sqlite_uri = "sqlite:///{}".format(tmp_path.joinpath("test.db"))
     qcflow.set_tracking_uri(sqlite_uri)
 
-    origin_create_experiment = MlflowClient.create_experiment
+    origin_create_experiment = QCFlowClient.create_experiment
 
     def patched_create_experiment(self, *args, **kwargs):
         # The sleep is for triggering `qcflow.set_experiment`
@@ -1504,7 +1504,7 @@ def test_set_experiment_thread_safety(tmp_path):
         return origin_create_experiment(self, *args, **kwargs)
 
     with mock.patch(
-        "qcflow.tracking.client.MlflowClient.create_experiment", patched_create_experiment
+        "qcflow.tracking.client.QCFlowClient.create_experiment", patched_create_experiment
     ):
         created_exp_ids = []
 
@@ -1662,7 +1662,7 @@ def test_subprocess_inherit_registry_uri(tmp_path):
 
 
 def test_end_run_inside_start_run_context_manager():
-    client = MlflowClient()
+    client = QCFlowClient()
 
     with qcflow.start_run() as parent_run:
         with qcflow.start_run(nested=True) as child_run:

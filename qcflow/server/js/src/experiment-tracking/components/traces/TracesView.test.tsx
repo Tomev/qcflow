@@ -2,7 +2,7 @@ import { waitFor, screen, waitForElementToBeRemoved } from '@testing-library/rea
 import userEvent from '@testing-library/user-event-14';
 import { renderWithIntl } from '../../../common/utils/TestUtils.react18';
 import { TracesView, TRACE_AUTO_REFRESH_INTERVAL } from './TracesView';
-import { MlflowService } from '../../sdk/MlflowService';
+import { QCFlowService } from '../../sdk/QCFlowService';
 import { KeyValueEntity } from '../../types';
 import { ModelTraceInfo } from '@databricks/web-shared/model-trace-explorer';
 import { MemoryRouter } from '@qcflow/qcflow/src/common/utils/RoutingUtils';
@@ -38,14 +38,14 @@ describe('TracesView', () => {
   it('should auto-refresh traces', async () => {
     jest.useFakeTimers();
 
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation(getMockTraceResponse(10));
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation(getMockTraceResponse(10));
 
     renderWithIntl(
       <MemoryRouter>
         <TracesView experimentIds={testExperimentIds} />
       </MemoryRouter>,
     );
-    expect(MlflowService.getExperimentTraces).toHaveBeenCalledTimes(1);
+    expect(QCFlowService.getExperimentTraces).toHaveBeenCalledTimes(1);
 
     await waitFor(() => {
       // 10 rows + 1 header
@@ -53,12 +53,12 @@ describe('TracesView', () => {
     });
 
     // simulate new traces from the backend
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation(getMockTraceResponse(20));
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation(getMockTraceResponse(20));
 
     jest.advanceTimersByTime(TRACE_AUTO_REFRESH_INTERVAL + 1000);
 
     // expect that the new traces have been fetched and show up
-    expect(MlflowService.getExperimentTraces).toHaveBeenCalledTimes(2);
+    expect(QCFlowService.getExperimentTraces).toHaveBeenCalledTimes(2);
     await waitFor(() => {
       expect(screen.getAllByRole('row')).toHaveLength(21);
     });
@@ -69,11 +69,11 @@ describe('TracesView', () => {
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime });
 
     const mockTraces = new Array(10).fill(0).map((_, i) => generateMockTrace(`trace-${i + 1}`));
-    const getTracesSpy = jest.spyOn(MlflowService, 'getExperimentTraces').mockResolvedValue({
+    const getTracesSpy = jest.spyOn(QCFlowService, 'getExperimentTraces').mockResolvedValue({
       traces: mockTraces,
       next_page_token: undefined,
     });
-    const deleteTracesSpy = jest.spyOn(MlflowService, 'deleteTraces').mockResolvedValue({ traces_deleted: 1 });
+    const deleteTracesSpy = jest.spyOn(QCFlowService, 'deleteTraces').mockResolvedValue({ traces_deleted: 1 });
 
     renderWithIntl(
       <MemoryRouter>

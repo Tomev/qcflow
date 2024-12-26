@@ -9,7 +9,7 @@ from pyspark.sql import SparkSession
 from sklearn.datasets import load_diabetes
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.artifacts import RegisteredModelVersionInfo
 from qcflow.recipes.steps.predict import _INPUT_FILE_NAME, _SCORED_OUTPUT_FILE_NAME, PredictStep
 from qcflow.recipes.steps.register import _REGISTERED_MV_INFO_FILE
@@ -312,7 +312,7 @@ def test_predict_correctly_handles_save_modes(
     if save_mode == "overwrite":
         predict_step.run(str(predict_step_output_dir))
     else:
-        with pytest.raises(MlflowException, match="already populated"):
+        with pytest.raises(QCFlowException, match="already populated"):
             predict_step.run(str(predict_step_output_dir))
 
 
@@ -336,7 +336,7 @@ def test_predict_throws_when_improperly_configured():
             recipe_root=os.getcwd(),
         )
         with pytest.raises(
-            MlflowException, match=f"The `{required_key}` configuration key must be specified"
+            QCFlowException, match=f"The `{required_key}` configuration key must be specified"
         ):
             predict_step._validate_and_apply_step_config()
 
@@ -354,7 +354,7 @@ def test_predict_throws_when_improperly_configured():
         },
         recipe_root=os.getcwd(),
     )
-    with pytest.raises(MlflowException, match="Invalid `using` in predict step configuration"):
+    with pytest.raises(QCFlowException, match="Invalid `using` in predict step configuration"):
         predict_step._validate_and_apply_step_config()
 
 
@@ -374,7 +374,7 @@ def test_predict_throws_when_no_model_is_specified():
         recipe_config=recipe_config,
         recipe_root=os.getcwd(),
     )
-    with pytest.raises(MlflowException, match="No model specified for batch scoring"):
+    with pytest.raises(QCFlowException, match="No model specified for batch scoring"):
         predict_step._validate_and_apply_step_config()
 
 

@@ -4,7 +4,7 @@ import pytest
 
 from qcflow import deployments
 from qcflow.deployments.plugin_manager import DeploymentPlugins
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 f_model_uri = "fake_model_uri"
 f_endpoint_name = "fake_endpoint_name"
@@ -78,7 +78,7 @@ def test_endpoint_get_success():
 
 def test_wrong_target_name():
     with pytest.raises(
-        MlflowException, match='No plugin found for managing model deployments to "wrong_target"'
+        QCFlowException, match='No plugin found for managing model deployments to "wrong_target"'
     ):
         deployments.get_deploy_client("wrong_target")
 
@@ -90,7 +90,7 @@ def test_plugin_doesnot_have_required_attrib():
     dummy_plugin = DummyPlugin()
     plugin_manager = DeploymentPlugins()
     plugin_manager.registry["dummy"] = dummy_plugin
-    with pytest.raises(MlflowException, match="Plugin registered for the target dummy"):
+    with pytest.raises(QCFlowException, match="Plugin registered for the target dummy"):
         plugin_manager["dummy"]
 
 
@@ -111,12 +111,12 @@ def test_target_uri_parsing():
 def test_explain_with_no_target_implementation():
     from qcflow_test_plugin import fake_deployment_plugin
 
-    mock_error = MlflowException("MOCK ERROR")
+    mock_error = QCFlowException("MOCK ERROR")
     target_client = deployments.get_deploy_client(f_target)
     plugin = fake_deployment_plugin.PluginDeploymentClient
     with mock.patch.object(plugin, "explain", return_value=mock_error) as mock_explain:
         res = target_client.explain(f_target, "test")
-        assert type(res) == MlflowException
+        assert type(res) == QCFlowException
         mock_explain.assert_called_once()
 
 

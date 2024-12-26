@@ -4,7 +4,7 @@ from pydantic import ValidationError
 import qcflow
 from qcflow.entities import LiveSpan
 from qcflow.entities.span import SpanType
-from qcflow.exceptions import MlflowTracingException
+from qcflow.exceptions import QCFlowTracingException
 from qcflow.tracing import set_span_chat_messages, set_span_chat_tools
 from qcflow.tracing.constant import SpanAttributeKey
 from qcflow.tracing.utils import (
@@ -51,7 +51,7 @@ def test_maybe_get_request_id():
     with set_prediction_context(Context(request_id="non_eval", is_evaluate=False)):
         assert maybe_get_request_id(is_evaluate=True) is None
 
-    with pytest.raises(MlflowTracingException, match="Missing request_id for context"):
+    with pytest.raises(QCFlowTracingException, match="Missing request_id for context"):
         with set_prediction_context(Context(request_id=None, is_evaluate=True)):
             maybe_get_request_id(is_evaluate=True)
 

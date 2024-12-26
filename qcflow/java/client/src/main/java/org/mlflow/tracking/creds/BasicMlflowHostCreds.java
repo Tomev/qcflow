@@ -1,29 +1,29 @@
 package org.qcflow.tracking.creds;
 
 /** A static hostname and optional credentials to talk to an QCFlow server. */
-public class BasicMlflowHostCreds implements MlflowHostCreds, MlflowHostCredsProvider {
+public class BasicQCFlowHostCreds implements QCFlowHostCreds, QCFlowHostCredsProvider {
   private String host;
   private String username;
   private String password;
   private String token;
   private boolean shouldIgnoreTlsVerification;
 
-  public BasicMlflowHostCreds(String host) {
+  public BasicQCFlowHostCreds(String host) {
     this.host = host;
   }
 
-  public BasicMlflowHostCreds(String host, String username, String password) {
+  public BasicQCFlowHostCreds(String host, String username, String password) {
     this.host = host;
     this.username = username;
     this.password = password;
   }
 
-  public BasicMlflowHostCreds(String host, String token) {
+  public BasicQCFlowHostCreds(String host, String token) {
     this.host = host;
     this.token = token;
   }
 
-  public BasicMlflowHostCreds(
+  public BasicQCFlowHostCreds(
       String host,
       String username,
       String password,
@@ -62,7 +62,7 @@ public class BasicMlflowHostCreds implements MlflowHostCreds, MlflowHostCredsPro
   }
 
   @Override
-  public MlflowHostCreds getHostCreds() {
+  public QCFlowHostCreds getHostCreds() {
     return this;
   }
 

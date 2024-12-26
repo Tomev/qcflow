@@ -1,7 +1,7 @@
 import { ModelGatewayService } from './ModelGatewayService';
-import { ModelGatewayRouteTask } from './MlflowEnums';
+import { ModelGatewayRouteTask } from './QCFlowEnums';
 import { fetchEndpoint } from '../../common/utils/FetchUtils';
-import { MlflowService } from './MlflowService';
+import { QCFlowService } from './QCFlowService';
 
 jest.mock('../../common/utils/FetchUtils', () => ({
   ...jest.requireActual('../../common/utils/FetchUtils'),
@@ -11,7 +11,7 @@ jest.mock('../../common/utils/FetchUtils', () => ({
 describe('ModelGatewayService', () => {
   beforeEach(() => {
     jest
-      .spyOn(MlflowService, 'gatewayProxyPost')
+      .spyOn(QCFlowService, 'gatewayProxyPost')
       .mockResolvedValue({ choices: [{ message: { content: 'output text' } }], usage: {} });
   });
   afterEach(() => {
@@ -38,7 +38,7 @@ describe('ModelGatewayService', () => {
       { inputText: 'input text', parameters: { temperature: 0.5, max_tokens: 50 } },
     );
 
-    expect(MlflowService.gatewayProxyPost).toBeCalledWith(
+    expect(QCFlowService.gatewayProxyPost).toBeCalledWith(
       expect.objectContaining({
         gateway_path: 'endpoint-url',
         json_data: { messages: [{ content: 'input text', role: 'user' }], temperature: 0.5, max_tokens: 50 },

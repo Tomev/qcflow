@@ -39,7 +39,7 @@ from qcflow.entities.document import Document
 from qcflow.entities.span_status import SpanStatusCode
 from qcflow.tracing.constant import SpanAttributeKey
 from qcflow.tracing.provider import detach_span_from_context, set_span_in_context
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.utils import IS_PYDANTIC_V2_OR_NEWER
 
 _logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ def _get_llama_index_version() -> Version:
 
 def set_llama_index_tracer():
     """
-    Set the MlflowSpanHandler and MlflowEventHandler to the global dispatcher.
+    Set the QCFlowSpanHandler and QCFlowEventHandler to the global dispatcher.
     If the handlers are already set, skip setting.
     """
     from llama_index.core.instrumentation import get_dispatcher
@@ -60,31 +60,31 @@ def set_llama_index_tracer():
 
     span_handler = None
     for handler in dsp.span_handlers:
-        if isinstance(handler, MlflowSpanHandler):
-            _logger.debug("MlflowSpanHandler is already set to the dispatcher. Skip setting.")
+        if isinstance(handler, QCFlowSpanHandler):
+            _logger.debug("QCFlowSpanHandler is already set to the dispatcher. Skip setting.")
             span_handler = handler
             break
     else:
-        span_handler = MlflowSpanHandler()
+        span_handler = QCFlowSpanHandler()
         dsp.add_span_handler(span_handler)
 
     for handler in dsp.event_handlers:
-        if isinstance(handler, MlflowEventHandler):
-            _logger.debug("MlflowEventHandler is already set to the dispatcher. Skip setting.")
+        if isinstance(handler, QCFlowEventHandler):
+            _logger.debug("QCFlowEventHandler is already set to the dispatcher. Skip setting.")
             break
     else:
-        dsp.add_event_handler(MlflowEventHandler(span_handler))
+        dsp.add_event_handler(QCFlowEventHandler(span_handler))
 
 
 def remove_llama_index_tracer():
     """
-    Remove the MlflowSpanHandler and MlflowEventHandler from the global dispatcher.
+    Remove the QCFlowSpanHandler and QCFlowEventHandler from the global dispatcher.
     """
     from llama_index.core.instrumentation import get_dispatcher
 
     dsp = get_dispatcher()
-    dsp.span_handlers = [h for h in dsp.span_handlers if h.class_name() != "MlflowSpanHandler"]
-    dsp.event_handlers = [h for h in dsp.event_handlers if h.class_name() != "MlflowEventHandler"]
+    dsp.span_handlers = [h for h in dsp.span_handlers if h.class_name() != "QCFlowSpanHandler"]
+    dsp.event_handlers = [h for h in dsp.event_handlers if h.class_name() != "QCFlowEventHandler"]
 
 
 class _LlamaSpan(BaseSpan, extra="allow"):
@@ -123,16 +123,16 @@ def _end_span(span: LiveSpan, status=SpanStatusCode.OK, outputs=None, token=None
     try:
         if span.parent_id is None:
             # NB: Initiate the new client every time to handle tracking URI updates.
-            MlflowClient().end_trace(span.request_id, status=status, outputs=outputs)
+            QCFlowClient().end_trace(span.request_id, status=status, outputs=outputs)
         else:
-            MlflowClient().end_span(span.request_id, span.span_id, status=status, outputs=outputs)
+            QCFlowClient().end_span(span.request_id, span.span_id, status=status, outputs=outputs)
     finally:
         # We should detach span even when end_span / end_trace API call fails
         if token:
             detach_span_from_context(token)
 
 
-class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
+class QCFlowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
     def __init__(self):
         super().__init__()
         self._span_id_to_token = {}
@@ -141,7 +141,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
 
     @classmethod
     def class_name(cls) -> str:
-        return "MlflowSpanHandler"
+        return "QCFlowSpanHandler"
 
     def get_span_for_event(self, event: BaseEvent) -> LiveSpan:
         llama_span = self.open_spans.get(event.span_id) or self._pending_spans.get(event.span_id)
@@ -166,7 +166,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
             span_type = self._get_span_type(instance) or SpanType.UNKNOWN
             if parent_span:
                 # NB: Initiate the new client every time to handle tracking URI updates.
-                span = MlflowClient().start_span(
+                span = QCFlowClient().start_span(
                     request_id=parent_span.request_id,
                     parent_id=parent_span.span_id,
                     name=id_.partition("-")[0],
@@ -175,7 +175,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
                     attributes=attributes,
                 )
             else:
-                span = MlflowClient().start_trace(
+                span = QCFlowClient().start_trace(
                     name=id_.partition("-")[0],
                     span_type=span_type,
                     inputs=input_args,
@@ -317,7 +317,7 @@ class MlflowSpanHandler(BaseSpanHandler[_LlamaSpan], extra="allow"):
         return attributes
 
 
-class MlflowEventHandler(BaseEventHandler, extra="allow"):
+class QCFlowEventHandler(BaseEventHandler, extra="allow"):
     """
     Event handler processes various events that are triggered during execution.
 
@@ -326,11 +326,11 @@ class MlflowEventHandler(BaseEventHandler, extra="allow"):
     and outputs in SpanHandler.
     """
 
-    _span_handler: MlflowSpanHandler
+    _span_handler: QCFlowSpanHandler
 
     @classmethod
     def class_name(cls) -> str:
-        return "MlflowEventHandler"
+        return "QCFlowEventHandler"
 
     def __init__(self, _span_handler):
         super().__init__()

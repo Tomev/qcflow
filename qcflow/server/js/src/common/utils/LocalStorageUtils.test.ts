@@ -1,5 +1,5 @@
 import LocalStorageUtils from './LocalStorageUtils';
-import { ExperimentPagePersistedState } from '../../experiment-tracking/sdk/MlflowLocalStorageMessages';
+import { ExperimentPagePersistedState } from '../../experiment-tracking/sdk/QCFlowLocalStorageMessages';
 
 test('Setting key-value pairs in one scope does not affect the other', () => {
   const store0 = LocalStorageUtils.getStoreForComponent('SomeTestComponent', 1);

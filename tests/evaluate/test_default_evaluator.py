@@ -24,7 +24,7 @@ from sklearn.preprocessing import FunctionTransformer
 from sklearn.svm import LinearSVC
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.metrics import (
     MetricValue,
     flesch_kincaid_grade_level,
@@ -1427,7 +1427,7 @@ def test_custom_metric_produced_multiple_artifacts_with_same_name_throw_exceptio
         return {"test_json_artifact": {"a": 3, "b": [1, 2]}}
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="cannot be logged because there already exists an artifact with the same name",
     ):
         _get_results_for_custom_metrics_tests(
@@ -1976,7 +1976,7 @@ def test_make_metric_name_inference():
     assert eval_metric.name == "metric"
 
     with pytest.raises(
-        MlflowException, match="`name` must be specified if `eval_fn` is a lambda function."
+        QCFlowException, match="`name` must be specified if `eval_fn` is a lambda function."
     ):
         make_metric(eval_fn=lambda _df, _metrics: 0, greater_is_better=True)
 
@@ -1985,7 +1985,7 @@ def test_make_metric_name_inference():
             return 1
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="`name` must be specified if `eval_fn` does not have a `__name__` attribute.",
     ):
         make_metric(eval_fn=Callable(), greater_is_better=True)
@@ -2054,7 +2054,7 @@ def test_missing_args_raises_exception():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
         with qcflow.start_run():
@@ -2076,7 +2076,7 @@ def test_custom_metrics_deprecated(
         pass
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The 'custom_metrics' parameter in qcflow.evaluate is deprecated. Please update "
         "your code to only use the 'extra_metrics' parameter instead.",
     ):
@@ -2123,7 +2123,7 @@ def test_evaluate_question_answering_with_targets():
             model_type="question-answering",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2150,7 +2150,7 @@ def test_evaluate_question_answering_on_static_dataset_with_targets():
             model_type="question-answering",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2191,7 +2191,7 @@ def test_evaluate_question_answering_with_numerical_targets():
             model_type="question-answering",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2214,7 +2214,7 @@ def test_evaluate_question_answering_without_targets():
             model_type="question-answering",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2308,7 +2308,7 @@ def test_evaluate_text_summarization_with_targets():
             model_type="text-summarization",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2338,7 +2338,7 @@ def test_evaluate_text_summarization_with_targets_no_type_hints():
             evaluators="default",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2360,7 +2360,7 @@ def test_evaluate_text_summarization_without_targets():
             model_type="text-summarization",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2395,7 +2395,7 @@ def test_evaluate_text_summarization_fails_to_load_evaluate_metrics():
             mock_load.assert_any_call("rouge")
             mock_load.assert_any_call("toxicity", module_type="measurement")
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2424,7 +2424,7 @@ def test_evaluate_text_and_text_metrics():
             model_type="text",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2477,7 +2477,7 @@ def test_evaluate_text_custom_metrics():
             ],
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2510,7 +2510,7 @@ def test_eval_results_table_json_can_be_prefixed_with_metric_prefix(metric_prefi
             },
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
 
     if metric_prefix is None:
@@ -2698,7 +2698,7 @@ def test_evaluate_no_model_or_predictions_specified():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             "Either a model or set of predictions must be specified in order to use the"
             " default evaluator"
@@ -2717,7 +2717,7 @@ def test_evaluate_no_model_and_predictions_specified_with_unsupported_data_type(
     y = np.random.random(5)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="If predictions is specified, data must be one of the following types",
     ):
         qcflow.evaluate(
@@ -2736,7 +2736,7 @@ def test_evaluate_no_model_type():
         )
         data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="The extra_metrics argument must be specified model_type is None.",
         ):
             qcflow.evaluate(
@@ -2837,7 +2837,7 @@ def test_default_metrics_as_extra_metrics():
             evaluators="default",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     assert "exact_match/v1" in results.metrics.keys()
@@ -2867,7 +2867,7 @@ def test_default_metrics_as_extra_metrics_static_dataset():
             evaluators="default",
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     for metric in ["toxicity", "ari_grade_level", "flesch_kincaid_grade_level"]:
@@ -3058,7 +3058,7 @@ def test_derived_metrics_complicated_dependency_graph():
     error_message = r"Error: Metric calculation failed for the following metrics:\n"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
         with qcflow.start_run():
@@ -3098,7 +3098,7 @@ def test_derived_metrics_circular_dependencies_raises_exception():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
         with qcflow.start_run():
@@ -3132,7 +3132,7 @@ def test_derived_metrics_missing_dependencies_raises_exception():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
         with qcflow.start_run():
@@ -3157,7 +3157,7 @@ def test_custom_metric_bad_names():
         "forward slashes ('/')."
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
         make_metric(eval_fn=metric_fn, name="metric/with/slash", greater_is_better=True)
@@ -3199,7 +3199,7 @@ def test_multi_output_model_error_handling():
             }
         )
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Output column name is not specified for the multi-output model.",
         ):
             evaluate(
@@ -3224,7 +3224,7 @@ def test_invalid_extra_metrics():
         )
         data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Please ensure that all extra metrics are instances of "
             "qcflow.metrics.EvaluationMetric.",
         ):
@@ -3251,7 +3251,7 @@ def test_evaluate_with_latency():
             extra_metrics=[qcflow.metrics.latency()],
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -3285,7 +3285,7 @@ def test_evaluate_with_latency_and_pd_series():
             extra_metrics=[qcflow.metrics.latency()],
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -3317,7 +3317,7 @@ def test_evaluate_with_latency_static_dataset():
             extra_metrics=[qcflow.metrics.latency()],
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -3486,7 +3486,7 @@ def test_evaluate_retriever():
         "ndcg_at_3/p90": pytest.approx(0.9197207891481877),
         "ndcg_at_3/variance": 0.0,
     }
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -3704,7 +3704,7 @@ def test_evaluate_retriever_builtin_metrics_no_model_type():
             "ndcg_at_4/variance": 0.0,
         }
     )
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -4025,7 +4025,7 @@ def test_do_not_log_built_in_metrics_as_artifacts():
                 flesch_kincaid_grade_level(),
             ],
         )
-        client = qcflow.MlflowClient()
+        client = qcflow.QCFlowClient()
         artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
         assert _GENAI_CUSTOM_METRICS_FILE_NAME not in artifacts
 
@@ -4074,7 +4074,7 @@ def test_log_genai_custom_metrics_as_artifacts():
             ],
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert _GENAI_CUSTOM_METRICS_FILE_NAME in artifacts
 
@@ -4146,7 +4146,7 @@ def test_all_genai_custom_metrics_are_from_user_prompt():
             ],
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert _GENAI_CUSTOM_METRICS_FILE_NAME in artifacts
 
@@ -4263,7 +4263,7 @@ def test_evaluate_multi_classifier_calculate_label_list_correctly(
 
 def test_evaluate_errors_invalid_pos_label():
     data = pd.DataFrame({"target": [0, 0, 1, 0], "prediction": [0, 1, 0, 0]})
-    with pytest.raises(MlflowException, match=r"'pos_label' 1 must exist in 'label_list'"):
+    with pytest.raises(QCFlowException, match=r"'pos_label' 1 must exist in 'label_list'"):
         qcflow.evaluate(
             data=data,
             model_type="classifier",

@@ -1,6 +1,6 @@
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.transformers import _build_pipeline_from_model_input
 from qcflow.transformers.flavor_config import (
     build_flavor_config,
@@ -177,5 +177,5 @@ def test_update_flavor_conf_to_persist_pretrained_model_raise_if_already_persist
         "model_binary": "model",
     }
 
-    with pytest.raises(MlflowException, match="It appears that the pretrained model weight"):
+    with pytest.raises(QCFlowException, match="It appears that the pretrained model weight"):
         update_flavor_conf_to_persist_pretrained_model(flavor_conf)

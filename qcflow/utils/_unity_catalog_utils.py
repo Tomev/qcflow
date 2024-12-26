@@ -11,7 +11,7 @@ from qcflow.entities.model_registry import (
 from qcflow.entities.model_registry.model_version_search import ModelVersionSearch
 from qcflow.entities.model_registry.registered_model_search import RegisteredModelSearch
 from qcflow.environment_variables import QCFLOW_USE_DATABRICKS_SDK_MODEL_ARTIFACTS_REPO_FOR_UC
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     EmitModelVersionLineageRequest,
     EmitModelVersionLineageResponse,
@@ -166,7 +166,7 @@ def get_artifact_repo_from_storage_info(
                 base_credential_refresh_def=base_credential_refresh_def,
             )
     except ImportError as e:
-        raise MlflowException(
+        raise QCFlowException(
             "Unable to import necessary dependencies to access model version files in "
             "Unity Catalog. Please ensure you have the necessary dependencies installed, "
             "e.g. by running 'pip install qcflow[databricks]' or "
@@ -273,7 +273,7 @@ def _get_artifact_repo_from_storage_info(
             credential_refresh_def=r2_credential_refresh,
         )
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Got unexpected credential type {credential_type} when attempting to "
             "access model version files in Unity Catalog. Try upgrading to the latest "
             "version of the QCFlow Python client."
@@ -343,7 +343,7 @@ def _get_artifact_repo_from_storage_info_oss(
         client = Client(project="qcflow", credentials=credentials)
         return GCSArtifactRepository(artifact_uri=storage_location, client=client)
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "Got no credential type when attempting to "
             "access model version files in Unity Catalog. Try upgrading to the latest "
             "version of the QCFlow Python client."

@@ -6,7 +6,7 @@ import importlib_metadata
 
 from qcflow.deployments.base import BaseDeploymentClient
 from qcflow.deployments.utils import parse_target_uri
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
 from qcflow.utils.annotations import developer_stable
 from qcflow.utils.plugins import get_entry_points
@@ -96,7 +96,7 @@ class DeploymentPlugins(PluginManager):
                 "https://qcflow.org/docs/latest/plugins.html#community-plugins using "
                 "your package manager (pip, conda etc)."
             )
-            raise MlflowException(msg, error_code=RESOURCE_DOES_NOT_EXIST)
+            raise QCFlowException(msg, error_code=RESOURCE_DOES_NOT_EXIST)
 
         if isinstance(plugin_like, (importlib_metadata.EntryPoint, importlib.metadata.EntryPoint)):
             try:
@@ -120,7 +120,7 @@ class DeploymentPlugins(PluginManager):
             ):
                 deployment_classes.append(name)
         if len(expected) > 0:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Plugin registered for the target {item} does not have all "
                 "the required interfaces. Raise an issue with the "
                 "plugin developers.\n"
@@ -128,14 +128,14 @@ class DeploymentPlugins(PluginManager):
                 error_code=INTERNAL_ERROR,
             )
         if len(deployment_classes) > 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Plugin registered for the target {item} has more than one "
                 "child class of BaseDeploymentClient. Raise an issue with"
                 " the plugin developers. "
                 f"Classes found are {deployment_classes}"
             )
         elif len(deployment_classes) == 0:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Plugin registered for the target {item} has no child class"
                 " of BaseDeploymentClient. Raise an issue with the "
                 "plugin developers"

@@ -4,7 +4,7 @@ import os
 from decimal import Decimal
 from typing import Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.evaluation import EvaluationResult
 from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
 from qcflow.utils.annotations import deprecated
@@ -157,7 +157,7 @@ class MetricThreshold:
         return " ".join(threshold_strs)
 
 
-class MetricThresholdClassException(MlflowException):
+class MetricThresholdClassException(QCFlowException):
     def __init__(self, _message, **kwargs):
         message = "Could not instantiate MetricThreshold class: " + _message
         super().__init__(message, error_code=INVALID_PARAMETER_VALUE, **kwargs)
@@ -249,7 +249,7 @@ class _MetricValidationResult:
         )
 
 
-class ModelValidationFailedException(MlflowException):
+class ModelValidationFailedException(QCFlowException):
     def __init__(self, message, **kwargs):
         super().__init__(message, error_code=BAD_REQUEST, **kwargs)
 
@@ -333,7 +333,7 @@ def validate_evaluation_results(
         for threshold in validation_thresholds.values():
             assert isinstance(threshold, MetricThreshold)
     except AssertionError:
-        raise MlflowException(
+        raise QCFlowException(
             message="The validation thresholds argument must be a dictionary that maps strings "
             "to MetricThreshold objects.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -364,7 +364,7 @@ def _validate(
         baseline_metrics: The metric evaluation result of the baseline model.
 
     Raises:
-        If the validation does not pass, raise an MlflowException with detail failure message.
+        If the validation does not pass, raise an QCFlowException with detail failure message.
     """
     validation_results = {
         metric_name: _MetricValidationResult(

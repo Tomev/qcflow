@@ -51,7 +51,7 @@ from qcflow.utils.autologging_utils import (
     ENSURE_AUTOLOGGING_ENABLED_TEXT,
     INPUT_EXAMPLE_SAMPLE_ROWS,
     InputExampleInfo,
-    MlflowAutologgingQueueingClient,
+    QCFlowAutologgingQueueingClient,
     autologging_integration,
     batch_metrics_logger,
     get_autologging_config,
@@ -638,7 +638,7 @@ def autolog(
                 finally:
                     plt.close(fig)
 
-        autologging_client = MlflowAutologgingQueueingClient()
+        autologging_client = QCFlowAutologgingQueueingClient()
         # logging booster params separately to extract key/value pairs and make it easier to
         # compare them across runs.
         booster_params = args[0] if len(args) > 0 else kwargs["params"]

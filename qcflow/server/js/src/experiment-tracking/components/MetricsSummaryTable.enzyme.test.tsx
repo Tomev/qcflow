@@ -13,7 +13,7 @@ import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
 import MetricsSummaryTable from './MetricsSummaryTable';
 import { HtmlTableView } from './HtmlTableView';
-import { Metric } from '../sdk/MlflowMessages';
+import { Metric } from '../sdk/QCFlowMessages';
 import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';
 
 describe('MetricsSummaryTable', () => {

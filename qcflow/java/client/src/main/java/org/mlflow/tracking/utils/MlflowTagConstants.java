@@ -1,6 +1,6 @@
 package org.qcflow.tracking.utils;
 
-public class MlflowTagConstants {
+public class QCFlowTagConstants {
   public static final String PARENT_RUN_ID = "qcflow.parentRunId";
   public static final String RUN_NAME = "qcflow.runName";
   public static final String USER = "qcflow.user";

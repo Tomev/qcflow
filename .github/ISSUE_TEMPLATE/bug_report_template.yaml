@@ -136,7 +136,7 @@ body:
           File "a.py", line 3, in <module>
             qcflow.log_param(1, 2)
           File "/home/user/qcflow/qcflow/tracking/fluent.py", line 541, in log_param
-            return MlflowClient().log_param(run_id, key, value)
+            return QCFlowClient().log_param(run_id, key, value)
           File "/home/user/qcflow/qcflow/tracking/client.py", line 742, in log_param
             self._tracking_client.log_param(run_id, key, value)
           File "/home/user/qcflow/qcflow/tracking/_tracking_service/client.py", line 295, in log_param

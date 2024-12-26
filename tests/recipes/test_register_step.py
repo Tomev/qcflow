@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.steps.evaluate import EvaluateStep
 from qcflow.recipes.steps.register import _REGISTERED_MV_INFO_FILE, RegisterStep
 from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
@@ -78,10 +78,10 @@ def weighted_mean_squared_error(eval_df, builtin_metrics):
     recipe_config = read_yaml(tmp_recipe_root_path, _RECIPE_CONFIG_FILE_NAME)
     evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     evaluate_step.run(str(evaluate_step_output_dir))
-    assert len(qcflow.tracking.MlflowClient().search_registered_models()) == 0
+    assert len(qcflow.tracking.QCFlowClient().search_registered_models()) == 0
     register_step = RegisterStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     if mae_threshold < 0:
-        with pytest.raises(MlflowException, match=r"Model registration on .* failed"):
+        with pytest.raises(QCFlowException, match=r"Model registration on .* failed"):
             register_step.run(str(register_step_output_dir))
     else:
         register_step.run(str(register_step_output_dir))
@@ -90,7 +90,7 @@ def weighted_mean_squared_error(eval_df, builtin_metrics):
         assert model_validation_status_path.read_text() == "VALIDATED"
         mv_info_file_path = register_step_output_dir.joinpath(_REGISTERED_MV_INFO_FILE)
         assert mv_info_file_path.exists()
-        assert len(qcflow.tracking.MlflowClient().search_registered_models()) == 1
+        assert len(qcflow.tracking.QCFlowClient().search_registered_models()) == 1
 
 
 @pytest.mark.usefixtures("clear_custom_metrics_module_cache")
@@ -121,10 +121,10 @@ steps:
     recipe_config = read_yaml(tmp_recipe_root_path, _RECIPE_CONFIG_FILE_NAME)
     evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     evaluate_step.run(str(evaluate_step_output_dir))
-    assert len(qcflow.tracking.MlflowClient().search_registered_models()) == 0
+    assert len(qcflow.tracking.QCFlowClient().search_registered_models()) == 0
     register_step = RegisterStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     if register_flag == "":
-        with pytest.raises(MlflowException, match=r"Model registration on .* failed"):
+        with pytest.raises(QCFlowException, match=r"Model registration on .* failed"):
             register_step.run(str(register_step_output_dir))
     else:
         register_step.run(str(register_step_output_dir))
@@ -133,7 +133,7 @@ steps:
         assert model_validation_status_path.read_text() == "UNKNOWN"
         mv_info_file_path = register_step_output_dir.joinpath(_REGISTERED_MV_INFO_FILE)
         assert mv_info_file_path.exists()
-        assert len(qcflow.tracking.MlflowClient().search_registered_models()) == 1
+        assert len(qcflow.tracking.QCFlowClient().search_registered_models()) == 1
 
 
 def test_usage_tracking_correctly_added(
@@ -186,7 +186,7 @@ def weighted_mean_squared_error(eval_df, builtin_metrics):
     evaluate_step.run(str(evaluate_step_output_dir))
     register_step = RegisterStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     register_step.run(str(register_step_output_dir))
-    registered_models = qcflow.tracking.MlflowClient().search_registered_models()
+    registered_models = qcflow.tracking.QCFlowClient().search_registered_models()
     latest_tag = registered_models[0].latest_versions[0].tags
     assert latest_tag[QCFLOW_SOURCE_TYPE] == "RECIPE"
     assert latest_tag[QCFLOW_RECIPE_TEMPLATE_NAME] == "regression/v1"

@@ -1,8 +1,8 @@
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.protos.service_pb2 import FileInfo as ProtoFileInfo
 
 
-class FileInfo(_MlflowObject):
+class FileInfo(_QCFlowObject):
     """
     Metadata about a file or directory.
     """

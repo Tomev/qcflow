@@ -6,7 +6,7 @@ from requests.exceptions import HTTPError
 
 import qcflow.gateway.utils
 from qcflow.environment_variables import QCFLOW_GATEWAY_URI
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway import (
     create_route,
     delete_route,
@@ -70,10 +70,10 @@ def gateway(basic_config_dict, tmp_path):
 
 
 def test_fluent_apis_with_no_server_set():
-    with pytest.raises(MlflowException, match="No Gateway server uri has been set. Please"):
+    with pytest.raises(QCFlowException, match="No Gateway server uri has been set. Please"):
         get_route("bogus")
 
-    with pytest.raises(MlflowException, match="No Gateway server uri has been set. Please"):
+    with pytest.raises(QCFlowException, match="No Gateway server uri has been set. Please"):
         get_route("claude-chat")
 
 
@@ -81,7 +81,7 @@ def test_fluent_health_check_on_non_running_server(monkeypatch):
     monkeypatch.setenv("QCFLOW_HTTP_REQUEST_MAX_RETRIES", "0")
     set_gateway_uri("http://not.real:1000")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="API request to http://not.real:1000/api/2.0/gateway/routes/not-a-route failed with",
     ):
         get_route("not-a-route")
@@ -203,7 +203,7 @@ def test_fluent_query_chat(gateway):
     data = {"messages": [{"role": "user", "content": "How hot is the core of the sun?"}]}
 
     with mock.patch(
-        "qcflow.gateway.fluent.MlflowGatewayClient.query", return_value=expected_output
+        "qcflow.gateway.fluent.QCFlowGatewayClient.query", return_value=expected_output
     ):
         response = query(route=routes[1].name, data=data)
         assert response == expected_output
@@ -230,7 +230,7 @@ def test_fluent_query_completions(gateway):
     data = {"prompt": "I like to drive fast in my"}
 
     with mock.patch(
-        "qcflow.gateway.fluent.MlflowGatewayClient.query", return_value=expected_output
+        "qcflow.gateway.fluent.QCFlowGatewayClient.query", return_value=expected_output
     ):
         response = query(route=routes[0].name, data=data)
         assert response == expected_output
@@ -239,7 +239,7 @@ def test_fluent_query_completions(gateway):
 def test_fluent_create_route_raises(gateway):
     set_gateway_uri(gateway_uri=gateway.url)
     # This API is only available in Databricks
-    with pytest.raises(MlflowException, match="The create_route API is only available when"):
+    with pytest.raises(QCFlowException, match="The create_route API is only available when"):
         create_route(
             "some-route", "llm/v1/completions", {"name": "some_name", "provider": "anthropic"}
         )
@@ -248,7 +248,7 @@ def test_fluent_create_route_raises(gateway):
 def test_fluent_delete_route_raises(gateway):
     set_gateway_uri(gateway_uri=gateway.url)
     # This API is only available in Databricks
-    with pytest.raises(MlflowException, match="The delete_route API is only available when"):
+    with pytest.raises(QCFlowException, match="The delete_route API is only available when"):
         delete_route("some-route")
 
 

@@ -7,7 +7,7 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.ml_package_versions import FLAVOR_TO_MODULE_NAME
 from qcflow.utils import gorilla
 from qcflow.utils.autologging_utils import (
@@ -110,7 +110,7 @@ log_test_args = [
 @pytest.mark.parametrize(("args", "kwargs", "expected"), log_test_args)
 def test_log_fn_args_as_params(args, kwargs, expected, start_run):
     log_fn_args_as_params(dummy_fn, args, kwargs)
-    client = MlflowClient()
+    client = QCFlowClient()
     params = client.get_run(qcflow.active_run().info.run_id).data.params
     for arg, value in zip(["arg1", "arg2", "arg3"], expected):
         assert arg in params
@@ -122,7 +122,7 @@ def test_log_fn_args_as_params_ignores_unwanted_parameters(
 ):
     args, kwargs, unlogged = ("arg1", {"arg2": "value"}, ["arg1", "arg2", "arg3"])
     log_fn_args_as_params(dummy_fn, args, kwargs, unlogged)
-    client = MlflowClient()
+    client = QCFlowClient()
     params = client.get_run(qcflow.active_run().info.run_id).data.params
     assert len(params.keys()) == 0
 
@@ -264,7 +264,7 @@ def test_batch_metrics_logger_logs_all_metrics(start_run):
         for i in range(100):
             metrics_logger.record_metrics({hex(i): i}, i)
 
-    metrics_on_run = MlflowClient().get_run(run_id).data.metrics
+    metrics_on_run = QCFlowClient().get_run(run_id).data.metrics
 
     for i in range(100):
         assert hex(i) in metrics_on_run
@@ -282,19 +282,19 @@ def test_batch_metrics_logger_flush_logs_to_qcflow(start_run):
         metrics_logger.record_metrics({"my_metric": 10}, 5)
 
         # Recorded metrics should not be logged to qcflow run before flushing BatchMetricsLogger
-        metrics_on_run = MlflowClient().get_run(run_id).data.metrics
+        metrics_on_run = QCFlowClient().get_run(run_id).data.metrics
         assert "my_metric" not in metrics_on_run
 
         metrics_logger.flush()
 
         # Recorded metric should be logged to qcflow run after flushing BatchMetricsLogger
-        metrics_on_run = MlflowClient().get_run(run_id).data.metrics
+        metrics_on_run = QCFlowClient().get_run(run_id).data.metrics
         assert "my_metric" in metrics_on_run
         assert metrics_on_run["my_metric"] == 10
 
 
 def test_batch_metrics_logger_runs_training_and_logging_in_correct_ratio(start_run):
-    with mock.patch.object(MlflowClient, "log_batch") as log_batch_mock:
+    with mock.patch.object(QCFlowClient, "log_batch") as log_batch_mock:
         run_id = qcflow.active_run().info.run_id
         with batch_metrics_logger(run_id) as metrics_logger:
             metrics_logger.record_metrics({"x": 1}, step=0)  # data doesn't matter
@@ -336,7 +336,7 @@ def test_batch_metrics_logger_runs_training_and_logging_in_correct_ratio(start_r
 
 
 def test_batch_metrics_logger_chunks_metrics_when_batch_logging(start_run):
-    with mock.patch.object(MlflowClient, "log_batch") as log_batch_mock:
+    with mock.patch.object(QCFlowClient, "log_batch") as log_batch_mock:
         run_id = qcflow.active_run().info.run_id
         with batch_metrics_logger(run_id) as metrics_logger:
             metrics_logger.record_metrics({hex(x): x for x in range(5000)}, step=0)
@@ -354,7 +354,7 @@ def test_batch_metrics_logger_chunks_metrics_when_batch_logging(start_run):
 
 
 def test_batch_metrics_logger_records_time_correctly(start_run):
-    with mock.patch.object(MlflowClient, "log_batch", wraps=lambda *args, **kwargs: time.sleep(1)):
+    with mock.patch.object(QCFlowClient, "log_batch", wraps=lambda *args, **kwargs: time.sleep(1)):
         run_id = qcflow.active_run().info.run_id
         with batch_metrics_logger(run_id) as metrics_logger:
             metrics_logger.record_metrics({"x": 1}, step=0)
@@ -370,7 +370,7 @@ def test_batch_metrics_logger_records_time_correctly(start_run):
 
 def test_batch_metrics_logger_logs_timestamps_as_int_milliseconds(start_run):
     with (
-        mock.patch.object(MlflowClient, "log_batch") as log_batch_mock,
+        mock.patch.object(QCFlowClient, "log_batch") as log_batch_mock,
         mock.patch("time.time", return_value=123.45678901234567890),
     ):
         run_id = qcflow.active_run().info.run_id
@@ -584,7 +584,7 @@ def test_autologging_disable_restores_behavior():
         run = qcflow.start_run()
         model.fit(X, y)
         qcflow.end_run()
-        run = MlflowClient().get_run(run.info.run_id)
+        run = QCFlowClient().get_run(run.info.run_id)
         return run.data.metrics and run.data.params
 
     # Turn on autologging

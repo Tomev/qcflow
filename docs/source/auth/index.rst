@@ -93,95 +93,95 @@ Required Permissions for accessing experiments:
      - Endpoint
      - Method
      - Required permission
-   * - :ref:`Create Experiment <qcflowMlflowServicecreateExperiment>`
+   * - :ref:`Create Experiment <qcflowQCFlowServicecreateExperiment>`
      - ``2.0/qcflow/experiments/create``
      - ``POST``
      - None
-   * - :ref:`Get Experiment <qcflowMlflowServicegetExperiment>`
+   * - :ref:`Get Experiment <qcflowQCFlowServicegetExperiment>`
      - ``2.0/qcflow/experiments/get``
      - ``GET``
      - can_read
-   * - :ref:`Get Experiment By Name <qcflowMlflowServicegetExperimentByName>`
+   * - :ref:`Get Experiment By Name <qcflowQCFlowServicegetExperimentByName>`
      - ``2.0/qcflow/experiments/get-by-name``
      - ``GET``
      - can_read
-   * - :ref:`Delete Experiment <qcflowMlflowServicedeleteExperiment>`
+   * - :ref:`Delete Experiment <qcflowQCFlowServicedeleteExperiment>`
      - ``2.0/qcflow/experiments/delete``
      - ``POST``
      - can_delete
-   * - :ref:`Restore Experiment <qcflowMlflowServicerestoreExperiment>`
+   * - :ref:`Restore Experiment <qcflowQCFlowServicerestoreExperiment>`
      - ``2.0/qcflow/experiments/restore``
      - ``POST``
      - can_delete
-   * - :ref:`Update Experiment <qcflowMlflowServiceupdateExperiment>`
+   * - :ref:`Update Experiment <qcflowQCFlowServiceupdateExperiment>`
      - ``2.0/qcflow/experiments/update``
      - ``POST``
      - can_update
-   * - :ref:`Search Experiments <qcflowMlflowServicesearchExperiments>`
+   * - :ref:`Search Experiments <qcflowQCFlowServicesearchExperiments>`
      - ``2.0/qcflow/experiments/search``
      - ``POST``
      - None
-   * - :ref:`Search Experiments <qcflowMlflowServicesearchExperiments>`
+   * - :ref:`Search Experiments <qcflowQCFlowServicesearchExperiments>`
      - ``2.0/qcflow/experiments/search``
      - ``GET``
      - None
-   * - :ref:`Set Experiment Tag <qcflowMlflowServicesetExperimentTag>`
+   * - :ref:`Set Experiment Tag <qcflowQCFlowServicesetExperimentTag>`
      - ``2.0/qcflow/experiments/set-experiment-tag``
      - ``POST``
      - can_update
-   * - :ref:`Create Run <qcflowMlflowServicecreateRun>`
+   * - :ref:`Create Run <qcflowQCFlowServicecreateRun>`
      - ``2.0/qcflow/runs/create``
      - ``POST``
      - can_update
-   * - :ref:`Get Run <qcflowMlflowServicegetRun>`
+   * - :ref:`Get Run <qcflowQCFlowServicegetRun>`
      - ``2.0/qcflow/runs/get``
      - ``GET``
      - can_read
-   * - :ref:`Update Run <qcflowMlflowServiceupdateRun>`
+   * - :ref:`Update Run <qcflowQCFlowServiceupdateRun>`
      - ``2.0/qcflow/runs/update``
      - ``POST``
      - can_update
-   * - :ref:`Delete Run <qcflowMlflowServicedeleteRun>`
+   * - :ref:`Delete Run <qcflowQCFlowServicedeleteRun>`
      - ``2.0/qcflow/runs/delete``
      - ``POST``
      - can_delete
-   * - :ref:`Restore Run <qcflowMlflowServicerestoreRun>`
+   * - :ref:`Restore Run <qcflowQCFlowServicerestoreRun>`
      - ``2.0/qcflow/runs/restore``
      - ``POST``
      - can_delete
-   * - :ref:`Search Runs <qcflowMlflowServicesearchRuns>`
+   * - :ref:`Search Runs <qcflowQCFlowServicesearchRuns>`
      - ``2.0/qcflow/runs/search``
      - ``POST``
      - None
-   * - :ref:`Set Tag <qcflowMlflowServicesetTag>`
+   * - :ref:`Set Tag <qcflowQCFlowServicesetTag>`
      - ``2.0/qcflow/runs/set-tag``
      - ``POST``
      - can_update
-   * - :ref:`Delete Tag <qcflowMlflowServicedeleteTag>`
+   * - :ref:`Delete Tag <qcflowQCFlowServicedeleteTag>`
      - ``2.0/qcflow/runs/delete-tag``
      - ``POST``
      - can_update
-   * - :ref:`Log Metric <qcflowMlflowServicelogMetric>`
+   * - :ref:`Log Metric <qcflowQCFlowServicelogMetric>`
      - ``2.0/qcflow/runs/log-metric``
      - ``POST``
      - can_update
-   * - :ref:`Log Param <qcflowMlflowServicelogParam>`
+   * - :ref:`Log Param <qcflowQCFlowServicelogParam>`
      - ``2.0/qcflow/runs/log-parameter``
      - ``POST``
      - can_update
-   * - :ref:`Log Batch <qcflowMlflowServicelogBatch>`
+   * - :ref:`Log Batch <qcflowQCFlowServicelogBatch>`
      - ``2.0/qcflow/runs/log-batch``
      - ``POST``
      - can_update
-   * - :ref:`Log Model <qcflowMlflowServicelogModel>`
+   * - :ref:`Log Model <qcflowQCFlowServicelogModel>`
      - ``2.0/qcflow/runs/log-model``
      - ``POST``
      - can_update
-   * - :ref:`List Artifacts <qcflowMlflowServicelistArtifacts>`
+   * - :ref:`List Artifacts <qcflowQCFlowServicelistArtifacts>`
      - ``2.0/qcflow/artifacts/list``
      - ``GET``
      - can_read
-   * - :ref:`Get Metric History <qcflowMlflowServicegetMetricHistory>`
+   * - :ref:`Get Metric History <qcflowQCFlowServicegetMetricHistory>`
      - ``2.0/qcflow/metrics/get-history``
      - ``GET``
      - can_read
@@ -360,7 +360,7 @@ on that experiment, so that the creator can grant or revoke other users' access 
      - Endpoint
      - Method
      - Effect
-   * - :ref:`Create Experiment <qcflowMlflowServicecreateExperiment>`
+   * - :ref:`Create Experiment <qcflowQCFlowServicecreateExperiment>`
      - ``2.0/qcflow/experiments/create``
      - ``POST``
      - Automatically grants ``MANAGE`` permission to the creator.
@@ -368,15 +368,15 @@ on that experiment, so that the creator can grant or revoke other users' access 
      - ``2.0/qcflow/registered-models/create``
      - ``POST``
      - Automatically grants ``MANAGE`` permission to the creator.
-   * - :ref:`Search Experiments <qcflowMlflowServicesearchExperiments>`
+   * - :ref:`Search Experiments <qcflowQCFlowServicesearchExperiments>`
      - ``2.0/qcflow/experiments/search``
      - ``POST``
      - Only returns experiments which the user has ``READ`` permission on.
-   * - :ref:`Search Experiments <qcflowMlflowServicesearchExperiments>`
+   * - :ref:`Search Experiments <qcflowQCFlowServicesearchExperiments>`
      - ``2.0/qcflow/experiments/search``
      - ``GET``
      - Only returns experiments which the user has ``READ`` permission on.
-   * - :ref:`Search Runs <qcflowMlflowServicesearchRuns>`
+   * - :ref:`Search Runs <qcflowQCFlowServicesearchRuns>`
      - ``2.0/qcflow/runs/search``
      - ``POST``
      - Only returns experiments which the user has ``READ`` permission on.
@@ -461,7 +461,7 @@ To instantiate ``AuthServiceClient``, it is recommended that you use :py:func:`q
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
     from qcflow.server import get_app_client
 
     tracking_uri = "http://localhost:5000/"
@@ -470,7 +470,7 @@ To instantiate ``AuthServiceClient``, it is recommended that you use :py:func:`q
     auth_client.create_user(username="user1", password="pw1")
     auth_client.create_user(username="user2", password="pw2")
 
-    client = MlflowClient(tracking_uri=tracking_uri)
+    client = QCFlowClient(tracking_uri=tracking_uri)
     experiment_id = client.create_experiment(name="experiment")
 
     auth_client.create_experiment_permission(

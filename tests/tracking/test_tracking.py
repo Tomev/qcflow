@@ -13,13 +13,13 @@ import pytest
 import yaml
 
 import qcflow
-from qcflow import MlflowClient, tracking
+from qcflow import QCFlowClient, tracking
 from qcflow.entities import LifecycleStage, Metric, Param, RunStatus, RunTag, ViewType
 from qcflow.environment_variables import (
     QCFLOW_ASYNC_LOGGING_THREADPOOL_SIZE,
     QCFLOW_RUN_ID,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
@@ -46,10 +46,10 @@ MockExperiment = namedtuple("MockExperiment", ["experiment_id", "lifecycle_stage
 
 
 def test_create_experiment():
-    with pytest.raises(MlflowException, match="Invalid experiment name"):
+    with pytest.raises(QCFlowException, match="Invalid experiment name"):
         qcflow.create_experiment(None)
 
-    with pytest.raises(MlflowException, match="Invalid experiment name"):
+    with pytest.raises(QCFlowException, match="Invalid experiment name"):
         qcflow.create_experiment("")
 
     exp_id = qcflow.create_experiment(f"Some random experiment name {random.randint(1, 1e6)}")
@@ -60,28 +60,28 @@ def test_create_experiment_with_duplicate_name():
     name = "popular_name"
     exp_id = qcflow.create_experiment(name)
 
-    with pytest.raises(MlflowException, match=re.escape(f"Experiment(name={name}) already exists")):
+    with pytest.raises(QCFlowException, match=re.escape(f"Experiment(name={name}) already exists")):
         qcflow.create_experiment(name)
 
-    tracking.MlflowClient().delete_experiment(exp_id)
-    with pytest.raises(MlflowException, match=re.escape(f"Experiment(name={name}) already exists")):
+    tracking.QCFlowClient().delete_experiment(exp_id)
+    with pytest.raises(QCFlowException, match=re.escape(f"Experiment(name={name}) already exists")):
         qcflow.create_experiment(name)
 
 
 def test_create_experiments_with_bad_names():
     # None for name
-    with pytest.raises(MlflowException, match="Invalid experiment name: 'None'"):
+    with pytest.raises(QCFlowException, match="Invalid experiment name: 'None'"):
         qcflow.create_experiment(None)
 
     # empty string name
-    with pytest.raises(MlflowException, match="Invalid experiment name: ''"):
+    with pytest.raises(QCFlowException, match="Invalid experiment name: ''"):
         qcflow.create_experiment("")
 
 
 @pytest.mark.parametrize("name", [123, 0, -1.2, [], ["A"], {1: 2}])
 def test_create_experiments_with_bad_name_types(name):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(f"Invalid experiment name: {name}. Expects a string."),
     ):
         qcflow.create_experiment(name)
@@ -112,7 +112,7 @@ def test_set_experiment_by_id():
         assert run.info.experiment_id == exp_id
 
     nonexistent_id = "-1337"
-    with pytest.raises(MlflowException, match="No Experiment with id=-1337 exists") as exc:
+    with pytest.raises(QCFlowException, match="No Experiment with id=-1337 exists") as exc:
         qcflow.set_experiment(experiment_id=nonexistent_id)
     assert exc.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
     with start_run() as run:
@@ -120,19 +120,19 @@ def test_set_experiment_by_id():
 
 
 def test_set_experiment_parameter_validation():
-    with pytest.raises(MlflowException, match="Must specify exactly one") as exc:
+    with pytest.raises(QCFlowException, match="Must specify exactly one") as exc:
         qcflow.set_experiment()
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
-    with pytest.raises(MlflowException, match="Must specify exactly one") as exc:
+    with pytest.raises(QCFlowException, match="Must specify exactly one") as exc:
         qcflow.set_experiment(None)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
-    with pytest.raises(MlflowException, match="Must specify exactly one") as exc:
+    with pytest.raises(QCFlowException, match="Must specify exactly one") as exc:
         qcflow.set_experiment(None, None)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
-    with pytest.raises(MlflowException, match="Must specify exactly one") as exc:
+    with pytest.raises(QCFlowException, match="Must specify exactly one") as exc:
         qcflow.set_experiment("name", "id")
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -143,13 +143,13 @@ def test_set_experiment_with_deleted_experiment():
     with start_run() as run:
         exp_id = run.info.experiment_id
 
-    tracking.MlflowClient().delete_experiment(exp_id)
+    tracking.QCFlowClient().delete_experiment(exp_id)
 
-    with pytest.raises(MlflowException, match="Cannot set a deleted experiment") as exc:
+    with pytest.raises(QCFlowException, match="Cannot set a deleted experiment") as exc:
         qcflow.set_experiment(name)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
-    with pytest.raises(MlflowException, match="Cannot set a deleted experiment") as exc:
+    with pytest.raises(QCFlowException, match="Cannot set a deleted experiment") as exc:
         qcflow.set_experiment(experiment_id=exp_id)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -159,11 +159,11 @@ def test_set_experiment_with_zero_id():
     mock_experiment = MockExperiment(experiment_id=0, lifecycle_stage=LifecycleStage.ACTIVE)
     with (
         mock.patch.object(
-            MlflowClient,
+            QCFlowClient,
             "get_experiment_by_name",
             mock.Mock(return_value=mock_experiment),
         ) as get_experiment_by_name_mock,
-        mock.patch.object(MlflowClient, "create_experiment") as create_experiment_mock,
+        mock.patch.object(QCFlowClient, "create_experiment") as create_experiment_mock,
     ):
         qcflow.set_experiment("my_exp")
         get_experiment_by_name_mock.assert_called_once()
@@ -174,10 +174,10 @@ def test_start_run_context_manager():
     with start_run() as first_run:
         first_uuid = first_run.info.run_id
         # Check that start_run() causes the run information to be persisted in the store
-        persisted_run = tracking.MlflowClient().get_run(first_uuid)
+        persisted_run = tracking.QCFlowClient().get_run(first_uuid)
         assert persisted_run is not None
         assert persisted_run.info == first_run.info
-    finished_run = tracking.MlflowClient().get_run(first_uuid)
+    finished_run = tracking.QCFlowClient().get_run(first_uuid)
     assert finished_run.info.status == RunStatus.to_string(RunStatus.FINISHED)
     # Launch a separate run that fails, verify the run status is FAILED and the run UUID is
     # different
@@ -186,7 +186,7 @@ def test_start_run_context_manager():
             raise Exception("Failing run!")
     second_run_id = second_run.info.run_id
     assert second_run_id != first_uuid
-    finished_run2 = tracking.MlflowClient().get_run(second_run_id)
+    finished_run2 = tracking.QCFlowClient().get_run(second_run_id)
     assert finished_run2.info.status == RunStatus.to_string(RunStatus.FAILED)
 
 
@@ -195,7 +195,7 @@ def test_start_and_end_run():
 
     with start_run() as active_run:
         qcflow.log_metric("name_1", 25)
-    finished_run = tracking.MlflowClient().get_run(active_run.info.run_id)
+    finished_run = tracking.QCFlowClient().get_run(active_run.info.run_id)
     # Validate metrics
     assert len(finished_run.data.metrics) == 1
     assert finished_run.data.metrics["name_1"] == 25
@@ -207,7 +207,7 @@ def test_metric_timestamp():
         qcflow.log_metric("name_1", 30)
         run_id = active_run.info.run_uuid
     # Check that metric timestamps are between run start and finish
-    client = MlflowClient()
+    client = QCFlowClient()
     history = client.get_metric_history(run_id, "name_1")
     finished_run = client.get_run(run_id)
     assert len(history) == 2
@@ -243,8 +243,8 @@ def test_log_batch():
 
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        MlflowClient().log_batch(run_id=run_id, metrics=metrics, params=params, tags=tags)
-    client = tracking.MlflowClient()
+        QCFlowClient().log_batch(run_id=run_id, metrics=metrics, params=params, tags=tags)
+    client = tracking.QCFlowClient()
     finished_run = client.get_run(run_id)
     # Validate metrics
     assert len(finished_run.data.metrics) == 2
@@ -294,10 +294,10 @@ def test_log_batch_with_many_elements():
 
     with start_run() as active_run:
         run_id = active_run.info.run_id
-        qcflow.tracking.MlflowClient().log_batch(
+        qcflow.tracking.QCFlowClient().log_batch(
             run_id=run_id, metrics=metrics, params=params, tags=tags
         )
-    client = tracking.MlflowClient()
+    client = tracking.QCFlowClient()
     finished_run = client.get_run(run_id)
     # Validate metrics
     assert expected_metrics == finished_run.data.metrics
@@ -323,13 +323,13 @@ def test_log_metric():
         qcflow.log_metric("name_1", 30, 5)
         qcflow.log_metric("name_1", 40, -2)
         qcflow.log_metric("nested/nested/name", 40)
-    finished_run = tracking.MlflowClient().get_run(run_id)
+    finished_run = tracking.QCFlowClient().get_run(run_id)
     # Validate metrics
     assert len(finished_run.data.metrics) == 3
     expected_pairs = {"name_1": 30, "name_2": -3, "nested/nested/name": 40}
     for key, value in finished_run.data.metrics.items():
         assert expected_pairs[key] == value
-    client = tracking.MlflowClient()
+    client = tracking.QCFlowClient()
     metric_history_name1 = client.get_metric_history(run_id, "name_1")
     assert {(m.value, m.timestamp, m.step) for m in metric_history_name1} == {
         (25, 123 * 1000, 0),
@@ -348,7 +348,7 @@ def test_log_metrics_uses_millisecond_timestamp_resolution_fluent():
         qcflow.log_metrics({"name_1": 40})
         run_id = active_run.info.run_id
 
-    client = tracking.MlflowClient()
+    client = tracking.QCFlowClient()
     metric_history_name1 = client.get_metric_history(run_id, "name_1")
     assert {(m.value, m.timestamp) for m in metric_history_name1} == {
         (25, 123 * 1000),
@@ -362,7 +362,7 @@ def test_log_metrics_uses_millisecond_timestamp_resolution_fluent():
 def test_log_metrics_uses_millisecond_timestamp_resolution_client():
     with start_run() as active_run, mock.patch("time.time") as time_mock:
         time_mock.side_effect = lambda: 123
-        qcflow_client = tracking.MlflowClient()
+        qcflow_client = tracking.QCFlowClient()
         run_id = active_run.info.run_id
 
         qcflow_client.log_metric(run_id=run_id, key="name_1", value=25)
@@ -387,7 +387,7 @@ def test_log_metrics_uses_common_timestamp_and_step_per_invocation(step_kwarg):
     with start_run() as active_run:
         run_id = active_run.info.run_id
         qcflow.log_metrics(expected_metrics, step=step_kwarg)
-    finished_run = tracking.MlflowClient().get_run(run_id)
+    finished_run = tracking.QCFlowClient().get_run(run_id)
     # Validate metric key/values match what we expect, and that all metrics have the same timestamp
     assert len(finished_run.data.metrics) == len(expected_metrics)
     for key, value in finished_run.data.metrics.items():
@@ -416,7 +416,7 @@ def test_set_tags():
     with start_run() as active_run:
         run_id = active_run.info.run_id
         qcflow.set_tags(exact_expected_tags)
-    finished_run = tracking.MlflowClient().get_run(run_id)
+    finished_run = tracking.QCFlowClient().get_run(run_id)
     # Validate tags
     assert len(finished_run.data.tags) == len(exact_expected_tags) + len(approx_expected_tags)
     for tag_key, tag_val in finished_run.data.tags.items():
@@ -430,12 +430,12 @@ def test_log_metric_validation():
     with start_run() as active_run:
         run_id = active_run.info.run_id
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Invalid value \"apple\" for parameter 'value' supplied",
         ) as e:
             qcflow.log_metric("name_1", "apple")
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
-    finished_run = tracking.MlflowClient().get_run(run_id)
+    finished_run = tracking.QCFlowClient().get_run(run_id)
     assert len(finished_run.data.metrics) == 0
 
 
@@ -445,7 +445,7 @@ def test_log_param():
         assert qcflow.log_param("name_1", "a") == "a"
         assert qcflow.log_param("name_2", "b") == "b"
         assert qcflow.log_param("nested/nested/name", 5) == 5
-    finished_run = tracking.MlflowClient().get_run(run_id)
+    finished_run = tracking.QCFlowClient().get_run(run_id)
     # Validate params
     assert finished_run.data.params == {
         "name_1": "a",
@@ -459,7 +459,7 @@ def test_log_params():
     with start_run() as active_run:
         run_id = active_run.info.run_id
         qcflow.log_params(expected_params)
-    finished_run = tracking.MlflowClient().get_run(run_id)
+    finished_run = tracking.QCFlowClient().get_run(run_id)
     # Validate params
     assert finished_run.data.params == {
         "name_1": "c",
@@ -474,12 +474,12 @@ def test_log_params_duplicate_keys_raises():
         run_id = active_run.info.run_id
         qcflow.log_params(params)
         with pytest.raises(
-            expected_exception=MlflowException,
+            expected_exception=QCFlowException,
             match=r"Changing param values is not allowed. Param with key=",
         ) as e:
             qcflow.log_param("a", "3")
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
-    finished_run = tracking.MlflowClient().get_run(run_id)
+    finished_run = tracking.QCFlowClient().get_run(run_id)
     assert finished_run.data.params == params
 
 
@@ -489,7 +489,7 @@ def test_param_metric_with_colon():
         run_id = active_run.info.run_id
         qcflow.log_param("a:b", 3)
         qcflow.log_metric("c:d", 4)
-    finished_run = tracking.MlflowClient().get_run(run_id)
+    finished_run = tracking.QCFlowClient().get_run(run_id)
 
     # Validate param
     assert len(finished_run.data.params) == 1
@@ -504,9 +504,9 @@ def test_log_batch_duplicate_entries_raises():
     with start_run() as active_run:
         run_id = active_run.info.run_id
         with pytest.raises(
-            MlflowException, match=r"Duplicate parameter keys have been submitted."
+            QCFlowException, match=r"Duplicate parameter keys have been submitted."
         ) as e:
-            tracking.MlflowClient().log_batch(
+            tracking.QCFlowClient().log_batch(
                 run_id=run_id, params=[Param("a", "1"), Param("a", "2")]
             )
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -518,52 +518,52 @@ def test_log_batch_validates_entity_names_and_values():
 
         metrics = [Metric(key="../bad/metric/name", value=0.3, timestamp=3, step=0)]
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Invalid value \"../bad/metric/name\" for parameter \'metrics\[0\].name\'",
         ) as e:
-            tracking.MlflowClient().log_batch(run_id, metrics=metrics)
+            tracking.QCFlowClient().log_batch(run_id, metrics=metrics)
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
         metrics = [Metric(key="ok-name", value="non-numerical-value", timestamp=3, step=0)]
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Invalid value \"non-numerical-value\" "
             + r"for parameter \'metrics\[0\].value\' supplied",
         ) as e:
-            tracking.MlflowClient().log_batch(run_id, metrics=metrics)
+            tracking.QCFlowClient().log_batch(run_id, metrics=metrics)
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
         metrics = [Metric(key="ok-name", value=0.3, timestamp="non-numerical-timestamp", step=0)]
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Invalid value \"non-numerical-timestamp\" for "
             + r"parameter \'metrics\[0\].timestamp\' supplied",
         ) as e:
-            tracking.MlflowClient().log_batch(run_id, metrics=metrics)
+            tracking.QCFlowClient().log_batch(run_id, metrics=metrics)
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
         params = [Param(key="../bad/param/name", value="my-val")]
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Invalid value \"../bad/param/name\" for parameter \'params\[0\].key\' supplied",
         ) as e:
-            tracking.MlflowClient().log_batch(run_id, params=params)
+            tracking.QCFlowClient().log_batch(run_id, params=params)
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
         tags = [Param(key="../bad/tag/name", value="my-val")]
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Invalid value \"../bad/tag/name\" for parameter \'tags\[0\].key\' supplied",
         ) as e:
-            tracking.MlflowClient().log_batch(run_id, tags=tags)
+            tracking.QCFlowClient().log_batch(run_id, tags=tags)
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
         metrics = [Metric(key=None, value=42.0, timestamp=4, step=1)]
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Metric name cannot be None. A key name must be provided.",
         ) as e:
-            tracking.MlflowClient().log_batch(run_id, metrics=metrics)
+            tracking.QCFlowClient().log_batch(run_id, metrics=metrics)
         assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
 
@@ -742,7 +742,7 @@ def test_parent_create_run(monkeypatch):
                 pass
 
     def verify_has_parent_id_tag(child_id, expected_parent_id):
-        tags = tracking.MlflowClient().get_run(child_id).data.tags
+        tags = tracking.QCFlowClient().get_run(child_id).data.tags
         assert tags[QCFLOW_PARENT_RUN_ID] == expected_parent_id
 
     verify_has_parent_id_tag(child_run.info.run_id, parent_run.info.run_id)
@@ -754,8 +754,8 @@ def test_start_deleted_run():
     run_id = None
     with qcflow.start_run() as active_run:
         run_id = active_run.info.run_id
-    tracking.MlflowClient().delete_run(run_id)
-    with pytest.raises(MlflowException, match="because it is in the deleted state."):
+    tracking.QCFlowClient().delete_run(run_id)
+    with pytest.raises(QCFlowException, match="because it is in the deleted state."):
         with qcflow.start_run(run_id=run_id):
             pass
     assert qcflow.active_run() is None
@@ -768,7 +768,7 @@ def test_start_run_exp_id_0():
     with qcflow.start_run() as active_run:
         exp_id = active_run.info.experiment_id
         assert exp_id != FileStore.DEFAULT_EXPERIMENT_ID
-        assert MlflowClient().get_experiment(exp_id).name == "some-experiment"
+        assert QCFlowClient().get_experiment(exp_id).name == "some-experiment"
     # Set experiment ID to 0 when creating a run, verify that the specified experiment ID is honored
     with qcflow.start_run(experiment_id=0) as active_run:
         assert active_run.info.experiment_id == FileStore.DEFAULT_EXPERIMENT_ID
@@ -792,7 +792,7 @@ def test_get_artifact_uri_uses_currently_active_run_id():
 def _assert_get_artifact_uri_appends_to_uri_path_component_correctly(
     artifact_location, expected_uri_format
 ):
-    client = MlflowClient()
+    client = QCFlowClient()
     client.create_experiment("get-artifact-uri-test", artifact_location=artifact_location)
     qcflow.set_experiment("get-artifact-uri-test")
     with qcflow.start_run():
@@ -868,52 +868,52 @@ def test_search_runs():
     def verify_runs(runs, expected_set):
         assert {r.info.run_id for r in runs} == {logged_runs[r] for r in expected_set}
 
-    experiment_id = MlflowClient().get_experiment_by_name("exp-for-search").experiment_id
+    experiment_id = QCFlowClient().get_experiment_by_name("exp-for-search").experiment_id
 
     # 2 runs in this experiment
-    assert len(MlflowClient().search_runs([experiment_id], run_view_type=ViewType.ACTIVE_ONLY)) == 2
+    assert len(QCFlowClient().search_runs([experiment_id], run_view_type=ViewType.ACTIVE_ONLY)) == 2
 
     # 2 runs that have metric "m1" > 0.001
-    runs = MlflowClient().search_runs([experiment_id], "metrics.m1 > 0.0001")
+    runs = QCFlowClient().search_runs([experiment_id], "metrics.m1 > 0.0001")
     verify_runs(runs, ["first", "second"])
 
     # 1 run with has metric "m1" > 0.002
-    runs = MlflowClient().search_runs([experiment_id], "metrics.m1 > 0.002")
+    runs = QCFlowClient().search_runs([experiment_id], "metrics.m1 > 0.002")
     verify_runs(runs, ["second"])
 
     # no runs with metric "m1" > 0.1
-    runs = MlflowClient().search_runs([experiment_id], "metrics.m1 > 0.1")
+    runs = QCFlowClient().search_runs([experiment_id], "metrics.m1 > 0.1")
     verify_runs(runs, [])
 
     # 1 run with metric "m2" > 0
-    runs = MlflowClient().search_runs([experiment_id], "metrics.m2 > 0")
+    runs = QCFlowClient().search_runs([experiment_id], "metrics.m2 > 0")
     verify_runs(runs, ["first"])
 
     # 1 run each with param "p1" and "p2"
-    runs = MlflowClient().search_runs([experiment_id], "params.p1 = 'a'", ViewType.ALL)
+    runs = QCFlowClient().search_runs([experiment_id], "params.p1 = 'a'", ViewType.ALL)
     verify_runs(runs, ["first"])
-    runs = MlflowClient().search_runs([experiment_id], "params.p2 != 'a'", ViewType.ALL)
+    runs = QCFlowClient().search_runs([experiment_id], "params.p2 != 'a'", ViewType.ALL)
     verify_runs(runs, ["second"])
-    runs = MlflowClient().search_runs([experiment_id], "params.p2 = 'aa'", ViewType.ALL)
+    runs = QCFlowClient().search_runs([experiment_id], "params.p2 = 'aa'", ViewType.ALL)
     verify_runs(runs, ["second"])
 
     # 1 run each with tag "t1" and "t2"
-    runs = MlflowClient().search_runs([experiment_id], "tags.t1 = 'first-tag-val'", ViewType.ALL)
+    runs = QCFlowClient().search_runs([experiment_id], "tags.t1 = 'first-tag-val'", ViewType.ALL)
     verify_runs(runs, ["first"])
-    runs = MlflowClient().search_runs([experiment_id], "tags.t2 != 'qwerty'", ViewType.ALL)
+    runs = QCFlowClient().search_runs([experiment_id], "tags.t2 != 'qwerty'", ViewType.ALL)
     verify_runs(runs, ["second"])
-    runs = MlflowClient().search_runs([experiment_id], "tags.t2 = 'second-tag-val'", ViewType.ALL)
+    runs = QCFlowClient().search_runs([experiment_id], "tags.t2 = 'second-tag-val'", ViewType.ALL)
     verify_runs(runs, ["second"])
 
     # delete "first" run
-    MlflowClient().delete_run(logged_runs["first"])
-    runs = MlflowClient().search_runs([experiment_id], "params.p1 = 'a'", ViewType.ALL)
+    QCFlowClient().delete_run(logged_runs["first"])
+    runs = QCFlowClient().search_runs([experiment_id], "params.p1 = 'a'", ViewType.ALL)
     verify_runs(runs, ["first"])
 
-    runs = MlflowClient().search_runs([experiment_id], "params.p1 = 'a'", ViewType.DELETED_ONLY)
+    runs = QCFlowClient().search_runs([experiment_id], "params.p1 = 'a'", ViewType.DELETED_ONLY)
     verify_runs(runs, ["first"])
 
-    runs = MlflowClient().search_runs([experiment_id], "params.p1 = 'a'", ViewType.ACTIVE_ONLY)
+    runs = QCFlowClient().search_runs([experiment_id], "params.p1 = 'a'", ViewType.ACTIVE_ONLY)
     verify_runs(runs, [])
 
 
@@ -925,11 +925,11 @@ def test_search_runs_multiple_experiments():
             qcflow.log_metric("m0", 1)
             qcflow.log_metric(f"m_{eid}", 2)
 
-    assert len(MlflowClient().search_runs(experiment_ids, "metrics.m0 > 0", ViewType.ALL)) == 3
+    assert len(QCFlowClient().search_runs(experiment_ids, "metrics.m0 > 0", ViewType.ALL)) == 3
 
-    assert len(MlflowClient().search_runs(experiment_ids, "metrics.m_1 > 0", ViewType.ALL)) == 1
-    assert len(MlflowClient().search_runs(experiment_ids, "metrics.m_2 = 2", ViewType.ALL)) == 1
-    assert len(MlflowClient().search_runs(experiment_ids, "metrics.m_3 < 4", ViewType.ALL)) == 1
+    assert len(QCFlowClient().search_runs(experiment_ids, "metrics.m_1 > 0", ViewType.ALL)) == 1
+    assert len(QCFlowClient().search_runs(experiment_ids, "metrics.m_2 = 2", ViewType.ALL)) == 1
+    assert len(QCFlowClient().search_runs(experiment_ids, "metrics.m_3 < 4", ViewType.ALL)) == 1
 
 
 def read_data(artifact_path):
@@ -960,7 +960,7 @@ def test_log_table(file_type):
     run_id = None
 
     with pytest.raises(
-        MlflowException, match="data must be a pandas.DataFrame or a dictionary"
+        QCFlowException, match="data must be a pandas.DataFrame or a dictionary"
     ) as e:
         with qcflow.start_run() as run:
             # Log the incorrect data format as a table
@@ -1141,7 +1141,7 @@ def test_load_table(file_type):
 
     # test 6: load table with no matching results found. Error case
     with pytest.raises(
-        MlflowException, match="No runs found with the corresponding table artifact"
+        QCFlowException, match="No runs found with the corresponding table artifact"
     ):
         qcflow.load_table(artifact_file=f"error_case.{file_type}")
 

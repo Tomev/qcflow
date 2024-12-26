@@ -3,7 +3,7 @@ import logging
 import sys
 from typing import Any, Optional
 
-from qcflow.exceptions import BAD_REQUEST, MlflowException
+from qcflow.exceptions import BAD_REQUEST, QCFlowException
 from qcflow.models import EvaluationMetric, make_metric
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
@@ -26,7 +26,7 @@ class RecipeMetric:
         greater_is_better = custom_metric_dict.get(RecipeMetric._KEY_METRIC_GREATER_IS_BETTER)
         custom_function = custom_metric_dict.get(RecipeMetric._KEY_CUSTOM_FUNCTION)
         if (metric_name, greater_is_better, custom_function).count(None) > 0:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid custom metric definition: {custom_metric_dict}",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -105,7 +105,7 @@ def _get_error_fn(tmpl: str, use_probability: bool = False, positive_class: Opti
             ]
         else:
             return lambda predictions, targets: predictions != targets
-    raise MlflowException(
+    raise QCFlowException(
         f"No error function for template kind {tmpl}",
         error_code=INVALID_PARAMETER_VALUE,
     )
@@ -127,7 +127,7 @@ def _get_extended_task(recipe: str, positive_class: str) -> str:  # noqa: D417
             return "classification/binary"
         else:
             return "classification/multiclass"
-    raise MlflowException(
+    raise QCFlowException(
         f"No model type for template kind {recipe}",
         error_code=INVALID_PARAMETER_VALUE,
     )
@@ -145,7 +145,7 @@ def _get_model_type_from_template(tmpl: str) -> str:
         return "regressor"
     if tmpl == "classification/v1":
         return "classifier"
-    raise MlflowException(
+    raise QCFlowException(
         f"No model type for template kind {tmpl}",
         error_code=INVALID_PARAMETER_VALUE,
     )
@@ -166,7 +166,7 @@ def _get_builtin_metrics(ext_task: str) -> dict[str, str]:  # noqa: D417
         return BUILTIN_BINARY_CLASSIFICATION_RECIPE_METRICS
     elif ext_task == "classification/multiclass":
         return BUILTIN_MULTICLASS_CLASSIFICATION_RECIPE_METRICS
-    raise MlflowException(
+    raise QCFlowException(
         f"No builtin metrics for template kind {ext_task}",
         error_code=INVALID_PARAMETER_VALUE,
     )
@@ -225,7 +225,7 @@ def _load_custom_metrics(recipe_root: str, metrics: list[RecipeMetric]) -> list[
             for custom_metric in custom_metrics
         ]
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             message="Failed to load custom metric functions",
             error_code=BAD_REQUEST,
         ) from e

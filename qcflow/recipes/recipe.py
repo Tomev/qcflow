@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import BAD_REQUEST, INTERNAL_ERROR, INVALID_PARAMETER_VALUE
 from qcflow.recipes import dag_help_strings
 from qcflow.recipes.artifacts import Artifact
@@ -103,12 +103,12 @@ class BaseRecipe:
                 f"Last step status: '{last_executed_step_state.status}'\n"
             )
             if step is not None:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to run step '{step}' of recipe '{self.name}':\n{last_step_error_mesg}",
                     error_code=BAD_REQUEST,
                 )
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to run recipe '{self.name}':\n{last_step_error_mesg}",
                     error_code=BAD_REQUEST,
                 )
@@ -150,7 +150,7 @@ class BaseRecipe:
         steps = self._steps
         step_names = [s.name for s in steps]
         if step_name not in step_names:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Step {step_name} not found in recipe. Available steps are {step_names}"
             )
         return self._steps[step_names.index(step_name)]
@@ -345,7 +345,7 @@ class BaseRecipe:
             for artifact in step.get_artifacts():
                 if artifact.name() == artifact_name:
                     return artifact
-        raise MlflowException(
+        raise QCFlowException(
             f"The artifact with name '{artifact_name}' is not supported.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -396,14 +396,14 @@ class Recipe:
             regression_recipe.run(step="train")
         """
         if not profile:
-            raise MlflowException(
+            raise QCFlowException(
                 "A profile name must be provided to construct a valid Recipe object.",
                 error_code=INVALID_PARAMETER_VALUE,
             ) from None
 
         recipe_root_path = get_recipe_root_path()
         if " " in recipe_root_path:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "Recipe directory path cannot contain spaces. Please move or rename your "
                     f"recipe directory. Current path: {recipe_root_path}"
@@ -414,7 +414,7 @@ class Recipe:
         recipe_config = get_recipe_config(recipe_root_path=recipe_root_path, profile=profile)
         recipe = recipe_config.get("recipe")
         if recipe is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "The `recipe` property needs to be defined in the `recipe.yaml` file. "
                 "For example: `recipe: regression/v1`",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -426,13 +426,13 @@ class Recipe:
             recipe_class_module = _get_class_from_string(class_name)
         except Exception as e:
             if isinstance(e, ModuleNotFoundError):
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to find Recipe {class_name}."
                     f"Please check the correctness of the recipe template setting: {recipe}",
                     error_code=INVALID_PARAMETER_VALUE,
                 ) from None
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to construct Recipe {class_name}",
                     error_code=INTERNAL_ERROR,
                 ) from e

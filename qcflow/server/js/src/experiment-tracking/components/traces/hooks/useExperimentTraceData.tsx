@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { MlflowService } from '../../../sdk/MlflowService';
+import { QCFlowService } from '../../../sdk/QCFlowService';
 import { ModelTraceStatus, type ModelTraceData } from '@databricks/web-shared/model-trace-explorer';
 import Utils from '../../../../common/utils/Utils';
 
@@ -11,7 +11,7 @@ export const useExperimentTraceData = (traceId?: string, skip = false) => {
   const fetchTraceData = useCallback(async (traceId: string) => {
     setLoading(true);
     try {
-      const response = await MlflowService.getExperimentTraceData(traceId);
+      const response = await QCFlowService.getExperimentTraceData(traceId);
 
       if (Array.isArray(response.spans)) {
         setTraceData(response);

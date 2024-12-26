@@ -27,7 +27,7 @@ import qcflow
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 from qcflow import pyfunc
 from qcflow.deployments import PredictionsResponse
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelSignature, infer_signature
 from qcflow.models.model import METADATA_FILES
 from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
@@ -151,11 +151,11 @@ def test_default_requirements(pipeline, expected_requirements, request):
 
 def test_inference_task_validation(small_qa_pipeline):
     with pytest.raises(
-        MlflowException, match="The task provided is invalid. 'llm/v1/invalid' is not"
+        QCFlowException, match="The task provided is invalid. 'llm/v1/invalid' is not"
     ):
         _validate_llm_inference_task_type("llm/v1/invalid", "text-generation")
     with pytest.raises(
-        MlflowException, match="The task provided is invalid. 'llm/v1/completions' is not"
+        QCFlowException, match="The task provided is invalid. 'llm/v1/completions' is not"
     ):
         _validate_llm_inference_task_type("llm/v1/completions", small_qa_pipeline)
     _validate_llm_inference_task_type("llm/v1/completions", "text-generation")
@@ -207,12 +207,12 @@ def test_pipeline_construction_from_base_vision_model(small_vision_model):
 
 def test_saving_with_invalid_dict_as_model(model_path):
     with pytest.raises(
-        MlflowException, match="Invalid dictionary submitted for 'transformers_model'. The "
+        QCFlowException, match="Invalid dictionary submitted for 'transformers_model'. The "
     ):
         qcflow.transformers.save_model(transformers_model={"invalid": "key"}, path=model_path)
 
     with pytest.raises(
-        MlflowException, match="The 'transformers_model' dictionary must have an entry"
+        QCFlowException, match="The 'transformers_model' dictionary must have an entry"
     ):
         qcflow.transformers.save_model(
             transformers_model={"tokenizer": "some_tokenizer"}, path=model_path
@@ -447,7 +447,7 @@ def test_multi_modal_pipeline_save_and_load(small_multi_modal_pipeline, model_pa
     pipeline_answer = pipeline(image=image_for_test, question=question)
     assert pipeline_answer[0]["answer"] == "1"
     # Test invalid loading mode
-    with pytest.raises(MlflowException, match="The specified return_type mode 'magic' is"):
+    with pytest.raises(QCFlowException, match="The specified return_type mode 'magic' is"):
         qcflow.transformers.load_model(model_path, return_type="magic")
 
 
@@ -511,7 +511,7 @@ def test_pipeline_saved_model_with_processor_cannot_be_loaded_as_pipeline(
         processor=processor,  # If this is specified, we cannot guarantee correct inference
     )
     with pytest.raises(
-        MlflowException, match="This model has been saved with a processor. Processor objects"
+        QCFlowException, match="This model has been saved with a processor. Processor objects"
     ):
         qcflow.transformers.load_model(model_uri=model_path, return_type="pipeline")
 
@@ -529,7 +529,7 @@ def test_component_saved_model_with_processor_cannot_be_loaded_as_pipeline(
         processor=processor,
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model has been saved with a processor. Processor objects are not compatible "
         "with Pipelines. Please load",
     ):
@@ -725,7 +725,7 @@ def test_transformers_log_with_extra_pip_requirements(small_multi_modal_pipeline
 
 def test_transformers_log_with_duplicate_extra_pip_requirements(small_multi_modal_pipeline):
     with pytest.raises(
-        MlflowException, match="The specified requirements versions are incompatible"
+        QCFlowException, match="The specified requirements versions are incompatible"
     ):
         with qcflow.start_run():
             qcflow.transformers.log_model(
@@ -872,12 +872,12 @@ def test_invalid_model_type_without_registered_name_does_not_save(model_path):
     invalid_pipeline = transformers.pipeline(task="text-generation", model="gpt2")
     del invalid_pipeline.model.name_or_path
 
-    with pytest.raises(MlflowException, match="The submitted model type"):
+    with pytest.raises(QCFlowException, match="The submitted model type"):
         qcflow.transformers.save_model(transformers_model=invalid_pipeline, path=model_path)
 
 
 def test_invalid_input_to_pyfunc_signature_output_wrapper_raises(component_multi_modal):
-    with pytest.raises(MlflowException, match="The pipeline type submitted is not a valid"):
+    with pytest.raises(QCFlowException, match="The pipeline type submitted is not a valid"):
         qcflow.transformers.generate_signature_output(component_multi_modal["model"], "bogus")
 
 
@@ -1139,14 +1139,14 @@ def test_text2text_generation_pipeline_with_params_with_errors(
     )
     pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"The params provided to the `predict` method are "
         r"not valid for pipeline Text2TextGenerationPipeline.",
     ):
         pyfunc_loaded.predict(data, parameters)
 
     # Type validation of params failure
-    with pytest.raises(MlflowException, match=r"Invalid parameters found"):
+    with pytest.raises(QCFlowException, match=r"Invalid parameters found"):
         pyfunc_loaded.predict(data, {"top_k": "2"})
 
 
@@ -1174,7 +1174,7 @@ def test_invalid_input_to_text2text_pipeline(text2text_generation_pipeline, inva
     # We generate this string from a dict or generate a list of these strings from a list of
     # dictionaries.
     with pytest.raises(
-        MlflowException, match=r"An invalid type has been supplied: .+\. Please supply"
+        QCFlowException, match=r"An invalid type has been supplied: .+\. Please supply"
     ):
         infer_signature(
             invalid_data,
@@ -1240,7 +1240,7 @@ def test_invalid_input_to_text_generation_pipeline(text_generation_pipeline, inv
         match = "If supplying a list, all values must be of string type"
     else:
         match = "The input data is of an incorrect type"
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         infer_signature(
             invalid_data,
             qcflow.transformers.generate_signature_output(text_generation_pipeline, invalid_data),
@@ -1304,7 +1304,7 @@ def test_invalid_input_to_fill_mask_pipeline(fill_mask_pipeline, invalid_data):
         match = "Invalid data submission. Ensure all"
     else:
         match = "The input data is of an incorrect type"
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         infer_signature(
             invalid_data,
             qcflow.transformers.generate_signature_output(fill_mask_pipeline, invalid_data),
@@ -2043,13 +2043,13 @@ def test_feature_extraction_pipeline_pyfunc_predict(feature_extraction_pipeline)
 
 def test_loading_unsupported_pipeline_type_as_pyfunc(small_multi_modal_pipeline, model_path):
     qcflow.transformers.save_model(small_multi_modal_pipeline, model_path)
-    with pytest.raises(MlflowException, match='Model does not have the "python_function" flavor'):
+    with pytest.raises(QCFlowException, match='Model does not have the "python_function" flavor'):
         qcflow.pyfunc.load_model(model_path)
 
 
 def test_pyfunc_input_validations(mock_pyfunc_wrapper):
     def ensure_raises(data, match):
-        with pytest.raises(MlflowException, match=match):
+        with pytest.raises(QCFlowException, match=match):
             mock_pyfunc_wrapper._validate_str_or_list_str(data)
 
     match1 = "The input data is of an incorrect type"
@@ -2104,7 +2104,7 @@ def test_pyfunc_json_encoded_list_parsing(mock_pyfunc_wrapper):
     list_dict_parsed = mock_pyfunc_wrapper._parse_json_encoded_list(list_dict_input, "in")
     assert list_dict_parsed == {"in": list_dict}
 
-    with pytest.raises(MlflowException, match="Invalid key in inference payload. The "):
+    with pytest.raises(QCFlowException, match="Invalid key in inference payload. The "):
         mock_pyfunc_wrapper._parse_json_encoded_list(list_dict_input, "invalid")
 
 
@@ -2126,10 +2126,10 @@ def test_pyfunc_text_to_text_input(mock_pyfunc_wrapper):
     parsed_list_str = mock_pyfunc_wrapper._parse_text2text_input(["a", "b"])
     assert parsed_list_str == ["a", "b"]
 
-    with pytest.raises(MlflowException, match="An invalid type has been supplied"):
+    with pytest.raises(QCFlowException, match="An invalid type has been supplied"):
         mock_pyfunc_wrapper._parse_text2text_input([1, 2, 3])
 
-    with pytest.raises(MlflowException, match="An invalid type has been supplied"):
+    with pytest.raises(QCFlowException, match="An invalid type has been supplied"):
         mock_pyfunc_wrapper._parse_text2text_input([{"a": [{"b": "c"}]}])
 
 
@@ -2142,13 +2142,13 @@ def test_pyfunc_qa_input(mock_pyfunc_wrapper):
     parsed_multi_input = mock_pyfunc_wrapper._parse_question_answer_input(multi_input)
     assert parsed_multi_input == multi_input
 
-    with pytest.raises(MlflowException, match="Invalid keys were submitted. Keys must"):
+    with pytest.raises(QCFlowException, match="Invalid keys were submitted. Keys must"):
         mock_pyfunc_wrapper._parse_question_answer_input({"q": "a", "c": "b"})
 
-    with pytest.raises(MlflowException, match="An invalid type has been supplied"):
+    with pytest.raises(QCFlowException, match="An invalid type has been supplied"):
         mock_pyfunc_wrapper._parse_question_answer_input("a")
 
-    with pytest.raises(MlflowException, match="An invalid type has been supplied"):
+    with pytest.raises(QCFlowException, match="An invalid type has been supplied"):
         mock_pyfunc_wrapper._parse_question_answer_input(["a", "b", "c"])
 
 
@@ -2383,7 +2383,7 @@ def test_invalid_instruction_pipeline_parsing(mock_pyfunc_wrapper, flavor_config
 
     bad_output = {"generated_text": ["Strawberry Milk Cap", "Honeydew with boba"]}
 
-    with pytest.raises(MlflowException, match="Unable to parse the pipeline output. Expected"):
+    with pytest.raises(QCFlowException, match="Unable to parse the pipeline output. Expected"):
         mock_pyfunc_wrapper._strip_input_from_response_in_instruction_pipelines(
             prompt, bad_output, "generated_text", flavor_config, True
         )
@@ -2631,18 +2631,18 @@ def test_whisper_model_pyfunc_with_malformed_input(whisper_pipeline, model_path)
     pyfunc_model = qcflow.pyfunc.load_model(model_path)
 
     invalid_audio = b"This isn't a real audio file"
-    with pytest.raises(MlflowException, match="Failed to process the input audio data. Either"):
+    with pytest.raises(QCFlowException, match="Failed to process the input audio data. Either"):
         pyfunc_model.predict([invalid_audio])
 
     bad_uri_msg = "An invalid string input was provided. String"
 
-    with pytest.raises(MlflowException, match=bad_uri_msg):
+    with pytest.raises(QCFlowException, match=bad_uri_msg):
         pyfunc_model.predict("An invalid path")
 
-    with pytest.raises(MlflowException, match=bad_uri_msg):
+    with pytest.raises(QCFlowException, match=bad_uri_msg):
         pyfunc_model.predict("//www.invalid.net/audio.wav")
 
-    with pytest.raises(MlflowException, match=bad_uri_msg):
+    with pytest.raises(QCFlowException, match=bad_uri_msg):
         pyfunc_model.predict("https:///my/audio.mp3")
 
 
@@ -2954,7 +2954,7 @@ def test_pyfunc_model_log_load_with_artifacts_snapshot_errors():
 
     with qcflow.start_run():
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Failed to download snapshot from Hugging Face Hub "
             r"with artifact_uri: hf:/invalid-repo-id.",
         ):
@@ -3002,7 +3002,7 @@ def test_basic_model_with_accelerate_device_mapping_fails_save(tmp_path, model_p
     pipeline = transformers.pipeline(task=task, model=model, tokenizer=tokenizer)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The model that is attempting to be saved has been loaded into memory",
     ):
         qcflow.transformers.save_model(transformers_model=pipeline, path=model_path)
@@ -3122,7 +3122,7 @@ def test_text_generation_save_model_with_invalid_inference_task(
     text_generation_pipeline, model_path
 ):
     with pytest.raises(
-        MlflowException, match=r"The task provided is invalid.*Must be.*llm/v1/completions"
+        QCFlowException, match=r"The task provided is invalid.*Must be.*llm/v1/completions"
     ):
         qcflow.transformers.save_model(
             transformers_model=text_generation_pipeline,
@@ -3133,7 +3133,7 @@ def test_text_generation_save_model_with_invalid_inference_task(
 
 def test_text_generation_log_model_with_mismatched_task(text_generation_pipeline):
     with pytest.raises(
-        MlflowException, match=r"LLM v1 task type 'llm/v1/chat' is specified in metadata, but"
+        QCFlowException, match=r"LLM v1 task type 'llm/v1/chat' is specified in metadata, but"
     ):
         with qcflow.start_run():
             qcflow.transformers.log_model(
@@ -3336,7 +3336,7 @@ def test_get_task_for_model():
             _get_task_for_model("model", default_task="feature-extraction") == "feature-extraction"
         )
 
-        with pytest.raises(MlflowException, match="Cannot construct transformers pipeline"):
+        with pytest.raises(QCFlowException, match="Cannot construct transformers pipeline"):
             _get_task_for_model("model")
 
         # If get_task raises an exception, fall back to the default task if provided.
@@ -3345,7 +3345,7 @@ def test_get_task_for_model():
             _get_task_for_model("model", default_task="feature-extraction") == "feature-extraction"
         )
 
-        with pytest.raises(MlflowException, match="The task could not be inferred"):
+        with pytest.raises(QCFlowException, match="The task could not be inferred"):
             _get_task_for_model("model")
 
 
@@ -3359,8 +3359,8 @@ def test_local_custom_model_save_and_load(text_generation_pipeline, model_path, 
     )
     model_dict = {"model": locally_loaded_model, "tokenizer": tokenizer}
 
-    # 1. Save local custom model without specifying task -> raises MlflowException
-    with pytest.raises(MlflowException, match=r"The task could not be inferred"):
+    # 1. Save local custom model without specifying task -> raises QCFlowException
+    with pytest.raises(QCFlowException, match=r"The task could not be inferred"):
         qcflow.transformers.save_model(transformers_model=model_dict, path=model_path)
 
     # 2. Save local custom model with task -> saves successfully
@@ -3673,7 +3673,7 @@ def test_device_param_on_load_model(device, small_qa_pipeline, model_path, monke
         assert conf.get("device") is None
     else:
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"The environment variable QCFLOW_HUGGINGFACE_USE_DEVICE_MAP is set to True, "
             rf"but the `device` argument is provided with value {device}.",
         ):
@@ -3823,14 +3823,14 @@ def test_save_model_from_local_checkpoint_with_llm_inference_task(
 
 
 def test_save_model_from_local_checkpoint_invalid_arguments(model_path, local_checkpoint_path):
-    with pytest.raises(MlflowException, match=r"The `task` argument must be specified"):
+    with pytest.raises(QCFlowException, match=r"The `task` argument must be specified"):
         qcflow.transformers.save_model(
             transformers_model=local_checkpoint_path,
             path=model_path,
         )
 
     with pytest.raises(
-        MlflowException, match=r"The `save_pretrained` argument must be set to True"
+        QCFlowException, match=r"The `save_pretrained` argument must be set to True"
     ):
         qcflow.transformers.save_model(
             transformers_model=local_checkpoint_path,
@@ -3840,7 +3840,7 @@ def test_save_model_from_local_checkpoint_invalid_arguments(model_path, local_ch
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"The provided directory invalid path does not contain a config.json file.",
     ):
         qcflow.transformers.save_model(

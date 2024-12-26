@@ -1,7 +1,7 @@
 import json
 from typing import Any, AsyncGenerator, AsyncIterable
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.config import RouteConfig, TogetherAIConfig
 from qcflow.gateway.exceptions import AIGatewayException
 from qcflow.gateway.providers.base import BaseProvider, ProviderAdapter
@@ -298,7 +298,7 @@ class TogetherAIProvider(BaseProvider):
         super().__init__(config)
         if config.model.config is None or not isinstance(config.model.config, TogetherAIConfig):
             # Should be unreachable
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Invalid config type {config.model.config}"
             )
         self.togetherai_config: TogetherAIConfig = config.model.config

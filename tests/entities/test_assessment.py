@@ -1,7 +1,7 @@
 import pytest
 
 from qcflow.entities.assessment import Assessment, AssessmentSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 
 def test_assessment_equality():
@@ -154,7 +154,7 @@ def test_assessment_value_validation():
 
     # Invalid case: more than one value type specified
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Exactly one of boolean_value, numeric_value, string_value, or error_code must be "
         "specified for an assessment.",
     ):
@@ -169,7 +169,7 @@ def test_assessment_value_validation():
 
     # Invalid case: no value type specified
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Exactly one of boolean_value, numeric_value, string_value, or error_code must be "
         "specified for an assessment.",
     ):
@@ -182,7 +182,7 @@ def test_assessment_value_validation():
 
     # Invalid case: error_message specified with another value type
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="error_message cannot be specified when boolean_value, numeric_value, or "
         "string_value is specified.",
     ):
@@ -196,7 +196,7 @@ def test_assessment_value_validation():
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="error_message cannot be specified when boolean_value, numeric_value, or "
         "string_value is specified.",
     ):
@@ -210,7 +210,7 @@ def test_assessment_value_validation():
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="error_message cannot be specified when boolean_value, numeric_value, or "
         "string_value is specified.",
     ):

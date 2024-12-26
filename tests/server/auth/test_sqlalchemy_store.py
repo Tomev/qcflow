@@ -1,6 +1,6 @@
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_ALREADY_EXISTS,
@@ -49,7 +49,7 @@ def test_create_user(store):
 
     # error on duplicate
     with pytest.raises(
-        MlflowException, match=rf"User \(username={username1}\) already exists"
+        QCFlowException, match=rf"User \(username={username1}\) already exists"
     ) as exception_context:
         _user_maker(store, username1, password1)
     assert exception_context.value.error_code == ErrorCode.Name(RESOURCE_ALREADY_EXISTS)
@@ -63,10 +63,10 @@ def test_create_user(store):
     assert user2.is_admin is True
 
     # invalid username will fail
-    with pytest.raises(MlflowException, match=r"Username cannot be empty") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Username cannot be empty") as exception_context:
         _user_maker(store, None, None)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
-    with pytest.raises(MlflowException, match=r"Username cannot be empty") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Username cannot be empty") as exception_context:
         _user_maker(store, "", "")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -93,7 +93,7 @@ def test_get_user(store):
     # error on non-existent user
     username2 = random_str()
     with pytest.raises(
-        MlflowException, match=rf"User with username={username2} not found"
+        QCFlowException, match=rf"User with username={username2} not found"
     ) as exception_context:
         store.get_user(username=username2)
     assert exception_context.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
@@ -154,7 +154,7 @@ def test_delete_user(store):
     store.delete_user(username1)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"User with username={username1} not found",
     ) as exception_context:
         store.get_user(username1)
@@ -176,7 +176,7 @@ def test_create_experiment_permission(store):
 
     # error on duplicate
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Experiment permission \(experiment_id={experiment_id1}, "
         rf"username={username1}\) already exists",
     ) as exception_context:
@@ -200,7 +200,7 @@ def test_create_experiment_permission(store):
 
     # invalid permission will fail
     experiment_id4 = random_str()
-    with pytest.raises(MlflowException, match=r"Invalid permission") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Invalid permission") as exception_context:
         _ep_maker(store, experiment_id4, username1, "some_invalid_permission_string")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -223,7 +223,7 @@ def test_get_experiment_permission(store):
     # error on non-existent row
     experiment_id2 = random_str()
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Experiment permission with experiment_id={experiment_id2} "
         rf"and username={username1} not found",
     ) as exception_context:
@@ -270,7 +270,7 @@ def test_update_experiment_permission(store):
     assert ep1.permission == permission2
 
     # invalid permission will fail
-    with pytest.raises(MlflowException, match=r"Invalid permission") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Invalid permission") as exception_context:
         store.update_experiment_permission(
             experiment_id1, username1, "some_invalid_permission_string"
         )
@@ -288,7 +288,7 @@ def test_delete_experiment_permission(store):
 
     store.delete_experiment_permission(experiment_id1, username1)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Experiment permission with experiment_id={experiment_id1} "
         rf"and username={username1} not found",
     ) as exception_context:
@@ -311,7 +311,7 @@ def test_create_registered_model_permission(store):
 
     # error on duplicate
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Registered model permission \(name={name1}, username={username1}\) already exists",
     ) as exception_context:
         _rmp_maker(store, name1, username1, permission1)
@@ -334,7 +334,7 @@ def test_create_registered_model_permission(store):
 
     # invalid permission will fail
     name4 = random_str()
-    with pytest.raises(MlflowException, match=r"Invalid permission") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Invalid permission") as exception_context:
         _rmp_maker(store, name4, username1, "some_invalid_permission_string")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -357,7 +357,7 @@ def test_get_registered_model_permission(store):
     # error on non-existent row
     name2 = random_str()
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Registered model permission with name={name2} and username={username1} not found",
     ) as exception_context:
         store.get_registered_model_permission(name2, username1)
@@ -403,7 +403,7 @@ def test_update_registered_model_permission(store):
     assert rmp1.permission == permission2
 
     # invalid permission will fail
-    with pytest.raises(MlflowException, match=r"Invalid permission") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Invalid permission") as exception_context:
         store.update_registered_model_permission(name1, username1, "some_invalid_permission_string")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -419,7 +419,7 @@ def test_delete_registered_model_permission(store):
 
     store.delete_registered_model_permission(name1, username1)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Registered model permission with name={name1} and username={username1} not found",
     ) as exception_context:
         store.get_registered_model_permission(name1, username1)

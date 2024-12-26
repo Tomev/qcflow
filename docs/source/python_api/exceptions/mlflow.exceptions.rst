@@ -3,7 +3,7 @@
 qcflow.exceptions
 =================
 
-.. exception:: qcflow.exceptions.MlflowException(message, error_code=1, **kwargs)
+.. exception:: qcflow.exceptions.QCFlowException(message, error_code=1, **kwargs)
 
     Generic exception thrown when an QCFlow operation fails
 
@@ -12,4 +12,4 @@ qcflow.exceptions
     :undoc-members:
     :show-inheritance:
     :exclude-members:
-        MlflowException
+        QCFlowException

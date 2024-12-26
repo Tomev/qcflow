@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 import qcflow
 from qcflow.recipes.utils.execution import get_step_output_path
-from qcflow.tracking import MlflowClient
+from qcflow.tracking import QCFlowClient
 from qcflow.tracking._tracking_service.utils import _use_tracking_uri
 from qcflow.utils.file_utils import chdir
 
@@ -111,7 +111,7 @@ class RunArtifact(Artifact):
         run_id = read_run_id(self._recipe_root)
         if run_id:
             with _use_tracking_uri(self._tracking_uri), chdir(self._recipe_root):
-                return MlflowClient().get_run(run_id)
+                return QCFlowClient().get_run(run_id)
         log_artifact_not_found_warning(self._name, self._step_name)
         return None
 
@@ -134,7 +134,7 @@ class ModelVersionArtifact(Artifact):
         if os.path.exists(self._path):
             registered_model_info = RegisteredModelVersionInfo.from_json(path=self._path)
             with _use_tracking_uri(self._tracking_uri), chdir(self._recipe_root):
-                return MlflowClient().get_model_version(
+                return QCFlowClient().get_model_version(
                     name=registered_model_info.name, version=registered_model_info.version
                 )
         log_artifact_not_found_warning(self._name, self._step_name)

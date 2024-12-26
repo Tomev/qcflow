@@ -9,7 +9,7 @@ from sklearn import datasets
 import qcflow.sklearn
 import qcflow.utils.model_utils as qcflow_model_utils
 from qcflow.environment_variables import QCFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.mleap import FLAVOR_NAME as MLEAP_FLAVOR_NAME
 from qcflow.models import Model
 from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST, ErrorCode
@@ -36,7 +36,7 @@ def test_get_flavor_configuration_throws_exception_when_model_configuration_does
     model_path,
 ):
     with pytest.raises(
-        MlflowException, match='Could not find an "MLmodel" configuration file'
+        QCFlowException, match='Could not find an "MLmodel" configuration file'
     ) as exc:
         qcflow_model_utils._get_flavor_configuration(
             model_path=model_path, flavor_name=qcflow.mleap.FLAVOR_NAME
@@ -56,7 +56,7 @@ def test_get_flavor_configuration_throws_exception_when_requested_flavor_is_miss
     assert sklearn_flavor_config is not None
 
     # The saved model does not contain the "mleap" flavor, so this call should fail
-    with pytest.raises(MlflowException, match='Model does not have the "mleap" flavor') as exc:
+    with pytest.raises(QCFlowException, match='Model does not have the "mleap" flavor') as exc:
         qcflow_model_utils._get_flavor_configuration(
             model_path=model_path, flavor_name=MLEAP_FLAVOR_NAME
         )
@@ -111,7 +111,7 @@ def test_add_code_to_system_path(sklearn_knn_model, model_path):
 
 @mock.patch("builtins.open", side_effect=OSError("[Errno 95] Operation not supported"))
 def test_add_code_to_system_path_not_copyable_file(sklearn_knn_model, model_path):
-    with pytest.raises(MlflowException, match=r"Failed to copy the specified code path"):
+    with pytest.raises(QCFlowException, match=r"Failed to copy the specified code path"):
         qcflow.sklearn.save_model(
             sk_model=sklearn_knn_model,
             path=model_path,

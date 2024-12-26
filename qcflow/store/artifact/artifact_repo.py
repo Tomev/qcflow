@@ -16,9 +16,9 @@ from qcflow.entities.multipart_upload import (
     MultipartUploadPart,
 )
 from qcflow.exceptions import (
-    MlflowException,
-    MlflowTraceDataCorrupted,
-    MlflowTraceDataNotFound,
+    QCFlowException,
+    QCFlowTraceDataCorrupted,
+    QCFlowTraceDataNotFound,
 )
 from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
@@ -100,7 +100,7 @@ class ArtifactRepository:
 
     def _create_thread_pool(self):
         return ThreadPoolExecutor(
-            max_workers=self.max_workers, thread_name_prefix=f"Mlflow{self.__class__.__name__}"
+            max_workers=self.max_workers, thread_name_prefix=f"QCFlow{self.__class__.__name__}"
         )
 
     def flush_async_logging(self):
@@ -247,7 +247,7 @@ class ArtifactRepository:
         if dst_path:
             dst_path = os.path.abspath(dst_path)
             if not os.path.exists(dst_path):
-                raise MlflowException(
+                raise QCFlowException(
                     message=(
                         "The destination path for downloaded artifacts does not"
                         f" exist! Destination path: {dst_path}"
@@ -255,7 +255,7 @@ class ArtifactRepository:
                     error_code=RESOURCE_DOES_NOT_EXIST,
                 )
             elif not os.path.isdir(dst_path):
-                raise MlflowException(
+                raise QCFlowException(
                     message=(
                         "The destination path for downloaded artifacts must be a directory!"
                         f" Destination path: {dst_path}"
@@ -311,7 +311,7 @@ class ArtifactRepository:
                 template.format(path=path, error=error, traceback=tracebacks[path])
                 for path, error in failed_downloads.items()
             )
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "The following failures occurred while downloading one or more"
                     f" artifacts from {self.artifact_uri}:\n{_truncate_error(failures)}"
@@ -356,17 +356,17 @@ class ArtifactRepository:
             The trace data as a dictionary.
 
         Raises:
-            - `MlflowTraceDataNotFound`: The trace data is not found.
-            - `MlflowTraceDataCorrupted`: The trace data is corrupted.
+            - `QCFlowTraceDataNotFound`: The trace data is not found.
+            - `QCFlowTraceDataCorrupted`: The trace data is corrupted.
         """
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_file = Path(temp_dir, TRACE_DATA_FILE_NAME)
             try:
                 self._download_file(TRACE_DATA_FILE_NAME, temp_file)
             except Exception as e:
-                # `MlflowTraceDataNotFound` is caught in `TrackingServiceClient.search_traces` and
+                # `QCFlowTraceDataNotFound` is caught in `TrackingServiceClient.search_traces` and
                 # is used to filter out traces with failed trace data download.
-                raise MlflowTraceDataNotFound(artifact_path=TRACE_DATA_FILE_NAME) from e
+                raise QCFlowTraceDataNotFound(artifact_path=TRACE_DATA_FILE_NAME) from e
             return try_read_trace_data(temp_file)
 
     def upload_trace_data(self, trace_data: str) -> None:
@@ -390,15 +390,15 @@ def write_local_temp_trace_data_file(trace_data: str):
 
 def try_read_trace_data(trace_data_path):
     if not os.path.exists(trace_data_path):
-        raise MlflowTraceDataNotFound(artifact_path=trace_data_path)
+        raise QCFlowTraceDataNotFound(artifact_path=trace_data_path)
     with open(trace_data_path) as f:
         data = f.read()
     if not data:
-        raise MlflowTraceDataNotFound(artifact_path=trace_data_path)
+        raise QCFlowTraceDataNotFound(artifact_path=trace_data_path)
     try:
         return json.loads(data)
     except json.decoder.JSONDecodeError as e:
-        raise MlflowTraceDataCorrupted(artifact_path=trace_data_path) from e
+        raise QCFlowTraceDataCorrupted(artifact_path=trace_data_path) from e
 
 
 class MultipartUploadMixin(ABC):
@@ -458,6 +458,6 @@ class MultipartUploadMixin(ABC):
 
 def verify_artifact_path(artifact_path):
     if artifact_path and path_not_unique(artifact_path):
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid artifact path: '{artifact_path}'. {bad_path_message(artifact_path)}"
         )

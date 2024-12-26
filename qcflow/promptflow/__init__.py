@@ -283,7 +283,7 @@ def save_model(
         or not hasattr(model, "flow_dag_path")
         or not hasattr(model, "code")
     ):
-        raise qcflow.MlflowException.invalid_parameter_value(
+        raise qcflow.QCFlowException.invalid_parameter_value(
             _UNSUPPORTED_MODEL_ERROR_MESSAGE.format(instance_type=type(model).__name__)
         )
 
@@ -426,7 +426,7 @@ class _PromptflowModelWrapper:
         if isinstance(data, pd.DataFrame):
             messages = data.to_dict(orient="records")
             if len(messages) > 1:
-                raise qcflow.MlflowException.invalid_parameter_value(
+                raise qcflow.QCFlowException.invalid_parameter_value(
                     _INVALID_PREDICT_INPUT_ERROR_MESSAGE
                 )
             messages = messages[0]
@@ -434,7 +434,7 @@ class _PromptflowModelWrapper:
         elif isinstance(data, dict):
             messages = data
             return self.model_invoker.invoke(messages)
-        raise qcflow.MlflowException.invalid_parameter_value(_INVALID_PREDICT_INPUT_ERROR_MESSAGE)
+        raise qcflow.QCFlowException.invalid_parameter_value(_INVALID_PREDICT_INPUT_ERROR_MESSAGE)
 
 
 def _load_pyfunc(path, model_config: Optional[dict[str, Any]] = None):  # noqa: D417

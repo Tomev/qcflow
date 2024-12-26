@@ -20,7 +20,7 @@ from packaging.version import Version
 
 import qcflow.tracking
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.utils import _save_example
@@ -360,7 +360,7 @@ class _OnnxModelWrapper:
             # assumed to be the first input.
             if len(self.inputs) != 1:
                 inputs = [x[0] for x in self.inputs]
-                raise MlflowException(
+                raise QCFlowException(
                     "Unable to map numpy array input to the expected model "
                     "input. "
                     "Numpy arrays can only be used as input for QCFlow ONNX "

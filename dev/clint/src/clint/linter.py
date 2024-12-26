@@ -264,8 +264,8 @@ class Linter(ast.NodeVisitor):
             self._check(Location.from_node(node), rules.TestNameTypo())
 
     def _qcflow_class_name(self, node: ast.ClassDef) -> None:
-        if "QCFlow" in node.name or "MLFlow" in node.name:
-            self._check(Location.from_node(node), rules.MlflowClassName())
+        if "QCFlow" in node.name or "QCFlow" in node.name:
+            self._check(Location.from_node(node), rules.QCFlowClassName())
 
     def _is_in_test(self) -> bool:
         return (

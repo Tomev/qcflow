@@ -4,7 +4,7 @@ import shutil
 from contextlib import contextmanager
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     READ_WRITE_MODEL_VERSION,
     CreateModelVersion,
@@ -61,7 +61,7 @@ def _raise_unsupported_arg(arg_name, message=None):
     ]
     if message is not None:
         messages.append(message)
-    raise MlflowException(" ".join(messages))
+    raise QCFlowException(" ".join(messages))
 
 
 def _require_arg_unspecified(arg_name, arg_value, default_values=None, message=None):
@@ -465,7 +465,7 @@ class UnityCatalogOssStore(BaseRestStore):
                     artifact_uri=source, tracking_uri=self.tracking_uri
                 )
             except Exception as e:
-                raise MlflowException(
+                raise QCFlowException(
                     "Unable to download model artifacts from source artifact location "
                     f"'{source}' in order to upload them to Unity Catalog. Please ensure "
                     "the source artifact location exists and that you can download from "

@@ -12,7 +12,7 @@ option (scalapb.options) = {
   flat_package: true,
 };
 
-service DatabricksMlflowArtifactsService {
+service DatabricksQCFlowArtifactsService {
 
   // Fetch credentials to read from the specified QCFlow artifact location
   //

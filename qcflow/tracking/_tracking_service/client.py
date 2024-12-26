@@ -27,10 +27,10 @@ from qcflow.entities.trace import Trace
 from qcflow.entities.trace_info import TraceInfo
 from qcflow.entities.trace_status import TraceStatus
 from qcflow.exceptions import (
-    MlflowException,
-    MlflowTraceDataCorrupted,
-    MlflowTraceDataException,
-    MlflowTraceDataNotFound,
+    QCFlowException,
+    QCFlowTraceDataCorrupted,
+    QCFlowTraceDataException,
+    QCFlowTraceDataNotFound,
 )
 from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE, ErrorCode
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
@@ -118,7 +118,7 @@ class TrackingServiceClient:
 
         # NB: Paginated query support is currently only available for the RestStore backend.
         # FileStore and SQLAlchemy store do not provide support for paginated queries and will
-        # raise an MlflowException if the `page_token` argument is not None when calling this
+        # raise an QCFlowException if the `page_token` argument is not None when calling this
         # API for a continuation query.
         history = self.store.get_metric_history(
             run_id=run_id,
@@ -273,16 +273,16 @@ class TrackingServiceClient:
         trace_info = self.get_trace_info(request_id)
         try:
             trace_data = self._download_trace_data(trace_info)
-        except MlflowTraceDataNotFound:
-            raise MlflowException(
+        except QCFlowTraceDataNotFound:
+            raise QCFlowException(
                 message=(
                     f"Trace with ID {request_id} cannot be loaded because it is missing span data."
                     " Please try creating or loading another trace."
                 ),
                 error_code=BAD_REQUEST,
             ) from None  # Ensure the original spammy exception is not included in the traceback
-        except MlflowTraceDataCorrupted:
-            raise MlflowException(
+        except QCFlowTraceDataCorrupted:
+            raise QCFlowException(
                 message=(
                     f"Trace with ID {request_id} cannot be loaded because its span data"
                     " is corrupted. Please try creating or loading another trace."
@@ -323,7 +323,7 @@ class TrackingServiceClient:
             """
             try:
                 trace_data = self._download_trace_data(trace_info)
-            except MlflowTraceDataException as e:
+            except QCFlowTraceDataException as e:
                 _logger.warning(
                     (
                         f"Failed to download trace data for trace {trace_info.request_id!r} "
@@ -340,7 +340,7 @@ class TrackingServiceClient:
             additional_filter = f"metadata.{TraceMetadataKey.SOURCE_RUN} = '{run_id}'"
             if filter_string:
                 if TraceMetadataKey.SOURCE_RUN in filter_string:
-                    raise MlflowException(
+                    raise QCFlowException(
                         "You cannot filter by run_id when it is already part of the filter string."
                         f"Please remove the {TraceMetadataKey.SOURCE_RUN} filter from the filter "
                         "string and try again.",
@@ -609,10 +609,10 @@ class TrackingServiceClient:
                 return value
             else:
                 return self.store.log_param_async(run_id, param)
-        except MlflowException as e:
+        except QCFlowException as e:
             if e.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE):
                 msg = f"{e.message}{PARAM_VALIDATION_MSG}"
-                raise MlflowException(msg, INVALID_PARAMETER_VALUE)
+                raise QCFlowException(msg, INVALID_PARAMETER_VALUE)
             else:
                 raise e
 
@@ -704,7 +704,7 @@ class TrackingServiceClient:
                 and returns a future representing the logging operation.
 
         Raises:
-            MlflowException: If any errors occur.
+            QCFlowException: If any errors occur.
 
         Returns:
             When synchronous=True, returns None.
@@ -779,7 +779,7 @@ class TrackingServiceClient:
             datasets: List of :py:class:`qcflow.entities.DatasetInput` instances to log.
 
         Raises:
-            MlflowException: If any errors occur.
+            QCFlowException: If any errors occur.
 
         Returns:
             None

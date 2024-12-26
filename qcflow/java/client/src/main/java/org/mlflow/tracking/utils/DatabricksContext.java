@@ -52,17 +52,17 @@ public class DatabricksContext {
     Map<String, String> tagsForNotebook = new HashMap<>();
     String notebookId = getNotebookId();
     if (notebookId != null) {
-      tagsForNotebook.put(MlflowTagConstants.DATABRICKS_NOTEBOOK_ID, notebookId);
+      tagsForNotebook.put(QCFlowTagConstants.DATABRICKS_NOTEBOOK_ID, notebookId);
     }
     String notebookPath = configProvider.get("notebookPath");
     if (notebookPath != null) {
-      tagsForNotebook.put(MlflowTagConstants.SOURCE_NAME, notebookPath);
-      tagsForNotebook.put(MlflowTagConstants.DATABRICKS_NOTEBOOK_PATH, notebookPath);
-      tagsForNotebook.put(MlflowTagConstants.SOURCE_TYPE, "NOTEBOOK");
+      tagsForNotebook.put(QCFlowTagConstants.SOURCE_NAME, notebookPath);
+      tagsForNotebook.put(QCFlowTagConstants.DATABRICKS_NOTEBOOK_PATH, notebookPath);
+      tagsForNotebook.put(QCFlowTagConstants.SOURCE_TYPE, "NOTEBOOK");
     }
     String webappUrl = configProvider.get("host");
     if (webappUrl != null) {
-      tagsForNotebook.put(MlflowTagConstants.DATABRICKS_WEBAPP_URL, webappUrl);
+      tagsForNotebook.put(QCFlowTagConstants.DATABRICKS_WEBAPP_URL, webappUrl);
     }
     return tagsForNotebook;
   }
@@ -102,17 +102,17 @@ public class DatabricksContext {
     String jobType = configProvider.get("jobType");
     String webappUrl = configProvider.get("host");
     if (jobId != null && jobRunId != null) {
-      tagsForJob.put(MlflowTagConstants.DATABRICKS_JOB_ID, jobId);
-      tagsForJob.put(MlflowTagConstants.DATABRICKS_JOB_RUN_ID, jobRunId);
-      tagsForJob.put(MlflowTagConstants.SOURCE_TYPE, "JOB");
-      tagsForJob.put(MlflowTagConstants.SOURCE_NAME,
+      tagsForJob.put(QCFlowTagConstants.DATABRICKS_JOB_ID, jobId);
+      tagsForJob.put(QCFlowTagConstants.DATABRICKS_JOB_RUN_ID, jobRunId);
+      tagsForJob.put(QCFlowTagConstants.SOURCE_TYPE, "JOB");
+      tagsForJob.put(QCFlowTagConstants.SOURCE_NAME,
                           String.format("jobs/%s/run/%s", jobId, jobRunId));
     }
     if (jobType != null) {
-      tagsForJob.put(MlflowTagConstants.DATABRICKS_JOB_TYPE, jobType);
+      tagsForJob.put(QCFlowTagConstants.DATABRICKS_JOB_TYPE, jobType);
     }
     if (webappUrl != null) {
-      tagsForJob.put(MlflowTagConstants.DATABRICKS_WEBAPP_URL, webappUrl);
+      tagsForJob.put(QCFlowTagConstants.DATABRICKS_WEBAPP_URL, webappUrl);
     }
     return tagsForJob;
   }

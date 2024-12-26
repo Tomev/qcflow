@@ -3,7 +3,7 @@ from click.testing import CliRunner
 
 import qcflow.recipes.cli as recipes_cli
 from qcflow.environment_variables import QCFLOW_RECIPES_PROFILE
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 _STEP_NAMES = ["ingest", "split", "train", "transform", "evaluate", "register"]
 
@@ -50,7 +50,7 @@ def test_recipes_cli_fails_with_illegal_profile():
         recipes_cli.clean, env={QCFLOW_RECIPES_PROFILE.name: "illegal_profile"}
     )
     assert result.exit_code != 0
-    assert isinstance(result.exception, MlflowException)
+    assert isinstance(result.exception, QCFlowException)
 
 
 @pytest.mark.usefixtures("enter_recipe_example_directory", "clean_up_recipe")
@@ -79,7 +79,7 @@ def test_recipes_get_artifact_with_bad_artifact_name_fails():
         env={QCFLOW_RECIPES_PROFILE.name: "local"},
     )
     assert result.exit_code != 0
-    assert isinstance(result.exception, MlflowException)
+    assert isinstance(result.exception, QCFlowException)
 
 
 @pytest.mark.usefixtures("enter_recipe_example_directory", "clean_up_recipe")

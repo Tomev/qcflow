@@ -3,7 +3,7 @@ from typing import Any, Optional, Union
 
 import yaml
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 __qcflow_model_config__ = None
@@ -128,7 +128,7 @@ class ModelConfig:
             try:
                 return yaml.safe_load(file)
             except yaml.YAMLError as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Error parsing YAML file: {e}", error_code=INVALID_PARAMETER_VALUE
                 )
 

@@ -7,7 +7,7 @@ import pandas as pd
 import pydantic
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.types.schema import AnyType, Array, ColSpec, DataType, Map, Object, Property, Schema
 from qcflow.types.type_hints import (
     PYDANTIC_V1_OR_OLDER,
@@ -165,45 +165,45 @@ def test_infer_schema_from_type_hints_errors():
             r"doesn't have a default value. Please set default value to None for this field."
         )
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=message,
         ):
             _infer_schema_from_type_hint(InvalidModel)
 
-        with pytest.raises(MlflowException, match=message):
+        with pytest.raises(QCFlowException, match=message):
             _infer_schema_from_type_hint(list[InvalidModel])
 
     message = r"If you would like to use Optional types, use a Pydantic-based type hint definition."
-    with pytest.raises(MlflowException, match=message):
+    with pytest.raises(QCFlowException, match=message):
         _infer_schema_from_type_hint(Optional[str])
 
-    with pytest.raises(MlflowException, match=message):
+    with pytest.raises(QCFlowException, match=message):
         _infer_schema_from_type_hint(Union[str, int, type(None)])
 
     with pytest.raises(
-        MlflowException, match=r"List type hint must contain only one internal type"
+        QCFlowException, match=r"List type hint must contain only one internal type"
     ):
         _infer_schema_from_type_hint(list[str, int])
 
-    with pytest.raises(MlflowException, match=r"Dictionary key type must be str"):
+    with pytest.raises(QCFlowException, match=r"Dictionary key type must be str"):
         _infer_schema_from_type_hint(dict[int, int])
 
     with pytest.raises(
-        MlflowException, match=r"Dictionary type hint must contain two internal types"
+        QCFlowException, match=r"Dictionary type hint must contain two internal types"
     ):
         _infer_schema_from_type_hint(dict[int])
 
     message = r"it must include a valid internal type"
-    with pytest.raises(MlflowException, match=message):
+    with pytest.raises(QCFlowException, match=message):
         _infer_schema_from_type_hint(Union)
 
-    with pytest.raises(MlflowException, match=message):
+    with pytest.raises(QCFlowException, match=message):
         _infer_schema_from_type_hint(Optional)
 
-    with pytest.raises(MlflowException, match=message):
+    with pytest.raises(QCFlowException, match=message):
         _infer_schema_from_type_hint(list)
 
-    with pytest.raises(MlflowException, match=message):
+    with pytest.raises(QCFlowException, match=message):
         _infer_schema_from_type_hint(dict)
 
     with pytest.raises(InvalidTypeHintException, match=r"Unsupported type hint"):
@@ -335,37 +335,37 @@ def test_python_type_hints_validation(type_hint, example):
 
 def test_type_hints_validation_errors():
     with pytest.raises(
-        MlflowException, match=r"Input example is not valid for Pydantic model `CustomModel`"
+        QCFlowException, match=r"Input example is not valid for Pydantic model `CustomModel`"
     ):
         _validate_example_against_type_hint({"long_field": 1, "str_field": "a"}, CustomModel)
 
-    with pytest.raises(MlflowException, match=r"Expected type <class 'int'>, but got str"):
+    with pytest.raises(QCFlowException, match=r"Expected type <class 'int'>, but got str"):
         _validate_example_against_type_hint("a", int)
 
-    with pytest.raises(MlflowException, match=r"Expected list, but got str"):
+    with pytest.raises(QCFlowException, match=r"Expected list, but got str"):
         _validate_example_against_type_hint("a", list[str])
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r'Invalid elements in list: {\'1\': "Expected type <class \'str\'>, but got int"}',
     ):
         _validate_example_against_type_hint(["a", 1], list[str])
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Expected dict, but got list",
     ):
         _validate_example_against_type_hint(["a", 1], dict[str, int])
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid elements in dict: {'1': 'Key must be a string, got int', "
         r"'a': 'Expected list, but got int'}",
     ):
         _validate_example_against_type_hint({1: ["a", "b"], "a": 1}, dict[str, list[str]])
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Expected type <class 'int'>, but got str",
     ):
         _validate_example_against_type_hint("a", Optional[int])
@@ -428,7 +428,7 @@ def test_maybe_convert_data_for_type_hint_errors():
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Only `list\[...\]` or `Any` type hint supports pandas DataFrame input",
     ):
         _convert_data_to_type_hint(pd.DataFrame([["a", "b"]]), str)

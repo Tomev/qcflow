@@ -11,7 +11,7 @@ import yaml
 import qcflow
 from qcflow.entities import Run, SourceType
 from qcflow.entities.model_registry import ModelVersion
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.recipe import Recipe
 from qcflow.recipes.step import BaseStep
 from qcflow.recipes.utils.execution import (
@@ -19,7 +19,7 @@ from qcflow.recipes.utils.execution import (
     _get_execution_directory_basename,
     get_step_output_path,
 )
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.tracking.context.registry import resolve_tags
 from qcflow.utils.file_utils import path_to_local_file_uri
 from qcflow.utils.qcflow_tags import (
@@ -40,7 +40,7 @@ _STEP_NAMES = ["ingest", "split", "transform", "train", "evaluate", "register"]
 @pytest.mark.usefixtures("enter_recipe_example_directory")
 def test_create_recipe_fails_with_invalid_profile():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"(Failed to find|Did not find the YAML configuration)",
     ):
         Recipe(profile="local123")
@@ -55,7 +55,7 @@ def test_create_recipe_and_clean_works():
 @pytest.mark.usefixtures("enter_recipe_example_directory")
 @pytest.mark.parametrize("empty_profile", [None, ""])
 def test_create_recipe_fails_with_empty_profile_name(empty_profile):
-    with pytest.raises(MlflowException, match="A profile name must be provided"):
+    with pytest.raises(QCFlowException, match="A profile name must be provided"):
         Recipe(profile=empty_profile)
 
 
@@ -69,7 +69,7 @@ def test_create_recipe_fails_with_path_containing_space(tmp_path):
 
     with (
         chdir(space_path),
-        pytest.raises(MlflowException, match="Recipe directory path cannot contain spaces"),
+        pytest.raises(QCFlowException, match="Recipe directory path cannot contain spaces"),
     ):
         Recipe(profile="local")
 
@@ -144,7 +144,7 @@ def test_recipes_log_to_expected_qcflow_backend_with_expected_run_tags_once_on_r
         str((pathlib.Path(artifact_location) / logged_run.info.run_id / "artifacts").resolve())
     )
     assert "test_r2_score" in logged_run.data.metrics
-    artifacts = MlflowClient(tracking_uri).list_artifacts(
+    artifacts = QCFlowClient(tracking_uri).list_artifacts(
         run_id=logged_run.info.run_id, path="train"
     )
     assert {artifact.path for artifact in artifacts} == {
@@ -153,7 +153,7 @@ def test_recipes_log_to_expected_qcflow_backend_with_expected_run_tags_once_on_r
         "train/estimator",
         "train/model",
     }
-    run_tags = MlflowClient(tracking_uri).get_run(run_id=logged_run.info.run_id).data.tags
+    run_tags = QCFlowClient(tracking_uri).get_run(run_id=logged_run.info.run_id).data.tags
     recipe_source_tag = {QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.RECIPE)}
     assert resolve_tags(recipe_source_tag).items() <= run_tags.items()
 
@@ -183,7 +183,7 @@ def test_recipes_run_sets_qcflow_git_tags():
     )
     logged_run = logged_runs[0]
 
-    run_tags = MlflowClient(tracking_uri).get_run(run_id=logged_run.info.run_id).data.tags
+    run_tags = QCFlowClient(tracking_uri).get_run(run_id=logged_run.info.run_id).data.tags
     assert {
         QCFLOW_SOURCE_NAME,
         QCFLOW_GIT_COMMIT,
@@ -207,10 +207,10 @@ def test_recipes_run_throws_exception_and_produces_failure_card_when_step_fails(
     recipe = Recipe(profile="local")
     recipe.clean()
     with pytest.raises(
-        MlflowException, match="Failed to run recipe.*test_recipe.*\n.*Step:ingest.*"
+        QCFlowException, match="Failed to run recipe.*test_recipe.*\n.*Step:ingest.*"
     ):
         recipe.run()
-    with pytest.raises(MlflowException, match="Failed to run step.*split.*\n.*Step:ingest.*"):
+    with pytest.raises(QCFlowException, match="Failed to run step.*split.*\n.*Step:ingest.*"):
         recipe.run(step="split")
 
     step_card_path = get_step_output_path(
@@ -274,7 +274,7 @@ def test_recipe_get_artifacts():
     assert isinstance(recipe.get_artifact("run"), Run)
     assert isinstance(recipe.get_artifact("registered_model_version"), ModelVersion)
 
-    with pytest.raises(MlflowException, match="The artifact with name 'abcde' is not supported."):
+    with pytest.raises(QCFlowException, match="The artifact with name 'abcde' is not supported."):
         recipe.get_artifact("abcde")
 
     recipe.clean()
@@ -344,7 +344,7 @@ def test_make_dry_run_error_does_not_print_cached_steps_messages(capsys):
         r.clean()
         try:
             r.run()
-        except MlflowException:
+        except QCFlowException:
             pass
         captured = capsys.readouterr()
         output_info = captured.out
@@ -372,7 +372,7 @@ def test_makefile_with_runtime_error_print_cached_steps_messages(capsys):
         r.clean()
         try:
             r.run(step="split")
-        except MlflowException:
+        except QCFlowException:
             pass
         captured = capsys.readouterr()
         output_info = captured.out
@@ -385,7 +385,7 @@ def test_makefile_with_runtime_error_print_cached_steps_messages(capsys):
 
         try:
             r.run(step="split")
-        except MlflowException:
+        except QCFlowException:
             pass
         captured = capsys.readouterr()
         output_info = captured.out

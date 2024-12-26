@@ -3,15 +3,15 @@ package org.qcflow.tracking;
 /**
  * Returned when an HTTP API request to a remote Tracking service returns an error code.
  */
-public class MlflowHttpException extends MlflowClientException {
+public class QCFlowHttpException extends QCFlowClientException {
 
-  public MlflowHttpException(int statusCode, String reasonPhrase) {
+  public QCFlowHttpException(int statusCode, String reasonPhrase) {
     super("statusCode=" + statusCode + " reasonPhrase=[" + reasonPhrase +"]");
     this.statusCode = statusCode;
     this.reasonPhrase = reasonPhrase;
   }
 
-  public MlflowHttpException(int statusCode, String reasonPhrase, String bodyMessage) {
+  public QCFlowHttpException(int statusCode, String reasonPhrase, String bodyMessage) {
     super("statusCode=" + statusCode + " reasonPhrase=[" + reasonPhrase + "] bodyMessage=["
       + bodyMessage + "]");
     this.statusCode = statusCode;

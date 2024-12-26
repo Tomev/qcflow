@@ -6,7 +6,7 @@ import sklearn
 from sklearn.linear_model import LinearRegression
 
 import qcflow.utils.requirements_utils
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.pyfunc import get_model_dependencies
 from qcflow.utils import PYTHON_VERSION
 
@@ -40,7 +40,7 @@ scikit-learn==1.0.2"""
                 f"following command: '%pip install -r {req_file}'."
             )
 
-    with pytest.raises(MlflowException, match="Illegal format argument 'abc'"):
+    with pytest.raises(QCFlowException, match="Illegal format argument 'abc'"):
         get_model_dependencies(model_path, format="abc")
 
 
@@ -127,7 +127,7 @@ dependencies:
 """
     )
 
-    with pytest.raises(MlflowException, match="No pip section found in conda.yaml file"):
+    with pytest.raises(QCFlowException, match="No pip section found in conda.yaml file"):
         get_model_dependencies(model_path, format="pip")
 
 

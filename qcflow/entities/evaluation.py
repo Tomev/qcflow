@@ -1,12 +1,12 @@
 from typing import Any, Optional
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.assessment import Assessment
 from qcflow.entities.evaluation_tag import EvaluationTag  # Assuming EvaluationTag is in this module
 from qcflow.entities.metric import Metric
 
 
-class Evaluation(_MlflowObject):
+class Evaluation(_QCFlowObject):
     """
     Evaluation result data, including inputs, outputs, targets, assessments, and more.
     """

@@ -1,9 +1,9 @@
 package org.qcflow.tracking.creds;
 
-abstract class DatabricksHostCredsProvider implements MlflowHostCredsProvider {
+abstract class DatabricksHostCredsProvider implements QCFlowHostCredsProvider {
 
   @Override
-  public abstract DatabricksMlflowHostCreds getHostCreds();
+  public abstract DatabricksQCFlowHostCreds getHostCreds();
 
   @Override
   public abstract void refresh();

@@ -6,18 +6,18 @@ import re
 from dataclasses import dataclass
 from typing import Any, Optional, Union
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.span import Span, SpanType
 from qcflow.entities.trace_data import TraceData
 from qcflow.entities.trace_info import TraceInfo
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 _logger = logging.getLogger(__name__)
 
 
 @dataclass
-class Trace(_MlflowObject):
+class Trace(_QCFlowObject):
     """A trace object.
 
     Args:
@@ -44,7 +44,7 @@ class Trace(_MlflowObject):
         info = trace_dict.get("info")
         data = trace_dict.get("data")
         if info is None or data is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Unable to parse Trace from dictionary. Expected keys: 'info' and 'data'. "
                 f"Received keys: {list(trace_dict.keys())}",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -60,7 +60,7 @@ class Trace(_MlflowObject):
         try:
             trace_dict = json.loads(trace_json)
         except json.JSONDecodeError as e:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unable to parse trace JSON: {trace_json}. Error: {e}",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -198,7 +198,7 @@ class Trace(_MlflowObject):
             elif name is None:
                 return True
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid type for 'name'. Expected str or re.Pattern. Got: {type(name)}",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
@@ -209,7 +209,7 @@ class Trace(_MlflowObject):
             elif span_type is None:
                 return True
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     "Invalid type for 'span_type'. Expected str or qcflow.entities.SpanType. "
                     f"Got: {type(span_type)}",
                     error_code=INVALID_PARAMETER_VALUE,

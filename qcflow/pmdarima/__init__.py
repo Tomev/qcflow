@@ -68,7 +68,7 @@ from packaging.version import Version
 
 import qcflow
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _infer_signature_from_input_example
@@ -531,7 +531,7 @@ class _PmdarimaModelWrapper:
         df_schema = dataframe.columns.values.tolist()
 
         if len(dataframe) > 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The provided prediction pd.DataFrame contains {len(dataframe)} rows. "
                 "Only 1 row should be supplied.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -541,7 +541,7 @@ class _PmdarimaModelWrapper:
         n_periods = attrs.get("n_periods", None)
 
         if not n_periods:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The provided prediction configuration pd.DataFrame columns ({df_schema}) do not "
                 "contain the required column `n_periods` for specifying future prediction periods "
                 "to generate.",
@@ -549,7 +549,7 @@ class _PmdarimaModelWrapper:
             )
 
         if not isinstance(n_periods, int):
-            raise MlflowException(
+            raise QCFlowException(
                 f"The provided `n_periods` value {n_periods} must be an integer."
                 f"provided type: {type(n_periods)}",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -570,7 +570,7 @@ class _PmdarimaModelWrapper:
         alpha = attrs.get("alpha", 0.05)
 
         if not isinstance(n_periods, int):
-            raise MlflowException(
+            raise QCFlowException(
                 "The prediction DataFrame must contain a column `n_periods` with "
                 "an integer value for number of future periods to predict.",
                 error_code=INVALID_PARAMETER_VALUE,

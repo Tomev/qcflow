@@ -5,7 +5,7 @@ import pytest
 from pyspark.sql import SparkSession
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 
 def language_model(inputs: list[str]) -> list[str]:
@@ -19,7 +19,7 @@ def test_write_to_delta_fails_without_spark():
         )
         data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="eval_results_path is only supported in Spark environment",
         ):
             qcflow.evaluate(
@@ -57,7 +57,7 @@ def test_write_to_delta_fails_with_invalid_mode(spark_session_with_delta):
         )
         data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="eval_results_mode can only be 'overwrite' or 'append'",
         ):
             qcflow.evaluate(

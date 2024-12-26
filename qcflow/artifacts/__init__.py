@@ -7,7 +7,7 @@ import pathlib
 import tempfile
 from typing import Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import BAD_REQUEST, INVALID_PARAMETER_VALUE
 from qcflow.tracking import _get_store
 from qcflow.tracking.artifact_utils import (
@@ -47,12 +47,12 @@ def download_artifacts(
         The location of the artifact file or directory on the local filesystem.
     """
     if (run_id, artifact_uri).count(None) != 1:
-        raise MlflowException(
+        raise QCFlowException(
             message="Exactly one of `run_id` or `artifact_uri` must be specified",
             error_code=INVALID_PARAMETER_VALUE,
         )
     elif artifact_uri is not None and artifact_path is not None:
-        raise MlflowException(
+        raise QCFlowException(
             message="`artifact_path` cannot be specified if `artifact_uri` is specified",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -96,11 +96,11 @@ def list_artifacts(
         List of artifacts as FileInfo listed directly under path.
     """
     if (run_id, artifact_uri).count(None) != 1:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             message="Exactly one of `run_id` or `artifact_uri` must be specified",
         )
     elif artifact_uri is not None and artifact_path is not None:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             message="`artifact_path` cannot be specified if `artifact_uri` is specified",
         )
 
@@ -147,7 +147,7 @@ def load_text(artifact_uri: str) -> str:
             try:
                 return str(local_artifact_fd.read())
             except Exception:
-                raise MlflowException("Unable to form a str object from file content", BAD_REQUEST)
+                raise QCFlowException("Unable to form a str object from file content", BAD_REQUEST)
 
 
 def load_dict(artifact_uri: str) -> dict:
@@ -181,7 +181,7 @@ def load_dict(artifact_uri: str) -> dict:
             try:
                 return json.load(local_artifact_fd)
             except json.JSONDecodeError:
-                raise MlflowException("Unable to form a JSON object from file content", BAD_REQUEST)
+                raise QCFlowException("Unable to form a JSON object from file content", BAD_REQUEST)
 
 
 def load_image(artifact_uri: str):
@@ -225,6 +225,6 @@ def load_image(artifact_uri: str):
             image_obj.load()
             return image_obj
         except Exception:
-            raise MlflowException(
+            raise QCFlowException(
                 "Unable to form a PIL Image object from file content", BAD_REQUEST
             )

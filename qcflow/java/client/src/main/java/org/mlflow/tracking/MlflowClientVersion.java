@@ -7,13 +7,13 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 /** Returns the version of the QCFlow project this client was compiled against. */
-public class MlflowClientVersion {
+public class QCFlowClientVersion {
   // To avoid extra disk IO during class loading (static initialization), we lazily read the
   // pom.properties file on first access and then cache the result to avoid future IO.
   private static Supplier<String> clientVersionSupplier = Suppliers.memoize(() -> {
     try {
       Properties p = new Properties();
-      InputStream is = MlflowClientVersion.class.getResourceAsStream(
+      InputStream is = QCFlowClientVersion.class.getResourceAsStream(
         "/META-INF/maven/org.qcflow/qcflow-client/pom.properties");
       if (is == null) {
         return "";
@@ -25,7 +25,7 @@ public class MlflowClientVersion {
     }
   });
 
-  private MlflowClientVersion() {}
+  private QCFlowClientVersion() {}
 
   /** @return QCFlow client version (e.g., 0.9.1) or an empty string if detection fails. */
   public static String getClientVersion() {

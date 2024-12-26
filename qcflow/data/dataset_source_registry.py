@@ -4,7 +4,7 @@ from typing import Any, Optional
 from qcflow.data.artifact_dataset_sources import register_artifact_dataset_sources
 from qcflow.data.dataset_source import DatasetSource
 from qcflow.data.http_dataset_source import HTTPDatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
 from qcflow.utils.plugins import get_entry_points
 
@@ -50,7 +50,7 @@ class DatasetSourceRegistry:
                 also considered. If unspecified, all registered sources are considered.
 
         Raises:
-            MlflowException: If no DatasetSource class can resolve the raw source.
+            QCFlowException: If no DatasetSource class can resolve the raw source.
 
         Returns:
             The resolved DatasetSource.
@@ -92,7 +92,7 @@ class DatasetSourceRegistry:
                 )
                 continue
 
-        raise MlflowException(
+        raise QCFlowException(
             f"Could not find a source information resolver for the specified"
             f" dataset source: {raw_source}.",
             RESOURCE_DOES_NOT_EXIST,
@@ -110,7 +110,7 @@ class DatasetSourceRegistry:
             if source._get_source_type() == source_type:
                 return source.from_json(source_json)
 
-        raise MlflowException(
+        raise QCFlowException(
             f"Could not parse dataset source from JSON due to unrecognized"
             f" source type: {source_type}.",
             RESOURCE_DOES_NOT_EXIST,
@@ -141,7 +141,7 @@ def resolve_dataset_source(
             are considered.
 
     Raises:
-        MlflowException: If no DatasetSource class can resolve the raw source.
+        QCFlowException: If no DatasetSource class can resolve the raw source.
 
     Returns:
         The resolved DatasetSource.

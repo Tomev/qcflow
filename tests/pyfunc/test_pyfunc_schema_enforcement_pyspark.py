@@ -19,7 +19,7 @@ from pyspark.sql.types import (
 )
 from pyspark.testing import assertDataFrameEqual
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.utils import _enforce_schema
 from qcflow.types import ColSpec, DataType, Schema
 from qcflow.types.schema import Array, Object, Property
@@ -258,7 +258,7 @@ def test_enforce_schema_spark_dataframe_missing_col(spark):
     )
 
     df = spark.createDataFrame(data, spark_df_schema)
-    with pytest.raises(MlflowException, match="Model is missing inputs"):
+    with pytest.raises(QCFlowException, match="Model is missing inputs"):
         _enforce_schema(df, input_schema)
 
 
@@ -282,7 +282,7 @@ def test_enforce_schema_spark_dataframe_incompatible_type(spark):
     )
 
     df = spark.createDataFrame(data, spark_df_schema)
-    with pytest.raises(MlflowException, match="Incompatible input types"):
+    with pytest.raises(QCFlowException, match="Incompatible input types"):
         _enforce_schema(df, input_schema)
 
 
@@ -324,7 +324,7 @@ def test_enforce_schema_spark_dataframe_incompatible_type_complex(spark):
     )
 
     df = spark.createDataFrame(data, spark_df_schema)
-    with pytest.raises(MlflowException, match="Failed to enforce schema"):
+    with pytest.raises(QCFlowException, match="Failed to enforce schema"):
         _enforce_schema(df, input_schema)
 
 
@@ -364,5 +364,5 @@ def test_enforce_schema_spark_dataframe_no_schema(spark):
     )
 
     df = spark.createDataFrame(data, ["a", "b"])
-    with pytest.raises(MlflowException, match="Incompatible input types"):
+    with pytest.raises(QCFlowException, match="Incompatible input types"):
         _enforce_schema(df, input_schema)

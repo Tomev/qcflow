@@ -1,12 +1,12 @@
 from typing import Any, Optional
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.assessment_source import AssessmentSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
-class Assessment(_MlflowObject):
+class Assessment(_QCFlowObject):
     """
     Assessment data associated with an evaluation.
     """
@@ -57,7 +57,7 @@ class Assessment(_MlflowObject):
         if error_message is not None and (
             boolean_value is not None or numeric_value is not None or string_value is not None
         ):
-            raise MlflowException(
+            raise QCFlowException(
                 "error_message cannot be specified when boolean_value, numeric_value, "
                 "or string_value is specified.",
                 INVALID_PARAMETER_VALUE,
@@ -66,7 +66,7 @@ class Assessment(_MlflowObject):
         if (self._boolean_value, self._string_value, self._numeric_value, self._error_code).count(
             None
         ) != 3:
-            raise MlflowException(
+            raise QCFlowException(
                 "Exactly one of boolean_value, numeric_value, string_value, or error_code must be "
                 "specified for an assessment.",
                 INVALID_PARAMETER_VALUE,

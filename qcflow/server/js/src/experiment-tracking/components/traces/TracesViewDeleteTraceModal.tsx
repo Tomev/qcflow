@@ -2,7 +2,7 @@ import Utils from '@qcflow/qcflow/src/common/utils/Utils';
 import { keys, pickBy } from 'lodash';
 import React, { useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
-import { MlflowService } from '../../sdk/MlflowService';
+import { QCFlowService } from '../../sdk/QCFlowService';
 import { Modal, Typography } from '@databricks/design-system';
 
 export const TracesViewDeleteTraceModal = ({
@@ -30,7 +30,7 @@ export const TracesViewDeleteTraceModal = ({
       // TODO: Add support for deleting traces from multiple experiments
       // The trace data contains the experiment ID, so we simply need to
       // pass the trace data instead of just the trace IDs.
-      await MlflowService.deleteTraces(experimentIds[0] ?? '', tracesToDelete);
+      await QCFlowService.deleteTraces(experimentIds[0] ?? '', tracesToDelete);
 
       // reset row selection and refresh traces
       setRowSelection({});

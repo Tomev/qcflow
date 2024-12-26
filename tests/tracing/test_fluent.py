@@ -19,7 +19,7 @@ from qcflow.entities import (
 )
 from qcflow.entities.trace_status import TraceStatus
 from qcflow.environment_variables import QCFLOW_TRACKING_USERNAME
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.pyfunc.context import Context, set_prediction_context
 from qcflow.store.entities.paged_list import PagedList
 from qcflow.store.tracking import SEARCH_TRACES_DEFAULT_MAX_RESULTS
@@ -99,7 +99,7 @@ class ErroringAsyncTestModel:
 @pytest.fixture
 def mock_client():
     client = mock.MagicMock()
-    with mock.patch("qcflow.tracing.fluent.MlflowClient", return_value=client):
+    with mock.patch("qcflow.tracing.fluent.QCFlowClient", return_value=client):
         yield client
 
 
@@ -551,7 +551,7 @@ def test_start_span_context_manager_with_imperative_apis(async_logging_enabled):
     # part of broader tracing.
     class TestModel:
         def __init__(self):
-            self._qcflow_client = qcflow.tracking.MlflowClient()
+            self._qcflow_client = qcflow.tracking.QCFlowClient()
 
         def predict(self, x, y):
             with qcflow.start_span(name="root_span") as root_span:
@@ -618,7 +618,7 @@ def test_start_span_context_manager_with_imperative_apis(async_logging_enabled):
 
 
 def test_qcflow_trace_isolated_from_other_otel_processors():
-    # Set up non-MLFlow tracer
+    # Set up non-QCFlow tracer
     import opentelemetry.sdk.trace as trace_sdk
     from opentelemetry import trace
 
@@ -775,7 +775,7 @@ def test_search_traces_with_default_experiment_id(mock_client):
 
 def test_search_traces_yields_expected_dataframe_contents(monkeypatch):
     model = DefaultTestModel()
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     expected_traces = []
     for _ in range(10):
         model.predict(2, 5)
@@ -814,7 +814,7 @@ def test_search_traces_yields_expected_dataframe_contents(monkeypatch):
 
 
 def test_search_traces_handles_missing_response_tags_and_metadata(monkeypatch):
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             return [
                 Trace(
@@ -833,7 +833,7 @@ def test_search_traces_handles_missing_response_tags_and_metadata(monkeypatch):
                 )
             ]
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     df = qcflow.search_traces()
     assert df["response"].isnull().all()
@@ -845,11 +845,11 @@ def test_search_traces_extracts_fields_as_expected(monkeypatch):
     model = DefaultTestModel()
     model.predict(2, 5)
 
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             return get_traces()
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     df = qcflow.search_traces(
         extract_fields=["predict.inputs.x", "predict.outputs", "add_one_with_custom_name.inputs.z"]
@@ -861,11 +861,11 @@ def test_search_traces_extracts_fields_as_expected(monkeypatch):
 
 # Test cases should cover case where there are no spans at all
 def test_search_traces_with_no_spans(monkeypatch):
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             return []
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     df = qcflow.search_traces()
     assert df.empty
@@ -877,11 +877,11 @@ def test_search_traces_with_input_and_no_output(monkeypatch):
     with qcflow.start_span(name="with_input_and_no_output") as span:
         span.set_inputs({"a": 1})
 
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             return get_traces()
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     df = qcflow.search_traces(
         extract_fields=["with_input_and_no_output.inputs.a", "with_input_and_no_output.outputs"]
@@ -892,7 +892,7 @@ def test_search_traces_with_input_and_no_output(monkeypatch):
 
 # Test case where span content is invalid
 def test_search_traces_with_invalid_span_content(monkeypatch):
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             # Invalid span content
             return [
@@ -908,7 +908,7 @@ def test_search_traces_with_invalid_span_content(monkeypatch):
                 )
             ]
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     with pytest.raises(AttributeError, match="NoneType"):
         qcflow.search_traces()
@@ -920,11 +920,11 @@ def test_search_traces_with_non_dict_span_inputs_outputs(monkeypatch):
         span.set_inputs(["a", "b"])
         span.set_outputs([1, 2, 3])
 
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             return get_traces()
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     df = qcflow.search_traces(
         extract_fields=["non_dict_span.inputs", "non_dict_span.outputs", "non_dict_span.inputs.x"]
@@ -956,11 +956,11 @@ def test_search_traces_with_multiple_spans_with_same_name(monkeypatch):
     model = TestModel()
     model.predict(2, 5)
 
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             return get_traces()
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     df = qcflow.search_traces(
         extract_fields=[
@@ -986,11 +986,11 @@ def test_search_traces_with_non_existent_field(monkeypatch):
     model = DefaultTestModel()
     model.predict(2, 5)
 
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             return get_traces()
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     df = qcflow.search_traces(
         extract_fields=[
@@ -1011,12 +1011,12 @@ def test_search_traces_without_experiment_id(monkeypatch):
     model = DefaultTestModel()
     model.predict(2, 5)
 
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, experiment_ids, *args, **kwargs):
             assert experiment_ids == ["0"]
             return get_traces()
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
     qcflow.search_traces()
 
@@ -1062,18 +1062,18 @@ def test_search_traces_with_span_name(monkeypatch):
     model = TestModel()
     model.predict(2, 5)
 
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, experiment_ids, *args, **kwargs):
             return get_traces()
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
 
 
 def test_search_traces_with_run_id():
     def _create_trace(name, tags=None):
         with qcflow.start_span(name=name) as span:
             for k, v in (tags or {}).items():
-                qcflow.MlflowClient().set_trace_tag(request_id=span.request_id, key=k, value=v)
+                qcflow.QCFlowClient().set_trace_tag(request_id=span.request_id, key=k, value=v)
         return span.request_id
 
     def _get_names(traces):
@@ -1101,7 +1101,7 @@ def test_search_traces_with_run_id():
     )
     assert _get_names(traces) == ["tr-5"]
 
-    with pytest.raises(MlflowException, match="You cannot filter by run_id when it is already"):
+    with pytest.raises(QCFlowException, match="You cannot filter by run_id when it is already"):
         qcflow.search_traces(
             run_id=run2.info.run_id,
             filter_string="metadata.qcflow.sourceRun = '123'",
@@ -1117,7 +1117,7 @@ def test_search_traces_with_run_id():
     ],
 )
 def test_search_traces_invalid_extract_fields(extract_fields):
-    with pytest.raises(MlflowException, match="Invalid field type"):
+    with pytest.raises(QCFlowException, match="Invalid field type"):
         qcflow.search_traces(extract_fields=extract_fields)
 
 
@@ -1138,7 +1138,7 @@ def test_get_last_active_trace():
 
     # Mutation of the copy should not affect the original trace logged in the backend
     trace.info.status = TraceStatus.ERROR
-    original_trace = qcflow.MlflowClient().get_trace(trace.info.request_id)
+    original_trace = qcflow.QCFlowClient().get_trace(trace.info.request_id)
     assert original_trace.info.status == TraceStatus.OK
 
 
@@ -1169,7 +1169,7 @@ def test_update_current_trace():
     assert tags == expected_tags
 
     # Validate backend trace
-    traces = qcflow.MlflowClient().search_traces(experiment_ids=[DEFAULT_EXPERIMENT_ID])
+    traces = qcflow.QCFlowClient().search_traces(experiment_ids=[DEFAULT_EXPERIMENT_ID])
     assert len(traces) == 1
     assert traces[0].info.status == "OK"
     tags = {k: v for k, v in traces[0].info.tags.items() if not k.startswith("qcflow.")}
@@ -1180,7 +1180,7 @@ def test_non_ascii_characters_not_encoded_as_unicode():
     with qcflow.start_span() as span:
         span.set_inputs({"japanese": "あ", "emoji": "👍"})
 
-    trace = qcflow.MlflowClient().get_trace(span.request_id)
+    trace = qcflow.QCFlowClient().get_trace(span.request_id)
     span = trace.data.spans[0]
     assert span.inputs == {"japanese": "あ", "emoji": "👍"}
 
@@ -1362,7 +1362,7 @@ def test_add_trace_no_current_active_trace():
 
 
 def test_add_trace_specific_target_span():
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     span = client.start_trace(name="parent")
     qcflow.add_trace(_SAMPLE_REMOTE_TRACE, target=span)
     client.end_trace(span.request_id)
@@ -1378,7 +1378,7 @@ def test_add_trace_specific_target_span():
 
 
 def test_add_trace_merge_tags():
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
 
     # Start the parent trace and merge the above trace as a child
     with qcflow.start_span(name="parent") as span:
@@ -1398,10 +1398,10 @@ def test_add_trace_merge_tags():
 
 
 def test_add_trace_raise_for_invalid_trace():
-    with pytest.raises(MlflowException, match="Invalid trace object"):
+    with pytest.raises(QCFlowException, match="Invalid trace object"):
         qcflow.add_trace(None)
 
-    with pytest.raises(MlflowException, match="Failed to load a trace object"):
+    with pytest.raises(QCFlowException, match="Failed to load a trace object"):
         qcflow.add_trace({"info": {}, "data": {}})
 
     in_progress_trace = Trace(
@@ -1414,13 +1414,13 @@ def test_add_trace_raise_for_invalid_trace():
         ),
         data=TraceData(),
     )
-    with pytest.raises(MlflowException, match="The trace must be ended"):
+    with pytest.raises(QCFlowException, match="The trace must be ended"):
         qcflow.add_trace(in_progress_trace)
 
     trace = Trace.from_dict(_SAMPLE_REMOTE_TRACE)
     spans = trace.data.spans
     unordered_trace = Trace(info=trace.info, data=TraceData(spans=[spans[1], spans[0]]))
-    with pytest.raises(MlflowException, match="Span with ID "):
+    with pytest.raises(QCFlowException, match="Span with ID "):
         qcflow.add_trace(unordered_trace)
 
 

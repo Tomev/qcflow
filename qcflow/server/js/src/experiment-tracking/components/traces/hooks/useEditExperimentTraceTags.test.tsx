@@ -2,7 +2,7 @@ import { type ModelTraceInfo } from '@databricks/web-shared/model-trace-explorer
 import { useEditExperimentTraceTags } from './useEditExperimentTraceTags';
 import { renderWithIntl, screen, within } from '../../../../common/utils/TestUtils.react18';
 import userEvent from '@testing-library/user-event-14';
-import { MlflowService } from '../../../sdk/MlflowService';
+import { QCFlowService } from '../../../sdk/QCFlowService';
 
 jest.setTimeout(30000); // Larger timeout for integration testing (form rendering)
 
@@ -30,8 +30,8 @@ describe('useEditExperimentTraceTag', () => {
 
   test('it should properly add tag with key and value', async () => {
     // Mock the service functions
-    jest.spyOn(MlflowService, 'setExperimentTraceTag').mockImplementation(() => Promise.resolve({}));
-    jest.spyOn(MlflowService, 'deleteExperimentTraceTag').mockImplementation(() => Promise.resolve({}));
+    jest.spyOn(QCFlowService, 'setExperimentTraceTag').mockImplementation(() => Promise.resolve({}));
+    jest.spyOn(QCFlowService, 'deleteExperimentTraceTag').mockImplementation(() => Promise.resolve({}));
 
     // Render the component
     renderTestComponent(mockTraceInfo);
@@ -58,11 +58,11 @@ describe('useEditExperimentTraceTag', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save tags' }));
 
     // We expect one new tag to be added
-    expect(MlflowService.setExperimentTraceTag).toBeCalledTimes(1);
-    expect(MlflowService.setExperimentTraceTag).toBeCalledWith('tr-test-request-id-1', 'newtag', 'newvalue');
+    expect(QCFlowService.setExperimentTraceTag).toBeCalledTimes(1);
+    expect(QCFlowService.setExperimentTraceTag).toBeCalledWith('tr-test-request-id-1', 'newtag', 'newvalue');
 
     // We expect one existing tag to be deleted
-    expect(MlflowService.deleteExperimentTraceTag).toBeCalledTimes(1);
-    expect(MlflowService.deleteExperimentTraceTag).toBeCalledWith('tr-test-request-id-1', 'existing-tag');
+    expect(QCFlowService.deleteExperimentTraceTag).toBeCalledTimes(1);
+    expect(QCFlowService.deleteExperimentTraceTag).toBeCalledWith('tr-test-request-id-1', 'existing-tag');
   });
 });

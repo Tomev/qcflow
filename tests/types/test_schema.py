@@ -12,7 +12,7 @@ import pyspark.sql.types as T
 import pytest
 from scipy.sparse import csc_matrix, csr_matrix
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import rag_signatures
 from qcflow.models.utils import _enforce_tensor_spec
 from qcflow.pyfunc import _parse_spark_datatype
@@ -53,7 +53,7 @@ def test_col_spec():
     b1 = ColSpec(DataType.string, "b")
     assert b1 != a1
     assert a1 == a2
-    with pytest.raises(MlflowException, match="Unsupported type 'unsupported'"):
+    with pytest.raises(QCFlowException, match="Unsupported type 'unsupported'"):
         ColSpec("unsupported")
     a4 = ColSpec(**a1.to_dict())
     assert a4 == a1
@@ -79,7 +79,7 @@ def test_tensor_spec():
     with pytest.raises(TypeError, match="Expected `shape` to be instance"):
         TensorSpec(np.dtype("float64"), np.array([-1, 2, 3]), "b")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="QCFlow does not support size information in flexible numpy data types",
     ):
         TensorSpec(np.dtype("<U10"), (-1,), "b")
@@ -144,43 +144,43 @@ def test_schema_creation():
     Schema([TensorSpec(np.dtype("float64"), (-1,))])
 
     # combination of tensor and col spec is not allowed
-    with pytest.raises(MlflowException, match="Please choose one of"):
+    with pytest.raises(QCFlowException, match="Please choose one of"):
         Schema([TensorSpec(np.dtype("float64"), (-1,)), ColSpec("double")])
 
     # combination of named and unnamed inputs is not allowed
     with pytest.raises(
-        MlflowException, match="Creating Schema with a combination of named and unnamed inputs"
+        QCFlowException, match="Creating Schema with a combination of named and unnamed inputs"
     ):
         Schema(
             [TensorSpec(np.dtype("float64"), (-1,), "blah"), TensorSpec(np.dtype("float64"), (-1,))]
         )
 
     with pytest.raises(
-        MlflowException, match="Creating Schema with a combination of named and unnamed inputs"
+        QCFlowException, match="Creating Schema with a combination of named and unnamed inputs"
     ):
         Schema([ColSpec("double", "blah"), ColSpec("double")])
 
     # multiple unnamed tensor specs is not allowed
     with pytest.raises(
-        MlflowException, match="Creating Schema with multiple unnamed TensorSpecs is not supported"
+        QCFlowException, match="Creating Schema with multiple unnamed TensorSpecs is not supported"
     ):
         Schema([TensorSpec(np.dtype("double"), (-1,)), TensorSpec(np.dtype("double"), (-1,))])
 
 
 def test_schema_creation_errors():
-    with pytest.raises(MlflowException, match=r"Creating Schema with empty inputs is not allowed."):
+    with pytest.raises(QCFlowException, match=r"Creating Schema with empty inputs is not allowed."):
         Schema([])
 
-    with pytest.raises(MlflowException, match=r"Inputs of Schema must be a list, got type dict"):
+    with pytest.raises(QCFlowException, match=r"Inputs of Schema must be a list, got type dict"):
         Schema({"col1": ColSpec(DataType.string)})
 
 
 def test_get_schema_type(dict_of_ndarrays):
     schema = _infer_schema(dict_of_ndarrays)
     assert ["float64"] * 4 == schema.numpy_types()
-    with pytest.raises(MlflowException, match="TensorSpec only supports numpy types"):
+    with pytest.raises(QCFlowException, match="TensorSpec only supports numpy types"):
         schema.pandas_types()
-    with pytest.raises(MlflowException, match="TensorSpec cannot be converted to spark dataframe"):
+    with pytest.raises(QCFlowException, match="TensorSpec cannot be converted to spark dataframe"):
         schema.as_spark_schema()
 
 
@@ -237,7 +237,7 @@ def test_schema_inference_on_pandas_series():
         assert schema == Schema([ColSpec("long")])
 
     # unsigned long is unsupported
-    with pytest.raises(MlflowException, match="Unsupported numpy data type"):
+    with pytest.raises(QCFlowException, match="Unsupported numpy data type"):
         _infer_schema(pd.Series(np.array([1, 2, 3], dtype=np.uint64)))
 
     # test floats
@@ -262,7 +262,7 @@ def test_schema_inference_on_pandas_series():
 
     # unsupported
     if hasattr(np, "float128"):
-        with pytest.raises(MlflowException, match="Unsupported numpy data type"):
+        with pytest.raises(QCFlowException, match="Unsupported numpy data type"):
             _infer_schema(pd.Series(np.array([1, 2, 3], dtype=np.float128)))
 
     # test names
@@ -286,11 +286,11 @@ def test_get_tensor_shape(dict_of_ndarrays):
 
     # Out of bounds
     with pytest.raises(
-        MlflowException, match="The specified variable_dimension 10 is out of bounds"
+        QCFlowException, match="The specified variable_dimension 10 is out of bounds"
     ):
         _get_tensor_shape(data, 10)
     with pytest.raises(
-        MlflowException, match="The specified variable_dimension -10 is out of bounds"
+        QCFlowException, match="The specified variable_dimension -10 is out of bounds"
     ):
         _get_tensor_shape(data, -10)
 
@@ -350,21 +350,21 @@ def test_schema_inference_on_dictionary_of_strings(data, schema):
 
 def test_schema_inference_on_list_with_errors():
     data = [{"a": 1, "b": "c"}, {"a": 1, "b": ["a", "b"]}]
-    with pytest.raises(MlflowException, match=re.escape(MULTIPLE_TYPES_ERROR_MSG)):
+    with pytest.raises(QCFlowException, match=re.escape(MULTIPLE_TYPES_ERROR_MSG)):
         _infer_schema(data)
 
 
 def test_schema_inference_validating_dictionary_keys():
     for data in [{1.7: "a", "b": "c"}, {12.4: "c", "d": "e"}]:
-        with pytest.raises(MlflowException, match="The dictionary keys are not all strings."):
+        with pytest.raises(QCFlowException, match="The dictionary keys are not all strings."):
             _infer_schema(data)
 
 
 def test_schema_inference_on_lists_with_errors():
-    with pytest.raises(MlflowException, match=re.escape(MULTIPLE_TYPES_ERROR_MSG)):
+    with pytest.raises(QCFlowException, match=re.escape(MULTIPLE_TYPES_ERROR_MSG)):
         _infer_schema(["a", 1])
 
-    with pytest.raises(MlflowException, match=re.escape(MULTIPLE_TYPES_ERROR_MSG)):
+    with pytest.raises(QCFlowException, match=re.escape(MULTIPLE_TYPES_ERROR_MSG)):
         _infer_schema(["a", ["b", "c"]])
 
 
@@ -400,30 +400,30 @@ def test_dict_input_valid_checks_on_keys():
     hash_obj_2 = Hashable("some", "other")
     custom_hashable_dict = {hash_obj_1: "value", hash_obj_2: "other_value"}
 
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(custom_hashable_dict)
 
     # keys are floats
     float_keys_dict = {1.1: "a", 2.2: "b"}
 
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(float_keys_dict)
 
     # keys are bool
     bool_keys_dict = {True: "a", False: "b"}
 
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(bool_keys_dict)
     # keys are tuples
     tuple_keys_dict = {("a", "b"): "a", ("a", "c"): "b"}
 
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(tuple_keys_dict)
 
     # keys are frozenset
     frozen_set_dict = {frozenset({"a", "b"}): "a", frozenset({"b", "c"}): "b"}
 
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(frozen_set_dict)
 
 
@@ -431,34 +431,34 @@ def test_dict_input_valid_checks_on_values():
     match = "Invalid values in dictionary. If passing a dictionary containing strings"
 
     list_of_ints = {"a": [1, 2, 3], "b": [1, 2, 3]}
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(list_of_ints)
 
     list_of_floats = {"a": [1.1, 1.2], "b": [1.1, 2.2]}
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(list_of_floats)
 
     list_of_dics = {"a": [{"a": "b"}, {"b": "c"}], "b": [{"a": "c"}, {"b": "d"}]}
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(list_of_dics)
 
     list_of_lists = {"a": [["b", "c"], ["d", "e"]], "b": [["e", "f"], ["g", "h"]]}
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(list_of_lists)
 
     list_of_set = {"a": [{"b", "c"}, {"d", "e"}], "b": [{"a", "c"}, {"d", "f"}]}
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(list_of_set)
 
     list_of_frozen_set = {
         "a": [frozenset({"b", "c"}), frozenset({"d", "e"})],
         "b": [frozenset({"a", "c"}), frozenset({"d", "f"})],
     }
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(list_of_frozen_set)
 
     list_of_bool = {"a": [True, True, False], "b": [False, False, True]}
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_input_dictionary_contains_only_strings_and_lists_of_strings(list_of_bool)
 
 
@@ -754,7 +754,7 @@ def test_enforce_tensor_spec_variable_signature():
     result_array = _enforce_tensor_spec(standard_array, standard_spec)
     np.testing.assert_array_equal(standard_array, result_array)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(r"Shape of input (2,) does not match expected shape (-1, 2, 3)."),
     ):
         _enforce_tensor_spec(ragged_array, standard_spec)
@@ -798,7 +798,7 @@ def test_datatype_type_check():
 
 def test_param_schema_find_duplicates():
     with pytest.raises(
-        MlflowException, match=re.escape("Duplicated parameters found in schema: ['param1']")
+        QCFlowException, match=re.escape("Duplicated parameters found in schema: ['param1']")
     ):
         ParamSchema(
             [
@@ -809,7 +809,7 @@ def test_param_schema_find_duplicates():
         )
 
     with pytest.raises(
-        MlflowException, match=re.escape("Duplicated parameters found in schema: ['param1']")
+        QCFlowException, match=re.escape("Duplicated parameters found in schema: ['param1']")
     ):
         ParamSchema(
             [
@@ -820,7 +820,7 @@ def test_param_schema_find_duplicates():
         )
 
     with pytest.raises(
-        MlflowException, match=re.escape("Duplicated parameters found in schema: ['param3']")
+        QCFlowException, match=re.escape("Duplicated parameters found in schema: ['param3']")
     ):
         ParamSchema(
             [
@@ -1028,11 +1028,11 @@ def test_infer_param_schema():
     )
 
     # Raise error if parameters is not dictionary
-    with pytest.raises(MlflowException, match=r"Expected parameters to be dict, got list"):
+    with pytest.raises(QCFlowException, match=r"Expected parameters to be dict, got list"):
         _infer_param_schema(["a", "str_a", "b", 1])
 
     # Raise error if parameter is bytes
-    with pytest.raises(MlflowException, match=r"Binary type is not supported for parameters"):
+    with pytest.raises(QCFlowException, match=r"Binary type is not supported for parameters"):
         _infer_param_schema({"a": b"str_a"})
 
     # Raise error for invalid parameters types - tuple, 2D array
@@ -1043,24 +1043,24 @@ def test_infer_param_schema():
         "d": [[1, 2], [3, 4]],
         "e": [[[1, 2], [3], []]],
     }
-    with pytest.raises(MlflowException, match=r".*") as e:
+    with pytest.raises(QCFlowException, match=r".*") as e:
         _infer_param_schema(test_parameters)
     assert e.match(r"Failed to infer schema for parameters: ")
     assert e.match(
         re.escape(
-            "('b', (1, 2, 3), MlflowException('Expected parameters "
+            "('b', (1, 2, 3), QCFlowException('Expected parameters "
             "to be 1D array or scalar, got tuple'))"
         )
     )
     assert e.match(
         re.escape(
-            "('d', [[1, 2], [3, 4]], MlflowException('Expected parameters "
+            "('d', [[1, 2], [3, 4]], QCFlowException('Expected parameters "
             "to be 1D array or scalar, got 2D array'))"
         )
     )
     assert e.match(
         re.escape(
-            "('e', [[[1, 2], [3], []]], MlflowException('Expected parameters "
+            "('e', [[[1, 2], [3], []]], QCFlowException('Expected parameters "
             "to be 1D array or scalar, got 3D array'))"
         )
     )
@@ -1114,17 +1114,17 @@ def test_param_schema_for_dicts():
 
 def test_infer_param_schema_with_errors():
     with pytest.raises(
-        MlflowException, match=r"Expected parameters to be 1D array or scalar, got Series"
+        QCFlowException, match=r"Expected parameters to be 1D array or scalar, got Series"
     ):
         _infer_param_schema({"a": pd.Series([1, 2, 3])})
 
 
 def test_object_construction_with_errors():
-    with pytest.raises(MlflowException, match=r"Expected properties to be a list, got type dict"):
+    with pytest.raises(QCFlowException, match=r"Expected properties to be a list, got type dict"):
         Object({"p1": Property("p1", DataType.string)})
 
     with pytest.raises(
-        MlflowException, match=r"Creating Object with empty properties is not allowed."
+        QCFlowException, match=r"Creating Object with empty properties is not allowed."
     ):
         Object([])
 
@@ -1133,7 +1133,7 @@ def test_object_construction_with_errors():
         Property("p2", DataType.binary),
         {"invalid_type": "value"},
     ]
-    with pytest.raises(MlflowException, match=r"Expected values to be instance of Property"):
+    with pytest.raises(QCFlowException, match=r"Expected values to be instance of Property"):
         Object(properties)
 
     properties = [
@@ -1141,7 +1141,7 @@ def test_object_construction_with_errors():
         Property("p2", DataType.binary),
         Property("p2", DataType.boolean),
     ]
-    with pytest.raises(MlflowException, match=r"Found duplicated property names: {'p2'}"):
+    with pytest.raises(QCFlowException, match=r"Found duplicated property names: {'p2'}"):
         Object(properties)
 
 
@@ -1176,19 +1176,19 @@ def test_property_to_and_from_dict(data_type):
 
 def test_property_from_dict_with_errors():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Expected Property JSON to contain a single key as name, got 2 keys.",
     ):
         Property.from_json_dict(**{"p1": {}, "p2": {}})
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Missing keys in Property `p`. Expected to find key `type`",
     ):
         Property.from_json_dict(**{"p": {}})
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             r"Unsupported type 'invalid_type', expected instance of DataType, Array, "
             r"Object, Map or "
@@ -1198,13 +1198,13 @@ def test_property_from_dict_with_errors():
 
     # test array
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Missing keys in Array JSON. Expected to find keys `items` and `type`",
     ):
         Property.from_json_dict(**{"p": {"type": "array"}})
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             r"Unsupported type 'invalid_type', expected instance of DataType, Array, "
             r"Object, Map or "
@@ -1213,25 +1213,25 @@ def test_property_from_dict_with_errors():
         Property.from_json_dict(**{"p": {"type": "array", "items": {"type": "invalid_type"}}})
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Expected items to be a dictionary of Object JSON",
     ):
         Property.from_json_dict(**{"p": {"type": "array", "items": "invalid_items_type"}})
 
     # test object
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Missing keys in Object JSON. Expected to find keys `properties` and `type`",
     ):
         Property.from_json_dict(**{"p": {"type": "object"}})
 
     with pytest.raises(
-        MlflowException, match=r"Expected properties to be a dictionary of Property JSON"
+        QCFlowException, match=r"Expected properties to be a dictionary of Property JSON"
     ):
         Property.from_json_dict(**{"p": {"type": "object", "properties": "invalid_type"}})
 
     with pytest.raises(
-        MlflowException, match=r"Expected properties to be a dictionary of Property JSON"
+        QCFlowException, match=r"Expected properties to be a dictionary of Property JSON"
     ):
         Property.from_json_dict(
             **{
@@ -1259,23 +1259,23 @@ def test_object_to_and_from_dict():
 
 def test_object_from_dict_with_errors():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Missing keys in Object JSON. Expected to find keys `properties` and `type`",
     ):
         Object.from_json_dict(**{"type": "object"})
 
     with pytest.raises(
-        MlflowException, match=r"Type mismatch, Object expects `object` as the type"
+        QCFlowException, match=r"Type mismatch, Object expects `object` as the type"
     ):
         Object.from_json_dict(**{"type": "array", "properties": {}})
 
     with pytest.raises(
-        MlflowException, match=r"Expected properties to be a dictionary of Property JSON"
+        QCFlowException, match=r"Expected properties to be a dictionary of Property JSON"
     ):
         Object.from_json_dict(**{"type": "object", "properties": "invalid_type"})
 
     with pytest.raises(
-        MlflowException, match=r"Expected properties to be a dictionary of Property JSON"
+        QCFlowException, match=r"Expected properties to be a dictionary of Property JSON"
     ):
         Object.from_json_dict(
             **{
@@ -1305,19 +1305,19 @@ def test_array_to_and_from_dict(data_type):
 
 def test_array_from_dict_with_errors():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Missing keys in Array JSON. Expected to find keys `items` and `type`",
     ):
         Array.from_json_dict(**{"type": "array"})
 
-    with pytest.raises(MlflowException, match=r"Type mismatch, Array expects `array` as the type"):
+    with pytest.raises(QCFlowException, match=r"Type mismatch, Array expects `array` as the type"):
         Array.from_json_dict(**{"type": "object", "items": "string"})
 
-    with pytest.raises(MlflowException, match=r"Expected items to be a dictionary of Object JSON"):
+    with pytest.raises(QCFlowException, match=r"Expected items to be a dictionary of Object JSON"):
         Array.from_json_dict(**{"type": "array", "items": "string"})
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             r"Unsupported type 'invalid_type', expected instance of DataType, Array, "
             r"Object, Map or "
@@ -1326,7 +1326,7 @@ def test_array_from_dict_with_errors():
         Array.from_json_dict(**{"type": "array", "items": {"type": "invalid_type"}})
 
     with pytest.raises(
-        MlflowException, match=r"Expected properties to be a dictionary of Property JSON"
+        QCFlowException, match=r"Expected properties to be a dictionary of Property JSON"
     ):
         Array.from_json_dict(**{"type": "array", "items": {"type": "object", "properties": []}})
 
@@ -1717,7 +1717,7 @@ def test_schema_inference_with_empty_lists():
 
     # Empty numpy array is not allowed.
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Numpy array must include at least one non-empty item",
     ):
         _infer_schema([np.array([])])
@@ -1874,7 +1874,7 @@ def test_convert_dataclass_to_schema_invalid():
         foo: Union[str, int] = "1"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(r"Only Optional[...] is supported as a Union type in dataclass fields"),
     ):
         convert_dataclass_to_schema(InvalidDataclassWithUnion)
@@ -1885,7 +1885,7 @@ def test_convert_dataclass_to_schema_invalid():
         foo: dict[str, int] = field(default_factory=dict)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(r"Unsupported field type dict[str, int] in dataclass InvalidDataclass"),
     ):
         convert_dataclass_to_schema(InvalidDataclassWithDict)

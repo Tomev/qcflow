@@ -28,7 +28,7 @@ from packaging.version import Version
 
 import qcflow
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.langchain.databricks_dependencies import _detect_databricks_dependencies
 from qcflow.langchain.runnables import _load_runnables, _save_runnables
 from qcflow.langchain.utils import (
@@ -627,7 +627,7 @@ def _load_model(local_model_path, flavor_conf):
         elif model_load_fn == _BASE_LOAD_KEY:
             model = _load_base_lcs(local_model_path, flavor_conf)
         else:
-            raise qcflow.MlflowException(
+            raise qcflow.QCFlowException(
                 "Failed to load LangChain model. Unknown model type: "
                 f"{flavor_conf.get(_MODEL_TYPE_KEY)}"
             )
@@ -678,22 +678,22 @@ class _LangChainModelWrapper:
             # if this is False, tracing is disabled and we shouldn't inject the tracer
             and is_qcflow_tracing_enabled_in_model_serving()
         ):
-            from qcflow.langchain.langchain_tracer import MlflowLangchainTracer
+            from qcflow.langchain.langchain_tracer import QCFlowLangchainTracer
 
-            callbacks = [MlflowLangchainTracer()]
+            callbacks = [QCFlowLangchainTracer()]
         else:
             callbacks = None
 
         return self._predict_with_callbacks(data, params, callback_handlers=callbacks)
 
     def _update_dependencies_schemas_in_prediction_context(self, callback_handlers):
-        from qcflow.langchain.langchain_tracer import MlflowLangchainTracer
+        from qcflow.langchain.langchain_tracer import QCFlowLangchainTracer
 
         if (
             callback_handlers
             and (
                 tracer := next(
-                    (c for c in callback_handlers if isinstance(c, MlflowLangchainTracer)), None
+                    (c for c in callback_handlers if isinstance(c, QCFlowLangchainTracer)), None
                 )
             )
             and self.model_path
@@ -754,7 +754,7 @@ class _LangChainModelWrapper:
             return [data], True
         if isinstance(data, list):
             return data, False
-        raise qcflow.MlflowException.invalid_parameter_value(
+        raise qcflow.QCFlowException.invalid_parameter_value(
             "Input must be a pandas DataFrame or a list "
             f"for model {self.lc_model.__class__.__name__}"
         )
@@ -767,7 +767,7 @@ class _LangChainModelWrapper:
             # but `enforce_schema` might convert single input into a list like `[single_input]`
             # so extract the first element in the list.
             if len(data) != 1:
-                raise MlflowException(
+                raise QCFlowException(
                     f"'predict_stream' requires single input, but it got input data {data}"
                 )
             return data[0]
@@ -1013,7 +1013,7 @@ def autolog(
             will be supported. Note that all classes within the list must be subclasses of Runnable,
             and we only patch `invoke`, `batch`, and `stream` methods for tracing.
         log_traces: If ``True``, traces are logged for Langchain models by using
-            MlflowLangchainTracer as a callback during inference. If ``False``, no traces are
+            QCFlowLangchainTracer as a callback during inference. If ``False``, no traces are
             collected during inference. Default to ``True``.
     """
     from qcflow.langchain._langchain_autolog import patched_inference

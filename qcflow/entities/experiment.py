@@ -1,10 +1,10 @@
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.experiment_tag import ExperimentTag
 from qcflow.protos.service_pb2 import Experiment as ProtoExperiment
 from qcflow.protos.service_pb2 import ExperimentTag as ProtoExperimentTag
 
 
-class Experiment(_MlflowObject):
+class Experiment(_QCFlowObject):
     """
     Experiment object.
     """

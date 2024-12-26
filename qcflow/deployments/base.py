@@ -11,7 +11,7 @@ In particular, a valid deployment plugin module must implement:
 
 import abc
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.annotations import developer_stable
 
 
@@ -30,7 +30,7 @@ def run_local(target, name, model_uri, flavor=None, config=None):
         target: Which target to use. This information is used to call the appropriate plugin.
         name: Unique name to use for deployment. If another deployment exists with the same
             name, create_deployment will raise a
-            :py:class:`qcflow.exceptions.MlflowException`.
+            :py:class:`qcflow.exceptions.QCFlowException`.
         model_uri: URI of model to deploy.
         flavor: (optional) Model flavor to deploy. If unspecified, default flavor is chosen.
         config: (optional) Dict containing updated target-specific config for the deployment.
@@ -82,7 +82,7 @@ class BaseDeploymentClient(abc.ABC):
     target-specific information.
 
     .. Note::
-        Subclasses should raise :py:class:`qcflow.exceptions.MlflowException` in error cases (e.g.
+        Subclasses should raise :py:class:`qcflow.exceptions.QCFlowException` in error cases (e.g.
         on failure to deploy a model).
     """
 
@@ -96,13 +96,13 @@ class BaseDeploymentClient(abc.ABC):
         deployment completes (i.e. until it's possible to perform inference with the deployment).
         In the case of conflicts (e.g. if it's not possible to create the specified deployment
         without due to conflict with an existing deployment), raises a
-        :py:class:`qcflow.exceptions.MlflowException` or an `HTTPError` for remote
+        :py:class:`qcflow.exceptions.QCFlowException` or an `HTTPError` for remote
         deployments. See target-specific plugin documentation
         for additional detail on support for asynchronous deployment and other configuration.
 
         Args:
             name: Unique name to use for deployment. If another deployment exists with the same
-                name, raises a :py:class:`qcflow.exceptions.MlflowException`
+                name, raises a :py:class:`qcflow.exceptions.QCFlowException`
             model_uri: URI of model to deploy
             flavor: (optional) Model flavor to deploy. If unspecified, a default flavor
                 will be chosen.
@@ -185,7 +185,7 @@ class BaseDeploymentClient(abc.ABC):
     def get_deployment(self, name, endpoint=None):
         """
         Returns a dictionary describing the specified deployment, throwing either a
-        :py:class:`qcflow.exceptions.MlflowException` or an `HTTPError` for remote
+        :py:class:`qcflow.exceptions.QCFlowException` or an `HTTPError` for remote
         deployments if no deployment exists with the provided ID.
         The dict is guaranteed to contain an 'name' key containing the deployment name.
         The other fields of the returned dictionary and their types may vary across
@@ -249,7 +249,7 @@ class BaseDeploymentClient(abc.ABC):
             A JSON-able object (pandas dataframe, numpy array, dictionary), or
             an exception if the implementation is not available in deployment target's class
         """
-        raise MlflowException(
+        raise QCFlowException(
             "Computing model explanations is not yet supported for this deployment target"
         )
 
@@ -259,13 +259,13 @@ class BaseDeploymentClient(abc.ABC):
         creation completes (i.e. until it's possible to create a deployment within the endpoint).
         In the case of conflicts (e.g. if it's not possible to create the specified endpoint
         due to conflict with an existing endpoint), raises a
-        :py:class:`qcflow.exceptions.MlflowException` or an `HTTPError` for remote
+        :py:class:`qcflow.exceptions.QCFlowException` or an `HTTPError` for remote
         deployments. See target-specific plugin documentation
         for additional detail on support for asynchronous creation and other configuration.
 
         Args:
             name: Unique name to use for endpoint. If another endpoint exists with the same
-                name, raises a :py:class:`qcflow.exceptions.MlflowException`.
+                name, raises a :py:class:`qcflow.exceptions.QCFlowException`.
             config: (optional) Dict containing target-specific configuration for the
                 endpoint.
 
@@ -273,7 +273,7 @@ class BaseDeploymentClient(abc.ABC):
             Dict corresponding to created endpoint, which must contain the 'name' key.
 
         """
-        raise MlflowException(
+        raise QCFlowException(
             "Method is unimplemented in base client. Implementation should be "
             "provided by specific target plugins."
         )
@@ -295,7 +295,7 @@ class BaseDeploymentClient(abc.ABC):
             None
 
         """
-        raise MlflowException(
+        raise QCFlowException(
             "Method is unimplemented in base client. Implementation should be "
             "provided by specific target plugins."
         )
@@ -311,7 +311,7 @@ class BaseDeploymentClient(abc.ABC):
         Returns:
             None
         """
-        raise MlflowException(
+        raise QCFlowException(
             "Method is unimplemented in base client. Implementation should be "
             "provided by specific target plugins."
         )
@@ -330,7 +330,7 @@ class BaseDeploymentClient(abc.ABC):
             contain a 'name' key containing the endpoint name. The other fields of
             the returned dictionary and their types may vary across targets.
         """
-        raise MlflowException(
+        raise QCFlowException(
             "Method is unimplemented in base client. Implementation should be "
             "provided by specific target plugins."
         )
@@ -338,7 +338,7 @@ class BaseDeploymentClient(abc.ABC):
     def get_endpoint(self, endpoint):
         """
         Returns a dictionary describing the specified endpoint, throwing a
-        py:class:`qcflow.exception.MlflowException` or an `HTTPError` for remote
+        py:class:`qcflow.exception.QCFlowException` or an `HTTPError` for remote
         deployments if no endpoint exists with the provided
         name.
         The dict is guaranteed to contain an 'name' key containing the endpoint name.
@@ -352,7 +352,7 @@ class BaseDeploymentClient(abc.ABC):
             contain a 'name' key corresponding to the endpoint name. The other fields of
             the returned dictionary and their types may vary across targets.
         """
-        raise MlflowException(
+        raise QCFlowException(
             "Method is unimplemented in base client. Implementation should be "
             "provided by specific target plugins."
         )

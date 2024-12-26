@@ -23,9 +23,9 @@ from scipy.sparse import csc_matrix, csr_matrix
 from scipy.stats import uniform
 
 import qcflow.sklearn
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import RunStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, infer_signature
 from qcflow.models.utils import _read_example
 from qcflow.sklearn.utils import (
@@ -38,7 +38,7 @@ from qcflow.sklearn.utils import (
 )
 from qcflow.types.utils import _infer_schema
 from qcflow.utils import _truncate_dict
-from qcflow.utils.autologging_utils import MlflowAutologgingQueueingClient
+from qcflow.utils.autologging_utils import QCFlowAutologgingQueueingClient
 from qcflow.utils.qcflow_tags import QCFLOW_AUTOLOGGING
 from qcflow.utils.validation import (
     MAX_ENTITY_KEY_LENGTH,
@@ -78,11 +78,11 @@ def fit_model(model, X, y, fit_func_name):
 
 
 def get_run(run_id):
-    return MlflowClient().get_run(run_id)
+    return QCFlowClient().get_run(run_id)
 
 
 def get_run_data(run_id):
-    client = MlflowClient()
+    client = QCFlowClient()
     data = client.get_run(run_id).data
     # Ignore tags qcflow logs by default (e.g. "qcflow.user")
     tags = {k: v for k, v in data.tags.items() if not k.startswith("qcflow.")}
@@ -154,7 +154,7 @@ def test_autolog_preserves_original_function_attributes():
 
 def test_autolog_throws_error_with_negative_max_tuning_runs():
     with pytest.raises(
-        MlflowException, match="`max_tuning_runs` must be non-negative, instead got -1."
+        QCFlowException, match="`max_tuning_runs` must be non-negative, instead got -1."
     ):
         qcflow.sklearn.autolog(max_tuning_runs=-1)
 
@@ -260,7 +260,7 @@ def test_classifier_binary():
     assert tags == get_expected_class_tags(model)
     assert MODEL_DIR in artifacts
 
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [x.path for x in client.list_artifacts(run_id)]
 
     plot_names = []
@@ -323,7 +323,7 @@ def test_classifier_multi_class():
     assert tags == get_expected_class_tags(model)
     assert MODEL_DIR in artifacts
 
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [x.path for x in client.list_artifacts(run_id)]
 
     plot_names = []
@@ -826,7 +826,7 @@ def test_parameter_search_estimators_produce_expected_outputs(
     input_example = _read_example(best_estimator_conf, best_estimator_path)
     best_estimator.predict(input_example)  # Ensure that input example evaluation succeeds
 
-    client = MlflowClient()
+    client = QCFlowClient()
     child_runs = client.search_runs(
         run.info.experiment_id, f"tags.`qcflow.parentRunId` = '{run_id}'"
     )
@@ -894,7 +894,7 @@ def test_parameter_search_handles_large_volume_of_metric_outputs():
         cv_model.fit(*get_iris())
         run_id = run.info.run_id
 
-    client = MlflowClient()
+    client = QCFlowClient()
     child_runs = client.search_runs(
         run.info.experiment_id, f"tags.`qcflow.parentRunId` = '{run_id}'"
     )
@@ -1136,7 +1136,7 @@ def test_sklearn_autolog_log_datasets_configuration(log_datasets):
         model.fit(X, y)
 
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
     if log_datasets:
         assert len(dataset_inputs) == 1
@@ -1164,7 +1164,7 @@ def test_sklearn_autolog_log_datasets_with_predict():
         model.predict(X)
 
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
 
     assert len(dataset_inputs) == 2
@@ -1199,7 +1199,7 @@ def test_sklearn_autolog_log_datasets_without_explicit_run():
     model.predict(X)
 
     run_id = getattr(model, "_qcflow_run_id")
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
 
     assert len(dataset_inputs) == 2
@@ -1236,7 +1236,7 @@ def test_autolog_does_not_capture_runs_for_preprocessing_or_feature_manipulation
     # Create a run using the QCFlow client, which will be resumed via the fluent API,
     # in order to avoid setting fluent-level tags (e.g., source and user). Suppressing these
     # tags simplifies test validation logic
-    client = MlflowClient()
+    client = QCFlowClient()
     run_id = client.create_run(experiment_id=0).info.run_id
 
     from sklearn.compose import ColumnTransformer
@@ -1780,7 +1780,7 @@ def test_autolog_registering_model():
     with qcflow.start_run():
         sklearn.cluster.KMeans().fit(*get_iris())
 
-        registered_model = MlflowClient().get_registered_model(registered_model_name)
+        registered_model = QCFlowClient().get_registered_model(registered_model_name)
         assert registered_model.name == registered_model_name
 
 
@@ -1795,7 +1795,7 @@ def test_autolog_pos_label_used_for_training_metric():
     with qcflow.start_run() as run:
         model = fit_model(model, X, y, "fit")
         _, training_metrics, _, _ = get_run_data(run.info.run_id)
-        with MlflowAutologgingQueueingClient() as autologging_client:
+        with QCFlowAutologgingQueueingClient() as autologging_client:
             expected_training_metrics = _log_estimator_content(
                 autologging_client=autologging_client,
                 estimator=model,

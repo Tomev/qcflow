@@ -23,13 +23,13 @@ from langchain_core.tools import tool
 from packaging.version import Version
 
 import qcflow
-from qcflow.entities import Document as MlflowDocument
+from qcflow.entities import Document as QCFlowDocument
 from qcflow.entities import Trace
 from qcflow.entities.span_event import SpanEvent
 from qcflow.entities.span_status import SpanStatus, SpanStatusCode
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.langchain import _LangChainModelWrapper
-from qcflow.langchain.langchain_tracer import MlflowLangchainTracer
+from qcflow.langchain.langchain_tracer import QCFlowLangchainTracer
 from qcflow.pyfunc.context import Context
 from qcflow.tracing.constant import TRACE_SCHEMA_VERSION_KEY, SpanAttributeKey
 from qcflow.tracing.export.inference_table import pop_trace
@@ -92,7 +92,7 @@ def _validate_trace_json_serialization(trace):
 
 
 def test_llm_success():
-    callback = MlflowLangchainTracer()
+    callback = QCFlowLangchainTracer()
     run_id = str(uuid.uuid4())
     callback.on_llm_start(
         {},
@@ -132,7 +132,7 @@ def test_llm_success():
 
 
 def test_llm_error():
-    callback = MlflowLangchainTracer()
+    callback = QCFlowLangchainTracer()
     run_id = str(uuid.uuid4())
     callback.on_llm_start(
         {},
@@ -165,7 +165,7 @@ def test_llm_error():
 
 
 def test_llm_internal_exception():
-    callback = MlflowLangchainTracer()
+    callback = QCFlowLangchainTracer()
     run_id = str(uuid.uuid4())
     callback.on_llm_start(
         {},
@@ -184,7 +184,7 @@ def test_llm_internal_exception():
 
 
 def test_retriever_success():
-    callback = MlflowLangchainTracer()
+    callback = QCFlowLangchainTracer()
     run_id = str(uuid.uuid4())
     callback.on_retriever_start(
         {},
@@ -212,7 +212,7 @@ def test_retriever_success():
     assert retriever_span.span_type == "RETRIEVER"
     assert retriever_span.inputs == "test query"
     assert retriever_span.outputs == [
-        MlflowDocument.from_langchain_document(doc).to_dict() for doc in documents
+        QCFlowDocument.from_langchain_document(doc).to_dict() for doc in documents
     ]
     assert retriever_span.start_time_ns is not None
     assert retriever_span.end_time_ns is not None
@@ -222,7 +222,7 @@ def test_retriever_success():
 
 
 def test_retriever_error():
-    callback = MlflowLangchainTracer()
+    callback = QCFlowLangchainTracer()
     run_id = str(uuid.uuid4())
     callback.on_retriever_start(
         {},
@@ -246,7 +246,7 @@ def test_retriever_error():
 
 
 def test_retriever_internal_exception():
-    callback = MlflowLangchainTracer()
+    callback = QCFlowLangchainTracer()
     run_id = str(uuid.uuid4())
     callback.on_retriever_start(
         {},
@@ -274,7 +274,7 @@ def test_retriever_internal_exception():
 
 
 def test_multiple_components():
-    callback = MlflowLangchainTracer()
+    callback = QCFlowLangchainTracer()
     chain_run_id = str(uuid.uuid4())
     callback.on_chain_start(
         {},
@@ -349,7 +349,7 @@ def test_multiple_components():
         assert retriever_span.inputs == f"test query {i}"
         assert (
             retriever_span.outputs[0]
-            == MlflowDocument(
+            == QCFlowDocument(
                 page_content=f"document content {i}",
                 metadata={
                     "chunk_id": str(i),
@@ -363,7 +363,7 @@ def test_multiple_components():
 
 def _predict_with_callbacks(lc_model, request_id, data):
     model = _LangChainModelWrapper(lc_model)
-    tracer = MlflowLangchainTracer(prediction_context=Context(request_id=request_id))
+    tracer = QCFlowLangchainTracer(prediction_context=Context(request_id=request_id))
     response = model._predict_with_callbacks(
         data, callback_handlers=[tracer], convert_chat_responses=True
     )
@@ -490,7 +490,7 @@ def test_tool_success(mock_databricks_serving_with_tracing_env):
 
 
 def test_tracer_thread_safe():
-    tracer = MlflowLangchainTracer()
+    tracer = QCFlowLangchainTracer()
 
     def worker_function(worker_id):
         chain_run_id = str(uuid.uuid4())
@@ -538,7 +538,7 @@ def test_tracer_does_not_add_spans_to_trace_after_root_run_has_finished():
 
     run_id_for_on_chain_end = None
 
-    class ExceptionCatchingTracer(MlflowLangchainTracer):
+    class ExceptionCatchingTracer(QCFlowLangchainTracer):
         def on_chain_end(self, outputs, *, run_id, inputs=None, **kwargs):
             nonlocal run_id_for_on_chain_end
             run_id_for_on_chain_end = run_id
@@ -554,7 +554,7 @@ def test_tracer_does_not_add_spans_to_trace_after_root_run_has_finished():
         config={"callbacks": [tracer]},
     )
 
-    with pytest.raises(MlflowException, match="Span for run_id .* not found."):
+    with pytest.raises(QCFlowException, match="Span for run_id .* not found."):
         # After the chain is invoked, verify that the tracer no longer holds references to spans,
         # ensuring that the tracer does not add spans to the trace after the root run has finished
         tracer.on_chain_end({"output": "test output"}, run_id=run_id_for_on_chain_end, inputs=None)
@@ -568,7 +568,7 @@ def test_tracer_noop_when_tracing_disabled(monkeypatch):
     def _predict():
         return model._predict_with_callbacks(
             ["QCFlow"],
-            callback_handlers=[MlflowLangchainTracer()],
+            callback_handlers=[QCFlowLangchainTracer()],
             convert_chat_responses=True,
         )
 
@@ -612,7 +612,7 @@ def test_tracer_with_manual_traces():
 
     @qcflow.trace(name="parent", span_type="SPECIAL")
     def run(message):
-        return chain.invoke(message, config={"callbacks": [MlflowLangchainTracer()]})
+        return chain.invoke(message, config={"callbacks": [QCFlowLangchainTracer()]})
 
     response = run("red")
     expected_response = "What is the complementary color of green?"

@@ -216,5 +216,5 @@ def test_log_evaluations_works_properly_with_empty_evaluations_list():
     with qcflow.start_run():
         log_evaluations(evaluations=[])
 
-        artifacts = qcflow.MlflowClient().list_artifacts(qcflow.active_run().info.run_id)
+        artifacts = qcflow.QCFlowClient().list_artifacts(qcflow.active_run().info.run_id)
         assert len(artifacts) == 0

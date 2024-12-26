@@ -4,7 +4,7 @@ import pytest
 from aiohttp import ClientTimeout
 from fastapi.encoders import jsonable_encoder
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.config import RouteConfig
 from qcflow.gateway.constants import QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
 from qcflow.gateway.exceptions import AIGatewayException
@@ -124,7 +124,7 @@ async def test_completions():
 @pytest.mark.asyncio
 async def test_param_invalid_model_name_is_not_permitted():
     config = completions_config_invalid_model()
-    with pytest.raises(MlflowException, match=r"An Unsupported AI21Labs model.*"):
+    with pytest.raises(QCFlowException, match=r"An Unsupported AI21Labs model.*"):
         RouteConfig(**config)
 
 

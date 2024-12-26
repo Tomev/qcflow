@@ -1,4 +1,4 @@
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
@@ -14,7 +14,7 @@ def _validate_content_type(flask_request, allowed_content_types: list[str]):
         return
 
     if flask_request.content_type is None:
-        raise MlflowException(
+        raise QCFlowException(
             message="Bad Request. Content-Type header is missing.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -24,7 +24,7 @@ def _validate_content_type(flask_request, allowed_content_types: list[str]):
     if content_type not in allowed_content_types:
         message = f"Bad Request. Content-Type must be one of {allowed_content_types}."
 
-        raise MlflowException(
+        raise QCFlowException(
             message=message,
             error_code=INVALID_PARAMETER_VALUE,
         )

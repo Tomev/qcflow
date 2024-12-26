@@ -76,7 +76,7 @@ class AsyncArtifactsLoggingQueue:
     def _logging_loop(self) -> None:
         """
         Continuously logs run data until `self._continue_to_process_data` is set to False.
-        If an exception occurs during logging, a `MlflowException` is raised.
+        If an exception occurs during logging, a `QCFlowException` is raised.
         """
         try:
             while not self._stop_data_logging_thread_event.is_set():
@@ -85,9 +85,9 @@ class AsyncArtifactsLoggingQueue:
             while not self._queue.empty():
                 self._log_artifact()
         except Exception as e:
-            from qcflow.exceptions import MlflowException
+            from qcflow.exceptions import QCFlowException
 
-            raise MlflowException(f"Exception inside the run data logging thread: {e}")
+            raise QCFlowException(f"Exception inside the run data logging thread: {e}")
 
     def _log_artifact(self) -> None:
         """Process the run's artifacts in the running runs queues.
@@ -197,10 +197,10 @@ class AsyncArtifactsLoggingQueue:
                 to check the status of the operation and retrieve any exceptions
                 that occurred during the operation.
         """
-        from qcflow import MlflowException
+        from qcflow import QCFlowException
 
         if not self._is_activated:
-            raise MlflowException("AsyncArtifactsLoggingQueue is not activated.")
+            raise QCFlowException("AsyncArtifactsLoggingQueue is not activated.")
         artifact = RunArtifact(
             filename=filename,
             artifact_path=artifact_path,

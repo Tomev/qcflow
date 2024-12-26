@@ -143,13 +143,13 @@ In that case, you can view the UI at ``http://<IP address of your QCFlow trackin
 Querying Runs Programmatically
 ------------------------------
 
-You can also access all of the functions in the Tracking UI programmatically with :py:class:`MlflowClient <qcflow.client.MlflowClient>`.
+You can also access all of the functions in the Tracking UI programmatically with :py:class:`QCFlowClient <qcflow.client.QCFlowClient>`.
 
 For example, the following code snippet search for runs that has the best validation loss among all runs in the experiment.
 
 .. code-block:: python
 
-    client = qcflow.tracking.MlflowClient()
+    client = qcflow.tracking.QCFlowClient()
     experiment_id = "0"
     best_run = client.search_runs(
         experiment_id, order_by=["metrics.val_loss ASC"], max_results=1

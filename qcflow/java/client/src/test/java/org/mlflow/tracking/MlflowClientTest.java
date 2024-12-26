@@ -49,8 +49,8 @@ import static org.qcflow.tracking.TestUtils.createParam;
 import static org.qcflow.tracking.TestUtils.createTag;
 import static org.qcflow.tracking.TestUtils.getExperimentByName;
 
-public class MlflowClientTest {
-  private static final Logger logger = LoggerFactory.getLogger(MlflowClientTest.class);
+public class QCFlowClientTest {
+  private static final Logger logger = LoggerFactory.getLogger(QCFlowClientTest.class);
 
   private static double ACCURACY_SCORE = 0.9733333333333334D;
   // NB: This can only be represented as a double (not float)
@@ -62,7 +62,7 @@ public class MlflowClientTest {
   private final TestClientProvider testClientProvider = new TestClientProvider();
   private String runId;
 
-  private MlflowClient client;
+  private QCFlowClient client;
 
   @BeforeSuite
   public void beforeAll() throws IOException {
@@ -99,7 +99,7 @@ public class MlflowClientTest {
     }
   }
 
-  @Test(expectedExceptions = MlflowClientException.class) // TODO: server should throw 406
+  @Test(expectedExceptions = QCFlowClientException.class) // TODO: server should throw 406
   public void createExistingExperiment() {
     String expName = createExperimentName();
     client.createExperiment(expName);
@@ -340,21 +340,21 @@ public class MlflowClientTest {
     try {
       client.deleteTag(runId, "tag0");
       Assert.fail();
-    } catch (MlflowClientException e) {
+    } catch (QCFlowClientException e) {
       Assert.assertTrue(e.getMessage().contains(String.format("No tag with name: tag0 in run with id %s", runId)));
     }
     // test that you can't delete a tag that doesn't already exist.
     try {
       client.deleteTag(runId, "fakeTag");
       Assert.fail();
-    } catch (MlflowClientException e) {
+    } catch (QCFlowClientException e) {
       Assert.assertTrue(e.getMessage().contains(String.format("No tag with name: fakeTag in run with id %s", runId)));
     }
     // test that you can't delete a tag on a nonexistent run.
     try {
       client.deleteTag("fakeRunId", "fakeTag");
       Assert.fail();
-    } catch (MlflowClientException e) {
+    } catch (QCFlowClientException e) {
       Assert.assertTrue(e.getMessage().contains(String.format("Run '%s' not found", "fakeRunId")));
     }
   }

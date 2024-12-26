@@ -1,15 +1,15 @@
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.protos.service_pb2 import InputTag as ProtoInputTag
 
 
-class InputTag(_MlflowObject):
+class InputTag(_QCFlowObject):
     """Input tag object associated with a dataset."""
 
     def __init__(self, key: str, value: str) -> None:
         self._key = key
         self._value = value
 
-    def __eq__(self, other: _MlflowObject) -> bool:
+    def __eq__(self, other: _QCFlowObject) -> bool:
         if type(other) is type(self):
             return self.__dict__ == other.__dict__
         return False

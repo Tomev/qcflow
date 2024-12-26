@@ -5,8 +5,8 @@ from requests.exceptions import HTTPError, Timeout
 
 import qcflow.gateway.utils
 from qcflow.environment_variables import QCFLOW_GATEWAY_URI
-from qcflow.exceptions import InvalidUrlException, MlflowException
-from qcflow.gateway import MlflowGatewayClient, set_gateway_uri
+from qcflow.exceptions import InvalidUrlException, QCFlowException
+from qcflow.gateway import QCFlowGatewayClient, set_gateway_uri
 from qcflow.gateway.config import Route
 from qcflow.gateway.constants import QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
 from qcflow.gateway.utils import resolve_route_url
@@ -175,23 +175,23 @@ def oss_gateway(qcflow_mixed_config_dict, tmp_path):
     ],
 )
 def test_invalid_uri_on_utils_raises(uri):
-    with pytest.raises(MlflowException, match="The gateway uri provided is missing required"):
+    with pytest.raises(QCFlowException, match="The gateway uri provided is missing required"):
         set_gateway_uri(uri)
 
 
 def test_non_running_server_raises_when_called(monkeypatch):
     monkeypatch.setenv("QCFLOW_HTTP_REQUEST_MAX_RETRIES", "0")
     set_gateway_uri("http://invalid.server:6000")
-    client = MlflowGatewayClient()
+    client = QCFlowGatewayClient()
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="API request to http://invalid.server:6000/api/2.0/gateway/routes/ failed ",
     ):
         client.search_routes()
 
 
 def test_create_gateway_client_with_declared_url(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
     assert gateway_client.gateway_uri == gateway.url
     assert isinstance(gateway_client.get_route("chat"), Route)
 
@@ -199,7 +199,7 @@ def test_create_gateway_client_with_declared_url(gateway):
 def test_set_gateway_uri_from_utils(gateway):
     set_gateway_uri(gateway_uri=gateway.url)
 
-    gateway_client = MlflowGatewayClient()
+    gateway_client = QCFlowGatewayClient()
     assert gateway_client.gateway_uri == gateway.url
     assert isinstance(gateway_client.get_route("completions"), Route)
 
@@ -207,7 +207,7 @@ def test_set_gateway_uri_from_utils(gateway):
 def test_create_gateway_client_with_environment_variable(gateway, monkeypatch):
     monkeypatch.setenv(QCFLOW_GATEWAY_URI.name, gateway.url)
 
-    gateway_client = MlflowGatewayClient()
+    gateway_client = QCFlowGatewayClient()
     assert gateway_client.gateway_uri == gateway.url
     assert isinstance(gateway_client.get_route("completions"), Route)
 
@@ -219,11 +219,11 @@ def test_create_gateway_client_with_overridden_env_variable(gateway, monkeypatch
     with pytest.raises(
         InvalidUrlException, match="Invalid url: http://localhost:99999/api/2.0/gateway/routes"
     ):
-        MlflowGatewayClient().search_routes()
+        QCFlowGatewayClient().search_routes()
 
     # Ensure that the global variable override preempts trying the environment variable value
     set_gateway_uri(gateway_uri=gateway.url)
-    gateway_client = MlflowGatewayClient()
+    gateway_client = QCFlowGatewayClient()
 
     assert gateway_client.gateway_uri == gateway.url
     assert gateway_client.get_route("chat").route_type == "llm/v1/chat"
@@ -232,7 +232,7 @@ def test_create_gateway_client_with_overridden_env_variable(gateway, monkeypatch
 def test_get_individual_routes(gateway, monkeypatch):
     monkeypatch.setenv(QCFLOW_GATEWAY_URI.name, gateway.url)
 
-    gateway_client = MlflowGatewayClient()
+    gateway_client = QCFlowGatewayClient()
 
     route1 = gateway_client.get_route(name="completions")
     assert isinstance(route1, Route)
@@ -258,7 +258,7 @@ def test_get_individual_routes(gateway, monkeypatch):
 def test_get_mixed_routes(mixed_gateway, monkeypatch):
     monkeypatch.setenv(QCFLOW_GATEWAY_URI.name, mixed_gateway.url)
 
-    gateway_client = MlflowGatewayClient()
+    gateway_client = QCFlowGatewayClient()
     chat_route = gateway_client.get_route(name="chat")
     assert chat_route.route_type == "llm/v1/chat"
     assert chat_route.name == "chat"
@@ -277,7 +277,7 @@ def test_get_mixed_routes(mixed_gateway, monkeypatch):
 
 
 def test_search_mixed_routes(mixed_gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=mixed_gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=mixed_gateway.url)
     routes = gateway_client.search_routes()
 
     assert len(routes) == 2
@@ -318,7 +318,7 @@ def test_search_routes_returns_expected_pages(tmp_path):
     }
     save_yaml(conf, gateway_config_dict)
     with Gateway(conf) as gateway:
-        gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+        gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
         routes_page_1 = gateway_client.search_routes()
         assert [route.name for route in routes_page_1] == gateway_route_names[
             :QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
@@ -334,14 +334,14 @@ def test_search_routes_returns_expected_pages(tmp_path):
 
 
 def test_query_invalid_route(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
 
     with pytest.raises(HTTPError, match="404 Client Error: Not Found"):
         gateway_client.get_route("invalid-route")
 
 
 def test_list_all_configured_routes(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
 
     routes = gateway_client.search_routes()
     assert all(isinstance(x, Route) for x in routes)
@@ -362,7 +362,7 @@ def test_list_all_configured_routes(gateway):
 
 
 def test_client_query_chat(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
 
     routes = gateway_client.search_routes()
 
@@ -400,7 +400,7 @@ def test_client_query_chat(gateway):
 
 
 def test_client_query_completions(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
 
     routes = gateway_client.search_routes()
 
@@ -430,7 +430,7 @@ def test_client_query_completions(gateway):
 
 
 def test_client_query_embeddings(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
     routes = gateway_client.search_routes()
     expected_output = {
         "object": "list",
@@ -468,10 +468,10 @@ def test_client_query_embeddings(gateway):
 
 
 def test_client_create_route_raises(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
 
     # This API is available only in Databricks for route creation
-    with pytest.raises(MlflowException, match="The create_route API is only available when"):
+    with pytest.raises(QCFlowException, match="The create_route API is only available when"):
         gateway_client.create_route(
             "some-route",
             "llm/v1/chat",
@@ -487,29 +487,29 @@ def test_client_create_route_raises(gateway):
 
 
 def test_client_set_limits_raises(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
 
     with pytest.raises(HTTPError, match="The set_limits API is not available"):
         gateway_client.set_limits("some-route", [])
 
 
 def test_client_get_limits_raises(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
 
     with pytest.raises(HTTPError, match="The get_limits API is not available"):
         gateway_client.get_limits("some-route")
 
 
 def test_client_delete_route_raises(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
 
     # This API is available only in Databricks for route deletion
-    with pytest.raises(MlflowException, match="The delete_route API is only available when"):
+    with pytest.raises(QCFlowException, match="The delete_route API is only available when"):
         gateway_client.delete_route("some-route")
 
 
 def test_client_query_anthropic_completions(mixed_gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=mixed_gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=mixed_gateway.url)
 
     route = gateway_client.get_route(name="completions")
     assert route.model.provider == "anthropic"
@@ -540,7 +540,7 @@ def test_client_query_anthropic_completions(mixed_gateway):
 
 
 def test_client_query_with_disallowed_param(mixed_gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=mixed_gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=mixed_gateway.url)
 
     route = gateway_client.get_route(name="completions")
 
@@ -551,7 +551,7 @@ def test_client_query_with_disallowed_param(mixed_gateway):
 
 
 def test_query_timeout_not_retried(mixed_gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=mixed_gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=mixed_gateway.url)
 
     data = {"prompt": "Test", "temperature": 0.4}
     route = "completions"
@@ -560,14 +560,14 @@ def test_query_timeout_not_retried(mixed_gateway):
         mock.patch("qcflow.gateway.constants.QCFLOW_GATEWAY_CLIENT_QUERY_TIMEOUT_SECONDS", new=1),
         mock.patch("requests.Session.request", side_effect=Timeout) as mocked_request,
     ):
-        with pytest.raises(MlflowException, match="The provider has timed out while generating"):
+        with pytest.raises(QCFlowException, match="The provider has timed out while generating"):
             gateway_client.query(route=route, data=data)
 
         mocked_request.assert_called_once()
 
 
 def test_client_query_qcflow_chat_route(oss_gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=oss_gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=oss_gateway.url)
 
     route = gateway_client.get_route(name="chat-oss")
     assert route.model.provider == "qcflow-model-serving"
@@ -605,7 +605,7 @@ def test_client_query_qcflow_chat_route(oss_gateway):
 
 
 def test_client_query_qcflow_completions_route(oss_gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=oss_gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=oss_gateway.url)
 
     route = gateway_client.get_route(name="completions-oss")
     assert route.model.provider == "qcflow-model-serving"
@@ -636,7 +636,7 @@ def test_client_query_qcflow_completions_route(oss_gateway):
 
 
 def test_client_query_qcflow_embeddings_route(oss_gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=oss_gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=oss_gateway.url)
 
     route = gateway_client.get_route(name="embeddings-oss")
     assert route.model.provider == "qcflow-model-serving"
@@ -679,7 +679,7 @@ def test_client_query_qcflow_embeddings_route(oss_gateway):
 
 
 def test_search_routes_no_routes():
-    gateway_client = MlflowGatewayClient(gateway_uri="http://localhost:5000")
+    gateway_client = QCFlowGatewayClient(gateway_uri="http://localhost:5000")
     resp = mock.Mock(status_code=200)
     resp.json.return_value = {}
     with mock.patch("requests.Session.request", return_value=resp) as request_mock:

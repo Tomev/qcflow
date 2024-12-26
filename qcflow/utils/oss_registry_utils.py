@@ -1,9 +1,9 @@
 import urllib.parse
 
 from qcflow.environment_variables import QCFLOW_UC_OSS_TOKEN
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.databricks_utils import get_databricks_host_creds
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 from qcflow.utils.uri import (
     _DATABRICKS_UNITY_CATALOG_SCHEME,
 )
@@ -17,13 +17,13 @@ def get_oss_host_creds(server_uri=None):
         server_uri (str): The URI of the server.
 
     Returns:
-        MlflowHostCreds: The host credentials for the OSS server.
+        QCFlowHostCreds: The host credentials for the OSS server.
     """
     parsed_uri = urllib.parse.urlparse(server_uri)
 
     if parsed_uri.scheme != "uc":
-        raise MlflowException("The scheme of the server_uri should be 'uc'")
+        raise QCFlowException("The scheme of the server_uri should be 'uc'")
 
     if parsed_uri.path == _DATABRICKS_UNITY_CATALOG_SCHEME:
         return get_databricks_host_creds(parsed_uri.path)
-    return MlflowHostCreds(host=parsed_uri.path, token=QCFLOW_UC_OSS_TOKEN.get())
+    return QCFlowHostCreds(host=parsed_uri.path, token=QCFLOW_UC_OSS_TOKEN.get())

@@ -7,7 +7,7 @@ import pytest
 
 from qcflow.data.dataset_source_registry import get_dataset_source_from_json, resolve_dataset_source
 from qcflow.data.http_dataset_source import HTTPDatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.os import is_windows
 from qcflow.utils.rest_utils import cloud_storage_http_request
 
@@ -38,13 +38,13 @@ def test_http_dataset_source_is_registered_and_resolvable():
     assert isinstance(source2, HTTPDatasetSource)
     assert source2.url == "https://otherwebsite.net"
 
-    with pytest.raises(MlflowException, match="Could not find a source information resolver"):
+    with pytest.raises(QCFlowException, match="Could not find a source information resolver"):
         resolve_dataset_source("s3://mybucket", candidate_sources=[HTTPDatasetSource])
 
-    with pytest.raises(MlflowException, match="Could not find a source information resolver"):
+    with pytest.raises(QCFlowException, match="Could not find a source information resolver"):
         resolve_dataset_source("otherscheme://mybucket", candidate_sources=[HTTPDatasetSource])
 
-    with pytest.raises(MlflowException, match="Could not find a source information resolver"):
+    with pytest.raises(QCFlowException, match="Could not find a source information resolver"):
         resolve_dataset_source("htp://mybucket", candidate_sources=[HTTPDatasetSource])
 
 
@@ -157,7 +157,7 @@ def test_source_load_with_content_disposition_header_invalid_filename(filename):
             "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-red.csv"
         )
 
-        with pytest.raises(MlflowException, match="Invalid filename in Content-Disposition header"):
+        with pytest.raises(QCFlowException, match="Invalid filename in Content-Disposition header"):
             source.load()
 
 
@@ -183,6 +183,6 @@ def test_source_load_with_content_disposition_header_invalid_filename_windows(fi
             "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-red.csv"
         )
 
-        # Expect an MlflowException for invalid filenames
-        with pytest.raises(MlflowException, match="Invalid filename in Content-Disposition header"):
+        # Expect an QCFlowException for invalid filenames
+        with pytest.raises(QCFlowException, match="Invalid filename in Content-Disposition header"):
             source.load()

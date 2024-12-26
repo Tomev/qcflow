@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 import qcflow
-from qcflow import MlflowClient, MlflowException
+from qcflow import QCFlowClient, QCFlowException
 from qcflow.data.evaluation_dataset import EvaluationDataset
 from qcflow.entities.metric import Metric
 from qcflow.metrics.base import MetricValue
@@ -149,7 +149,7 @@ def _is_valid_artifacts(artifacts):
 def _evaluate_custom_artifacts(custom_artifact_tuple, eval_df, builtin_metrics):
     """
     This function calls the `custom_artifact` function and performs validations on the returned
-    result to ensure that they are in the expected format. It will raise a MlflowException if
+    result to ensure that they are in the expected format. It will raise a QCFlowException if
     the result is not in the expected format.
 
     Args:
@@ -195,7 +195,7 @@ class BuiltInEvaluator(ModelEvaluator):
     """
 
     def __init__(self):
-        self.client = MlflowClient()
+        self.client = QCFlowClient()
 
     @abstractmethod
     def _evaluate(
@@ -295,7 +295,7 @@ class BuiltInEvaluator(ModelEvaluator):
         artifact_file_local_path = self.temp_dir.path(artifact_name + inferred_ext)
 
         if pathlib.Path(artifact_file_local_path).exists():
-            raise MlflowException(
+            raise QCFlowException(
                 f"{exception_and_warning_header} produced an artifact '{artifact_name}' that "
                 "cannot be logged because there already exists an artifact with the same name."
             )
@@ -327,7 +327,7 @@ class BuiltInEvaluator(ModelEvaluator):
                     f" with type '{type(raw_artifact)}' that is logged as a pickle artifact."
                 )
             except pickle.PickleError:
-                raise MlflowException(
+                raise QCFlowException(
                     f"{exception_and_warning_header} produced an unsupported artifact "
                     f"'{artifact_name}' with type '{type(raw_artifact)}' that cannot be pickled. "
                     "Supported object types for artifacts are:\n"
@@ -549,7 +549,7 @@ class BuiltInEvaluator(ModelEvaluator):
             malformed_results, input_columns, output_columns
         )
 
-        raise MlflowException(error_message, error_code=INVALID_PARAMETER_VALUE)
+        raise QCFlowException(error_message, error_code=INVALID_PARAMETER_VALUE)
 
     def _get_eval_df(self, prediction: pd.Series, target: Optional[np.array] = None):
         """
@@ -625,7 +625,7 @@ class BuiltInEvaluator(ModelEvaluator):
                     self.metrics_values.update({name: metric_value})
             except Exception as e:
                 stacktrace_str = traceback.format_exc()
-                if isinstance(e, MlflowException):
+                if isinstance(e, QCFlowException):
                     exceptions.append(
                         f"Metric '{metric.name}': Error:\n{e.message}\n{stacktrace_str}"
                     )
@@ -633,7 +633,7 @@ class BuiltInEvaluator(ModelEvaluator):
                     exceptions.append(f"Metric '{metric.name}': Error:\n{e!r}\n{stacktrace_str}")
 
         if len(exceptions) > 0:
-            raise MlflowException("\n".join(exceptions))
+            raise QCFlowException("\n".join(exceptions))
 
     def evaluate_metrics(
         self,
@@ -787,7 +787,7 @@ class BuiltInEvaluator(ModelEvaluator):
         **kwargs,
     ) -> EvaluationResult:
         if model is None and predictions is None and dataset.predictions_data is None:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "Either a model or set of predictions must be specified in order to use the"
                     " default evaluator. Either specify the `model` parameter, the `predictions`"
@@ -819,19 +819,19 @@ class BuiltInEvaluator(ModelEvaluator):
 
             self.spark_session = _get_active_spark_session()
             if not self.spark_session:
-                raise MlflowException(
+                raise QCFlowException(
                     message="eval_results_path is only supported in Spark environment. ",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
 
             if self.eval_results_mode not in ["overwrite", "append"]:
-                raise MlflowException(
+                raise QCFlowException(
                     message="eval_results_mode can only be 'overwrite' or 'append'. ",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
 
         if extra_metrics and custom_metrics:
-            raise MlflowException(
+            raise QCFlowException(
                 "The 'custom_metrics' parameter in qcflow.evaluate is deprecated. Please update "
                 "your code to only use the 'extra_metrics' parameter instead."
             )
@@ -855,7 +855,7 @@ class BuiltInEvaluator(ModelEvaluator):
             message = "\n".join(
                 [f"- Metric '{m}' has type '{type(m).__name__}'" for m in bad_metrics]
             )
-            raise MlflowException(
+            raise QCFlowException(
                 f"In the 'extra_metrics' parameter, the following metrics have the wrong type:\n"
                 f"{message}\n"
                 f"Please ensure that all extra metrics are instances of "

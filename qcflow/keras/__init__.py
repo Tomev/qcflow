@@ -22,7 +22,7 @@ if Version(keras.__version__) < Version("3.0.0"):
     ]
 else:
     from qcflow.keras.autologging import autolog
-    from qcflow.keras.callback import MlflowCallback
+    from qcflow.keras.callback import QCFlowCallback
     from qcflow.keras.load import _load_pyfunc, load_model
     from qcflow.keras.save import (
         get_default_conda_env,
@@ -33,11 +33,11 @@ else:
 
     FLAVOR_NAME = "keras"
 
-    QCFlowCallback = MlflowCallback  # for backwards compatibility
+    QCFlowCallback = QCFlowCallback  # for backwards compatibility
 
     __all__ = [
         "_load_pyfunc",
-        "MlflowCallback",
+        "QCFlowCallback",
         "QCFlowCallback",
         "autolog",
         "load_model",

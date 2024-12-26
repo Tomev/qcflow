@@ -17,7 +17,7 @@ from opentelemetry import context as context_api
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 
-from qcflow.exceptions import MlflowTracingException
+from qcflow.exceptions import QCFlowTracingException
 from qcflow.tracing.constant import SpanAttributeKey
 from qcflow.tracing.utils.exception import raise_as_trace_exception
 from qcflow.tracing.utils.once import Once
@@ -174,11 +174,11 @@ def _setup_tracer_provider(disabled=False):
 
     else:
         # Default to QCFlow Tracking Server
-        from qcflow.tracing.export.qcflow import MlflowSpanExporter
-        from qcflow.tracing.processor.qcflow import MlflowSpanProcessor
+        from qcflow.tracing.export.qcflow import QCFlowSpanExporter
+        from qcflow.tracing.processor.qcflow import QCFlowSpanProcessor
 
-        exporter = MlflowSpanExporter()
-        processor = MlflowSpanProcessor(exporter)
+        exporter = QCFlowSpanExporter()
+        processor = QCFlowSpanProcessor(exporter)
 
     tracer_provider = TracerProvider()
     tracer_provider.add_span_processor(processor)
@@ -313,7 +313,7 @@ def trace_disabled(f):
                 is_func_called, result = True, f(*args, **kwargs)
         # We should only catch the exception from disable() and enable()
         # and let other exceptions propagate.
-        except MlflowTracingException as e:
+        except QCFlowTracingException as e:
             _logger.warning(
                 f"An error occurred while disabling or re-enabling tracing: {e} "
                 "The original function will still be executed, but the tracing "

@@ -1,8 +1,8 @@
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.protos.service_pb2 import RunTag as ProtoRunTag
 
 
-class RunTag(_MlflowObject):
+class RunTag(_QCFlowObject):
     """Tag object associated with a run."""
 
     def __init__(self, key, value):

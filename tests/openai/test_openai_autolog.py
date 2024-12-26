@@ -4,7 +4,7 @@ import openai
 import pytest
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.tracing.constant import SpanAttributeKey, TraceMetadataKey
 
 from tests.openai.conftest import is_v1
@@ -344,7 +344,7 @@ def test_autolog_with_registered_model_name(client):
         model="gpt-4o-mini",
         temperature=0,
     )
-    registered_model = MlflowClient().get_registered_model(registered_model_name)
+    registered_model = QCFlowClient().get_registered_model(registered_model_name)
     assert registered_model.name == registered_model_name
 
 

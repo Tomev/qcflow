@@ -9,8 +9,8 @@ import qcflow
 from qcflow.data.code_dataset_source import CodeDatasetSource
 from qcflow.data.numpy_dataset import from_numpy
 from qcflow.data.tensorflow_dataset import from_tensorflow
-from qcflow.exceptions import MlflowException
-from qcflow.keras.callback import MlflowCallback
+from qcflow.exceptions import QCFlowException
+from qcflow.keras.callback import QCFlowCallback
 from qcflow.keras.save import log_model
 from qcflow.keras.utils import get_model_signature
 from qcflow.tracking.context import registry as context_registry
@@ -29,12 +29,12 @@ _logger = logging.getLogger(__name__)
 
 def _check_existing_qcflow_callback(callbacks):
     for callback in callbacks:
-        if isinstance(callback, MlflowCallback):
-            raise MlflowException(
-                "QCFlow autologging must be turned off if an `MlflowCallback` is explicitly added "
-                "to the callback list. You are creating an `MlflowCallback` while having "
+        if isinstance(callback, QCFlowCallback):
+            raise QCFlowException(
+                "QCFlow autologging must be turned off if an `QCFlowCallback` is explicitly added "
+                "to the callback list. You are creating an `QCFlowCallback` while having "
                 "autologging enabled. Please either call `qcflow.keras.autolog(disable=True)` "
-                "to disable autologging or remove `MlflowCallback` from the callback list. "
+                "to disable autologging or remove `QCFlowCallback` from the callback list. "
             )
 
 
@@ -253,9 +253,9 @@ def autolog(
                 except Exception as e:
                     _logger.warning(f"Failed to log dataset information to QCFlow. Reason: {e}")
 
-            # Add `MlflowCallback` to the callback list.
+            # Add `QCFlowCallback` to the callback list.
             callbacks = args[5] if len(args) >= 6 else kwargs.get("callbacks", [])
-            qcflow_callback = MlflowCallback(
+            qcflow_callback = QCFlowCallback(
                 log_every_epoch=log_every_epoch,
                 log_every_n_steps=log_every_n_steps,
             )

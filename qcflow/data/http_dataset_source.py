@@ -4,7 +4,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from qcflow.data.dataset_source import DatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.utils.file_utils import create_tmp_dir
 from qcflow.utils.rest_utils import augmented_raise_for_status, cloud_storage_http_request
@@ -49,7 +49,7 @@ class HTTPDatasetSource(DatasetSource):
             for match in re.finditer(r"filename=(.+)", content_disposition):
                 filename = match[1].strip("'\"")
                 if _is_path(filename):
-                    raise MlflowException.invalid_parameter_value(
+                    raise QCFlowException.invalid_parameter_value(
                         f"Invalid filename in Content-Disposition header: {filename}. "
                         "It must be a file name, not a path."
                     )
@@ -137,7 +137,7 @@ class HTTPDatasetSource(DatasetSource):
         """
         url = source_dict.get("url")
         if url is None:
-            raise MlflowException(
+            raise QCFlowException(
                 'Failed to parse HTTPDatasetSource. Missing expected key: "url"',
                 INVALID_PARAMETER_VALUE,
             )

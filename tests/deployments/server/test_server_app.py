@@ -8,7 +8,7 @@ from qcflow.deployments.server.constants import (
     QCFLOW_DEPLOYMENTS_CRUD_ENDPOINT_BASE,
     QCFLOW_DEPLOYMENTS_ENDPOINTS_BASE,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.config import GatewayConfig
 
 from tests.gateway.tools import MockAsyncResponse
@@ -242,5 +242,5 @@ def test_rate_limit():
 
 def test_create_app_from_env_fails_if_QCFLOW_DEPLOYMENTS_CONFIG_is_not_set(monkeypatch):
     monkeypatch.delenv("QCFLOW_DEPLOYMENTS_CONFIG", raising=False)
-    with pytest.raises(MlflowException, match="'QCFLOW_DEPLOYMENTS_CONFIG' is not set"):
+    with pytest.raises(QCFlowException, match="'QCFLOW_DEPLOYMENTS_CONFIG' is not set"):
         create_app_from_env()

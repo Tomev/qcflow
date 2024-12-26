@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.metrics.genai.base import EvaluationExample
 from qcflow.metrics.genai.genai_metric import make_genai_metric
 from qcflow.metrics.genai.utils import _get_latest_metric_version
@@ -32,7 +32,7 @@ def answer_similarity(
     predictions. This can be mapped to a column of a different name using ``col_mapping``
     in the ``evaluator_config`` parameter, or using the ``targets`` parameter in qcflow.evaluate().
 
-    An MlflowException will be raised if the specified version for this metric does not exist.
+    An QCFlowException will be raised if the specified version for this metric does not exist.
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
@@ -66,13 +66,13 @@ def answer_similarity(
     try:
         answer_similarity_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to find answer similarity metric for version {metric_version}."
             f" Please check the version",
             error_code=INVALID_PARAMETER_VALUE,
         ) from None
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to construct answer similarity metric {metric_version}. Error: {e!r}",
             error_code=INTERNAL_ERROR,
         ) from None
@@ -125,7 +125,7 @@ def answer_correctness(
     predictions. This can be mapped to a column of a different name using ``col_mapping``
     in the ``evaluator_config`` parameter, or using the ``targets`` parameter in qcflow.evaluate().
 
-    An MlflowException will be raised if the specified version for this metric does not exist.
+    An QCFlowException will be raised if the specified version for this metric does not exist.
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
@@ -159,13 +159,13 @@ def answer_correctness(
     try:
         answer_correctness_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to find answer correctness metric for version {metric_version}."
             f"Please check the version",
             error_code=INVALID_PARAMETER_VALUE,
         ) from None
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to construct answer correctness metric {metric_version}. Error: {e!r}",
             error_code=INTERNAL_ERROR,
         ) from None
@@ -215,7 +215,7 @@ def faithfulness(
     predictions. This can be mapped to a column of a different name using ``col_mapping``
     in the ``evaluator_config`` parameter.
 
-    An MlflowException will be raised if the specified version for this metric does not exist.
+    An QCFlowException will be raised if the specified version for this metric does not exist.
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
@@ -247,13 +247,13 @@ def faithfulness(
     try:
         faithfulness_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to find faithfulness metric for version {metric_version}."
             f" Please check the version",
             error_code=INVALID_PARAMETER_VALUE,
         ) from None
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to construct faithfulness metric {metric_version}. Error: {e!r}",
             error_code=INTERNAL_ERROR,
         ) from None
@@ -300,7 +300,7 @@ def answer_relevance(
     outputs are about the same subject as the input, while low scores mean that outputs may
     be non-topical.
 
-    An MlflowException will be raised if the specified version for this metric does not exist.
+    An QCFlowException will be raised if the specified version for this metric does not exist.
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
@@ -332,13 +332,13 @@ def answer_relevance(
     try:
         answer_relevance_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to find answer relevance metric for version {metric_version}."
             f" Please check the version",
             error_code=INVALID_PARAMETER_VALUE,
         ) from None
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to construct answer relevance metric {metric_version}. Error: {e!r}",
             error_code=INTERNAL_ERROR,
         ) from None
@@ -387,7 +387,7 @@ def relevance(
     predictions. This can be mapped to a column of a different name using ``col_mapping``
     in the ``evaluator_config`` parameter.
 
-    An MlflowException will be raised if the specified version for this metric does not exist.
+    An QCFlowException will be raised if the specified version for this metric does not exist.
 
     Args:
         model: (Optional) Model uri of the judge model that will be used to compute the metric,
@@ -421,13 +421,13 @@ def relevance(
     try:
         relevance_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to find relevance metric for version {metric_version}."
             f"Please check the version",
             error_code=INVALID_PARAMETER_VALUE,
         ) from None
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to construct relevance metric {metric_version}. Error: {e!r}",
             error_code=INTERNAL_ERROR,
         ) from None

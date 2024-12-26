@@ -10,7 +10,7 @@ LOGGING_LINE_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
 LOGGING_DATETIME_FORMAT = "%Y/%m/%d %H:%M:%S"
 
 
-class MlflowLoggingStream:
+class QCFlowLoggingStream:
     """
     A Python stream for use with event logging APIs throughout QCFlow (`eprint()`,
     `logger.info()`, etc.). This stream wraps `sys.stderr`, forwarding `write()` and
@@ -38,12 +38,12 @@ class MlflowLoggingStream:
         self._enabled = value
 
 
-QCFLOW_LOGGING_STREAM = MlflowLoggingStream()
+QCFLOW_LOGGING_STREAM = QCFlowLoggingStream()
 
 
 def disable_logging():
     """
-    Disables the `MlflowLoggingStream` used by event logging APIs throughout QCFlow
+    Disables the `QCFlowLoggingStream` used by event logging APIs throughout QCFlow
     (`eprint()`, `logger.info()`, etc), silencing all subsequent event logs.
     """
     QCFLOW_LOGGING_STREAM.enabled = False
@@ -51,14 +51,14 @@ def disable_logging():
 
 def enable_logging():
     """
-    Enables the `MlflowLoggingStream` used by event logging APIs throughout QCFlow
+    Enables the `QCFlowLoggingStream` used by event logging APIs throughout QCFlow
     (`eprint()`, `logger.info()`, etc), emitting all subsequent event logs. This
     reverses the effects of `disable_logging()`.
     """
     QCFLOW_LOGGING_STREAM.enabled = True
 
 
-class MlflowFormatter(logging.Formatter):
+class QCFlowFormatter(logging.Formatter):
     """
     Custom Formatter Class to support colored log
     ANSI characters might not work natively on older Windows, so disabling the feature for win32.
@@ -104,7 +104,7 @@ def _configure_qcflow_loggers(root_module_name):
             "disable_existing_loggers": False,
             "formatters": {
                 "qcflow_formatter": {
-                    "()": MlflowFormatter,
+                    "()": QCFlowFormatter,
                     "format": LOGGING_LINE_FORMAT,
                     "datefmt": LOGGING_DATETIME_FORMAT,
                 },

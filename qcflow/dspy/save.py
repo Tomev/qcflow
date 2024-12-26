@@ -10,7 +10,7 @@ import yaml
 import qcflow
 from qcflow import pyfunc
 from qcflow.dspy.wrapper import DspyChatModelWrapper, DspyModelWrapper
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.models import (
     Model,
     ModelInputExample,
@@ -123,12 +123,12 @@ def save_model(
     if signature:
         num_inputs = len(signature.inputs.inputs)
         if num_inputs == 0:
-            raise MlflowException(
+            raise QCFlowException(
                 "The model signature's input schema must contain at least one field.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
     if task and task not in SIGNATURE_FOR_LLM_INFERENCE_TASK:
-        raise MlflowException(
+        raise QCFlowException(
             "Invalid task: {task} at `qcflow.dspy.save_model()` call. The task must be None or one "
             f"of: {list(SIGNATURE_FOR_LLM_INFERENCE_TASK.keys())}",
             error_code=INVALID_PARAMETER_VALUE,

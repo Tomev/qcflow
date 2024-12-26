@@ -16,10 +16,10 @@ from qcflow.tracking._tracking_service.utils import (
     is_tracking_uri_set,
     set_tracking_uri,
 )
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 
 __all__ = [
-    "MlflowClient",
+    "QCFlowClient",
     "get_tracking_uri",
     "set_tracking_uri",
     "is_tracking_uri_set",

@@ -9,7 +9,7 @@ from google.protobuf.text_format import Parse as ParseTextIntoProto
 
 from qcflow.entities import Experiment, Metric
 from qcflow.entities.model_registry import ModelVersion, RegisteredModel
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.model_registry_pb2 import RegisteredModel as ProtoRegisteredModel
 from qcflow.protos.service_pb2 import Experiment as ProtoExperiment
 from qcflow.protos.service_pb2 import Metric as ProtoMetric
@@ -17,7 +17,7 @@ from qcflow.types import ColSpec, DataType, Schema, TensorSpec
 from qcflow.types.schema import Array, Map, Object, Property
 from qcflow.types.utils import _infer_schema
 from qcflow.utils.proto_json_utils import (
-    MlflowFailedTypeConversion,
+    QCFlowFailedTypeConversion,
     _CustomJsonEncoder,
     _stringify_all_experiment_ids,
     cast_df_types_according_to_schema,
@@ -426,7 +426,7 @@ def test_parse_tf_serving_raises_expected_errors():
         ]
     }
     with pytest.raises(
-        MlflowException, match="The length of values for each input/column name are not the same"
+        QCFlowException, match="The length of values for each input/column name are not the same"
     ):
         parse_tf_serving_input(tfserving_instances)
 
@@ -436,7 +436,7 @@ def test_parse_tf_serving_raises_expected_errors():
         "inputs": {"a": ["s1", "s2", "s3"], "b": [1, 2, 3], "c": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]},
     }
     match = 'Invalid input. One of "instances" and "inputs" must be specified'
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         parse_tf_serving_input(tfserving_input)
 
     # cannot specify signature name
@@ -445,7 +445,7 @@ def test_parse_tf_serving_raises_expected_errors():
         "inputs": {"a": ["s1", "s2", "s3"], "b": [1, 2, 3], "c": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]},
     }
     match = '"signature_name" parameter is currently not supported'
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         parse_tf_serving_input(tfserving_input)
 
 
@@ -625,7 +625,7 @@ def test_cast_df_types_according_to_schema_success(dataframe, schema, expected):
     ],
 )
 def test_cast_df_types_according_to_schema_error_message(dataframe, schema, error_message):
-    with pytest.raises(MlflowFailedTypeConversion, match=error_message):
+    with pytest.raises(QCFlowFailedTypeConversion, match=error_message):
         cast_df_types_according_to_schema(dataframe, schema)
 
 

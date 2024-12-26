@@ -32,7 +32,7 @@ from qcflow.data.numpy_dataset import from_numpy
 from qcflow.data.pandas_dataset import from_pandas
 from qcflow.entities.dataset_input import DatasetInput
 from qcflow.entities.input_tag import InputTag
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _infer_signature_from_input_example
@@ -40,11 +40,11 @@ from qcflow.models.utils import _save_example
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
 from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.utils import _inspect_original_var_name, gorilla
 from qcflow.utils.autologging_utils import (
     INPUT_EXAMPLE_SAMPLE_ROWS,
-    MlflowAutologgingQueueingClient,
+    QCFlowAutologgingQueueingClient,
     _get_new_training_session_class,
     autologging_integration,
     disable_autologging,
@@ -234,7 +234,7 @@ def save_model(
     _validate_env_arguments(conda_env, pip_requirements, extra_pip_requirements)
 
     if serialization_format not in SUPPORTED_SERIALIZATION_FORMATS:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Unrecognized serialization format: {serialization_format}. Please specify one"
                 f" of the following supported formats: {SUPPORTED_SERIALIZATION_FORMATS}."
@@ -439,7 +439,7 @@ def _load_model_from_local_file(path, serialization_format):
     """
     # TODO: we could validate the scikit-learn version here
     if serialization_format not in SUPPORTED_SERIALIZATION_FORMATS:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Unrecognized serialization format: {serialization_format}. Please specify one"
                 f" of the following supported formats: {SUPPORTED_SERIALIZATION_FORMATS}."
@@ -485,7 +485,7 @@ def _load_pyfunc(path):
             serialization_format = sklearn_flavor_conf.get(
                 "serialization_format", SERIALIZATION_FORMAT_PICKLE
             )
-        except MlflowException:
+        except QCFlowException:
             _logger.warning(
                 "Could not find scikit-learn flavor configuration during model loading process."
                 " Assuming 'pickle' serialization format."
@@ -589,7 +589,7 @@ def _save_model(sk_model, output_path, serialization_format):
 
             _dump_model(cloudpickle, sk_model, out)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"Unrecognized serialization format: {serialization_format}",
                 error_code=INTERNAL_ERROR,
             )
@@ -913,7 +913,7 @@ class _AutologgingMetricsManager:
         """
         # Note: if the case log the same metric key multiple times,
         #  newer value will overwrite old value
-        client = MlflowClient()
+        client = QCFlowClient()
         client.log_metric(run_id=run_id, key=key, value=value)
         if self._metric_info_artifact_need_update[run_id]:
             call_commands_list = []
@@ -1177,11 +1177,11 @@ def autolog(
         import numpy as np
         from sklearn.linear_model import LinearRegression
         import qcflow
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
 
 
         def fetch_logged_data(run_id):
-            client = MlflowClient()
+            client = QCFlowClient()
             data = client.get_run(run_id).data
             tags = {k: v for k, v in data.tags.items() if not k.startswith("qcflow.")}
             artifacts = [f.path for f in client.list_artifacts(run_id, "model")]
@@ -1343,7 +1343,7 @@ def _autolog(  # noqa: D417
     from qcflow.tracking.context import registry as context_registry
 
     if max_tuning_runs is not None and max_tuning_runs < 0:
-        raise MlflowException(
+        raise QCFlowException(
             message=f"`max_tuning_runs` must be non-negative, instead got {max_tuning_runs}.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1424,7 +1424,7 @@ def _autolog(  # noqa: D417
         # use during model logging & input example extraction, ensuring that we don't
         # attempt to infer input examples on data that was mutated during training
         (X, y_true, sample_weight) = _get_X_y_and_sample_weight(self.fit, args, kwargs)
-        autologging_client = MlflowAutologgingQueueingClient()
+        autologging_client = QCFlowAutologgingQueueingClient()
         _log_pretraining_metadata(autologging_client, self, X, y_true)
         params_logging_future = autologging_client.flush(synchronous=False)
         fit_output = original(self, *args, **kwargs)
@@ -1441,7 +1441,7 @@ def _autolog(  # noqa: D417
         QCFlow run that can be referenced via the fluent Tracking API.
 
         Args:
-            autologging_client: An instance of `MlflowAutologgingQueueingClient` used for
+            autologging_client: An instance of `QCFlowAutologgingQueueingClient` used for
                 efficiently logging run data to QCFlow Tracking.
             estimator: The scikit-learn estimator for which to log metadata.
         """
@@ -1488,7 +1488,7 @@ def _autolog(  # noqa: D417
         QCFlow run that can be referenced via the fluent Tracking API.
 
         Args:
-            autologging_client: An instance of `MlflowAutologgingQueueingClient` used for
+            autologging_client: An instance of `QCFlowAutologgingQueueingClient` used for
                 efficiently logging run data to QCFlow Tracking.
             estimator: The scikit-learn estimator for which to log metadata.
             X: The training dataset samples passed to the ``estimator.fit()`` function.
@@ -1700,7 +1700,7 @@ def _autolog(  # noqa: D417
                         dataset_input = DatasetInput(dataset=dataset._to_qcflow_entity(), tags=tags)
 
                         # log the dataset
-                        client = qcflow.MlflowClient()
+                        client = qcflow.QCFlowClient()
                         client.log_inputs(run_id=run_id, datasets=[dataset_input])
                 except Exception as e:
                     _logger.warning(

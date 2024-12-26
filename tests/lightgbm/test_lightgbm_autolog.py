@@ -16,7 +16,7 @@ from sklearn import datasets
 
 import qcflow
 import qcflow.lightgbm
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.lightgbm import _autolog_callback
 from qcflow.models import Model
 from qcflow.models.utils import _read_example
@@ -27,7 +27,7 @@ mpl.use("Agg")
 
 
 def get_latest_run():
-    client = MlflowClient()
+    client = QCFlowClient()
     return client.get_run(client.search_runs(["0"])[0].info.run_id)
 
 
@@ -188,7 +188,7 @@ def test_lgb_autolog_sklearn():
         model.fit(X, y)
         model_uri = qcflow.get_artifact_uri("model")
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(run.info.run_id)
     assert run.data.metrics.items() <= params.items()
     artifacts = {x.path for x in client.list_artifacts(run.info.run_id)}
@@ -217,7 +217,7 @@ def test_lgb_autolog_sklearn_nested_in_pipeline():
     with qcflow.start_run() as run:
         model.fit(X, y)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(run.info.run_id)
     # assert pipeline logged
     assert run.data.params["lgbmclassifier__reg_lambda"] == "1"
@@ -295,7 +295,7 @@ def test_lgb_autolog_logs_metrics_with_validation_data(bst_params, train_set):
         )
     run = get_latest_run()
     data = run.data
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_key = "train-multi_logloss"
     metric_history = [x.value for x in client.get_metric_history(run.info.run_id, metric_key)]
     assert metric_key in data.metrics
@@ -330,7 +330,7 @@ def test_lgb_autolog_logs_metrics_with_multi_validation_data(bst_params, train_s
         )
     run = get_latest_run()
     data = run.data
-    client = MlflowClient()
+    client = QCFlowClient()
     for valid_name in valid_names:
         metric_key = f"{valid_name}-multi_logloss"
         metric_history = [x.value for x in client.get_metric_history(run.info.run_id, metric_key)]
@@ -366,7 +366,7 @@ def test_lgb_autolog_logs_metrics_with_multi_metrics(bst_params, train_set):
         )
     run = get_latest_run()
     data = run.data
-    client = MlflowClient()
+    client = QCFlowClient()
     for metric_name in params["metric"]:
         metric_key = f"{valid_names[0]}-{metric_name}"
         metric_history = [x.value for x in client.get_metric_history(run.info.run_id, metric_key)]
@@ -402,7 +402,7 @@ def test_lgb_autolog_logs_metrics_with_multi_validation_data_and_metrics(bst_par
         )
     run = get_latest_run()
     data = run.data
-    client = MlflowClient()
+    client = QCFlowClient()
     for valid_name in valid_names:
         for metric_name in params["metric"]:
             metric_key = f"{valid_name}-{metric_name}"
@@ -540,7 +540,7 @@ def test_lgb_autolog_logs_metrics_with_early_stopping(bst_params, train_set):
         )
     run = get_latest_run()
     data = run.data
-    client = MlflowClient()
+    client = QCFlowClient()
     assert "best_iteration" in data.metrics
     assert int(data.metrics["best_iteration"]) == model.best_iteration
     assert "stopped_iteration" in data.metrics
@@ -564,7 +564,7 @@ def test_lgb_autolog_logs_feature_importance(bst_params, train_set):
     run = get_latest_run()
     run_id = run.info.run_id
     artifacts_dir = run.info.artifact_uri.replace("file://", "")
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [x.path for x in client.list_artifacts(run_id)]
 
     for imp_type in ["split", "gain"]:
@@ -640,7 +640,7 @@ def test_lgb_autolog_infers_model_signature_correctly(bst_params):
     run = get_latest_run()
     run_id = run.info.run_id
     artifacts_dir = run.info.artifact_uri.replace("file://", "")
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [x.path for x in client.list_artifacts(run_id, "model")]
 
     ml_model_filename = "MLmodel"
@@ -691,7 +691,7 @@ def test_lgb_autolog_continues_logging_even_if_signature_inference_fails(tmp_pat
     run = get_latest_run()
     run_id = run.info.run_id
     artifacts_dir = run.info.artifact_uri.replace("file://", "")
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [x.path for x in client.list_artifacts(run_id, "model")]
 
     ml_model_filename = "MLmodel"
@@ -737,7 +737,7 @@ def test_lgb_autolog_log_models_configuration(bst_params, log_models):
         lgb.train(bst_params, dataset)
 
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [f.path for f in client.list_artifacts(run_id)]
     assert ("model" in artifacts) == log_models
 
@@ -770,7 +770,7 @@ def test_sklearn_api_autolog_registering_model():
     with qcflow.start_run():
         model.fit(X, y)
 
-        registered_model = MlflowClient().get_registered_model(registered_model_name)
+        registered_model = QCFlowClient().get_registered_model(registered_model_name)
         assert registered_model.name == registered_model_name
 
 
@@ -781,7 +781,7 @@ def test_lgb_api_autolog_registering_model(bst_params, train_set):
     with qcflow.start_run():
         lgb.train(bst_params, train_set, num_boost_round=1)
 
-        registered_model = MlflowClient().get_registered_model(registered_model_name)
+        registered_model = QCFlowClient().get_registered_model(registered_model_name)
         assert registered_model.name == registered_model_name
 
 
@@ -792,7 +792,7 @@ def test_lgb_log_datasets(bst_params, train_set, log_datasets):
         lgb.train(bst_params, train_set, num_boost_round=1)
 
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
     if log_datasets:
         assert len(dataset_inputs) == 1
@@ -809,7 +809,7 @@ def test_lgb_log_datasets_with_valid_set(bst_params, train_set, valid_set):
         lgb.train(bst_params, train_set, valid_sets=[valid_set], num_boost_round=1)
 
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
     assert len(dataset_inputs) == 2
     assert dataset_inputs[0].tags[0].value == "train"
@@ -834,7 +834,7 @@ def test_lgb_log_datasets_with_valid_set_with_name(bst_params, train_set, valid_
         )
 
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
     assert len(dataset_inputs) == 2
     assert dataset_inputs[0].tags[0].value == "train"

@@ -1,6 +1,6 @@
 import base64
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.protos.databricks_uc_registry_service_pb2 import UcModelRegistryService
 from qcflow.protos.unity_catalog_oss_messages_pb2 import (
@@ -64,7 +64,7 @@ class UnityCatalogOSSModelsArtifactRepository(ArtifactRepository):
 
     def __init__(self, artifact_uri, registry_uri):
         if not is_oss_unity_catalog_uri(registry_uri):
-            raise MlflowException(
+            raise QCFlowException(
                 message="Attempted to instantiate an artifact repo to access models in the "
                 f"OSS Unity Catalog with non-Unity Catalog registry URI '{registry_uri}'. "
                 f"Please specify a Unity Catalog registry URI of the "
@@ -74,7 +74,7 @@ class UnityCatalogOSSModelsArtifactRepository(ArtifactRepository):
                 error_code=INVALID_PARAMETER_VALUE,
             )
         super().__init__(artifact_uri)
-        from qcflow.tracking.client import MlflowClient
+        from qcflow.tracking.client import QCFlowClient
 
         registry_uri_from_artifact_uri = get_databricks_profile_uri_from_artifact_uri(
             artifact_uri, result_scheme=_OSS_UNITY_CATALOG_SCHEME
@@ -84,14 +84,14 @@ class UnityCatalogOSSModelsArtifactRepository(ArtifactRepository):
 
         _, key_prefix = get_db_info_from_uri(urllib.parse.urlparse(registry_uri).path)
         if key_prefix is not None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Remote model registry access via model URIs of the form "
                 "'models://<scope>@<prefix>/<model_name>/<version_or_stage>' is unsupported for "
                 "models in the Unity Catalog. We recommend that you access the Unity Catalog "
                 "from the current Databricks workspace instead."
             )
         self.registry_uri = registry_uri
-        self.client = MlflowClient(registry_uri=self.registry_uri)
+        self.client = QCFlowClient(registry_uri=self.registry_uri)
         try:
             spark = _get_active_spark_session()
         except Exception:
@@ -159,10 +159,10 @@ class UnityCatalogOSSModelsArtifactRepository(ArtifactRepository):
         )
 
     def log_artifact(self, local_file, artifact_path=None):
-        raise MlflowException("This repository does not support logging artifacts.")
+        raise QCFlowException("This repository does not support logging artifacts.")
 
     def log_artifacts(self, local_dir, artifact_path=None):
-        raise MlflowException("This repository does not support logging artifacts.")
+        raise QCFlowException("This repository does not support logging artifacts.")
 
     def delete_artifacts(self, artifact_path=None):
         raise NotImplementedError("This artifact repository does not support deleting artifacts")

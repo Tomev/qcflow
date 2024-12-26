@@ -17210,7 +17210,7 @@ public final class DatabricksArtifacts {
       "\n\026ArtifactCredentialType\022\021\n\rAZURE_SAS_UR" +
       "I\020\001\022\025\n\021AWS_PRESIGNED_URL\020\002\022\022\n\016GCP_SIGNED" +
       "_URL\020\003\022\033\n\027AZURE_ADLS_GEN2_SAS_URI\020\0042\213\n\n " +
-      "DatabricksMlflowArtifactsService\022\234\001\n\025get" +
+      "DatabricksQCFlowArtifactsService\022\234\001\n\025get" +
       "CredentialsForRead\022\035.qcflow.GetCredentia" +
       "lsForRead\032&.qcflow.GetCredentialsForRead" +
       ".Response\"<\362\206\0318\n4\n\004POST\022&/qcflow/artifac" +

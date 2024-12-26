@@ -4,7 +4,7 @@ from contextlib import contextmanager
 import pytest
 
 import qcflow
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.environment_variables import QCFLOW_TRACKING_PASSWORD, QCFLOW_TRACKING_USERNAME
 from qcflow.protos.databricks_pb2 import (
     PERMISSION_DENIED,
@@ -55,14 +55,14 @@ def client(tmp_path):
 
 @contextmanager
 def assert_unauthenticated():
-    with pytest.raises(MlflowException, match=r"You are not authenticated.") as exception_context:
+    with pytest.raises(QCFlowException, match=r"You are not authenticated.") as exception_context:
         yield
     assert exception_context.value.error_code == ErrorCode.Name(UNAUTHENTICATED)
 
 
 @contextmanager
 def assert_unauthorized():
-    with pytest.raises(MlflowException, match=r"Permission denied.") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Permission denied.") as exception_context:
         yield
     assert exception_context.value.error_code == ErrorCode.Name(PERMISSION_DENIED)
 
@@ -170,7 +170,7 @@ def test_delete_user(client, monkeypatch):
         client.update_user_admin(username, True)
         client.delete_user(username)
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=rf"User with username={username} not found",
         ) as exception_context:
             client.get_user(username)
@@ -246,7 +246,7 @@ def test_client_delete_experiment_permission(client, monkeypatch):
         client.create_experiment_permission(experiment_id, username, PERMISSION)
         client.delete_experiment_permission(experiment_id, username)
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=rf"Experiment permission with experiment_id={experiment_id} "
             rf"and username={username} not found",
         ) as exception_context:
@@ -319,7 +319,7 @@ def test_client_delete_registered_model_permission(client, monkeypatch):
         client.create_registered_model_permission(name, username, PERMISSION)
         client.delete_registered_model_permission(name, username)
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=rf"Registered model permission with name={name} "
             rf"and username={username} not found",
         ) as exception_context:

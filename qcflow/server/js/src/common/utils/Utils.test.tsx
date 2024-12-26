@@ -8,7 +8,7 @@
 import Utils from './Utils';
 import React from 'react';
 import { X_AXIS_RELATIVE, X_AXIS_STEP, X_AXIS_WALL } from '../../experiment-tracking/components/MetricsPlotControls';
-import { RunTag } from '../../experiment-tracking/sdk/MlflowMessages';
+import { RunTag } from '../../experiment-tracking/sdk/QCFlowMessages';
 
 test('formatMetric', () => {
   expect(Utils.formatMetric(0)).toEqual('0');

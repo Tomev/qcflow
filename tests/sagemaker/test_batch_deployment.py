@@ -17,7 +17,7 @@ import qcflow.pyfunc
 import qcflow.sagemaker as mfs
 import qcflow.sagemaker.cli as mfscli
 import qcflow.sklearn
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model
 from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
@@ -95,7 +95,7 @@ def mock_sagemaker_aws_services(fn):
 def test_batch_deployment_with_unsupported_flavor_raises_exception(pretrained_model):
     unsupported_flavor = "this is not a valid flavor"
     match = "The specified flavor: `this is not a valid flavor` is not supported for deployment"
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         mfs.deploy_transform_job(
             job_name="bad_flavor",
             model_uri=pretrained_model.model_uri,
@@ -112,7 +112,7 @@ def test_batch_deployment_with_unsupported_flavor_raises_exception(pretrained_mo
 def test_batch_deployment_with_missing_flavor_raises_exception(pretrained_model):
     missing_flavor = "mleap"
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The specified model does not contain the specified deployment flavor",
     ) as exc:
         mfs.deploy_transform_job(
@@ -136,7 +136,7 @@ def test_batch_deployment_of_model_with_no_supported_flavors_raises_exception(pr
     model_config.save(path=model_config_path)
 
     match = "The specified model does not contain any of the supported flavors for deployment"
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         mfs.deploy_transform_job(
             job_name="missing-flavor",
             model_uri=logged_model_path,
@@ -153,7 +153,7 @@ def test_batch_deployment_of_model_with_no_supported_flavors_raises_exception(pr
 def test_deploy_sagemaker_transform_job_in_asynchronous_mode_without_archiving_throws_exception(
     pretrained_model,
 ):
-    with pytest.raises(MlflowException, match="Resources must be archived") as exc:
+    with pytest.raises(QCFlowException, match="Resources must be archived") as exc:
         mfs.deploy_transform_job(
             job_name="test-job",
             model_uri=pretrained_model.model_uri,
@@ -344,7 +344,7 @@ def test_deploying_sagemaker_transform_job_with_preexisting_name_in_create_mode_
     )
 
     with pytest.raises(
-        MlflowException, match="a batch transform job with the same name already exists"
+        QCFlowException, match="a batch transform job with the same name already exists"
     ) as exc:
         mfs.deploy_transform_job(
             job_name=job_name,
@@ -443,7 +443,7 @@ def test_deploy_in_throw_exception_after_transform_job_creation_fails(
 
     with (
         mock.patch("botocore.client.BaseClient._make_api_call", new=fail_transform_job_creations),
-        pytest.raises(MlflowException, match="batch transform job failed") as exc,
+        pytest.raises(QCFlowException, match="batch transform job failed") as exc,
     ):
         mfs.deploy_transform_job(
             job_name="test-job",
@@ -471,7 +471,7 @@ def test_attempting_to_terminate_in_asynchronous_mode_without_archiving_throws_e
         s3_output_path="Some Output Path",
     )
 
-    with pytest.raises(MlflowException, match="Resources must be archived") as exc:
+    with pytest.raises(QCFlowException, match="Resources must be archived") as exc:
         mfs.terminate_transform_job(
             job_name=job_name,
             archive=False,

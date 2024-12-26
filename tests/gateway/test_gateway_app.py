@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 from fastapi.testclient import TestClient
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.app import create_app_from_config, create_app_from_env
 from qcflow.gateway.config import GatewayConfig
 from qcflow.gateway.constants import QCFLOW_GATEWAY_CRUD_ROUTE_BASE, QCFLOW_GATEWAY_ROUTE_BASE
@@ -194,5 +194,5 @@ def test_dynamic_route():
 
 def test_create_app_from_env_fails_if_QCFLOW_GATEWAY_CONFIG_is_not_set(monkeypatch):
     monkeypatch.delenv("QCFLOW_GATEWAY_CONFIG", raising=False)
-    with pytest.raises(MlflowException, match="'QCFLOW_GATEWAY_CONFIG' is not set"):
+    with pytest.raises(QCFlowException, match="'QCFLOW_GATEWAY_CONFIG' is not set"):
         create_app_from_env()

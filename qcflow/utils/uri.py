@@ -6,7 +6,7 @@ import urllib.parse
 import uuid
 from typing import Any
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.store.db.db_types import DATABASE_ENGINES
 from qcflow.utils.os import is_windows
@@ -54,7 +54,7 @@ def is_local_uri(uri, is_tracking_or_registry_uri=True):
     )
     if scheme == "file":
         if is_remote_hostname:
-            raise MlflowException(
+            raise QCFlowException(
                 f"{uri} is not a valid remote uri. For remote access "
                 "on windows, please consider using a different scheme "
                 "such as SMB (e.g. smb://<hostname>/<path>)."
@@ -144,17 +144,17 @@ def construct_db_uri_from_profile(profile):
 def validate_db_scope_prefix_info(scope, prefix):
     for c in ["/", ":", " "]:
         if c in scope:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported Databricks profile name: {scope}."
                 f" Profile names cannot contain '{c}'."
             )
         if prefix and c in prefix:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported Databricks profile key prefix: {prefix}."
                 f" Key prefixes cannot contain '{c}'."
             )
     if prefix is not None and prefix.strip() == "":
-        raise MlflowException(
+        raise QCFlowException(
             f"Unsupported Databricks profile key prefix: '{prefix}'."
             " Key prefixes cannot be empty."
         )
@@ -169,7 +169,7 @@ def get_db_info_from_uri(uri):
     if parsed_uri.scheme == "databricks" or parsed_uri.scheme == _DATABRICKS_UNITY_CATALOG_SCHEME:
         # netloc should not be an empty string unless URI is formatted incorrectly.
         if parsed_uri.netloc == "":
-            raise MlflowException(
+            raise QCFlowException(
                 f"URI is formatted incorrectly: no netloc in URI '{uri}'."
                 " This may be the case if there is only one slash in the URI."
             )
@@ -254,7 +254,7 @@ def extract_db_type_from_uri(db_uri):
         db_type, _ = scheme.split("+")
     else:
         error_msg = f"Invalid database URI: '{db_uri}'. {_INVALID_DB_URI_MSG}"
-        raise MlflowException(error_msg, INVALID_PARAMETER_VALUE)
+        raise QCFlowException(error_msg, INVALID_PARAMETER_VALUE)
 
     _validate_db_type_string(db_type)
 
@@ -382,7 +382,7 @@ def is_valid_dbfs_uri(uri):
         return False
     try:
         db_profile_uri = get_databricks_profile_uri_from_artifact_uri(uri)
-    except MlflowException:
+    except QCFlowException:
         db_profile_uri = None
     return not parsed.netloc or db_profile_uri is not None
 
@@ -403,7 +403,7 @@ def dbfs_hdfs_uri_to_fuse_path(dbfs_uri):
         # Convert posixpaths (e.g. "/tmp/qcflow") to DBFS URIs by adding "dbfs:/" as a prefix
         dbfs_uri = "dbfs:" + dbfs_uri
     if not dbfs_uri.startswith(_DBFS_HDFS_URI_PREFIX):
-        raise MlflowException(
+        raise QCFlowException(
             f"Path '{dbfs_uri}' did not start with expected DBFS URI "
             f"prefix '{_DBFS_HDFS_URI_PREFIX}'",
         )
@@ -480,7 +480,7 @@ def validate_path_is_safe(path):
     # We must decode path before validating it
     path = _decode(path)
 
-    exc = MlflowException("Invalid path", error_code=INVALID_PARAMETER_VALUE)
+    exc = QCFlowException("Invalid path", error_code=INVALID_PARAMETER_VALUE)
     if "#" in path:
         raise exc
 
@@ -503,7 +503,7 @@ def validate_query_string(query):
     # Block query strings contain any traversal path (../) because they
     # could be resolved as part of the path and allow path traversal.
     if ".." in query:
-        raise MlflowException("Invalid query string", error_code=INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Invalid query string", error_code=INVALID_PARAMETER_VALUE)
 
 
 def _decode(url):

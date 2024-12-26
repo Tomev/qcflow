@@ -12,7 +12,7 @@ from packaging.version import Version
 from pydantic import ConfigDict, Field, ValidationError, root_validator, validator
 from pydantic.json import pydantic_encoder
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.base_models import ConfigModel, LimitModel, ResponseModel
 from qcflow.gateway.constants import (
     QCFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES,
@@ -109,7 +109,7 @@ class OpenAIAPIType(str, Enum):
             if api_type.value == value.lower():
                 return api_type
 
-        raise MlflowException.invalid_parameter_value(f"Invalid OpenAI API type '{value}'")
+        raise QCFlowException.invalid_parameter_value(f"Invalid OpenAI API type '{value}'")
 
 
 class OpenAIConfig(ConfigModel):
@@ -131,7 +131,7 @@ class OpenAIConfig(ConfigModel):
         api_type = (info.get("openai_api_type") or OpenAIAPIType.OPENAI).lower()
         if api_type == OpenAIAPIType.OPENAI:
             if info.get("openai_deployment_name") is not None:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"OpenAI route configuration can only specify a value for "
                     f"'openai_deployment_name' if 'openai_api_type' is '{OpenAIAPIType.AZURE}' "
                     f"or '{OpenAIAPIType.AZUREAD}'. Found type: '{api_type}'"
@@ -140,7 +140,7 @@ class OpenAIConfig(ConfigModel):
                 info["openai_api_base"] = "https://api.openai.com/v1"
         elif api_type in (OpenAIAPIType.AZURE, OpenAIAPIType.AZUREAD):
             if info.get("openai_organization") is not None:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"OpenAI route configuration can only specify a value for "
                     f"'openai_organization' if 'openai_api_type' is '{OpenAIAPIType.OPENAI}'"
                 )
@@ -148,13 +148,13 @@ class OpenAIConfig(ConfigModel):
             deployment_name = info.get("openai_deployment_name")
             api_version = info.get("openai_api_version")
             if (base_url, deployment_name, api_version).count(None) > 0:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"OpenAI route configuration must specify 'openai_api_base', "
                     f"'openai_deployment_name', and 'openai_api_version' if 'openai_api_type' is "
                     f"'{OpenAIAPIType.AZURE}' or '{OpenAIAPIType.AZUREAD}'."
                 )
         else:
-            raise MlflowException.invalid_parameter_value(f"Invalid OpenAI API type '{api_type}'")
+            raise QCFlowException.invalid_parameter_value(f"Invalid OpenAI API type '{api_type}'")
 
         return info
 
@@ -190,7 +190,7 @@ class PaLMConfig(ConfigModel):
         return _resolve_api_key_from_input(value)
 
 
-class MlflowModelServingConfig(ConfigModel):
+class QCFlowModelServingConfig(ConfigModel):
     model_server_url: str
 
     # Workaround to suppress warning that Pydantic raises when a field name starts with "model_".
@@ -247,7 +247,7 @@ def _resolve_api_key_from_input(api_key_input):
     """
 
     if not isinstance(api_key_input, str):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "The api key provided is not a string. Please provide either an environment "
             "variable key, a path to a file containing the api key, or the api key itself"
         )
@@ -258,7 +258,7 @@ def _resolve_api_key_from_input(api_key_input):
         if env_var := os.getenv(env_var_name):
             return env_var
         else:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Environment variable {env_var_name!r} is not set"
             )
 
@@ -290,7 +290,7 @@ class Model(ConfigModel):
             return Provider[formatted_value]
         if value in provider_registry.keys():
             return value
-        raise MlflowException.invalid_parameter_value(f"The provider '{value}' is not supported.")
+        raise QCFlowException.invalid_parameter_value(f"The provider '{value}' is not supported.")
 
     @classmethod
     def _validate_config(cls, info, values):
@@ -300,7 +300,7 @@ class Model(ConfigModel):
             config_type = provider_registry.get(provider).CONFIG_TYPE
             return config_type(**info)
 
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "A provider must be provided for each gateway route."
         )
 
@@ -349,7 +349,7 @@ class RouteConfig(AliasedConfigModel):
     @validator("name")
     def validate_endpoint_name(cls, route_name):
         if not is_valid_endpoint_name(route_name):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "The route name provided contains disallowed characters for a url endpoint. "
                 f"'{route_name}' is invalid. Names cannot contain spaces or any non "
                 "alphanumeric characters other than hyphen and underscore."
@@ -361,7 +361,7 @@ class RouteConfig(AliasedConfigModel):
         if model:
             model_instance = Model(**model)
             if model_instance.provider in Provider.values() and model_instance.config is None:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     "A config must be supplied when setting a provider. The provider entry for "
                     f"{model_instance.provider} is incorrect."
                 )
@@ -377,13 +377,13 @@ class RouteConfig(AliasedConfigModel):
             and route_type == RouteType.LLM_V1_CHAT
             and not is_valid_mosiacml_chat_model(model.name)
         ):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"An invalid model has been specified for the chat route. '{model.name}'. "
                 f"Ensure the model selected starts with one of: "
                 f"{QCFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES}"
             )
         if model and model.provider == "ai21labs" and not is_valid_ai21labs_model(model.name):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"An Unsupported AI21Labs model has been specified: '{model.name}'. "
                 f"Please see documentation for supported models."
             )
@@ -393,7 +393,7 @@ class RouteConfig(AliasedConfigModel):
     def validate_route_type(cls, value):
         if value in RouteType._value2member_map_:
             return value
-        raise MlflowException.invalid_parameter_value(f"The route_type '{value}' is not supported.")
+        raise QCFlowException.invalid_parameter_value(f"The route_type '{value}' is not supported.")
 
     @validator("limit", pre=True)
     def validate_limit(cls, value):
@@ -404,7 +404,7 @@ class RouteConfig(AliasedConfigModel):
             try:
                 parse(f"{limit.calls}/{limit.renewal_period}")
             except ValueError:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     "Failed to parse the rate limit configuration."
                     "Please make sure limit.calls is a positive number and"
                     "limit.renewal_period is a right granularity"
@@ -484,7 +484,7 @@ def _load_route_config(path: Union[str, Path]) -> GatewayConfig:
     try:
         configuration = yaml.safe_load(path.read_text())
     except Exception as e:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"The file at {path} is not a valid yaml file"
         ) from e
     check_configuration_deprecated_fields(configuration)
@@ -492,7 +492,7 @@ def _load_route_config(path: Union[str, Path]) -> GatewayConfig:
     try:
         return GatewayConfig(**configuration)
     except ValidationError as e:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"The gateway configuration is invalid: {e}"
         ) from e
 
@@ -505,9 +505,9 @@ def _save_route_config(config: GatewayConfig, path: Union[str, Path]) -> None:
 
 def _validate_config(config_path: str) -> GatewayConfig:
     if not os.path.exists(config_path):
-        raise MlflowException.invalid_parameter_value(f"{config_path} does not exist")
+        raise QCFlowException.invalid_parameter_value(f"{config_path} does not exist")
 
     try:
         return _load_route_config(config_path)
     except ValidationError as e:
-        raise MlflowException.invalid_parameter_value(f"Invalid gateway configuration: {e}") from e
+        raise QCFlowException.invalid_parameter_value(f"Invalid gateway configuration: {e}") from e

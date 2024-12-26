@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 import qcflow
-from qcflow.tensorflow.callback import MlflowCallback
+from qcflow.tensorflow.callback import QCFlowCallback
 
 
 @pytest.mark.parametrize(("log_every_epoch", "log_every_n_steps"), [(True, None), (False, 1)])
@@ -28,7 +28,7 @@ def test_tf_qcflow_callback(log_every_epoch, log_every_n_steps):
     )
 
     with qcflow.start_run() as run:
-        qcflow_callback = MlflowCallback(
+        qcflow_callback = QCFlowCallback(
             run=run,
             log_every_epoch=log_every_epoch,
             log_every_n_steps=log_every_n_steps,
@@ -44,7 +44,7 @@ def test_tf_qcflow_callback(log_every_epoch, log_every_n_steps):
             callbacks=[qcflow_callback],
         )
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     qcflow_run = client.get_run(run.info.run_id)
     run_metrics = qcflow_run.data.metrics
     model_info = qcflow_run.data.params
@@ -56,4 +56,4 @@ def test_tf_qcflow_callback(log_every_epoch, log_every_n_steps):
 
 
 def test_old_callback_still_exists():
-    assert qcflow.tensorflow.QCFlowCallback is qcflow.tensorflow.MlflowCallback
+    assert qcflow.tensorflow.QCFlowCallback is qcflow.tensorflow.QCFlowCallback

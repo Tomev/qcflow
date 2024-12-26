@@ -23,11 +23,11 @@ from qcflow.data.evaluation_dataset import (
 )
 from qcflow.entities.dataset_input import DatasetInput
 from qcflow.entities.input_tag import InputTag
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.evaluation.utils.trace import configure_autologging_for_evaluation
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.utils import _get_fully_qualified_class_name
 from qcflow.utils.annotations import developer_stable, experimental
 from qcflow.utils.class_utils import _get_class_from_string
@@ -202,11 +202,11 @@ def _generate_eval_metric_class(eval_fn, require_strict_signature=False):
             **kwargs,
         ) -> MetricValue:
             if missed_kwargs := set(allowed_kwargs_names) - set(kwargs.keys()):
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Missing required arguments: {missed_kwargs}",
                 )
             if extra_kwargs := set(kwargs.keys()) - set(allowed_kwargs_names):
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Unexpected arguments: {extra_kwargs}",
                 )
             return self.eval_fn(
@@ -485,19 +485,19 @@ def _make_metric(
     '''
     if name is None:
         if isinstance(eval_fn, FunctionType) and eval_fn.__name__ == "<lambda>":
-            raise MlflowException(
+            raise QCFlowException(
                 "`name` must be specified if `eval_fn` is a lambda function.",
                 INVALID_PARAMETER_VALUE,
             )
         if not hasattr(eval_fn, "__name__"):
-            raise MlflowException(
+            raise QCFlowException(
                 "`name` must be specified if `eval_fn` does not have a `__name__` attribute.",
                 INVALID_PARAMETER_VALUE,
             )
         name = eval_fn.__name__
 
     if "/" in name:
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid metric name '{name}'. Metric names cannot include forward slashes ('/').",
             INVALID_PARAMETER_VALUE,
         )
@@ -853,7 +853,7 @@ def resolve_evaluators_and_configs(
         try:
             import databricks.agents  # noqa: F401
         except ImportError as e:
-            raise MlflowException(
+            raise QCFlowException(
                 message="Databricks Agents SDK must be installed to use the "
                 f"`{_ModelType.DATABRICKS_AGENT}` model type. Run `pip install databricks-agents` "
                 "to install the package and try again.",
@@ -910,7 +910,7 @@ def resolve_evaluators_and_configs(
     elif isinstance(evaluators, str):
         # Single evaluator name specified
         if not (evaluator_config is None or isinstance(evaluator_config, dict)):
-            raise MlflowException(
+            raise QCFlowException(
                 message="If `evaluators` argument is the name of an evaluator, evaluator_config"
                 " must be None or a dict containing config items for the evaluator.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -930,7 +930,7 @@ def resolve_evaluators_and_configs(
         if evaluator_config is not None and not check_nesting_config_dict(
             evaluators, evaluator_config
         ):
-            raise MlflowException(
+            raise QCFlowException(
                 message="If `evaluators` argument is an evaluator name list, evaluator_config "
                 "must be a dict containing mapping from evaluator name to individual "
                 "evaluator config dict.",
@@ -950,7 +950,7 @@ def resolve_evaluators_and_configs(
                 resolved.append(EvaluatorBundle(name, rg.get_evaluator(name), config))
         return resolved
     else:
-        raise MlflowException(
+        raise QCFlowException(
             message="Invalid `evaluators` and `evaluator_config` arguments. "
             "Please refer to the documentation for correct usage.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -1007,7 +1007,7 @@ def _evaluate(
     global _last_failed_evaluator
     _last_failed_evaluator = None
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     model_uuid = getattr(model, "metadata", None)
 
@@ -1040,7 +1040,7 @@ def _evaluate(
     _last_failed_evaluator = None
 
     if len(eval_results) == 0:
-        raise MlflowException(
+        raise QCFlowException(
             message="The model could not be evaluated by any of the registered evaluators, please "
             "verify that the model type and other configs are set correctly.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -1075,7 +1075,7 @@ def _is_model_deployment_endpoint_uri(model: Any) -> bool:
     try:
         schema, path = _parse_model_uri(model)
         return schema == "endpoints"
-    except MlflowException:
+    except QCFlowException:
         return False
 
 
@@ -1599,7 +1599,7 @@ def evaluate(  # noqa: D417
     # TODO: We should support inference_params for other model types
 
     if inference_params is not None and not _is_model_deployment_endpoint_uri(model):
-        raise MlflowException(
+        raise QCFlowException(
             message="The inference_params argument can only be specified when the model "
             "is an QCFlow Deployments endpoint URI like `endpoints:/my-chat`",
             error_code=INVALID_PARAMETER_VALUE,
@@ -1615,7 +1615,7 @@ def evaluate(  # noqa: D417
             predictions = col_mapping.get(predictions, predictions)
 
     if data is None:
-        raise MlflowException(
+        raise QCFlowException(
             message="The data argument cannot be None.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1625,7 +1625,7 @@ def evaluate(  # noqa: D417
     # If Dataset is provided, the targets can only be specified by the Dataset,
     # not the targets parameters of the qcflow.evaluate() API.
     if isinstance(data, Dataset) and targets is not None:
-        raise MlflowException(
+        raise QCFlowException(
             message="The top-level targets parameter should not be specified since a Dataset "
             "is used. Please only specify the targets column name in the Dataset. For example: "
             "`data = qcflow.data.from_pandas(df=X.assign(y=y), targets='y')`. "
@@ -1635,7 +1635,7 @@ def evaluate(  # noqa: D417
     # If Dataset is provided and model is None, then the predictions can only be specified by the
     # Dataset, not the predictions parameters of the qcflow.evaluate() API.
     if isinstance(data, Dataset) and model is None and predictions is not None:
-        raise MlflowException(
+        raise QCFlowException(
             message="The top-level predictions parameter should not be specified since a Dataset "
             "is used. Please only specify the predictions column name in the Dataset. For example:"
             " `data = qcflow.data.from_pandas(df=X.assign(y=y), predictions='y')`"
@@ -1648,7 +1648,7 @@ def evaluate(  # noqa: D417
         and model is not None
         and getattr(data, "predictions", None) is not None
     ):
-        raise MlflowException(
+        raise QCFlowException(
             message="The predictions parameter should not be specified in the Dataset since a "
             "model is specified. Please remove the predictions column from the Dataset.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -1659,7 +1659,7 @@ def evaluate(  # noqa: D417
             if getattr(data, "targets", None) is not None:
                 targets = data.targets
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     message="The targets column name must be specified in the provided Dataset "
                     f"for {model_type} models. For example: "
                     "`data = qcflow.data.from_pandas(df=X.assign(y=y), targets='y')`",
@@ -1667,13 +1667,13 @@ def evaluate(  # noqa: D417
                 )
         else:
             if targets is None:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The targets argument must be specified for {model_type} models.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
     elif model_type is None:
         if not extra_metrics:
-            raise MlflowException(
+            raise QCFlowException(
                 message="The extra_metrics argument must be specified model_type is None.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -1684,14 +1684,14 @@ def evaluate(  # noqa: D417
         else:
             model = _load_model_or_server(model, env_manager, model_config)
     elif env_manager != _EnvManager.LOCAL:
-        raise MlflowException(
+        raise QCFlowException(
             message="The model argument must be a string URI referring to an QCFlow model when a "
             "non-local env_manager is specified.",
             error_code=INVALID_PARAMETER_VALUE,
         )
     elif isinstance(model, PyFuncModel):
         if model_config:
-            raise MlflowException(
+            raise QCFlowException(
                 message="Indicating ``model_config`` when passing a `PyFuncModel`` object as "
                 "model argument is not allowed. If you need to change the model configuration "
                 "for the evaluation model, use "
@@ -1702,7 +1702,7 @@ def evaluate(  # noqa: D417
     elif callable(model):
         model = _get_model_from_function(model)
     elif model is not None:
-        raise MlflowException(
+        raise QCFlowException(
             message="The model argument must be a string URI referring to an QCFlow model, "
             "an QCFlow Deployments endpoint URI, an instance of `qcflow.pyfunc.PyFuncModel`, "
             "a function, or None.",
@@ -1740,7 +1740,7 @@ def evaluate(  # noqa: D417
                     context = e.config.get("metric_prefix")
                     break
 
-            client = MlflowClient()
+            client = QCFlowClient()
             tags = [InputTag(key=QCFLOW_DATASET_CONTEXT, value=context)] if context else []
             dataset_input = DatasetInput(dataset=data._to_qcflow_entity(), tags=tags)
             client.log_inputs(run_id, [dataset_input])

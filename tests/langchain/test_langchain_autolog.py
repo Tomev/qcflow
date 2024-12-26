@@ -51,7 +51,7 @@ except ImportError:
 from packaging.version import Version
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities.trace_status import TraceStatus
 from qcflow.langchain._langchain_autolog import (
     UNSUPPORTED_LOG_MODEL_MESSAGE,
@@ -177,8 +177,8 @@ def test_autolog_manage_run(async_logging_enabled):
     assert qcflow.active_run() is not None
     assert run.info.status != "FINISHED"
 
-    assert MlflowClient().get_run(run.info.run_id).data.tags["test_tag"] == "test"
-    assert MlflowClient().get_run(run.info.run_id).data.tags["qcflow.autologging"] == "langchain"
+    assert QCFlowClient().get_run(run.info.run_id).data.tags["test_tag"] == "test"
+    assert QCFlowClient().get_run(run.info.run_id).data.tags["qcflow.autologging"] == "langchain"
     qcflow.end_run()
 
     if async_logging_enabled:
@@ -201,7 +201,7 @@ def test_autolog_manage_run_no_active_run():
     model.invoke("QCFlow")
 
     # A new run should be created, and terminated after the inference
-    run = MlflowClient().get_run(model.run_id)
+    run = QCFlowClient().get_run(model.run_id)
     assert run.info.run_name.startswith("langchain-")
     assert run.info.status == "FINISHED"
 
@@ -321,7 +321,7 @@ def test_llmchain_autolog_no_optional_artifacts_by_default():
     question = "QCFlow"
     answer = {"product": "QCFlow", "text": TEST_CONTENT}
     model = create_openai_llmchain()
-    with mock.patch("qcflow.MlflowClient.create_run") as create_run_mock:
+    with mock.patch("qcflow.QCFlowClient.create_run") as create_run_mock:
         assert model.invoke(question) == answer
         create_run_mock.assert_not_called()
 
@@ -336,7 +336,7 @@ def test_llmchain_autolog_with_registered_model_name():
     qcflow.langchain.autolog(log_models=True, registered_model_name=registered_model_name)
     model = create_openai_llmchain()
     model.invoke("QCFlow")
-    registered_model = MlflowClient().get_registered_model(registered_model_name)
+    registered_model = QCFlowClient().get_registered_model(registered_model_name)
     assert registered_model.name == registered_model_name
 
 

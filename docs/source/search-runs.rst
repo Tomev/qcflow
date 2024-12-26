@@ -460,7 +460,7 @@ outside the QCFlow UI. This can be done programmatically using the QCFlow client
 Python
 ^^^^^^
 
-:py:func:`qcflow.client.MlflowClient.search_runs()` or :py:func:`qcflow.search_runs()` 
+:py:func:`qcflow.client.QCFlowClient.search_runs()` or :py:func:`qcflow.search_runs()` 
 take the same arguments as the above UI examples and more! They return all the runs that 
 match the specified filters. Your best resource is the dosctrings for each of these functions, but
 here are some useful examples.
@@ -578,7 +578,7 @@ Now you might be wondering how to search all experiments. It's as simple as spec
   )
 
 Finally, there are additioanl useful features in the 
-:py:func:`qcflow.client.MlflowClient.search_runs()` or :py:func:`qcflow.search_runs()` methods, so be sure to 
+:py:func:`qcflow.client.QCFlowClient.search_runs()` or :py:func:`qcflow.search_runs()` methods, so be sure to 
 check out the documentation for more details.
 
 R

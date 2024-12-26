@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo, ArtifactCredentialType
 from qcflow.store.artifact.cloud_artifact_repo import (
     CloudArtifactRepository,
@@ -20,9 +20,9 @@ def test_readable_size(size, size_str):
 
 
 def test_chunk_size_validation_failure():
-    with pytest.raises(MlflowException, match="Multipart chunk size"):
+    with pytest.raises(QCFlowException, match="Multipart chunk size"):
         _validate_chunk_size_aws(5 * 1024**2 - 1)
-    with pytest.raises(MlflowException, match="Multipart chunk size"):
+    with pytest.raises(QCFlowException, match="Multipart chunk size"):
         _validate_chunk_size_aws(5 * 1024**3 + 1)
 
 
@@ -106,7 +106,7 @@ def test__parallelized_download_from_cloud(
         ):
             if future_result:
                 with pytest.raises(
-                    MlflowException, match="All retries have been exhausted. Download has failed."
+                    QCFlowException, match="All retries have been exhausted. Download has failed."
                 ):
                     cloud_artifact_instance._parallelized_download_from_cloud(
                         1, "fake_remote_path", str(fake_local_path)

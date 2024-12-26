@@ -7,13 +7,13 @@ from qcflow.server.graphql.graphql_errors import ApiError
 from qcflow.utils.proto_json_utils import parse_dict
 
 
-class MlflowModelVersionStatus(graphene.Enum):
+class QCFlowModelVersionStatus(graphene.Enum):
     PENDING_REGISTRATION = 1
     FAILED_REGISTRATION = 2
     READY = 3
 
 
-class MlflowRunStatus(graphene.Enum):
+class QCFlowRunStatus(graphene.Enum):
     RUNNING = 1
     SCHEDULED = 2
     FINISHED = 3
@@ -21,18 +21,18 @@ class MlflowRunStatus(graphene.Enum):
     KILLED = 5
 
 
-class MlflowViewType(graphene.Enum):
+class QCFlowViewType(graphene.Enum):
     ACTIVE_ONLY = 1
     DELETED_ONLY = 2
     ALL = 3
 
 
-class MlflowModelVersionTag(graphene.ObjectType):
+class QCFlowModelVersionTag(graphene.ObjectType):
     key = graphene.String()
     value = graphene.String()
 
 
-class MlflowModelVersion(graphene.ObjectType):
+class QCFlowModelVersion(graphene.ObjectType):
     name = graphene.String()
     version = graphene.String()
     creation_timestamp = LongString()
@@ -42,32 +42,32 @@ class MlflowModelVersion(graphene.ObjectType):
     description = graphene.String()
     source = graphene.String()
     run_id = graphene.String()
-    status = graphene.Field(MlflowModelVersionStatus)
+    status = graphene.Field(QCFlowModelVersionStatus)
     status_message = graphene.String()
-    tags = graphene.List(graphene.NonNull(MlflowModelVersionTag))
+    tags = graphene.List(graphene.NonNull(QCFlowModelVersionTag))
     run_link = graphene.String()
     aliases = graphene.List(graphene.String)
 
 
-class MlflowSearchModelVersionsResponse(graphene.ObjectType):
-    model_versions = graphene.List(graphene.NonNull(MlflowModelVersion))
+class QCFlowSearchModelVersionsResponse(graphene.ObjectType):
+    model_versions = graphene.List(graphene.NonNull(QCFlowModelVersion))
     next_page_token = graphene.String()
     apiError = graphene.Field(ApiError)
 
 
-class MlflowDatasetSummary(graphene.ObjectType):
+class QCFlowDatasetSummary(graphene.ObjectType):
     experiment_id = graphene.String()
     name = graphene.String()
     digest = graphene.String()
     context = graphene.String()
 
 
-class MlflowSearchDatasetsResponse(graphene.ObjectType):
-    dataset_summaries = graphene.List(graphene.NonNull(MlflowDatasetSummary))
+class QCFlowSearchDatasetsResponse(graphene.ObjectType):
+    dataset_summaries = graphene.List(graphene.NonNull(QCFlowDatasetSummary))
     apiError = graphene.Field(ApiError)
 
 
-class MlflowMetricWithRunId(graphene.ObjectType):
+class QCFlowMetricWithRunId(graphene.ObjectType):
     key = graphene.String()
     value = graphene.Float()
     timestamp = LongString()
@@ -75,25 +75,25 @@ class MlflowMetricWithRunId(graphene.ObjectType):
     run_id = graphene.String()
 
 
-class MlflowGetMetricHistoryBulkIntervalResponse(graphene.ObjectType):
-    metrics = graphene.List(graphene.NonNull(MlflowMetricWithRunId))
+class QCFlowGetMetricHistoryBulkIntervalResponse(graphene.ObjectType):
+    metrics = graphene.List(graphene.NonNull(QCFlowMetricWithRunId))
     apiError = graphene.Field(ApiError)
 
 
-class MlflowFileInfo(graphene.ObjectType):
+class QCFlowFileInfo(graphene.ObjectType):
     path = graphene.String()
     is_dir = graphene.Boolean()
     file_size = LongString()
 
 
-class MlflowListArtifactsResponse(graphene.ObjectType):
+class QCFlowListArtifactsResponse(graphene.ObjectType):
     root_uri = graphene.String()
-    files = graphene.List(graphene.NonNull(MlflowFileInfo))
+    files = graphene.List(graphene.NonNull(QCFlowFileInfo))
     next_page_token = graphene.String()
     apiError = graphene.Field(ApiError)
 
 
-class MlflowDataset(graphene.ObjectType):
+class QCFlowDataset(graphene.ObjectType):
     name = graphene.String()
     digest = graphene.String()
     source_type = graphene.String()
@@ -102,105 +102,105 @@ class MlflowDataset(graphene.ObjectType):
     profile = graphene.String()
 
 
-class MlflowInputTag(graphene.ObjectType):
+class QCFlowInputTag(graphene.ObjectType):
     key = graphene.String()
     value = graphene.String()
 
 
-class MlflowDatasetInput(graphene.ObjectType):
-    tags = graphene.List(graphene.NonNull(MlflowInputTag))
-    dataset = graphene.Field(MlflowDataset)
+class QCFlowDatasetInput(graphene.ObjectType):
+    tags = graphene.List(graphene.NonNull(QCFlowInputTag))
+    dataset = graphene.Field(QCFlowDataset)
 
 
-class MlflowRunInputs(graphene.ObjectType):
-    dataset_inputs = graphene.List(graphene.NonNull(MlflowDatasetInput))
+class QCFlowRunInputs(graphene.ObjectType):
+    dataset_inputs = graphene.List(graphene.NonNull(QCFlowDatasetInput))
 
 
-class MlflowRunTag(graphene.ObjectType):
+class QCFlowRunTag(graphene.ObjectType):
     key = graphene.String()
     value = graphene.String()
 
 
-class MlflowParam(graphene.ObjectType):
+class QCFlowParam(graphene.ObjectType):
     key = graphene.String()
     value = graphene.String()
 
 
-class MlflowMetric(graphene.ObjectType):
+class QCFlowMetric(graphene.ObjectType):
     key = graphene.String()
     value = graphene.Float()
     timestamp = LongString()
     step = LongString()
 
 
-class MlflowRunData(graphene.ObjectType):
-    metrics = graphene.List(graphene.NonNull(MlflowMetric))
-    params = graphene.List(graphene.NonNull(MlflowParam))
-    tags = graphene.List(graphene.NonNull(MlflowRunTag))
+class QCFlowRunData(graphene.ObjectType):
+    metrics = graphene.List(graphene.NonNull(QCFlowMetric))
+    params = graphene.List(graphene.NonNull(QCFlowParam))
+    tags = graphene.List(graphene.NonNull(QCFlowRunTag))
 
 
-class MlflowRunInfo(graphene.ObjectType):
+class QCFlowRunInfo(graphene.ObjectType):
     run_id = graphene.String()
     run_uuid = graphene.String()
     run_name = graphene.String()
     experiment_id = graphene.String()
     user_id = graphene.String()
-    status = graphene.Field(MlflowRunStatus)
+    status = graphene.Field(QCFlowRunStatus)
     start_time = LongString()
     end_time = LongString()
     artifact_uri = graphene.String()
     lifecycle_stage = graphene.String()
 
 
-class MlflowRun(graphene.ObjectType):
-    info = graphene.Field(MlflowRunInfo)
-    data = graphene.Field(MlflowRunData)
-    inputs = graphene.Field(MlflowRunInputs)
+class QCFlowRun(graphene.ObjectType):
+    info = graphene.Field(QCFlowRunInfo)
+    data = graphene.Field(QCFlowRunData)
+    inputs = graphene.Field(QCFlowRunInputs)
 
 
-class MlflowSearchRunsResponse(graphene.ObjectType):
-    runs = graphene.List(graphene.NonNull('qcflow.server.graphql.graphql_schema_extensions.MlflowRunExtension'))
+class QCFlowSearchRunsResponse(graphene.ObjectType):
+    runs = graphene.List(graphene.NonNull('qcflow.server.graphql.graphql_schema_extensions.QCFlowRunExtension'))
     next_page_token = graphene.String()
     apiError = graphene.Field(ApiError)
 
 
-class MlflowGetRunResponse(graphene.ObjectType):
-    run = graphene.Field('qcflow.server.graphql.graphql_schema_extensions.MlflowRunExtension')
+class QCFlowGetRunResponse(graphene.ObjectType):
+    run = graphene.Field('qcflow.server.graphql.graphql_schema_extensions.QCFlowRunExtension')
     apiError = graphene.Field(ApiError)
 
 
-class MlflowExperimentTag(graphene.ObjectType):
+class QCFlowExperimentTag(graphene.ObjectType):
     key = graphene.String()
     value = graphene.String()
 
 
-class MlflowExperiment(graphene.ObjectType):
+class QCFlowExperiment(graphene.ObjectType):
     experiment_id = graphene.String()
     name = graphene.String()
     artifact_location = graphene.String()
     lifecycle_stage = graphene.String()
     last_update_time = LongString()
     creation_time = LongString()
-    tags = graphene.List(graphene.NonNull(MlflowExperimentTag))
+    tags = graphene.List(graphene.NonNull(QCFlowExperimentTag))
 
 
-class MlflowGetExperimentResponse(graphene.ObjectType):
-    experiment = graphene.Field(MlflowExperiment)
+class QCFlowGetExperimentResponse(graphene.ObjectType):
+    experiment = graphene.Field(QCFlowExperiment)
     apiError = graphene.Field(ApiError)
 
 
-class MlflowSearchModelVersionsInput(graphene.InputObjectType):
+class QCFlowSearchModelVersionsInput(graphene.InputObjectType):
     filter = graphene.String()
     max_results = LongString()
     order_by = graphene.List(graphene.String)
     page_token = graphene.String()
 
 
-class MlflowSearchDatasetsInput(graphene.InputObjectType):
+class QCFlowSearchDatasetsInput(graphene.InputObjectType):
     experiment_ids = graphene.List(graphene.String)
 
 
-class MlflowGetMetricHistoryBulkIntervalInput(graphene.InputObjectType):
+class QCFlowGetMetricHistoryBulkIntervalInput(graphene.InputObjectType):
     run_ids = graphene.List(graphene.String)
     metric_key = graphene.String()
     start_step = graphene.Int()
@@ -208,37 +208,37 @@ class MlflowGetMetricHistoryBulkIntervalInput(graphene.InputObjectType):
     max_results = graphene.Int()
 
 
-class MlflowListArtifactsInput(graphene.InputObjectType):
+class QCFlowListArtifactsInput(graphene.InputObjectType):
     run_id = graphene.String()
     run_uuid = graphene.String()
     path = graphene.String()
     page_token = graphene.String()
 
 
-class MlflowSearchRunsInput(graphene.InputObjectType):
+class QCFlowSearchRunsInput(graphene.InputObjectType):
     experiment_ids = graphene.List(graphene.String)
     filter = graphene.String()
-    run_view_type = graphene.Field(MlflowViewType)
+    run_view_type = graphene.Field(QCFlowViewType)
     max_results = graphene.Int()
     order_by = graphene.List(graphene.String)
     page_token = graphene.String()
 
 
-class MlflowGetRunInput(graphene.InputObjectType):
+class QCFlowGetRunInput(graphene.InputObjectType):
     run_id = graphene.String()
     run_uuid = graphene.String()
 
 
-class MlflowGetExperimentInput(graphene.InputObjectType):
+class QCFlowGetExperimentInput(graphene.InputObjectType):
     experiment_id = graphene.String()
 
 
 class QueryType(graphene.ObjectType):
-    qcflow_get_experiment = graphene.Field(MlflowGetExperimentResponse, input=MlflowGetExperimentInput())
-    qcflow_get_metric_history_bulk_interval = graphene.Field(MlflowGetMetricHistoryBulkIntervalResponse, input=MlflowGetMetricHistoryBulkIntervalInput())
-    qcflow_get_run = graphene.Field(MlflowGetRunResponse, input=MlflowGetRunInput())
-    qcflow_list_artifacts = graphene.Field(MlflowListArtifactsResponse, input=MlflowListArtifactsInput())
-    qcflow_search_model_versions = graphene.Field(MlflowSearchModelVersionsResponse, input=MlflowSearchModelVersionsInput())
+    qcflow_get_experiment = graphene.Field(QCFlowGetExperimentResponse, input=QCFlowGetExperimentInput())
+    qcflow_get_metric_history_bulk_interval = graphene.Field(QCFlowGetMetricHistoryBulkIntervalResponse, input=QCFlowGetMetricHistoryBulkIntervalInput())
+    qcflow_get_run = graphene.Field(QCFlowGetRunResponse, input=QCFlowGetRunInput())
+    qcflow_list_artifacts = graphene.Field(QCFlowListArtifactsResponse, input=QCFlowListArtifactsInput())
+    qcflow_search_model_versions = graphene.Field(QCFlowSearchModelVersionsResponse, input=QCFlowSearchModelVersionsInput())
 
     def resolve_qcflow_get_experiment(self, info, input):
         input_dict = vars(input)
@@ -272,8 +272,8 @@ class QueryType(graphene.ObjectType):
 
 
 class MutationType(graphene.ObjectType):
-    qcflow_search_datasets = graphene.Field(MlflowSearchDatasetsResponse, input=MlflowSearchDatasetsInput())
-    qcflow_search_runs = graphene.Field(MlflowSearchRunsResponse, input=MlflowSearchRunsInput())
+    qcflow_search_datasets = graphene.Field(QCFlowSearchDatasetsResponse, input=QCFlowSearchDatasetsInput())
+    qcflow_search_runs = graphene.Field(QCFlowSearchRunsResponse, input=QCFlowSearchRunsInput())
 
     def resolve_qcflow_search_datasets(self, info, input):
         input_dict = vars(input)

@@ -46,7 +46,7 @@ jest.mock('../../../../../common/components/ag-grid/AgGridLoader', () => {
   };
   const columnApiMock = {};
   return {
-    MLFlowAgGridLoader: ({ onGridReady }: any) => {
+    QCFlowAgGridLoader: ({ onGridReady }: any) => {
       onGridReady({
         api: apiMock,
         columnApi: columnApiMock,

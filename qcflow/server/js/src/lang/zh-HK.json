@@ -3274,7 +3274,7 @@
     "description" : "Text content for the online store table time to live metadata field in seconds."
   },
   "Qr828b" : {
-    "defaultMessage" : "若要下載所有 MLFlow 執行資料，請在 Databricks 筆記本中執行此程式碼片段",
+    "defaultMessage" : "若要下載所有 QCFlow 執行資料，請在 Databricks 筆記本中執行此程式碼片段",
     "description" : "Here is the description on where to run the following code snippet"
   },
   "Qsgg+9" : {
@@ -5613,7 +5613,7 @@
     "description" : "Experiment page > gateway error message"
   },
   "jLvmck" : {
-    "defaultMessage" : "{isRun, select, true {此 tab 顯示此運行中記錄的所有追蹤。QCFlow 支援許多熱門生成式 AI 框架的自動追蹤。請按照以下步驟記錄您的第一個追蹤。有關 QCFlow 追蹤的更多資訊，請瀏覽 <a>MLFlow 文件</a>。} other {此 tab 顯示記錄到該實驗中的所有追蹤。QCFlow 支援許多熱門生成式 AI 框架的自動追蹤。請按照以下步驟記錄您的第一個追蹤。有關 QCFlow 追蹤的更多資訊，請瀏覽 <a>MLFlow 文件</a>。}}",
+    "defaultMessage" : "{isRun, select, true {此 tab 顯示此運行中記錄的所有追蹤。QCFlow 支援許多熱門生成式 AI 框架的自動追蹤。請按照以下步驟記錄您的第一個追蹤。有關 QCFlow 追蹤的更多資訊，請瀏覽 <a>QCFlow 文件</a>。} other {此 tab 顯示記錄到該實驗中的所有追蹤。QCFlow 支援許多熱門生成式 AI 框架的自動追蹤。請按照以下步驟記錄您的第一個追蹤。有關 QCFlow 追蹤的更多資訊，請瀏覽 <a>QCFlow 文件</a>。}}",
     "description" : "Message that explains the function of the 'Traces' tab in the QCFlow UI.This message is followed by a tutorial explaining how to get started with QCFlow Tracing."
   },
   "jMUqD1" : {
@@ -6213,7 +6213,7 @@
     "description" : "Dropdown text to display columns names that could to be rendered for the experiment runs table"
   },
   "nyHcAz" : {
-    "defaultMessage" : "MLFlow 部署傳回以下錯誤：「{errorMessage}」",
+    "defaultMessage" : "QCFlow 部署傳回以下錯誤：「{errorMessage}」",
     "description" : "Experiment page > QCFlow deployment error message"
   },
   "o1BTcp" : {

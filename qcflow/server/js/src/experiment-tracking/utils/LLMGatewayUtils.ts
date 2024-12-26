@@ -1,5 +1,5 @@
 import { ErrorWrapper } from '../../common/utils/ErrorWrapper';
-import { ModelGatewayRouteTask } from '../sdk/MlflowEnums';
+import { ModelGatewayRouteTask } from '../sdk/QCFlowEnums';
 import type {
   EndpointModelChatResponseType,
   EndpointModelCompletionsResponseType,

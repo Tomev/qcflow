@@ -22,7 +22,7 @@ from qcflow.entities.run_data import RunData
 from qcflow.entities.run_info import RunInfo
 from qcflow.entities.run_inputs import RunInputs
 from qcflow.entities.run_tag import RunTag
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import ModelSignature, Schema
 from qcflow.protos.databricks_uc_registry_messages_pb2 import (
@@ -482,7 +482,7 @@ def test_create_model_version_with_langchain_no_dependencies(
 def test_create_model_version_nonexistent_directory(store, tmp_path):
     fake_directory = str(tmp_path.joinpath("myfakepath"))
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Unable to download model artifacts from source artifact location",
     ):
         store.create_model_version(name="mymodel", source=fake_directory)
@@ -516,7 +516,7 @@ def test_create_model_version_missing_python_deps(store, local_model_dir):
         ),
         mock.patch.dict("sys.modules", {"boto3": None}),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Unable to import necessary dependencies to access model version files",
         ),
     ):
@@ -543,7 +543,7 @@ def feature_store_local_model_dir(tmp_path):
 
 def test_create_model_version_fails_fs_packaged_model(store, feature_store_local_model_dir):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model was packaged by Databricks Feature Store and can only be registered on "
         "a Databricks cluster.",
     ):
@@ -552,7 +552,7 @@ def test_create_model_version_fails_fs_packaged_model(store, feature_store_local
 
 def test_create_model_version_missing_mlmodel(store, tmp_path):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Unable to load model metadata. Ensure the source path of the model "
         "being registered points to a valid QCFlow model directory ",
     ):
@@ -562,7 +562,7 @@ def test_create_model_version_missing_mlmodel(store, tmp_path):
 def test_create_model_version_missing_signature(store, tmp_path):
     tmp_path.joinpath(MLMODEL_FILE_NAME).write_text(json.dumps({"a": "b"}))
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Model passed for registration did not contain any signature metadata",
     ):
         store.create_model_version(name="mymodel", source=str(tmp_path))
@@ -574,7 +574,7 @@ def test_create_model_version_missing_output_signature(store, tmp_path):
     with open(tmp_path.joinpath(MLMODEL_FILE_NAME), "w") as handle:
         yaml.dump(fake_mlmodel_contents, handle)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Model passed for registration contained a signature that includes only inputs",
     ):
         store.create_model_version(name="mymodel", source=str(tmp_path))
@@ -842,7 +842,7 @@ def test_search_registered_models_invalid_args(store):
         for combination in combinations(params_list, sz):
             params = {k: v for d in combination for k, v in d.items()}
             with pytest.raises(
-                MlflowException, match="unsupported for models in the Unity Catalog"
+                QCFlowException, match="unsupported for models in the Unity Catalog"
             ):
                 store.search_registered_models(**params)
 
@@ -859,14 +859,14 @@ def test_get_registered_model(mock_http, store):
 def test_get_latest_versions_unsupported(store):
     name = "model_1"
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=f"{_expected_unsupported_method_error_message('get_latest_versions')}. "
         "To load the latest version of a model in Unity Catalog, you can set "
         "an alias on the model version and load it by alias",
     ):
         store.get_latest_versions(name=name)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=f"{_expected_unsupported_method_error_message('get_latest_versions')}. "
         "Detected attempt to load latest model version in stages",
     ):
@@ -1424,7 +1424,7 @@ def test_create_model_version_unknown_storage_creds(store, local_model_dir):
         ),
         mock.patch.object(TemporaryCredentials, "WhichOneof", return_value=unknown_credential_type),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=f"Got unexpected credential type {unknown_credential_type} when "
             "attempting to access model version files",
         ),
@@ -1608,7 +1608,7 @@ def test_input_source_truncation(num_inputs, expected_truncation_size, store):
 
 
 def test_create_model_version_unsupported_fields(store):
-    with pytest.raises(MlflowException, match=_expected_unsupported_arg_error_message("run_link")):
+    with pytest.raises(QCFlowException, match=_expected_unsupported_arg_error_message("run_link")):
         store.create_model_version(name="mymodel", source="mysource", run_link="https://google.com")
 
 
@@ -1621,7 +1621,7 @@ def test_transition_model_version_stage_unsupported(store):
         f"management."
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=expected_error,
     ):
         store.transition_model_version_stage(
@@ -1706,7 +1706,7 @@ def test_search_model_versions_with_pagination(mock_http, store):
 
 
 def test_search_model_versions_order_by_unsupported(store):
-    with pytest.raises(MlflowException, match=_expected_unsupported_arg_error_message("order_by")):
+    with pytest.raises(QCFlowException, match=_expected_unsupported_arg_error_message("order_by")):
         store.search_model_versions(
             filter_string="name='model_12'", page_token="fake_page_token", order_by=["name ASC"]
         )

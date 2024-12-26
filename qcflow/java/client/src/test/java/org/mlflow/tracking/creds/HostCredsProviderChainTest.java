@@ -4,17 +4,17 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import org.qcflow.tracking.MlflowClientException;
+import org.qcflow.tracking.QCFlowClientException;
 
 public class HostCredsProviderChainTest {
   private boolean refreshCalled = false;
   private boolean throwException = false;
-  private MlflowHostCreds providedHostCreds = null;
-  private MlflowHostCredsProvider myHostCredsProvider = new MyHostCredsProvider();
+  private QCFlowHostCreds providedHostCreds = null;
+  private QCFlowHostCredsProvider myHostCredsProvider = new MyHostCredsProvider();
 
-  class MyHostCredsProvider implements MlflowHostCredsProvider {
+  class MyHostCredsProvider implements QCFlowHostCredsProvider {
     @Override
-    public MlflowHostCreds getHostCreds() {
+    public QCFlowHostCreds getHostCreds() {
       if (throwException) {
         throw new IllegalStateException("Oh no!");
       }
@@ -36,16 +36,16 @@ public class HostCredsProviderChainTest {
 
   @Test
   public void testUseFirstIfAvailable() {
-    BasicMlflowHostCreds secondCreds = new BasicMlflowHostCreds("hosty", "tokeny");
+    BasicQCFlowHostCreds secondCreds = new BasicQCFlowHostCreds("hosty", "tokeny");
     HostCredsProviderChain chain = new HostCredsProviderChain(myHostCredsProvider, secondCreds);
 
     // If we have valid credentials, we should be used.
-    providedHostCreds = new BasicMlflowHostCreds("new-host");
+    providedHostCreds = new BasicQCFlowHostCreds("new-host");
     Assert.assertEquals(chain.getHostCreds().getHost(), "new-host");
     Assert.assertNull(chain.getHostCreds().getToken());
 
     // If our credentials are invalid, we should be skipped.
-    providedHostCreds = new BasicMlflowHostCreds(null);
+    providedHostCreds = new BasicQCFlowHostCreds(null);
     Assert.assertEquals(chain.getHostCreds().getHost(), "hosty");
     Assert.assertEquals(chain.getHostCreds().getToken(), "tokeny");
 
@@ -74,7 +74,7 @@ public class HostCredsProviderChainTest {
     HostCredsProviderChain chain = new HostCredsProviderChain(myHostCredsProvider);
     try {
       chain.getHostCreds().getHost();
-    } catch (MlflowClientException e) {
+    } catch (QCFlowClientException e) {
       Assert.assertTrue(e.getMessage().contains("Oh no!"), e.getMessage());
     }
   }

@@ -1,6 +1,6 @@
 from typing import Union
 
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.gateway.config import Provider
 from qcflow.gateway.providers import BaseProvider
 from qcflow.utils.plugins import get_entry_points
@@ -12,14 +12,14 @@ class ProviderRegistry:
 
     def register(self, name: str, provider: type[BaseProvider]):
         if name in self._providers:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Provider {name} is already registered: {self._providers[name]}"
             )
         self._providers[name] = provider
 
     def get(self, name: str) -> type[BaseProvider]:
         if name not in self._providers:
-            raise MlflowException.invalid_parameter_value(f"Provider {name} not found")
+            raise QCFlowException.invalid_parameter_value(f"Provider {name} not found")
         return self._providers[name]
 
     def keys(self):
@@ -33,7 +33,7 @@ def _register_default_providers(registry: ProviderRegistry):
     from qcflow.gateway.providers.cohere import CohereProvider
     from qcflow.gateway.providers.huggingface import HFTextGenerationInferenceServerProvider
     from qcflow.gateway.providers.mistral import MistralProvider
-    from qcflow.gateway.providers.qcflow import MlflowModelServingProvider
+    from qcflow.gateway.providers.qcflow import QCFlowModelServingProvider
     from qcflow.gateway.providers.mosaicml import MosaicMLProvider
     from qcflow.gateway.providers.openai import OpenAIProvider
     from qcflow.gateway.providers.palm import PaLMProvider
@@ -45,7 +45,7 @@ def _register_default_providers(registry: ProviderRegistry):
     registry.register(Provider.AI21LABS, AI21LabsProvider)
     registry.register(Provider.MOSAICML, MosaicMLProvider)
     registry.register(Provider.PALM, PaLMProvider)
-    registry.register(Provider.QCFLOW_MODEL_SERVING, MlflowModelServingProvider)
+    registry.register(Provider.QCFLOW_MODEL_SERVING, QCFlowModelServingProvider)
     registry.register(Provider.BEDROCK, AmazonBedrockProvider)
     registry.register(Provider.AMAZON_BEDROCK, AmazonBedrockProvider)
     registry.register(

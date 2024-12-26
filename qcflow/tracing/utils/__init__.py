@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 from opentelemetry import trace as trace_api
 from packaging.version import Version
 
-from qcflow.exceptions import BAD_REQUEST, MlflowTracingException
+from qcflow.exceptions import BAD_REQUEST, QCFlowTracingException
 from qcflow.tracing.constant import SpanAttributeKey
 from qcflow.utils.qcflow_tags import IMMUTABLE_TAGS
 
@@ -212,7 +212,7 @@ def maybe_get_request_id(is_evaluate=False) -> Optional[str]:
         return None
 
     if not context.request_id and is_evaluate:
-        raise MlflowTracingException(
+        raise QCFlowTracingException(
             f"Missing request_id for context {context}. "
             "request_id can't be None when is_evaluate=True.",
             error_code=BAD_REQUEST,
@@ -338,7 +338,7 @@ def set_span_chat_tools(span: LiveSpan, tools: list[ChatTool]):
     from qcflow.types.chat import ChatTool
 
     if not isinstance(tools, list):
-        raise MlflowTracingException(
+        raise QCFlowTracingException(
             f"Invalid tools type {type(tools)}. Expected a list of ChatTool.",
             error_code=BAD_REQUEST,
         )

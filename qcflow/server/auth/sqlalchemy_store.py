@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError, MultipleResultsFound, NoResultFound
 from sqlalchemy.orm import sessionmaker
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import (
     INVALID_STATE,
     RESOURCE_ALREADY_EXISTS,
@@ -37,7 +37,7 @@ class SqlAlchemyStore:
             try:
                 user = self._get_user(session, username)
                 return check_password_hash(user.password_hash, password)
-            except MlflowException:
+            except QCFlowException:
                 return False
 
     def create_user(self, username: str, password: str, is_admin: bool = False) -> User:
@@ -50,7 +50,7 @@ class SqlAlchemyStore:
                 session.flush()
                 return user.to_qcflow_entity()
             except IntegrityError as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"User (username={username}) already exists. Error: {e}",
                     RESOURCE_ALREADY_EXISTS,
                 ) from e
@@ -60,12 +60,12 @@ class SqlAlchemyStore:
         try:
             return session.query(SqlUser).filter(SqlUser.username == username).one()
         except NoResultFound:
-            raise MlflowException(
+            raise QCFlowException(
                 f"User with username={username} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
         except MultipleResultsFound:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Found multiple users with username={username}",
                 INVALID_STATE,
             )
@@ -114,7 +114,7 @@ class SqlAlchemyStore:
                 session.flush()
                 return perm.to_qcflow_entity()
             except IntegrityError as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Experiment permission (experiment_id={experiment_id}, username={username}) "
                     f"already exists. Error: {e}",
                     RESOURCE_ALREADY_EXISTS,
@@ -134,13 +134,13 @@ class SqlAlchemyStore:
                 .one()
             )
         except NoResultFound:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Experiment permission with experiment_id={experiment_id} and "
                 f"username={username} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
         except MultipleResultsFound:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Found multiple experiment permissions with experiment_id={experiment_id} "
                 f"and username={username}",
                 INVALID_STATE,
@@ -190,7 +190,7 @@ class SqlAlchemyStore:
                 session.flush()
                 return perm.to_qcflow_entity()
             except IntegrityError as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Registered model permission (name={name}, username={username}) "
                     f"already exists. Error: {e}",
                     RESOURCE_ALREADY_EXISTS,
@@ -210,12 +210,12 @@ class SqlAlchemyStore:
                 .one()
             )
         except NoResultFound:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered model permission with name={name} and username={username} not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
         except MultipleResultsFound:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Found multiple registered model permissions with name={name} "
                 f"and username={username}",
                 INVALID_STATE,

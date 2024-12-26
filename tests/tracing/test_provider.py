@@ -5,7 +5,7 @@ import pytest
 from opentelemetry import trace
 
 import qcflow
-from qcflow.exceptions import MlflowTracingException
+from qcflow.exceptions import QCFlowTracingException
 from qcflow.tracing.export.inference_table import (
     _TRACE_BUFFER,
     InferenceTableSpanExporter,
@@ -95,15 +95,15 @@ def test_disable_enable_tracing():
     assert isinstance(_get_tracer(__name__), trace.Tracer)
     TRACE_BUFFER.clear()
 
-    # enable() / disable() should only raise MlflowTracingException
+    # enable() / disable() should only raise QCFlowTracingException
     with mock.patch(
         "qcflow.tracing.provider.is_tracing_enabled", side_effect=ValueError("error")
     ) as is_enabled_mock:
-        with pytest.raises(MlflowTracingException, match="error"):
+        with pytest.raises(QCFlowTracingException, match="error"):
             qcflow.tracing.disable()
         assert is_enabled_mock.call_count == 1
 
-        with pytest.raises(MlflowTracingException, match="error"):
+        with pytest.raises(QCFlowTracingException, match="error"):
             qcflow.tracing.enable()
         assert is_enabled_mock.call_count == 2
 
@@ -147,14 +147,14 @@ def test_trace_disabled_decorator(enabled_initially):
     # @trace_disabled should not block the decorated function even
     # if it fails to disable tracing
     with mock.patch(
-        "qcflow.tracing.provider.disable", side_effect=MlflowTracingException("error")
+        "qcflow.tracing.provider.disable", side_effect=QCFlowTracingException("error")
     ) as disable_mock:
         assert test_fn() == 0
         assert call_count == 3
         assert disable_mock.call_count == (1 if enabled_initially else 0)
 
     with mock.patch(
-        "qcflow.tracing.provider.enable", side_effect=MlflowTracingException("error")
+        "qcflow.tracing.provider.enable", side_effect=QCFlowTracingException("error")
     ) as enable_mock:
         assert test_fn() == 0
         assert call_count == 4
@@ -204,11 +204,11 @@ def test_is_tracing_enabled():
     qcflow.tracing.enable()
     assert is_tracing_enabled() is True
 
-    # is_tracing_enabled() should only raise MlflowTracingException
+    # is_tracing_enabled() should only raise QCFlowTracingException
     with mock.patch(
         "qcflow.tracing.provider._get_tracer", side_effect=ValueError("error")
     ) as get_tracer_mock:
-        with pytest.raises(MlflowTracingException, match="error"):
+        with pytest.raises(QCFlowTracingException, match="error"):
             assert is_tracing_enabled() is False
         assert get_tracer_mock.call_count == 1
 
@@ -243,7 +243,7 @@ def test_enable_qcflow_tracing_switch_in_serving_client(monkeypatch, enable_qcfl
     monkeypatch.setenv("ENABLE_QCFLOW_TRACING", str(enable_qcflow_tracing).lower())
     monkeypatch.setenv("IS_IN_DB_MODEL_SERVING_ENV", "true")
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
 
     def foo():
         return bar()

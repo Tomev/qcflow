@@ -1,4 +1,4 @@
-from qcflow.gateway.client import MlflowGatewayClient
+from qcflow.gateway.client import QCFlowGatewayClient
 from qcflow.gateway.fluent import (
     create_route,
     delete_route,
@@ -17,7 +17,7 @@ __all__ = [
     "set_limits",
     "get_limits",
     "get_gateway_uri",
-    "MlflowGatewayClient",
+    "QCFlowGatewayClient",
     "query",
     "search_routes",
     "set_gateway_uri",

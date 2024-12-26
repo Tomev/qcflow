@@ -5,12 +5,12 @@ from unittest import mock
 import pydantic
 import pytest
 
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import Metric, Param, Run, RunInfo, RunTag
 from qcflow.entities.trace_data import TraceData
 from qcflow.entities.trace_info import TraceInfo
 from qcflow.entities.trace_status import TraceStatus
-from qcflow.exceptions import MlflowTraceDataCorrupted, MlflowTraceDataNotFound
+from qcflow.exceptions import QCFlowTraceDataCorrupted, QCFlowTraceDataNotFound
 from qcflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, SpanAttributeKey
 from qcflow.tracing.utils import TraceJSONEncoder
 from qcflow.tracking._tracking_service.client import TrackingServiceClient
@@ -132,7 +132,7 @@ def test_upload_trace_data(tmp_path, mock_store):
         data: str
 
     obj = CustomObject(data="test")
-    span = MlflowClient().start_trace(
+    span = QCFlowClient().start_trace(
         "span",
         # test non-json serializable objects
         inputs={"data": uuid.uuid4()},
@@ -299,9 +299,9 @@ def test_search_traces_download_failures(tmp_path):
             side_effect=[
                 # Page 1
                 TraceData(),
-                MlflowTraceDataCorrupted(request_id="test"),
+                QCFlowTraceDataCorrupted(request_id="test"),
                 # Page 2
-                MlflowTraceDataNotFound(request_id="test"),
+                QCFlowTraceDataNotFound(request_id="test"),
                 # Page 3
                 TraceData(),
             ],
@@ -367,9 +367,9 @@ def test_search_traces_download_failures(tmp_path):
             side_effect=[
                 # Page 1
                 TraceData(),
-                MlflowTraceDataCorrupted(request_id="test"),
+                QCFlowTraceDataCorrupted(request_id="test"),
                 # Page 2
-                MlflowTraceDataNotFound(request_id="test"),
+                QCFlowTraceDataNotFound(request_id="test"),
             ],
         ) as mock_download_trace_data,
     ):

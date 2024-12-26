@@ -418,7 +418,7 @@ Params Type and Shape Enforcement
 In QCFlow, the types and shapes of parameters (params) are meticulously checked against the model's signature. During inference, each parameter's type 
 and shape are validated to ensure they align with the specifications in the signature. Scalar values are expected to have a shape of ``None``, while list 
 values should have a shape of ``(-1,)``. If a parameter's type or shape is found to be incompatible, QCFlow raises an exception. Additionally, the parameter's 
-value undergoes a validation check against its designated type in the signature. If the conversion to the specified type fails, an `MlflowException` is 
+value undergoes a validation check against its designated type in the signature. If the conversion to the specified type fails, an `QCFlowException` is 
 triggered. For a comprehensive list of valid params, refer to the :ref:`Model Inference Params <inference-params>` section. 
 
 .. important::
@@ -957,7 +957,7 @@ Supposed you have created the following model version without a signature like b
 
     from sklearn.ensemble import RandomForestClassifier
     import qcflow
-    from qcflow.client import MlflowClient
+    from qcflow.client import QCFlowClient
 
     model_name = "add_signature_model"
 
@@ -976,7 +976,7 @@ as follows:
     import qcflow
     from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
 
-    client = qcflow.client.MlflowClient()
+    client = qcflow.client.QCFlowClient()
     model_name = "add_signature_model"
     model_version = 1
     mv = client.get_model_version(name=model_name, version=model_version)

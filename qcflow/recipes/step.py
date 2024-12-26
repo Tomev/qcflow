@@ -12,7 +12,7 @@ import yaml
 from qcflow.recipes.cards import CARD_HTML_NAME, CARD_PICKLE_NAME, BaseCard, FailureCard
 from qcflow.recipes.utils import get_recipe_name
 from qcflow.recipes.utils.step import display_html
-from qcflow.tracking import MlflowClient
+from qcflow.tracking import QCFlowClient
 from qcflow.utils.databricks_utils import is_in_databricks_runtime
 
 _logger = logging.getLogger(__name__)
@@ -323,7 +323,7 @@ class BaseStep(metaclass=abc.ABCMeta):
                 )
             else:
                 try:
-                    from dbruntime.MlflowCreateRunHook import get_qcflow_create_run_hook
+                    from dbruntime.QCFlowCreateRunHook import get_qcflow_create_run_hook
 
                     # `get_qcflow_create_run_hook` sets up a patch to trigger a Databricks command
                     # notification every time an QCFlow Run is created. This notification is
@@ -353,7 +353,7 @@ class BaseStep(metaclass=abc.ABCMeta):
             relative_path=CARD_HTML_NAME,
         )
         if os.path.exists(local_card_path):
-            MlflowClient().log_artifact(run_id, local_card_path, artifact_path=step_name)
+            QCFlowClient().log_artifact(run_id, local_card_path, artifact_path=step_name)
         else:
             _logger.warning(
                 "Failed to log step card for step %s. Run ID: %s. Card local path: %s",

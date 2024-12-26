@@ -6,7 +6,7 @@ from unittest import mock
 
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.utils import (
     get_default_profile,
     get_recipe_config,
@@ -28,7 +28,7 @@ def test_get_recipe_root_path_returns_correctly_when_inside_recipe_directory(
 
 
 def test_get_recipe_root_path_throws_outside_recipe_directory(tmp_path):
-    with pytest.raises(MlflowException, match="Failed to find recipe.yaml"), chdir(tmp_path):
+    with pytest.raises(QCFlowException, match="Failed to find recipe.yaml"), chdir(tmp_path):
         get_recipe_root_path()
 
 
@@ -44,10 +44,10 @@ def test_get_recipe_name_returns_correctly_for_valid_recipe_directory(
 
 
 def test_get_recipe_name_throws_for_invalid_recipe_directory(tmp_path):
-    with pytest.raises(MlflowException, match="Failed to find recipe.yaml"), chdir(tmp_path):
+    with pytest.raises(QCFlowException, match="Failed to find recipe.yaml"), chdir(tmp_path):
         get_recipe_name()
 
-    with pytest.raises(MlflowException, match="Failed to find recipe.yaml"):
+    with pytest.raises(QCFlowException, match="Failed to find recipe.yaml"):
         get_recipe_name(recipe_root_path=tmp_path)
 
 
@@ -130,16 +130,16 @@ def test_get_recipe_config_for_recipe_directory_referencing_external_json(
 
 
 def test_get_recipe_config_throws_for_invalid_recipe_directory(tmp_path):
-    with pytest.raises(MlflowException, match="Failed to find recipe.yaml"), chdir(tmp_path):
+    with pytest.raises(QCFlowException, match="Failed to find recipe.yaml"), chdir(tmp_path):
         get_recipe_config()
 
-    with pytest.raises(MlflowException, match="Failed to find recipe.yaml"):
+    with pytest.raises(QCFlowException, match="Failed to find recipe.yaml"):
         get_recipe_config(recipe_root_path=tmp_path)
 
 
 @pytest.mark.usefixtures("enter_recipe_example_directory")
 def test_get_recipe_config_throws_for_nonexistent_profile():
-    with pytest.raises(MlflowException, match="Did not find the YAML configuration.*badprofile"):
+    with pytest.raises(QCFlowException, match="Did not find the YAML configuration.*badprofile"):
         get_recipe_config(profile="badprofile")
 
 
@@ -168,7 +168,7 @@ def test_get_recipe_config_throws_clear_error_for_invalid_profile():
         f.write(r"\BAD")
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Failed to read recipe configuration.*verify.*syntactically correct",
     ):
         get_recipe_config(profile="badcontent")

@@ -3,7 +3,7 @@
 Search Experiments
 ==================
 
-:py:func:`qcflow.search_experiments` and :py:func:`MlflowClient.search_experiments() <qcflow.client.MlflowClient.search_experiments>` support the same filter string syntax as :py:func:`qcflow.search_runs` and :py:func:`MlflowClient.search_runs() <qcflow.client.MlflowClient.search_runs>`, but the supported identifiers and comparators are different.
+:py:func:`qcflow.search_experiments` and :py:func:`QCFlowClient.search_experiments() <qcflow.client.QCFlowClient.search_experiments>` support the same filter string syntax as :py:func:`qcflow.search_runs` and :py:func:`QCFlowClient.search_runs() <qcflow.client.QCFlowClient.search_runs>`, but the supported identifiers and comparators are different.
 
 .. contents:: Table of Contents
   :local:

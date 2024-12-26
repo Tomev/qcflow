@@ -32,15 +32,15 @@ def autolog(
 
     import dspy
 
-    from qcflow.dspy.callback import MlflowCallback
+    from qcflow.dspy.callback import QCFlowCallback
 
-    # Enable tracing by setting the MlflowCallback
+    # Enable tracing by setting the QCFlowCallback
     if log_traces and not disable:
-        if not any(isinstance(c, MlflowCallback) for c in dspy.settings.callbacks):
-            dspy.settings.configure(callbacks=[*dspy.settings.callbacks, MlflowCallback()])
+        if not any(isinstance(c, QCFlowCallback) for c in dspy.settings.callbacks):
+            dspy.settings.configure(callbacks=[*dspy.settings.callbacks, QCFlowCallback()])
     else:
         dspy.settings.configure(
-            callbacks=[c for c in dspy.settings.callbacks if not isinstance(c, MlflowCallback)]
+            callbacks=[c for c in dspy.settings.callbacks if not isinstance(c, QCFlowCallback)]
         )
 
     # Patch teleprompter and evaluate not to generate traces

@@ -5,7 +5,7 @@ from typing import Any, TypeVar
 from urllib.parse import urlparse
 
 from qcflow.artifacts import download_artifacts
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.store.artifact.artifact_repository_registry import get_registered_artifact_repositories
 from qcflow.utils.uri import is_local_uri
@@ -153,7 +153,7 @@ def _create_dataset_source_for_artifact_repo(scheme: str, dataset_source_name: s
         def from_dict(cls, source_dict: dict[Any, Any]) -> DatasetForArtifactRepoSourceType:
             uri = source_dict.get("uri")
             if uri is None:
-                raise MlflowException(
+                raise QCFlowException(
                     f'Failed to parse {dataset_source_name}. Missing expected key: "uri"',
                     INVALID_PARAMETER_VALUE,
                 )

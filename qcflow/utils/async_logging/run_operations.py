@@ -6,7 +6,7 @@ class RunOperations:
 
     def wait(self):
         """Blocks on completion of all futures."""
-        from qcflow.exceptions import MlflowException
+        from qcflow.exceptions import QCFlowException
 
         failed_operations = []
         for future in self._operation_futures:
@@ -16,7 +16,7 @@ class RunOperations:
                 failed_operations.append(e)
 
         if len(failed_operations) > 0:
-            raise MlflowException(
+            raise QCFlowException(
                 "The following failures occurred while performing one or more async logging "
                 f"operations: {failed_operations}"
             )

@@ -17,13 +17,13 @@ from packaging.version import Version
 from tensorflow.keras import layers
 
 import qcflow
-from qcflow import MlflowClient
-from qcflow.exceptions import MlflowException
+from qcflow import QCFlowClient
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model
 from qcflow.models.utils import _read_example
 from qcflow.tensorflow import load_checkpoint
 from qcflow.tensorflow.autologging import _TensorBoard
-from qcflow.tensorflow.callback import MlflowCallback
+from qcflow.tensorflow.callback import QCFlowCallback
 from qcflow.tracking.fluent import _shut_down_async_logging
 from qcflow.types.utils import _infer_schema
 from qcflow.utils.autologging_utils import (
@@ -208,7 +208,7 @@ def test_tf_keras_autolog_log_models_configuration(
 
     model.fit(data, labels, epochs=10)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run_id = client.search_runs(["0"])[0].info.run_id
     artifacts = client.list_artifacts(run_id)
     artifacts = (x.path for x in artifacts)
@@ -228,7 +228,7 @@ def test_tf_keras_autolog_log_datasets_configuration_with_numpy(
 
     model.fit(data, labels, epochs=10)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(qcflow.last_active_run().info.run_id).inputs.dataset_inputs
     if log_datasets:
         assert len(dataset_inputs) == 1
@@ -259,7 +259,7 @@ def test_tf_keras_autolog_log_datasets_configuration_with_tensor(
 
     model.fit(data_as_tensor, labels_as_tensor, epochs=10)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(qcflow.last_active_run().info.run_id).inputs.dataset_inputs
     if log_datasets:
         assert len(dataset_inputs) == 1
@@ -285,7 +285,7 @@ def test_tf_keras_autolog_log_datasets_configuration_with_tf_dataset(
     fashion_mnist_model = _create_fashion_mnist_model()
     fashion_mnist_model.fit(fashion_mnist_tf_dataset)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(qcflow.last_active_run().info.run_id).inputs.dataset_inputs
     if log_datasets:
         assert len(dataset_inputs) == 1
@@ -312,7 +312,7 @@ def test_tf_keras_autolog_log_datasets_with_validation_data(
     fashion_mnist_model = _create_fashion_mnist_model()
     fashion_mnist_model.fit(fashion_mnist_tf_dataset, validation_data=fashion_mnist_tf_dataset_eval)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(qcflow.last_active_run().info.run_id).inputs.dataset_inputs
     assert len(dataset_inputs) == 2
     assert dataset_inputs[0].tags[0].value == "train"
@@ -327,7 +327,7 @@ def test_tf_keras_autolog_log_datasets_with_validation_data_as_numpy_tuple(
     X_eval, y_eval = next(fashion_mnist_tf_dataset_eval.as_numpy_iterator())
     fashion_mnist_model.fit(fashion_mnist_tf_dataset, validation_data=(X_eval, y_eval))
 
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(qcflow.last_active_run().info.run_id).inputs.dataset_inputs
     assert len(dataset_inputs) == 2
     assert dataset_inputs[0].tags[0].value == "train"
@@ -347,7 +347,7 @@ def test_tf_keras_autolog_log_datasets_with_validation_data_as_tf_tuple(
         fashion_mnist_tf_dataset, validation_data=(X_eval_tensor, y_eval_tensor)
     )
 
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(qcflow.last_active_run().info.run_id).inputs.dataset_inputs
     assert len(dataset_inputs) == 2
     assert dataset_inputs[0].tags[0].value == "train"
@@ -379,7 +379,7 @@ def tf_keras_random_data_run(random_train_data, random_one_hot_labels, initial_e
         data, labels, epochs=initial_epoch + 10, steps_per_epoch=1, initial_epoch=initial_epoch
     )
 
-    client = MlflowClient()
+    client = QCFlowClient()
     return client.get_run(client.search_runs(["0"])[0].info.run_id), history
 
 
@@ -409,7 +409,7 @@ def test_tf_keras_autolog_logs_expected_data(tf_keras_random_data_run):
     assert "opt_epsilon" in data.params
     assert "opt_amsgrad" in data.params
     assert data.params["opt_amsgrad"] == "False"
-    client = MlflowClient()
+    client = QCFlowClient()
     all_epoch_acc = client.get_metric_history(run.info.run_id, "accuracy")
     num_of_epochs = len(history.history["loss"])
     assert len(all_epoch_acc) == num_of_epochs == 10
@@ -665,7 +665,7 @@ def test_tf_keras_autolog_records_metrics_for_last_epoch(random_train_data, rand
             initial_epoch=0,
         )
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run_metrics = client.get_run(run.info.run_id).data.metrics
     assert "accuracy" in run_metrics
     all_epoch_acc = client.get_metric_history(run.info.run_id, "accuracy")
@@ -688,7 +688,7 @@ def test_tf_keras_autolog_logs_metrics_for_single_epoch_training(
     with qcflow.start_run() as run:
         model.fit(random_train_data, random_one_hot_labels, epochs=1)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run_metrics = client.get_run(run.info.run_id).data.metrics
     assert "accuracy" in run_metrics
     assert "loss" in run_metrics
@@ -709,7 +709,7 @@ def test_tf_keras_autolog_names_positional_parameters_correctly(
         model.fit(data, labels, 8, epochs=10, steps_per_epoch=1)
         run_id = qcflow.active_run().info.run_id
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run_info = client.get_run(run_id)
     assert run_info.data.params.get("batch_size") == "8"
 
@@ -718,7 +718,7 @@ def test_tf_keras_autolog_names_positional_parameters_correctly(
 def test_tf_keras_autolog_model_can_load_from_artifact(tf_keras_random_data_run, random_train_data):
     run, _ = tf_keras_random_data_run
 
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = client.list_artifacts(run.info.run_id)
     artifacts = (x.path for x in artifacts)
     assert "model" in artifacts
@@ -763,7 +763,7 @@ def get_tf_keras_random_data_run_with_callback(
         data, labels, epochs=initial_epoch + 10, callbacks=[callback], initial_epoch=initial_epoch
     )
 
-    client = MlflowClient()
+    client = QCFlowClient()
     return client.get_run(client.search_runs(["0"])[0].info.run_id), history, callback
 
 
@@ -810,7 +810,7 @@ def test_tf_keras_autolog_early_stop_logs(tf_keras_random_data_run_with_callback
     # never observes a loss improvement due to an extremely large `min_delta` value
     assert restored_epoch == initial_epoch
     assert "loss" in history.history
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "loss")
     # Check that QCFlow has logged the metrics of the "best" model, in addition to per-epoch metrics
     loss = history.history["loss"]
@@ -844,7 +844,7 @@ def test_tf_keras_autolog_early_stop_no_stop_does_not_log(tf_keras_random_data_r
     assert "restored_epoch" not in metrics
     assert "loss" in history.history
     num_of_epochs = len(history.history["loss"])
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "loss")
     # Check the test epoch numbers are correct
     assert num_of_epochs == 10
@@ -870,7 +870,7 @@ def test_tf_keras_autolog_early_stop_no_restore_doesnt_log(tf_keras_random_data_
     assert "restored_epoch" not in metrics
     assert "loss" in history.history
     num_of_epochs = len(history.history["loss"])
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "loss")
     # Check the test epoch numbers are correct
     assert num_of_epochs == callback.patience + 1
@@ -894,7 +894,7 @@ def test_tf_keras_autolog_non_early_stop_callback_no_log(tf_keras_random_data_ru
     assert "restored_epoch" not in metrics
     assert "loss" in history.history
     num_of_epochs = len(history.history["loss"])
-    client = MlflowClient()
+    client = QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "loss")
     # Check the test epoch numbers are correct
     assert num_of_epochs == 10
@@ -1038,7 +1038,7 @@ def test_tf_keras_model_autolog_registering_model(random_train_data, random_one_
         model = create_tf_keras_model()
         model.fit(random_train_data, random_one_hot_labels, epochs=10)
 
-        registered_model = MlflowClient().get_registered_model(registered_model_name)
+        registered_model = QCFlowClient().get_registered_model(registered_model_name)
         assert registered_model.name == registered_model_name
 
 
@@ -1057,7 +1057,7 @@ def test_fluent_autolog_with_tf_keras_logs_expected_content(
     with qcflow.start_run() as run:
         model.fit(random_train_data, random_one_hot_labels, epochs=10)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run_data = client.get_run(run.info.run_id).data
     assert "accuracy" in run_data.metrics
     assert "epochs" in run_data.params
@@ -1068,7 +1068,7 @@ def test_fluent_autolog_with_tf_keras_logs_expected_content(
 
 
 def test_callback_is_picklable():
-    cb = MlflowCallback()
+    cb = QCFlowCallback()
     pickle.dumps(cb)
 
     tb = _TensorBoard()
@@ -1087,7 +1087,7 @@ def test_tf_keras_autolog_distributed_training(random_train_data, random_one_hot
     fit_params = {"epochs": 10, "batch_size": 10}
     with qcflow.start_run() as run:
         model.fit(random_train_data, random_one_hot_labels, **fit_params)
-    client = MlflowClient()
+    client = QCFlowClient()
     assert client.get_run(run.info.run_id).data.params.keys() >= fit_params.keys()
 
 
@@ -1101,7 +1101,7 @@ def test_import_tensorflow_with_fluent_autolog_enables_tensorflow_autologging():
 
 def _assert_autolog_infers_model_signature_correctly(run, input_sig_spec, output_sig_spec):
     artifacts_dir = run.info.artifact_uri.replace("file://", "")
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [x.path for x in client.list_artifacts(run.info.run_id, "model")]
     ml_model_filename = "MLmodel"
     assert str(os.path.join("model", ml_model_filename)) in artifacts
@@ -1319,8 +1319,8 @@ def test_autolog_throw_error_on_explicit_qcflow_callback(keras_data_gen_sequence
 
     model = create_tf_keras_model()
     with qcflow.start_run() as run:
-        with pytest.raises(MlflowException, match="QCFlow autologging must be turned off*"):
-            model.fit(keras_data_gen_sequence, callbacks=[MlflowCallback(run)])
+        with pytest.raises(QCFlowException, match="QCFlow autologging must be turned off*"):
+            model.fit(keras_data_gen_sequence, callbacks=[QCFlowCallback(run)])
 
 
 def test_autolog_correct_logging_frequency(random_train_data, random_one_hot_labels):
@@ -1337,7 +1337,7 @@ def test_autolog_correct_logging_frequency(random_train_data, random_one_hot_lab
             epochs=num_epochs,
         )
 
-    client = MlflowClient()
+    client = QCFlowClient()
     loss_history = client.get_metric_history(run.info.run_id, "loss")
     assert len(loss_history) == num_epochs * (len(random_train_data) // batch_size) // logging_freq
 

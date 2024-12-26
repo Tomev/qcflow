@@ -12,7 +12,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.qcflow.api.proto.ModelRegistry.*;
 import org.qcflow.api.proto.Service.*;
 
-class MlflowProtobufMapper {
+class QCFlowProtobufMapper {
 
   String makeCreateExperimentRequest(String expName) {
     CreateExperiment.Builder builder = CreateExperiment.newBuilder();
@@ -133,7 +133,7 @@ class MlflowProtobufMapper {
       }
       return builder.build().toString();
     } catch (URISyntaxException e) {
-      throw new MlflowClientException("Failed to construct request URI for get latest versions.",
+      throw new QCFlowClientException("Failed to construct request URI for get latest versions.",
               e);
     }
   }
@@ -168,7 +168,7 @@ class MlflowProtobufMapper {
           .build()
           .toString();
     } catch (URISyntaxException e) {
-      throw new MlflowClientException("Failed to construct request URI for get model version.", e);
+      throw new QCFlowClientException("Failed to construct request URI for get model version.", e);
     }
   }
 
@@ -180,7 +180,7 @@ class MlflowProtobufMapper {
           .build()
           .toString();
     } catch (URISyntaxException e) {
-      throw new MlflowClientException("Failed to construct request URI for get model version.", e);
+      throw new QCFlowClientException("Failed to construct request URI for get model version.", e);
     }
   }
 
@@ -190,7 +190,7 @@ class MlflowProtobufMapper {
               .addParameter("name", modelName)
               .addParameter("version", modelVersion).build().toString();
     } catch (URISyntaxException e) {
-      throw new MlflowClientException(
+      throw new QCFlowClientException(
               "Failed to construct request URI for get version download uri.",
               e);
     }
@@ -214,7 +214,7 @@ class MlflowProtobufMapper {
       }
       return builder.build().toString();
     } catch (URISyntaxException e) {
-      throw new MlflowClientException(
+      throw new QCFlowClientException(
               "Failed to construct request URI for search model version.",
               e);
     }
@@ -307,7 +307,7 @@ class MlflowProtobufMapper {
     try {
       return JsonFormat.printer().preservingProtoFieldNames().print(message);
     } catch (InvalidProtocolBufferException e) {
-      throw new MlflowClientException("Failed to serialize message " + message, e);
+      throw new QCFlowClientException("Failed to serialize message " + message, e);
     }
   }
 
@@ -315,7 +315,7 @@ class MlflowProtobufMapper {
     try {
       JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
     } catch (InvalidProtocolBufferException e) {
-      throw new MlflowClientException("Failed to serialize json " + json + " into " + builder, e);
+      throw new QCFlowClientException("Failed to serialize json " + json + " into " + builder, e);
     }
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Type definitions for models used in experiment tracking.
- * See 'src/experiment-tracking/sdk/MlflowMessages.js' for reference
+ * See 'src/experiment-tracking/sdk/QCFlowMessages.js' for reference
  *
  * Note: this could be automatically generated in the future.
  */

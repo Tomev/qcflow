@@ -21,7 +21,7 @@ import qcflow.pyfunc
 import qcflow.sagemaker as mfs
 import qcflow.sklearn
 from qcflow.deployments.cli import commands as cli_commands
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model
 from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
@@ -166,7 +166,7 @@ def test_initialize_sagemaker_deployment_client_with_region_name_and_iam_role_ar
 
 def test_init_sagemaker_deployment_client_with_iam_role_arn_but_no_region_name_raises_exception():
     match = "A region name must be provided when the target_uri contains a role ARN."
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         mfs.SageMakerDeploymentClient(
             "sagemaker:/arn:aws:iam::123456789012:role/dummy.company.com/assumed_role"
         )
@@ -433,7 +433,7 @@ def test_create_deployment_with_unsupported_flavor_raises_exception(
 ):
     unsupported_flavor = "this is not a valid flavor"
     match = "The specified flavor: `this is not a valid flavor` is not supported for deployment"
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         sagemaker_deployment_client.create_deployment(
             name="bad_flavor", model_uri=pretrained_model.model_uri, flavor=unsupported_flavor
         )
@@ -446,7 +446,7 @@ def test_create_deployment_with_missing_flavor_raises_exception(
 ):
     missing_flavor = "mleap"
     match = "The specified model does not contain the specified deployment flavor"
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         sagemaker_deployment_client.create_deployment(
             name="missing-flavor", model_uri=pretrained_model.model_uri, flavor=missing_flavor
         )
@@ -464,7 +464,7 @@ def test_create_deployment_of_model_with_no_supported_flavors_raises_exception(
     model_config.save(path=model_config_path)
 
     match = "The specified model does not contain any of the supported flavors for deployment"
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         sagemaker_deployment_client.create_deployment(
             name="missing-flavor", model_uri=logged_model_path, flavor=None
         )
@@ -475,7 +475,7 @@ def test_create_deployment_of_model_with_no_supported_flavors_raises_exception(
 def test_attempting_to_deploy_in_asynchronous_mode_without_archiving_throws_exception(
     pretrained_model, sagemaker_deployment_client
 ):
-    with pytest.raises(MlflowException, match="Resources must be archived") as exc:
+    with pytest.raises(QCFlowException, match="Resources must be archived") as exc:
         sagemaker_deployment_client.create_deployment(
             name="test-app",
             model_uri=pretrained_model.model_uri,
@@ -541,7 +541,7 @@ def test_prepare_sagemaker_tags_duplicate_key_raises_exception():
     config_tags = [{"Key": "app_name", "Value": "a_cool_name"}]
     sagemaker_tags = {"app_name": "a_cooler_name", "tag2": "value2", "tag3": "123"}
     match = "Duplicate tag provided for 'app_name'"
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         mfs._prepare_sagemaker_tags(config_tags, sagemaker_tags)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -861,7 +861,7 @@ def test_create_deployment_with_preexisting_name_throws_exception(
     )
 
     with pytest.raises(
-        MlflowException, match="an application with the same name already exists"
+        QCFlowException, match="an application with the same name already exists"
     ) as exc:
         sagemaker_deployment_client.create_deployment(
             name=name,
@@ -977,7 +977,7 @@ def test_create_deployment_throws_exception_after_endpoint_creation_fails(
 
     with (
         mock.patch("botocore.client.BaseClient._make_api_call", new=fail_endpoint_creations),
-        pytest.raises(MlflowException, match="deployment operation failed") as exc,
+        pytest.raises(QCFlowException, match="deployment operation failed") as exc,
     ):
         sagemaker_deployment_client.create_deployment(
             name="test-app",
@@ -1085,7 +1085,7 @@ def test_create_deployment_in_add_mode_adds_new_model_to_existing_endpoint(
 def test_update_deployment_with_create_mode_raises_exception(
     pretrained_model, sagemaker_deployment_client
 ):
-    with pytest.raises(MlflowException, match="Invalid mode") as exc:
+    with pytest.raises(QCFlowException, match="Invalid mode") as exc:
         sagemaker_deployment_client.update_deployment(
             name="invalid mode",
             model_uri=pretrained_model.model_uri,
@@ -1227,7 +1227,7 @@ def test_update_deployment_in_replace_mode_throws_exception_after_endpoint_updat
 
     with (
         mock.patch("botocore.client.BaseClient._make_api_call", new=fail_endpoint_updates),
-        pytest.raises(MlflowException, match="deployment operation failed") as exc,
+        pytest.raises(QCFlowException, match="deployment operation failed") as exc,
     ):
         sagemaker_deployment_client.update_deployment(
             name=name,
@@ -1433,7 +1433,7 @@ def test_deploy_cli_updates_sagemaker_and_s3_resources_in_add_mode(
 def test_delete_deployment_in_asynchronous_mode_without_archiving_raises_exception(
     sagemaker_deployment_client,
 ):
-    with pytest.raises(MlflowException, match="Resources must be archived") as exc:
+    with pytest.raises(QCFlowException, match="Resources must be archived") as exc:
         sagemaker_deployment_client.delete_deployment(
             name="dummy", config={"archive": False, "synchronous": False}
         )
@@ -1559,7 +1559,7 @@ def test_get_deployment_with_assumed_role_arn(
 def test_get_deployment_non_existent_deployment():
     sagemaker_deployment_client = mfs.SageMakerDeploymentClient("sagemaker:/us-west-2")
 
-    with pytest.raises(MlflowException, match="There was an error while"):
+    with pytest.raises(QCFlowException, match="There was an error while"):
         sagemaker_deployment_client.get_deployment("non-existent app")
 
 

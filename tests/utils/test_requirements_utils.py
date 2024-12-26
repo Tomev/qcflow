@@ -10,7 +10,7 @@ import pytest
 
 import qcflow
 import qcflow.utils.requirements_utils
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.environment import infer_pip_requirements
 from qcflow.utils.os import is_windows
 from qcflow.utils.requirements_utils import (
@@ -683,7 +683,7 @@ def test_capture_imported_modules_raises_when_env_var_set(monkeypatch):
             raise Exception("Intentional")
 
     with pytest.raises(
-        MlflowException, match="Encountered an error while capturing imported modules"
+        QCFlowException, match="Encountered an error while capturing imported modules"
     ):
         with qcflow.start_run():
             qcflow.pyfunc.log_model(

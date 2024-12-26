@@ -6,7 +6,7 @@ import pytest
 from click.testing import CliRunner
 
 from qcflow.deployments import cli
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 f_model_uri = "fake_model_uri"
 f_name = "fake_deployment_name"
@@ -144,10 +144,10 @@ def test_explain(tmp_path):
 def test_explain_with_no_target_implementation(tmp_path):
     file_path = tmp_path.joinpath("input.json")
     file_path.write_text('{"data": [5000]}')
-    mock_error = MlflowException("MOCK ERROR")
+    mock_error = QCFlowException("MOCK ERROR")
     with mock.patch.object(CliRunner, "invoke", return_value=mock_error) as mock_explain:
         res = runner.invoke(
             cli.explain, ["--target", f_target, "--name", f_name, "--input-path", file_path]
         )
-        assert type(res) == MlflowException
+        assert type(res) == QCFlowException
         mock_explain.assert_called_once()

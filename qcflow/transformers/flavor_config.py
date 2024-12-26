@@ -4,7 +4,7 @@ import json
 import os
 from typing import TYPE_CHECKING, Any, Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import ALREADY_EXISTS, INVALID_PARAMETER_VALUE
 from qcflow.transformers.hub_utils import get_latest_commit_for_repo
 from qcflow.transformers.peft import _PEFT_ADAPTOR_DIR_NAME, get_peft_base_model, is_peft_model
@@ -183,7 +183,7 @@ def build_flavor_config_from_local_checkpoint(
 
     config_path = os.path.join(local_checkpoint_dir, "config.json")
     if not os.path.exists(config_path):
-        raise MlflowException(
+        raise QCFlowException(
             f"The provided directory {local_checkpoint_dir} does not contain a config.json file."
             "Please ensure that the directory contains a valid transformers model checkpoint.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -208,7 +208,7 @@ def build_flavor_config_from_local_checkpoint(
     try:
         tokenizer = AutoTokenizer.from_pretrained(local_checkpoint_dir)
     except OSError as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Error loading tokenizer from {local_checkpoint_dir}. When logging a "
             "Transformers model from a local checkpoint, please make sure that the "
             "checkpoint directory contains a valid tokenizer configuration as well.",
@@ -236,7 +236,7 @@ def update_flavor_conf_to_persist_pretrained_model(
 
     # Replace model commit path with local path
     if FlavorKey.MODEL_BINARY in original_flavor_conf:
-        raise MlflowException(
+        raise QCFlowException(
             "It appears that the pretrained model weight is already saved to the artifact path.",
             error_code=ALREADY_EXISTS,
         )

@@ -4,7 +4,7 @@ from typing import Optional
 
 from qcflow.entities import DatasetInput, Experiment, Metric, Run, RunInfo, TraceInfo, ViewType
 from qcflow.entities.trace_status import TraceStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos import databricks_pb2
 from qcflow.protos.service_pb2 import (
     CreateExperiment,
@@ -25,7 +25,7 @@ from qcflow.protos.service_pb2 import (
     LogMetric,
     LogModel,
     LogParam,
-    MlflowService,
+    QCFlowService,
     RestoreExperiment,
     RestoreRun,
     SearchExperiments,
@@ -53,7 +53,7 @@ from qcflow.utils.rest_utils import (
     get_trace_info_endpoint,
 )
 
-_METHOD_TO_INFO = extract_api_info_for_service(MlflowService, _REST_API_PATH_PREFIX)
+_METHOD_TO_INFO = extract_api_info_for_service(QCFlowService, _REST_API_PATH_PREFIX)
 _logger = logging.getLogger(__name__)
 
 
@@ -63,7 +63,7 @@ class RestStore(AbstractStore):
 
     Args
         get_host_creds: Method to be invoked prior to every REST request to get the
-            :py:class:`qcflow.rest_utils.MlflowHostCreds` for the request. Note that this
+            :py:class:`qcflow.rest_utils.QCFlowHostCreds` for the request. Note that this
             is a function so that we can obtain fresh credentials in the case of expiry.
     """
 
@@ -521,7 +521,7 @@ class RestStore(AbstractStore):
             req_body = message_to_json(GetExperimentByName(experiment_name=experiment_name))
             response_proto = self._call_endpoint(GetExperimentByName, req_body)
             return Experiment.from_proto(response_proto.experiment)
-        except MlflowException as e:
+        except QCFlowException as e:
             if e.error_code == databricks_pb2.ErrorCode.Name(
                 databricks_pb2.RESOURCE_DOES_NOT_EXIST
             ):

@@ -1,11 +1,11 @@
 from typing import Any, Optional
 
-from qcflow.entities._qcflow_object import _MlflowObject
-from qcflow.exceptions import MlflowException
+from qcflow.entities._qcflow_object import _QCFlowObject
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
-class AssessmentSource(_MlflowObject):
+class AssessmentSource(_QCFlowObject):
     """
     Source of an assessment (human, LLM as a judge with GPT-4, etc).
     """
@@ -81,7 +81,7 @@ class AssessmentSourceType:
     def _parse(source_type: str) -> str:
         source_type = source_type.upper()
         if source_type not in AssessmentSourceType._SOURCE_TYPES:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Invalid assessment source type: {source_type}. "
                     f"Valid source types: {AssessmentSourceType._SOURCE_TYPES}"

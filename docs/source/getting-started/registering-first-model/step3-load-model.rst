@@ -73,9 +73,9 @@ In the prior page, we added a model version alias to our model, but here's a pro
 .. code-block:: python
 
     import qcflow.sklearn
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     # Set model version alias
     model_name = "sk-learn-random-forest-reg-model"

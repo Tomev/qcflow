@@ -4,7 +4,7 @@ import os
 
 import yaml
 
-from qcflow.exceptions import ExecutionException, MlflowException
+from qcflow.exceptions import ExecutionException, QCFlowException
 from qcflow.projects import env_type
 from qcflow.tracking import artifact_utils
 from qcflow.utils import data_utils
@@ -54,12 +54,12 @@ def load_project(directory):
         python_file = databricks_spark_job_yaml.get("python_file")
 
         if python_file is None and not entry_points:
-            raise MlflowException(
+            raise QCFlowException(
                 "Databricks Spark job requires either 'databricks_spark_job.python_file' "
                 "setting or 'entry_points' setting."
             )
         if python_file is not None and entry_points:
-            raise MlflowException(
+            raise QCFlowException(
                 "Databricks Spark job does not allow setting both "
                 "'databricks_spark_job.python_file' and 'entry_points'."
             )
@@ -67,23 +67,23 @@ def load_project(directory):
         for entry_point in entry_points.values():
             for param in entry_point.parameters.values():
                 if param.type == "path":
-                    raise MlflowException(
+                    raise QCFlowException(
                         "Databricks Spark job does not support entry point parameter of 'path' "
                         f"type. '{param.name}' value type is invalid."
                     )
 
         if env_type.DOCKER in yaml_obj:
-            raise MlflowException(
+            raise QCFlowException(
                 "Databricks Spark job does not support setting docker environment."
             )
 
         if env_type.PYTHON in yaml_obj:
-            raise MlflowException(
+            raise QCFlowException(
                 "Databricks Spark job does not support setting python environment."
             )
 
         if env_type.CONDA in yaml_obj:
-            raise MlflowException(
+            raise QCFlowException(
                 "Databricks Spark job does not support setting conda environment."
             )
 
@@ -225,7 +225,7 @@ class Project:
                 return None
 
             if self._entry_points is None or entry_point not in self._entry_points:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The entry point '{entry_point}' is not defined in the Databricks spark job "
                     f"MLproject file."
                 )

@@ -4,7 +4,7 @@ import shutil
 from io import StringIO
 from typing import ForwardRef, get_args, get_origin
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.flavor_backend_registry import get_flavor_backend
 from qcflow.utils import env_manager as _EnvManager
 from qcflow.utils.annotations import experimental
@@ -193,7 +193,7 @@ def predict(
     from qcflow.pyfunc import _PREBUILD_ENV_ROOT_LOCATION
 
     if content_type not in [_CONTENT_TYPE_JSON, _CONTENT_TYPE_CSV]:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Content type must be one of {_CONTENT_TYPE_JSON} or {_CONTENT_TYPE_CSV}."
         )
     if extra_envs and env_manager not in (
@@ -201,13 +201,13 @@ def predict(
         _EnvManager.CONDA,
         _EnvManager.UV,
     ):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Extra environment variables are only supported when env_manager is "
             f"set to '{_EnvManager.VIRTUALENV}', '{_EnvManager.CONDA}' or '{_EnvManager.UV}'."
         )
     if env_manager == _EnvManager.UV:
         if not shutil.which("uv"):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Found '{env_manager}' as env_manager, but the 'uv' command is not found in the "
                 f"PATH. {UV_INSTALLATION_INSTRUCTIONS} Alternatively, you can use 'virtualenv' or "
                 "'conda' as the environment manager, but note their performances are not "
@@ -223,7 +223,7 @@ def predict(
     is_dbconnect_mode = is_databricks_connect()
     if is_dbconnect_mode:
         if env_manager not in (_EnvManager.VIRTUALENV, _EnvManager.UV):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Databricks Connect only supports '{_EnvManager.VIRTUALENV}' or '{_EnvManager.UV}'"
                 f" as the environment manager. Got {env_manager}."
             )
@@ -250,7 +250,7 @@ def predict(
         )
 
     if input_data is not None and input_path is not None:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Both input_data and input_path are provided. Only one of them should be specified."
         )
     elif input_data is not None:
@@ -301,7 +301,7 @@ def _serialize_input_data(input_data, content_type):
     }.get(content_type)
 
     if not isinstance(input_data, valid_input_types):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Input data must be one of {valid_input_types} when content type is '{content_type}', "
             f"but got {type(input_data)}."
         )
@@ -314,7 +314,7 @@ def _serialize_input_data(input_data, content_type):
             try:
                 return pd.DataFrame(input_data).to_csv(index=False)
             except Exception as e:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     "Failed to serialize input data to CSV format."
                 ) from e
 
@@ -323,7 +323,7 @@ def _serialize_input_data(input_data, content_type):
         # the input_data is valid type for the loaded pyfunc model
         return convert_input_example_to_serving_input(input_data)
     except Exception as e:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Invalid input data, please make sure the data is acceptable by the "
             "loaded pyfunc model. Use `qcflow.models.convert_input_example_to_serving_input` "
             "to manually validate your input data."
@@ -339,6 +339,6 @@ def _validate_csv_string(input_data: str):
 
         pd.read_csv(StringIO(input_data))
     except Exception as e:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             message="Failed to deserialize input string data to Pandas DataFrame."
         ) from e

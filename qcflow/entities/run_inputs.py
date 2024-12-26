@@ -1,17 +1,17 @@
 from typing import Any
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.dataset_input import DatasetInput
 from qcflow.protos.service_pb2 import RunInputs as ProtoRunInputs
 
 
-class RunInputs(_MlflowObject):
+class RunInputs(_QCFlowObject):
     """RunInputs object."""
 
     def __init__(self, dataset_inputs: list[DatasetInput]) -> None:
         self._dataset_inputs = dataset_inputs
 
-    def __eq__(self, other: _MlflowObject) -> bool:
+    def __eq__(self, other: _QCFlowObject) -> bool:
         if type(other) is type(self):
             return self.__dict__ == other.__dict__
         return False

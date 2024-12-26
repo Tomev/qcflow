@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.metrics.genai import EvaluationExample, model_utils
 from qcflow.metrics.genai.genai_metric import (
     _extract_score_and_justification,
@@ -397,7 +397,7 @@ def test_malformed_input_raises_exception():
     answer_similarity_metric = answer_similarity()
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
         answer_similarity_metric.eval_fn(
@@ -481,7 +481,7 @@ def test_make_genai_metric_failure():
     import pandas as pd
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "Failed to find evaluation model for version v-latest."
             " Please check the correctness of the version"
@@ -518,7 +518,7 @@ def test_make_genai_metric_failure():
             aggregations=["random-fake"],
         )
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=re.escape("Invalid aggregate option random-fake"),
         ):
             custom_metric2.eval_fn(
@@ -542,7 +542,7 @@ def test_make_genai_metric_failure():
 )
 def test_make_genai_metric_throws_if_grading_context_cols_wrong(grading_cols, example_context_cols):
     with pytest.raises(
-        MlflowException, match="Example grading context does not contain required columns"
+        QCFlowException, match="Example grading context does not contain required columns"
     ):
         make_genai_metric(
             name="correctness",
@@ -573,7 +573,7 @@ def test_format_args_string():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("bar does not exist in the eval function ['foo']."),
     ):
         variable_string = _format_args_string(["foo", "bar"], pd.DataFrame({"foo": ["foo"]}), 0)
@@ -716,7 +716,7 @@ def test_similarity_metric(parameters, extra_headers, proxy_url):
     }
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Failed to find answer similarity metric for version non-existent-version",
     ):
         answer_similarity(
@@ -786,7 +786,7 @@ def test_faithfulness_metric():
     }
 
     with pytest.raises(
-        MlflowException, match="Failed to find faithfulness metric for version non-existent-version"
+        QCFlowException, match="Failed to find faithfulness metric for version non-existent-version"
     ):
         faithfulness_metric = faithfulness(
             model="gateway:/gpt-4o-mini",
@@ -866,7 +866,7 @@ def test_answer_correctness_metric():
     }
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Failed to find answer correctness metric for version non-existent-version",
     ):
         answer_correctness(metric_version="non-existent-version")
@@ -932,7 +932,7 @@ def test_answer_relevance_metric():
     }
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Failed to find answer relevance metric for version non-existent-version",
     ):
         answer_relevance(
@@ -1011,7 +1011,7 @@ def test_relevance_metric():
     }
 
     with pytest.raises(
-        MlflowException, match="Failed to find relevance metric for version non-existent-version"
+        QCFlowException, match="Failed to find relevance metric for version non-existent-version"
     ):
         relevance_metric = relevance(
             model="gateway:/gpt-4o-mini",
@@ -1149,7 +1149,7 @@ def test_make_custom_prompt_genai_metric_validates_input_kwargs():
     )
 
     inputs = ["What is QCFlow?"]
-    with pytest.raises(MlflowException, match="Missing variable inputs to eval_fn"):
+    with pytest.raises(QCFlowException, match="Missing variable inputs to eval_fn"):
         custom_judge_prompt_metric.eval_fn(
             input=pd.Series(inputs),
         )
@@ -1279,10 +1279,10 @@ def test_genai_metrics_callable_errors(custom_metric):
         "predictions": qcflow_prediction,
         "inputs": "What is QCFlow?",
     }
-    with pytest.raises(MlflowException, match=r"Missing required arguments: {'targets'}"):
+    with pytest.raises(QCFlowException, match=r"Missing required arguments: {'targets'}"):
         custom_metric(**data)
 
-    with pytest.raises(MlflowException, match=r"Unexpected arguments: {'data'}"):
+    with pytest.raises(QCFlowException, match=r"Unexpected arguments: {'data'}"):
         custom_metric(**data, targets=qcflow_ground_truth, data="data")
 
     with pytest.raises(

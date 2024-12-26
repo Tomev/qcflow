@@ -4,29 +4,29 @@
 directive @component(name: String!) on QUERY | MUTATION
 
 type Query {
-  qcflowGetExperiment(input: MlflowGetExperimentInput): MlflowGetExperimentResponse
-  qcflowGetMetricHistoryBulkInterval(input: MlflowGetMetricHistoryBulkIntervalInput): MlflowGetMetricHistoryBulkIntervalResponse
-  qcflowGetRun(input: MlflowGetRunInput): MlflowGetRunResponse
-  qcflowListArtifacts(input: MlflowListArtifactsInput): MlflowListArtifactsResponse
-  qcflowSearchModelVersions(input: MlflowSearchModelVersionsInput): MlflowSearchModelVersionsResponse
+  qcflowGetExperiment(input: QCFlowGetExperimentInput): QCFlowGetExperimentResponse
+  qcflowGetMetricHistoryBulkInterval(input: QCFlowGetMetricHistoryBulkIntervalInput): QCFlowGetMetricHistoryBulkIntervalResponse
+  qcflowGetRun(input: QCFlowGetRunInput): QCFlowGetRunResponse
+  qcflowListArtifacts(input: QCFlowListArtifactsInput): QCFlowListArtifactsResponse
+  qcflowSearchModelVersions(input: QCFlowSearchModelVersionsInput): QCFlowSearchModelVersionsResponse
 
   """Simple echoing field"""
   test(inputString: String): Test
 }
 
-type MlflowGetExperimentResponse {
-  experiment: MlflowExperiment
+type QCFlowGetExperimentResponse {
+  experiment: QCFlowExperiment
   apiError: ApiError
 }
 
-type MlflowExperiment {
+type QCFlowExperiment {
   experimentId: String
   name: String
   artifactLocation: String
   lifecycleStage: String
   lastUpdateTime: LongString
   creationTime: LongString
-  tags: [MlflowExperimentTag!]
+  tags: [QCFlowExperimentTag!]
 }
 
 """
@@ -34,7 +34,7 @@ LongString Scalar type to prevent truncation to max integer in JavaScript.
 """
 scalar LongString
 
-type MlflowExperimentTag {
+type QCFlowExperimentTag {
   key: String
   value: String
 }
@@ -52,16 +52,16 @@ type ErrorDetail {
   message: String
 }
 
-input MlflowGetExperimentInput {
+input QCFlowGetExperimentInput {
   experimentId: String
 }
 
-type MlflowGetMetricHistoryBulkIntervalResponse {
-  metrics: [MlflowMetricWithRunId!]
+type QCFlowGetMetricHistoryBulkIntervalResponse {
+  metrics: [QCFlowMetricWithRunId!]
   apiError: ApiError
 }
 
-type MlflowMetricWithRunId {
+type QCFlowMetricWithRunId {
   key: String
   value: Float
   timestamp: LongString
@@ -69,7 +69,7 @@ type MlflowMetricWithRunId {
   runId: String
 }
 
-input MlflowGetMetricHistoryBulkIntervalInput {
+input QCFlowGetMetricHistoryBulkIntervalInput {
   runIds: [String]
   metricKey: String
   startStep: Int
@@ -77,33 +77,33 @@ input MlflowGetMetricHistoryBulkIntervalInput {
   maxResults: Int
 }
 
-type MlflowGetRunResponse {
-  run: MlflowRunExtension
+type QCFlowGetRunResponse {
+  run: QCFlowRunExtension
   apiError: ApiError
 }
 
-type MlflowRunExtension {
-  info: MlflowRunInfo
-  data: MlflowRunData
-  inputs: MlflowRunInputs
-  experiment: MlflowExperiment
-  modelVersions: [MlflowModelVersion!]
+type QCFlowRunExtension {
+  info: QCFlowRunInfo
+  data: QCFlowRunData
+  inputs: QCFlowRunInputs
+  experiment: QCFlowExperiment
+  modelVersions: [QCFlowModelVersion!]
 }
 
-type MlflowRunInfo {
+type QCFlowRunInfo {
   runId: String
   runUuid: String
   runName: String
   experimentId: String
   userId: String
-  status: MlflowRunStatus
+  status: QCFlowRunStatus
   startTime: LongString
   endTime: LongString
   artifactUri: String
   lifecycleStage: String
 }
 
-enum MlflowRunStatus {
+enum QCFlowRunStatus {
   RUNNING
   SCHEDULED
   FINISHED
@@ -111,44 +111,44 @@ enum MlflowRunStatus {
   KILLED
 }
 
-type MlflowRunData {
-  metrics: [MlflowMetric!]
-  params: [MlflowParam!]
-  tags: [MlflowRunTag!]
+type QCFlowRunData {
+  metrics: [QCFlowMetric!]
+  params: [QCFlowParam!]
+  tags: [QCFlowRunTag!]
 }
 
-type MlflowMetric {
+type QCFlowMetric {
   key: String
   value: Float
   timestamp: LongString
   step: LongString
 }
 
-type MlflowParam {
+type QCFlowParam {
   key: String
   value: String
 }
 
-type MlflowRunTag {
+type QCFlowRunTag {
   key: String
   value: String
 }
 
-type MlflowRunInputs {
-  datasetInputs: [MlflowDatasetInput!]
+type QCFlowRunInputs {
+  datasetInputs: [QCFlowDatasetInput!]
 }
 
-type MlflowDatasetInput {
-  tags: [MlflowInputTag!]
-  dataset: MlflowDataset
+type QCFlowDatasetInput {
+  tags: [QCFlowInputTag!]
+  dataset: QCFlowDataset
 }
 
-type MlflowInputTag {
+type QCFlowInputTag {
   key: String
   value: String
 }
 
-type MlflowDataset {
+type QCFlowDataset {
   name: String
   digest: String
   sourceType: String
@@ -157,7 +157,7 @@ type MlflowDataset {
   profile: String
 }
 
-type MlflowModelVersion {
+type QCFlowModelVersion {
   name: String
   version: String
   creationTimestamp: LongString
@@ -167,56 +167,56 @@ type MlflowModelVersion {
   description: String
   source: String
   runId: String
-  status: MlflowModelVersionStatus
+  status: QCFlowModelVersionStatus
   statusMessage: String
-  tags: [MlflowModelVersionTag!]
+  tags: [QCFlowModelVersionTag!]
   runLink: String
   aliases: [String]
 }
 
-enum MlflowModelVersionStatus {
+enum QCFlowModelVersionStatus {
   PENDING_REGISTRATION
   FAILED_REGISTRATION
   READY
 }
 
-type MlflowModelVersionTag {
+type QCFlowModelVersionTag {
   key: String
   value: String
 }
 
-input MlflowGetRunInput {
+input QCFlowGetRunInput {
   runId: String
   runUuid: String
 }
 
-type MlflowListArtifactsResponse {
+type QCFlowListArtifactsResponse {
   rootUri: String
-  files: [MlflowFileInfo!]
+  files: [QCFlowFileInfo!]
   nextPageToken: String
   apiError: ApiError
 }
 
-type MlflowFileInfo {
+type QCFlowFileInfo {
   path: String
   isDir: Boolean
   fileSize: LongString
 }
 
-input MlflowListArtifactsInput {
+input QCFlowListArtifactsInput {
   runId: String
   runUuid: String
   path: String
   pageToken: String
 }
 
-type MlflowSearchModelVersionsResponse {
-  modelVersions: [MlflowModelVersion!]
+type QCFlowSearchModelVersionsResponse {
+  modelVersions: [QCFlowModelVersion!]
   nextPageToken: String
   apiError: ApiError
 }
 
-input MlflowSearchModelVersionsInput {
+input QCFlowSearchModelVersionsInput {
   filter: String
   maxResults: LongString
   orderBy: [String]
@@ -229,45 +229,45 @@ type Test {
 }
 
 type Mutation {
-  qcflowSearchDatasets(input: MlflowSearchDatasetsInput): MlflowSearchDatasetsResponse
-  qcflowSearchRuns(input: MlflowSearchRunsInput): MlflowSearchRunsResponse
+  qcflowSearchDatasets(input: QCFlowSearchDatasetsInput): QCFlowSearchDatasetsResponse
+  qcflowSearchRuns(input: QCFlowSearchRunsInput): QCFlowSearchRunsResponse
 
   """Simple echoing field"""
   testMutation(inputString: String): TestMutation
 }
 
-type MlflowSearchDatasetsResponse {
-  datasetSummaries: [MlflowDatasetSummary!]
+type QCFlowSearchDatasetsResponse {
+  datasetSummaries: [QCFlowDatasetSummary!]
   apiError: ApiError
 }
 
-type MlflowDatasetSummary {
+type QCFlowDatasetSummary {
   experimentId: String
   name: String
   digest: String
   context: String
 }
 
-input MlflowSearchDatasetsInput {
+input QCFlowSearchDatasetsInput {
   experimentIds: [String]
 }
 
-type MlflowSearchRunsResponse {
-  runs: [MlflowRunExtension!]
+type QCFlowSearchRunsResponse {
+  runs: [QCFlowRunExtension!]
   nextPageToken: String
   apiError: ApiError
 }
 
-input MlflowSearchRunsInput {
+input QCFlowSearchRunsInput {
   experimentIds: [String]
   filter: String
-  runViewType: MlflowViewType = null
+  runViewType: QCFlowViewType = null
   maxResults: Int
   orderBy: [String]
   pageToken: String
 }
 
-enum MlflowViewType {
+enum QCFlowViewType {
   ACTIVE_ONLY
   DELETED_ONLY
   ALL

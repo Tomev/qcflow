@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 from qcflow.deployments import get_deploy_client
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 
 @pytest.fixture(autouse=True)
@@ -121,7 +121,7 @@ def test_create_endpoint_name_match():
 
 def test_create_endpoint_name_mismatch():
     """Test when name is provided both in config and as named arg with different values.
-    Should raise an MlflowException.
+    Should raise an QCFlowException.
     """
     client = get_deploy_client("databricks")
     mock_resp = mock.Mock()
@@ -131,7 +131,7 @@ def test_create_endpoint_name_mismatch():
 
     with mock.patch("requests.Session.request", return_value=mock_resp) as mock_request:
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Name mismatch. Found 'test1' as parameter and 'test2' "
             "in config. Please specify 'name' only within the config "
             "dictionary as this parameter is deprecated.",
@@ -205,7 +205,7 @@ def test_create_endpoint_route_optimized_match():
 
 def test_create_endpoint_route_optimized_mismatch():
     """Test when route_optimized is provided both in config and as named arg with different values.
-    Should raise an MlflowException.
+    Should raise an QCFlowException.
     """
     client = get_deploy_client("databricks")
     mock_resp = mock.Mock()
@@ -215,7 +215,7 @@ def test_create_endpoint_route_optimized_mismatch():
 
     with mock.patch("requests.Session.request", return_value=mock_resp) as mock_request:
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Conflicting 'route_optimized' values found. "
             "Please specify 'route_optimized' only within the config dictionary "
             "as this parameter is deprecated.",

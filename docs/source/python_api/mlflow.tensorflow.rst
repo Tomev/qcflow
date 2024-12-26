@@ -6,6 +6,6 @@ qcflow.tensorflow
     :undoc-members:
     :show-inheritance:
 
-.. autoclass:: qcflow.tensorflow.MlflowCallback
+.. autoclass:: qcflow.tensorflow.QCFlowCallback
     :members:
     :undoc-members:

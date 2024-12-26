@@ -46,7 +46,7 @@ class RestStore(BaseRestStore):
 
     Args:
         get_host_creds: Method to be invoked prior to every REST request to get the
-            :py:class:`qcflow.rest_utils.MlflowHostCreds` for the request. Note that this
+            :py:class:`qcflow.rest_utils.QCFlowHostCreds` for the request. Note that this
             is a function so that we can obtain fresh credentials in the case of expiry.
     """
 

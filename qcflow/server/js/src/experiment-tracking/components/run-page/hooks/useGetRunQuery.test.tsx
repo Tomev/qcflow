@@ -3,7 +3,7 @@ import { graphql } from 'msw';
 import { useGetRunQuery } from './useGetRunQuery';
 import { setupServer } from '../../../../common/utils/setup-msw';
 import { TestApolloProvider } from '../../../../common/utils/TestApolloProvider';
-import { GetRun, MlflowRunStatus } from '../../../../graphql/__generated__/graphql';
+import { GetRun, QCFlowRunStatus } from '../../../../graphql/__generated__/graphql';
 
 describe('useGetRunQuery', () => {
   const server = setupServer();
@@ -28,7 +28,7 @@ describe('useGetRunQuery', () => {
                   experimentId: 'test-experiment-id',
                   lifecycleStage: 'active',
                   runUuid: 'test-run-uuid',
-                  status: MlflowRunStatus.FINISHED,
+                  status: QCFlowRunStatus.FINISHED,
                   userId: null,
                 },
                 experiment: {

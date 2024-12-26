@@ -52,12 +52,12 @@ class LazyBuiltinImport(Rule):
         return "Builtin modules must be imported at the top level."
 
 
-class MlflowClassName(Rule):
+class QCFlowClassName(Rule):
     def _id(self) -> str:
         return "MLF0003"
 
     def _message(self) -> str:
-        return "Should use `Mlflow` in class name, not `QCFlow` or `MLFlow`."
+        return "Should use `QCFlow` in class name, not `QCFlow` or `QCFlow`."
 
 
 class TestNameTypo(Rule):

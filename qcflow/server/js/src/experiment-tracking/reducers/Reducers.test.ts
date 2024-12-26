@@ -34,7 +34,7 @@ import {
   runInfoOrderByUuid,
 } from './Reducers';
 import { mockExperiment, mockRunInfo } from '../utils/test-utils/ReduxStoreFixtures';
-import { RunTag, Param, ExperimentTag } from '../sdk/MlflowMessages';
+import { RunTag, Param, ExperimentTag } from '../sdk/QCFlowMessages';
 import {
   SEARCH_EXPERIMENTS_API,
   GET_EXPERIMENT_API,

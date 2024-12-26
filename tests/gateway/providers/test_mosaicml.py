@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.gateway.config import RouteConfig
 from qcflow.gateway.constants import QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
 from qcflow.gateway.exceptions import AIGatewayException
@@ -494,7 +494,7 @@ def test_valid_parsing(messages, expected_output):
 def test_invalid_role_submitted_raises(messages):
     route_config = RouteConfig(**chat_config())
     with pytest.raises(
-        MlflowException, match=".*Must be one of 'system', 'user', or 'assistant'.*"
+        QCFlowException, match=".*Must be one of 'system', 'user', or 'assistant'.*"
     ):
         MosaicMLProvider(route_config)._parse_chat_messages_to_prompt(messages)
 
@@ -514,7 +514,7 @@ def unsupported_mosaic_chat_model_config():
 
 
 def test_unsupported_model_name_raises_in_chat_parsing_route_configuration():
-    with pytest.raises(MlflowException, match="An invalid model has been specified"):
+    with pytest.raises(QCFlowException, match="An invalid model has been specified"):
         RouteConfig(**unsupported_mosaic_chat_model_config())
 
 

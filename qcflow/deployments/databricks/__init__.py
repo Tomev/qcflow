@@ -11,7 +11,7 @@ from qcflow.environment_variables import (
     QCFLOW_DEPLOYMENT_PREDICT_TIMEOUT,
     QCFLOW_HTTP_REQUEST_TIMEOUT,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils import AttrDict
 from qcflow.utils.annotations import deprecated, experimental
 from qcflow.utils.databricks_utils import get_databricks_host_creds
@@ -307,13 +307,13 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
         for line in chunk_line_iter:
             splits = line.split(":", 1)
             if len(splits) < 2:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Unknown response format: '{line}', "
                     "expected 'data: <value>' for streaming response."
                 )
             key, value = splits
             if key != "data":
-                raise MlflowException(
+                raise QCFlowException(
                     f"Unknown response format with key '{key}'. "
                     f"Expected 'data: <value>' for streaming response, got '{line}'."
                 )
@@ -411,14 +411,14 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
                             "Please specify 'name' only within the config dictionary."
                         )
                     else:
-                        raise MlflowException(
+                        raise QCFlowException(
                             f"Name mismatch. Found '{name}' as parameter and '{payload['name']}' "
                             "in config. Please specify 'name' only within the config dictionary "
                             "as this parameter is deprecated."
                         )
             else:
                 if name is None:
-                    raise MlflowException(
+                    raise QCFlowException(
                         "The 'name' field is required. Please specify it within the config "
                         "dictionary."
                     )
@@ -432,7 +432,7 @@ class DatabricksDeploymentClient(BaseDeploymentClient):
             if "route_optimized" in payload:
                 if route_optimized is not None:
                     if payload["route_optimized"] != route_optimized:
-                        raise MlflowException(
+                        raise QCFlowException(
                             "Conflicting 'route_optimized' values found. "
                             "Please specify 'route_optimized' only within the config dictionary "
                             "as this parameter is deprecated."

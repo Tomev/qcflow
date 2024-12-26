@@ -32,8 +32,8 @@ def enable_notebook_display():
 
     * On trace completion (i.e. whenever a trace is exported)
     * When calling the :py:func:`qcflow.search_traces` fluent API
-    * When calling the :py:meth:`qcflow.client.MlflowClient.get_trace`
-      or :py:meth:`qcflow.client.MlflowClient.search_traces` client APIs
+    * When calling the :py:meth:`qcflow.client.QCFlowClient.get_trace`
+      or :py:meth:`qcflow.client.QCFlowClient.search_traces` client APIs
 
     To disable, please call :py:func:`qcflow.tracing.disable_notebook_display()`.
     """

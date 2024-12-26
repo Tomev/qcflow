@@ -18,7 +18,7 @@ const classNames = {
 const isExperimentsActive = (location: Location) => matchPath('/experiments/*', location.pathname);
 const isModelsActive = (location: Location) => matchPath('/models/*', location.pathname);
 
-export const MlflowHeader = ({
+export const QCFlowHeader = ({
   isDarkTheme = false,
   setIsDarkTheme = (val: boolean) => {},
 }: {

@@ -13,7 +13,7 @@ import {
   LOAD_MORE_RUNS_API,
   SEARCH_RUNS_API,
 } from '../actions';
-import { Metric } from '../sdk/MlflowMessages';
+import { Metric } from '../sdk/QCFlowMessages';
 import { fulfilled } from '../../common/utils/ActionUtils';
 
 export const getMetricsByKey = (runUuid: any, key: any, state: any) => {

@@ -42,7 +42,7 @@ def set_handlers():
 
 def _get_all_traces() -> list[Trace]:
     """Utility function to get all traces in the test experiment."""
-    return qcflow.MlflowClient().search_traces(experiment_ids=[DEFAULT_EXPERIMENT_ID])
+    return qcflow.QCFlowClient().search_traces(experiment_ids=[DEFAULT_EXPERIMENT_ID])
 
 
 @pytest.mark.parametrize("is_async", [True, False])

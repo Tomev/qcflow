@@ -3,7 +3,7 @@ from typing import Optional
 
 from opentelemetry.sdk.trace.export import SpanExporter
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
 
 
@@ -21,7 +21,7 @@ def get_otlp_exporter() -> SpanExporter:
         try:
             from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
         except ImportError:
-            raise MlflowException(
+            raise QCFlowException(
                 "gRPC OTLP exporter is not available. Please install the required dependency by "
                 "running `pip install opentelemetry-exporter-otlp-proto-grpc`.",
                 error_code=RESOURCE_DOES_NOT_EXIST,
@@ -32,7 +32,7 @@ def get_otlp_exporter() -> SpanExporter:
         try:
             from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
         except ImportError as e:
-            raise MlflowException(
+            raise QCFlowException(
                 "HTTP OTLP exporter is not available. Please install the required dependency by "
                 "running `pip install opentelemetry-exporter-otlp-proto-http`.",
                 error_code=RESOURCE_DOES_NOT_EXIST,
@@ -40,7 +40,7 @@ def get_otlp_exporter() -> SpanExporter:
 
         return OTLPSpanExporter(endpoint=endpoint)
     else:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Unsupported OTLP protocol '{protocol}' is configured. Please set "
             "the protocol to either 'grpc' or 'http/protobuf'."
         )

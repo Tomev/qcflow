@@ -6,8 +6,8 @@ import uuid
 
 from py4j.java_gateway import CallbackServerParameters
 
-from qcflow import MlflowClient
-from qcflow.exceptions import MlflowException
+from qcflow import QCFlowClient
+from qcflow.exceptions import QCFlowException
 from qcflow.spark import FLAVOR_NAME
 from qcflow.tracking.context.abstract_context import RunContextProvider
 from qcflow.tracking.fluent import _get_latest_active_run
@@ -30,7 +30,7 @@ _spark_table_info_listener = None
 # Queue & singleton consumer thread for logging Spark datasource info asynchronously
 _metric_queue = []
 _thread_pool = concurrent.futures.ThreadPoolExecutor(
-    max_workers=1, thread_name_prefix="MlflowSparkAutologging"
+    max_workers=1, thread_name_prefix="QCFlowSparkAutologging"
 )
 
 
@@ -84,7 +84,7 @@ def _get_jvm_event_publisher(spark_context):
     - register(subscriber) for registering subscribers to receive datasource events
     """
     jvm = spark_context._gateway.jvm
-    qualified_classname = "{}.{}".format(_JAVA_PACKAGE, "MlflowAutologEventPublisher")
+    qualified_classname = "{}.{}".format(_JAVA_PACKAGE, "QCFlowAutologEventPublisher")
     return getattr(jvm, qualified_classname)
 
 
@@ -99,7 +99,7 @@ def _set_run_tag_async(run_id, path, version, data_format):
 
 
 def _set_run_tag(run_id, path, version, data_format):
-    client = MlflowClient()
+    client = QCFlowClient()
     table_info_string = _get_table_info_string(path, version, data_format)
     existing_run = client.get_run(run_id)
     existing_tag = existing_run.data.tags.get(_SPARK_TABLE_INFO_TAG_NAME)
@@ -122,7 +122,7 @@ def _listen_for_spark_activity(spark_context):
         return
 
     if _get_spark_major_version(spark_context) < 3:
-        raise MlflowException("Spark autologging unsupported for Spark versions < 3")
+        raise QCFlowException("Spark autologging unsupported for Spark versions < 3")
 
     gw = spark_context._gateway
     params = gw.callback_server_parameters
@@ -153,7 +153,7 @@ def _listen_for_spark_activity(spark_context):
                     "Failed to shut down Spark callback server for autologging: %s", str(e)
                 )
         _spark_table_info_listener = None
-        raise MlflowException(
+        raise QCFlowException(
             "Exception while attempting to initialize JVM-side state for Spark datasource "
             "autologging. Note that Spark datasource autologging only works with Spark 3.0 "
             "and above. Please create a new Spark session with required Spark version and "
@@ -188,7 +188,7 @@ class PythonSubscriber(metaclass=ExceptionSafeClass):
     """
     Subscriber, intended to be instantiated once per Python process, that logs Spark table
     information propagated from Java to the current QCFlow run, starting a run if necessary.
-    class implements a Java interface (org.qcflow.spark.autologging.MlflowAutologEventSubscriber,
+    class implements a Java interface (org.qcflow.spark.autologging.QCFlowAutologEventSubscriber,
     defined in the qcflow-spark package) that's called-into by autologging logic in the JVM in order
     to propagate Spark datasource read events to Python.
 
@@ -245,7 +245,7 @@ class PythonSubscriber(metaclass=ExceptionSafeClass):
         return self._repl_id
 
     class Java:
-        implements = [f"{_JAVA_PACKAGE}.MlflowAutologEventSubscriber"]
+        implements = [f"{_JAVA_PACKAGE}.QCFlowAutologEventSubscriber"]
 
 
 class SparkAutologgingContext(RunContextProvider):

@@ -17,7 +17,7 @@ option (scalapb.options) = {
   flat_package: true,
 };
 
-service MlflowArtifactsService {
+service QCFlowArtifactsService {
 
   rpc downloadArtifact (DownloadArtifact) returns (DownloadArtifact.Response) {
     option (rpc) = {

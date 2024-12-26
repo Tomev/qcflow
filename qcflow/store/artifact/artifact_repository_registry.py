@@ -1,6 +1,6 @@
 import warnings
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.store.artifact.azure_blob_artifact_repo import AzureBlobArtifactRepository
 from qcflow.store.artifact.dbfs_artifact_repo import dbfs_artifact_repo_factory
@@ -9,7 +9,7 @@ from qcflow.store.artifact.gcs_artifact_repo import GCSArtifactRepository
 from qcflow.store.artifact.hdfs_artifact_repo import HdfsArtifactRepository
 from qcflow.store.artifact.http_artifact_repo import HttpArtifactRepository
 from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from qcflow.store.artifact.qcflow_artifacts_repo import MlflowArtifactsRepository
+from qcflow.store.artifact.qcflow_artifacts_repo import QCFlowArtifactsRepository
 from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
 from qcflow.store.artifact.r2_artifact_repo import R2ArtifactRepository
 from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
@@ -69,7 +69,7 @@ class ArtifactRepositoryRegistry:
         scheme = get_uri_scheme(artifact_uri)
         repository = self._registry.get(scheme)
         if repository is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Could not find a registered artifact repository for: {artifact_uri}. "
                 f"Currently registered schemes are: {list(self._registry.keys())}"
             )
@@ -110,7 +110,7 @@ _artifact_repository_registry.register("runs", RunsArtifactRepository)
 _artifact_repository_registry.register("models", ModelsArtifactRepository)
 for scheme in ["http", "https"]:
     _artifact_repository_registry.register(scheme, HttpArtifactRepository)
-_artifact_repository_registry.register("qcflow-artifacts", MlflowArtifactsRepository)
+_artifact_repository_registry.register("qcflow-artifacts", QCFlowArtifactsRepository)
 
 _artifact_repository_registry.register_entrypoints()
 

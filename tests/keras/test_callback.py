@@ -4,7 +4,7 @@ import keras
 import numpy as np
 
 import qcflow
-from qcflow.keras.callback import MlflowCallback
+from qcflow.keras.callback import QCFlowCallback
 from qcflow.tracking.fluent import flush_async_logging
 
 
@@ -29,7 +29,7 @@ def test_keras_qcflow_callback_log_every_epoch():
 
     num_epochs = 2
     with qcflow.start_run() as run:
-        qcflow_callback = MlflowCallback(log_every_epoch=True)
+        qcflow_callback = QCFlowCallback(log_every_epoch=True)
         model.fit(
             data,
             label,
@@ -39,7 +39,7 @@ def test_keras_qcflow_callback_log_every_epoch():
             callbacks=[qcflow_callback],
         )
     flush_async_logging()
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     qcflow_run = client.get_run(run.info.run_id)
     run_metrics = qcflow_run.data.metrics
     model_info = qcflow_run.data.params
@@ -82,7 +82,7 @@ def test_keras_qcflow_callback_log_every_n_steps():
     log_every_n_steps = 1
     num_epochs = 2
     with qcflow.start_run() as run:
-        qcflow_callback = MlflowCallback(log_every_epoch=False, log_every_n_steps=log_every_n_steps)
+        qcflow_callback = QCFlowCallback(log_every_epoch=False, log_every_n_steps=log_every_n_steps)
         model.fit(
             data,
             label,
@@ -92,7 +92,7 @@ def test_keras_qcflow_callback_log_every_n_steps():
             callbacks=[qcflow_callback],
         )
     flush_async_logging()
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     qcflow_run = client.get_run(run.info.run_id)
     run_metrics = qcflow_run.data.metrics
     model_info = qcflow_run.data.params
@@ -114,4 +114,4 @@ def test_keras_qcflow_callback_log_every_n_steps():
 
 
 def test_old_callback_still_exists():
-    assert qcflow.keras.QCFlowCallback is qcflow.keras.MlflowCallback
+    assert qcflow.keras.QCFlowCallback is qcflow.keras.QCFlowCallback

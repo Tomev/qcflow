@@ -96,7 +96,7 @@ xgboost = LazyLoader("qcflow.xgboost", globals(), "qcflow.xgboost")
 if QCFLOW_CONFIGURE_LOGGING.get() is True:
     _configure_qcflow_loggers(root_module_name=__name__)
 
-from qcflow.client import MlflowClient
+from qcflow.client import QCFlowClient
 
 # For backward compatibility, we expose the following functions and classes at the top level in
 # addition to `qcflow.config`.
@@ -112,7 +112,7 @@ from qcflow.config import (
     set_system_metrics_sampling_interval,
     set_tracking_uri,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import evaluate
 from qcflow.models.evaluation.validation import validate_evaluation_results
 from qcflow.projects import run
@@ -178,8 +178,8 @@ from qcflow.utils.doctor import doctor
 
 __all__ = [
     "ActiveRun",
-    "MlflowClient",
-    "MlflowException",
+    "QCFlowClient",
+    "QCFlowException",
     "active_run",
     "autolog",
     "create_experiment",

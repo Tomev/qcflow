@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Optional
 if TYPE_CHECKING:
     import dspy
 
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
 )
@@ -43,7 +43,7 @@ class DspyModelWrapper(PythonModel):
 
         supported_input_types = (np.ndarray, pd.DataFrame, str, dict)
         if not isinstance(inputs, supported_input_types):
-            raise MlflowException(
+            raise QCFlowException(
                 f"`inputs` must be one of: {[x.__name__ for x in supported_input_types]}, but "
                 f"received type: {type(inputs)}.",
                 INVALID_PARAMETER_VALUE,
@@ -53,7 +53,7 @@ class DspyModelWrapper(PythonModel):
         if isinstance(inputs, np.ndarray):
             flatten = inputs.reshape(-1)
             if len(flatten) > 1:
-                raise MlflowException(
+                raise QCFlowException(
                     "Dspy model doesn't support multiple inputs or batch inference. Please "
                     "provide a single input.",
                     INVALID_PARAMETER_VALUE,
@@ -84,7 +84,7 @@ class DspyChatModelWrapper(DspyModelWrapper):
         elif isinstance(inputs, pd.DataFrame):
             converted_inputs = inputs.messages[0]
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported input type: {type(inputs)}. To log a DSPy model with task "
                 "'llm/v1/chat', the input must be a dict or a pandas DataFrame.",
                 INVALID_PARAMETER_VALUE,
@@ -144,14 +144,14 @@ class DspyChatModelWrapper(DspyModelWrapper):
                         }
                     )
                 else:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Unsupported output type: {type(output)}. To log a DSPy model with task "
                         "'llm/v1/chat', the DSPy model must return a dict, a dspy.Prediction, or a "
                         "list of dicts or dspy.Prediction.",
                         INVALID_PARAMETER_VALUE,
                     )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported output type: {type(outputs)}. To log a DSPy model with task "
                 "'llm/v1/chat', the DSPy model must return a dict, a dspy.Prediction, or a list of "
                 "dicts or dspy.Prediction.",

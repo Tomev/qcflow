@@ -25,7 +25,7 @@ def test_pytorch_autolog_logs_expected_data(tmp_path):
         writer.close()
 
     # Checking if metrics are logged.
-    client = qcflow.tracking.MlflowClient()
+    client = qcflow.tracking.QCFlowClient()
     metric_history = client.get_metric_history(run.info.run_id, "loss")
     assert len(metric_history) == NUM_EPOCHS
     for i, (m, (t0, t1)) in enumerate(zip(metric_history, timestamps), START_STEP):

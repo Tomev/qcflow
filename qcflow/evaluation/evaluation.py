@@ -2,7 +2,7 @@ import hashlib
 import json
 from typing import Any, Optional, Union
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.evaluation import Evaluation as EvaluationEntity
 from qcflow.entities.evaluation_tag import EvaluationTag  # Assuming EvaluationTag is in this module
 from qcflow.entities.metric import Metric
@@ -10,7 +10,7 @@ from qcflow.evaluation.assessment import Assessment
 from qcflow.tracing.utils import TraceJSONEncoder
 
 
-class Evaluation(_MlflowObject):
+class Evaluation(_QCFlowObject):
     """
     Evaluation result data.
     """

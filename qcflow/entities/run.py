@@ -1,14 +1,14 @@
 from typing import Any, Optional
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.run_data import RunData
 from qcflow.entities.run_info import RunInfo
 from qcflow.entities.run_inputs import RunInputs
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.service_pb2 import Run as ProtoRun
 
 
-class Run(_MlflowObject):
+class Run(_QCFlowObject):
     """
     Run object.
     """
@@ -17,7 +17,7 @@ class Run(_MlflowObject):
         self, run_info: RunInfo, run_data: RunData, run_inputs: Optional[RunInputs] = None
     ) -> None:
         if run_info is None:
-            raise MlflowException("run_info cannot be None")
+            raise QCFlowException("run_info cannot be None")
         self._info = run_info
         self._data = run_data
         self._inputs = run_inputs

@@ -11,7 +11,7 @@ from packaging.version import Version
 
 import qcflow
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature, infer_pip_requirements
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _infer_signature_from_input_example
@@ -99,14 +99,14 @@ def _verify_task_and_update_metadata(
     task: str, metadata: Optional[dict[str, Any]] = None
 ) -> dict[str, Any]:
     if task not in [_LLM_INFERENCE_TASK_EMBEDDING]:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Received invalid parameter value for `task` argument {task}. Task type could "
             f"only be {_LLM_INFERENCE_TASK_EMBEDDING}"
         )
     if metadata is None:
         metadata = {}
     if "task" in metadata and metadata["task"] != task:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Received invalid parameter value for `task` argument {task}. Task type is "
             f"inconsistent with the task value from metadata {metadata['task']}"
         )
@@ -527,7 +527,7 @@ class _SentenceTransformerModelWrapper:
             try:
                 output_data = self.model.encode(sentences, **params)
             except TypeError as e:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     "Received invalid parameter value for `params` argument"
                 ) from e
         else:

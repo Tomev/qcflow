@@ -24,7 +24,7 @@ import qcflow.utils.file_utils
 from qcflow import pyfunc
 from qcflow.entities.model_registry import ModelVersion
 from qcflow.environment_variables import QCFLOW_DFS_TMP
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelSignature
 from qcflow.models.utils import _read_example
 from qcflow.spark import _add_code_from_conf_to_system_path
@@ -281,7 +281,7 @@ def test_model_export_with_signature_and_examples(spark_model_iris, iris_signatu
 def test_model_export_raise_when_example_is_spark_dataframe(spark, spark_model_iris, model_path):
     features_df = spark_model_iris.pandas_df.drop("label", axis=1)
     example = spark.createDataFrame(features_df.head(3))
-    with pytest.raises(MlflowException, match="Examples can not be provided as Spark Dataframe."):
+    with pytest.raises(QCFlowException, match="Examples can not be provided as Spark Dataframe."):
         qcflow.spark.save_model(spark_model_iris.model, path=model_path, input_example=example)
 
 
@@ -435,7 +435,7 @@ def test_load_spark_model_from_models_uri(
         ) as mock_download_artifacts,
         mock.patch("qcflow.get_registry_uri", return_value=registry_uri),
         mock.patch.object(
-            qcflow.tracking.MlflowClient,
+            qcflow.tracking.QCFlowClient,
             "get_model_version_by_alias",
             return_value=fake_model_version,
         ) as get_model_version_by_alias_mock,
@@ -819,7 +819,7 @@ def test_model_logged_via_qcflowdbfs_when_appropriate(
     expected_uri,
 ):
     def mock_spark_session_load(path):
-        raise Exception("MlflowDbfsClient operation failed!")
+        raise Exception("QCFlowDbfsClient operation failed!")
 
     mock_spark_session = mock.Mock()
     mock_read_spark_session = mock.Mock()
@@ -848,7 +848,7 @@ def test_model_logged_via_qcflowdbfs_when_appropriate(
             "qcflow.spark._HadoopFileSystem.is_filesystem_available",
             return_value=qcflowdbfs_available,
         ),
-        mock.patch("qcflow.utils.databricks_utils.MlflowCredentialContext", autospec=True),
+        mock.patch("qcflow.utils.databricks_utils.QCFlowCredentialContext", autospec=True),
         mock.patch("qcflow.utils.databricks_utils._get_dbutils", mock_get_dbutils),
         mock.patch.object(spark_model_iris.model, "save") as mock_save,
         mock.patch("qcflow.models.infer_pip_requirements", return_value=[]) as mock_infer,
@@ -875,7 +875,7 @@ def test_model_logging_uses_qcflowdbfs_if_appropriate_when_hdfs_check_fails(
 ):
     def mock_spark_session_load(path):
         if dummy_read_shows_qcflowdbfs_available:
-            raise Exception("MlflowdbfsClient operation failed!")
+            raise Exception("QCFlowdbfsClient operation failed!")
         else:
             raise Exception("qcflowdbfs filesystem not found")
 
@@ -906,9 +906,9 @@ def test_model_logging_uses_qcflowdbfs_if_appropriate_when_hdfs_check_fails(
         ),
         mock.patch(
             "qcflow.spark._HadoopFileSystem.is_filesystem_available",
-            side_effect=Exception("MlflowDbfsClient operation failed!"),
+            side_effect=Exception("QCFlowDbfsClient operation failed!"),
         ),
-        mock.patch("qcflow.utils.databricks_utils.MlflowCredentialContext", autospec=True),
+        mock.patch("qcflow.utils.databricks_utils.QCFlowCredentialContext", autospec=True),
         mock.patch(
             "qcflow.utils.databricks_utils._get_dbutils",
             mock_get_dbutils,

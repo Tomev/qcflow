@@ -84,10 +84,10 @@ To start with, we will need to import our required modules.
         from sklearn.ensemble import RandomForestRegressor
         from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-Notice that here we aren't importing the ``MlflowClient`` directly. For this portion, we're going to
+Notice that here we aren't importing the ``QCFlowClient`` directly. For this portion, we're going to
 be using the ``fluent`` API. The fluent APIs use a globally referenced state of the QCFlow tracking
 server's uri. This global instance allows for us to use these 'higher-level' (simpler) APIs to perform
-every action that we can otherwise do with the ``MlflowClient``, with the addition of some other useful
+every action that we can otherwise do with the ``QCFlowClient``, with the addition of some other useful
 syntax (such as context handlers that we'll be using very shortly) to make integrating QCFlow to
 ML workloads as simple as possible.
 

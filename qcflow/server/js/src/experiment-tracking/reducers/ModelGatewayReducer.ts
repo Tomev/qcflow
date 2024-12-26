@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
 import { ModelGatewayRouteLegacy, ModelGatewayRoute } from '../sdk/ModelGatewayService';
-import { ModelGatewayRouteTask } from '../sdk/MlflowEnums';
+import { ModelGatewayRouteTask } from '../sdk/QCFlowEnums';
 import { fulfilled, pending, rejected } from '../../common/utils/ActionUtils';
 
 import type { AsyncAction, AsyncFulfilledAction } from '../../redux-types';
-import type { SearchMlflowDeploymentsModelRoutesAction } from '../actions/ModelGatewayActions';
+import type { SearchQCFlowDeploymentsModelRoutesAction } from '../actions/ModelGatewayActions';
 
 export interface ModelGatewayReduxState {
   modelGatewayRoutesLegacy: Record<string, ModelGatewayRouteLegacy>;
@@ -41,7 +41,7 @@ export const modelGatewayRoutesLoading = (
   return state;
 };
 
-type ModelGatewayReducerActions = AsyncFulfilledAction<SearchMlflowDeploymentsModelRoutesAction>;
+type ModelGatewayReducerActions = AsyncFulfilledAction<SearchQCFlowDeploymentsModelRoutesAction>;
 export const modelGatewayRoutes = (
   state: Record<string, ModelGatewayRoute> = {},
   { payload, type }: ModelGatewayReducerActions,

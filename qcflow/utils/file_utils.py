@@ -45,7 +45,7 @@ from qcflow.environment_variables import (
     QCFLOW_DOWNLOAD_CHUNK_TIMEOUT,
     QCFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR,
 )
-from qcflow.exceptions import MissingConfigException, MlflowException
+from qcflow.exceptions import MissingConfigException, QCFlowException
 from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialType
 from qcflow.utils import download_cloud_file_chunk, merge_dicts
 from qcflow.utils.databricks_utils import (
@@ -760,7 +760,7 @@ def parallelized_download_file_using_http_uri(
                 env=env,
             )
         except (TimeoutExpired, CalledProcessError) as e:
-            raise MlflowException(
+            raise QCFlowException(
                 f"""
 ----- stdout -----
 {e.stdout.strip()}
@@ -1072,11 +1072,11 @@ def get_total_file_size(path: Union[str, pathlib.Path]) -> Optional[int]:
         if isinstance(path, pathlib.Path):
             path = str(path)
         if not os.path.exists(path):
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"The given {path} does not exist.", error_code=INVALID_PARAMETER_VALUE
             )
         if not os.path.isdir(path):
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"The given {path} is not a directory.", error_code=INVALID_PARAMETER_VALUE
             )
 

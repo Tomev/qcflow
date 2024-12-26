@@ -233,7 +233,7 @@ module.exports = function () {
          * https://jestjs.io/docs/ecmascript-modules
          * https://nodejs.org/api/vm.html#vm_class_vm_module
          *
-         * Since there are certain ESM-built dependencies used in MLFLow, we need
+         * Since there are certain ESM-built dependencies used in QCFLow, we need
          * to add a few exceptions to the standard ignore pattern for babel.
          */
         const createIgnorePatternForESM = () => {

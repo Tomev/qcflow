@@ -11,7 +11,7 @@ from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 
 import qcflow.db
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.db.base_sql_model import Base
 from qcflow.store.db.utils import _get_alembic_config, _verify_schema
 from qcflow.store.tracking.dbmodels.initial_models import Base as InitialBase
@@ -87,7 +87,7 @@ def test_running_migrations_generates_expected_schema(tmp_path, expected_schema_
 
 def test_sqlalchemy_store_detects_schema_mismatch(db_url):
     def _assert_invalid_schema(engine):
-        with pytest.raises(MlflowException, match="Detected out-of-date database schema."):
+        with pytest.raises(QCFlowException, match="Detected out-of-date database schema."):
             _verify_schema(engine)
 
     # Initialize an empty database & verify that we detect a schema mismatch

@@ -12,7 +12,7 @@ public class DatabricksConfigHostCredsProvider extends DatabricksHostCredsProvid
 
   private final String profile;
 
-  private DatabricksMlflowHostCreds hostCreds;
+  private DatabricksQCFlowHostCreds hostCreds;
 
   public DatabricksConfigHostCredsProvider(String profile) {
     this.profile = profile;
@@ -82,11 +82,11 @@ public class DatabricksConfigHostCredsProvider extends DatabricksHostCredsProvid
         " (" + basePath + "). Please run 'databricks configure' using the Databricks CLI.");
     }
 
-    this.hostCreds = new DatabricksMlflowHostCreds(host, username, password, token, insecure);
+    this.hostCreds = new DatabricksQCFlowHostCreds(host, username, password, token, insecure);
   }
 
   @Override
-  public DatabricksMlflowHostCreds getHostCreds() {
+  public DatabricksQCFlowHostCreds getHostCreds() {
     loadConfigIfNecessary();
     return hostCreds;
   }

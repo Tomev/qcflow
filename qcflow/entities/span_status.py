@@ -5,7 +5,7 @@ from enum import Enum
 
 from opentelemetry import trace as trace_api
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
@@ -43,7 +43,7 @@ class SpanStatus:
             try:
                 self.status_code = SpanStatusCode(self.status_code)
             except ValueError:
-                raise MlflowException(
+                raise QCFlowException(
                     f"{self.status_code} is not a valid SpanStatusCode value. "
                     f"Please use one of {[status_code.value for status_code in SpanStatusCode]}",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -58,7 +58,7 @@ class SpanStatus:
         try:
             status_code = getattr(trace_api.StatusCode, self.status_code.name)
         except AttributeError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid status code: {self.status_code}", error_code=INVALID_PARAMETER_VALUE
             )
         return trace_api.Status(status_code, self.description)
@@ -73,7 +73,7 @@ class SpanStatus:
         try:
             status_code = SpanStatusCode(otel_status.status_code.name)
         except ValueError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Got invalid status code from OpenTelemetry: {otel_status.status_code}",
                 error_code=INVALID_PARAMETER_VALUE,
             )

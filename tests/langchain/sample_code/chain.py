@@ -8,7 +8,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.chat_models import ChatDatabricks, ChatMlflow
+from langchain_community.chat_models import ChatDatabricks, ChatQCFlow
 from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings.fake import FakeEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -48,7 +48,7 @@ def get_fake_chat_model(endpoint="fake-endpoint"):
                     }
                 ],
             }
-            return ChatMlflow._create_chat_result(response)
+            return ChatQCFlow._create_chat_result(response)
 
         @property
         def _llm_type(self) -> str:

@@ -1,7 +1,7 @@
 from unittest import mock
 
-from qcflow import MlflowClient
-from qcflow.exceptions import MlflowException
+from qcflow import QCFlowClient
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.tracking.default_experiment.databricks_notebook_experiment_provider import (
     DatabricksNotebookExperimentProvider,
@@ -17,9 +17,9 @@ def test_databricks_notebook_default_experiment_in_context():
 def test_databricks_notebook_default_experiment_id():
     with (
         mock.patch.object(
-            MlflowClient,
+            QCFlowClient,
             "create_experiment",
-            side_effect=MlflowException(
+            side_effect=QCFlowException(
                 message="Error message", error_code=INVALID_PARAMETER_VALUE
             ),
         ),
@@ -46,7 +46,7 @@ def test_databricks_repo_notebook_default_experiment_gets_id_by_request():
             return_value="/Repos/path",
         ),
         mock.patch.object(
-            MlflowClient, "create_experiment", return_value="experiment_id"
+            QCFlowClient, "create_experiment", return_value="experiment_id"
         ) as create_experiment_mock,
     ):
         DatabricksNotebookExperimentProvider._resolved_notebook_experiment_id = None
@@ -66,10 +66,10 @@ def test_databricks_repo_notebook_default_experiment_uses_fallback_notebook_id()
             "qcflow.utils.databricks_utils.get_notebook_path",
             return_value="/Repos/path",
         ),
-        mock.patch.object(MlflowClient, "create_experiment") as create_experiment_mock,
+        mock.patch.object(QCFlowClient, "create_experiment") as create_experiment_mock,
     ):
         DatabricksNotebookExperimentProvider._resolved_notebook_experiment_id = None
-        create_experiment_mock.side_effect = MlflowException(
+        create_experiment_mock.side_effect = QCFlowException(
             message="not enabled", error_code=INVALID_PARAMETER_VALUE
         )
         returned_id = DatabricksNotebookExperimentProvider().get_experiment_id()

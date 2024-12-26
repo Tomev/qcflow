@@ -31,7 +31,7 @@ from qcflow.entities.multipart_upload import MultipartUploadPart
 from qcflow.entities.trace_info import TraceInfo
 from qcflow.entities.trace_status import TraceStatus
 from qcflow.environment_variables import QCFLOW_DEPLOYMENTS_TARGET
-from qcflow.exceptions import MlflowException, _UnsupportedMultipartUploadException
+from qcflow.exceptions import QCFlowException, _UnsupportedMultipartUploadException
 from qcflow.models import Model
 from qcflow.protos import databricks_pb2
 from qcflow.protos.databricks_pb2 import (
@@ -45,11 +45,11 @@ from qcflow.protos.qcflow_artifacts_pb2 import (
     CreateMultipartUpload,
     DeleteArtifact,
     DownloadArtifact,
-    MlflowArtifactsService,
+    QCFlowArtifactsService,
     UploadArtifact,
 )
 from qcflow.protos.qcflow_artifacts_pb2 import (
-    ListArtifacts as ListArtifactsMlflowArtifacts,
+    ListArtifacts as ListArtifactsQCFlowArtifacts,
 )
 from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
@@ -96,7 +96,7 @@ from qcflow.protos.service_pb2 import (
     LogMetric,
     LogModel,
     LogParam,
-    MlflowService,
+    QCFlowService,
     RestoreExperiment,
     RestoreRun,
     SearchDatasets,
@@ -222,7 +222,7 @@ def _get_trace_artifact_repo(trace_info: TraceInfo):
 
         path = _get_proxied_run_artifact_destination_path(artifact_uri)
         if not path:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Failed to resolve the proxied run artifact URI: {artifact_uri}. ",
                 "Trace artifact URI must contain subpath to the trace data directory.",
                 error_code=BAD_REQUEST,
@@ -448,7 +448,7 @@ def _validate_param_against_schema(schema, param, value, proto_parsing_succeeded
     """
     Attempts to validate a single parameter against a specified schema. Examples of the elements of
     the schema are type assertions and checks for required parameters. Returns None on validation
-    success.  Otherwise, raises an MLFlowException if an assertion fails. This method is intended
+    success.  Otherwise, raises an QCFlowException if an assertion fails. This method is intended
     to be called for side effects.
 
     Args:
@@ -477,7 +477,7 @@ def _validate_param_against_schema(schema, param, value, proto_parsing_succeeded
                 message = invalid_value(
                     param, value, f" Hint: Value was of type '{type(value).__name__}'."
                 )
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     message + " See the API docs for more information about request parameters."
                 ),
@@ -571,7 +571,7 @@ def catch_qcflow_exception(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except MlflowException as e:
+        except QCFlowException as e:
             response = Response(mimetype="application/json")
             response.set_data(e.serialize_as_json())
             response.status_code = e.get_http_status_code()
@@ -662,7 +662,7 @@ def _create_experiment():
     # Validate query string in artifact location to prevent attacks
     parsed_artifact_location = urllib.parse.urlparse(request_message.artifact_location)
     if parsed_artifact_location.fragment or parsed_artifact_location.params:
-        raise MlflowException(
+        raise QCFlowException(
             "'artifact_location' URL can't include fragments or params.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -706,7 +706,7 @@ def _get_experiment_by_name():
     response_message = GetExperimentByName.Response()
     store_exp = _get_tracking_store().get_experiment_by_name(request_message.experiment_name)
     if store_exp is None:
-        raise MlflowException(
+        raise QCFlowException(
             f"Could not find experiment with name '{request_message.experiment_name}'",
             error_code=RESOURCE_DOES_NOT_EXIST,
         )
@@ -1128,12 +1128,12 @@ def get_metric_history_bulk_handler():
     MAX_RUN_IDS_PER_REQUEST = 100
     run_ids = request.args.to_dict(flat=False).get("run_id", [])
     if not run_ids:
-        raise MlflowException(
+        raise QCFlowException(
             message="GetMetricHistoryBulk request must specify at least one run_id.",
             error_code=INVALID_PARAMETER_VALUE,
         )
     if len(run_ids) > MAX_RUN_IDS_PER_REQUEST:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"GetMetricHistoryBulk request cannot specify more than {MAX_RUN_IDS_PER_REQUEST}"
                 f" run_ids. Received {len(run_ids)} run_ids."
@@ -1143,7 +1143,7 @@ def get_metric_history_bulk_handler():
 
     metric_key = request.args.get("metric_key")
     if metric_key is None:
-        raise MlflowException(
+        raise QCFlowException(
             message="GetMetricHistoryBulk request must specify a metric_key.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1273,12 +1273,12 @@ def get_metric_history_bulk_interval_impl(request_message):
             start_step = int(start_step)
             end_step = int(end_step)
             if start_step > end_step:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     "end_step must be greater than start_step. "
                     f"Found start_step={start_step} and end_step={end_step}."
                 )
         elif start_step is not None or end_step is not None:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "If either start step or end step are specified, both must be specified."
             )
 
@@ -1345,12 +1345,12 @@ def search_datasets_impl(request_message):
     _validate_content_type(request, ["application/json"])
     experiment_ids = request_message.experiment_ids or []
     if not experiment_ids:
-        raise MlflowException(
+        raise QCFlowException(
             message="SearchDatasets request must specify at least one experiment_id.",
             error_code=INVALID_PARAMETER_VALUE,
         )
     if len(experiment_ids) > MAX_EXPERIMENT_IDS_PER_REQUEST:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"SearchDatasets request cannot specify more than {MAX_EXPERIMENT_IDS_PER_REQUEST}"
                 f" experiment_ids. Received {len(experiment_ids)} experiment_ids."
@@ -1381,7 +1381,7 @@ def gateway_proxy_handler():
 
     gateway_path = args.get("gateway_path")
     if not gateway_path:
-        raise MlflowException(
+        raise QCFlowException(
             message="Deployments proxy request must specify a gateway_path.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1393,7 +1393,7 @@ def gateway_proxy_handler():
     if response.status_code == 200:
         return response.json()
     else:
-        raise MlflowException(
+        raise QCFlowException(
             message=f"Deployments proxy request failed with error code {response.status_code}. "
             f"Error message: {response.text}",
             error_code=response.status_code,
@@ -1405,7 +1405,7 @@ def gateway_proxy_handler():
 def create_promptlab_run_handler():
     def assert_arg_exists(arg_name, arg):
         if not arg:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"CreatePromptlabRun request must specify {arg_name}.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -1474,27 +1474,27 @@ def upload_artifact_handler():
     args = request.args
     run_uuid = args.get("run_uuid")
     if not run_uuid:
-        raise MlflowException(
+        raise QCFlowException(
             message="Request must specify run_uuid.",
             error_code=INVALID_PARAMETER_VALUE,
         )
     path = args.get("path")
     if not path:
-        raise MlflowException(
+        raise QCFlowException(
             message="Request must specify path.",
             error_code=INVALID_PARAMETER_VALUE,
         )
     path = validate_path_is_safe(path)
 
     if request.content_length and request.content_length > 10 * 1024 * 1024:
-        raise MlflowException(
+        raise QCFlowException(
             message="Artifact size is too large. Max size is 10MB.",
             error_code=INVALID_PARAMETER_VALUE,
         )
 
     data = request.data
     if not data:
-        raise MlflowException(
+        raise QCFlowException(
             message="Request must specify data.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1619,7 +1619,7 @@ def _log_model():
     try:
         model = json.loads(request_message.model_json)
     except Exception:
-        raise MlflowException(
+        raise QCFlowException(
             f"Malformed model info. \n {request_message.model_json} \n is not a valid JSON.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1627,7 +1627,7 @@ def _log_model():
     missing_fields = {"artifact_path", "flavors", "utc_time_created", "run_id"} - set(model.keys())
 
     if missing_fields:
-        raise MlflowException(
+        raise QCFlowException(
             f"Model json is missing mandatory fields: {missing_fields}",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -1835,14 +1835,14 @@ def _validate_non_local_source_contains_relative_paths(source: str):
         source = unquoted
     source_path = re.sub(r"/+", "/", urllib.parse.urlparse(source).path.rstrip("/"))
     if "\x00" in source_path or any(p == ".." for p in source.split("/")):
-        raise MlflowException(invalid_source_error_message, INVALID_PARAMETER_VALUE)
+        raise QCFlowException(invalid_source_error_message, INVALID_PARAMETER_VALUE)
     resolved_source = pathlib.Path(source_path).resolve().as_posix()
     # NB: drive split is specifically for Windows since WindowsPath.resolve() will append the
     # drive path of the pwd to a given path. We don't care about the drive here, though.
     _, resolved_path = os.path.splitdrive(resolved_source)
 
     if resolved_path != source_path:
-        raise MlflowException(invalid_source_error_message, INVALID_PARAMETER_VALUE)
+        raise QCFlowException(invalid_source_error_message, INVALID_PARAMETER_VALUE)
 
 
 def _validate_source(source: str, run_id: str) -> None:
@@ -1858,7 +1858,7 @@ def _validate_source(source: str, run_id: str) -> None:
                 if run_artifact_dir in [source, *source.parents]:
                     return
 
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid model version source: '{source}'. To use a local path as a model version "
             "source, the run_id request parameter has to be specified and the local path has to be "
             "contained within the artifact directory of the run specified by the run_id.",
@@ -2195,7 +2195,7 @@ def _list_artifacts_qcflow_artifacts():
     A request handler for `GET /qcflow-artifacts/artifacts?path=<value>` to list artifacts in `path`
     (a relative path from the root artifact directory).
     """
-    request_message = _get_request_message(ListArtifactsMlflowArtifacts())
+    request_message = _get_request_message(ListArtifactsQCFlowArtifacts())
     path = validate_path_is_safe(request_message.path) if request_message.HasField("path") else None
     artifact_repo = _get_artifact_repo_qcflow_artifacts()
     files = []
@@ -2538,7 +2538,7 @@ def get_trace_artifact_handler():
     request_id = request.args.get("request_id")
 
     if not request_id:
-        raise MlflowException(
+        raise QCFlowException(
             'Request must include the "request_id" query parameter.',
             error_code=BAD_REQUEST,
         )
@@ -2622,9 +2622,9 @@ def get_endpoints(get_handler=get_handler):
         List of tuples (path, handler, methods)
     """
     return (
-        get_service_endpoints(MlflowService, get_handler)
+        get_service_endpoints(QCFlowService, get_handler)
         + get_service_endpoints(ModelRegistryService, get_handler)
-        + get_service_endpoints(MlflowArtifactsService, get_handler)
+        + get_service_endpoints(QCFlowArtifactsService, get_handler)
         + [("/graphql", _graphql, ["GET", "POST"])]
     )
 
@@ -2680,7 +2680,7 @@ HANDLERS = {
     # QCFlow Artifacts APIs
     DownloadArtifact: _download_artifact,
     UploadArtifact: _upload_artifact,
-    ListArtifactsMlflowArtifacts: _list_artifacts_qcflow_artifacts,
+    ListArtifactsQCFlowArtifacts: _list_artifacts_qcflow_artifacts,
     DeleteArtifact: _delete_artifact_qcflow_artifacts,
     CreateMultipartUpload: _create_multipart_upload_artifact,
     CompleteMultipartUpload: _complete_multipart_upload_artifact,

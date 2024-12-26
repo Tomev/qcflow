@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 import qcflow.pytorch
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelSignature
 from qcflow.models.utils import _read_example, load_serving_example
 from qcflow.pytorch import get_default_conda_env
@@ -279,7 +279,7 @@ def test_raise_exception(sequential_model):
             qcflow.pytorch.save_model([1, 2, 3], path)
 
         qcflow.pytorch.save_model(sequential_model, path)
-        with pytest.raises(MlflowException, match=f"Path '{os.path.abspath(path)}' already exists"):
+        with pytest.raises(QCFlowException, match=f"Path '{os.path.abspath(path)}' already exists"):
             qcflow.pytorch.save_model(sequential_model, path)
 
         import sklearn.neighbors as knn
@@ -292,7 +292,7 @@ def test_raise_exception(sequential_model):
             pickle.dump(knn, f)
         path = tmp.path("knn")
         sklearn.save_model(knn, path=path)
-        with pytest.raises(MlflowException, match='Model does not have the "pytorch" flavor'):
+        with pytest.raises(QCFlowException, match='Model does not have the "pytorch" flavor'):
             qcflow.pytorch.load_model(path)
 
 
@@ -835,7 +835,7 @@ def test_load_model_raises_exception_when_pickle_module_cannot_be_imported(
         f.write(bad_pickle_module_name)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to import the pickle module.+" + re.escape(bad_pickle_module_name),
     ):
         qcflow.pytorch.load_model(model_uri=model_path)
@@ -979,7 +979,7 @@ def test_requirements_file_save_model(create_requirements_file, sequential_model
 def test_log_model_invalid_requirement_file_path(sequential_model):
     with (
         qcflow.start_run(),
-        pytest.raises(MlflowException, match="No such file or directory: 'non_existing_file.txt'"),
+        pytest.raises(QCFlowException, match="No such file or directory: 'non_existing_file.txt'"),
     ):
         qcflow.pytorch.log_model(
             sequential_model,
@@ -1072,7 +1072,7 @@ def test_extra_files_save_model(create_extra_files, sequential_model):
 def test_log_model_invalid_extra_file_path(sequential_model):
     with (
         qcflow.start_run(),
-        pytest.raises(MlflowException, match="No such file or directory: 'non_existing_file.txt'"),
+        pytest.raises(QCFlowException, match="No such file or directory: 'non_existing_file.txt'"),
     ):
         qcflow.pytorch.log_model(
             sequential_model,

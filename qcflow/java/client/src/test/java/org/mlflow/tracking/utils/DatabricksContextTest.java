@@ -70,10 +70,10 @@ public class DatabricksContextTest {
     {
       baseMap = new HashMap<>();
       Map<String, String> expectedTags = ImmutableMap.of(
-        MlflowTagConstants.DATABRICKS_NOTEBOOK_ID, "1",
-        MlflowTagConstants.DATABRICKS_NOTEBOOK_PATH, "test-path",
-        MlflowTagConstants.SOURCE_TYPE, "NOTEBOOK",
-        MlflowTagConstants.SOURCE_NAME, "test-path");
+        QCFlowTagConstants.DATABRICKS_NOTEBOOK_ID, "1",
+        QCFlowTagConstants.DATABRICKS_NOTEBOOK_PATH, "test-path",
+        QCFlowTagConstants.SOURCE_TYPE, "NOTEBOOK",
+        QCFlowTagConstants.SOURCE_NAME, "test-path");
       baseMap.put("notebookId", "1");
       baseMap.put("notebookPath", "test-path");
       DatabricksContext context = DatabricksContext.createIfAvailable(MyDynamicProvider.class.getName());
@@ -83,7 +83,7 @@ public class DatabricksContextTest {
     {
       baseMap = new HashMap<>();
       Map<String, String> expectedTags = ImmutableMap.of(
-        MlflowTagConstants.DATABRICKS_NOTEBOOK_ID, "1");
+        QCFlowTagConstants.DATABRICKS_NOTEBOOK_ID, "1");
       baseMap.put("notebookId", "1");
       baseMap.put("notebookPath", null);
       DatabricksContext context = DatabricksContext.createIfAvailable(MyDynamicProvider.class.getName());
@@ -97,11 +97,11 @@ public class DatabricksContextTest {
     {
       baseMap = new HashMap<>();
       Map<String, String> expectedTags = ImmutableMap.of(
-        MlflowTagConstants.DATABRICKS_JOB_ID, "70",
-        MlflowTagConstants.DATABRICKS_JOB_RUN_ID, "5",
-        MlflowTagConstants.DATABRICKS_JOB_TYPE, "notebook",
-        MlflowTagConstants.SOURCE_TYPE, "JOB",
-        MlflowTagConstants.SOURCE_NAME, "jobs/70/run/5");
+        QCFlowTagConstants.DATABRICKS_JOB_ID, "70",
+        QCFlowTagConstants.DATABRICKS_JOB_RUN_ID, "5",
+        QCFlowTagConstants.DATABRICKS_JOB_TYPE, "notebook",
+        QCFlowTagConstants.SOURCE_TYPE, "JOB",
+        QCFlowTagConstants.SOURCE_NAME, "jobs/70/run/5");
       baseMap.put("jobId", "70");
       baseMap.put("jobRunId", "5");
       baseMap.put("jobType", "notebook");
@@ -112,10 +112,10 @@ public class DatabricksContextTest {
     {
       baseMap = new HashMap<>();
       Map<String, String> expectedTags = ImmutableMap.of(
-        MlflowTagConstants.DATABRICKS_JOB_ID, "70",
-        MlflowTagConstants.DATABRICKS_JOB_RUN_ID, "5",
-        MlflowTagConstants.SOURCE_TYPE, "JOB",
-        MlflowTagConstants.SOURCE_NAME, "jobs/70/run/5");
+        QCFlowTagConstants.DATABRICKS_JOB_ID, "70",
+        QCFlowTagConstants.DATABRICKS_JOB_RUN_ID, "5",
+        QCFlowTagConstants.SOURCE_TYPE, "JOB",
+        QCFlowTagConstants.SOURCE_NAME, "jobs/70/run/5");
       baseMap.put("jobId", "70");
       baseMap.put("jobRunId", "5");
       DatabricksContext context = DatabricksContext.createIfAvailable(MyDynamicProvider.class.getName());

@@ -5,13 +5,13 @@ import pytest
 from aiohttp import ClientTimeout
 from fastapi.encoders import jsonable_encoder
 
-from qcflow.gateway.config import MlflowModelServingConfig, RouteConfig
+from qcflow.gateway.config import QCFlowModelServingConfig, RouteConfig
 from qcflow.gateway.constants import (
     QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS,
     QCFLOW_SERVING_RESPONSE_KEY,
 )
 from qcflow.gateway.exceptions import AIGatewayException
-from qcflow.gateway.providers.qcflow import MlflowModelServingProvider
+from qcflow.gateway.providers.qcflow import QCFlowModelServingProvider
 from qcflow.gateway.schemas import chat, completions, embeddings
 
 from tests.gateway.tools import MockAsyncResponse, mock_http_client
@@ -44,7 +44,7 @@ async def test_completions():
         mock.patch("time.time", return_value=1677858242),
         mock.patch("aiohttp.ClientSession", return_value=mock_client) as mock_build_client,
     ):
-        provider = MlflowModelServingProvider(RouteConfig(**config))
+        provider = QCFlowModelServingProvider(RouteConfig(**config))
         payload = {
             "prompt": "Is this a test?",
             "temperature": 0.0,
@@ -114,7 +114,7 @@ async def test_completions():
 )
 def test_valid_completions_input_parsing(input_data, expected_output):
     config = completions_config()
-    provider = MlflowModelServingProvider(RouteConfig(**config))
+    provider = QCFlowModelServingProvider(RouteConfig(**config))
     parsed = provider._process_completions_response_for_qcflow_serving(input_data)
 
     assert parsed == expected_output
@@ -133,7 +133,7 @@ def test_valid_completions_input_parsing(input_data, expected_output):
 )
 def test_validation_errors(invalid_data):
     config = completions_config()
-    provider = MlflowModelServingProvider(RouteConfig(**config))
+    provider = QCFlowModelServingProvider(RouteConfig(**config))
     with pytest.raises(AIGatewayException, match=r".*") as e:
         provider._process_completions_response_for_qcflow_serving(invalid_data)
     assert e.value.status_code == 502
@@ -142,7 +142,7 @@ def test_validation_errors(invalid_data):
 
 def test_invalid_return_key_from_qcflow_serving():
     config = completions_config()
-    provider = MlflowModelServingProvider(RouteConfig(**config))
+    provider = QCFlowModelServingProvider(RouteConfig(**config))
     with pytest.raises(AIGatewayException, match=r".*") as e:
         provider._process_completions_response_for_qcflow_serving(
             {"invalid_return_key": ["invalid", "response"]}
@@ -176,7 +176,7 @@ async def test_embeddings():
     mock_client = mock_http_client(MockAsyncResponse(resp))
 
     with mock.patch("aiohttp.ClientSession", return_value=mock_client) as mock_build_client:
-        provider = MlflowModelServingProvider(RouteConfig(**config))
+        provider = QCFlowModelServingProvider(RouteConfig(**config))
         payload = {"input": ["test1", "test2"]}
         response = await provider.embeddings(embeddings.RequestPayload(**payload))
         assert jsonable_encoder(response) == {
@@ -223,7 +223,7 @@ async def test_embeddings():
 )
 def test_invalid_embeddings_response(response):
     config = embedding_config()
-    provider = MlflowModelServingProvider(RouteConfig(**config))
+    provider = QCFlowModelServingProvider(RouteConfig(**config))
     with pytest.raises(AIGatewayException, match=r".*") as e:
         provider._process_embeddings_response_for_qcflow_serving(response)
 
@@ -258,7 +258,7 @@ async def test_chat():
         mock.patch("time.time", return_value=1700242674),
         mock.patch("aiohttp.ClientSession", return_value=mock_client) as mock_build_client,
     ):
-        provider = MlflowModelServingProvider(RouteConfig(**config))
+        provider = QCFlowModelServingProvider(RouteConfig(**config))
         payload = {"messages": [{"role": "user", "content": "Is this a test?"}]}
         response = await provider.chat(chat.RequestPayload(**payload))
         assert jsonable_encoder(response) == {
@@ -302,7 +302,7 @@ async def test_chat_exception_raised_for_multiple_elements_in_query():
     mock_client = mock_http_client(MockAsyncResponse(resp))
 
     with mock.patch("aiohttp.ClientSession", return_value=mock_client):
-        provider = MlflowModelServingProvider(RouteConfig(**config))
+        provider = QCFlowModelServingProvider(RouteConfig(**config))
         payload = {
             "messages": [
                 {"role": "user", "content": "Is this a test?"},
@@ -317,4 +317,4 @@ async def test_chat_exception_raised_for_multiple_elements_in_query():
 
 def test_route_construction_fails_with_invalid_config():
     with pytest.raises(pydantic.ValidationError, match="model_server_url"):
-        MlflowModelServingConfig(model_server_url=None)
+        QCFlowModelServingConfig(model_server_url=None)

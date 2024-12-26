@@ -7,7 +7,7 @@ import qcflow.data
 from qcflow.data.dataset import Dataset
 from qcflow.data.dataset_registry import DatasetRegistry, register_constructor
 from qcflow.data.dataset_source_registry import DatasetSourceRegistry, resolve_dataset_source
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 from tests.resources.data.dataset import SampleDataset
 from tests.resources.data.dataset_source import SampleDatasetSource
@@ -45,10 +45,10 @@ def test_register_constructor_function_performs_validation():
     ) -> Dataset:
         pass
 
-    with pytest.raises(MlflowException, match="Constructor name must start with"):
+    with pytest.raises(QCFlowException, match="Constructor name must start with"):
         registry.register_constructor(bad_name_fn)
 
-    with pytest.raises(MlflowException, match="Constructor name must start with"):
+    with pytest.raises(QCFlowException, match="Constructor name must start with"):
         registry.register_constructor(
             constructor_fn=from_good_function, constructor_name="bad_name"
         )
@@ -58,7 +58,7 @@ def test_register_constructor_function_performs_validation():
     ) -> Dataset:
         pass
 
-    with pytest.raises(MlflowException, match="must define an optional parameter named 'name'"):
+    with pytest.raises(QCFlowException, match="must define an optional parameter named 'name'"):
         registry.register_constructor(from_no_name_fn)
 
     def from_no_digest_fn(
@@ -66,7 +66,7 @@ def test_register_constructor_function_performs_validation():
     ) -> Dataset:
         pass
 
-    with pytest.raises(MlflowException, match="must define an optional parameter named 'digest'"):
+    with pytest.raises(QCFlowException, match="must define an optional parameter named 'digest'"):
         registry.register_constructor(from_no_digest_fn)
 
     def from_bad_return_type_fn(
@@ -76,7 +76,7 @@ def test_register_constructor_function_performs_validation():
     ) -> str:
         pass
 
-    with pytest.raises(MlflowException, match="must have a return type annotation.*Dataset"):
+    with pytest.raises(QCFlowException, match="must have a return type annotation.*Dataset"):
         registry.register_constructor(from_bad_return_type_fn)
 
     def from_no_return_type_fn(
@@ -86,7 +86,7 @@ def test_register_constructor_function_performs_validation():
     ):
         pass
 
-    with pytest.raises(MlflowException, match="must have a return type annotation.*Dataset"):
+    with pytest.raises(QCFlowException, match="must have a return type annotation.*Dataset"):
         registry.register_constructor(from_no_return_type_fn)
 
 

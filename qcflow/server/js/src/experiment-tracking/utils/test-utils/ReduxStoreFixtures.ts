@@ -5,7 +5,7 @@
  * annotations are already looking good, please remove this comment.
  */
 
-import { RunTag, Metric } from '../../sdk/MlflowMessages';
+import { RunTag, Metric } from '../../sdk/QCFlowMessages';
 
 export const emptyState = {
   apis: {},

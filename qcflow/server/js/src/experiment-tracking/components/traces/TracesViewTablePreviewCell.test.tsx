@@ -3,7 +3,7 @@ import { render, screen } from '../../../common/utils/TestUtils.react18';
 import { TracesViewTableResponsePreviewCell } from './TracesViewTablePreviewCell';
 import { Table, TableCell, TableRow } from '@databricks/design-system';
 import userEvent from '@testing-library/user-event-14';
-import { MlflowService } from '../../sdk/MlflowService';
+import { QCFlowService } from '../../sdk/QCFlowService';
 
 const shortValue = '{"test":"short"}';
 const longValue = `{"model_input":[{"query":"What is featured in the last version of QCFlow?"}],"system_prompt":"\\nYou are an assistant for Databricks users. You are answering python, coding, SQL, data engineering, spark, data science, DW and platform, API or infrastructure administration question related to Databricks. If the question is not related to one of these topics, kindly decline to answer. If you don't know the answer, just say that you don't know, don't try to make up an answer. Keep the answer as concise as possible.Use the following pieces of context to answer the question at the end:\\n","params":{"model_name":"databricks-dbrx-instruct","temperature":0.1,"max_tokens":1000}}`;
@@ -53,7 +53,7 @@ describe('ExperimentViewTracesTablePreviewCell', () => {
 
   test('it should expand short values and request more data', async () => {
     jest
-      .spyOn(MlflowService, 'getExperimentTraceData')
+      .spyOn(QCFlowService, 'getExperimentTraceData')
       .mockImplementation(() => Promise.resolve({ response: longValue }));
 
     renderTable(longValueTruncated);
@@ -63,7 +63,7 @@ describe('ExperimentViewTracesTablePreviewCell', () => {
 
     await userEvent.click(screen.getByRole('button'));
 
-    expect(MlflowService.getExperimentTraceData).toBeCalledWith('test_request_id');
+    expect(QCFlowService.getExperimentTraceData).toBeCalledWith('test_request_id');
 
     expect(screen.getByText(formattedLongValue, { collapseWhitespace: false })).toBeInTheDocument();
 
@@ -74,7 +74,7 @@ describe('ExperimentViewTracesTablePreviewCell', () => {
 
   test('it should unescape non-ascii characters', async () => {
     jest
-      .spyOn(MlflowService, 'getExperimentTraceData')
+      .spyOn(QCFlowService, 'getExperimentTraceData')
       .mockImplementation(() => Promise.resolve({ response: longValue }));
 
     const escapedJson = '{"model_input":"\\uD83D\\uDE42"}';

@@ -6,7 +6,7 @@ import pytest
 import requests
 
 from qcflow.environment_variables import QCFLOW_HTTP_REQUEST_TIMEOUT
-from qcflow.exceptions import InvalidUrlException, MlflowException, RestException
+from qcflow.exceptions import InvalidUrlException, QCFlowException, RestException
 from qcflow.protos.databricks_pb2 import ENDPOINT_NOT_FOUND, ErrorCode
 from qcflow.protos.service_pb2 import GetRun
 from qcflow.pyfunc.scoring_server import NumpyEncoder
@@ -15,7 +15,7 @@ from qcflow.tracking.request_header.default_request_header_provider import (
     DefaultRequestHeaderProvider,
 )
 from qcflow.utils.rest_utils import (
-    MlflowHostCreds,
+    QCFlowHostCreds,
     _can_parse_as_json_object,
     augmented_raise_for_status,
     call_endpoint,
@@ -37,11 +37,11 @@ from tests import helper_functions
 )
 def test_malformed_json_error_response(response_mock):
     with mock.patch("requests.Session.request", return_value=response_mock):
-        host_only = MlflowHostCreds("http://my-host")
+        host_only = QCFlowHostCreds("http://my-host")
 
         response_proto = GetRun.Response()
         with pytest.raises(
-            MlflowException, match="API request to endpoint /my/endpoint failed with error code 400"
+            QCFlowException, match="API request to endpoint /my/endpoint failed with error code 400"
         ):
             call_endpoint(host_only, "/my/endpoint", "GET", None, response_proto)
 
@@ -53,7 +53,7 @@ def test_call_endpoints():
             RestException({"error_code": ErrorCode.Name(ENDPOINT_NOT_FOUND)}),
             None,
         ]
-        host_only = MlflowHostCreds("http://my-host")
+        host_only = QCFlowHostCreds("http://my-host")
         endpoints = [("/my/endpoint", "POST"), ("/my/endpoint", "GET")]
         resp = call_endpoints(host_only, endpoints, "", response_proto)
         mock_call_endpoint.assert_has_calls(
@@ -72,7 +72,7 @@ def test_call_endpoints_raises_exceptions():
             RestException({"error_code": ErrorCode.Name(ENDPOINT_NOT_FOUND)}),
             RestException({"error_code": ErrorCode.Name(ENDPOINT_NOT_FOUND)}),
         ]
-        host_only = MlflowHostCreds("http://my-host")
+        host_only = QCFlowHostCreds("http://my-host")
         endpoints = [("/my/endpoint", "POST"), ("/my/endpoint", "GET")]
         with pytest.raises(RestException, match="ENDPOINT_NOT_FOUND"):
             call_endpoints(host_only, endpoints, "", response_proto)
@@ -83,7 +83,7 @@ def test_call_endpoints_raises_exceptions():
 
 @mock.patch("requests.Session.request")
 def test_http_request_hostonly(request):
-    host_only = MlflowHostCreds("http://my-host")
+    host_only = QCFlowHostCreds("http://my-host")
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -101,7 +101,7 @@ def test_http_request_hostonly(request):
 @mock.patch("requests.Session.request")
 def test_http_request_cleans_hostname(request):
     # Add a trailing slash, should be removed.
-    host_only = MlflowHostCreds("http://my-host/")
+    host_only = QCFlowHostCreds("http://my-host/")
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -118,7 +118,7 @@ def test_http_request_cleans_hostname(request):
 
 @mock.patch("requests.Session.request")
 def test_http_request_with_basic_auth(request):
-    host_only = MlflowHostCreds("http://my-host", username="user", password="pass")
+    host_only = QCFlowHostCreds("http://my-host", username="user", password="pass")
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -148,7 +148,7 @@ def test_http_request_with_aws_sigv4(request, monkeypatch):
             "AWS_DEFAULT_REGION": "eu-west-1",
         }
     )
-    aws_sigv4 = MlflowHostCreds("http://my-host", aws_sigv4=True)
+    aws_sigv4 = QCFlowHostCreds("http://my-host", aws_sigv4=True)
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -175,7 +175,7 @@ def test_http_request_with_auth(fetch_auth, request):
     mock_fetch_auth = {"test_name": "test_auth_value"}
     fetch_auth.return_value = mock_fetch_auth
     auth = "test_auth_name"
-    host_only = MlflowHostCreds("http://my-host", auth=auth)
+    host_only = QCFlowHostCreds("http://my-host", auth=auth)
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -196,7 +196,7 @@ def test_http_request_with_auth(fetch_auth, request):
 
 @mock.patch("requests.Session.request")
 def test_http_request_with_token(request):
-    host_only = MlflowHostCreds("http://my-host", token="my-token")
+    host_only = QCFlowHostCreds("http://my-host", token="my-token")
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -215,7 +215,7 @@ def test_http_request_with_token(request):
 
 @mock.patch("requests.Session.request")
 def test_http_request_with_insecure(request):
-    host_only = MlflowHostCreds("http://my-host", ignore_tls_verification=True)
+    host_only = QCFlowHostCreds("http://my-host", ignore_tls_verification=True)
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -232,7 +232,7 @@ def test_http_request_with_insecure(request):
 
 @mock.patch("requests.Session.request")
 def test_http_request_client_cert_path(request):
-    host_only = MlflowHostCreds("http://my-host", client_cert_path="/some/path")
+    host_only = QCFlowHostCreds("http://my-host", client_cert_path="/some/path")
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -250,7 +250,7 @@ def test_http_request_client_cert_path(request):
 
 @mock.patch("requests.Session.request")
 def test_http_request_server_cert_path(request):
-    host_only = MlflowHostCreds("http://my-host", server_cert_path="/some/path")
+    host_only = QCFlowHostCreds("http://my-host", server_cert_path="/some/path")
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -267,7 +267,7 @@ def test_http_request_server_cert_path(request):
 
 @mock.patch("requests.Session.request")
 def test_http_request_with_content_type_header(request):
-    host_only = MlflowHostCreds("http://my-host", token="my-token")
+    host_only = QCFlowHostCreds("http://my-host", token="my-token")
     response = mock.MagicMock()
     response.status_code = 200
     request.return_value = response
@@ -296,7 +296,7 @@ def test_http_request_request_headers(request):
     # polluting request headers in developers' environments. The following mock overrides this to
     # perform the integration test.
     with mock.patch.object(PluginRequestHeaderProvider, "in_context", return_value=True):
-        host_only = MlflowHostCreds("http://my-host", server_cert_path="/some/path")
+        host_only = QCFlowHostCreds("http://my-host", server_cert_path="/some/path")
 
         response = mock.MagicMock()
         response.status_code = 200
@@ -329,7 +329,7 @@ def test_http_request_request_headers_user_agent(request):
             return_value={_USER_AGENT: "test_user_agent"},
         ),
     ):
-        host_only = MlflowHostCreds("http://my-host", server_cert_path="/some/path")
+        host_only = QCFlowHostCreds("http://my-host", server_cert_path="/some/path")
         expected_headers = {
             _USER_AGENT: "{} {}".format(
                 DefaultRequestHeaderProvider().request_headers()[_USER_AGENT], "test_user_agent"
@@ -367,7 +367,7 @@ def test_http_request_request_headers_user_agent_and_extra_header(request):
             return_value={_USER_AGENT: "test_user_agent", "header": "value"},
         ),
     ):
-        host_only = MlflowHostCreds("http://my-host", server_cert_path="/some/path")
+        host_only = QCFlowHostCreds("http://my-host", server_cert_path="/some/path")
         expected_headers = {
             _USER_AGENT: "{} {}".format(
                 DefaultRequestHeaderProvider().request_headers()[_USER_AGENT], "test_user_agent"
@@ -391,7 +391,7 @@ def test_http_request_request_headers_user_agent_and_extra_header(request):
 
 def test_http_request_with_invalid_url_raise_invalid_url_exception():
     """InvalidURL exception can be caught by a custom InvalidUrlException"""
-    host_only = MlflowHostCreds("http://my-host")
+    host_only = QCFlowHostCreds("http://my-host")
 
     with pytest.raises(InvalidUrlException, match="Invalid url: http://my-host/invalid_url"):
         with mock.patch("requests.Session.request", side_effect=requests.exceptions.InvalidURL):
@@ -399,20 +399,20 @@ def test_http_request_with_invalid_url_raise_invalid_url_exception():
 
 
 def test_http_request_with_invalid_url_raise_qcflow_exception():
-    """The InvalidUrlException can be caught by the MlflowException"""
-    host_only = MlflowHostCreds("http://my-host")
+    """The InvalidUrlException can be caught by the QCFlowException"""
+    host_only = QCFlowHostCreds("http://my-host")
 
-    with pytest.raises(MlflowException, match="Invalid url: http://my-host/invalid_url"):
+    with pytest.raises(QCFlowException, match="Invalid url: http://my-host/invalid_url"):
         with mock.patch("requests.Session.request", side_effect=requests.exceptions.InvalidURL):
             http_request(host_only, "/invalid_url", "GET")
 
 
 def test_ignore_tls_verification_not_server_cert_path():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="When 'ignore_tls_verification' is true then 'server_cert_path' must not be set",
     ):
-        MlflowHostCreds(
+        QCFlowHostCreds(
             "http://my-host",
             ignore_tls_verification=True,
             server_cert_path="/some/path",
@@ -421,7 +421,7 @@ def test_ignore_tls_verification_not_server_cert_path():
 
 @mock.patch("requests.Session.request")
 def test_http_request_wrapper(request):
-    host_only = MlflowHostCreds("http://my-host", ignore_tls_verification=True)
+    host_only = QCFlowHostCreds("http://my-host", ignore_tls_verification=True)
     response = mock.MagicMock()
     response.status_code = 200
     response.text = "{}"
@@ -449,7 +449,7 @@ def test_http_request_wrapper(request):
     response.status_code = 400
     response.text = ""
     request.return_value = response
-    with pytest.raises(MlflowException, match="Response body"):
+    with pytest.raises(QCFlowException, match="Response body"):
         http_request_safe(host_only, "/my/endpoint", "GET")
     response.text = (
         '{"error_code": "RESOURCE_DOES_NOT_EXIST", "message": "Node type not supported"}'
@@ -488,7 +488,7 @@ def test_http_request_customize_config(monkeypatch):
     with mock.patch(
         "qcflow.utils.rest_utils._get_http_response_with_retries"
     ) as mock_get_http_response_with_retries:
-        host_only = MlflowHostCreds("http://my-host")
+        host_only = QCFlowHostCreds("http://my-host")
         monkeypatch.delenv("QCFLOW_HTTP_REQUEST_MAX_RETRIES", raising=False)
         monkeypatch.delenv("QCFLOW_HTTP_REQUEST_BACKOFF_FACTOR", raising=False)
         monkeypatch.delenv("QCFLOW_HTTP_REQUEST_TIMEOUT", raising=False)
@@ -532,13 +532,13 @@ def test_http_request_customize_config(monkeypatch):
 def test_http_request_explains_how_to_increase_timeout_in_error_message():
     with mock.patch("requests.Session.request", side_effect=requests.exceptions.Timeout):
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=(
                 r"To increase the timeout, set the environment variable "
                 + re.escape(str(QCFLOW_HTTP_REQUEST_TIMEOUT))
             ),
         ):
-            http_request(MlflowHostCreds("http://my-host"), "/my/endpoint", "GET")
+            http_request(QCFlowHostCreds("http://my-host"), "/my/endpoint", "GET")
 
 
 def test_augmented_raise_for_status():
@@ -564,7 +564,7 @@ def test_provide_redirect_kwarg():
         mock_request.return_value.text = "mock response"
 
         response = http_request(
-            MlflowHostCreds("http://my-host"),
+            QCFlowHostCreds("http://my-host"),
             "/my/endpoint",
             "GET",
             allow_redirects=False,
@@ -583,10 +583,10 @@ def test_provide_redirect_kwarg():
 
 def test_http_request_max_retries(monkeypatch):
     monkeypatch.setenv("_QCFLOW_HTTP_REQUEST_MAX_RETRIES_LIMIT", "15")
-    host_creds = MlflowHostCreds("http://example.com")
+    host_creds = QCFlowHostCreds("http://example.com")
 
     with mock.patch("requests.Session.request") as mock_request:
-        with pytest.raises(MlflowException, match="The configured max_retries"):
+        with pytest.raises(QCFlowException, match="The configured max_retries"):
             http_request(host_creds, "/endpoint", "GET", max_retries=16)
         mock_request.assert_not_called()
         http_request(host_creds, "/endpoint", "GET", max_retries=3)
@@ -595,10 +595,10 @@ def test_http_request_max_retries(monkeypatch):
 
 def test_http_request_backoff_factor(monkeypatch):
     monkeypatch.setenv("_QCFLOW_HTTP_REQUEST_MAX_BACKOFF_FACTOR_LIMIT", "200")
-    host_creds = MlflowHostCreds("http://example.com")
+    host_creds = QCFlowHostCreds("http://example.com")
 
     with mock.patch("requests.Session.request") as mock_request:
-        with pytest.raises(MlflowException, match="The configured backoff_factor"):
+        with pytest.raises(QCFlowException, match="The configured backoff_factor"):
             http_request(host_creds, "/endpoint", "GET", backoff_factor=250)
         mock_request.assert_not_called()
         http_request(host_creds, "/endpoint", "GET", backoff_factor=10)
@@ -606,18 +606,18 @@ def test_http_request_backoff_factor(monkeypatch):
 
 
 def test_http_request_negative_max_retries():
-    host_creds = MlflowHostCreds("http://example.com")
+    host_creds = QCFlowHostCreds("http://example.com")
 
     with mock.patch("requests.Session.request") as mock_request:
-        with pytest.raises(MlflowException, match="The max_retries value must be either"):
+        with pytest.raises(QCFlowException, match="The max_retries value must be either"):
             http_request(host_creds, "/endpoint", "GET", max_retries=-1)
         mock_request.assert_not_called()
 
 
 def test_http_request_negative_backoff_factor():
-    host_creds = MlflowHostCreds("http://example.com")
+    host_creds = QCFlowHostCreds("http://example.com")
 
     with mock.patch("requests.Session.request") as mock_request:
-        with pytest.raises(MlflowException, match="The backoff_factor value must be"):
+        with pytest.raises(QCFlowException, match="The backoff_factor value must be"):
             http_request(host_creds, "/endpoint", "GET", backoff_factor=-1)
         mock_request.assert_not_called()

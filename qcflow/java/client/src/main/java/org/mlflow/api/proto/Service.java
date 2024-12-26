@@ -84178,7 +84178,7 @@ public final class Service {
       "CHEDULED\020\002\022\014\n\010FINISHED\020\003\022\n\n\006FAILED\020\004\022\n\n\006" +
       "KILLED\020\005*O\n\013TraceStatus\022\034\n\030TRACE_STATUS_" +
       "UNSPECIFIED\020\000\022\006\n\002OK\020\001\022\t\n\005ERROR\020\002\022\017\n\013IN_P" +
-      "ROGRESS\020\0032\347!\n\rMlflowService\022\246\001\n\023getExper" +
+      "ROGRESS\020\0032\347!\n\rQCFlowService\022\246\001\n\023getExper" +
       "imentByName\022\033.qcflow.GetExperimentByName" +
       "\032$.qcflow.GetExperimentByName.Response\"L" +
       "\362\206\031H\n,\n\003GET\022\037/qcflow/experiments/get-by-" +

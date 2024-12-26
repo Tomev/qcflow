@@ -7,7 +7,7 @@ exposed in the :py:mod:`qcflow.tracking` module.
 import logging
 
 from qcflow.entities.model_registry import ModelVersionTag, RegisteredModelTag
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_DEFAULT,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
@@ -90,7 +90,7 @@ class ModelRegistryClient:
 
         """
         if new_name.strip() == "":
-            raise MlflowException("The name must not be an empty string.")
+            raise QCFlowException("The name must not be an empty string.")
         return self.store.rename_registered_model(name=name, new_name=new_name)
 
     def delete_registered_model(self, name):
@@ -279,7 +279,7 @@ class ModelRegistryClient:
 
         """
         if stage.strip() == "":
-            raise MlflowException("The stage must not be an empty string.")
+            raise QCFlowException("The stage must not be an empty string.")
         return self.store.transition_model_version_stage(
             name=name,
             version=version,

@@ -2,7 +2,7 @@ import time
 from contextlib import contextmanager
 from typing import Any
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.config import MosaicMLConfig, RouteConfig
 from qcflow.gateway.exceptions import AIGatewayException
 from qcflow.gateway.providers.base import BaseProvider
@@ -69,7 +69,7 @@ class MosaicMLProvider(BaseProvider):
                 # Add statement closing/opening tags by default
                 prompt += f" {m.content} </s><s>"
             else:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Invalid role {m.role} inputted. Must be one of 'system', "
                     "'user', or 'assistant'.",
                 )
@@ -102,7 +102,7 @@ class MosaicMLProvider(BaseProvider):
         # Handle 'prompt' field in payload
         try:
             prompt = [self._parse_chat_messages_to_prompt(messages)]
-        except MlflowException as e:
+        except QCFlowException as e:
             raise AIGatewayException(
                 status_code=422, detail=f"An invalid request structure was submitted. {e.message}"
             )

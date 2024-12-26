@@ -12,7 +12,7 @@ The tutorial content builds upon itself, culminating in successfully logging you
 The topics in this tutorial cover:
 
 * Starting an **QCFlow Tracking Server** (Optionally) and connecting to a Tracking Server
-* Exploring the **MlflowClient** API (briefly)
+* Exploring the **QCFlowClient** API (briefly)
 * Understanding the Default Experiment
 * **Searching** for Experiments with the QCFlow client API
 * Understanding the uses of **tags** and how to leverage them for model organization

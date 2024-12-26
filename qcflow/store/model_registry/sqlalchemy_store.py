@@ -12,7 +12,7 @@ from qcflow.entities.model_registry.model_version_stages import (
     STAGE_DELETED_INTERNAL,
     get_canonical_stage,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     INVALID_STATE,
@@ -120,10 +120,10 @@ class SqlAlchemyStore(AbstractStore):
             SqlModelVersion.__tablename__,
         ]
         if any(table not in inspected_tables for table in expected_tables):
-            # TODO: Replace the MlflowException with the following line once it's possible to run
+            # TODO: Replace the QCFlowException with the following line once it's possible to run
             # the registry against a different DB than the tracking server:
             # qcflow.store.db.utils._initialize_tables(self.engine)
-            raise MlflowException("Database migration in unexpected state. Run manual upgrade.")
+            raise QCFlowException("Database migration in unexpected state. Run manual upgrade.")
 
     @staticmethod
     def _get_eager_registered_model_query_options():
@@ -187,7 +187,7 @@ class SqlAlchemyStore(AbstractStore):
                 session.flush()
                 return registered_model.to_qcflow_entity()
             except sqlalchemy.exc.IntegrityError as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Registered Model (name={name}) already exists. Error: {e}",
                     RESOURCE_ALREADY_EXISTS,
                 )
@@ -210,11 +210,11 @@ class SqlAlchemyStore(AbstractStore):
         )
 
         if len(rms) == 0:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Registered Model with name={name} not found", RESOURCE_DOES_NOT_EXIST
             )
         if len(rms) > 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Expected only 1 registered model with name={name}. Found {len(rms)}.",
                 INVALID_STATE,
             )
@@ -267,7 +267,7 @@ class SqlAlchemyStore(AbstractStore):
                 session.flush()
                 return sql_registered_model.to_qcflow_entity()
             except sqlalchemy.exc.IntegrityError as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Registered Model (name={new_name}) already exists. Error: {e}",
                     RESOURCE_ALREADY_EXISTS,
                 )
@@ -318,7 +318,7 @@ class SqlAlchemyStore(AbstractStore):
             obtained via the ``token`` attribute of the object.
         """
         if max_results > SEARCH_REGISTERED_MODEL_MAX_RESULTS_THRESHOLD:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for request parameter max_results. It must be at most "
                 f"{SEARCH_REGISTERED_MODEL_MAX_RESULTS_THRESHOLD}, but got value {max_results}",
                 INVALID_PARAMETER_VALUE,
@@ -362,11 +362,11 @@ class SqlAlchemyStore(AbstractStore):
             value = f["value"]
             if type_ == "attribute":
                 if key != "name":
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Invalid attribute name: {key}", error_code=INVALID_PARAMETER_VALUE
                     )
                 if comparator not in ("=", "!=", "LIKE", "ILIKE"):
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Invalid comparator for attribute: {comparator}",
                         error_code=INVALID_PARAMETER_VALUE,
                     )
@@ -375,7 +375,7 @@ class SqlAlchemyStore(AbstractStore):
                 attribute_filters.append(attr_filter)
             elif type_ == "tag":
                 if comparator not in ("=", "!=", "LIKE", "ILIKE"):
-                    raise MlflowException.invalid_parameter_value(
+                    raise QCFlowException.invalid_parameter_value(
                         f"Invalid comparator for tag: {comparator}"
                     )
                 if key not in tag_filters:
@@ -389,7 +389,7 @@ class SqlAlchemyStore(AbstractStore):
                 )
                 tag_filters[key].append(val_filter)
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid token type: {type_}", error_code=INVALID_PARAMETER_VALUE
                 )
 
@@ -421,7 +421,7 @@ class SqlAlchemyStore(AbstractStore):
             value = f["value"]
             if type_ == "attribute":
                 if key not in SearchModelVersionUtils.VALID_SEARCH_ATTRIBUTE_KEYS:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Invalid attribute name: {key}", error_code=INVALID_PARAMETER_VALUE
                     )
                 if key in SearchModelVersionUtils.NUMERIC_ATTRIBUTES:
@@ -429,7 +429,7 @@ class SqlAlchemyStore(AbstractStore):
                         comparator
                         not in SearchModelVersionUtils.VALID_NUMERIC_ATTRIBUTE_COMPARATORS
                     ):
-                        raise MlflowException(
+                        raise QCFlowException(
                             f"Invalid comparator for attribute {key}: {comparator}",
                             error_code=INVALID_PARAMETER_VALUE,
                         )
@@ -437,7 +437,7 @@ class SqlAlchemyStore(AbstractStore):
                     comparator not in SearchModelVersionUtils.VALID_STRING_ATTRIBUTE_COMPARATORS
                     or (comparator == "IN" and key != "run_id")
                 ):
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Invalid comparator for attribute: {comparator}",
                         error_code=INVALID_PARAMETER_VALUE,
                     )
@@ -461,7 +461,7 @@ class SqlAlchemyStore(AbstractStore):
                 attribute_filters.append(val_filter)
             elif type_ == "tag":
                 if comparator not in ("=", "!=", "LIKE", "ILIKE"):
-                    raise MlflowException.invalid_parameter_value(
+                    raise QCFlowException.invalid_parameter_value(
                         f"Invalid comparator for tag: {comparator}",
                     )
                 if key not in tag_filters:
@@ -475,7 +475,7 @@ class SqlAlchemyStore(AbstractStore):
                 )
                 tag_filters[key].append(val_filter)
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid token type: {type_}", error_code=INVALID_PARAMETER_VALUE
                 )
 
@@ -517,14 +517,14 @@ class SqlAlchemyStore(AbstractStore):
                 elif attribute_token in SearchUtils.VALID_TIMESTAMP_ORDER_BY_KEYS:
                     field = SqlRegisteredModel.last_updated_time
                 else:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Invalid order by key '{attribute_token}' specified."
                         + "Valid keys are "
                         + f"'{SearchUtils.RECOMMENDED_ORDER_BY_KEYS_REGISTERED_MODELS}'",
                         error_code=INVALID_PARAMETER_VALUE,
                     )
                 if field.key in observed_order_by_clauses:
-                    raise MlflowException(f"`order_by` contains duplicate fields: {order_by_list}")
+                    raise QCFlowException(f"`order_by` contains duplicate fields: {order_by_list}")
                 observed_order_by_clauses.add(field.key)
                 if ascending:
                     clauses.append(field.asc())
@@ -582,7 +582,7 @@ class SqlAlchemyStore(AbstractStore):
         if len(tags) == 0:
             return None
         if len(tags) > 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Expected only 1 registered model tag with name={name}, key={key}. "
                 f"Found {len(tags)}.",
                 INVALID_STATE,
@@ -675,7 +675,7 @@ class SqlAlchemyStore(AbstractStore):
                     parsed_model_uri.name, parsed_model_uri.version
                 )
             except Exception as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Unable to fetch model from model URI source artifact location '{source}'."
                     f"Error: {e}"
                 ) from e
@@ -716,7 +716,7 @@ class SqlAlchemyStore(AbstractStore):
                         str(more_retries),
                         "s" if more_retries > 1 else "",
                     )
-        raise MlflowException(
+        raise QCFlowException(
             f"Model Version creation error (name={name}). Giving up after "
             f"{self.CREATE_MODEL_VERSION_RETRIES} attempts."
         )
@@ -736,12 +736,12 @@ class SqlAlchemyStore(AbstractStore):
         versions = session.query(SqlModelVersion).options(*query_options).filter(*conditions).all()
 
         if len(versions) == 0:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Model Version (name={name}, version={version}) not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
         if len(versions) > 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Expected only 1 model version with (name={name}, version={version}). "
                 f"Found {len(versions)}.",
                 INVALID_STATE,
@@ -835,7 +835,7 @@ class SqlAlchemyStore(AbstractStore):
                 "Model version transition cannot archive existing model versions "
                 "because '{}' is not an Active stage. Valid stages are {}"
             )
-            raise MlflowException(msg_tpl.format(stage, DEFAULT_STAGES_FOR_GET_LATEST_VERSIONS))
+            raise QCFlowException(msg_tpl.format(stage, DEFAULT_STAGES_FOR_GET_LATEST_VERSIONS))
 
         with self.ManagedSessionMaker() as session:
             last_updated_time = get_current_time_millis()
@@ -956,14 +956,14 @@ class SqlAlchemyStore(AbstractStore):
 
         """
         if not isinstance(max_results, int) or max_results < 1:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for max_results. It must be a positive integer,"
                 f" but got {max_results}",
                 INVALID_PARAMETER_VALUE,
             )
 
         if max_results > SEARCH_MODEL_VERSION_MAX_RESULTS_THRESHOLD:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for request parameter max_results. It must be at most "
                 f"{SEARCH_MODEL_VERSION_MAX_RESULTS_THRESHOLD}, but got value {max_results}",
                 INVALID_PARAMETER_VALUE,
@@ -1017,7 +1017,7 @@ class SqlAlchemyStore(AbstractStore):
                     order_by_clause
                 )
                 if key not in SearchModelVersionUtils.VALID_ORDER_BY_ATTRIBUTE_KEYS:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Invalid order by key '{key}' specified. "
                         "Valid keys are "
                         f"{SearchModelVersionUtils.VALID_ORDER_BY_ATTRIBUTE_KEYS}",
@@ -1033,7 +1033,7 @@ class SqlAlchemyStore(AbstractStore):
                     else:
                         field = getattr(SqlModelVersion, key)
                 if field.key in observed_order_by_clauses:
-                    raise MlflowException(f"`order_by` contains duplicate fields: {order_by_list}")
+                    raise QCFlowException(f"`order_by` contains duplicate fields: {order_by_list}")
                 observed_order_by_clauses.add(field.key)
                 if ascending:
                     clauses.append(field.asc())
@@ -1060,7 +1060,7 @@ class SqlAlchemyStore(AbstractStore):
         if len(tags) == 0:
             return None
         if len(tags) > 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Expected only 1 model version tag with name={name}, version={version}, "
                 f"key={key}. Found {len(tags)}.",
                 INVALID_STATE,
@@ -1185,7 +1185,7 @@ class SqlAlchemyStore(AbstractStore):
                     session, name, sql_model_version.to_qcflow_entity()
                 )
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Registered model alias {alias} not found.", INVALID_PARAMETER_VALUE
                 )
 

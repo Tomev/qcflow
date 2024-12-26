@@ -65,7 +65,7 @@ def get_error_code(http_status):
     )
 
 
-class MlflowException(Exception):
+class QCFlowException(Exception):
     """
     Generic exception thrown to surface failure information about external-facing operations.
     The error message associated with this exception may be exposed to clients in HTTP responses
@@ -82,7 +82,7 @@ class MlflowException(Exception):
                 included in the exception's serialized JSON representation. This should
                 be one of the codes listed in the `qcflow.protos.databricks_pb2` proto.
             kwargs: Additional key-value pairs to include in the serialized JSON representation
-                of the MlflowException.
+                of the QCFlowException.
         """
         try:
             self.error_code = ErrorCode.Name(error_code)
@@ -103,18 +103,18 @@ class MlflowException(Exception):
 
     @classmethod
     def invalid_parameter_value(cls, message, **kwargs):
-        """Constructs an `MlflowException` object with the `INVALID_PARAMETER_VALUE` error code.
+        """Constructs an `QCFlowException` object with the `INVALID_PARAMETER_VALUE` error code.
 
         Args:
             message: The message describing the error that occurred. This will be included in the
                 exception's serialized JSON representation.
             kwargs: Additional key-value pairs to include in the serialized JSON representation
-                of the MlflowException.
+                of the QCFlowException.
         """
         return cls(message, error_code=INVALID_PARAMETER_VALUE, **kwargs)
 
 
-class RestException(MlflowException):
+class RestException(QCFlowException):
     """Exception thrown on non 200-level responses from the REST API"""
 
     def __init__(self, json):
@@ -149,19 +149,19 @@ class RestException(MlflowException):
         return RestException, (self.json,)
 
 
-class ExecutionException(MlflowException):
+class ExecutionException(QCFlowException):
     """Exception thrown when executing a project fails"""
 
 
-class MissingConfigException(MlflowException):
+class MissingConfigException(QCFlowException):
     """Exception thrown when expected configuration file/directory not found"""
 
 
-class InvalidUrlException(MlflowException):
+class InvalidUrlException(QCFlowException):
     """Exception thrown when a http request fails to send due to an invalid URL"""
 
 
-class _UnsupportedMultipartUploadException(MlflowException):
+class _UnsupportedMultipartUploadException(QCFlowException):
     """Exception thrown when multipart upload is unsupported by an artifact repository"""
 
     MESSAGE = "Multipart upload is not supported for the current artifact repository"
@@ -170,7 +170,7 @@ class _UnsupportedMultipartUploadException(MlflowException):
         super().__init__(self.MESSAGE, error_code=NOT_IMPLEMENTED)
 
 
-class MlflowTracingException(MlflowException):
+class QCFlowTracingException(QCFlowException):
     """
     Exception thrown from tracing logic
 
@@ -182,7 +182,7 @@ class MlflowTracingException(MlflowException):
         super().__init__(message, error_code=error_code)
 
 
-class MlflowTraceDataException(MlflowTracingException):
+class QCFlowTraceDataException(QCFlowTracingException):
     """Exception thrown for trace data related error"""
 
     def __init__(
@@ -199,14 +199,14 @@ class MlflowTraceDataException(MlflowTracingException):
             super().__init__(f"Trace data is corrupted for {self.ctx}", error_code=error_code)
 
 
-class MlflowTraceDataNotFound(MlflowTraceDataException):
+class QCFlowTraceDataNotFound(QCFlowTraceDataException):
     """Exception thrown when trace data is not found"""
 
     def __init__(self, request_id: Optional[str] = None, artifact_path: Optional[str] = None):
         super().__init__(NOT_FOUND, request_id, artifact_path)
 
 
-class MlflowTraceDataCorrupted(MlflowTraceDataException):
+class QCFlowTraceDataCorrupted(QCFlowTraceDataException):
     """Exception thrown when trace data is corrupted"""
 
     def __init__(self, request_id: Optional[str] = None, artifact_path: Optional[str] = None):

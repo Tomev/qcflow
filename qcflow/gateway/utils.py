@@ -11,7 +11,7 @@ from typing import Any, AsyncGenerator, Optional
 from urllib.parse import urlparse
 
 from qcflow.environment_variables import QCFLOW_GATEWAY_URI
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.constants import QCFLOW_AI_GATEWAY_MOSAICML_CHAT_SUPPORTED_MODEL_PREFIXES
 from qcflow.utils.uri import append_to_uri_path
 
@@ -35,7 +35,7 @@ def check_configuration_route_name_collisions(config):
         return
     names = [route["name"] for route in routes]
     if len(names) != len(set(names)):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Duplicate names found in endpoint configurations. Please remove the duplicate endpoint"
             " name from the configuration to ensure that endpoints are created properly."
         )
@@ -157,7 +157,7 @@ def set_gateway_uri(gateway_uri: str):
             Databricks, "databricks".
     """
     if not _is_valid_uri(gateway_uri):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "The gateway uri provided is missing required elements. Ensure that the schema "
             "and netloc are provided."
         )
@@ -170,7 +170,7 @@ def set_gateway_uri(gateway_uri: str):
 def get_gateway_uri() -> str:
     """
     Returns the currently set QCFlow AI Gateway server uri iff set.
-    If the Gateway uri has not been set by using ``set_gateway_uri``, an ``MlflowException``
+    If the Gateway uri has not been set by using ``set_gateway_uri``, an ``QCFlowException``
     is raised.
     """
     if _gateway_uri is not None:
@@ -178,7 +178,7 @@ def get_gateway_uri() -> str:
     elif uri := QCFLOW_GATEWAY_URI.get():
         return uri
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "No Gateway server uri has been set. Please either set the QCFlow Gateway URI via "
             "`qcflow.gateway.set_gateway_uri()` or set the environment variable "
             f"{QCFLOW_GATEWAY_URI} to the running Gateway API server's uri"
@@ -233,13 +233,13 @@ class SearchRoutesToken:
             parsed_token = json.loads(decoded_token)
             index = int(parsed_token.get("index"))
         except Exception as e:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Invalid SearchRoutes token: {encoded_token}. The index is not defined as a "
                 "value that can be represented as a positive integer."
             ) from e
 
         if index < 0:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Invalid SearchRoutes token: {encoded_token}. The index cannot be negative."
             )
 

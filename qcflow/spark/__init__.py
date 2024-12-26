@@ -32,7 +32,7 @@ from packaging.version import Version
 import qcflow
 from qcflow import environment_variables, mleap, pyfunc
 from qcflow.environment_variables import QCFLOW_DFS_TMP
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _LOG_MODEL_INFER_SIGNATURE_WARNING_TEMPLATE
@@ -313,13 +313,13 @@ def log_model(
             run_root_artifact_uri, artifact_path, _SPARK_MODEL_PATH_SUB
         )
         qcflowdbfs_path = _qcflowdbfs_path(run_id, artifact_path)
-        with databricks_utils.MlflowCredentialContext(
+        with databricks_utils.QCFlowCredentialContext(
             get_databricks_profile_uri_from_artifact_uri(run_root_artifact_uri)
         ):
             try:
                 spark_model.save(qcflowdbfs_path)
             except Exception as e:
-                raise MlflowException("failed to save spark model via qcflowdbfs") from e
+                raise QCFlowException("failed to save spark model via qcflowdbfs") from e
 
     # If the artifact URI is a local filesystem path, defer to Model.log() to persist the model,
     # since Spark may not be able to write directly to the driver's filesystem. For example,
@@ -377,7 +377,7 @@ def log_model(
 
 def _qcflowdbfs_path(run_id, artifact_path):
     if artifact_path.startswith("/"):
-        raise MlflowException(
+        raise QCFlowException(
             f"artifact_path should be relative, found: {artifact_path}",
             INVALID_PARAMETER_VALUE,
         )
@@ -548,14 +548,14 @@ def _should_use_qcflowdbfs(root_uri):
         # clusters may not work on certain Databricks cluster types due to unavailability of
         # the _HadoopFileSystem.is_filesystem_available() API. As a temporary workaround,
         # we check the contents of the expected exception raised by a dummy qcflowdbfs
-        # read for evidence that qcflowdbfs is available. If "MlflowdbfsClient" is present
+        # read for evidence that qcflowdbfs is available. If "QCFlowdbfsClient" is present
         # in the exception contents, we can safely assume that qcflowdbfs is available because
-        # `MlflowdbfsClient` is exclusively used by qcflowdbfs for performing QCFlow
+        # `QCFlowdbfsClient` is exclusively used by qcflowdbfs for performing QCFlow
         # file storage operations
         #
         # TODO: Remove this logic once the _HadoopFileSystem.is_filesystem_available() check
         # below is determined to work on all Databricks cluster types
-        return "MlflowdbfsClient" in (qcflowdbfs_read_exception_str or "")
+        return "QCFlowdbfsClient" in (qcflowdbfs_read_exception_str or "")
 
 
 def _save_model_metadata(
@@ -669,7 +669,7 @@ def _validate_model(spark_model):
         or not isinstance(spark_model, MLReadable)
         or not isinstance(spark_model, MLWritable)
     ):
-        raise MlflowException(
+        raise QCFlowException(
             "Cannot serialize this model. QCFlow can only save descendants of pyspark.ml.Model "
             "or pyspark.ml.Transformer that implement MLWritable and MLReadable.",
             INVALID_PARAMETER_VALUE,
@@ -910,7 +910,7 @@ def load_model(model_uri, dfs_tmpdir=None, dst_path=None):
         qcflowdbfs_path = _qcflowdbfs_path(
             DatabricksArtifactRepository._extract_run_id(model_uri), artifact_path
         )
-        with databricks_utils.MlflowCredentialContext(
+        with databricks_utils.QCFlowCredentialContext(
             get_databricks_profile_uri_from_artifact_uri(root_uri)
         ):
             return PipelineModel.load(qcflowdbfs_path)

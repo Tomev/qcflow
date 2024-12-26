@@ -25,12 +25,12 @@ from qcflow import pyfunc
 from qcflow.data.code_dataset_source import CodeDatasetSource
 from qcflow.data.numpy_dataset import from_numpy
 from qcflow.data.tensorflow_dataset import from_tensorflow
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature, infer_signature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _infer_signature_from_input_example
 from qcflow.models.utils import _save_example
-from qcflow.tensorflow.callback import MlflowCallback, MlflowModelCheckpointCallback  # noqa: F401
+from qcflow.tensorflow.callback import QCFlowCallback, QCFlowModelCheckpointCallback  # noqa: F401
 from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
 from qcflow.tracking.context import registry as context_registry
@@ -98,7 +98,7 @@ _KERAS_MODEL_DATA_PATH = "data"
 _TF2MODEL_SUBPATH = "tf2model"
 
 
-QCFlowCallback = MlflowCallback  # for backwards compatibility
+QCFlowCallback = QCFlowCallback  # for backwards compatibility
 
 
 def get_default_pip_requirements(include_cloudpickle=False):
@@ -358,18 +358,18 @@ def save_model(
     else:
         num_inputs = len(signature.inputs.inputs)
         if num_inputs == 0:
-            raise MlflowException(
+            raise QCFlowException(
                 "The model signature's input schema must contain at least one field.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         for field in signature.inputs.inputs:
             if not isinstance(field, TensorSpec):
-                raise MlflowException(
+                raise QCFlowException(
                     "All fields in the model signature's input schema must be of type TensorSpec.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
             if field.shape[0] != -1:
-                raise MlflowException(
+                raise QCFlowException(
                     "All fields in the model signature's input schema must have a shape "
                     "in which the first dimension is a variable dimension.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -456,7 +456,7 @@ def save_model(
             "model_type": _MODEL_TYPE_TF2_MODULE,
         }
     else:
-        raise MlflowException(f"Unknown model type: {type(model)}")
+        raise QCFlowException(f"Unknown model type: {type(model)}")
 
     # update flavor info to qcflow_model
     qcflow_model.add_flavor(FLAVOR_NAME, code=code_dir_subpath, **flavor_options)
@@ -647,7 +647,7 @@ def load_model(model_uri, dst_path=None, saved_model_kwargs=None, keras_model_kw
         tf_saved_model_dir = os.path.join(local_model_path, flavor_conf["saved_model_dir"])
         return tf.saved_model.load(tf_saved_model_dir, **saved_model_kwargs)
 
-    raise MlflowException(f"Unknown model_type: {model_type}")
+    raise QCFlowException(f"Unknown model_type: {model_type}")
 
 
 def _load_tf1_estimator_saved_model(tf_saved_model_dir, tf_meta_graph_tags, tf_signature_def_key):
@@ -676,7 +676,7 @@ def _load_tf1_estimator_saved_model(tf_saved_model_dir, tf_meta_graph_tags, tf_s
     loaded = tf.saved_model.load(tags=tf_meta_graph_tags, export_dir=tf_saved_model_dir)
     loaded_sig = loaded.signatures
     if tf_signature_def_key not in loaded_sig:
-        raise MlflowException(
+        raise QCFlowException(
             f"Could not find signature def key {tf_signature_def_key}. "
             f"Available keys are: {list(loaded_sig.keys())}"
         )
@@ -702,7 +702,7 @@ def _load_pyfunc(path):
     elif os.path.isfile(model_meta_path2):
         model_meta = Model.load(model_meta_path2)
     else:
-        raise MlflowException(f"Cannot find file {MLMODEL_FILE_NAME} for the logged model.")
+        raise QCFlowException(f"Cannot find file {MLMODEL_FILE_NAME} for the logged model.")
 
     model_type = _infer_model_type(model_meta)
     if model_type == _MODEL_TYPE_KERAS:
@@ -742,7 +742,7 @@ def _load_pyfunc(path):
         loaded_model = tf.saved_model.load(tf_saved_model_dir)
         return _TF2ModuleWrapper(model=loaded_model, signature=model_meta.signature)
 
-    raise MlflowException("Unknown model_type.")
+    raise QCFlowException("Unknown model_type.")
 
 
 class _TF2Wrapper:
@@ -847,7 +847,7 @@ class _TF2ModuleWrapper:
         if isinstance(data, (np.ndarray, list)):
             data = tf.convert_to_tensor(data)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported input data type: {type(data)}, the input data must be "
                 "numpy array or a list."
             )
@@ -894,7 +894,7 @@ class _KerasModelWrapper:
 
         supported_input_types = (np.ndarray, list, tuple, dict)
         if not isinstance(data, supported_input_types):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unsupported input data type: {type(data)}. "
                 f"Must be one of: {[x.__name__ for x in supported_input_types]}",
                 INVALID_PARAMETER_VALUE,
@@ -933,20 +933,20 @@ class _TensorBoardLogDir(NamedTuple):
 
 def _setup_callbacks(callbacks, log_every_epoch, log_every_n_steps):
     """
-    Adds TensorBoard and MlfLowTfKeras callbacks to the
+    Adds TensorBoard and QCFlowTfKeras callbacks to the
     input list, and returns the new list and appropriate log directory.
     """
     from qcflow.tensorflow.autologging import _TensorBoard
-    from qcflow.tensorflow.callback import MlflowCallback, MlflowModelCheckpointCallback
+    from qcflow.tensorflow.callback import QCFlowCallback, QCFlowModelCheckpointCallback
 
     tb = _get_tensorboard_callback(callbacks)
     for callback in callbacks:
-        if isinstance(callback, MlflowCallback):
-            raise MlflowException(
-                "QCFlow autologging must be turned off if an `MlflowCallback` is explicitly added "
-                "to the callback list. You are creating an `MlflowCallback` while having "
+        if isinstance(callback, QCFlowCallback):
+            raise QCFlowException(
+                "QCFlow autologging must be turned off if an `QCFlowCallback` is explicitly added "
+                "to the callback list. You are creating an `QCFlowCallback` while having "
                 "autologging enabled. Please either call `qcflow.tensorflow.autolog(disable=True)` "
-                "to disable autologging or remove `MlflowCallback` from the callback list. "
+                "to disable autologging or remove `QCFlowCallback` from the callback list. "
             )
     if tb is None:
         log_dir = _TensorBoardLogDir(location=tempfile.mkdtemp(), is_temp=True)
@@ -955,7 +955,7 @@ def _setup_callbacks(callbacks, log_every_epoch, log_every_n_steps):
         log_dir = _TensorBoardLogDir(location=tb.log_dir, is_temp=False)
 
     callbacks.append(
-        MlflowCallback(
+        QCFlowCallback(
             log_every_epoch=log_every_epoch,
             log_every_n_steps=log_every_n_steps,
         )
@@ -979,9 +979,9 @@ def _setup_callbacks(callbacks, log_every_epoch, log_every_n_steps):
             qcflow.tensorflow.FLAVOR_NAME, "checkpoint_save_freq", "epoch"
         )
 
-        if not any(isinstance(callback, MlflowModelCheckpointCallback) for callback in callbacks):
+        if not any(isinstance(callback, QCFlowModelCheckpointCallback) for callback in callbacks):
             callbacks.append(
-                MlflowModelCheckpointCallback(
+                QCFlowModelCheckpointCallback(
                     monitor=checkpoint_monitor,
                     mode=checkpoint_mode,
                     save_best_only=checkpoint_save_best_only,
@@ -1052,8 +1052,8 @@ def autolog(
     <https://www.qcflow.org/docs/latest/tracking.html#tensorflow-and-keras-experimental>`_.
 
     Note that autologging cannot be used together with explicit QCFlow callback, i.e.,
-    `qcflow.tensorflow.MlflowCallback`, because it will cause the same metrics to be logged twice.
-    If you want to include `qcflow.tensorflow.MlflowCallback` in the callback list, please turn off
+    `qcflow.tensorflow.QCFlowCallback`, because it will cause the same metrics to be logged twice.
+    If you want to include `qcflow.tensorflow.QCFlowCallback` in the callback list, please turn off
     autologging by calling `qcflow.tensorflow.autolog(disable=True)`.
 
     Args:
@@ -1211,7 +1211,7 @@ def autolog(
             input_training_data = args[0]
             keras_input_example_slice = extract_tf_keras_input_example(input_training_data)
             if keras_input_example_slice is None:
-                raise MlflowException(
+                raise QCFlowException(
                     "Cannot log input example or model signature for input with type"
                     f" {type(input_training_data)}. TensorFlow Keras autologging can"
                     " only log input examples and model signatures for the following"
@@ -1474,7 +1474,7 @@ def load_checkpoint(model=None, run_id=None, epoch=None, global_step=None):
         if fname.endswith(_WEIGHT_ONLY_CHECKPOINT_SUFFIX):
             # the model is saved as weights only
             if model is None:
-                raise MlflowException(
+                raise QCFlowException(
                     "The latest checkpoint is weights-only, 'model' argument must be provided"
                 )
             model.load_weights(downloaded_checkpoint_filepath)

@@ -1,10 +1,10 @@
 import sys
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.protos.service_pb2 import Param as ProtoParam
 
 
-class Param(_MlflowObject):
+class Param(_QCFlowObject):
     """
     Parameter object.
     """

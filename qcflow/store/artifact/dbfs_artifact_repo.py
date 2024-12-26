@@ -6,7 +6,7 @@ from typing import Optional
 import qcflow.utils.databricks_utils
 from qcflow.entities import FileInfo
 from qcflow.environment_variables import QCFLOW_ENABLE_DBFS_FUSE_ARTIFACT_REPO
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.store.artifact.databricks_artifact_repo import DatabricksArtifactRepository
@@ -46,7 +46,7 @@ class DbfsRestArtifactRepository(ArtifactRepository):
 
     def __init__(self, artifact_uri):
         if not is_valid_dbfs_uri(artifact_uri):
-            raise MlflowException(
+            raise QCFlowException(
                 message="DBFS URI must be of the form dbfs:/<path> or "
                 + "dbfs://profile@databricks/<path>",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -94,7 +94,7 @@ class DbfsRestArtifactRepository(ArtifactRepository):
         try:
             return json_response["is_dir"]
         except KeyError:
-            raise MlflowException(f"DBFS path {dbfs_path} does not exist")
+            raise QCFlowException(f"DBFS path {dbfs_path} does not exist")
 
     def _get_dbfs_path(self, artifact_path):
         return "/{}/{}".format(
@@ -143,7 +143,7 @@ class DbfsRestArtifactRepository(ArtifactRepository):
         try:
             json_response = json.loads(response.text)
         except ValueError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"API request to list files under DBFS path {dbfs_path} failed with "
                 f"status code {response.status_code}. Response body: {response.text}"
             )
@@ -171,13 +171,13 @@ class DbfsRestArtifactRepository(ArtifactRepository):
         )
 
     def delete_artifacts(self, artifact_path=None):
-        raise MlflowException("Not implemented yet")
+        raise QCFlowException("Not implemented yet")
 
 
 def _get_host_creds_from_default_store():
     store = utils._get_store()
     if not isinstance(store, RestStore):
-        raise MlflowException(
+        raise QCFlowException(
             "Failed to get credentials for DBFS; they are read from the "
             + "Databricks CLI credentials or QCFLOW_TRACKING* environment "
             + "variables."
@@ -204,7 +204,7 @@ def dbfs_artifact_repo_factory(artifact_uri):
         Subclass of ArtifactRepository capable of storing artifacts on DBFS.
     """
     if not is_valid_dbfs_uri(artifact_uri):
-        raise MlflowException(
+        raise QCFlowException(
             "DBFS URI must be of the form dbfs:/<path> or "
             + "dbfs://profile@databricks/<path>, but received "
             + artifact_uri

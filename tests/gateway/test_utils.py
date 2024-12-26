@@ -1,6 +1,6 @@
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.utils import (
     SearchRoutesToken,
     _is_valid_uri,
@@ -53,7 +53,7 @@ def test_is_valid_endpoint_name(name, expected):
 
 def test_check_configuration_route_name_collisions():
     config = {"routes": [{"name": "name1"}, {"name": "name2"}, {"name": "name1"}]}
-    with pytest.raises(MlflowException, match="Duplicate names found in endpoint configurations"):
+    with pytest.raises(QCFlowException, match="Duplicate names found in endpoint configurations"):
         check_configuration_route_name_collisions(config)
 
 
@@ -94,7 +94,7 @@ def test_set_gateway_uri(monkeypatch):
     assert get_gateway_uri() == valid_uri
 
     invalid_uri = "localhost"
-    with pytest.raises(MlflowException, match="The gateway uri provided is missing required"):
+    with pytest.raises(QCFlowException, match="The gateway uri provided is missing required"):
         set_gateway_uri(invalid_uri)
 
 
@@ -102,7 +102,7 @@ def test_get_gateway_uri(monkeypatch):
     monkeypatch.setattr("qcflow.gateway.utils._gateway_uri", None)
     monkeypatch.delenv("QCFLOW_GATEWAY_URI", raising=False)
 
-    with pytest.raises(MlflowException, match="No Gateway server uri has been set"):
+    with pytest.raises(QCFlowException, match="No Gateway server uri has been set"):
         get_gateway_uri()
 
     valid_uri = "http://localhost"
@@ -134,5 +134,5 @@ def test_search_routes_token_decodes_correctly():
 def test_search_routes_token_with_invalid_token_values(index):
     token = SearchRoutesToken(index)
     encoded_token = token.encode()
-    with pytest.raises(MlflowException, match="Invalid SearchRoutes token"):
+    with pytest.raises(QCFlowException, match="Invalid SearchRoutes token"):
         SearchRoutesToken.decode(encoded_token)

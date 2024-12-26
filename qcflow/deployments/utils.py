@@ -3,7 +3,7 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from qcflow.environment_variables import QCFLOW_DEPLOYMENTS_TARGET
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.uri import append_to_uri_path
 
 _deployments_target: Optional[str] = None
@@ -16,7 +16,7 @@ def parse_target_uri(target_uri):
         if parsed.path:
             # uri = 'target_name' (without :/<path>)
             return parsed.path
-        raise MlflowException(
+        raise QCFlowException(
             f"Not a proper deployment URI: {target_uri}. "
             + "Deployment URIs must be of the form 'target' or 'target:/suffix'"
         )
@@ -61,7 +61,7 @@ def set_deployments_target(target: str):
             Databricks, "databricks".
     """
     if not _is_valid_target(target):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "The target provided is not a valid uri or 'databricks'"
         )
 
@@ -73,14 +73,14 @@ def get_deployments_target() -> str:
     """
     Returns the currently set QCFlow deployments target iff set.
     If the deployments target has not been set by using ``set_deployments_target``, an
-    ``MlflowException`` is raised.
+    ``QCFlowException`` is raised.
     """
     if _deployments_target is not None:
         return _deployments_target
     elif uri := QCFLOW_DEPLOYMENTS_TARGET.get():
         return uri
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "No deployments target has been set. Please either set the QCFlow deployments target"
             " via `qcflow.deployments.set_deployments_target()` or set the environment variable "
             f"{QCFLOW_DEPLOYMENTS_TARGET} to the running deployment server's uri"

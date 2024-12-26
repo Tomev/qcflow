@@ -1,12 +1,12 @@
 import signal
 from contextlib import contextmanager
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import NOT_IMPLEMENTED
 from qcflow.utils.os import is_windows
 
 
-class MlflowTimeoutError(Exception):
+class QCFlowTimeoutError(Exception):
     pass
 
 
@@ -25,13 +25,13 @@ def run_with_timeout(seconds):
         ```
     """
     if is_windows():
-        raise MlflowException(
+        raise QCFlowException(
             "Timeouts are not implemented yet for non-Unix platforms",
             error_code=NOT_IMPLEMENTED,
         )
 
     def signal_handler(signum, frame):
-        raise MlflowTimeoutError(f"Operation timed out after {seconds} seconds")
+        raise QCFlowTimeoutError(f"Operation timed out after {seconds} seconds")
 
     signal.signal(signal.SIGALRM, signal_handler)
     signal.alarm(seconds)

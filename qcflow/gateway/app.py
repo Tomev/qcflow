@@ -23,7 +23,7 @@ from qcflow.environment_variables import (
     QCFLOW_GATEWAY_CONFIG,
     QCFLOW_GATEWAY_RATE_LIMITS_STORAGE_URI,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.base_models import SetLimitsModel
 from qcflow.gateway.config import (
     GatewayConfig,
@@ -430,7 +430,7 @@ def create_app_from_env() -> GatewayAPI:
     if config_path := QCFLOW_GATEWAY_CONFIG.get():
         return create_app_from_path(config_path)
 
-    raise MlflowException(
+    raise QCFlowException(
         f"Environment variable {QCFLOW_GATEWAY_CONFIG!r} is not set. "
         "Please set it to the path of the gateway configuration file."
     )

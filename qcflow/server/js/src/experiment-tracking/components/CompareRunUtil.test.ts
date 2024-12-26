@@ -6,7 +6,7 @@
  */
 
 import CompareRunUtil from './CompareRunUtil';
-import { Metric } from '../sdk/MlflowMessages';
+import { Metric } from '../sdk/QCFlowMessages';
 
 describe('CompareRunUtil', () => {
   const makeSublist = (obj: any) => {

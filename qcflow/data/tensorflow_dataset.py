@@ -15,7 +15,7 @@ from qcflow.data.digest_utils import (
 from qcflow.data.evaluation_dataset import EvaluationDataset
 from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
 from qcflow.data.schema import TensorDatasetSchema
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
 from qcflow.types.schema import Schema
 from qcflow.types.utils import _infer_schema
@@ -49,14 +49,14 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
         import tensorflow as tf
 
         if not isinstance(features, tf.data.Dataset) and not tf.is_tensor(features):
-            raise MlflowException(
+            raise QCFlowException(
                 f"'features' must be an instance of tf.data.Dataset or a TensorFlow Tensor."
                 f" Found: {type(features)}.",
                 INVALID_PARAMETER_VALUE,
             )
 
         if tf.is_tensor(features) and targets is not None and not tf.is_tensor(targets):
-            raise MlflowException(
+            raise QCFlowException(
                 f"If 'features' is a TensorFlow Tensor, then 'targets' must also be a TensorFlow"
                 f" Tensor. Found: {type(targets)}.",
                 INVALID_PARAMETER_VALUE,
@@ -67,7 +67,7 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
             and targets is not None
             and not isinstance(targets, tf.data.Dataset)
         ):
-            raise MlflowException(
+            raise QCFlowException(
                 "If 'features' is an instance of tf.data.Dataset, then 'targets' must also be an"
                 f" instance of tf.data.Dataset. Found: {type(targets)}.",
                 INVALID_PARAMETER_VALUE,
@@ -231,7 +231,7 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
             elif isinstance(numpy_data, tuple):
                 return TensorFlowDataset._get_schema_from_tf_dataset_tuple_numpy_data(numpy_data)
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to infer schema for tf.data.Dataset due to unrecognized numpy iterator"
                     f" data type. Numpy iterator data types 'np.ndarray', 'dict', and 'tuple' are"
                     f" supported. Found: {type(numpy_data)}.",
@@ -240,7 +240,7 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
         elif tf.is_tensor(tf_object):
             return _infer_schema(tf_object.numpy())
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Cannot infer schema of an object that is not an instance of tf.data.Dataset or"
                 f" a TensorFlow Tensor. Found: {type(tf_object)}",
                 INTERNAL_ERROR,
@@ -249,7 +249,7 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
     @staticmethod
     def _get_schema_from_tf_dataset_dict_numpy_data(numpy_data: dict[Any, Any]) -> Schema:
         if not all(isinstance(data_element, np.ndarray) for data_element in numpy_data.values()):
-            raise MlflowException(
+            raise QCFlowException(
                 "Failed to infer schema for tf.data.Dataset. Schemas can only be inferred"
                 " if the dataset consists of tensors. Ragged tensors, tensor arrays, and"
                 " other types are not supported. Additionally, datasets with nested tensors"
@@ -261,7 +261,7 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
     @staticmethod
     def _get_schema_from_tf_dataset_tuple_numpy_data(numpy_data: tuple[Any]) -> Schema:
         if not all(isinstance(data_element, np.ndarray) for data_element in numpy_data):
-            raise MlflowException(
+            raise QCFlowException(
                 "Failed to infer schema for tf.data.Dataset. Schemas can only be inferred"
                 " if the dataset consists of tensors. Ragged tensors, tensor arrays, and"
                 " other types are not supported. Additionally, datasets with nested tensors"
@@ -293,9 +293,9 @@ class TensorFlowDataset(Dataset, PyFuncConvertibleDatasetMixin):
 
         # check that data and targets are Tensors
         if not tf.is_tensor(self._features):
-            raise MlflowException("Data must be a Tensor to convert to an EvaluationDataset.")
+            raise QCFlowException("Data must be a Tensor to convert to an EvaluationDataset.")
         if self._targets is not None and not tf.is_tensor(self._targets):
-            raise MlflowException("Targets must be a Tensor to convert to an EvaluationDataset.")
+            raise QCFlowException("Targets must be a Tensor to convert to an EvaluationDataset.")
         return EvaluationDataset(
             data=self._features.numpy(),
             targets=self._targets.numpy() if self._targets is not None else None,

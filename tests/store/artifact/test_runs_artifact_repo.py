@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
 from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
 
@@ -37,7 +37,7 @@ def test_parse_runs_uri_valid_input(uri, expected_run_id, expected_artifact_path
     ],
 )
 def test_parse_runs_uri_invalid_input(uri):
-    with pytest.raises(MlflowException, match="Not a proper runs"):
+    with pytest.raises(QCFlowException, match="Not a proper runs"):
         RunsArtifactRepository.parse_runs_uri(uri)
 
 

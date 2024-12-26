@@ -26,7 +26,7 @@ import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise-middleware';
 import { ErrorCodes } from '../../common/constants';
 import { ArtifactView } from './ArtifactView';
-import { RunTag } from '../sdk/MlflowMessages';
+import { RunTag } from '../sdk/QCFlowMessages';
 
 describe('ArtifactPage', () => {
   let wrapper;

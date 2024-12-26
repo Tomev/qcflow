@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 import qcflow.utils.async_logging.async_logging_queue
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.entities.metric import Metric
 from qcflow.entities.param import Param
 from qcflow.entities.run_tag import RunTag
@@ -38,7 +38,7 @@ class RunData:
     def consume_queue_data(self, run_id, metrics, tags, params):
         self.batch_count += 1
         if self.batch_count in self.throw_exception_on_batch_number:
-            raise MlflowException("Failed to log run data")
+            raise QCFlowException("Failed to log run data")
         self.received_run_id = run_id
         self.received_metrics.extend(metrics or [])
         self.received_params.extend(params or [])
@@ -133,7 +133,7 @@ def test_queue_activation():
             )
             for val in range(METRIC_PER_BATCH)
         ]
-        with pytest.raises(MlflowException, match="AsyncLoggingQueue is not activated."):
+        with pytest.raises(QCFlowException, match="AsyncLoggingQueue is not activated."):
             async_logging_queue.log_batch_async(run_id=run_id, metrics=metrics, tags=[], params=[])
 
         async_logging_queue.activate()
@@ -180,7 +180,7 @@ def test_partial_logging_failed():
         batch_id = 1
         for params, tags, metrics in _get_run_data():
             if batch_id in [3, 4]:
-                with pytest.raises(MlflowException, match="Failed to log run data"):
+                with pytest.raises(QCFlowException, match="Failed to log run data"):
                     async_logging_queue.log_batch_async(
                         run_id=run_id, metrics=metrics, tags=tags, params=params
                     ).wait()

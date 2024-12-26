@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Optional
 
 import requests
 
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.deployments import BaseDeploymentClient
 from qcflow.deployments.constants import (
     QCFLOW_DEPLOYMENT_CLIENT_REQUEST_RETRY_CODES,
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 @experimental
-class MlflowDeploymentClient(BaseDeploymentClient):
+class QCFlowDeploymentClient(BaseDeploymentClient):
     """
     Client for interacting with the QCFlow AI Gateway.
 
@@ -62,28 +62,28 @@ class MlflowDeploymentClient(BaseDeploymentClient):
     def create_deployment(self, name, model_uri, flavor=None, config=None, endpoint=None):
         """
         .. warning::
-            This method is not implemented for `MlflowDeploymentClient`.
+            This method is not implemented for `QCFlowDeploymentClient`.
         """
         raise NotImplementedError
 
     def update_deployment(self, name, model_uri=None, flavor=None, config=None, endpoint=None):
         """
         .. warning::
-            This method is not implemented for `MlflowDeploymentClient`.
+            This method is not implemented for `QCFlowDeploymentClient`.
         """
         raise NotImplementedError
 
     def delete_deployment(self, name, config=None, endpoint=None):
         """
         .. warning::
-            This method is not implemented for `MlflowDeploymentClient`.
+            This method is not implemented for `QCFlowDeploymentClient`.
         """
         raise NotImplementedError
 
     def list_deployments(self, endpoint=None):
         """
         .. warning::
-            This method is not implemented for `MlflowDeploymentClient`.
+            This method is not implemented for `QCFlowDeploymentClient`.
         """
         raise NotImplementedError
 
@@ -97,21 +97,21 @@ class MlflowDeploymentClient(BaseDeploymentClient):
     def create_endpoint(self, name, config=None):
         """
         .. warning::
-            This method is not implemented for `MlflowDeploymentClient`.
+            This method is not implemented for `QCFlowDeploymentClient`.
         """
         raise NotImplementedError
 
     def update_endpoint(self, endpoint, config=None):
         """
         .. warning::
-            This method is not implemented for `MlflowDeploymentClient`.
+            This method is not implemented for `QCFlowDeploymentClient`.
         """
         raise NotImplementedError
 
     def delete_endpoint(self, endpoint):
         """
         .. warning::
-            This method is not implemented for `MlflowDeploymentClient`.
+            This method is not implemented for `QCFlowDeploymentClient`.
         """
         raise NotImplementedError
 
@@ -310,9 +310,9 @@ class MlflowDeploymentClient(BaseDeploymentClient):
             return self._call_endpoint(
                 "POST", query_route, inputs, QCFLOW_DEPLOYMENT_PREDICT_TIMEOUT.get()
             )
-        except MlflowException as e:
+        except QCFlowException as e:
             if isinstance(e.__cause__, requests.exceptions.Timeout):
-                raise MlflowException(
+                raise QCFlowException(
                     message=(
                         "The provider has timed out while generating a response to your "
                         "query. Please evaluate the available parameters for the query "

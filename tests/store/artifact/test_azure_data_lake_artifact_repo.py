@@ -15,7 +15,7 @@ from azure.storage.filedatalake import (
     PathProperties,
 )
 
-from qcflow.exceptions import MlflowException, MlflowTraceDataCorrupted
+from qcflow.exceptions import QCFlowException, QCFlowTraceDataCorrupted
 from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
 from qcflow.protos.service_pb2 import FileInfo
 from qcflow.store.artifact.artifact_repo import try_read_trace_data
@@ -139,12 +139,12 @@ def test_parse_valid_abfss_uri(uri, filesystem, account, region_suffix, path):
     ],
 )
 def test_parse_invalid_abfss_uri(uri):
-    with pytest.raises(MlflowException, match="ABFSS URI must be of the form"):
+    with pytest.raises(QCFlowException, match="ABFSS URI must be of the form"):
         _parse_abfss_uri(uri)
 
 
 def test_parse_invalid_abfss_uri_bad_scheme():
-    with pytest.raises(MlflowException, match="Not an ABFSS URI"):
+    with pytest.raises(QCFlowException, match="Not an ABFSS URI"):
         _parse_abfss_uri("abfs://cont@acct.dfs.core.windows.net/path")
 
 
@@ -405,7 +405,7 @@ def test_refresh_credentials():
 
 def test_trace_data(mock_data_lake_client, tmp_path):
     repo = AzureDataLakeArtifactRepository(TEST_DATA_LAKE_URI, None)
-    with pytest.raises(MlflowException, match=r"Trace data not found for path="):
+    with pytest.raises(QCFlowException, match=r"Trace data not found for path="):
         repo.download_trace_data()
     trace_data_path = tmp_path.joinpath("traces.json")
     trace_data_path.write_text("invalid data")
@@ -414,7 +414,7 @@ def test_trace_data(mock_data_lake_client, tmp_path):
             "qcflow.store.artifact.artifact_repo.try_read_trace_data",
             side_effect=lambda x: try_read_trace_data(trace_data_path),
         ),
-        pytest.raises(MlflowTraceDataCorrupted, match=r"Trace data is corrupted for path="),
+        pytest.raises(QCFlowTraceDataCorrupted, match=r"Trace data is corrupted for path="),
     ):
         repo.download_trace_data()
 

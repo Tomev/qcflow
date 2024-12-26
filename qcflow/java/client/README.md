@@ -74,7 +74,7 @@ ListArtifacts.Response listArtifacts(String runId, String path)
 ### Java Usage
 
 For a simple example see [QuickStartDriver.java](src/main/java/org/qcflow/tracking/samples/QuickStartDriver.java).
-For full examples of API coverage see the [tests](src/test/java/org/qcflow/tracking) such as [MlflowClientTest.java](src/test/java/org/qcflow/tracking/MlflowClientTest.java).
+For full examples of API coverage see the [tests](src/test/java/org/qcflow/tracking) such as [QCFlowClientTest.java](src/test/java/org/qcflow/tracking/QCFlowClientTest.java).
 
 ```
 package org.qcflow.tracking.samples;
@@ -86,7 +86,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 
 import org.qcflow.api.proto.Service.*;
-import org.qcflow.tracking.MlflowClient;
+import org.qcflow.tracking.QCFlowClient;
 
 /**
  * This is an example application which uses the QCFlow Tracking API to create and manage
@@ -98,11 +98,11 @@ public class QuickStartDriver {
   }
 
   void process(String[] args) throws Exception {
-    MlflowClient client;
+    QCFlowClient client;
     if (args.length < 1) {
-      client = new MlflowClient();
+      client = new QCFlowClient();
     } else {
-      client = new MlflowClient(args[0]);
+      client = new QCFlowClient(args[0]);
     }
 
     boolean verbose = args.length >= 2 && "true".equals(args[1]);
@@ -135,7 +135,7 @@ public class QuickStartDriver {
     System.out.println("getExperimentByName: " + exp3);
   }
 
-  void createRun(MlflowClient client, String expId) {
+  void createRun(QCFlowClient client, String expId) {
     System.out.println("====== createRun");
 
     // Create run

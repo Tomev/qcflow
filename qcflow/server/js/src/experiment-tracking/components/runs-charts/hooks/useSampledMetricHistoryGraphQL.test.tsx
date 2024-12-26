@@ -2,7 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { graphql } from 'msw';
 import { setupServer } from '../../../../common/utils/setup-msw';
 import { TestApolloProvider } from '../../../../common/utils/TestApolloProvider';
-import { GetMetricHistoryBulkInterval, GetRun, MlflowRunStatus } from '../../../../graphql/__generated__/graphql';
+import { GetMetricHistoryBulkInterval, GetRun, QCFlowRunStatus } from '../../../../graphql/__generated__/graphql';
 import { useSampledMetricHistoryGraphQL } from './useSampledMetricHistoryGraphQL';
 import { IntlProvider } from 'react-intl';
 import Utils from '../../../../common/utils/Utils';
@@ -10,7 +10,7 @@ import { ApolloClient, ApolloProvider, createHttpLink, InMemoryCache } from '@ap
 
 const createMetrics = (count: number) =>
   Array.from({ length: count }, (_, i) => ({
-    __typename: 'MlflowMetricWithRunId' as const,
+    __typename: 'QCFlowMetricWithRunId' as const,
     timestamp: (i * 1000).toString(),
     step: i.toString(),
     runId: `test-run-uuid-${i % 10}`,
@@ -56,7 +56,7 @@ describe('useSampledMetricHistoryGraphQL', () => {
         res(
           ctx.data({
             qcflowGetMetricHistoryBulkInterval: {
-              __typename: 'MlflowGetMetricHistoryBulkIntervalResponse',
+              __typename: 'QCFlowGetMetricHistoryBulkIntervalResponse',
               apiError: null,
               metrics: createMetrics(100),
             },
@@ -87,7 +87,7 @@ describe('useSampledMetricHistoryGraphQL', () => {
         res(
           ctx.data({
             qcflowGetMetricHistoryBulkInterval: {
-              __typename: 'MlflowGetMetricHistoryBulkIntervalResponse',
+              __typename: 'QCFlowGetMetricHistoryBulkIntervalResponse',
               apiError: {
                 __typename: 'ApiError',
                 code: 'RESOURCE_DOES_NOT_EXIST',
@@ -118,7 +118,7 @@ describe('useSampledMetricHistoryGraphQL', () => {
           ctx.status(400),
           ctx.data({
             qcflowGetMetricHistoryBulkInterval: {
-              __typename: 'MlflowGetMetricHistoryBulkIntervalResponse',
+              __typename: 'QCFlowGetMetricHistoryBulkIntervalResponse',
               apiError: null,
               metrics: null,
             },

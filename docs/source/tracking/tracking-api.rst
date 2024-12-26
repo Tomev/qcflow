@@ -39,7 +39,7 @@ Python
 Java and Scala
   .. code-block:: java
 
-    MlflowClient client = new MlflowClient();
+    QCFlowClient client = new QCFlowClient();
     RunInfo run = client.createRun();
     for (int epoch = 0; epoch < 3; epoch ++) {
         client.logMetric(run.getRunId(), "quality", 2 * epoch, System.currentTimeMillis(), epoch);
@@ -90,11 +90,11 @@ with no active run automatically starts a new one.
 currently active run, if any.
 **Note**: You cannot access currently-active run attributes
 (parameters, metrics, etc.) through the run returned by ``qcflow.active_run``. In order to access
-such attributes, use the :py:class:`MlflowClient <qcflow.client.MlflowClient>` as follows:
+such attributes, use the :py:class:`QCFlowClient <qcflow.client.QCFlowClient>` as follows:
 
 .. code-block:: python
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     data = client.get_run(qcflow.active_run().info.run_id).data
 
 :py:func:`qcflow.last_active_run` returns a :py:class:`qcflow.entities.Run` object corresponding to the
@@ -384,7 +384,7 @@ The following tags are set automatically by QCFlow, when appropriate:
 Custom Tags
 ~~~~~~~~~~~
 
-The :py:func:`MlflowClient.set_tag() <qcflow.client.MlflowClient.set_tag>` function lets you add custom tags to runs. A tag can only have a single unique value mapped to it at a time. For example:
+The :py:func:`QCFlowClient.set_tag() <qcflow.client.QCFlowClient.set_tag>` function lets you add custom tags to runs. A tag can only have a single unique value mapped to it at a time. For example:
 
 .. code-block:: python
 

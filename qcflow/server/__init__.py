@@ -9,7 +9,7 @@ import types
 from flask import Flask, Response, send_from_directory
 from packaging.version import Version
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.server import handlers
 from qcflow.server.handlers import (
     STATIC_PREFIX_ENV_VAR,
@@ -164,7 +164,7 @@ def _find_app(app_name: str) -> str:
         if app.name == app_name:
             return app.value
 
-    raise MlflowException(
+    raise QCFlowException(
         f"Failed to find app '{app_name}'. Available apps: {[a.name for a in apps]}"
     )
 
@@ -200,7 +200,7 @@ def get_app_client(app_name: str, *args, **kwargs):
             cls = client.load()
             return cls(*args, **kwargs)
 
-    raise MlflowException(
+    raise QCFlowException(
         f"Failed to find client for '{app_name}'. Available clients: {[c.name for c in clients]}"
     )
 

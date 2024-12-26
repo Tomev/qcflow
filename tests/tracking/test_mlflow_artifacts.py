@@ -9,7 +9,7 @@ import pytest
 import requests
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.artifacts import download_artifacts
 from qcflow.utils.os import is_windows
 
@@ -170,7 +170,7 @@ def test_log_artifacts(artifacts_server, tmp_path):
     with qcflow.start_run() as run:
         qcflow.log_artifacts(tmp_path)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert sorted(artifacts) == ["a.txt", "dir"]
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id, "dir")]
@@ -196,7 +196,7 @@ def test_list_artifacts(artifacts_server, tmp_path):
     tmp_path_a.write_text("0")
     tmp_path_b = tmp_path.joinpath("b.txt")
     tmp_path_b.write_text("1")
-    client = MlflowClient()
+    client = QCFlowClient()
     with qcflow.start_run() as run:
         assert client.list_artifacts(run.info.run_id) == []
         qcflow.log_artifact(tmp_path_a)
@@ -317,7 +317,7 @@ def test_rest_get_model_version_artifact_api_proxied_artifact_root(artifacts_ser
     artifact_file.write_text("abcdefg")
 
     name = "GetModelVersionTest"
-    qcflow_client = MlflowClient(artifacts_server.backend_store_uri)
+    qcflow_client = QCFlowClient(artifacts_server.backend_store_uri)
     qcflow_client.create_registered_model(name)
     # An artifact root with scheme http, https, or qcflow-artifacts is a proxied artifact root
     qcflow_client.create_model_version(name, "qcflow-artifacts:", 1)

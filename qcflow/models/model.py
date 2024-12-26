@@ -16,7 +16,7 @@ from packaging.requirements import InvalidRequirement, Requirement
 import qcflow
 from qcflow.artifacts import download_artifacts
 from qcflow.environment_variables import QCFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.resources import Resource, ResourceType, _ResourceBuilder
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, RESOURCE_DOES_NOT_EXIST
 from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
@@ -687,7 +687,7 @@ class Model:
         # Check if the path is a local directory and not remote
         path_scheme = urlparse(str(path)).scheme
         if (not path_scheme or path_scheme == "file") and not os.path.exists(path):
-            raise MlflowException(
+            raise QCFlowException(
                 f'Could not find an "{MLMODEL_FILE_NAME}" configuration file at "{path}"',
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -890,7 +890,7 @@ class Model:
 
             try:
                 qcflow.tracking.fluent._record_logged_model(qcflow_model, run_id)
-            except MlflowException:
+            except QCFlowException:
                 # We need to swallow all qcflow exceptions to maintain backwards compatibility with
                 # older tracking servers. Only print out a warning for now.
                 _logger.warning(_LOG_MODEL_METADATA_WARNING_TEMPLATE, qcflow.get_artifact_uri())
@@ -1074,7 +1074,7 @@ def update_model_requirements(
             For example: ["numpy==1.20.3", "pandas>=1.3.3"]
     """
     if ModelsArtifactRepository.is_models_uri(model_uri):
-        raise MlflowException(
+        raise QCFlowException(
             f'Failed to set requirements on "{model_uri}". '
             + "Model URIs with the `models:/` scheme are not supported.",
             INVALID_PARAMETER_VALUE,
@@ -1100,7 +1100,7 @@ def update_model_requirements(
         except InvalidRequirement as e:
             invalid_requirements[s] = e
     if invalid_requirements:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Found invalid requirements: {invalid_requirements}"
         )
     if operation == "add":
@@ -1140,7 +1140,7 @@ def _validate_langchain_model(model):
         return _validate_and_get_model_code_path(model, None)
 
     if not isinstance(model, Runnable):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Model must be a Langchain Runnable type or path to a Langchain model, "
             f"got {type(model)}"
         )
@@ -1170,7 +1170,7 @@ def set_model(model) -> None:
     from qcflow.pyfunc import PythonModel
 
     if isinstance(model, str):
-        raise qcflow.MlflowException(SET_MODEL_ERROR)
+        raise qcflow.QCFlowException(SET_MODEL_ERROR)
 
     if isinstance(model, PythonModel) or callable(model):
         globals()["__qcflow_model__"] = model
@@ -1183,4 +1183,4 @@ def set_model(model) -> None:
         except Exception:
             pass
 
-    raise qcflow.MlflowException(SET_MODEL_ERROR)
+    raise qcflow.QCFlowException(SET_MODEL_ERROR)

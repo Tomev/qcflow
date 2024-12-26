@@ -7,9 +7,9 @@ from qcflow.evaluation.utils import (
     _get_metrics_dataframe_schema,
     _get_tags_dataframe_schema,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 
 
 def get_evaluation(*, run_id: str, evaluation_id: str) -> EvaluationEntity:
@@ -23,9 +23,9 @@ def get_evaluation(*, run_id: str, evaluation_id: str) -> EvaluationEntity:
     Returns:
         Evaluation: The Evaluation object.
     """
-    client = MlflowClient()
+    client = QCFlowClient()
     if not _contains_evaluation_artifacts(client=client, run_id=run_id):
-        raise MlflowException(
+        raise QCFlowException(
             "The specified run does not contain any evaluations. "
             "Please log evaluations to the run before retrieving them.",
             error_code=RESOURCE_DOES_NOT_EXIST,
@@ -53,7 +53,7 @@ def get_evaluation(*, run_id: str, evaluation_id: str) -> EvaluationEntity:
     )
 
 
-def _contains_evaluation_artifacts(*, client: MlflowClient, run_id: str) -> bool:
+def _contains_evaluation_artifacts(*, client: QCFlowClient, run_id: str) -> bool:
     return {"_evaluations.json", "_metrics.json", "_assessments.json", "_tags.json"}.issubset(
         {file.path for file in client.list_artifacts(run_id)}
     )
@@ -137,7 +137,7 @@ def _get_evaluation_from_dataframes(
     """
     evaluation_row = evaluations_df[evaluations_df["evaluation_id"] == evaluation_id]
     if evaluation_row.empty:
-        raise MlflowException(
+        raise QCFlowException(
             f"The specified evaluation ID '{evaluation_id}' does not exist in the run '{run_id}'.",
             error_code=RESOURCE_DOES_NOT_EXIST,
         )
@@ -149,7 +149,7 @@ def _get_evaluation_from_dataframes(
         tags_df=tags_df,
     )
     if len(evaluations) != 1:
-        raise MlflowException(
+        raise QCFlowException(
             f"Expected to find a single evaluation with ID '{evaluation_id}', but found "
             f"{len(evaluations)} evaluations.",
             error_code=INTERNAL_ERROR,

@@ -12,7 +12,7 @@ import qcflow.projects.databricks
 import qcflow.utils.uri
 from qcflow import tracking
 from qcflow.entities import RunStatus
-from qcflow.exceptions import ExecutionException, MlflowException
+from qcflow.exceptions import ExecutionException, QCFlowException
 from qcflow.projects.backend import loader
 from qcflow.projects.submitted_run import SubmittedRun
 from qcflow.projects.utils import (
@@ -59,13 +59,13 @@ def _resolve_experiment_id(experiment_name=None, experiment_id=None):
     """
 
     if experiment_name and experiment_id:
-        raise MlflowException("Specify only one of 'experiment_name' or 'experiment_id'.")
+        raise QCFlowException("Specify only one of 'experiment_name' or 'experiment_id'.")
 
     if experiment_id:
         return str(experiment_id)
 
     if experiment_name:
-        client = tracking.MlflowClient()
+        client = tracking.QCFlowClient()
         exp = client.get_experiment_by_name(experiment_name)
         if exp:
             return exp.experiment_id
@@ -116,11 +116,11 @@ def _run(
                 tracking_store_uri,
                 experiment_id,
             )
-            tracking.MlflowClient().set_tag(
+            tracking.QCFlowClient().set_tag(
                 submitted_run.run_id, QCFLOW_PROJECT_BACKEND, backend_name
             )
             if run_name is not None:
-                tracking.MlflowClient().set_tag(submitted_run.run_id, QCFLOW_RUN_NAME, run_name)
+                tracking.QCFlowClient().set_tag(submitted_run.run_id, QCFLOW_RUN_NAME, run_name)
             return submitted_run
 
     work_dir = fetch_and_validate_project(uri, version, entry_point, parameters)
@@ -132,10 +132,10 @@ def _run(
     )
 
     if run_name is not None:
-        tracking.MlflowClient().set_tag(active_run.info.run_id, QCFLOW_RUN_NAME, run_name)
+        tracking.QCFlowClient().set_tag(active_run.info.run_id, QCFLOW_RUN_NAME, run_name)
 
     if backend_name == "databricks":
-        tracking.MlflowClient().set_tag(
+        tracking.QCFlowClient().set_tag(
             active_run.info.run_id, QCFLOW_PROJECT_BACKEND, "databricks"
         )
         from qcflow.projects.databricks import run_databricks, run_databricks_spark_job
@@ -171,8 +171,8 @@ def _run(
             validate_docker_installation,
         )
 
-        tracking.MlflowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "docker")
-        tracking.MlflowClient().set_tag(
+        tracking.QCFlowClient().set_tag(active_run.info.run_id, QCFLOW_PROJECT_ENV, "docker")
+        tracking.QCFlowClient().set_tag(
             active_run.info.run_id, QCFLOW_PROJECT_BACKEND, "kubernetes"
         )
         validate_docker_env(project)
@@ -187,7 +187,7 @@ def _run(
             docker_auth=docker_auth,
         )
         image_digest = kb.push_image_to_registry(image.tags[0])
-        tracking.MlflowClient().set_tag(
+        tracking.QCFlowClient().set_tag(
             active_run.info.run_id, QCFLOW_DOCKER_IMAGE_ID, image_digest
         )
         return kb.run_kubernetes_job(
@@ -382,7 +382,7 @@ def _wait_for(submitted_run_obj):
     # Note: there's a small chance we fail to report the run's status to the tracking server if
     # we're interrupted before we reach the try block below
     try:
-        active_run = tracking.MlflowClient().get_run(run_id) if run_id is not None else None
+        active_run = tracking.QCFlowClient().get_run(run_id) if run_id is not None else None
         if submitted_run_obj.wait():
             _logger.info("=== Run (ID '%s') succeeded ===", run_id)
             _maybe_set_run_terminated(active_run, "FINISHED")
@@ -404,10 +404,10 @@ def _maybe_set_run_terminated(active_run, status):
     if active_run is None:
         return
     run_id = active_run.info.run_id
-    cur_status = tracking.MlflowClient().get_run(run_id).info.status
+    cur_status = tracking.QCFlowClient().get_run(run_id).info.status
     if RunStatus.is_terminated(cur_status):
         return
-    tracking.MlflowClient().set_terminated(run_id, status)
+    tracking.QCFlowClient().set_terminated(run_id, status)
 
 
 def _validate_execution_environment(project, backend):

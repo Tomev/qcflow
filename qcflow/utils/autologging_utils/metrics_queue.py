@@ -2,7 +2,7 @@ import concurrent.futures
 from threading import RLock
 
 from qcflow.entities import Metric
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 
 _metrics_queue_lock = RLock()
 _metrics_queue = []
@@ -33,7 +33,7 @@ def flush_metrics_queue():
         # flush operation should proceed; all others are redundant and should be dropped
         acquired_lock = _metrics_queue_lock.acquire(blocking=False)
         if acquired_lock:
-            client = MlflowClient()
+            client = QCFlowClient()
             # For thread safety and to avoid modifying a list while iterating over it, we record a
             # separate list of the items being flushed and remove each one from the metric queue,
             # rather than clearing the metric queue or reassigning it (clearing / reassigning is

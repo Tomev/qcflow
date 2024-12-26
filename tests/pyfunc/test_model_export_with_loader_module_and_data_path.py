@@ -14,7 +14,7 @@ import qcflow
 import qcflow.pyfunc
 import qcflow.pyfunc.model
 import qcflow.sklearn
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, infer_signature
 from qcflow.models.utils import _read_example
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
@@ -184,7 +184,7 @@ def test_model_log_load_no_active_run(sklearn_knn_model, iris_data, tmp_path):
 
 def test_save_model_with_unsupported_argument_combinations_throws_exception(model_path):
     with pytest.raises(
-        MlflowException, match="Either `loader_module` or `python_model` must be specified"
+        QCFlowException, match="Either `loader_module` or `python_model` must be specified"
     ):
         qcflow.pyfunc.save_model(path=model_path, data_path="/path/to/data")
 
@@ -193,7 +193,7 @@ def test_log_model_with_unsupported_argument_combinations_throws_exception():
     with (
         qcflow.start_run(),
         pytest.raises(
-            MlflowException, match="Either `loader_module` or `python_model` must be specified"
+            QCFlowException, match="Either `loader_module` or `python_model` must be specified"
         ),
     ):
         qcflow.pyfunc.log_model("pyfunc_model", data_path="/path/to/data")

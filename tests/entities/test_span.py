@@ -8,7 +8,7 @@ from opentelemetry.sdk.trace import ReadableSpan as OTelReadableSpan
 import qcflow
 from qcflow.entities import LiveSpan, Span, SpanEvent, SpanStatus, SpanStatusCode, SpanType
 from qcflow.entities.span import NoOpSpan, create_qcflow_span
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.tracing.provider import _get_tracer, trace_disabled
 from qcflow.tracing.utils import encode_span_id, encode_trace_id
 
@@ -124,7 +124,7 @@ def test_create_noop_span():
 
 
 def test_create_raise_for_invalid_otel_span():
-    with pytest.raises(MlflowException, match=r"The `otel_span` argument must be"):
+    with pytest.raises(QCFlowException, match=r"The `otel_span` argument must be"):
         create_qcflow_span(otel_span=123, request_id="tr-12345")
 
 
@@ -141,7 +141,7 @@ def test_set_status(status):
 
 def test_set_status_raise_for_invalid_value():
     with qcflow.start_span("test_span") as span:
-        with pytest.raises(MlflowException, match=r"INVALID is not a valid SpanStatusCode value."):
+        with pytest.raises(QCFlowException, match=r"INVALID is not a valid SpanStatusCode value."):
             span.set_status("INVALID")
 
 
@@ -206,7 +206,7 @@ def test_to_immutable_span():
 
 
 def test_from_dict_raises_when_request_id_is_empty():
-    with pytest.raises(MlflowException, match=r"Failed to create a Span object from "):
+    with pytest.raises(QCFlowException, match=r"Failed to create a Span object from "):
         Span.from_dict(
             {
                 "name": "predict",

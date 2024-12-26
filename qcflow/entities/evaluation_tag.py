@@ -1,7 +1,7 @@
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 
 
-class EvaluationTag(_MlflowObject):
+class EvaluationTag(_QCFlowObject):
     """Key-value tag associated with an evaluation."""
 
     def __init__(self, key, value):

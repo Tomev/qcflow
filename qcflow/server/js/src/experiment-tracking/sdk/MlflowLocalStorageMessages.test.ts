@@ -5,7 +5,7 @@
  * annotations are already looking good, please remove this comment.
  */
 
-import { ExperimentPagePersistedState } from './MlflowLocalStorageMessages';
+import { ExperimentPagePersistedState } from './QCFlowLocalStorageMessages';
 
 test('Local storage messages ignore unknown fields', () => {
   const persistedState = ExperimentPagePersistedState({ heyYallImAnUnknownField: 'value' });

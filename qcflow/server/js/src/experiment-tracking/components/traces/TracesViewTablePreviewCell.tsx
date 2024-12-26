@@ -1,7 +1,7 @@
 import { Button, ChevronDownIcon, ChevronRightIcon, useDesignSystemTheme } from '@databricks/design-system';
 import { isString } from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
-import { MlflowService } from '../../sdk/MlflowService';
+import { QCFlowService } from '../../sdk/QCFlowService';
 import Utils from '../../../common/utils/Utils';
 import { ErrorWrapper } from '../../../common/utils/ErrorWrapper';
 import type { CellContext, ColumnDefTemplate } from '@tanstack/react-table';
@@ -26,7 +26,7 @@ const TracesViewTablePreviewCell = ({
   const fetchFullData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await MlflowService.getExperimentTraceData<{
+      const response = await QCFlowService.getExperimentTraceData<{
         request?: any;
         response?: any;
       }>(traceId);

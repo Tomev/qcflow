@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from packaging.version import Version
 
-from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.recipes.artifacts import DataframeArtifact
 from qcflow.recipes.cards import BaseCard
 from qcflow.recipes.step import BaseStep, StepClass
@@ -170,7 +170,7 @@ def _validate_user_code_output(post_split, train_df, validation_df, test_df):
             post_filter_test_df,
         ) = post_split(train_df, validation_df, test_df)
     except Exception:
-        raise MlflowException(
+        raise QCFlowException(
             message="Error in cleaning up the data frame post split step."
             " Expected output is a tuple with (train_df, validation_df, test_df)"
         ) from None
@@ -181,11 +181,11 @@ def _validate_user_code_output(post_split, train_df, validation_df, test_df):
         [post_filter_test_df, test_df, "test"],
     ]:
         if not isinstance(post_split_df, pd.DataFrame):
-            raise MlflowException(
+            raise QCFlowException(
                 message="The split data is not a DataFrame, please return the correct data."
             ) from None
         if list(pre_split_df.columns) != list(post_split_df.columns):
-            raise MlflowException(
+            raise QCFlowException(
                 message="The number of columns post split step are different."
                 f" Column list for {split_type} dataset pre-slit is {list(pre_split_df.columns)}"
                 f" and post split is {list(post_split_df.columns)}. "
@@ -209,7 +209,7 @@ class SplitStep(BaseStep):
         self.positive_class = self.step_config.get("positive_class")
         self.skip_data_profiling = self.step_config.get("skip_data_profiling", False)
         if self.target_col is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing target_col config in recipe config.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -217,7 +217,7 @@ class SplitStep(BaseStep):
 
         if "using" in self.step_config:
             if self.step_config["using"] not in ["custom", "split_ratios"]:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid split step configuration value {self.step_config['using']} for "
                     f"key 'using'. Supported values are: ['custom', 'split_ratios']",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -232,12 +232,12 @@ class SplitStep(BaseStep):
                 and len(self.split_ratios) == 3
                 and all(isinstance(x, (int, float)) and x > 0 for x in self.split_ratios)
             ):
-                raise MlflowException(
+                raise QCFlowException(
                     "Config split_ratios must be a list containing 3 positive numbers."
                 )
 
         if "split_method" not in self.step_config and self.step_config["using"] == "custom":
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing 'split_method' configuration in the split step, "
                 "which is using 'custom'.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -344,7 +344,7 @@ class SplitStep(BaseStep):
     def _validate_and_execute_custom_split(self, split_fn, input_df):
         custom_split_mapping_series = split_fn(input_df)
         if not isinstance(custom_split_mapping_series, pd.Series):
-            raise MlflowException(
+            raise QCFlowException(
                 "Return type of the custom split function should be a pandas series",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -367,7 +367,7 @@ class SplitStep(BaseStep):
                     ]
                 )
             ].unique()
-            raise MlflowException(
+            raise QCFlowException(
                 f"Returned pandas series from custom split step should only contain "
                 f"{SplitValues.TRAINING.value}, {SplitValues.VALIDATION.value} or "
                 f"{SplitValues.TEST.value} as values. Value returned back: {incorrect_args}",
@@ -399,7 +399,7 @@ class SplitStep(BaseStep):
         raw_input_num_rows = len(input_df)
         # Make sure the target column is actually present in the input DF.
         if self.target_col not in input_df.columns:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Target column '{self.target_col}' not found in ingested dataset.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -439,7 +439,7 @@ class SplitStep(BaseStep):
             train_df = train_df[post_split_filter(train_df)]
 
         if min(len(train_df), len(validation_df), len(test_df)) < 4:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Train, validation, and testing datasets cannot be less than 4 rows. Train has "
                 f"{len(train_df)} rows, validation has {len(validation_df)} rows, and test has "
                 f"{len(test_df)} rows.",

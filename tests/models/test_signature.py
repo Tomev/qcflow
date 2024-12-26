@@ -9,7 +9,7 @@ import pytest
 from sklearn.ensemble import RandomForestRegressor
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelSignature, infer_signature, rag_signatures, set_signature
 from qcflow.models.model import get_model_info
 from qcflow.types import DataType
@@ -251,7 +251,7 @@ def test_set_signature_overwrite():
 def test_cannot_set_signature_on_models_scheme_uris():
     signature = infer_signature(np.array([1]))
     with pytest.raises(
-        MlflowException, match="Model URIs with the `models:/` scheme are not supported."
+        QCFlowException, match="Model URIs with the `models:/` scheme are not supported."
     ):
         set_signature("models:/dummy_model@champion", signature)
 

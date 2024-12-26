@@ -63,14 +63,14 @@ and offers the ``save_model()``, ``log_model()`` and ``load_model()`` methods.
 Installing bigqcflow
 ^^^^^^^^^^^^^^^^^^^^
 
-BigMLFlow can be installed from PyPI as follows:
+BigQCFlow can be installed from PyPI as follows:
 
 
 .. code-block:: bash
 
     pip install bigqcflow
 
-BigMLFlow usage
+BigQCFlow usage
 ^^^^^^^^^^^^^^^
 
 The ``bigqcflow`` module defines the flavor that implements the
@@ -109,7 +109,7 @@ with the ``bigqcflow`` model flavor as a BigML
 `SupervisedModel <https://bigml.readthedocs.io/en/latest/local_resources.html#local-supervised-model>`_.
 
 For more information, see the
-`BigMLFlow documentation <https://bigqcflow.readthedocs.io/en/latest/>`_
+`BigQCFlow documentation <https://bigqcflow.readthedocs.io/en/latest/>`_
 and `BigML's blog <https://blog.bigml.com/2022/10/25/easily-operating-machine-learning-models/>`_.
 
 Sktime

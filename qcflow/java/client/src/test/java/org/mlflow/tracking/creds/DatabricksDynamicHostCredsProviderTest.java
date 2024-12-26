@@ -20,7 +20,7 @@ public class DatabricksDynamicHostCredsProviderTest {
   @Test
   public void testUpdatesAfterPut() {
     baseMap.put("host", "hello");
-    MlflowHostCredsProvider provider = DatabricksDynamicHostCredsProvider.createIfAvailable(
+    QCFlowHostCredsProvider provider = DatabricksDynamicHostCredsProvider.createIfAvailable(
       MyDynamicProvider.class.getName());
     Assert.assertNotNull(provider);
     Assert.assertEquals(provider.getHostCreds().getHost(), "hello");
@@ -40,7 +40,7 @@ public class DatabricksDynamicHostCredsProviderTest {
     baseMap.put("host", "hello");
     baseMap.put("username", "boop");
     baseMap.put("password", "beep");
-    MlflowHostCredsProvider provider = DatabricksDynamicHostCredsProvider.createIfAvailable(
+    QCFlowHostCredsProvider provider = DatabricksDynamicHostCredsProvider.createIfAvailable(
       MyDynamicProvider.class.getName());
     Assert.assertNotNull(provider);
     Assert.assertEquals(provider.getHostCreds().getHost(), "hello");
@@ -51,7 +51,7 @@ public class DatabricksDynamicHostCredsProviderTest {
   @Test
   public void testTlsInsecure() {
     baseMap.put("host", "hello");
-    MlflowHostCredsProvider provider = DatabricksDynamicHostCredsProvider.createIfAvailable(
+    QCFlowHostCredsProvider provider = DatabricksDynamicHostCredsProvider.createIfAvailable(
       MyDynamicProvider.class.getName());
     Assert.assertNotNull(provider);
     Assert.assertEquals(provider.getHostCreds().getHost(), "hello");

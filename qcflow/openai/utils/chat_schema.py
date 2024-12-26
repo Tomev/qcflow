@@ -3,7 +3,7 @@ from typing import Any
 
 from qcflow.entities import SpanType
 from qcflow.entities.span import LiveSpan
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.tracing import set_span_chat_messages, set_span_chat_tools
 
 _logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ def set_span_chat_attributes(span: LiveSpan, inputs: dict[str, Any], output: Any
 
     try:
         set_span_chat_messages(span, messages)
-    except MlflowException:
+    except QCFlowException:
         _logger.debug(
             "Failed to set chat messages on span",
             exc_info=True,
@@ -35,5 +35,5 @@ def set_span_chat_attributes(span: LiveSpan, inputs: dict[str, Any], output: Any
     if tools := inputs.get("tools"):
         try:
             set_span_chat_tools(span, tools)
-        except MlflowException:
+        except QCFlowException:
             _logger.debug("Failed to set chat tools on span", exc_info=True)

@@ -8,7 +8,7 @@ from qcflow.entities import (
 )
 from qcflow.entities.metric import MetricWithRunId
 from qcflow.entities.trace_status import TraceStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.entities.paged_list import PagedList
 from qcflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT, SEARCH_TRACES_DEFAULT_MAX_RESULTS
 from qcflow.utils.annotations import developer_stable
@@ -309,19 +309,19 @@ class AbstractStore:
         """
         # request_ids can't be an empty list of string
         if max_timestamp_millis is None and not request_ids:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Either `max_timestamp_millis` or `request_ids` must be specified.",
             )
         if max_timestamp_millis and request_ids:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Only one of `max_timestamp_millis` and `request_ids` can be specified.",
             )
         if request_ids and max_traces is not None:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "`max_traces` can't be specified if `request_ids` is specified.",
             )
         if max_traces is not None and max_traces <= 0:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"`max_traces` must be a positive integer, received {max_traces}.",
             )
         return self._delete_traces(experiment_id, max_timestamp_millis, max_traces, request_ids)

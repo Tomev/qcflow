@@ -81,10 +81,10 @@ then make API requests to your remote tracking server.
 
   .. code-block:: scala
 
-      import org.qcflow.tracking.MlflowClient
+      import org.qcflow.tracking.QCFlowClient
 
       val remoteServerUri = "..." // set to your server URI
-      val client = new MlflowClient(remoteServerUri)
+      val client = new QCFlowClient(remoteServerUri)
 
       val experimentId = client.createExperiment("my-experiment")
       client.setExperiment(experimentId)

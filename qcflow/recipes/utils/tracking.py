@@ -8,10 +8,10 @@ from typing import Any, Optional
 
 import qcflow
 from qcflow.environment_variables import QCFLOW_RUN_CONTEXT
-from qcflow.exceptions import MlflowException, RestException
+from qcflow.exceptions import QCFlowException, RestException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.recipes.utils import get_recipe_name
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.tracking.context.registry import resolve_tags
 from qcflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
 from qcflow.tracking.fluent import _get_experiment_id
@@ -76,13 +76,13 @@ class TrackingConfig:
                 does not already exist. If the Experiment already exists, this location is ignored.
         """
         if tracking_uri is None:
-            raise MlflowException(
+            raise QCFlowException(
                 message="`tracking_uri` must be specified",
                 error_code=INVALID_PARAMETER_VALUE,
             )
 
         if (experiment_name, experiment_id).count(None) != 1:
-            raise MlflowException(
+            raise QCFlowException(
                 message="Exactly one of `experiment_name` or `experiment_id` must be specified",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -211,7 +211,7 @@ def apply_recipe_tracking_config(tracking_config: TrackingConfig):
     """
     qcflow.set_tracking_uri(uri=tracking_config.tracking_uri)
 
-    client = MlflowClient()
+    client = QCFlowClient()
     if tracking_config.experiment_name is not None:
         experiment = client.get_experiment_by_name(name=tracking_config.experiment_name)
         if not experiment:
@@ -227,7 +227,7 @@ def apply_recipe_tracking_config(tracking_config: TrackingConfig):
             except RestException:
                 # Inform user they should create an experiment and specify it in the recipe
                 # config if an experiment with the recipe name can't be created.
-                raise MlflowException(
+                raise QCFlowException(
                     f"Could not create an QCFlow Experiment with "
                     f"name {tracking_config.experiment_name}. Please create an "
                     f"QCFlow Experiment for this recipe and specify its name in the "
@@ -307,4 +307,4 @@ def log_code_snapshot(
             tmp_path.parent.mkdir(exist_ok=True, parents=True)
             with open(tmp_path, mode="w", encoding="utf-8") as config_file:
                 yaml.dump(recipe_config, config_file)
-        MlflowClient().log_artifacts(run_id, str(tmpdir), artifact_path=artifact_path)
+        QCFlowClient().log_artifacts(run_id, str(tmpdir), artifact_path=artifact_path)

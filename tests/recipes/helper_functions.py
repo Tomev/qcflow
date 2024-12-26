@@ -117,7 +117,7 @@ class BaseStepImplemented(BaseStep):
 def list_all_artifacts(
     tracking_uri: str, run_id: str, path: Optional[str] = None
 ) -> Generator[str, None, None]:
-    artifacts = qcflow.tracking.MlflowClient(tracking_uri).list_artifacts(run_id, path)
+    artifacts = qcflow.tracking.QCFlowClient(tracking_uri).list_artifacts(run_id, path)
     for artifact in artifacts:
         if artifact.is_dir:
             yield from list_all_artifacts(tracking_uri, run_id, artifact.path)

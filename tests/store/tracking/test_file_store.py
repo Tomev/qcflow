@@ -31,7 +31,7 @@ from qcflow.entities import (
 )
 from qcflow.entities.trace_info import TraceInfo
 from qcflow.entities.trace_status import TraceStatus
-from qcflow.exceptions import MissingConfigException, MlflowException
+from qcflow.exceptions import MissingConfigException, QCFlowException
 from qcflow.models import Model
 from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
@@ -129,7 +129,7 @@ def test_attempting_to_remove_default_experiment(store):
     assert _is_default_in_experiments(ViewType.ACTIVE_ONLY)
 
     # Ensure experiment deletion of default id raises
-    with pytest.raises(MlflowException, match="Cannot delete the default experiment"):
+    with pytest.raises(QCFlowException, match="Cannot delete the default experiment"):
         store.delete_experiment(FileStore.DEFAULT_EXPERIMENT_ID)
 
 
@@ -350,19 +350,19 @@ def test_search_experiments_max_results(store):
 
 def test_search_experiments_max_results_validation(store):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value None for parameter 'max_results' supplied. "
         r"It must be a positive integer",
     ):
         store.search_experiments(max_results=None)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value 0 for parameter 'max_results' supplied. "
         r"It must be a positive integer",
     ):
         store.search_experiments(max_results=0)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value 1000000 for parameter 'max_results' supplied. "
         r"It must be at most 50000",
     ):
@@ -663,7 +663,7 @@ def test_create_experiment(store):
         store.create_experiment(None)
     with pytest.raises(Exception, match="Invalid experiment name: ''"):
         store.create_experiment("")
-    with pytest.raises(MlflowException, match=r"'name' exceeds the maximum length"):
+    with pytest.raises(QCFlowException, match=r"'name' exceeds the maximum length"):
         store.create_experiment(name="x" * (MAX_EXPERIMENT_NAME_LENGTH + 1))
     name = random_str(25)  # since existing experiments are 10 chars long
     time_before_create = get_current_time_millis()
@@ -843,13 +843,13 @@ def test_hard_delete_run(store):
     exp_id = experiments[random_int(0, len(experiments) - 1)]
     run_id = exp_data[exp_id]["runs"][0]
     store._hard_delete_run(run_id)
-    with pytest.raises(MlflowException, match=f"Run '{run_id}' not found"):
+    with pytest.raises(QCFlowException, match=f"Run '{run_id}' not found"):
         store.get_run(run_id)
-    with pytest.raises(MlflowException, match=f"Run '{run_id}' not found"):
+    with pytest.raises(QCFlowException, match=f"Run '{run_id}' not found"):
         store.get_all_tags(run_id)
-    with pytest.raises(MlflowException, match=f"Run '{run_id}' not found"):
+    with pytest.raises(QCFlowException, match=f"Run '{run_id}' not found"):
         store.get_all_metrics(run_id)
-    with pytest.raises(MlflowException, match=f"Run '{run_id}' not found"):
+    with pytest.raises(QCFlowException, match=f"Run '{run_id}' not found"):
         store.get_all_params(run_id)
 
 
@@ -937,7 +937,7 @@ def test_create_run_sets_name(store):
     assert run.info.run_name == "test"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "Both 'run_name' argument and 'qcflow.runName' tag are specified, but with "
             "different values (run_name='my name', qcflow.runName='test')."
@@ -1107,7 +1107,7 @@ def test_log_metric_with_non_numeric_value_raises_exception(store):
         run_name="first name",
     ).info.run_id
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value \"string\" for parameter \'value\' supplied",
     ):
         store.log_metric(run_id, Metric("test", "string", 0, 0))
@@ -1146,7 +1146,7 @@ def test_get_metric_history(store):
 
 def test_get_metric_history_paginated_request_raises(store):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The FileStore backend does not support pagination for the `get_metric_history` "
         "API.",
     ):
@@ -1225,7 +1225,7 @@ def test_search_with_max_results(store):
         assert runs[: min(1200, n)] == _search(store, exp, max_results=n)
 
     with pytest.raises(
-        MlflowException, match="Invalid value for request parameter max_results. It "
+        QCFlowException, match="Invalid value for request parameter max_results. It "
     ):
         _search(store, exp, None, max_results=int(1e10))
 
@@ -1634,7 +1634,7 @@ def test_log_param_enforces_value_immutability(store):
     # Duplicate calls to `log_param` with the same key and value should succeed
     store.log_param(run_id, Param(param_name, "value1"))
     with pytest.raises(
-        MlflowException, match="Changing param values is not allowed. Param with key="
+        QCFlowException, match="Changing param values is not allowed. Param with key="
     ) as e:
         store.log_param(run_id, Param(param_name, "value2"))
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -1651,7 +1651,7 @@ def test_log_param_max_length_value(store, monkeypatch):
     run = store.get_run(run_id)
     assert run.data.params[param_name] == param_value
     monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
-    with pytest.raises(MlflowException, match="exceeds the maximum length"):
+    with pytest.raises(QCFlowException, match="exceeds the maximum length"):
         store.log_param(run_id, Param(param_name, "x" * 6001))
 
     monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "true")
@@ -1717,7 +1717,7 @@ def test_set_experiment_tags(store):
     assert experiment.tags["multiline_tag"] == "value2\nvalue2\nvalue2"
     # test cannot set tags on deleted experiments
     store.delete_experiment(exp_id)
-    with pytest.raises(MlflowException, match="must be in the 'active' lifecycle_stage"):
+    with pytest.raises(QCFlowException, match="must be in the 'active' lifecycle_stage"):
         store.set_experiment_tag(exp_id, ExperimentTag("should", "notset"))
 
 
@@ -1755,15 +1755,15 @@ def test_delete_tags(store):
     new_tags = store.get_run(run_id).data.tags
     assert "tag0" not in new_tags.keys()
     # test that you cannot delete tags that don't exist.
-    with pytest.raises(MlflowException, match="No tag with name"):
+    with pytest.raises(QCFlowException, match="No tag with name"):
         store.delete_tag(run_id, "fakeTag")
     # test that you cannot delete tags for nonexistent runs
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         store.delete_tag("random_id", "tag0")
     store.delete_run(run_id)
     # test that you cannot delete tags for deleted runs.
     assert store.get_run(run_id).info.lifecycle_stage == LifecycleStage.DELETED
-    with pytest.raises(MlflowException, match="must be in 'active' lifecycle_stage"):
+    with pytest.raises(QCFlowException, match="must be in 'active' lifecycle_stage"):
         store.delete_tag(run_id, "tag0")
 
 
@@ -1798,17 +1798,17 @@ def test_set_deleted_run(store):
 
     assert store.get_run(run_id).info.lifecycle_stage == LifecycleStage.DELETED
     match = "must be in 'active' lifecycle_stage"
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         store.set_tag(run_id, RunTag("a", "b"))
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         store.log_metric(run_id, Metric("a", 0.0, timestamp=0, step=0))
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         store.log_param(run_id, Param("a", "b"))
 
 
 def test_default_experiment_attempted_deletion(store):
     _create_root(store)
-    with pytest.raises(MlflowException, match="Cannot delete the default experiment"):
+    with pytest.raises(QCFlowException, match="Cannot delete the default experiment"):
         store.delete_experiment(FileStore.DEFAULT_EXPERIMENT_ID)
     experiment = store.get_experiment(FileStore.DEFAULT_EXPERIMENT_ID)
     assert experiment.lifecycle_stage == LifecycleStage.ACTIVE
@@ -1871,7 +1871,7 @@ def test_malformed_metric(store):
     with (
         mock.patch("qcflow.store.tracking.file_store.read_file_lines", return_value=["0 1 0 2\n"]),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=f"Metric 'test' is malformed; persisted metric data contained "
             f"4 fields. Expected 2 or 3 fields. "
             f"Experiment id: {exp_id}",
@@ -1892,10 +1892,10 @@ def test_mismatching_experiment_id(store):
     path_new = os.path.join(store.root_directory, str(target))
     os.rename(path_orig, path_new)
 
-    with pytest.raises(MlflowException, match="Could not find experiment with ID"):
+    with pytest.raises(QCFlowException, match="Could not find experiment with ID"):
         store.get_experiment(FileStore.DEFAULT_EXPERIMENT_ID)
 
-    with pytest.raises(MlflowException, match="does not exist"):
+    with pytest.raises(QCFlowException, match="does not exist"):
         store.get_experiment(target)
     assert len(store.search_experiments(view_type=ViewType.ALL)) == experiments - 1
 
@@ -1915,7 +1915,7 @@ def test_bad_experiment_id_recorded_for_run(store):
     experiment_data["experiment_id"] = 1
     write_yaml(path, "meta.yaml", experiment_data, True)
 
-    with pytest.raises(MlflowException, match="metadata is in invalid state"):
+    with pytest.raises(QCFlowException, match="metadata is in invalid state"):
         store.get_run(bad_run_id)
 
     valid_runs = _search(store, exp_0.experiment_id)
@@ -1962,7 +1962,7 @@ def test_log_batch_max_length_value(store, monkeypatch):
 
     monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
     param_entities = [Param("long param", "x" * 6001), Param("short param", "xyz")]
-    with pytest.raises(MlflowException, match="exceeds the maximum length"):
+    with pytest.raises(QCFlowException, match="exceeds the maximum length"):
         store.log_batch(run.info.run_id, (), param_entities, ())
 
     monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "true")
@@ -1970,7 +1970,7 @@ def test_log_batch_max_length_value(store, monkeypatch):
 
 
 def test_log_batch_internal_error(store):
-    # Verify that internal errors during log_batch result in MlflowExceptions
+    # Verify that internal errors during log_batch result in QCFlowExceptions
     run = store.create_run(
         experiment_id=FileStore.DEFAULT_EXPERIMENT_ID,
         user_id="user",
@@ -1997,14 +1997,14 @@ def test_log_batch_internal_error(store):
         ]:
             log_batch_kwargs = {"metrics": [], "params": [], "tags": []}
             log_batch_kwargs.update(kwargs)
-            with pytest.raises(MlflowException, match="Some internal error") as e:
+            with pytest.raises(QCFlowException, match="Some internal error") as e:
                 store.log_batch(run.info.run_id, **log_batch_kwargs)
             assert e.value.error_code == ErrorCode.Name(INTERNAL_ERROR)
 
 
 def test_log_batch_nonexistent_run(store):
     nonexistent_uuid = uuid.uuid4().hex
-    with pytest.raises(MlflowException, match=f"Run '{nonexistent_uuid}' not found") as e:
+    with pytest.raises(QCFlowException, match=f"Run '{nonexistent_uuid}' not found") as e:
         store.log_batch(nonexistent_uuid, [], [], [])
     assert e.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
 
@@ -2112,7 +2112,7 @@ def test_log_batch_with_duplicate_params_errors_no_partial_write(store):
         tags=[],
         run_name="name",
     )
-    with pytest.raises(MlflowException, match="Duplicate parameter keys have been submitted") as e:
+    with pytest.raises(QCFlowException, match="Duplicate parameter keys have been submitted") as e:
         store.log_batch(
             run.info.run_id,
             metrics=[],
@@ -2888,7 +2888,7 @@ def test_start_trace(store):
     assert trace_info.request_metadata == {}
     assert trace_info.tags == tags
 
-    with pytest.raises(MlflowException, match=r"Experiment fake_exp_id does not exist."):
+    with pytest.raises(QCFlowException, match=r"Experiment fake_exp_id does not exist."):
         store.start_trace("fake_exp_id", timestamp_ms, {}, {})
 
 
@@ -2910,7 +2910,7 @@ def test_end_trace(store_and_trace_info):
     assert trace_info.request_metadata == {**trace.request_metadata, **request_metadata}
     assert trace_info.tags == {**trace.tags, **tags}
 
-    with pytest.raises(MlflowException, match=r"Trace with request ID 'fake_request_id' not found"):
+    with pytest.raises(QCFlowException, match=r"Trace with request ID 'fake_request_id' not found"):
         store.end_trace("fake_request_id", timestamp_ms, TraceStatus.OK, request_metadata, tags)
 
 
@@ -2919,7 +2919,7 @@ def test_get_trace_info(store_and_trace_info):
     trace_info = store.get_trace_info(trace.request_id)
     assert trace_info == trace
 
-    with pytest.raises(MlflowException, match=r"Trace with request ID 'fake_request_id' not found"):
+    with pytest.raises(QCFlowException, match=r"Trace with request ID 'fake_request_id' not found"):
         store.get_trace_info("fake_request_id")
 
     mock_trace_info = deepcopy(trace_info)
@@ -2930,7 +2930,7 @@ def test_get_trace_info(store_and_trace_info):
             return_value=mock_trace_info,
         ),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=rf"Trace with request ID '{trace.request_id}' metadata is in invalid state.",
         ),
     ):
@@ -2953,7 +2953,7 @@ def test_set_trace_tag(store_and_trace_info):
     trace_info = store.get_trace_info(trace.request_id)
     assert trace_info.tags["int_key"] == "1234"
 
-    with pytest.raises(MlflowException, match=r"Missing value for required parameter \'key\'"):
+    with pytest.raises(QCFlowException, match=r"Missing value for required parameter \'key\'"):
         store.set_trace_tag(trace.request_id, None, "test")
 
 
@@ -2965,7 +2965,7 @@ def test_delete_trace_tag(store_and_trace_info):
     assert "some_key" not in trace_info.tags
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"No tag with name: invalid_key in trace with request_id {trace.request_id}.",
     ):
         store.delete_trace_tag(trace.request_id, "invalid_key")
@@ -2996,25 +2996,25 @@ def test_delete_traces(store):
     assert len(store.search_traces([exp_id])[0]) == 0
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Either `max_timestamp_millis` or `request_ids` must be specified.",
     ):
         store.delete_traces(exp_id)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Only one of `max_timestamp_millis` and `request_ids` can be specified.",
     ):
         store.delete_traces(exp_id, max_timestamp_millis=100, request_ids=request_ids)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"`max_traces` can't be specified if `request_ids` is specified.",
     ):
         store.delete_traces(exp_id, max_traces=2, request_ids=request_ids)
     with pytest.raises(
-        MlflowException, match=r"`max_traces` must be a positive integer, received 0"
+        QCFlowException, match=r"`max_traces` must be a positive integer, received 0"
     ):
         store.delete_traces(exp_id, 100, max_traces=0)
-    with pytest.raises(MlflowException, match=r"Experiment non_existing_exp does not exist."):
+    with pytest.raises(QCFlowException, match=r"Experiment non_existing_exp does not exist."):
         store.delete_traces("non_existing_exp", 100, 2)
 
 
@@ -3241,7 +3241,7 @@ def test_search_traces_invalid_filter(generate_trace_infos, filter_string, error
     exp_id = generate_trace_infos.exp_id
 
     # Invalid filter key
-    with pytest.raises(MlflowException, match=error):
+    with pytest.raises(QCFlowException, match=error):
         store.search_traces([exp_id], filter_string)
 
 
@@ -3334,12 +3334,12 @@ def test_search_traces_raise_errors(generate_trace_infos):
 
     # unsupported order_by keys
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid order_by entity `tag` with key `qcflow.traceName`",
     ):
         store.search_traces([exp_id], "", order_by=["name DESC"])
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid order_by entity `request_metadata` "
         rf"with key `{TraceMetadataKey.SOURCE_RUN}`",
     ):
@@ -3362,7 +3362,7 @@ def test_search_traces_pagination(generate_trace_infos):
 
 def test_traces_not_listed_as_runs(tmp_path):
     with _use_tracking_uri(tmp_path.joinpath("mlruns").as_uri()):
-        client = qcflow.MlflowClient()
+        client = qcflow.QCFlowClient()
         with qcflow.start_run() as run:
             client.start_trace("test")
 

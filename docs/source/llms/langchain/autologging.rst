@@ -107,18 +107,18 @@ QCFlow LangChain Autologging uses two ways to log traces and other artifacts. Tr
 QCFlow Tracing Callbacks
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-`MlflowLangchainTracer <https://github.com/qcflow/qcflow/blob/master/qcflow/langchain/langchain_tracer.py>`_ is a callback handler that is injected into the langchain model inference process to log traces automatically. It starts a new span upon a set of actions of the chain such as ``on_chain_start``, ``on_llm_start``, and concludes it when the action is finished. Various metadata such as span type, action name, input, output, latency, are automatically recorded to the span.
+`QCFlowLangchainTracer <https://github.com/qcflow/qcflow/blob/master/qcflow/langchain/langchain_tracer.py>`_ is a callback handler that is injected into the langchain model inference process to log traces automatically. It starts a new span upon a set of actions of the chain such as ``on_chain_start``, ``on_llm_start``, and concludes it when the action is finished. Various metadata such as span type, action name, input, output, latency, are automatically recorded to the span.
 
 Customize Callback
 ^^^^^^^^^^^^^^^^^^
 
-Sometimes you may want to customize what information is logged in the traces. You can achieve this by creating a custom callback handler that inherits from `MlflowLangchainTracer <https://github.com/qcflow/qcflow/blob/master/qcflow/langchain/langchain_tracer.py>`_. The following example demonstrates how to record an additional attribute to the span when a chat model starts running.
+Sometimes you may want to customize what information is logged in the traces. You can achieve this by creating a custom callback handler that inherits from `QCFlowLangchainTracer <https://github.com/qcflow/qcflow/blob/master/qcflow/langchain/langchain_tracer.py>`_. The following example demonstrates how to record an additional attribute to the span when a chat model starts running.
 
 .. code-block::
 
-    from qcflow.langchain.langchain_tracer import MlflowLangchainTracer
+    from qcflow.langchain.langchain_tracer import QCFlowLangchainTracer
 
-    class CustomLangchainTracer(MlflowLangchainTracer):
+    class CustomLangchainTracer(QCFlowLangchainTracer):
 
         # Override the handler functions to customize the behavior. The method signature is defined by LangChain Callbacks.
         def on_chat_model_start(

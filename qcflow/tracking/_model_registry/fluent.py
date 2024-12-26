@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from qcflow.entities.model_registry import ModelVersion, RegisteredModel
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import ALREADY_EXISTS, RESOURCE_ALREADY_EXISTS, ErrorCode
 from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
 from qcflow.store.model_registry import (
@@ -9,7 +9,7 @@ from qcflow.store.model_registry import (
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
 )
 from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.utils import get_results_from_paginated_fn
 from qcflow.utils.logging_utils import eprint
 
@@ -87,11 +87,11 @@ def _register_model(
     tags: Optional[dict[str, Any]] = None,
     local_model_path=None,
 ) -> ModelVersion:
-    client = MlflowClient()
+    client = QCFlowClient()
     try:
         create_model_response = client.create_registered_model(name)
         eprint(f"Successfully registered model '{create_model_response.name}'.")
-    except MlflowException as e:
+    except QCFlowException as e:
         if e.error_code in (
             ErrorCode.Name(RESOURCE_ALREADY_EXISTS),
             ErrorCode.Name(ALREADY_EXISTS),
@@ -214,7 +214,7 @@ def search_registered_models(
     """
 
     def pagination_wrapper_func(number_to_get, next_page_token):
-        return MlflowClient().search_registered_models(
+        return QCFlowClient().search_registered_models(
             max_results=number_to_get,
             filter_string=filter_string,
             order_by=order_by,
@@ -311,7 +311,7 @@ def search_model_versions(
     """
 
     def pagination_wrapper_func(number_to_get, next_page_token):
-        return MlflowClient().search_model_versions(
+        return QCFlowClient().search_model_versions(
             max_results=number_to_get,
             filter_string=filter_string,
             order_by=order_by,

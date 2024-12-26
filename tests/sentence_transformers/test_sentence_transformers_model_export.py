@@ -16,7 +16,7 @@ import qcflow
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 import qcflow.sentence_transformers
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, infer_signature
 from qcflow.models.utils import _read_example, load_serving_example
 from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
@@ -383,7 +383,7 @@ def test_model_pyfunc_predict_with_params(basic_model, tmp_path):
     emb0 = loaded_pyfunc.predict(sentence, params)
     assert emb0.shape == (1, embedding_dim)
 
-    with pytest.raises(MlflowException, match=r"Invalid parameters found"):
+    with pytest.raises(QCFlowException, match=r"Invalid parameters found"):
         loaded_pyfunc.predict(sentence, {"batch_size": "16"})
 
     model_path = tmp_path / "model3"
@@ -414,7 +414,7 @@ def test_model_pyfunc_predict_with_invalid_params(basic_model, tmp_path):
 
     loaded_pyfunc = pyfunc.load_model(model_uri=model_path)
     with pytest.raises(
-        MlflowException, match=r"Received invalid parameter value for `params` argument"
+        QCFlowException, match=r"Received invalid parameter value for `params` argument"
     ):
         loaded_pyfunc.predict(sentence, {"invalid_param": "random_value"})
 
@@ -555,12 +555,12 @@ def test_verify_task_and_update_metadata():
     # Update embedding task with metadata containing different task
     metadata = {"task": "llm/v1/completions"}
     with pytest.raises(
-        MlflowException, match=r"Task type is inconsistent with the task value from metadata"
+        QCFlowException, match=r"Task type is inconsistent with the task value from metadata"
     ):
         qcflow.sentence_transformers._verify_task_and_update_metadata("llm/v1/embeddings", metadata)
 
     # Invalid task type
-    with pytest.raises(MlflowException, match=r"Task type could only be llm/v1/embeddings"):
+    with pytest.raises(QCFlowException, match=r"Task type could only be llm/v1/embeddings"):
         qcflow.sentence_transformers._verify_task_and_update_metadata("llm/v1/completions")
 
 

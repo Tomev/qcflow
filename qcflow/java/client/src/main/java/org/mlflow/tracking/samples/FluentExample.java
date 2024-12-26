@@ -2,14 +2,14 @@ package org.qcflow.tracking.samples;
 
 import com.google.common.collect.ImmutableMap;
 import org.qcflow.tracking.ActiveRun;
-import org.qcflow.tracking.MlflowContext;
+import org.qcflow.tracking.QCFlowContext;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class FluentExample {
   public static void main(String[] args) {
-    MlflowContext qcflow = new MlflowContext();
+    QCFlowContext qcflow = new QCFlowContext();
     ExecutorService executor = Executors.newFixedThreadPool(10);
 
     // Vanilla usage

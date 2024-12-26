@@ -984,13 +984,13 @@ Starting a Trace
 Unlike with the fluent API, the QCFlow Trace Client API requires that you explicitly start a trace before adding child spans. This initial API call 
 starts the root span for the trace, providing a context request_id that is used for associating subsequent spans to the root span. 
 
-To start a new trace, use the :py:meth:`qcflow.client.MlflowClient.start_trace` method. This method creates a new trace and returns the root span object.
+To start a new trace, use the :py:meth:`qcflow.client.QCFlowClient.start_trace` method. This method creates a new trace and returns the root span object.
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     # Start a new trace
     root_span = client.start_trace("my_trace")
@@ -1001,7 +1001,7 @@ To start a new trace, use the :py:meth:`qcflow.client.MlflowClient.start_trace` 
 Adding a Child Span
 ^^^^^^^^^^^^^^^^^^^
 
-Once a trace is started, you can add child spans to it with the :py:meth:`qcflow.client.MlflowClient.start_span` API. Child spans allow you to break down the trace into smaller, more manageable segments, 
+Once a trace is started, you can add child spans to it with the :py:meth:`qcflow.client.QCFlowClient.start_span` API. Child spans allow you to break down the trace into smaller, more manageable segments, 
 each representing a specific operation or step within the overall process.
 
 .. code-block:: python
@@ -1018,7 +1018,7 @@ each representing a specific operation or step within the overall process.
 Ending a Span
 ^^^^^^^^^^^^^
 
-After performing the operations associated with a span, you must end the span explicitly using the :py:meth:`qcflow.client.MlflowClient.end_span` method. Make note of the two required fields 
+After performing the operations associated with a span, you must end the span explicitly using the :py:meth:`qcflow.client.QCFlowClient.end_span` method. Make note of the two required fields 
 that are in the API signature:
 
 - **request_id**: The identifier associated with the root span
@@ -1045,7 +1045,7 @@ The initiating ``request_id`` can be accessed from any parent span object's prop
 Ending a Trace
 ^^^^^^^^^^^^^^
 
-To complete the trace, end the root span using the :py:meth:`qcflow.client.MlflowClient.end_trace` method. This will also ensure that all associated child 
+To complete the trace, end the root span using the :py:meth:`qcflow.client.QCFlowClient.end_trace` method. This will also ensure that all associated child 
 spans are properly ended.
 
 .. code-block:: python
@@ -1062,14 +1062,14 @@ spans are properly ended.
 Searching and Retrieving Traces
 -------------------------------
 
-You can search for traces based on various criteria using the :py:meth:`qcflow.client.MlflowClient.search_traces` method or the fluent API :py:func:`qcflow.search_traces`. 
+You can search for traces based on various criteria using the :py:meth:`qcflow.client.QCFlowClient.search_traces` method or the fluent API :py:func:`qcflow.search_traces`. 
 See `Searching and Retrieving Traces <./search-traces.html>`_ for the usages of these APIs.
 
 
 Deleting Traces
 ---------------
 
-You can delete traces based on specific criteria using the :py:meth:`qcflow.client.MlflowClient.delete_traces` method. This method allows you to delete traces by **experiment ID**,
+You can delete traces based on specific criteria using the :py:meth:`qcflow.client.QCFlowClient.delete_traces` method. This method allows you to delete traces by **experiment ID**,
 **maximum timestamp**, or **request IDs**.
 
 .. tip::
@@ -1108,7 +1108,7 @@ Tags can be added to traces to provide additional metadata at the trace level. F
 
     * - :py:func:`qcflow.update_current_trace` API.
       - Setting tags on an **active** trace during the code execution.
-    * - :py:meth:`qcflow.client.MlflowClient.set_trace_tag` API
+    * - :py:meth:`qcflow.client.QCFlowClient.set_trace_tag` API
       - Programmatically setting tags on a finished trace.
     * - QCFlow UI
       - Setting tags on a finished trace conveniently.
@@ -1137,8 +1137,8 @@ For example, the following code example adds the ``"fruit": "apple"`` tag to the
 Setting Tags on a Finished Trace
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To set tags on a trace that has already been completed and logged in the backend store, use the :py:meth:`qcflow.client.MlflowClient.set_trace_tag` method to set a tag on a trace, 
-and the :py:meth:`qcflow.client.MlflowClient.delete_trace_tag` method to remove a tag from a trace.
+To set tags on a trace that has already been completed and logged in the backend store, use the :py:meth:`qcflow.client.QCFlowClient.set_trace_tag` method to set a tag on a trace, 
+and the :py:meth:`qcflow.client.QCFlowClient.delete_trace_tag` method to remove a tag from a trace.
 
 .. code-block:: python
 
@@ -1282,13 +1282,13 @@ well as providing a link to navigate to the run within the QCFlow UI. See the be
     :width: 100%
     :align: center
 
-You can also programmatically retrieve the traces associated to a particular Run by using the :py:meth:`qcflow.client.MlflowClient.search_traces` method.
+You can also programmatically retrieve the traces associated to a particular Run by using the :py:meth:`qcflow.client.QCFlowClient.search_traces` method.
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     # Retrieve traces associated with a specific Run
     traces = client.search_traces(run_id=run.info.run_id)

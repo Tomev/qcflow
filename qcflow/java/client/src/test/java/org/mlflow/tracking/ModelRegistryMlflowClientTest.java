@@ -26,14 +26,14 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-public class ModelRegistryMlflowClientTest {
-    private static final Logger logger = LoggerFactory.getLogger(ModelRegistryMlflowClientTest.class);
+public class ModelRegistryQCFlowClientTest {
+    private static final Logger logger = LoggerFactory.getLogger(ModelRegistryQCFlowClientTest.class);
 
-    private static final MlflowProtobufMapper mapper = new MlflowProtobufMapper();
+    private static final QCFlowProtobufMapper mapper = new QCFlowProtobufMapper();
 
     private final TestClientProvider testClientProvider = new TestClientProvider();
 
-    private MlflowClient client;
+    private QCFlowClient client;
     private String source;
 
     private String modelName;
@@ -107,7 +107,7 @@ public class ModelRegistryMlflowClientTest {
         validateDetailedModelVersion(modelVersion, modelName, "Staging", "1");
     }
 
-    @Test(expectedExceptions = MlflowHttpException.class, expectedExceptionsMessageRegExp = ".*RESOURCE_DOES_NOT_EXIST.*")
+    @Test(expectedExceptions = QCFlowHttpException.class, expectedExceptionsMessageRegExp = ".*RESOURCE_DOES_NOT_EXIST.*")
     public void testGetModelVersion_NotFound() {
         client.getModelVersion(modelName, "2");
     }
@@ -145,9 +145,9 @@ public class ModelRegistryMlflowClientTest {
         Assert.assertEquals(content, downloadedContent);
     }
 
-    @Test(expectedExceptions = MlflowClientException.class)
+    @Test(expectedExceptions = QCFlowClientException.class)
     public void testDownloadLatestModelVersionWhenMoreThanOneVersionIsReturned() {
-        MlflowClient mockedClient = Mockito.spy(client);
+        QCFlowClient mockedClient = Mockito.spy(client);
 
         List<ModelVersion> modelVersions = Lists.newArrayList();
         modelVersions.add(ModelVersion.newBuilder().build());

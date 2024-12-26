@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.qcflow.api.proto.Service.*;
-import org.qcflow.tracking.MlflowClient;
+import org.qcflow.tracking.QCFlowClient;
 
 /**
  * This is an example application which uses the QCFlow Tracking API to create and manage
@@ -16,11 +16,11 @@ public class QuickStartDriver {
   }
 
   void process(String[] args) throws Exception {
-    MlflowClient client;
+    QCFlowClient client;
     if (args.length < 1) {
-      client = new MlflowClient();
+      client = new QCFlowClient();
     } else {
-      client = new MlflowClient(args[0]);
+      client = new QCFlowClient(args[0]);
     }
 
     System.out.println("====== createExperiment");
@@ -49,7 +49,7 @@ public class QuickStartDriver {
     client.close();
   }
 
-  void createRun(MlflowClient client, String expId) {
+  void createRun(QCFlowClient client, String expId) {
     System.out.println("====== createRun");
 
     // Create run

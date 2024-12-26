@@ -1,6 +1,6 @@
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos import databricks_pb2
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.tracking.default_experiment.abstract_context import DefaultExperimentProvider
 from qcflow.utils import databricks_utils
 from qcflow.utils.qcflow_tags import QCFLOW_EXPERIMENT_SOURCE_ID, QCFLOW_EXPERIMENT_SOURCE_TYPE
@@ -29,8 +29,8 @@ class DatabricksNotebookExperimentProvider(DefaultExperimentProvider):
         # return the corresponding experiment if one exists for the repo notebook.
         # For non-repo notebooks, it will raise an exception and we will use source_notebook_id
         try:
-            experiment_id = MlflowClient().create_experiment(source_notebook_name, None, tags)
-        except MlflowException as e:
+            experiment_id = QCFlowClient().create_experiment(source_notebook_name, None, tags)
+        except QCFlowException as e:
             if e.error_code == databricks_pb2.ErrorCode.Name(
                 databricks_pb2.INVALID_PARAMETER_VALUE
             ):

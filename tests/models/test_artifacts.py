@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from matplotlib.figure import Figure
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.evaluation.artifacts import (
     CsvEvaluationArtifact,
     ImageEvaluationArtifact,
@@ -87,7 +87,7 @@ def test_infer_artifact_type_and_ext(is_file, artifact, artifact_type, ext, tmp_
 
 def test_infer_artifact_type_and_ext_raise_exception_for_non_file_non_json_str(cm_fn_tuple):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="with string representation 'some random str' that is "
         "neither a valid path to a file nor a JSON string",
     ):
@@ -96,12 +96,12 @@ def test_infer_artifact_type_and_ext_raise_exception_for_non_file_non_json_str(c
 
 def test_infer_artifact_type_and_ext_raise_exception_for_non_existent_path(tmp_path, cm_fn_tuple):
     path = tmp_path / "does_not_exist_path"
-    with pytest.raises(MlflowException, match=f"with path '{path}' does not exist"):
+    with pytest.raises(QCFlowException, match=f"with path '{path}' does not exist"):
         _infer_artifact_type_and_ext("test_artifact", path, cm_fn_tuple)
 
 
 def test_infer_artifact_type_and_ext_raise_exception_for_non_file_artifact(tmp_path, cm_fn_tuple):
-    with pytest.raises(MlflowException, match=f"with path '{tmp_path}' is not a file"):
+    with pytest.raises(QCFlowException, match=f"with path '{tmp_path}' is not a file"):
         _infer_artifact_type_and_ext("non_file_artifact", tmp_path, cm_fn_tuple)
 
 
@@ -110,7 +110,7 @@ def test_infer_artifact_type_and_ext_raise_exception_for_unsupported_ext(tmp_pat
     with open(path, "w") as f:
         f.write("some stuff that shouldn't be read")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=f"with path '{path}' does not match any of the supported file extensions",
     ):
         _infer_artifact_type_and_ext("invalid_ext_artifact", path, cm_fn_tuple)

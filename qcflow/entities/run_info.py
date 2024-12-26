@@ -1,14 +1,14 @@
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.lifecycle_stage import LifecycleStage
 from qcflow.entities.run_status import RunStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.protos.service_pb2 import RunInfo as ProtoRunInfo
 
 
 def check_run_is_active(run_info):
     if run_info.lifecycle_stage != LifecycleStage.ACTIVE:
-        raise MlflowException(
+        raise QCFlowException(
             f"The run {run_info.run_id} must be in 'active' lifecycle_stage.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -26,7 +26,7 @@ class orderable_attribute(property):
     pass
 
 
-class RunInfo(_MlflowObject):
+class RunInfo(_QCFlowObject):
     """
     Metadata about a run.
     """

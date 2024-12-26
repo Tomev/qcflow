@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '../../../common/utils/TestUtils.react18
 import { IntlProvider } from 'react-intl';
 import { MockedReduxStoreProvider } from '../../../common/utils/TestUtils';
 import userEvent from '@testing-library/user-event-14';
-import { MlflowService } from '../../sdk/MlflowService';
+import { QCFlowService } from '../../sdk/QCFlowService';
 import { getExperimentApi, updateExperimentApi } from '../../actions';
 import Utils from '../../../common/utils/Utils';
 
@@ -21,7 +21,7 @@ describe('RenameExperimentModal', () => {
   beforeEach(() => {
     jest.mocked(updateExperimentApi).mockClear();
     jest.mocked(getExperimentApi).mockClear();
-    jest.spyOn(MlflowService, 'getExperimentByName').mockImplementation(() => Promise.reject({} as any));
+    jest.spyOn(QCFlowService, 'getExperimentByName').mockImplementation(() => Promise.reject({} as any));
     jest.spyOn(Utils, 'logErrorAndNotifyUser');
     jest.clearAllMocks();
   });

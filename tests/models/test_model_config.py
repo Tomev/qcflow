@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import ModelConfig
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -27,7 +27,7 @@ def test_config_invalid_yaml(tmp_path):
     tmp_file = tmp_path / "invalid_config.yaml"
     tmp_file.write_text("invalid_yaml: \n  - this is not valid \n-yaml")
     config = ModelConfig(development_config=str(tmp_file))
-    with pytest.raises(MlflowException, match="Error parsing YAML file: "):
+    with pytest.raises(QCFlowException, match="Error parsing YAML file: "):
         config.get("key")
 
 

@@ -9,7 +9,7 @@ import Utils from '../../../../common/utils/Utils';
 import { useIntl } from 'react-intl';
 
 const GET_METRIC_HISTORY_BULK_INTERVAL = gql`
-  query GetMetricHistoryBulkInterval($data: MlflowGetMetricHistoryBulkIntervalInput!)
+  query GetMetricHistoryBulkInterval($data: QCFlowGetMetricHistoryBulkIntervalInput!)
   @component(name: "QCFlow.ExperimentRunTracking") {
     qcflowGetMetricHistoryBulkInterval(input: $data) {
       __typename

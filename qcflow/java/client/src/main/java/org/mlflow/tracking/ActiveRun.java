@@ -11,10 +11,10 @@ import java.util.stream.StreamSupport;
  * Represents an active QCFlow run and contains APIs to log data to the run.
  */
 public class ActiveRun {
-  private MlflowClient client;
+  private QCFlowClient client;
   private RunInfo runInfo;
 
-  ActiveRun(RunInfo runInfo, MlflowClient client) {
+  ActiveRun(RunInfo runInfo, QCFlowClient client) {
     this.runInfo = runInfo;
     this.client = client;
   }

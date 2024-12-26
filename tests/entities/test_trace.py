@@ -10,7 +10,7 @@ import qcflow
 import qcflow.tracking.context.default_context
 from qcflow.entities import SpanType, Trace, TraceData
 from qcflow.environment_variables import QCFLOW_TRACKING_USERNAME
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY
 from qcflow.tracing.utils import TraceJSONEncoder
 from qcflow.utils.qcflow_tags import QCFLOW_ARTIFACT_LOCATION
@@ -291,8 +291,8 @@ def test_search_spans_raise_for_invalid_param_type():
     run(2)
     trace = qcflow.get_last_active_trace()
 
-    with pytest.raises(MlflowException, match="Invalid type for 'span_type'"):
+    with pytest.raises(QCFlowException, match="Invalid type for 'span_type'"):
         trace.search_spans(span_type=123)
 
-    with pytest.raises(MlflowException, match="Invalid type for 'name'"):
+    with pytest.raises(QCFlowException, match="Invalid type for 'name'"):
         trace.search_spans(name=123)

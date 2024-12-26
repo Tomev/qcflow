@@ -9,7 +9,7 @@ import type {
 import { type CSSObject, Interpolation, Theme } from '@emotion/react';
 import cx from 'classnames';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { MLFlowAgGridLoader } from '../../../../../common/components/ag-grid/AgGridLoader';
+import { QCFlowAgGridLoader } from '../../../../../common/components/ag-grid/AgGridLoader';
 import Utils from '../../../../../common/utils/Utils';
 import {
   ExperimentEntity,
@@ -395,7 +395,7 @@ export const ExperimentViewRunsTable = React.memo(
               useGroupedValuesInCharts={Boolean(uiState.groupBy) && uiState.useGroupedValuesInCharts}
               allRunsHidden={allRunsHidden}
             >
-              <MLFlowAgGridLoader
+              <QCFlowAgGridLoader
                 context={tableContext}
                 defaultColDef={EXPERIMENTS_DEFAULT_COLUMN_SETUP}
                 columnDefs={columnDefs}

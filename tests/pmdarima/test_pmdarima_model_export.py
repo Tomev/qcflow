@@ -12,7 +12,7 @@ import yaml
 import qcflow.pmdarima
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelSignature, infer_signature
 from qcflow.models.utils import _read_example, load_serving_example
 from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
@@ -376,13 +376,13 @@ def test_pmdarima_pyfunc_raises_invalid_df_input(auto_arima_model, model_path):
     qcflow.pmdarima.save_model(pmdarima_model=auto_arima_model, path=model_path)
     loaded_pyfunc = qcflow.pyfunc.load_model(model_uri=model_path)
 
-    with pytest.raises(MlflowException, match="The provided prediction pd.DataFrame "):
+    with pytest.raises(QCFlowException, match="The provided prediction pd.DataFrame "):
         loaded_pyfunc.predict(pd.DataFrame([{"n_periods": 60}, {"n_periods": 100}]))
 
-    with pytest.raises(MlflowException, match="The provided prediction configuration "):
+    with pytest.raises(QCFlowException, match="The provided prediction configuration "):
         loaded_pyfunc.predict(pd.DataFrame([{"invalid": True}]))
 
-    with pytest.raises(MlflowException, match="The provided `n_periods` value "):
+    with pytest.raises(QCFlowException, match="The provided `n_periods` value "):
         loaded_pyfunc.predict(pd.DataFrame([{"n_periods": "60"}]))
 
 

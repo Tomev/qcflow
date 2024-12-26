@@ -11,7 +11,7 @@ option (scalapb.options) = {
   flat_package: true,
 };
 
-service MlflowService {
+service QCFlowService {
 
 
   // Get metadata for an experiment.

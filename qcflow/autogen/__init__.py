@@ -23,7 +23,7 @@ def autolog(
     """
     from autogen import runtime_logging
 
-    from qcflow.autogen.autogen_logger import MlflowAutogenLogger
+    from qcflow.autogen.autogen_logger import QCFlowAutogenLogger
 
     # NB: The @autologging_integration annotation is used for adding shared logic. However, one
     # caveat is that the wrapped function is NOT executed when disable=True is passed. This prevents
@@ -31,7 +31,7 @@ def autolog(
     # annotate _autolog() instead of this entrypoint, and define the cleanup logic outside it.
     # TODO: since this implementation is inconsistent, explore a universal way to solve the issue.
     if log_traces and not disable:
-        runtime_logging.start(logger=MlflowAutogenLogger())
+        runtime_logging.start(logger=QCFlowAutogenLogger())
     else:
         runtime_logging.stop()
 

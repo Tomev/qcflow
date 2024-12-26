@@ -18,7 +18,7 @@ from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NA
 from qcflow.recipes.steps.train import TrainStep
 from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
 from qcflow.recipes.utils.execution import get_step_output_path
-from qcflow.tracking import MlflowClient
+from qcflow.tracking import QCFlowClient
 from qcflow.utils.file_utils import read_yaml
 from qcflow.utils.qcflow_tags import (
     QCFLOW_RECIPE_PROFILE_NAME,
@@ -199,7 +199,7 @@ def test_train_step(tmp_recipe_root_path: Path, tmp_recipe_exec_path: Path):
         train_step.run(str(train_step_output_dir))
 
     run_id = train_step_output_dir.joinpath("run_id").read_text()
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert "val_mean_squared_error" in metrics
     assert "training_mean_squared_error" in metrics
 
@@ -254,7 +254,7 @@ def test_train_step_imbalanced_data(tmp_recipe_root_path: Path, tmp_recipe_exec_
     # assert "After downsampling: minority class percentage is 0.30" in captured.err
 
     run_id = train_step_output_dir.joinpath("run_id").read_text()
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert "val_f1_score" in metrics
 
 
@@ -294,7 +294,7 @@ def test_train_step_classifier_automl(
     train_step.run(str(train_step_output_dir))
 
     run_id = train_step_output_dir.joinpath("run_id").read_text()
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert "val_f1_score" in metrics
 
 
@@ -425,8 +425,8 @@ def test_train_steps_autologs(tmp_recipe_root_path: Path, tmp_recipe_exec_path: 
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    metrics = MlflowClient().get_run(run_id).data.metrics
-    params = MlflowClient().get_run(run_id).data.params
+    metrics = QCFlowClient().get_run(run_id).data.metrics
+    params = QCFlowClient().get_run(run_id).data.params
     assert "training_score" in metrics
     assert "epsilon" in params
 
@@ -449,7 +449,7 @@ def test_train_steps_with_correct_tags(
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    tags = MlflowClient().get_run(run_id).data.tags
+    tags = QCFlowClient().get_run(run_id).data.tags
     assert tags[QCFLOW_SOURCE_TYPE] == "RECIPE"
     assert tags[QCFLOW_RECIPE_TEMPLATE_NAME] == "regression/v1"
     assert tags[QCFLOW_RECIPE_STEP_NAME] == "train"
@@ -472,7 +472,7 @@ def test_train_step_with_tuning_best_parameters(
     assert "eta0" in best_params_yaml
 
     run_id = train_step_output_dir.joinpath("run_id").read_text()
-    parent_run_params = MlflowClient().get_run(run_id).data.params
+    parent_run_params = QCFlowClient().get_run(run_id).data.params
     assert "alpha" in parent_run_params
     assert "penalty" in parent_run_params
     assert "eta0" in parent_run_params
@@ -543,7 +543,7 @@ def test_train_step_with_tuning_child_runs_and_early_stop(
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    run = MlflowClient().get_run(run_id)
+    run = QCFlowClient().get_run(run_id)
     child_runs = train_step._get_tuning_df(run, params=["alpha", "penalty", "eta0"])
     assert len(child_runs) == 2
     assert "params.alpha" in child_runs.columns
@@ -630,7 +630,7 @@ def weighted_mean_squared_error(eval_df, builtin_metrics):
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert f"training_{primary_metric}" in metrics
 
 
@@ -664,7 +664,7 @@ def test_tuning_multiclass(tmp_recipe_root_path: Path, tmp_recipe_exec_path: Pat
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert "training_f1_score" in metrics
 
 

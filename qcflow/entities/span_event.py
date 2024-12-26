@@ -7,11 +7,11 @@ from datetime import datetime
 
 from opentelemetry.util.types import AttributeValue
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 
 
 @dataclass
-class SpanEvent(_MlflowObject):
+class SpanEvent(_QCFlowObject):
     """
     An event that records a specific occurrences or moments in time
     during a span, such as an exception being thrown. Compatible with OpenTelemetry.

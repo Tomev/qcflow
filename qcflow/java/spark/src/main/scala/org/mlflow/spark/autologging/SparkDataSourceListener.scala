@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
  * and notify subscribers.
  */
 class SparkDataSourceListener(
-    publisher: MlflowAutologEventPublisherImpl = MlflowAutologEventPublisher) extends SparkListener {
+    publisher: QCFlowAutologEventPublisherImpl = QCFlowAutologEventPublisher) extends SparkListener {
   protected val logger = LoggerFactory.getLogger(getClass)
 
   protected def getDatasourceAttributeExtractor: DatasourceAttributeExtractorBase = {

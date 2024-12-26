@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 import yaml
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.environment import (
     _contains_qcflow_requirement,
     _deduplicate_requirements,
@@ -362,10 +362,10 @@ def test_infer_requirements_error_handling(env_var, fallbacks, should_raise, mon
     call_args = ("path/to/model", "sklearn", fallbacks)
     with mock.patch(
         "qcflow.utils.requirements_utils._capture_imported_modules",
-        side_effect=MlflowException("Failed to capture imported modules"),
+        side_effect=QCFlowException("Failed to capture imported modules"),
     ):
         if should_raise:
-            with pytest.raises(MlflowException, match="Failed to capture imported module"):
+            with pytest.raises(QCFlowException, match="Failed to capture imported module"):
                 infer_pip_requirements(*call_args)
         else:
             # Should just pass with warning
@@ -432,6 +432,6 @@ def test_deduplicate_requirements_resolve_correctly(input_requirements, expected
 )
 def test_invalid_requirements_raise(input_requirements):
     with pytest.raises(
-        MlflowException, match="The specified requirements versions are incompatible"
+        QCFlowException, match="The specified requirements versions are incompatible"
     ):
         _deduplicate_requirements(input_requirements)

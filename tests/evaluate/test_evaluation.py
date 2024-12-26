@@ -32,11 +32,11 @@ from sklearn.metrics import (
 )
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.data.evaluation_dataset import EvaluationDataset, _gen_md5_for_arraylike_obj
 from qcflow.data.pandas_dataset import from_pandas
 from qcflow.entities import Trace, TraceData
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.evaluation import (
     EvaluationArtifact,
     EvaluationResult,
@@ -91,19 +91,19 @@ RunData = namedtuple("RunData", ["params", "metrics", "tags", "artifacts"])
 
 
 def get_run_data(run_id):
-    client = MlflowClient()
+    client = QCFlowClient()
     data = client.get_run(run_id).data
     artifacts = [f.path for f in client.list_artifacts(run_id)]
     return RunData(params=data.params, metrics=data.metrics, tags=data.tags, artifacts=artifacts)
 
 
 def get_run_datasets(run_id):
-    client = MlflowClient()
+    client = QCFlowClient()
     return client.get_run(run_id).inputs.dataset_inputs
 
 
 def get_raw_tag(run_id, tag_name):
-    client = MlflowClient()
+    client = QCFlowClient()
     data = client.get_run(run_id).data
     return data.tags[tag_name]
 
@@ -763,7 +763,7 @@ def test_dataset_with_array_data():
         data=input_data, targets=labels, feature_names=["a", "b"]
     ).feature_names == ["a", "b"]
 
-    with pytest.raises(MlflowException, match="all elements must have the same length"):
+    with pytest.raises(QCFlowException, match="all elements must have the same length"):
         EvaluationDataset(data=[[1, 2], [3, 4, 5]], targets=labels)
 
 
@@ -782,7 +782,7 @@ def test_dataset_autogen_feature_names():
     assert eval_dataset2.feature_names == [f"feature_{i + 1:03d}" for i in range(100)]
 
     with pytest.raises(
-        MlflowException, match="features example rows must be the same length with labels array"
+        QCFlowException, match="features example rows must be the same length with labels array"
     ):
         EvaluationDataset(data=[[1, 2], [3, 4]], targets=[1, 2, 3])
 
@@ -800,7 +800,7 @@ def test_dataset_from_spark_df(spark_session):
 def test_log_dataset_tag(iris_dataset, iris_pandas_df_dataset):
     model_uuid = uuid.uuid4().hex
     with qcflow.start_run() as run:
-        client = MlflowClient()
+        client = QCFlowClient()
         iris_dataset._log_dataset_tag(client, run.info.run_id, model_uuid=model_uuid)
         _, _, tags, _ = get_run_data(run.info.run_id)
 
@@ -892,7 +892,7 @@ def test_evaluator_evaluation_interface(multiclass_logistic_regressor_model_uri,
         ):
             with qcflow.start_run():
                 with pytest.raises(
-                    MlflowException,
+                    QCFlowException,
                     match="The model could not be evaluated by any of the registered evaluators",
                 ):
                     evaluate(
@@ -1219,7 +1219,7 @@ def test_resolve_evaluators_and_configs():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="If `evaluators` argument is an evaluator name list, evaluator_config must",
     ):
         resolve_evaluators_and_configs(["default", "dummy_evaluator"], {"abc": {"a": 3}})
@@ -1227,7 +1227,7 @@ def test_resolve_evaluators_and_configs():
 
 def test_resolve_evaluators_raise_for_missing_databricks_agent_dependency():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Databricks Agents SDK must be installed to use the `databricks-agent` model type.",
     ):
         resolve_evaluators_and_configs(
@@ -1241,7 +1241,7 @@ def test_evaluate_env_manager_params(multiclass_logistic_regressor_model_uri, ir
     with mock.patch.object(
         _model_evaluation_registry, "_registry", {"test_evaluator1": FakeEvaluator1}
     ):
-        with pytest.raises(MlflowException, match="The model argument must be a string URI"):
+        with pytest.raises(QCFlowException, match="The model argument must be a string URI"):
             evaluate(
                 model,
                 iris_dataset._constructor_args["data"],
@@ -1251,7 +1251,7 @@ def test_evaluate_env_manager_params(multiclass_logistic_regressor_model_uri, ir
                 env_manager="virtualenv",
             )
 
-        with pytest.raises(MlflowException, match="Invalid value for `env_manager`"):
+        with pytest.raises(QCFlowException, match="Invalid value for `env_manager`"):
             evaluate(
                 multiclass_logistic_regressor_model_uri,
                 iris_dataset._constructor_args["data"],
@@ -1362,7 +1362,7 @@ def test_evaluate_stdin_scoring_server():
 
 @pytest.mark.parametrize("model_type", ["regressor", "classifier"])
 def test_targets_is_required_for_regressor_and_classifier_models(model_type):
-    with pytest.raises(MlflowException, match="The targets argument must be specified"):
+    with pytest.raises(QCFlowException, match="The targets argument must be specified"):
         qcflow.evaluate(
             "models:/test",
             data=pd.DataFrame(),
@@ -1445,7 +1445,7 @@ def test_evaluate_with_targets_error_handling():
     qcflow_dataset_with_targets = qcflow.data.from_pandas(df=X.assign(y=y), targets="y")
 
     with qcflow.start_run():
-        with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_1)):
+        with pytest.raises(QCFlowException, match=re.escape(ERROR_TYPE_1)):
             qcflow.evaluate(
                 model=model,
                 data=qcflow_dataset_with_targets,
@@ -1453,7 +1453,7 @@ def test_evaluate_with_targets_error_handling():
                 targets="y",
             )
 
-        with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_1)):
+        with pytest.raises(QCFlowException, match=re.escape(ERROR_TYPE_1)):
             qcflow.evaluate(
                 model=model,
                 data=qcflow_dataset_no_targets,
@@ -1461,7 +1461,7 @@ def test_evaluate_with_targets_error_handling():
                 targets="y",
             )
 
-        with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_1)):
+        with pytest.raises(QCFlowException, match=re.escape(ERROR_TYPE_1)):
             qcflow.evaluate(
                 model=model,
                 data=qcflow_dataset_with_targets,
@@ -1469,7 +1469,7 @@ def test_evaluate_with_targets_error_handling():
                 targets="y",
             )
 
-        with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_1)):
+        with pytest.raises(QCFlowException, match=re.escape(ERROR_TYPE_1)):
             qcflow.evaluate(
                 model=model,
                 data=qcflow_dataset_no_targets,
@@ -1477,14 +1477,14 @@ def test_evaluate_with_targets_error_handling():
                 targets="y",
             )
 
-        with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_2)):
+        with pytest.raises(QCFlowException, match=re.escape(ERROR_TYPE_2)):
             qcflow.evaluate(
                 model=model,
                 data=qcflow_dataset_no_targets,
                 model_type="regressor",
             )
 
-        with pytest.raises(MlflowException, match=re.escape(ERROR_TYPE_3)):
+        with pytest.raises(QCFlowException, match=re.escape(ERROR_TYPE_3)):
             qcflow.evaluate(
                 model=model,
                 data=pandas_dataset_no_targets,
@@ -1507,7 +1507,7 @@ def test_evaluate_with_predictions_error_handling():
     )
     with qcflow.start_run():
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="The predictions parameter should not be specified in the Dataset since a model "
             "is specified. Please remove the predictions column from the Dataset.",
         ):
@@ -1610,7 +1610,7 @@ def test_evaluate_with_static_dataset_error_handling_pandas_dataframe():
     X = X[::5]
     y = y[::5]
     with qcflow.start_run():
-        with pytest.raises(MlflowException, match="The data argument cannot be None."):
+        with pytest.raises(QCFlowException, match="The data argument cannot be None."):
             qcflow.evaluate(
                 data=None,
                 targets="y",
@@ -1618,7 +1618,7 @@ def test_evaluate_with_static_dataset_error_handling_pandas_dataframe():
             )
 
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="The specified pandas DataFrame does not contain the specified predictions"
             " column 'prediction'.",
         ):
@@ -1645,14 +1645,14 @@ def test_evaluate_with_static_dataset_error_handling_pandas_dataset():
         "Meanwhile, please specify `qcflow.evaluate(..., predictions=None, ...)`."
     )
     with qcflow.start_run():
-        with pytest.raises(MlflowException, match=re.escape(ERROR_MESSAGE)):
+        with pytest.raises(QCFlowException, match=re.escape(ERROR_MESSAGE)):
             qcflow.evaluate(
                 data=dataset_with_predictions,
                 model_type="regressor",
                 predictions="model_output",
             )
 
-        with pytest.raises(MlflowException, match=re.escape(ERROR_MESSAGE)):
+        with pytest.raises(QCFlowException, match=re.escape(ERROR_MESSAGE)):
             qcflow.evaluate(
                 data=dataset_no_predictions,
                 model_type="regressor",
@@ -2001,7 +2001,7 @@ def test_evaluate_on_model_endpoint_invalid_payload(mock_deploy_client):
         }
     )
 
-    with pytest.raises(MlflowException, match="Failed to call the deployment endpoint"):
+    with pytest.raises(QCFlowException, match="Failed to call the deployment endpoint"):
         qcflow.evaluate(
             model="endpoints:/random",
             data=input_data,
@@ -2040,7 +2040,7 @@ def test_evaluate_on_model_endpoint_invalid_input_data(input_data, error_message
     with mock.patch("qcflow.deployments.get_deploy_client") as mock_deploy_client:
         mock_deploy_client.return_value.get_endpoint.return_value = {"task": "llm/v1/chat"}
 
-        with pytest.raises(MlflowException, match=error_message):
+        with pytest.raises(QCFlowException, match=error_message):
             with qcflow.start_run():
                 qcflow.evaluate(
                     model="endpoints:/chat",
@@ -2124,7 +2124,7 @@ def test_evaluate_shows_server_stdout_and_stderr_on_error(
             "qcflow.pyfunc.backend.PyFuncBackend.serve",
             return_value=server_proc,
         ) as mock_serve:
-            with pytest.raises(MlflowException, match="test1324"):
+            with pytest.raises(QCFlowException, match="test1324"):
                 evaluate(
                     linear_regressor_model_uri,
                     diabetes_dataset._constructor_args["data"],

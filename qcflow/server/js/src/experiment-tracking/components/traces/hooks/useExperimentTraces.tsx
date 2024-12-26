@@ -1,8 +1,8 @@
 import { type ModelTraceInfo } from '@databricks/web-shared/model-trace-explorer';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { MlflowService } from '../../../sdk/MlflowService';
+import { QCFlowService } from '../../../sdk/QCFlowService';
 import { EXPERIMENT_TRACES_SORTABLE_COLUMNS, getTraceInfoRunId } from '../TracesView.utils';
-import { ViewType } from '../../../sdk/MlflowEnums';
+import { ViewType } from '../../../sdk/QCFlowEnums';
 import { first, uniq, values } from 'lodash';
 import { RunEntity } from '../../../types';
 import { isExperimentLoggedModelsUIEnabled } from '../../../../common/utils/FeatureUtils';
@@ -33,7 +33,7 @@ const fetchRunNamesForTraces = async (experimentIds: string[], traces: ModelTrac
   if (runUuids.length < 1) {
     return {};
   }
-  const runResponse = (await MlflowService.searchRuns({
+  const runResponse = (await QCFlowService.searchRuns({
     experiment_ids: experimentIds,
     filter: createRunIdsFilterExpression(runUuids),
     run_view_type: ViewType.ALL,
@@ -136,7 +136,7 @@ export const useExperimentTraces = ({
       setError(undefined);
 
       try {
-        const response = await MlflowService.getExperimentTraces(experimentIds, orderByString, pageToken, filterString);
+        const response = await QCFlowService.getExperimentTraces(experimentIds, orderByString, pageToken, filterString);
 
         if (!response.traces) {
           setTraces([]);

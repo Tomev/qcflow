@@ -31,7 +31,7 @@ from pyspark.ml.tuning import CrossValidator, ParamGridBuilder, TrainValidationS
 from pyspark.sql.functions import col
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import RunStatus
 from qcflow.models import Model
 from qcflow.models.utils import _read_example
@@ -145,7 +145,7 @@ def get_expected_class_tags(estimator):
 
 
 def get_run_data(run_id):
-    client = MlflowClient()
+    client = QCFlowClient()
     data = client.get_run(run_id).data
     # Ignore tags qcflow logs by default (e.g. "qcflow.user")
     tags = {k: v for k, v in data.tags.items() if not k.startswith("qcflow.")}
@@ -572,7 +572,7 @@ def test_param_search_estimator(
         "search_results.csv",
     ]
 
-    client = MlflowClient()
+    client = QCFlowClient()
     child_runs = client.search_runs(
         run.info.experiment_id, f"tags.`qcflow.parentRunId` = '{run_id}'"
     )
@@ -739,7 +739,7 @@ def test_basic_post_training_datasets_autologging(dataset_iris_binomial, log_dat
         estimator.fit(dataset_iris_binomial)
 
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
     if log_datasets:
         assert len(dataset_inputs) == 1
@@ -760,7 +760,7 @@ def test_post_training_datasets_with_evaluate_autologging(dataset_iris_binomial)
         mce.evaluate(pred_result)
 
     run_id = run.info.run_id
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
     assert len(dataset_inputs) == 2
     assert dataset_inputs[0].tags[0].value == "train"
@@ -778,7 +778,7 @@ def test_post_training_datasets_without_explicit_run(dataset_iris_binomial):
     mce.evaluate(pred_result)
 
     run_id = getattr(model, "_qcflow_run_id")
-    client = MlflowClient()
+    client = QCFlowClient()
     dataset_inputs = client.get_run(run_id).inputs.dataset_inputs
     assert len(dataset_inputs) == 2
     assert dataset_inputs[0].tags[0].value == "train"
@@ -1000,13 +1000,13 @@ def test_autolog_registering_model(spark_session, dataset_binomial):
         lr = LinearRegression()
         lr.fit(dataset_binomial)
 
-        registered_model = MlflowClient().get_registered_model(registered_model_name)
+        registered_model = QCFlowClient().get_registered_model(registered_model_name)
         assert registered_model.name == registered_model_name
 
 
 def _read_model_conf_as_dict(run):
     artifacts_dir = pathlib.Path(run.info.artifact_uri.replace("file://", ""))
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [x.path for x in client.list_artifacts(run.info.run_id, "model")]
     ml_model_filename = "MLmodel"
     ml_model_path = artifacts_dir.joinpath("model", ml_model_filename).absolute()

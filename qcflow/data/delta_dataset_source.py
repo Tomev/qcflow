@@ -2,7 +2,7 @@ import logging
 from typing import Any, Optional
 
 from qcflow.data.dataset_source import DatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_managed_catalog_messages_pb2 import (
     GetTable,
     GetTableResponse,
@@ -43,7 +43,7 @@ class DeltaDatasetSource(DatasetSource):
         delta_table_id: Optional[str] = None,
     ):
         if (path, delta_table_name).count(None) != 1:
-            raise MlflowException(
+            raise QCFlowException(
                 'Must specify exactly one of "path" or "table_name"',
                 INVALID_PARAMETER_VALUE,
             )

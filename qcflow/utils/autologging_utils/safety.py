@@ -12,7 +12,7 @@ import qcflow
 import qcflow.utils.autologging_utils
 from qcflow.entities.run_status import RunStatus
 from qcflow.environment_variables import _QCFLOW_AUTOLOGGING_TESTING
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.utils import gorilla, is_iterator
 from qcflow.utils.autologging_utils import _logger
 from qcflow.utils.autologging_utils.events import AutologgingEventLogger
@@ -298,7 +298,7 @@ def _resolve_extra_tags(autologging_integration, extra_tags):
                 )
             tags.update(extra_tags)
         else:
-            raise qcflow.exceptions.MlflowException.invalid_parameter_value(
+            raise qcflow.exceptions.QCFlowException.invalid_parameter_value(
                 f"Invalid `extra_tags` type: expecting dictionary, "
                 f"received `{type(extra_tags).__name__}`"
             )
@@ -814,7 +814,7 @@ def _validate_autologging_run(autologging_integration, run_id):
         - The run has an autologging tag whose value is the name of the autologging integration
         - The run has a terminal status (e.g., KILLED, FAILED, FINISHED)
     """
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.get_run(run_id)
     autologging_tag_value = run.data.tags.get(QCFLOW_AUTOLOGGING)
     assert autologging_tag_value == autologging_integration, (

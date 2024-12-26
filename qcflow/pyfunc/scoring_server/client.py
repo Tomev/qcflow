@@ -10,7 +10,7 @@ from typing import Any, Optional
 import requests
 
 from qcflow.deployments import PredictionsResponse
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.pyfunc import scoring_server
 from qcflow.utils.proto_json_utils import dump_input_data
 
@@ -141,5 +141,5 @@ class StdinScoringServerClient(BaseScoringServerClient):
             except Exception as e:
                 _logger.debug("Exception while waiting for scoring to complete: %s", e)
             if time.time() - begin_time > 60:
-                raise MlflowException("Scoring timeout")
+                raise QCFlowException("Scoring timeout")
             time.sleep(1)

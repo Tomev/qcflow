@@ -4,7 +4,7 @@ import pathlib
 import posixpath
 from typing import Any, Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.utils.databricks_utils import is_in_databricks_runtime
 from qcflow.utils.file_utils import read_yaml, render_and_merge_yaml
@@ -26,7 +26,7 @@ def get_recipe_name(recipe_root_path: Optional[str] = None) -> str:
             working directory.
 
     Raises:
-        MlflowException: If the specified ``recipe_root_path`` is not a recipe root
+        QCFlowException: If the specified ``recipe_root_path`` is not a recipe root
             directory or if ``recipe_root_path`` is ``None`` and the current working directory
             does not correspond to a recipe.
 
@@ -52,7 +52,7 @@ def get_recipe_config(
             use configs from "profiles/dev.yaml".
 
     Raises:
-        MlflowException: If the specified ``recipe_root_path`` is not a recipe root directory
+        QCFlowException: If the specified ``recipe_root_path`` is not a recipe root directory
             or if ``recipe_root_path`` is ``None`` and the current working directory does not
             correspond to a recipe.
 
@@ -70,7 +70,7 @@ def get_recipe_config(
                 recipe_root_path, _RECIPE_PROFILE_DIR, f"{profile}.yaml"
             )
             if not os.path.exists(profile_file_path):
-                raise MlflowException(
+                raise QCFlowException(
                     "Did not find the YAML configuration file for the specified profile"
                     f" '{profile}' at expected path '{profile_file_path}'.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -80,10 +80,10 @@ def get_recipe_config(
             )
         else:
             return read_yaml(recipe_root_path, _RECIPE_CONFIG_FILE_NAME)
-    except MlflowException:
+    except QCFlowException:
         raise
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             "Failed to read recipe configuration. Please verify that the `recipe.yaml`"
             " configuration file and the YAML configuration file for the selected profile are"
             " syntactically correct and that the specified profile provides all required values"
@@ -95,7 +95,7 @@ def get_recipe_config(
 def get_recipe_root_path() -> str:
     """
     Obtains the path of the recipe corresponding to the current working directory, throwing an
-    ``MlflowException`` if the current working directory does not reside within a recipe
+    ``QCFlowException`` if the current working directory does not reside within a recipe
     directory.
 
     Returns:
@@ -118,7 +118,7 @@ def get_recipe_root_path() -> str:
             # If curr_dir_path == curr_dir_path.parent,
             # we have reached the root directory without finding
             # the desired recipe.yaml file
-            raise MlflowException(f"Failed to find {_RECIPE_CONFIG_FILE_NAME}!")
+            raise QCFlowException(f"Failed to find {_RECIPE_CONFIG_FILE_NAME}!")
 
 
 def get_default_profile() -> str:
@@ -141,9 +141,9 @@ def _verify_is_recipe_root_directory(recipe_root_path: str) -> str:
             filesystem to validate.
 
     Raises:
-        MlflowException: If the specified ``recipe_root_path`` is not a recipe root
+        QCFlowException: If the specified ``recipe_root_path`` is not a recipe root
             directory.
     """
     recipe_yaml_path = os.path.join(recipe_root_path, _RECIPE_CONFIG_FILE_NAME)
     if not os.path.exists(recipe_yaml_path):
-        raise MlflowException(f"Failed to find {_RECIPE_CONFIG_FILE_NAME} in {recipe_yaml_path}!")
+        raise QCFlowException(f"Failed to find {_RECIPE_CONFIG_FILE_NAME} in {recipe_yaml_path}!")

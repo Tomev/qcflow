@@ -23,7 +23,7 @@ from packaging.version import Version
 import qcflow
 import qcflow.llama_index
 import qcflow.pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.llama_index.pyfunc_wrapper import (
     _CHAT_MESSAGE_HISTORY_PARAMETER_NAME,
     ChatEngineWrapper,
@@ -86,10 +86,10 @@ def test_llama_index_native_log_and_load_model(request, index_fixture):
 
 
 def test_llama_index_save_invalid_object_raise(single_index):
-    with pytest.raises(MlflowException, match="The provided object of type "):
+    with pytest.raises(QCFlowException, match="The provided object of type "):
         qcflow.llama_index.save_model(llama_index_model=OpenAI(), path="model", engine_type="query")
 
-    with pytest.raises(MlflowException, match="Saving a non-index object is only supported"):
+    with pytest.raises(QCFlowException, match="Saving a non-index object is only supported"):
         qcflow.llama_index.save_model(
             llama_index_model=single_index.as_query_engine(),
             path="model",

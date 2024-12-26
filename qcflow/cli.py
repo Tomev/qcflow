@@ -19,7 +19,7 @@ from qcflow import projects, version
 from qcflow.entities import ViewType
 from qcflow.entities.lifecycle_stage import LifecycleStage
 from qcflow.environment_variables import QCFLOW_EXPERIMENT_ID, QCFLOW_EXPERIMENT_NAME
-from qcflow.exceptions import InvalidUrlException, MlflowException
+from qcflow.exceptions import InvalidUrlException, QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 from qcflow.store.tracking import DEFAULT_ARTIFACTS_URI, DEFAULT_LOCAL_FILE_AND_ARTIFACT_PATH
@@ -515,7 +515,7 @@ def gc(older_than, backend_store_uri, artifacts_destination, run_ids, experiment
     backend_store = _get_store(backend_store_uri, artifacts_destination)
     skip_experiments = False
     if not hasattr(backend_store, "_hard_delete_run"):
-        raise MlflowException(
+        raise QCFlowException(
             "This cli can only be used with a backend that allows hard-deleting runs"
         )
 
@@ -537,7 +537,7 @@ def gc(older_than, backend_store_uri, artifacts_destination, run_ids, experiment
         )
         parts = regex.match(older_than)
         if parts is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Could not parse any time information from '{older_than}'. "
                 "Examples of valid strings: '8h', '2d8h5m20s', '2m4s'",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -559,7 +559,7 @@ def gc(older_than, backend_store_uri, artifacts_destination, run_ids, experiment
                 e.experiment_id for e in experiments if e.lifecycle_stage != LifecycleStage.DELETED
             ]
             if active_experiment_ids:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Experiments {active_experiment_ids} are not in the deleted lifecycle stage. "
                     "Only experiments in the deleted lifecycle stage can be hard-deleted.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -573,7 +573,7 @@ def gc(older_than, backend_store_uri, artifacts_destination, run_ids, experiment
                     if e.last_update_time is None or e.last_update_time >= time_threshold
                 ]
                 if non_old_experiment_ids:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Experiments {non_old_experiment_ids} are not older than the required"
                         f"age. Only experiments older than {older_than} can be deleted.",
                         error_code=INVALID_PARAMETER_VALUE,
@@ -605,20 +605,20 @@ def gc(older_than, backend_store_uri, artifacts_destination, run_ids, experiment
     for run_id in set(run_ids):
         run = backend_store.get_run(run_id)
         if run.info.lifecycle_stage != LifecycleStage.DELETED:
-            raise MlflowException(
+            raise QCFlowException(
                 "Run % is not in `deleted` lifecycle stage. Only runs in"
                 " `deleted` lifecycle stage can be deleted." % run_id
             )
-        # raise MlflowException if run_id is newer than older_than parameter
+        # raise QCFlowException if run_id is newer than older_than parameter
         if older_than and run_id not in deleted_run_ids_older_than:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Run {run_id} is not older than the required age. "
                 f"Only runs older than {older_than} can be deleted.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
-        # raise MlflowException if run_id is newer than older_than parameter
+        # raise QCFlowException if run_id is newer than older_than parameter
         if older_than and run_id not in deleted_run_ids_older_than:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Run {run_id} is not older than the required age. "
                 f"Only runs older than {older_than} can be deleted.",
                 error_code=INVALID_PARAMETER_VALUE,

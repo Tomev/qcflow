@@ -734,7 +734,7 @@ Evaluating with an QCFlow Deployments Endpoint
 For QCFlow >= 2.11.0, :py:func:`qcflow.evaluate()` supports evaluating a model endpoint by directly passing the QCFlow Deployments endpoint URI to the ``model`` argument.
 This is particularly useful when you want to evaluate a deployed model hosted by a local `QCFlow AI Gateway <../deployments/index.html>`_,  `Databricks Foundation Models API <https://docs.databricks.com/en/machine-learning/model-serving/score-foundation-models.html>`_, and `External Models in Databricks Model Serving <https://docs.databricks.com/en/generative-ai/external-models/index.html>`_, without implementing custom prediction logic to wrap it as an QCFlow model or a python function.
 
-Please don't forget to set the target deployment client by using :py:func:`qcflow.deployments.set_deployments_target` before calling :py:func:`qcflow.evaluate()` with the endpoint URI, as shown in the example below. Otherwise, you will see an error message like ``MlflowException: No deployments target has been set...``.
+Please don't forget to set the target deployment client by using :py:func:`qcflow.deployments.set_deployments_target` before calling :py:func:`qcflow.evaluate()` with the endpoint URI, as shown in the example below. Otherwise, you will see an error message like ``QCFlowException: No deployments target has been set...``.
 
 .. hint::
 

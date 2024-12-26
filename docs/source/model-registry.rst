@@ -161,22 +161,22 @@ For this method, you will need the ``run_id`` as part of the ``runs:URI`` argume
 If a registered model with the name doesn’t exist, the method registers a new model, creates Version 1, and returns a ModelVersion QCFlow object.
 If a registered model with the name exists, the method creates a new model version and returns the version object.
 
-And finally, you can use the :meth:`~qcflow.client.MlflowClient.create_registered_model` to create a new registered model. If the model name exists,
-this method will throw an :class:`~qcflow.exceptions.MlflowException` because creating a new registered model requires a unique name.
+And finally, you can use the :meth:`~qcflow.client.QCFlowClient.create_registered_model` to create a new registered model. If the model name exists,
+this method will throw an :class:`~qcflow.exceptions.QCFlowException` because creating a new registered model requires a unique name.
 
 .. code-block:: python
 
-   from qcflow import MlflowClient
+   from qcflow import QCFlowClient
 
-   client = MlflowClient()
+   client = QCFlowClient()
    client.create_registered_model("sk-learn-random-forest-reg-model")
 
-The method above creates an empty registered model with no version associated. You can use :meth:`~qcflow.client.MlflowClient.create_model_version`
+The method above creates an empty registered model with no version associated. You can use :meth:`~qcflow.client.QCFlowClient.create_model_version`
 as shown below to create a new version of the model.
 
 .. code-block:: python
 
-    client = MlflowClient()
+    client = QCFlowClient()
     result = client.create_model_version(
         name="sk-learn-random-forest-reg-model",
         source="mlruns/0/d16076a3ec534311817565e6527539c0/artifacts/sklearn-model",
@@ -257,9 +257,9 @@ To set, update, and delete aliases using the QCFlow Client API, see the examples
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     # create "champion" alias for version 1 of model "example-model"
     client.set_registered_model_alias("example-model", "champion", 1)
@@ -279,9 +279,9 @@ To set and delete tags using the QCFlow Client API, see the examples below:
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     # Set registered model tag
     client.set_registered_model_tag("example-model", "task", "classification")
@@ -368,14 +368,14 @@ models in each environment. To productionize the latest iteration on a business 
 machine learning code across environments via source control and CI/CD systems.
 
 For simple model deployment use cases, you can register your trained QCFlow Model to a dev environment
-registered model as the latest model version and then use :meth:`~qcflow.client.MlflowClient.copy_model_version`
+registered model as the latest model version and then use :meth:`~qcflow.client.QCFlowClient.copy_model_version`
 to promote it across registered models.
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
     client.copy_model_version(
         src_model_uri="models:/regression-model-staging@candidate",
         dst_name="regression-model-production",
@@ -393,11 +393,11 @@ to which the current model version will be copied.
 Adding or Updating an QCFlow Model Descriptions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-At any point in a model’s lifecycle development, you can update a model version's description using :meth:`~qcflow.client.MlflowClient.update_model_version`.
+At any point in a model’s lifecycle development, you can update a model version's description using :meth:`~qcflow.client.QCFlowClient.update_model_version`.
 
 .. code-block:: python
 
-    client = MlflowClient()
+    client = QCFlowClient()
     client.update_model_version(
         name="sk-learn-random-forest-reg-model",
         version=1,
@@ -407,11 +407,11 @@ At any point in a model’s lifecycle development, you can update a model versio
 Renaming an QCFlow Model
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-As well as adding or updating a description of a specific version of the model, you can rename an existing registered model using :meth:`~qcflow.client.MlflowClient.rename_registered_model`.
+As well as adding or updating a description of a specific version of the model, you can rename an existing registered model using :meth:`~qcflow.client.QCFlowClient.rename_registered_model`.
 
 .. code-block:: python
 
-    client = MlflowClient()
+    client = QCFlowClient()
     client.rename_registered_model(
         name="sk-learn-random-forest-reg-model",
         new_name="sk-learn-random-forest-reg-model-100",
@@ -425,7 +425,7 @@ You can fetch a list of registered models in the registry with a simple method.
 
     from pprint import pprint
 
-    client = MlflowClient()
+    client = QCFlowClient()
     for rm in client.search_registered_models():
         pprint(dict(rm), indent=4)
 
@@ -441,12 +441,12 @@ This outputs:
         'name': 'sk-learn-random-forest-reg-model'}
 
 With hundreds of models, it can be cumbersome to peruse the results returned from this call. A more efficient approach would be to search for a specific model name and list its version
-details using :meth:`~qcflow.client.MlflowClient.search_model_versions` method
+details using :meth:`~qcflow.client.QCFlowClient.search_model_versions` method
 and provide a filter string such as ``"name='sk-learn-random-forest-reg-model'"``
 
 .. code-block:: python
 
-    client = MlflowClient()
+    client = QCFlowClient()
     for mv in client.search_model_versions("name='sk-learn-random-forest-reg-model'"):
         pprint(dict(mv), indent=4)
 
@@ -494,7 +494,7 @@ You can either delete specific versions of a registered model or you can delete 
 .. code-block:: python
 
     # Delete versions 1,2, and 3 of the model
-    client = MlflowClient()
+    client = QCFlowClient()
     versions = [1, 2, 3]
     for version in versions:
         client.delete_model_version(
@@ -778,7 +778,7 @@ You can transition a registered model to one of the stages: **Staging**, **Produ
 
 .. code-block:: python
 
-    client = MlflowClient()
+    client = QCFlowClient()
     client.transition_model_version_stage(
         name="sk-learn-random-forest-reg-model", version=3, stage="Production"
     )
@@ -808,7 +808,7 @@ At a later point, if that archived model is not needed, you can delete it.
 .. code-block:: python
 
     # Archive models version 3 from Production into Archived
-    client = MlflowClient()
+    client = QCFlowClient()
     client.transition_model_version_stage(
         name="sk-learn-random-forest-reg-model", version=3, stage="Archived"
     )
@@ -833,11 +833,11 @@ Model version tags can be used to annotate model versions with their status. For
 
 **Model version aliases**
 
-Model version aliases provide a flexible way to create named references for particular model versions, and are useful for identifying which model version(s) are deployed within an environment. For example, setting a **champion** alias on a model version enables you to fetch the model version by that alias via the :meth:`~qcflow.client.MlflowClient.get_model_version_by_alias` client API or the model URI ``models:/<registered model name>@champion``. Aliases can be reassigned to new model versions via the UI and client API. Unlike model registry stages, more than one alias can be applied to any given model version, allowing for easier A/B testing and model rollout.
+Model version aliases provide a flexible way to create named references for particular model versions, and are useful for identifying which model version(s) are deployed within an environment. For example, setting a **champion** alias on a model version enables you to fetch the model version by that alias via the :meth:`~qcflow.client.QCFlowClient.get_model_version_by_alias` client API or the model URI ``models:/<registered model name>@champion``. Aliases can be reassigned to new model versions via the UI and client API. Unlike model registry stages, more than one alias can be applied to any given model version, allowing for easier A/B testing and model rollout.
 
 **Set up separate environments for models**
 
-In mature DevOps and MLOps workflows, organizations use separate environments (typically, dev, staging, and prod) with access controls to enable quick development without compromising stability in production. With :ref:`QCFlow Authentication <auth>`, you can use registered models to express access-controlled environments for your QCFlow models. For example, you can create registered models corresponding to each combination of environment and business problem (e.g. ``prod.ml_team.revenue_forecasting``, ``dev.ml_team.revenue_forecasting``) and configure permissions accordingly. Automate model retraining against your production registered models, or for simple model deployment use cases, use :meth:`~qcflow.client.MlflowClient.copy_model_version` to promote model versions across registered models.
+In mature DevOps and MLOps workflows, organizations use separate environments (typically, dev, staging, and prod) with access controls to enable quick development without compromising stability in production. With :ref:`QCFlow Authentication <auth>`, you can use registered models to express access-controlled environments for your QCFlow models. For example, you can create registered models corresponding to each combination of environment and business problem (e.g. ``prod.ml_team.revenue_forecasting``, ``dev.ml_team.revenue_forecasting``) and configure permissions accordingly. Automate model retraining against your production registered models, or for simple model deployment use cases, use :meth:`~qcflow.client.QCFlowClient.copy_model_version` to promote model versions across registered models.
 
 Migrating models away from stages
 ---------------------------------
@@ -856,7 +856,7 @@ To set up separate environments and permissions for your model versions, create 
 
 Once you have registered models set up for each environment, you can build your MLOps workflows on top of them.
 
-* For simple model promotion use cases, you can first register your QCFlow models under the dev registered model and then promote models across environments using the :meth:`~qcflow.client.MlflowClient.copy_model_version` client API.
+* For simple model promotion use cases, you can first register your QCFlow models under the dev registered model and then promote models across environments using the :meth:`~qcflow.client.QCFlowClient.copy_model_version` client API.
 * For more mature production-grade setups, we recommend promoting your ML code (including model training code, inference code, and ML infrastructure as code) across environments. This eliminates the need to transition models across environments. Dev ML code is experimental and in a dev environment, hence targeting the dev registered model. Before merging developed ML code into your source code repository, your CI stages the code in a staging environment for integration testing (targeting the staging registered model). Post-merge, the ML code is deployed to production for automated retraining (targeting the prod registered model). Such setups enable safe and robust CI/CD of ML systems - including not just model training, but also feature engineering, model monitoring, and automated retraining.
 
 **Model aliasing**
@@ -869,10 +869,10 @@ To specify (via named references) which model version to deploy to serve traffic
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
     # Initialize an QCFlow Client
-    client = MlflowClient()
+    client = QCFlowClient()
 
 
     def assign_alias_to_stage(model_name, stage, alias):

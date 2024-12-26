@@ -26,7 +26,7 @@ from qcflow.environment_variables import (
     QCFLOW_SQLALCHEMYSTORE_POOL_SIZE,
     QCFLOW_SQLALCHEMYSTORE_POOLCLASS,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import BAD_REQUEST, INTERNAL_ERROR, TEMPORARILY_UNAVAILABLE
 from qcflow.store.db.db_types import SQLITE
 from qcflow.store.model_registry.dbmodels.models import (
@@ -105,7 +105,7 @@ def _get_latest_schema_revision():
     script = ScriptDirectory.from_config(config)
     heads = script.get_heads()
     if len(heads) != 1:
-        raise MlflowException(
+        raise QCFlowException(
             f"Migration script directory was in unexpected state. Got {len(heads)} head "
             f"database versions but expected only 1. Found versions: {heads}"
         )
@@ -116,7 +116,7 @@ def _verify_schema(engine):
     head_revision = _get_latest_schema_revision()
     current_rev = _get_schema_version(engine)
     if current_rev != head_revision:
-        raise MlflowException(
+        raise QCFlowException(
             f"Detected out-of-date database schema (found version {current_rev}, "
             f"but expected {head_revision}). Take a backup of your database, then run "
             "'qcflow db upgrade <database_uri>' "
@@ -146,7 +146,7 @@ def _get_managed_session_maker(SessionMaker, db_type):
                     session.execute(sql.text("PRAGMA case_sensitive_like = true;"))
                 yield session
                 session.commit()
-            except MlflowException:
+            except QCFlowException:
                 session.rollback()
                 raise
             except sqlalchemy.exc.OperationalError as e:
@@ -155,13 +155,13 @@ def _get_managed_session_maker(SessionMaker, db_type):
                     "SQLAlchemy database error. The following exception is caught.\n%s",
                     e,
                 )
-                raise MlflowException(message=e, error_code=TEMPORARILY_UNAVAILABLE)
+                raise QCFlowException(message=e, error_code=TEMPORARILY_UNAVAILABLE)
             except sqlalchemy.exc.SQLAlchemyError as e:
                 session.rollback()
-                raise MlflowException(message=e, error_code=BAD_REQUEST)
+                raise QCFlowException(message=e, error_code=BAD_REQUEST)
             except Exception as e:
                 session.rollback()
-                raise MlflowException(message=e, error_code=INTERNAL_ERROR)
+                raise QCFlowException(message=e, error_code=INTERNAL_ERROR)
 
     return make_managed_session
 

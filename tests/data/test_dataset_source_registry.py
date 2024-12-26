@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 from qcflow.data.dataset_source_registry import DatasetSourceRegistry
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 from tests.resources.data.dataset_source import SampleDatasetSource
 
@@ -50,7 +50,7 @@ def test_load_from_json_throws_for_unrecognized_source_type(tmp_path):
     registry = DatasetSourceRegistry()
     registry.register(SampleDatasetSource)
 
-    with pytest.raises(MlflowException, match="unrecognized source type: foo"):
+    with pytest.raises(QCFlowException, match="unrecognized source type: foo"):
         registry.get_source_from_json(source_json='{"bar": "123"}', source_type="foo")
 
     class CandidateDatasetSource1(SampleDatasetSource):
@@ -78,7 +78,7 @@ def test_load_from_json_throws_for_unrecognized_source_type(tmp_path):
 
     registry.resolve("test:" + str(tmp_path))
     registry.resolve("test:" + str(tmp_path), candidate_sources=[SampleDatasetSource])
-    with pytest.raises(MlflowException, match="Could not find a source information resolver"):
+    with pytest.raises(QCFlowException, match="Could not find a source information resolver"):
         # SampleDatasetSource is the only source that can resolve raw sources with scheme "test",
         # and SampleDatasetSource is not a subclass of CandidateDatasetSource1
         registry.resolve("test:" + str(tmp_path), candidate_sources=[CandidateDatasetSource1])
@@ -88,7 +88,7 @@ def test_load_from_json_throws_for_unrecognized_source_type(tmp_path):
     # CandidateDatasetSource1 is a subclass of SampleDatasetSource and is therefore considered
     # as a candidate for resolution
     registry.resolve("candidate1:" + str(tmp_path), candidate_sources=[SampleDatasetSource])
-    with pytest.raises(MlflowException, match="Could not find a source information resolver"):
+    with pytest.raises(QCFlowException, match="Could not find a source information resolver"):
         # CandidateDatasetSource2 is not a superclass of CandidateDatasetSource1 or
         # SampleDatasetSource and cannot resolve raw sources with scheme "candidate1"
         registry.resolve("candidate1:" + str(tmp_path), candidate_sources=[CandidateDatasetSource2])

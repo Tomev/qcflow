@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from qcflow.gateway.client import MlflowGatewayClient
+from qcflow.gateway.client import QCFlowGatewayClient
 from qcflow.gateway.config import LimitsConfig, Route
 from qcflow.gateway.constants import QCFLOW_GATEWAY_SEARCH_ROUTES_PAGE_SIZE
 from qcflow.gateway.utils import gateway_deprecated
@@ -12,7 +12,7 @@ def get_route(name: str) -> Route:
     """
     Retrieves a specific route from the QCFlow Gateway service.
 
-    This function creates an instance of MlflowGatewayClient and uses it to fetch a route by its
+    This function creates an instance of QCFlowGatewayClient and uses it to fetch a route by its
     name from the Gateway service.
 
     Args:
@@ -22,7 +22,7 @@ def get_route(name: str) -> Route:
         An instance of the Route class representing the fetched route.
 
     """
-    return MlflowGatewayClient().get_route(name)
+    return QCFlowGatewayClient().get_route(name)
 
 
 @gateway_deprecated
@@ -30,7 +30,7 @@ def search_routes() -> list[Route]:
     """
     Searches for routes in the QCFlow Gateway service.
 
-    This function creates an instance of MlflowGatewayClient and uses it to fetch a list of routes
+    This function creates an instance of QCFlowGatewayClient and uses it to fetch a list of routes
     from the Gateway service.
 
     Returns:
@@ -39,7 +39,7 @@ def search_routes() -> list[Route]:
     """
 
     def pagination_wrapper_func(_, next_page_token):
-        return MlflowGatewayClient().search_routes(page_token=next_page_token)
+        return QCFlowGatewayClient().search_routes(page_token=next_page_token)
 
     return get_results_from_paginated_fn(
         paginated_fn=pagination_wrapper_func,
@@ -104,7 +104,7 @@ def create_route(
             },
         )
     """
-    return MlflowGatewayClient().create_route(name, route_type, model)
+    return QCFlowGatewayClient().create_route(name, route_type, model)
 
 
 @gateway_deprecated
@@ -131,7 +131,7 @@ def delete_route(name: str) -> None:
 
         delete_route("my-new-route")
     """
-    MlflowGatewayClient().delete_route(name)
+    QCFlowGatewayClient().delete_route(name)
 
 
 @gateway_deprecated
@@ -157,7 +157,7 @@ def set_limits(route: str, limits: list[dict[str, Any]]) -> LimitsConfig:
 
         set_limits("my-new-route", [{"key": "user", "renewal_period": "minute", "calls": 50}])
     """
-    return MlflowGatewayClient().set_limits(route=route, limits=limits)
+    return QCFlowGatewayClient().set_limits(route=route, limits=limits)
 
 
 @gateway_deprecated
@@ -182,7 +182,7 @@ def get_limits(route: str) -> LimitsConfig:
 
         get_limits("my-new-route")
     """
-    return MlflowGatewayClient().get_limits(route=route)
+    return QCFlowGatewayClient().get_limits(route=route)
 
 
 @gateway_deprecated
@@ -251,4 +251,4 @@ def query(route: str, data):
             },
         )
     """
-    return MlflowGatewayClient().query(route, data)
+    return QCFlowGatewayClient().query(route, data)

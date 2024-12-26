@@ -8,7 +8,7 @@ from qcflow.environment_variables import (
     QCFLOW_SYSTEM_METRICS_SAMPLES_BEFORE_LOGGING,
     QCFLOW_SYSTEM_METRICS_SAMPLING_INTERVAL,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.system_metrics.metrics.cpu_monitor import CPUMonitor
 from qcflow.system_metrics.metrics.disk_monitor import DiskMonitor
 from qcflow.system_metrics.metrics.gpu_monitor import GPUMonitor
@@ -82,12 +82,12 @@ class SystemMetricsMonitor:
         self._logging_step = self._get_next_logging_step(run_id) if resume_logging else 0
 
     def _get_next_logging_step(self, run_id):
-        from qcflow.tracking.client import MlflowClient
+        from qcflow.tracking.client import QCFlowClient
 
-        client = MlflowClient()
+        client = QCFlowClient()
         try:
             run = client.get_run(run_id)
-        except MlflowException:
+        except QCFlowException:
             return 0
         system_metric_name = None
         for metric_name in run.data.metrics.keys():

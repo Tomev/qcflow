@@ -8,7 +8,7 @@ from qcflow.data.digest_utils import compute_pandas_digest
 from qcflow.data.evaluation_dataset import EvaluationDataset
 from qcflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
 from qcflow.data.pyfunc_dataset_mixin import PyFuncConvertibleDatasetMixin, PyFuncInputsOutputs
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, INVALID_PARAMETER_VALUE
 from qcflow.types import Schema
 from qcflow.types.utils import _infer_schema
@@ -45,7 +45,7 @@ class HuggingFaceDataset(Dataset, PyFuncConvertibleDatasetMixin):
                 is automatically computed.
         """
         if targets is not None and targets not in ds.column_names:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The specified Hugging Face dataset does not contain the specified targets column"
                 f" '{targets}'.",
                 INVALID_PARAMETER_VALUE,
@@ -145,7 +145,7 @@ class HuggingFaceDataset(Dataset, PyFuncConvertibleDatasetMixin):
         df = self._ds.to_pandas()
         if self._targets is not None:
             if self._targets not in df.columns:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to convert Hugging Face dataset to pyfunc inputs and outputs because"
                     f" the pandas representation of the Hugging Face dataset does not contain the"
                     f" specified targets column '{self._targets}'.",
@@ -221,7 +221,7 @@ def from_huggingface(
     from qcflow.tracking.context import registry
 
     if not isinstance(ds, datasets.Dataset):
-        raise MlflowException(
+        raise QCFlowException(
             f"The specified Hugging Face dataset must be an instance of `datasets.Dataset`."
             f" Instead, found an instance of: {type(ds)}",
             INVALID_PARAMETER_VALUE,

@@ -16,12 +16,12 @@ from qcflow.tracing.display.display_handler import IPythonTraceDisplayHandler
 from qcflow.tracing.fluent import TRACE_BUFFER
 from qcflow.tracing.trace_manager import InMemoryTraceManager
 from qcflow.tracing.utils import maybe_get_request_id
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 
 _logger = logging.getLogger(__name__)
 
 
-class MlflowSpanExporter(SpanExporter):
+class QCFlowSpanExporter(SpanExporter):
     """
     An exporter implementation that logs the traces to QCFlow.
 
@@ -39,10 +39,10 @@ class MlflowSpanExporter(SpanExporter):
 
     def __init__(
         self,
-        client: Optional[MlflowClient] = None,
+        client: Optional[QCFlowClient] = None,
         display_handler: Optional[IPythonTraceDisplayHandler] = None,
     ):
-        self._client = client or MlflowClient()
+        self._client = client or QCFlowClient()
         self._display_handler = display_handler or get_display_handler()
         self._trace_manager = InMemoryTraceManager.get_instance()
         self._async_queue = AsyncTraceExportQueue(self._client)

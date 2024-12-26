@@ -12,7 +12,7 @@ from qcflow.environment_variables import (
     QCFLOW_ENABLE_MULTIPART_UPLOAD,
     QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
 from qcflow.store.artifact.artifact_repo import _retry_with_new_creds
 from qcflow.store.artifact.cloud_artifact_repo import (
@@ -42,12 +42,12 @@ def _parse_abfss_uri(uri):
     """
     parsed = urllib.parse.urlparse(uri)
     if parsed.scheme != "abfss":
-        raise MlflowException(f"Not an ABFSS URI: {uri}")
+        raise QCFlowException(f"Not an ABFSS URI: {uri}")
 
     match = re.match(r"([^@]+)@([^.]+)\.(.*)", parsed.netloc)
 
     if match is None:
-        raise MlflowException(
+        raise QCFlowException(
             "ABFSS URI must be of the form abfss://<filesystem>@<account>.<domain_suffix>"
         )
     filesystem = match.group(1)
@@ -231,7 +231,7 @@ class AzureDataLakeArtifactRepository(CloudArtifactRepository):
 
             _, errors = _complete_futures(futures, src_file_path)
             if errors:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to upload at least one part of {artifact_file_path}. Errors: {errors}"
                 )
 
@@ -245,7 +245,7 @@ class AzureDataLakeArtifactRepository(CloudArtifactRepository):
                     headers=headers,
                 )
         except Exception as err:
-            raise MlflowException(err)
+            raise QCFlowException(err)
 
     def _get_presigned_uri(self, artifact_file_path):
         """

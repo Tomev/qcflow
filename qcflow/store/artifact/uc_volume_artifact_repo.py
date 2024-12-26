@@ -6,7 +6,7 @@ from typing import Optional
 import qcflow.utils.databricks_utils
 from qcflow.entities import FileInfo
 from qcflow.environment_variables import QCFLOW_ENABLE_UC_VOLUME_FUSE_ARTIFACT_REPO
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
@@ -35,7 +35,7 @@ class UCVolumesArtifactRepository(ArtifactRepository):
 
     def __init__(self, artifact_uri):
         if not is_valid_uc_volumes_uri(artifact_uri):
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"UC volumes URI must be of the form "
                     f"dbfs:/Volumes/<catalog>/<schema>/<volume>/<path>: {artifact_uri}"
@@ -208,7 +208,7 @@ def uc_volume_artifact_repo_factory(artifact_uri):
         Subclass of ArtifactRepository capable of storing artifacts on DBFS.
     """
     if not is_valid_uc_volumes_uri(artifact_uri):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"UC volumes URI must be of the form "
                 f"dbfs:/Volumes/<catalog>/<schema>/<volume>/<path>: {artifact_uri}"

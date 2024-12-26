@@ -43,7 +43,7 @@ def test_manual_system_metrics_monitor():
         assert "SystemMetricsMonitor" in thread_names
 
         wait_for_condition(
-            lambda: len(qcflow.MlflowClient().get_metric_history(run.info.run_id, metric_test)) > 1
+            lambda: len(qcflow.QCFlowClient().get_metric_history(run.info.run_id, metric_test)) > 1
         )
     wait_for_condition(
         lambda: "SystemMetricsMonitor" not in [thread.name for thread in threading.enumerate()]
@@ -66,7 +66,7 @@ def test_manual_system_metrics_monitor():
         assert name in metrics
 
     # Check the step is correctly logged.
-    metrics_history = qcflow.MlflowClient().get_metric_history(run.info.run_id, metric_test)
+    metrics_history = qcflow.QCFlowClient().get_metric_history(run.info.run_id, metric_test)
     assert metrics_history[-1].step > 0
 
 
@@ -81,7 +81,7 @@ def test_automatic_system_metrics_monitor():
         assert "SystemMetricsMonitor" in thread_names
 
         wait_for_condition(
-            lambda: len(qcflow.MlflowClient().get_metric_history(run.info.run_id, metric_test)) > 1
+            lambda: len(qcflow.QCFlowClient().get_metric_history(run.info.run_id, metric_test)) > 1
         )
 
     wait_for_condition(
@@ -105,7 +105,7 @@ def test_automatic_system_metrics_monitor():
         assert name in metrics
 
     # Check the step is correctly logged.
-    metrics_history = qcflow.MlflowClient().get_metric_history(run.info.run_id, metric_test)
+    metrics_history = qcflow.QCFlowClient().get_metric_history(run.info.run_id, metric_test)
     assert metrics_history[-1].step > 0
 
 
@@ -121,7 +121,7 @@ def test_automatic_system_metrics_monitor_resume_existing_run():
     )
 
     # Get the last step.
-    metrics_history = qcflow.MlflowClient().get_metric_history(
+    metrics_history = qcflow.QCFlowClient().get_metric_history(
         run.info.run_id, "system/cpu_utilization_percentage"
     )
     last_step = metrics_history[-1].step
@@ -145,7 +145,7 @@ def test_automatic_system_metrics_monitor_resume_existing_run():
         assert name in metrics
 
     # Check the step is correctly resumed.
-    metrics_history = qcflow.MlflowClient().get_metric_history(
+    metrics_history = qcflow.QCFlowClient().get_metric_history(
         run.info.run_id, "system/cpu_utilization_percentage"
     )
     assert metrics_history[-1].step > last_step

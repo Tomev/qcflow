@@ -7,9 +7,9 @@ import sys
 import yaml
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.environment_variables import QCFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import BAD_REQUEST
 from qcflow.pyfunc.model import MLMODEL_FILE_NAME, Model
 from qcflow.store.artifact.utils.models import _parse_model_uri, get_model_name_and_version
@@ -43,7 +43,7 @@ class WheeledModel:
         databricks_profile_uri = (
             get_databricks_profile_uri_from_artifact_uri(model_uri) or qcflow.get_registry_uri()
         )
-        client = MlflowClient(registry_uri=databricks_profile_uri)
+        client = QCFlowClient(registry_uri=databricks_profile_uri)
         self._model_name, _ = get_model_name_and_version(client, model_uri)
 
     @classmethod
@@ -116,12 +116,12 @@ class WheeledModel:
 
         # Check if the model file has `wheels` set to True
         if model_metadata.__dict__.get(_WHEELS_FOLDER_NAME, None) is not None:
-            raise MlflowException("Model libraries are already added", BAD_REQUEST)
+            raise QCFlowException("Model libraries are already added", BAD_REQUEST)
 
         conda_env = _extract_conda_env(model_metadata.flavors.get(FLAVOR_NAME, {}).get(ENV, None))
         conda_env_path = os.path.join(local_model_path, conda_env)
         if conda_env is None and not os.path.isfile(pip_requirements_path):
-            raise MlflowException(
+            raise QCFlowException(
                 "Cannot add libraries for model with no logged dependencies.", BAD_REQUEST
             )
 
@@ -240,7 +240,7 @@ class WheeledModel:
                 stderr=subprocess.STDOUT,
             )
         except subprocess.CalledProcessError as e:
-            raise MlflowException(
+            raise QCFlowException(
                 f"An error occurred while downloading the dependency wheels: {e.stdout}"
             )
 

@@ -19,7 +19,7 @@ import yaml
 
 import qcflow
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _infer_signature_from_input_example
@@ -301,7 +301,7 @@ class _SpacyModelWrapper:
             dataframe with predictions
         """
         if len(dataframe.columns) != 1:
-            raise MlflowException("Shape of input dataframe must be (n_rows, 1column)")
+            raise QCFlowException("Shape of input dataframe must be (n_rows, 1column)")
 
         return pd.DataFrame(
             {"predictions": dataframe.iloc[:, 0].apply(lambda text: self.spacy_model(text).cats)}

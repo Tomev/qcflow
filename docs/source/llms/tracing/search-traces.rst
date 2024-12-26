@@ -2,13 +2,13 @@ Searching and Retrieving Traces
 ===============================
 
 This page describes various ways to search and retrieve traces in QCFlow. QCFlow provides two methods for this purpose: 
-:py:meth:`MlflowClient.search_traces() <qcflow.client.MlflowClient.search_traces>` and :py:func:`qcflow.search_traces`.
+:py:meth:`QCFlowClient.search_traces() <qcflow.client.QCFlowClient.search_traces>` and :py:func:`qcflow.search_traces`.
 
-- :py:meth:`MlflowClient.search_traces() <qcflow.client.MlflowClient.search_traces>`: This method allows you to filter traces using experiment IDs, 
+- :py:meth:`QCFlowClient.search_traces() <qcflow.client.QCFlowClient.search_traces>`: This method allows you to filter traces using experiment IDs, 
   filter strings, and other parameters.
 
 - :py:func:`qcflow.search_traces`: A higher-level fluent API that returns a pandas DataFrame, with each row representing 
-  a trace. It supports the same filtering capabilities as `MlflowClient.search_traces` and additionally allows you to specify 
+  a trace. It supports the same filtering capabilities as `QCFlowClient.search_traces` and additionally allows you to specify 
   fields to extract from traces. See :ref:`extract_fields` for details. 
 
 The pandas Dataframe returned by the :py:func:`qcflow.search_traces` API consists of the following columns by default:
@@ -96,18 +96,18 @@ The code above creates the following traces:
      - ``ERROR``
 
 Then, you can search traces by ``experiment_ids`` using either :py:func:`qcflow.search_traces` or 
-:py:meth:`MlflowClient.search_traces() <qcflow.client.MlflowClient.search_traces>`.
+:py:meth:`QCFlowClient.search_traces() <qcflow.client.QCFlowClient.search_traces>`.
 
 .. note::
 
-    The ``experiment_ids`` parameter is **required** for :py:meth:`MlflowClient.search_traces() <qcflow.client.MlflowClient.search_traces>`, 
+    The ``experiment_ids`` parameter is **required** for :py:meth:`QCFlowClient.search_traces() <qcflow.client.QCFlowClient.search_traces>`, 
     while it is **optional** for :py:func:`qcflow.search_traces` and it defaults to the currently active experiment.
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     client.search_traces(experiment_ids=[morning_experiment.experiment_id])
     # [Trace #1]
@@ -209,7 +209,7 @@ Extract Specific Fields
 In addition to the search functionalities mentioned above, the fluent API :py:func:`qcflow.search_traces` enables you 
 to extract specific fields from traces using the format ``"span_name.[inputs|outputs]"`` or 
 ``"span_name.[inputs|outputs].field_name"``. This feature is useful for generating evaluation datasets or analyzing 
-model performance. Refer to `MLFlow LLM Evaluation <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html>`_ for more details.
+model performance. Refer to `QCFlow LLM Evaluation <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html>`_ for more details.
 
 .. code-block:: python
 

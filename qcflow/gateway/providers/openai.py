@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, AsyncIterable
 from urllib.parse import urlparse, urlunparse
 
 from qcflow.environment_variables import QCFLOW_ENABLE_UC_FUNCTIONS
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.config import OpenAIAPIType, OpenAIConfig, RouteConfig
 from qcflow.gateway.exceptions import AIGatewayException
 from qcflow.gateway.providers.base import BaseProvider, ProviderAdapter
@@ -253,7 +253,7 @@ class OpenAIProvider(BaseProvider):
         super().__init__(config)
         if config.model.config is None or not isinstance(config.model.config, OpenAIConfig):
             # Should be unreachable
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Invalid config type {config.model.config}"
             )
         self.openai_config: OpenAIConfig = config.model.config
@@ -279,7 +279,7 @@ class OpenAIProvider(BaseProvider):
                 ("api-version", self.openai_config.openai_api_version),
             )
         else:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Invalid OpenAI API type '{self.openai_config.openai_api_type}'"
             )
 
@@ -302,7 +302,7 @@ class OpenAIProvider(BaseProvider):
                 "api-key": self.openai_config.openai_api_key,
             }
         else:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Invalid OpenAI API type '{self.openai_config.openai_api_type}'"
             )
 

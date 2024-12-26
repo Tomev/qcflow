@@ -10,7 +10,7 @@ import re
 
 from qcflow.entities import Dataset, DatasetInput, InputTag, Param, RunTag
 from qcflow.environment_variables import QCFLOW_TRUNCATE_LONG_VALUES
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.store.db.db_types import DATABASE_ENGINES
 from qcflow.utils.os import is_windows
@@ -82,7 +82,7 @@ with qcflow.start_run():
     qcflow.log_param("depth", 5)
 ---------------------------------------
 
-Which will throw an MlflowException for overwriting a
+Which will throw an QCFlowException for overwriting a
 logged parameter.
 
 Correct Example:
@@ -165,17 +165,17 @@ def path_not_unique(name):
 def _validate_metric_name(name, path="name"):
     """Check that `name` is a valid metric name and raise an exception if it isn't."""
     if name is None:
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(path, name, f"Metric name cannot be None. {_MISSING_KEY_NAME_MESSAGE}"),
             error_code=INVALID_PARAMETER_VALUE,
         )
     if not validate_param_and_metric_name(name):
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(path, name, bad_character_message()),
             INVALID_PARAMETER_VALUE,
         )
     if path_not_unique(name):
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(path, name, bad_path_message(name)),
             INVALID_PARAMETER_VALUE,
         )
@@ -199,7 +199,7 @@ def _validate_metric(key, value, timestamp, step, path=""):
 
     # If invocated via log_metric, no prior validation of the presence of the value was done.
     if value is None:
-        raise MlflowException(
+        raise QCFlowException(
             missing_value(append_to_json_path(path, "value")),
             INVALID_PARAMETER_VALUE,
         )
@@ -207,7 +207,7 @@ def _validate_metric(key, value, timestamp, step, path=""):
     # value must be a Number
     # since bool is an instance of Number check for bool additionally
     if not _is_numeric(value):
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(
                 append_to_json_path(path, "value"),
                 value,
@@ -218,7 +218,7 @@ def _validate_metric(key, value, timestamp, step, path=""):
         )
 
     if not isinstance(timestamp, numbers.Number) or timestamp < 0:
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(
                 append_to_json_path(path, "timestamp"),
                 timestamp,
@@ -229,7 +229,7 @@ def _validate_metric(key, value, timestamp, step, path=""):
         )
 
     if not isinstance(step, numbers.Number):
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(
                 append_to_json_path(path, "step"),
                 step,
@@ -305,7 +305,7 @@ def _validate_param_keys_unique(params):
             dupe_keys.append(param.key)
 
     if dupe_keys:
-        raise MlflowException(
+        raise QCFlowException(
             f"Duplicate parameter keys have been submitted: {dupe_keys}. Please ensure "
             "the request contains only one param value per param key.",
             INVALID_PARAMETER_VALUE,
@@ -315,17 +315,17 @@ def _validate_param_keys_unique(params):
 def _validate_param_name(name, path="key"):
     """Check that `name` is a valid parameter name and raise an exception if it isn't."""
     if name is None:
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(path, "", _MISSING_KEY_NAME_MESSAGE),
             error_code=INVALID_PARAMETER_VALUE,
         )
     if not validate_param_and_metric_name(name):
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(path, name, bad_character_message()),
             INVALID_PARAMETER_VALUE,
         )
     if path_not_unique(name):
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(path, name, bad_path_message(name)),
             INVALID_PARAMETER_VALUE,
         )
@@ -335,17 +335,17 @@ def _validate_tag_name(name, path="key"):
     """Check that `name` is a valid tag name and raise an exception if it isn't."""
     # Reuse param & metric check.
     if name is None:
-        raise MlflowException(
+        raise QCFlowException(
             missing_value(path),
             error_code=INVALID_PARAMETER_VALUE,
         )
     if not validate_param_and_metric_name(name):
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(path, name, bad_character_message()),
             INVALID_PARAMETER_VALUE,
         )
     if path_not_unique(name):
-        raise MlflowException(
+        raise QCFlowException(
             invalid_value(path, name, bad_path_message(name)),
             INVALID_PARAMETER_VALUE,
         )
@@ -365,7 +365,7 @@ def _validate_length_limit(entity_name, limit, value, *, truncate=False):
         )
         return value[:limit]
 
-    raise MlflowException(
+    raise QCFlowException(
         exceeds_maximum_length(entity_name, limit),
         error_code=INVALID_PARAMETER_VALUE,
     )
@@ -374,13 +374,13 @@ def _validate_length_limit(entity_name, limit, value, *, truncate=False):
 def _validate_run_id(run_id, path="run_id"):
     """Check that `run_id` is a valid run ID and raise an exception if it isn't."""
     if _RUN_ID_REGEX.match(run_id) is None:
-        raise MlflowException(invalid_value(path, run_id), error_code=INVALID_PARAMETER_VALUE)
+        raise QCFlowException(invalid_value(path, run_id), error_code=INVALID_PARAMETER_VALUE)
 
 
 def _validate_experiment_id(exp_id):
     """Check that `experiment_id`is a valid string or None, raise an exception if it isn't."""
     if exp_id is not None and _EXPERIMENT_ID_REGEX.match(exp_id) is None:
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid experiment ID: '{exp_id}'", error_code=INVALID_PARAMETER_VALUE
         )
 
@@ -392,7 +392,7 @@ def _validate_batch_limit(entity_name, limit, length):
             f"Got {length} {entity_name}. Please split up {entity_name} across multiple"
             " requests and try again."
         )
-        raise MlflowException(error_msg, error_code=INVALID_PARAMETER_VALUE)
+        raise QCFlowException(error_msg, error_code=INVALID_PARAMETER_VALUE)
 
 
 def _validate_batch_log_limits(metrics, params, tags):
@@ -425,25 +425,25 @@ def _validate_batch_log_api_req(json_req):
             "Batched logging API requests must be at most {limit} bytes, got a "
             "request of size {size}."
         ).format(limit=MAX_BATCH_LOG_REQUEST_SIZE, size=len(json_req))
-        raise MlflowException(error_msg, error_code=INVALID_PARAMETER_VALUE)
+        raise QCFlowException(error_msg, error_code=INVALID_PARAMETER_VALUE)
 
 
 def _validate_experiment_name(experiment_name):
     """Check that `experiment_name` is a valid string and raise an exception if it isn't."""
     if experiment_name == "" or experiment_name is None:
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid experiment name: '{experiment_name}'",
             error_code=INVALID_PARAMETER_VALUE,
         )
 
     if not is_string_type(experiment_name):
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid experiment name: {experiment_name}. Expects a string.",
             error_code=INVALID_PARAMETER_VALUE,
         )
 
     if len(experiment_name) > MAX_EXPERIMENT_NAME_LENGTH:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             exceeds_maximum_length("name", MAX_EXPERIMENT_NAME_LENGTH)
         )
 
@@ -454,7 +454,7 @@ def _validate_experiment_id_type(experiment_id):
     exception if it isn't.
     """
     if experiment_id is not None and not isinstance(experiment_id, (str, int)):
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid experiment id: {experiment_id} of type {type(experiment_id)}. "
             "Must be one of str, int, or None.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -463,14 +463,14 @@ def _validate_experiment_id_type(experiment_id):
 
 def _validate_model_name(model_name):
     if model_name is None or model_name == "":
-        raise MlflowException("Registered model name cannot be empty.", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Registered model name cannot be empty.", INVALID_PARAMETER_VALUE)
 
 
 def _validate_model_version(model_version):
     try:
         model_version = int(model_version)
     except ValueError:
-        raise MlflowException(
+        raise QCFlowException(
             f"Model version must be an integer, got '{model_version}'",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -478,11 +478,11 @@ def _validate_model_version(model_version):
 
 def _validate_model_alias_name(model_alias_name):
     if model_alias_name is None or model_alias_name == "":
-        raise MlflowException(
+        raise QCFlowException(
             "Registered model alias name cannot be empty.", INVALID_PARAMETER_VALUE
         )
     if not _REGISTERED_MODEL_ALIAS_REGEX.match(model_alias_name):
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid alias name: '{model_alias_name}'. {_BAD_ALIAS_CHARACTERS_MESSAGE}",
             INVALID_PARAMETER_VALUE,
         )
@@ -492,12 +492,12 @@ def _validate_model_alias_name(model_alias_name):
         model_alias_name,
     )
     if model_alias_name.lower() == "latest":
-        raise MlflowException(
+        raise QCFlowException(
             "'latest' alias name (case insensitive) is reserved.",
             INVALID_PARAMETER_VALUE,
         )
     if _REGISTERED_MODEL_ALIAS_VERSION_REGEX.match(model_alias_name):
-        raise MlflowException(
+        raise QCFlowException(
             f"Version alias name '{model_alias_name}' is reserved.",
             INVALID_PARAMETER_VALUE,
         )
@@ -505,7 +505,7 @@ def _validate_model_alias_name(model_alias_name):
 
 def _validate_experiment_artifact_location(artifact_location):
     if artifact_location is not None and artifact_location.startswith("runs:"):
-        raise MlflowException(
+        raise QCFlowException(
             f"Artifact location cannot be a runs:/ URI. Given: '{artifact_location}'",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -515,20 +515,20 @@ def _validate_db_type_string(db_type):
     """validates db_type parsed from DB URI is supported"""
     if db_type not in DATABASE_ENGINES:
         error_msg = f"Invalid database engine: '{db_type}'. '{_UNSUPPORTED_DB_TYPE_MSG}'"
-        raise MlflowException(error_msg, INVALID_PARAMETER_VALUE)
+        raise QCFlowException(error_msg, INVALID_PARAMETER_VALUE)
 
 
 def _validate_model_version_or_stage_exists(version, stage):
     if version and stage:
-        raise MlflowException("version and stage cannot be set together", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("version and stage cannot be set together", INVALID_PARAMETER_VALUE)
 
     if not (version or stage):
-        raise MlflowException("version or stage must be set", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("version or stage must be set", INVALID_PARAMETER_VALUE)
 
 
 def _validate_tag_value(value):
     if value is None:
-        raise MlflowException("Tag value cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Tag value cannot be None", INVALID_PARAMETER_VALUE)
 
 
 def _validate_dataset_inputs(dataset_inputs: list[DatasetInput]):
@@ -539,37 +539,37 @@ def _validate_dataset_inputs(dataset_inputs: list[DatasetInput]):
 
 def _validate_dataset(dataset: Dataset):
     if dataset is None:
-        raise MlflowException("Dataset cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Dataset cannot be None", INVALID_PARAMETER_VALUE)
     if dataset.name is None:
-        raise MlflowException("Dataset name cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Dataset name cannot be None", INVALID_PARAMETER_VALUE)
     if dataset.digest is None:
-        raise MlflowException("Dataset digest cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Dataset digest cannot be None", INVALID_PARAMETER_VALUE)
     if dataset.source_type is None:
-        raise MlflowException("Dataset source_type cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Dataset source_type cannot be None", INVALID_PARAMETER_VALUE)
     if dataset.source is None:
-        raise MlflowException("Dataset source cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Dataset source cannot be None", INVALID_PARAMETER_VALUE)
     if len(dataset.name) > MAX_DATASET_NAME_SIZE:
-        raise MlflowException(
+        raise QCFlowException(
             exceeds_maximum_length("name", MAX_DATASET_NAME_SIZE),
             INVALID_PARAMETER_VALUE,
         )
     if len(dataset.digest) > MAX_DATASET_DIGEST_SIZE:
-        raise MlflowException(
+        raise QCFlowException(
             exceeds_maximum_length("digest", MAX_DATASET_DIGEST_SIZE),
             INVALID_PARAMETER_VALUE,
         )
     if len(dataset.source) > MAX_DATASET_SOURCE_SIZE:
-        raise MlflowException(
+        raise QCFlowException(
             exceeds_maximum_length("source", MAX_DATASET_SOURCE_SIZE),
             INVALID_PARAMETER_VALUE,
         )
     if dataset.schema is not None and len(dataset.schema) > MAX_DATASET_SCHEMA_SIZE:
-        raise MlflowException(
+        raise QCFlowException(
             exceeds_maximum_length("schema", MAX_DATASET_SCHEMA_SIZE),
             INVALID_PARAMETER_VALUE,
         )
     if dataset.profile is not None and len(dataset.profile) > MAX_DATASET_PROFILE_SIZE:
-        raise MlflowException(
+        raise QCFlowException(
             exceeds_maximum_length("profile", MAX_DATASET_PROFILE_SIZE),
             INVALID_PARAMETER_VALUE,
         )
@@ -582,18 +582,18 @@ def _validate_input_tags(input_tags: list[InputTag]):
 
 def _validate_input_tag(input_tag: InputTag):
     if input_tag is None:
-        raise MlflowException("InputTag cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("InputTag cannot be None", INVALID_PARAMETER_VALUE)
     if input_tag.key is None:
-        raise MlflowException("InputTag key cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("InputTag key cannot be None", INVALID_PARAMETER_VALUE)
     if input_tag.value is None:
-        raise MlflowException("InputTag value cannot be None", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("InputTag value cannot be None", INVALID_PARAMETER_VALUE)
     if len(input_tag.key) > MAX_INPUT_TAG_KEY_SIZE:
-        raise MlflowException(
+        raise QCFlowException(
             exceeds_maximum_length("key", MAX_INPUT_TAG_KEY_SIZE),
             INVALID_PARAMETER_VALUE,
         )
     if len(input_tag.value) > MAX_INPUT_TAG_VALUE_SIZE:
-        raise MlflowException(
+        raise QCFlowException(
             exceeds_maximum_length("value", MAX_INPUT_TAG_VALUE_SIZE),
             INVALID_PARAMETER_VALUE,
         )
@@ -601,7 +601,7 @@ def _validate_input_tag(input_tag: InputTag):
 
 def _validate_username(username):
     if username is None or username == "":
-        raise MlflowException("Username cannot be empty.", INVALID_PARAMETER_VALUE)
+        raise QCFlowException("Username cannot be empty.", INVALID_PARAMETER_VALUE)
 
 
 def _validate_trace_tag(key, value):

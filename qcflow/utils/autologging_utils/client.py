@@ -1,10 +1,10 @@
 """
-Defines an MlflowAutologgingQueueingClient developer API that provides batching, queueing, and
+Defines an QCFlowAutologgingQueueingClient developer API that provides batching, queueing, and
 asynchronous execution capabilities for a subset of QCFlow Tracking logging operations used most
 frequently by autologging operations.
 
 TODO(dbczumar): Migrate request batching, queueing, and async execution support from
-MlflowAutologgingQueueingClient to MlflowClient in order to provide broader benefits to end users.
+QCFlowAutologgingQueueingClient to QCFlowClient in order to provide broader benefits to end users.
 Remove this developer API.
 """
 
@@ -17,8 +17,8 @@ from typing import Any, Optional, Union
 
 from qcflow.entities import Metric, Param, RunTag
 from qcflow.entities.dataset_input import DatasetInput
-from qcflow.exceptions import MlflowException
-from qcflow.tracking.client import MlflowClient
+from qcflow.exceptions import QCFlowException
+from qcflow.tracking.client import QCFlowClient
 from qcflow.utils import _truncate_dict, chunk_list
 from qcflow.utils.time import get_current_time_millis
 from qcflow.utils.validation import (
@@ -67,7 +67,7 @@ class RunOperations:
                 failed_operations.append(e)
 
         if len(failed_operations) > 0:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "The following failures occurred while performing one or more logging"
                     f" operations: {failed_operations}"
@@ -75,8 +75,8 @@ class RunOperations:
             )
 
 
-# Define a threadpool for use across `MlflowAutologgingQueueingClient` instances to ensure that
-# `MlflowAutologgingQueueingClient` instances can be pickled (ThreadPoolExecutor objects are not
+# Define a threadpool for use across `QCFlowAutologgingQueueingClient` instances to ensure that
+# `QCFlowAutologgingQueueingClient` instances can be pickled (ThreadPoolExecutor objects are not
 # pickleable and therefore cannot be assigned as instance attributes).
 #
 # We limit the number of threads used for run operations, using at most 8 threads or 2 * the number
@@ -85,30 +85,30 @@ num_cpus = os.cpu_count() or 4
 num_logging_workers = min(num_cpus * 2, 8)
 _AUTOLOGGING_QUEUEING_CLIENT_THREAD_POOL = ThreadPoolExecutor(
     max_workers=num_logging_workers,
-    thread_name_prefix="MlflowAutologgingQueueingClient",
+    thread_name_prefix="QCFlowAutologgingQueueingClient",
 )
 
 
-class MlflowAutologgingQueueingClient:
+class QCFlowAutologgingQueueingClient:
     """
-    Efficiently implements a subset of QCFlow Tracking's  `MlflowClient` and fluent APIs to provide
+    Efficiently implements a subset of QCFlow Tracking's  `QCFlowClient` and fluent APIs to provide
     automatic batching and async execution of run operations by way of queueing, as well as
     parameter / tag truncation for autologging use cases. Run operations defined by this client,
     such as `create_run` and `log_metrics`, enqueue data for future persistence to QCFlow
     Tracking. Data is not persisted until the queue is flushed via the `flush()` method, which
     supports synchronous and asynchronous execution.
 
-    MlflowAutologgingQueueingClient is not threadsafe; none of its APIs should be called
+    QCFlowAutologgingQueueingClient is not threadsafe; none of its APIs should be called
     concurrently.
     """
 
     def __init__(self, tracking_uri=None):
-        self._client = MlflowClient(tracking_uri)
+        self._client = QCFlowClient(tracking_uri)
         self._pending_ops_by_run_id = {}
 
     def __enter__(self):
         """
-        Enables `MlflowAutologgingQueueingClient` to be used as a context manager with
+        Enables `QCFlowAutologgingQueueingClient` to be used as a context manager with
         synchronous flushing upon exit, removing the need to call `flush()` for use cases
         where logging completion can be waited upon synchronously.
 
@@ -118,7 +118,7 @@ class MlflowAutologgingQueueingClient:
 
     def __exit__(self, exc_type, exc, traceback):
         """
-        Enables `MlflowAutologgingQueueingClient` to be used as a context manager with
+        Enables `QCFlowAutologgingQueueingClient` to be used as a context manager with
         synchronous flushing upon exit, removing the need to call `flush()` for use cases
         where logging completion can be waited upon synchronously.
 
@@ -132,7 +132,7 @@ class MlflowAutologgingQueueingClient:
             self.flush(synchronous=True)
         else:
             _logger.debug(
-                "Skipping run content logging upon MlflowAutologgingQueueingClient context because"
+                "Skipping run content logging upon QCFlowAutologgingQueueingClient context because"
                 " an exception was raised within the context: %s",
                 exc,
             )
@@ -370,7 +370,7 @@ class MlflowAutologgingQueueingClient:
 
         failures = [result for result in operation_results if isinstance(result, Exception)]
         if len(failures) > 0:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Failed to perform one or more operations on the run with ID {run_id}."
                     f" Failed operations: {failures}"

@@ -1,13 +1,13 @@
 import functools
 
-from qcflow.exceptions import MlflowTracingException
+from qcflow.exceptions import QCFlowTracingException
 
 
 def raise_as_trace_exception(f):
     """
-    A decorator to make sure that the decorated function only raises MlflowTracingException.
+    A decorator to make sure that the decorated function only raises QCFlowTracingException.
 
-    Any exceptions are caught and translated to MlflowTracingException before exiting the function.
+    Any exceptions are caught and translated to QCFlowTracingException before exiting the function.
     This is helpful for upstream functions to handle tracing related exceptions properly.
     """
 
@@ -16,6 +16,6 @@ def raise_as_trace_exception(f):
         try:
             return f(*args, **kwargs)
         except Exception as e:
-            raise MlflowTracingException(e) from e
+            raise QCFlowTracingException(e) from e
 
     return wrapper

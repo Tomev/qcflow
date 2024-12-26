@@ -7,7 +7,7 @@ from typing import Iterable, Optional
 import numpy as np
 import pandas as pd
 
-from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import BAD_REQUEST, INVALID_PARAMETER_VALUE, QCFlowException
 from qcflow.recipes.cards import pandas_renderer
 from qcflow.utils.databricks_utils import (
     get_databricks_runtime_version,
@@ -68,7 +68,7 @@ def get_merged_eval_metrics(
 
 def display_html(html_data: Optional[str] = None, html_file_path: Optional[str] = None) -> None:
     if html_file_path is None and html_data is None:
-        raise MlflowException(
+        raise QCFlowException(
             "At least one HTML source must be provided. html_data and html_file_path are empty.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -82,7 +82,7 @@ def display_html(html_data: Optional[str] = None, html_file_path: Optional[str] 
         if is_in_databricks_runtime():
             dbr_version = get_databricks_runtime_version()
             if int(dbr_version.split(".")[0]) < 11:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Use Databricks Runtime 11 or newer with QCFlow Recipes. "
                     f"Current version is {dbr_version} ",
                     error_code=BAD_REQUEST,
@@ -195,12 +195,12 @@ def validate_classification_config(  # noqa: D417
         classes = np.unique(input_df[target_col])
         num_classes = len(classes)
         if num_classes <= 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Classification tasks require at least two tasks. "
                 f"Your dataset contains {num_classes}."
             )
         elif positive_class is None and num_classes == 2:
-            raise MlflowException(
+            raise QCFlowException(
                 "`positive_class` must be specified for classification/v1 recipes.",
                 error_code=INVALID_PARAMETER_VALUE,
             )

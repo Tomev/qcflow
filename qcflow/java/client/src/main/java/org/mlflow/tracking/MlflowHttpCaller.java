@@ -27,28 +27,28 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.qcflow.tracking.creds.MlflowHostCreds;
-import org.qcflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.tracking.creds.QCFlowHostCreds;
+import org.qcflow.tracking.creds.QCFlowHostCredsProvider;
 
 
-class MlflowHttpCaller {
-  private static final Logger logger = LoggerFactory.getLogger(MlflowHttpCaller.class);
+class QCFlowHttpCaller {
+  private static final Logger logger = LoggerFactory.getLogger(QCFlowHttpCaller.class);
   private static final String BASE_API_PATH = "api/2.0/qcflow";
   protected CloseableHttpClient httpClient;
-  private final MlflowHostCredsProvider hostCredsProvider;
+  private final QCFlowHostCredsProvider hostCredsProvider;
   private final int maxRateLimitIntervalMillis;
   private final int rateLimitRetrySleepInitMillis;
   private final int maxRetryAttempts;
 
   /**
-   * Construct a new MlflowHttpCaller with a default configuration for request retries.
+   * Construct a new QCFlowHttpCaller with a default configuration for request retries.
    */
-  MlflowHttpCaller(MlflowHostCredsProvider hostCredsProvider) {
+  QCFlowHttpCaller(QCFlowHostCredsProvider hostCredsProvider) {
     this(hostCredsProvider, 60000, 1000, 3);
   }
 
   /**
-   * Construct a new MlflowHttpCaller.
+   * Construct a new QCFlowHttpCaller.
    *
    * @param maxRateLimitIntervalMs The maximum amount of time, in milliseconds, to spend retrying a
    *                               single request in response to rate limiting (error code 429).
@@ -60,7 +60,7 @@ class MlflowHttpCaller {
    * @param maxRetryAttempts The maximum number of times to retry a request, excluding rate limit
    *                         retries.
    */
-  MlflowHttpCaller(MlflowHostCredsProvider hostCredsProvider,
+  QCFlowHttpCaller(QCFlowHostCredsProvider hostCredsProvider,
                    int maxRateLimitIntervalMs,
                    int rateLimitRetrySleepInitMs,
                    int maxRetryAttempts) {
@@ -71,7 +71,7 @@ class MlflowHttpCaller {
   }
 
   @VisibleForTesting
-  MlflowHttpCaller(MlflowHostCredsProvider hostCredsProvider,
+  QCFlowHttpCaller(QCFlowHostCredsProvider hostCredsProvider,
                    int maxRateLimitIntervalMs,
                    int rateLimitRetrySleepInitMs,
                    int maxRetryAttempts,
@@ -113,7 +113,7 @@ class MlflowHttpCaller {
       try {
         response = executeRequestWithRateLimitRetries(request);
         break;
-      } catch (MlflowHttpException e) {
+      } catch (QCFlowHttpException e) {
         if (attemptsRemaining > 0 && e.getStatusCode() != 429) {
           logger.warn("Request returned with status code {} (Rate limit exceeded)."
                       + " Retrying up to {} more times. Response body: {}",
@@ -139,7 +139,7 @@ class MlflowHttpCaller {
       logger.debug("Response: " + responseJson);
       return responseJson;
     } catch (IOException e) {
-      throw new MlflowClientException(e);
+      throw new QCFlowClientException(e);
     }
   }
 
@@ -154,7 +154,7 @@ class MlflowHttpCaller {
       logger.debug("response: #bytes=" + bytes.length);
       return bytes;
     } catch (IOException e) {
-      throw new MlflowClientException(e);
+      throw new QCFlowClientException(e);
     }
   }
 
@@ -180,27 +180,27 @@ class MlflowHttpCaller {
       logger.debug("Response: " + responseJson);
       return responseJson;
     } catch (IOException e) {
-      throw new MlflowClientException(e);
+      throw new QCFlowClientException(e);
     }
   }
 
-  private void checkError(HttpResponse response) throws MlflowClientException, IOException {
+  private void checkError(HttpResponse response) throws QCFlowClientException, IOException {
     int statusCode = response.getStatusLine().getStatusCode();
     String reasonPhrase = response.getStatusLine().getReasonPhrase();
     if (isError(statusCode)) {
       String bodyMessage = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
       if (statusCode >= 400 && statusCode <= 499) {
-        throw new MlflowHttpException(statusCode, reasonPhrase, bodyMessage);
+        throw new QCFlowHttpException(statusCode, reasonPhrase, bodyMessage);
       }
       if (statusCode >= 500 && statusCode <= 599) {
-        throw new MlflowHttpException(statusCode, reasonPhrase, bodyMessage);
+        throw new QCFlowHttpException(statusCode, reasonPhrase, bodyMessage);
       }
-      throw new MlflowHttpException(statusCode, reasonPhrase, bodyMessage);
+      throw new QCFlowHttpException(statusCode, reasonPhrase, bodyMessage);
     }
   }
 
   private void fillRequestSettings(HttpRequestBase request, String path) {
-    MlflowHostCreds hostCreds = hostCredsProvider.getHostCreds();
+    QCFlowHostCreds hostCreds = hostCredsProvider.getHostCreds();
     createHttpClientIfNecessary(hostCreds.shouldIgnoreTlsVerification());
     String uri = hostCreds.getHost() + "/" + BASE_API_PATH + "/" + path;
     request.setURI(URI.create(uri));
@@ -216,7 +216,7 @@ class MlflowHttpCaller {
     }
 
     String userAgent = "qcflow-java-client";
-    String clientVersion = MlflowClientVersion.getClientVersion();
+    String clientVersion = QCFlowClientVersion.getClientVersion();
     if (!clientVersion.isEmpty()) {
       userAgent += "/" + clientVersion;
     }

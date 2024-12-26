@@ -3,12 +3,12 @@ from unittest import mock
 import pytest
 
 from qcflow.deployments import get_deploy_client
-from qcflow.deployments.qcflow import MlflowDeploymentClient
+from qcflow.deployments.qcflow import QCFlowDeploymentClient
 
 
 def test_get_deploy_client():
     client = get_deploy_client("http://localhost:5000")
-    assert isinstance(client, MlflowDeploymentClient)
+    assert isinstance(client, QCFlowDeploymentClient)
 
 
 def test_create_endpoint():

@@ -8,7 +8,7 @@ import pytest
 
 import qcflow
 from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_DIRECTORY
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.steps.split import (
     _OUTPUT_TEST_FILE_NAME,
     _OUTPUT_TRAIN_FILE_NAME,
@@ -158,7 +158,7 @@ def test_from_recipe_config_fails_without_target_col(tmp_path, monkeypatch):
     monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
     with mock.patch("qcflow.recipes.step.get_recipe_name", return_value="fake_name"):
         split_step = SplitStep.from_recipe_config({}, "fake_root")
-        with pytest.raises(MlflowException, match="Missing target_col config"):
+        with pytest.raises(QCFlowException, match="Missing target_col config"):
             split_step._validate_and_apply_step_config()
 
 
@@ -217,7 +217,7 @@ def test_validation_split_step_validates_split_correctly():
         return (train_df, validation_df, test_df)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Column list for train dataset pre-slit .* and post split is .*",
     ):
         (out_train_df, out_validation_df, out_test_df) = _validate_user_code_output(
@@ -228,7 +228,7 @@ def test_validation_split_step_validates_split_correctly():
         return ([], validation_df, test_df)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The split data is not a DataFrame, please return the correct data.",
     ):
         (out_train_df, out_validation_df, out_test_df) = _validate_user_code_output(
@@ -352,7 +352,7 @@ def test_custom_error_split_method(tmp_recipe_root_path: Path, tmp_recipe_exec_p
     with (
         mock.patch.dict("sys.modules", {"steps.split": m_split}),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Value returned back: \['VALIDATE' 'TESTING'\]",
         ),
     ):

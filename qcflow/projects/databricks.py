@@ -14,7 +14,7 @@ from shlex import quote
 from qcflow import tracking
 from qcflow.entities import RunStatus
 from qcflow.environment_variables import QCFLOW_EXPERIMENT_ID, QCFLOW_RUN_ID, QCFLOW_TRACKING_URI
-from qcflow.exceptions import ExecutionException, MlflowException
+from qcflow.exceptions import ExecutionException, QCFlowException
 from qcflow.projects.submitted_run import SubmittedRun
 from qcflow.projects.utils import QCFLOW_LOCAL_BACKEND_RUN_ID_CONFIG
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
@@ -65,7 +65,7 @@ def before_run_validations(tracking_uri, backend_config):
             "Backend spec must be provided when launching QCFlow project runs on Databricks."
         )
     elif "existing_cluster_id" in backend_config:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "QCFlow Project runs on Databricks must provide a *new cluster* specification."
                 " Project execution against existing clusters is not currently supported. For more"
@@ -118,7 +118,7 @@ class DatabricksJobRunner:
         with open(src_path, "rb") as f:
             try:
                 self._databricks_api_request(endpoint=http_endpoint, method="POST", data=f)
-            except MlflowException as e:
+            except QCFlowException as e:
                 if "Error 409" in e.message and "File already exists" in e.message:
                     _logger.info("=== Did not overwrite existing DBFS path %s ===", dbfs_fuse_uri)
                 else:
@@ -140,7 +140,7 @@ class DatabricksJobRunner:
         try:
             json_response_obj = json.loads(response.text)
         except Exception:
-            raise MlflowException(
+            raise QCFlowException(
                 f"API request to check existence of file at DBFS path {dbfs_path} failed with "
                 f"status code {response.status_code}. Response body: {response.text}"
             )
@@ -297,7 +297,7 @@ class DatabricksJobRunner:
             command = project_spec.get_entry_point(entry_point).compute_command(parameters, None)
             command_splits = command.split(" ")
             if command_splits[0] != "python":
-                raise MlflowException(
+                raise QCFlowException(
                     "Databricks spark job only supports 'python' command in the entry point "
                     "configuration."
                 )
@@ -575,20 +575,20 @@ class DatabricksSubmittedRun(SubmittedRun):
         host_creds = databricks_utils.get_databricks_host_creds(
             self._job_runner.databricks_profile_uri
         )
-        tracking.MlflowClient().set_tag(
+        tracking.QCFlowClient().set_tag(
             self._qcflow_run_id, QCFLOW_DATABRICKS_RUN_URL, jobs_page_url
         )
-        tracking.MlflowClient().set_tag(
+        tracking.QCFlowClient().set_tag(
             self._qcflow_run_id, QCFLOW_DATABRICKS_SHELL_JOB_RUN_ID, self._databricks_run_id
         )
-        tracking.MlflowClient().set_tag(
+        tracking.QCFlowClient().set_tag(
             self._qcflow_run_id, QCFLOW_DATABRICKS_WEBAPP_URL, host_creds.host
         )
         job_id = run_info.get("job_id")
         # In some releases of Databricks we do not return the job ID. We start including it in DB
         # releases 2.80 and above.
         if job_id is not None:
-            tracking.MlflowClient().set_tag(
+            tracking.QCFlowClient().set_tag(
                 self._qcflow_run_id, QCFLOW_DATABRICKS_SHELL_JOB_ID, job_id
             )
 

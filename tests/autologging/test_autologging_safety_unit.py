@@ -8,7 +8,7 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import RunStatus
 from qcflow.utils import autologging_utils
 from qcflow.utils.autologging_utils import (
@@ -507,7 +507,7 @@ def test_safe_patch_does_not_validate_autologging_runs_in_standard_mode(
 def test_safe_patch_manages_run_if_specified_and_sets_expected_run_tags(
     patch_destination, test_autologging_integration
 ):
-    client = MlflowClient()
+    client = QCFlowClient()
     active_run = None
 
     def patch_impl(original, *args, **kwargs):
@@ -953,7 +953,7 @@ def test_with_managed_runs_yields_functions_and_classes_as_expected():
 
 
 def test_with_managed_run_with_non_throwing_function_exhibits_expected_behavior():
-    client = MlflowClient()
+    client = QCFlowClient()
 
     def patch_function(original, *args, **kwargs):
         return qcflow.active_run()
@@ -973,7 +973,7 @@ def test_with_managed_run_with_non_throwing_function_exhibits_expected_behavior(
 
 
 def test_with_managed_run_with_throwing_function_exhibits_expected_behavior():
-    client = MlflowClient()
+    client = QCFlowClient()
     patch_function_active_run = None
 
     def patch_function(original, *args, **kwargs):
@@ -1000,7 +1000,7 @@ def test_with_managed_run_with_throwing_function_exhibits_expected_behavior():
 
 
 def test_with_managed_run_with_non_throwing_class_exhibits_expected_behavior():
-    client = MlflowClient()
+    client = QCFlowClient()
 
     class TestPatch(PatchFunction):
         def _patch_implementation(self, original, *args, **kwargs):
@@ -1024,7 +1024,7 @@ def test_with_managed_run_with_non_throwing_class_exhibits_expected_behavior():
 
 
 def test_with_managed_run_with_throwing_class_exhibits_expected_behavior():
-    client = MlflowClient()
+    client = QCFlowClient()
     patch_function_active_run = None
 
     class TestPatch(PatchFunction):
@@ -1055,7 +1055,7 @@ def test_with_managed_run_with_throwing_class_exhibits_expected_behavior():
 
 
 def test_with_managed_run_sets_specified_run_tags():
-    client = MlflowClient()
+    client = QCFlowClient()
     tags_to_set = {
         "foo": "bar",
         "num_layers": "7",
@@ -1081,7 +1081,7 @@ def test_with_managed_run_sets_specified_run_tags():
 
 @pytest.mark.usefixtures(test_mode_on.__name__)
 def test_with_managed_run_ends_run_on_keyboard_interrupt():
-    client = MlflowClient()
+    client = QCFlowClient()
     run = None
 
     def original():
@@ -1542,7 +1542,7 @@ def test_validate_autologging_run_validates_run_status_correctly():
         run_id_finished = run_finished.info.run_id
 
     assert (
-        RunStatus.from_string(MlflowClient().get_run(run_id_finished).info.status)
+        RunStatus.from_string(QCFlowClient().get_run(run_id_finished).info.status)
         == RunStatus.FINISHED
     )
     _validate_autologging_run("test_integration", run_id_finished)
@@ -1550,18 +1550,18 @@ def test_validate_autologging_run_validates_run_status_correctly():
     with qcflow.start_run(tags=valid_autologging_tags) as run_failed:
         run_id_failed = run_failed.info.run_id
 
-    MlflowClient().set_terminated(run_id_failed, status=RunStatus.to_string(RunStatus.FAILED))
+    QCFlowClient().set_terminated(run_id_failed, status=RunStatus.to_string(RunStatus.FAILED))
     assert (
-        RunStatus.from_string(MlflowClient().get_run(run_id_failed).info.status) == RunStatus.FAILED
+        RunStatus.from_string(QCFlowClient().get_run(run_id_failed).info.status) == RunStatus.FAILED
     )
     _validate_autologging_run("test_integration", run_id_finished)
 
-    run_non_terminal = MlflowClient().create_run(
+    run_non_terminal = QCFlowClient().create_run(
         experiment_id=run_finished.info.experiment_id, tags=valid_autologging_tags
     )
     run_id_non_terminal = run_non_terminal.info.run_id
     assert (
-        RunStatus.from_string(MlflowClient().get_run(run_id_non_terminal).info.status)
+        RunStatus.from_string(QCFlowClient().get_run(run_id_non_terminal).info.status)
         == RunStatus.RUNNING
     )
     with pytest.raises(AssertionError, match="has a non-terminal status"):

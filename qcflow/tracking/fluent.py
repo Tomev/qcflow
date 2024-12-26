@@ -34,7 +34,7 @@ from qcflow.environment_variables import (
     QCFLOW_EXPERIMENT_NAME,
     QCFLOW_RUN_ID,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
@@ -42,7 +42,7 @@ from qcflow.protos.databricks_pb2 import (
 from qcflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
 from qcflow.tracing.provider import _get_trace_exporter
 from qcflow.tracking import _get_artifact_repo, _get_store, artifact_utils
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 from qcflow.tracking.context import registry as context_registry
 from qcflow.tracking.default_experiment import registry as default_experiment_registry
 from qcflow.utils import get_results_from_paginated_fn
@@ -145,12 +145,12 @@ def set_experiment(
     if (experiment_name is not None and experiment_id is not None) or (
         experiment_name is None and experiment_id is None
     ):
-        raise MlflowException(
+        raise QCFlowException(
             message="Must specify exactly one of: `experiment_id` or `experiment_name`.",
             error_code=INVALID_PARAMETER_VALUE,
         )
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     with _experiment_lock:
         if experiment_id is None:
@@ -162,7 +162,7 @@ def set_experiment(
                         "Experiment with name '%s' does not exist. Creating a new experiment.",
                         experiment_name,
                     )
-                except MlflowException as e:
+                except QCFlowException as e:
                     if e.error_code == "RESOURCE_ALREADY_EXISTS":
                         # NB: If two simultaneous processes attempt to set the same experiment
                         # simultaneously, a race condition may be encountered here wherein
@@ -173,13 +173,13 @@ def set_experiment(
         else:
             experiment = client.get_experiment(experiment_id)
             if experiment is None:
-                raise MlflowException(
+                raise QCFlowException(
                     message=f"Experiment with ID '{experiment_id}' does not exist.",
                     error_code=RESOURCE_DOES_NOT_EXIST,
                 )
 
         if experiment.lifecycle_stage != LifecycleStage.ACTIVE:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Cannot set a deleted experiment {experiment.name!r} as the active"
                     " experiment. "
@@ -202,7 +202,7 @@ def set_experiment(
 def _set_experiment_primary_metric(
     experiment_id: str, primary_metric: str, greater_is_better: bool
 ):
-    client = MlflowClient()
+    client = QCFlowClient()
     client.set_experiment_tag(experiment_id, QCFLOW_EXPERIMENT_PRIMARY_METRIC_NAME, primary_metric)
     client.set_experiment_tag(
         experiment_id, QCFLOW_EXPERIMENT_PRIMARY_METRIC_GREATER_IS_BETTER, str(greater_is_better)
@@ -355,7 +355,7 @@ def start_run(
                 + "run, call start_run with nested=True"
             ).format(active_run_stack[0].info.run_id)
         )
-    client = MlflowClient()
+    client = QCFlowClient()
     if run_id:
         existing_run_id = run_id
     elif run_id := QCFLOW_RUN_ID.get():
@@ -371,7 +371,7 @@ def start_run(
             _active_experiment_id is not None
             and _active_experiment_id != active_run_obj.info.experiment_id
         ):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Cannot start run with ID {existing_run_id} because active run ID "
                 "does not match environment run ID. Make sure --experiment-name "
                 "or --experiment-id matches experiment set with "
@@ -379,7 +379,7 @@ def start_run(
             )
         # Check if the current run has been deleted.
         if active_run_obj.info.lifecycle_stage == LifecycleStage.DELETED:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Cannot start run with ID {existing_run_id} because it is in the deleted state."
             )
         # Use previous `end_time` because a value is required for `update_run_info`.
@@ -390,7 +390,7 @@ def start_run(
         tags = tags or {}
         if description:
             if QCFLOW_RUN_NOTE in tags:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Description is already set via the tag {QCFLOW_RUN_NOTE} in tags."
                     f"Remove the key {QCFLOW_RUN_NOTE} from the tags or omit the description.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -409,7 +409,7 @@ def start_run(
             # Make sure parent_run_id matches the current run id, if there is an active run
             if len(active_run_stack) > 0 and parent_run_id != active_run_stack[-1].info.run_id:
                 current_run_id = active_run_stack[-1].info.run_id
-                raise MlflowException(
+                raise QCFlowException(
                     f"Current run with UUID {current_run_id} does not match the specified "
                     f"parent_run_id {parent_run_id}. To start a new nested run under "
                     f"the parent run with UUID {current_run_id}, first end the current run "
@@ -418,7 +418,7 @@ def start_run(
             parent_run_obj = client.get_run(parent_run_id)
             # Check if the specified parent_run has been deleted.
             if parent_run_obj.info.lifecycle_stage == LifecycleStage.DELETED:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Cannot start run under parent run with ID {parent_run_id} "
                     f"because it is in the deleted state."
                 )
@@ -430,7 +430,7 @@ def start_run(
         user_specified_tags = deepcopy(tags) or {}
         if description:
             if QCFLOW_RUN_NOTE in user_specified_tags:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Description is already set via the tag {QCFLOW_RUN_NOTE} in tags."
                     f"Remove the key {QCFLOW_RUN_NOTE} from the tags or omit the description.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -455,7 +455,7 @@ def start_run(
 
     if log_system_metrics:
         if importlib.util.find_spec("psutil") is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Failed to start system metrics monitoring as package `psutil` is not installed. "
                 "Please run `pip install psutil` to resolve the issue, otherwise you can disable "
                 "system metrics logging by passing `log_system_metrics=False` to "
@@ -516,7 +516,7 @@ def end_run(status: str = RunStatus.to_string(RunStatus.FINISHED)) -> None:
         run = active_run_stack.pop()
         last_active_run_id = run.info.run_id
         _last_active_run_id.set(last_active_run_id)
-        MlflowClient().set_terminated(last_active_run_id, status)
+        QCFlowClient().set_terminated(last_active_run_id, status)
         if last_active_run_id in run_id_to_system_metrics_monitor:
             system_metrics_monitor = run_id_to_system_metrics_monitor.pop(last_active_run_id)
             system_metrics_monitor.finish()
@@ -541,7 +541,7 @@ def active_run() -> Optional[ActiveRun]:
 
     **Note**: You cannot access currently-active run attributes
     (parameters, metrics, etc.) through the run returned by ``qcflow.active_run``. In order
-    to access such attributes, use the :py:class:`qcflow.client.MlflowClient` as follows:
+    to access such attributes, use the :py:class:`qcflow.client.QCFlowClient` as follows:
 
     .. code-block:: python
         :test:
@@ -672,7 +672,7 @@ def get_run(run_id: str) -> Run:
 
         run_id: 7472befefc754e388e8e922824a0cca5; lifecycle_stage: active
     """
-    return MlflowClient().get_run(run_id)
+    return QCFlowClient().get_run(run_id)
 
 
 def get_parent_run(run_id: str) -> Optional[Run]:
@@ -707,7 +707,7 @@ def get_parent_run(run_id: str) -> Optional[Run]:
         child_run_id: 7d175204675e40328e46d9a6a5a7ee6a
         parent_run_id: 8979459433a24a52ab3be87a229a9cdf
     """
-    return MlflowClient().get_parent_run(run_id)
+    return QCFlowClient().get_parent_run(run_id)
 
 
 def log_param(key: str, value: Any, synchronous: Optional[bool] = None) -> Any:
@@ -744,7 +744,7 @@ def log_param(key: str, value: Any, synchronous: Optional[bool] = None) -> Any:
     """
     run_id = _get_or_start_run().info.run_id
     synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
-    return MlflowClient().log_param(run_id, key, value, synchronous=synchronous)
+    return QCFlowClient().log_param(run_id, key, value, synchronous=synchronous)
 
 
 def flush_async_logging() -> None:
@@ -799,7 +799,7 @@ def set_experiment_tag(key: str, value: Any) -> None:
             qcflow.set_experiment_tag("release.version", "2.2.0")
     """
     experiment_id = _get_experiment_id()
-    MlflowClient().set_experiment_tag(experiment_id, key, value)
+    QCFlowClient().set_experiment_tag(experiment_id, key, value)
 
 
 def set_tag(key: str, value: Any, synchronous: Optional[bool] = None) -> Optional[RunOperations]:
@@ -839,7 +839,7 @@ def set_tag(key: str, value: Any, synchronous: Optional[bool] = None) -> Optiona
     """
     run_id = _get_or_start_run().info.run_id
     synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
-    return MlflowClient().set_tag(run_id, key, value, synchronous=synchronous)
+    return QCFlowClient().set_tag(run_id, key, value, synchronous=synchronous)
 
 
 def delete_tag(key: str) -> None:
@@ -865,7 +865,7 @@ def delete_tag(key: str) -> None:
             qcflow.delete_tag("engineering_remote")
     """
     run_id = _get_or_start_run().info.run_id
-    MlflowClient().delete_tag(run_id, key)
+    QCFlowClient().delete_tag(run_id, key)
 
 
 def log_metric(
@@ -920,7 +920,7 @@ def log_metric(
     """
     run_id = run_id or _get_or_start_run().info.run_id
     synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
-    return MlflowClient().log_metric(
+    return QCFlowClient().log_metric(
         run_id,
         key,
         value,
@@ -981,7 +981,7 @@ def log_metrics(
     timestamp = timestamp or get_current_time_millis()
     metrics_arr = [Metric(key, value, timestamp, step or 0) for key, value in metrics.items()]
     synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
-    return MlflowClient().log_batch(
+    return QCFlowClient().log_batch(
         run_id=run_id, metrics=metrics_arr, params=[], tags=[], synchronous=synchronous
     )
 
@@ -1027,7 +1027,7 @@ def log_params(
     run_id = run_id or _get_or_start_run().info.run_id
     params_arr = [Param(key, str(value)) for key, value in params.items()]
     synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
-    return MlflowClient().log_batch(
+    return QCFlowClient().log_batch(
         run_id=run_id, metrics=[], params=params_arr, tags=[], synchronous=synchronous
     )
 
@@ -1067,7 +1067,7 @@ def log_input(
 
     dataset_input = DatasetInput(dataset=dataset._to_qcflow_entity(), tags=tags_to_log)
 
-    MlflowClient().log_inputs(run_id=run_id, datasets=[dataset_input])
+    QCFlowClient().log_inputs(run_id=run_id, datasets=[dataset_input])
 
 
 def set_experiment_tags(tags: dict[str, Any]) -> None:
@@ -1138,7 +1138,7 @@ def set_tags(tags: dict[str, Any], synchronous: Optional[bool] = None) -> Option
     run_id = _get_or_start_run().info.run_id
     tags_arr = [RunTag(key, str(value)) for key, value in tags.items()]
     synchronous = synchronous if synchronous is not None else not QCFLOW_ENABLE_ASYNC_LOGGING.get()
-    return MlflowClient().log_batch(
+    return QCFlowClient().log_batch(
         run_id=run_id, metrics=[], params=[], tags=tags_arr, synchronous=synchronous
     )
 
@@ -1176,7 +1176,7 @@ def log_artifact(
                 qcflow.log_artifact(path)
     """
     run_id = run_id or _get_or_start_run().info.run_id
-    MlflowClient().log_artifact(run_id, local_path, artifact_path)
+    QCFlowClient().log_artifact(run_id, local_path, artifact_path)
 
 
 def log_artifacts(
@@ -1216,7 +1216,7 @@ def log_artifacts(
                 qcflow.log_artifacts(tmp_dir, artifact_path="states")
     """
     run_id = run_id or _get_or_start_run().info.run_id
-    MlflowClient().log_artifacts(run_id, local_dir, artifact_path)
+    QCFlowClient().log_artifacts(run_id, local_dir, artifact_path)
 
 
 def log_text(text: str, artifact_file: str, run_id: Optional[str] = None) -> None:
@@ -1248,7 +1248,7 @@ def log_text(text: str, artifact_file: str, run_id: Optional[str] = None) -> Non
 
     """
     run_id = run_id or _get_or_start_run().info.run_id
-    MlflowClient().log_text(run_id, text, artifact_file)
+    QCFlowClient().log_text(run_id, text, artifact_file)
 
 
 def log_dict(dictionary: dict[str, Any], artifact_file: str, run_id: Optional[str] = None) -> None:
@@ -1287,7 +1287,7 @@ def log_dict(dictionary: dict[str, Any], artifact_file: str, run_id: Optional[st
 
     """
     run_id = run_id or _get_or_start_run().info.run_id
-    MlflowClient().log_dict(run_id, dictionary, artifact_file)
+    QCFlowClient().log_dict(run_id, dictionary, artifact_file)
 
 
 def log_figure(
@@ -1340,7 +1340,7 @@ def log_figure(
             qcflow.log_figure(fig, "figure.html")
     """
     run_id = _get_or_start_run().info.run_id
-    MlflowClient().log_figure(run_id, figure, artifact_file, save_kwargs=save_kwargs)
+    QCFlowClient().log_figure(run_id, figure, artifact_file, save_kwargs=save_kwargs)
 
 
 def log_image(
@@ -1470,7 +1470,7 @@ def log_image(
             qcflow.log_image(image, "image.png")
     """
     run_id = _get_or_start_run().info.run_id
-    MlflowClient().log_image(run_id, image, artifact_file, key, step, timestamp, synchronous)
+    QCFlowClient().log_image(run_id, image, artifact_file, key, step, timestamp, synchronous)
 
 
 @experimental
@@ -1523,7 +1523,7 @@ def log_table(
             qcflow.log_table(data=df, artifact_file="qabot_eval_results.json")
     """
     run_id = run_id or _get_or_start_run().info.run_id
-    MlflowClient().log_table(run_id, data, artifact_file)
+    QCFlowClient().log_table(run_id, data, artifact_file)
 
 
 @experimental
@@ -1548,7 +1548,7 @@ def load_table(
 
     Returns:
         pandas.DataFrame containing the loaded table if the artifact exists
-        or else throw a MlflowException.
+        or else throw a QCFlowException.
 
     .. code-block:: python
         :test:
@@ -1599,12 +1599,12 @@ def load_table(
         )
     """
     experiment_id = _get_experiment_id()
-    return MlflowClient().load_table(experiment_id, artifact_file, run_ids, extra_columns)
+    return QCFlowClient().load_table(experiment_id, artifact_file, run_ids, extra_columns)
 
 
 def _record_logged_model(qcflow_model, run_id=None):
     run_id = run_id or _get_or_start_run().info.run_id
-    MlflowClient()._record_logged_model(run_id, qcflow_model)
+    QCFlowClient()._record_logged_model(run_id, qcflow_model)
 
 
 def get_experiment(experiment_id: str) -> Experiment:
@@ -1638,7 +1638,7 @@ def get_experiment(experiment_id: str) -> Experiment:
         Lifecycle_stage: active
         Creation timestamp: 1662004217511
     """
-    return MlflowClient().get_experiment(experiment_id)
+    return QCFlowClient().get_experiment(experiment_id)
 
 
 def get_experiment_by_name(name: str) -> Optional[Experiment]:
@@ -1675,7 +1675,7 @@ def get_experiment_by_name(name: str) -> Optional[Experiment]:
         Lifecycle_stage: active
         Creation timestamp: 1662004217511
     """
-    return MlflowClient().get_experiment_by_name(name)
+    return QCFlowClient().get_experiment_by_name(name)
 
 
 def search_experiments(
@@ -1777,7 +1777,7 @@ def search_experiments(
     """
 
     def pagination_wrapper_func(number_to_get, next_page_token):
-        return MlflowClient().search_experiments(
+        return QCFlowClient().search_experiments(
             view_type=view_type,
             max_results=number_to_get,
             filter_string=filter_string,
@@ -1840,7 +1840,7 @@ def create_experiment(
         Lifecycle_stage: active
         Creation timestamp: 1662004217511
     """
-    return MlflowClient().create_experiment(name, artifact_location, tags)
+    return QCFlowClient().create_experiment(name, artifact_location, tags)
 
 
 def delete_experiment(experiment_id: str) -> None:
@@ -1875,7 +1875,7 @@ def delete_experiment(experiment_id: str) -> None:
         Last Updated timestamp: 1662004217511
 
     """
-    MlflowClient().delete_experiment(experiment_id)
+    QCFlowClient().delete_experiment(experiment_id)
 
 
 def delete_run(run_id: str) -> None:
@@ -1906,7 +1906,7 @@ def delete_run(run_id: str) -> None:
         run_id: 45f4af3e6fd349e58579b27fcb0b8277; lifecycle_stage: deleted
 
     """
-    MlflowClient().delete_run(run_id)
+    QCFlowClient().delete_run(run_id)
 
 
 def get_artifact_uri(artifact_path: Optional[str] = None) -> str:
@@ -2058,7 +2058,7 @@ def search_runs(
     no_names = experiment_names is None or len(experiment_names) == 0
     no_ids_or_names = no_ids and no_names
     if not no_ids and not no_names:
-        raise MlflowException(
+        raise QCFlowException(
             message="Only experiment_ids or experiment_names can be used, but not both",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -2086,7 +2086,7 @@ def search_runs(
         # Using an internal function as the linter doesn't like assigning a lambda, and inlining the
         # full thing is a mess
         def pagination_wrapper_func(number_to_get, next_page_token):
-            return MlflowClient().search_runs(
+            return QCFlowClient().search_runs(
                 experiment_ids,
                 filter_string,
                 run_view_type,
@@ -2188,10 +2188,10 @@ def _get_experiment_id_from_env():
     experiment_name = QCFLOW_EXPERIMENT_NAME.get()
     experiment_id = QCFLOW_EXPERIMENT_ID.get()
     if experiment_name is not None:
-        exp = MlflowClient().get_experiment_by_name(experiment_name)
+        exp = QCFlowClient().get_experiment_by_name(experiment_name)
         if exp:
             if experiment_id and experiment_id != exp.experiment_id:
-                raise MlflowException(
+                raise QCFlowException(
                     message=f"The provided {QCFLOW_EXPERIMENT_ID} environment variable "
                     f"value `{experiment_id}` does not match the experiment id "
                     f"`{exp.experiment_id}` for experiment name `{experiment_name}`",
@@ -2200,13 +2200,13 @@ def _get_experiment_id_from_env():
             else:
                 return exp.experiment_id
         else:
-            return MlflowClient().create_experiment(name=experiment_name)
+            return QCFlowClient().create_experiment(name=experiment_name)
     if experiment_id is not None:
         try:
-            exp = MlflowClient().get_experiment(experiment_id)
+            exp = QCFlowClient().get_experiment(experiment_id)
             return exp.experiment_id
-        except MlflowException as exc:
-            raise MlflowException(
+        except QCFlowException as exc:
+            raise QCFlowException(
                 message=f"The provided {QCFLOW_EXPERIMENT_ID} environment variable "
                 f"value `{experiment_id}` does not exist in the tracking server. Provide a valid "
                 f"experiment_id.",
@@ -2315,13 +2315,13 @@ def autolog(
 
         import numpy as np
         import qcflow.sklearn
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
         from sklearn.linear_model import LinearRegression
 
 
         def print_auto_logged_info(r):
             tags = {k: v for k, v in r.data.tags.items() if not k.startswith("qcflow.")}
-            artifacts = [f.path for f in MlflowClient().list_artifacts(r.info.run_id, "model")]
+            artifacts = [f.path for f in QCFlowClient().list_artifacts(r.info.run_id, "model")]
             print(f"run_id: {r.info.run_id}")
             print(f"artifacts: {artifacts}")
             print(f"params: {r.data.params}")

@@ -6,7 +6,7 @@ import pandas as pd
 from PIL import Image
 from sklearn import metrics as sk_metrics
 
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import Metric
 from qcflow.models.evaluation import (
     EvaluationArtifact,
@@ -36,7 +36,7 @@ class DummyEvaluator(ModelEvaluator):
         """
         Helper method to log metrics into specified run.
         """
-        client = MlflowClient()
+        client = QCFlowClient()
         timestamp = get_current_time_millis()
         client.log_batch(
             run_id,
@@ -109,7 +109,7 @@ class DummyEvaluator(ModelEvaluator):
 
     def evaluate(self, *, model, model_type, dataset, run_id, evaluator_config, **kwargs):
         self.model_type = model_type
-        self.client = MlflowClient()
+        self.client = QCFlowClient()
         self.dataset = dataset
         self.run_id = run_id
         self.X = dataset.features_data

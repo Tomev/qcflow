@@ -32,7 +32,7 @@ from qcflow.entities.lifecycle_stage import LifecycleStage
 from qcflow.entities.run_info import check_run_is_active
 from qcflow.entities.trace_status import TraceStatus
 from qcflow.environment_variables import QCFLOW_TRACKING_DIR
-from qcflow.exceptions import MissingConfigException, MlflowException
+from qcflow.exceptions import MissingConfigException, QCFlowException
 from qcflow.protos import databricks_pb2
 from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
@@ -223,7 +223,7 @@ class FileStore(AbstractStore):
             if len(exp_list) > 0:
                 return exp_list[0]
         if assert_exists:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Experiment {experiment_id} does not exist.",
                 databricks_pb2.RESOURCE_DOES_NOT_EXIST,
             )
@@ -302,13 +302,13 @@ class FileStore(AbstractStore):
         page_token=None,
     ):
         if not isinstance(max_results, int) or max_results < 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid value {max_results} for parameter 'max_results' supplied. It must be "
                 f"a positive integer",
                 INVALID_PARAMETER_VALUE,
             )
         if max_results > SEARCH_MAX_RESULTS_THRESHOLD:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid value {max_results} for parameter 'max_results' supplied. It must be at "
                 f"most {SEARCH_MAX_RESULTS_THRESHOLD}",
                 INVALID_PARAMETER_VALUE,
@@ -387,7 +387,7 @@ class FileStore(AbstractStore):
         experiment = self.get_experiment_by_name(name)
         if experiment is not None:
             if experiment.lifecycle_stage == LifecycleStage.DELETED:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Experiment {experiment.name!r} already exists in deleted state. "
                     "You can restore the experiment, or permanently delete the experiment "
                     "from the .trash folder (under tracking server's root folder) in order to "
@@ -395,7 +395,7 @@ class FileStore(AbstractStore):
                     databricks_pb2.RESOURCE_ALREADY_EXISTS,
                 )
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Experiment '{experiment.name}' already exists.",
                     databricks_pb2.RESOURCE_ALREADY_EXISTS,
                 )
@@ -415,7 +415,7 @@ class FileStore(AbstractStore):
         _validate_experiment_id(experiment_id)
         experiment_dir = self._get_experiment_path(experiment_id, view_type)
         if experiment_dir is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Could not find experiment with ID {experiment_id}",
                 databricks_pb2.RESOURCE_DOES_NOT_EXIST,
             )
@@ -447,7 +447,7 @@ class FileStore(AbstractStore):
         experiment_id = FileStore.DEFAULT_EXPERIMENT_ID if experiment_id is None else experiment_id
         experiment = self._get_experiment(experiment_id)
         if experiment is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Experiment '{experiment_id}' does not exist.",
                 databricks_pb2.RESOURCE_DOES_NOT_EXIST,
             )
@@ -455,14 +455,14 @@ class FileStore(AbstractStore):
 
     def delete_experiment(self, experiment_id):
         if str(experiment_id) == str(FileStore.DEFAULT_EXPERIMENT_ID):
-            raise MlflowException(
+            raise QCFlowException(
                 "Cannot delete the default experiment "
                 f"'{FileStore.DEFAULT_EXPERIMENT_ID}'. This is an internally "
                 f"reserved experiment."
             )
         experiment_dir = self._get_experiment_path(experiment_id, ViewType.ACTIVE_ONLY)
         if experiment_dir is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Could not find experiment with ID {experiment_id}",
                 databricks_pb2.RESOURCE_DOES_NOT_EXIST,
             )
@@ -496,13 +496,13 @@ class FileStore(AbstractStore):
     def restore_experiment(self, experiment_id):
         experiment_dir = self._get_experiment_path(experiment_id, ViewType.DELETED_ONLY)
         if experiment_dir is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Could not find deleted experiment with ID {experiment_id}",
                 databricks_pb2.RESOURCE_DOES_NOT_EXIST,
             )
         conflict_experiment = self._get_experiment_path(experiment_id, ViewType.ACTIVE_ONLY)
         if conflict_experiment is not None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Cannot restore experiment with ID %d. "
                 "An experiment with same ID already exists." % experiment_id,
                 databricks_pb2.RESOURCE_ALREADY_EXISTS,
@@ -531,7 +531,7 @@ class FileStore(AbstractStore):
         # if experiment is malformed, will raise error
         experiment = self._get_experiment(experiment_id)
         if experiment is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Experiment '{experiment_id}' does not exist.",
                 databricks_pb2.RESOURCE_DOES_NOT_EXIST,
             )
@@ -552,7 +552,7 @@ class FileStore(AbstractStore):
     def delete_run(self, run_id):
         run_info = self._get_run_info(run_id)
         if run_info is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Run '{run_id}' metadata is in invalid state.",
                 databricks_pb2.INVALID_STATE,
             )
@@ -594,7 +594,7 @@ class FileStore(AbstractStore):
     def restore_run(self, run_id):
         run_info = self._get_run_info(run_id)
         if run_info is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Run '{run_id}' metadata is in invalid state.",
                 databricks_pb2.INVALID_STATE,
             )
@@ -638,20 +638,20 @@ class FileStore(AbstractStore):
         experiment_id = FileStore.DEFAULT_EXPERIMENT_ID if experiment_id is None else experiment_id
         experiment = self.get_experiment(experiment_id)
         if experiment is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Could not create run under experiment with ID {experiment_id} - no such "
                 "experiment exists.",
                 databricks_pb2.RESOURCE_DOES_NOT_EXIST,
             )
         if experiment.lifecycle_stage != LifecycleStage.ACTIVE:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Could not create run under non-active experiment with ID {experiment_id}.",
                 databricks_pb2.INVALID_STATE,
             )
         tags = tags or []
         run_name_tag = _get_run_name_from_tags(tags)
         if run_name and run_name_tag and run_name != run_name_tag:
-            raise MlflowException(
+            raise QCFlowException(
                 "Both 'run_name' argument and 'qcflow.runName' tag are specified, but with "
                 f"different values (run_name='{run_name}', qcflow.runName='{run_name_tag}').",
                 INVALID_PARAMETER_VALUE,
@@ -693,7 +693,7 @@ class FileStore(AbstractStore):
         _validate_run_id(run_id)
         run_info = self._get_run_info(run_id)
         if run_info is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Run '{run_id}' metadata is in invalid state.",
                 databricks_pb2.INVALID_STATE,
             )
@@ -716,12 +716,12 @@ class FileStore(AbstractStore):
         """
         exp_id, run_dir = self._find_run_root(run_uuid)
         if run_dir is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Run '{run_uuid}' not found", databricks_pb2.RESOURCE_DOES_NOT_EXIST
             )
         run_info = self._get_run_info_from_dir(run_dir)
         if run_info.experiment_id != exp_id:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Run '{run_uuid}' metadata is in invalid state.",
                 databricks_pb2.INVALID_STATE,
             )
@@ -801,7 +801,7 @@ class FileStore(AbstractStore):
     def _get_metric_from_line(metric_name, metric_line, exp_id):
         metric_parts = metric_line.strip().split(" ")
         if len(metric_parts) != 2 and len(metric_parts) != 3:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Metric '{metric_name}' is malformed; persisted metric data contained "
                 f"{len(metric_parts)} fields. Expected 2 or 3 fields. "
                 f"Experiment id: {exp_id}",
@@ -823,7 +823,7 @@ class FileStore(AbstractStore):
                 implemented for FileStore and is unused in this store's implementation.
             page_token: An indicator for paginated results. This functionality is not
                 implemented for FileStore and if the value is overridden with a value other than
-                ``None``, an MlflowException will be thrown.
+                ``None``, an QCFlowException will be thrown.
 
         Returns:
             A List of :py:class:`qcflow.entities.Metric` entities if ``metric_key`` values
@@ -834,7 +834,7 @@ class FileStore(AbstractStore):
         # Raise if `page_token` is specified, as the functionality to support paged queries
         # is not implemented.
         if page_token is not None:
-            raise MlflowException(
+            raise QCFlowException(
                 "The FileStore backend does not support pagination for the "
                 f"`get_metric_history` API. Supplied argument `page_token` '{page_token}' must "
                 "be `None`."
@@ -958,7 +958,7 @@ class FileStore(AbstractStore):
         page_token,
     ):
         if max_results > SEARCH_MAX_RESULTS_THRESHOLD:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for request parameter max_results. It must be at "
                 f"most {SEARCH_MAX_RESULTS_THRESHOLD}, but got value {max_results}",
                 databricks_pb2.INVALID_PARAMETER_VALUE,
@@ -1017,13 +1017,13 @@ class FileStore(AbstractStore):
         When logging a parameter with a key that already exists, this function is used to
         enforce immutability by verifying that the specified parameter value matches the existing
         value.
-        :raises: py:class:`qcflow.exceptions.MlflowException` if the specified new parameter value
+        :raises: py:class:`qcflow.exceptions.QCFlowException` if the specified new parameter value
                  does not match the existing parameter value.
         """
         with open(param_path) as param_file:
             current_value = param_file.read()
         if current_value != new_value:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Changing param values is not allowed. Param with key='{param_key}' was already"
                 f" logged with value='{current_value}' for run ID='{run_id}'. Attempted logging"
                 f" new value '{new_value}'.",
@@ -1041,7 +1041,7 @@ class FileStore(AbstractStore):
         _validate_tag_name(tag.key)
         experiment = self.get_experiment(experiment_id)
         if experiment.lifecycle_stage != LifecycleStage.ACTIVE:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The experiment {experiment.experiment_id} must be in the 'active' "
                 "lifecycle_stage to set tags",
                 error_code=databricks_pb2.INVALID_PARAMETER_VALUE,
@@ -1079,7 +1079,7 @@ class FileStore(AbstractStore):
         check_run_is_active(run_info)
         tag_path = self._get_tag_path(run_info.experiment_id, run_id, key)
         if not exists(tag_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"No tag with name: {key} in run with id {run_id}",
                 error_code=RESOURCE_DOES_NOT_EXIST,
             )
@@ -1112,7 +1112,7 @@ class FileStore(AbstractStore):
                     self.update_run_info(run_id, run_status, run_info.end_time, tag.value)
                 self._set_run_tag(run_info, tag)
         except Exception as e:
-            raise MlflowException(e, INTERNAL_ERROR)
+            raise QCFlowException(e, INTERNAL_ERROR)
 
     def record_logged_model(self, run_id, qcflow_model):
         from qcflow.models import Model
@@ -1137,7 +1137,7 @@ class FileStore(AbstractStore):
         try:
             self._set_run_tag(run_info, tag)
         except Exception as e:
-            raise MlflowException(e, INTERNAL_ERROR)
+            raise QCFlowException(e, INTERNAL_ERROR)
 
     def log_inputs(self, run_id: str, datasets: Optional[list[DatasetInput]] = None):
         """
@@ -1531,7 +1531,7 @@ class FileStore(AbstractStore):
         trace_dir = self._find_trace_dir(request_id, assert_exists=True)
         trace_info = self._get_trace_info_from_dir(trace_dir)
         if trace_info and trace_info.request_id != request_id:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Trace with request ID '{request_id}' metadata is in invalid state.",
                 databricks_pb2.INVALID_STATE,
             )
@@ -1546,7 +1546,7 @@ class FileStore(AbstractStore):
                 if traces := find(traces_dir, request_id, full_path=True):
                     return traces[0]
         if assert_exists:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Trace with request ID '{request_id}' not found",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -1590,7 +1590,7 @@ class FileStore(AbstractStore):
         trace_dir = self._find_trace_dir(request_id, assert_exists=True)
         tag_path = os.path.join(trace_dir, FileStore.TRACE_TAGS_FOLDER_NAME, key)
         if not exists(tag_path):
-            raise MlflowException(
+            raise QCFlowException(
                 f"No tag with name: {key} in trace with request_id {request_id}.",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -1685,7 +1685,7 @@ class FileStore(AbstractStore):
             not be meaningful in such cases.
         """
         if max_results > SEARCH_MAX_RESULTS_THRESHOLD:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid value for request parameter max_results. It must be at "
                 f"most {SEARCH_MAX_RESULTS_THRESHOLD}, but got value {max_results}",
                 INVALID_PARAMETER_VALUE,

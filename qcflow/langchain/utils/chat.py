@@ -17,7 +17,7 @@ from langchain_core.outputs.chat_generation import ChatGeneration
 from langchain_core.outputs.generation import Generation
 
 from qcflow.environment_variables import QCFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.types.chat import (
     ChatChoice,
     ChatChoiceDelta,
@@ -63,7 +63,7 @@ def convert_lc_message_to_chat_message(lc_message: Union[BaseMessage]) -> ChatMe
     elif isinstance(lc_message, SystemMessage):
         return ChatMessage(role="system", content=lc_message.content)
     else:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Unexpected message type. Expected a BaseMessage subclass, but got: {type(lc_message)}"
         )
 
@@ -83,7 +83,7 @@ def _chat_model_to_langchain_message(message: ChatMessage) -> BaseMessage:
     elif message.role == "function":
         return FunctionMessage(content=message.content)
     else:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Unrecognized chat message role: {message.role}"
         )
 

@@ -4,7 +4,7 @@ from qcflow.deployments.utils import (
     get_deployments_target,
     set_deployments_target,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 
 def test_set_deployments_target(monkeypatch):
@@ -20,7 +20,7 @@ def test_set_deployments_target(monkeypatch):
 
     invalid_uri = "localhost"
     with pytest.raises(
-        MlflowException, match="The target provided is not a valid uri or 'databricks'"
+        QCFlowException, match="The target provided is not a valid uri or 'databricks'"
     ):
         set_deployments_target(invalid_uri)
 
@@ -29,7 +29,7 @@ def test_get_deployments_target(monkeypatch):
     monkeypatch.setattr("qcflow.deployments.utils._deployments_target", None)
     monkeypatch.delenv("QCFLOW_DEPLOYMENTS_TARGET", raising=False)
 
-    with pytest.raises(MlflowException, match="No deployments target has been set"):
+    with pytest.raises(QCFlowException, match="No deployments target has been set"):
         get_deployments_target()
 
     valid_uri = "http://localhost"

@@ -38,7 +38,7 @@ def test_spark_udf_spark_connect(spark):
 @pytest.mark.parametrize("env_manager", ["conda", "virtualenv"])
 def test_spark_udf_spark_connect_unsupported_env_manager(spark, tmp_path, env_manager):
     with pytest.raises(
-        qcflow.MlflowException,
+        qcflow.QCFlowException,
         match=f"Environment manager {env_manager!r} is not supported",
     ):
         qcflow.pyfunc.spark_udf(spark, str(tmp_path), env_manager=env_manager)

@@ -16,7 +16,7 @@ export type Scalars = {
   LongString: { input: GraphQLLongString; output: GraphQLLongString; }
 };
 
-export type MlflowGetMetricHistoryBulkIntervalInput = {
+export type QCFlowGetMetricHistoryBulkIntervalInput = {
   endStep?: InputMaybe<Scalars['Int']['input']>;
   maxResults?: InputMaybe<Scalars['Int']['input']>;
   metricKey?: InputMaybe<Scalars['String']['input']>;
@@ -24,18 +24,18 @@ export type MlflowGetMetricHistoryBulkIntervalInput = {
   startStep?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type MlflowGetRunInput = {
+export type QCFlowGetRunInput = {
   runId?: InputMaybe<Scalars['String']['input']>;
   runUuid?: InputMaybe<Scalars['String']['input']>;
 };
 
-export enum MlflowModelVersionStatus {
+export enum QCFlowModelVersionStatus {
   FAILED_REGISTRATION = 'FAILED_REGISTRATION',
   PENDING_REGISTRATION = 'PENDING_REGISTRATION',
   READY = 'READY'
 }
 
-export enum MlflowRunStatus {
+export enum QCFlowRunStatus {
   FAILED = 'FAILED',
   FINISHED = 'FINISHED',
   KILLED = 'KILLED',
@@ -44,15 +44,15 @@ export enum MlflowRunStatus {
 }
 
 export type GetRunVariables = Exact<{
-  data: MlflowGetRunInput;
+  data: QCFlowGetRunInput;
 }>;
 
 
-export type GetRun = { qcflowGetRun: { __typename: 'MlflowGetRunResponse', apiError: { __typename: 'ApiError', helpUrl: string | null, code: string | null, message: string | null } | null, run: { __typename: 'MlflowRunExtension', info: { __typename: 'MlflowRunInfo', runName: string | null, status: MlflowRunStatus | null, runUuid: string | null, experimentId: string | null, artifactUri: string | null, endTime: GraphQLLongString | null, lifecycleStage: string | null, startTime: GraphQLLongString | null, userId: string | null } | null, experiment: { __typename: 'MlflowExperiment', experimentId: string | null, name: string | null, artifactLocation: string | null, lifecycleStage: string | null, lastUpdateTime: GraphQLLongString | null, tags: Array<{ __typename: 'MlflowExperimentTag', key: string | null, value: string | null }> | null } | null, modelVersions: Array<{ __typename: 'MlflowModelVersion', status: MlflowModelVersionStatus | null, version: string | null, name: string | null, source: string | null }> | null, data: { __typename: 'MlflowRunData', metrics: Array<{ __typename: 'MlflowMetric', key: string | null, value: number | null, step: GraphQLLongString | null, timestamp: GraphQLLongString | null }> | null, params: Array<{ __typename: 'MlflowParam', key: string | null, value: string | null }> | null, tags: Array<{ __typename: 'MlflowRunTag', key: string | null, value: string | null }> | null } | null, inputs: { __typename: 'MlflowRunInputs', datasetInputs: Array<{ __typename: 'MlflowDatasetInput', dataset: { __typename: 'MlflowDataset', digest: string | null, name: string | null, profile: string | null, schema: string | null, source: string | null, sourceType: string | null } | null, tags: Array<{ __typename: 'MlflowInputTag', key: string | null, value: string | null }> | null }> | null } | null } | null } | null };
+export type GetRun = { qcflowGetRun: { __typename: 'QCFlowGetRunResponse', apiError: { __typename: 'ApiError', helpUrl: string | null, code: string | null, message: string | null } | null, run: { __typename: 'QCFlowRunExtension', info: { __typename: 'QCFlowRunInfo', runName: string | null, status: QCFlowRunStatus | null, runUuid: string | null, experimentId: string | null, artifactUri: string | null, endTime: GraphQLLongString | null, lifecycleStage: string | null, startTime: GraphQLLongString | null, userId: string | null } | null, experiment: { __typename: 'QCFlowExperiment', experimentId: string | null, name: string | null, artifactLocation: string | null, lifecycleStage: string | null, lastUpdateTime: GraphQLLongString | null, tags: Array<{ __typename: 'QCFlowExperimentTag', key: string | null, value: string | null }> | null } | null, modelVersions: Array<{ __typename: 'QCFlowModelVersion', status: QCFlowModelVersionStatus | null, version: string | null, name: string | null, source: string | null }> | null, data: { __typename: 'QCFlowRunData', metrics: Array<{ __typename: 'QCFlowMetric', key: string | null, value: number | null, step: GraphQLLongString | null, timestamp: GraphQLLongString | null }> | null, params: Array<{ __typename: 'QCFlowParam', key: string | null, value: string | null }> | null, tags: Array<{ __typename: 'QCFlowRunTag', key: string | null, value: string | null }> | null } | null, inputs: { __typename: 'QCFlowRunInputs', datasetInputs: Array<{ __typename: 'QCFlowDatasetInput', dataset: { __typename: 'QCFlowDataset', digest: string | null, name: string | null, profile: string | null, schema: string | null, source: string | null, sourceType: string | null } | null, tags: Array<{ __typename: 'QCFlowInputTag', key: string | null, value: string | null }> | null }> | null } | null } | null } | null };
 
 export type GetMetricHistoryBulkIntervalVariables = Exact<{
-  data: MlflowGetMetricHistoryBulkIntervalInput;
+  data: QCFlowGetMetricHistoryBulkIntervalInput;
 }>;
 
 
-export type GetMetricHistoryBulkInterval = { qcflowGetMetricHistoryBulkInterval: { __typename: 'MlflowGetMetricHistoryBulkIntervalResponse', metrics: Array<{ __typename: 'MlflowMetricWithRunId', timestamp: GraphQLLongString | null, step: GraphQLLongString | null, runId: string | null, key: string | null, value: number | null }> | null, apiError: { __typename: 'ApiError', code: string | null, message: string | null } | null } | null };
+export type GetMetricHistoryBulkInterval = { qcflowGetMetricHistoryBulkInterval: { __typename: 'QCFlowGetMetricHistoryBulkIntervalResponse', metrics: Array<{ __typename: 'QCFlowMetricWithRunId', timestamp: GraphQLLongString | null, step: GraphQLLongString | null, runId: string | null, key: string | null, value: number | null }> | null, apiError: { __typename: 'ApiError', code: string | null, message: string | null } | null } | null };

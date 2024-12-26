@@ -8,7 +8,7 @@ import pandas as pd
 
 import qcflow
 from qcflow.entities.metric import Metric
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.metrics import (
     MetricValue,
     ari_grade_level,
@@ -168,7 +168,7 @@ class DefaultEvaluator(BuiltInEvaluator):
             elif isinstance(sample_pred, str):
                 return y_pred_list
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     message=f"Unsupported prediction type {type(sample_pred)} for model type "
                     f"{self.model_type}.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -255,12 +255,12 @@ def _extract_output_and_other_columns(model_predictions, output_column_name):
             y_pred = pd.Series(value, name=key)
             output_column_name = key
         elif output_column_name is None:
-            raise MlflowException(
+            raise QCFlowException(
                 ERROR_MISSING_OUTPUT_COLUMN_NAME,
                 error_code=INVALID_PARAMETER_VALUE,
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Output column name '{output_column_name}' is not found in the model "
                 f"predictions list: {model_predictions}. Please set the correct output column "
                 "name using the `predictions` parameter.",
@@ -274,12 +274,12 @@ def _extract_output_and_other_columns(model_predictions, output_column_name):
             output_column_name = model_predictions.columns[0]
             y_pred = model_predictions[output_column_name]
         elif output_column_name is None:
-            raise MlflowException(
+            raise QCFlowException(
                 ERROR_MISSING_OUTPUT_COLUMN_NAME,
                 error_code=INVALID_PARAMETER_VALUE,
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Output column name '{output_column_name}' is not found in the model "
                 f"predictions dataframe {model_predictions.columns}. Please set the correct "
                 "output column name using the `predictions` parameter.",
@@ -296,12 +296,12 @@ def _extract_output_and_other_columns(model_predictions, output_column_name):
             y_pred = pd.Series(value, name=key)
             output_column_name = key
         elif output_column_name is None:
-            raise MlflowException(
+            raise QCFlowException(
                 ERROR_MISSING_OUTPUT_COLUMN_NAME,
                 error_code=INVALID_PARAMETER_VALUE,
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Output column name '{output_column_name}' is not found in the "
                 f"model predictions dict {model_predictions}. Please set the correct "
                 "output column name using the `predictions` parameter.",

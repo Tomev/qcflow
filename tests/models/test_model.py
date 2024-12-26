@@ -614,7 +614,7 @@ def test_langchain_set_model():
 
 
 def test_error_set_model(sklearn_knn_model):
-    with pytest.raises(qcflow.MlflowException, match=SET_MODEL_ERROR):
+    with pytest.raises(qcflow.QCFlowException, match=SET_MODEL_ERROR):
         set_model(sklearn_knn_model)
 
 

@@ -20,7 +20,7 @@ import qcflow.onnx
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 from qcflow import pyfunc
 from qcflow.deployments import PredictionsResponse
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, infer_signature
 from qcflow.models.utils import _read_example
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
@@ -529,7 +529,7 @@ def test_model_save_evaluate_pyfunc_format_multi_tensor(
         np.testing.assert_allclose(preds, multi_tensor_model_prediction, rtol=1e-05, atol=1e-05)
         # single numpy array input should fail with the right error message:
         with pytest.raises(
-            MlflowException, match="Unable to map numpy array input to the expected model input."
+            QCFlowException, match="Unable to map numpy array input to the expected model input."
         ):
             pyfunc_loaded.predict(data.values)
 

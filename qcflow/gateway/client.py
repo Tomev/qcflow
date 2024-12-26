@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 import requests.exceptions
 
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.gateway.config import LimitsConfig, Route
 from qcflow.gateway.constants import (
     QCFLOW_GATEWAY_CLIENT_QUERY_RETRY_CODES,
@@ -31,7 +31,7 @@ _logger = logging.getLogger(__name__)
 
 
 @gateway_deprecated
-class MlflowGatewayClient:
+class QCFlowGatewayClient:
     """
     Client for interacting with the QCFlow Gateway API.
 
@@ -52,7 +52,7 @@ class MlflowGatewayClient:
     @property
     def _host_creds(self):
         """
-        NB: When `MlflowGatewayClient` is used as an instance variable in a custom pyfunc model, it
+        NB: When `QCFlowGatewayClient` is used as an instance variable in a custom pyfunc model, it
         is pickled in the environment where the custom pyfunc model is defined (e.g. a notebook).
         When the model is moved to a different environment, e.g. model serving, new credentials
         need to be resolved from within the new environment. Accordingly, we re-resolve host
@@ -194,7 +194,7 @@ class MlflowGatewayClient:
             newly created route endpoint.
 
         Raises:
-            qcflow.MlflowException: If the function is not running within Databricks.
+            qcflow.QCFlowException: If the function is not running within Databricks.
 
         .. note::
 
@@ -205,9 +205,9 @@ class MlflowGatewayClient:
 
         .. code-block:: python
 
-            from qcflow.gateway import MlflowGatewayClient
+            from qcflow.gateway import QCFlowGatewayClient
 
-            gateway_client = MlflowGatewayClient("databricks")
+            gateway_client = QCFlowGatewayClient("databricks")
 
             openai_api_key = ...
 
@@ -224,7 +224,7 @@ class MlflowGatewayClient:
             )
         """
         if not self._is_databricks_host():
-            raise MlflowException(
+            raise QCFlowException(
                 "The create_route API is only available when running within "
                 "Databricks. Route creation is handled through creating a "
                 "configuration YAML file during startup or through updating a "
@@ -256,19 +256,19 @@ class MlflowGatewayClient:
             name: The name of the route to delete.
 
         Raises:
-            qcflow.MlflowException: If the function is not running within Databricks.
+            qcflow.QCFlowException: If the function is not running within Databricks.
 
         Example usage from within Databricks:
 
         .. code-block:: python
 
-            from qcflow.gateway import MlflowGatewayClient
+            from qcflow.gateway import QCFlowGatewayClient
 
-            gateway_client = MlflowGatewayClient("databricks")
+            gateway_client = QCFlowGatewayClient("databricks")
             gateway_client.delete_route("my-existing-route")
         """
         if not self._is_databricks_host():
-            raise MlflowException(
+            raise QCFlowException(
                 "The delete_route API is only available when running within Databricks. Route "
                 "deletion is handled through uploading a modified configuration YAML file to the "
                 "location specified when starting the Gateway server. To delete a route, remove "
@@ -292,9 +292,9 @@ class MlflowGatewayClient:
 
                 .. code-block:: python
 
-                    from qcflow.gateway import MlflowGatewayClient
+                    from qcflow.gateway import QCFlowGatewayClient
 
-                    gateway_client = MlflowGatewayClient("http://my.gateway:8888")
+                    gateway_client = QCFlowGatewayClient("http://my.gateway:8888")
 
                     response = gateway_client.query(
                         "my-chat-route",
@@ -309,9 +309,9 @@ class MlflowGatewayClient:
 
                 .. code-block:: python
 
-                    from qcflow.gateway import MlflowGatewayClient
+                    from qcflow.gateway import QCFlowGatewayClient
 
-                    gateway_client = MlflowGatewayClient("http://my.gateway:8888")
+                    gateway_client = QCFlowGatewayClient("http://my.gateway:8888")
 
                     response = gateway_client.query(
                         "my-completions-route", {"prompt": "It's one small step for"}
@@ -321,9 +321,9 @@ class MlflowGatewayClient:
 
                 .. code-block:: python
 
-                    from qcflow.gateway import MlflowGatewayClient
+                    from qcflow.gateway import QCFlowGatewayClient
 
-                    gateway_client = MlflowGatewayClient("http://my.gateway:8888")
+                    gateway_client = QCFlowGatewayClient("http://my.gateway:8888")
 
                     response = gateway_client.query(
                         "my-embeddings-route",
@@ -336,9 +336,9 @@ class MlflowGatewayClient:
 
                 .. code-block:: python
 
-                    from qcflow.gateway import MlflowGatewayClient
+                    from qcflow.gateway import QCFlowGatewayClient
 
-                    gateway_client = MlflowGatewayClient("http://my.gateway:8888")
+                    gateway_client = QCFlowGatewayClient("http://my.gateway:8888")
 
                     response = gateway_client.query(
                         "my-completions-route",
@@ -360,7 +360,7 @@ class MlflowGatewayClient:
 
         try:
             return self._call_endpoint("POST", query_route, data).json()
-        except MlflowException as e:
+        except QCFlowException as e:
             if isinstance(e.__cause__, requests.exceptions.Timeout):
                 timeout_message = (
                     "The provider has timed out while generating a response to your "
@@ -370,7 +370,7 @@ class MlflowGatewayClient:
                     f"timeout of {QCFLOW_GATEWAY_CLIENT_QUERY_TIMEOUT_SECONDS} "
                     "seconds."
                 )
-                raise MlflowException(message=timeout_message, error_code=BAD_REQUEST)
+                raise QCFlowException(message=timeout_message, error_code=BAD_REQUEST)
             else:
                 raise e
 
@@ -405,9 +405,9 @@ class MlflowGatewayClient:
 
         .. code-block:: python
 
-            from qcflow.gateway import MlflowGatewayClient
+            from qcflow.gateway import QCFlowGatewayClient
 
-            gateway_client = MlflowGatewayClient("databricks")
+            gateway_client = QCFlowGatewayClient("databricks")
 
             gateway_client.set_limits(
                 "my-new-route", [{"key": "user", "renewal_period": "minute", "calls": 50}]
@@ -443,14 +443,14 @@ class MlflowGatewayClient:
 
         .. code-block:: python
 
-            from qcflow.gateway import MlflowGatewayClient
+            from qcflow.gateway import QCFlowGatewayClient
 
-            gateway_client = MlflowGatewayClient("databricks")
+            gateway_client = QCFlowGatewayClient("databricks")
 
             gateway_client.get_limits("my-new-route")
         """
         if not route:
-            raise MlflowException("A non-empty string is required for the route.", BAD_REQUEST)
+            raise QCFlowException("A non-empty string is required for the route.", BAD_REQUEST)
         route_uri = assemble_uri_path([QCFLOW_GATEWAY_LIMITS_BASE, route])
         response = self._call_endpoint("GET", route_uri).json()
         return LimitsConfig(**response)

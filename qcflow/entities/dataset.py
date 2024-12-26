@@ -1,10 +1,10 @@
 from typing import Optional
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.protos.service_pb2 import Dataset as ProtoDataset
 
 
-class Dataset(_MlflowObject):
+class Dataset(_QCFlowObject):
     """Dataset object associated with an experiment."""
 
     def __init__(
@@ -23,7 +23,7 @@ class Dataset(_MlflowObject):
         self._schema = schema
         self._profile = profile
 
-    def __eq__(self, other: _MlflowObject) -> bool:
+    def __eq__(self, other: _QCFlowObject) -> bool:
         if type(other) is type(self):
             return self.__dict__ == other.__dict__
         return False

@@ -22,7 +22,7 @@ import {
   DATA_EXTENSIONS,
   AUDIO_EXTENSIONS,
 } from '../../../common/utils/FileUtils';
-import { RunTag } from '../../sdk/MlflowMessages';
+import { RunTag } from '../../sdk/QCFlowMessages';
 import { LazyShowArtifactAudioView } from './LazyShowArtifactAudioView';
 
 // Mock these methods because js-dom doesn't implement window.Request

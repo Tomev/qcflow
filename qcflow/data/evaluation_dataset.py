@@ -9,7 +9,7 @@ from packaging.version import Version
 
 import qcflow
 from qcflow.entities import RunTag
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.utils.string_utils import generate_feature_name_if_not_string
 
@@ -218,7 +218,7 @@ def _validate_dataset_type_supports_predictions(data, supported_predictions_data
     Validate that the dataset type supports a user-specified "predictions" column.
     """
     if not any(isinstance(data, sdt) for sdt in supported_predictions_dataset_types):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 "If predictions is specified, data must be one of the following types, or an"
                 " QCFlow Dataset that represents one of the following types:"
@@ -252,12 +252,12 @@ class EvaluationDataset:
         The values of the constructor arguments comes from the `evaluate` call.
         """
         if name is not None and '"' in name:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f'Dataset name cannot include a double quote (") but got {name}',
                 error_code=INVALID_PARAMETER_VALUE,
             )
         if path is not None and '"' in path:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f'Dataset path cannot include a double quote (") but got {path}',
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -287,7 +287,7 @@ class EvaluationDataset:
             pass
 
         if feature_names is not None and len(set(feature_names)) < len(list(feature_names)):
-            raise MlflowException(
+            raise QCFlowException(
                 message="`feature_names` argument must be a list containing unique feature names.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -303,7 +303,7 @@ class EvaluationDataset:
             self._has_targets = True
         if isinstance(data, (np.ndarray, list)):
             if has_targets and not isinstance(targets, (np.ndarray, list)):
-                raise MlflowException(
+                raise QCFlowException(
                     message="If data is a numpy array or list of evaluation features, "
                     "`targets` argument must be a numpy array or list of evaluation labels.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -320,12 +320,12 @@ class EvaluationDataset:
                 try:
                     data = np.array(data)
                 except ValueError as e:
-                    raise MlflowException(
+                    raise QCFlowException(
                         message=shape_message, error_code=INVALID_PARAMETER_VALUE
                     ) from e
 
             if len(data.shape) != 2:
-                raise MlflowException(
+                raise QCFlowException(
                     message=shape_message,
                     error_code=INVALID_PARAMETER_VALUE,
                 )
@@ -337,7 +337,7 @@ class EvaluationDataset:
                 )
 
                 if len(self._features_data) != len(self._labels_data):
-                    raise MlflowException(
+                    raise QCFlowException(
                         message="The input features example rows must be the same length "
                         "with labels array.",
                         error_code=INVALID_PARAMETER_VALUE,
@@ -348,7 +348,7 @@ class EvaluationDataset:
             if feature_names is not None:
                 feature_names = list(feature_names)
                 if num_features != len(feature_names):
-                    raise MlflowException(
+                    raise QCFlowException(
                         message="feature name list must be the same length with feature data.",
                         error_code=INVALID_PARAMETER_VALUE,
                     )
@@ -360,7 +360,7 @@ class EvaluationDataset:
                 ]
         elif isinstance(data, self._supported_dataframe_types):
             if has_targets and not isinstance(targets, str):
-                raise MlflowException(
+                raise QCFlowException(
                     message="If data is a Pandas DataFrame or Spark DataFrame, `targets` argument "
                     "must be the name of the column which contains evaluation labels in the `data` "
                     "dataframe.",
@@ -401,7 +401,7 @@ class EvaluationDataset:
                     generate_feature_name_if_not_string(c) for c in self._features_data.columns
                 ]
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 message="The data argument must be a numpy array, a list or a Pandas DataFrame, or "
                 "spark DataFrame if pyspark package installed.",
                 error_code=INVALID_PARAMETER_VALUE,

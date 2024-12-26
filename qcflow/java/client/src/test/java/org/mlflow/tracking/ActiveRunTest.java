@@ -21,11 +21,11 @@ public class ActiveRunTest {
   private static final String RUN_ID = "test-run-id";
   private static final String ARTIFACT_URI = "dbfs:/artifact-uri";
 
-  private MlflowClient mockClient;
+  private QCFlowClient mockClient;
 
   private ActiveRun getActiveRun() {
     RunInfo r = RunInfo.newBuilder().setRunId(RUN_ID).setArtifactUri(ARTIFACT_URI).build();
-    this.mockClient = mock(MlflowClient.class);
+    this.mockClient = mock(QCFlowClient.class);
     return new ActiveRun(r, mockClient);
   }
 

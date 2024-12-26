@@ -10,7 +10,7 @@ from typing import Any, Optional, Union
 import pandas as pd
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.metrics.base import MetricValue
 from qcflow.metrics.genai import model_utils
 from qcflow.metrics.genai.base import EvaluationExample
@@ -53,7 +53,7 @@ def _format_args_string(grading_context_columns: Optional[list[str]], eval_value
                 else eval_values[arg][indx]
             )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"{arg} does not exist in the eval function {list(eval_values.keys())}."
             )
 
@@ -114,7 +114,7 @@ def _score_model_on_one_payload(
         return _extract_score_and_justification(raw_result)
     except ImportError:
         raise
-    except MlflowException as e:
+    except QCFlowException as e:
         if e.error_code in [
             ErrorCode.Name(BAD_REQUEST),
             ErrorCode.Name(UNAUTHENTICATED),
@@ -177,7 +177,7 @@ def _get_aggregate_results(scores, aggregations):
         }
 
         if aggregate_option not in options:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"Invalid aggregate option {aggregate_option}.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -295,7 +295,7 @@ def make_genai_metric_from_prompt(
         This is the function that is called when the metric is evaluated.
         """
         if missing_variables := allowed_variables - set(kwargs.keys()):
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"Missing variable inputs to eval_fn: {missing_variables}",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -487,7 +487,7 @@ def make_genai_metric(
             example.grading_context = grading_context
 
         if set(grading_context.keys()) != set(grading_context_columns):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Example grading context does not contain required columns.\n"
                 f" Example grading context columns: {list(grading_context.keys())}\n"
                 f" Required grading context columns: {grading_context_columns}\n"
@@ -510,13 +510,13 @@ def make_genai_metric(
     try:
         evaluation_model_class_module = _get_class_from_string(class_name)
     except ModuleNotFoundError:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to find evaluation model for version {version}."
             f" Please check the correctness of the version",
             error_code=INVALID_PARAMETER_VALUE,
         ) from None
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to construct evaluation model {version}. Error: {e!r}",
             error_code=INTERNAL_ERROR,
         ) from None
@@ -549,7 +549,7 @@ def make_genai_metric(
         # TODO: Save the metric definition in a yaml file for model monitoring
 
         if not isinstance(eval_model, str):
-            raise MlflowException(
+            raise QCFlowException(
                 message="The model argument must be a string URI referring to an openai model "
                 "(openai:/gpt-4o-mini) or an QCFlow Deployments endpoint "
                 f"(endpoints:/my-endpoint), passed {eval_model} instead",
@@ -562,7 +562,7 @@ def make_genai_metric(
             try:
                 arg_string = _format_args_string(grading_context_columns, eval_values, indx)
             except Exception as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Values for grading_context_columns are malformed and cannot be "
                     f"formatted into a prompt for metric '{name}'.\n"
                     f"Required columns: {grading_context_columns}\n"
@@ -649,7 +649,7 @@ def _deserialize_genai_metric_args(args_dict):
     qcflow_version_at_ser = args_dict.pop("qcflow_version", None)
     fn_name = args_dict.pop("fn_name", None)
     if fn_name is None or qcflow_version_at_ser is None:
-        raise MlflowException(
+        raise QCFlowException(
             message="The artifact JSON file appears to be corrupted and cannot be deserialized. "
             "Please regenerate the custom metrics and rerun the evaluation. "
             "Ensure that the file is correctly formatted and not tampered with.",
@@ -742,7 +742,7 @@ def retrieve_custom_metrics(
             name="custom llm judge",
         )
     """
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run_id)]
     if _GENAI_CUSTOM_METRICS_FILE_NAME not in artifacts:
         _logger.warning("No custom metric definitions were found for this evaluation run.")

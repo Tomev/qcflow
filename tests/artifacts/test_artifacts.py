@@ -7,7 +7,7 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.file_utils import mkdir, path_to_local_file_uri
 from qcflow.utils.os import is_windows
 
@@ -82,15 +82,15 @@ def test_download_artifacts_with_dst_path(run_with_artifact, tmp_path, dst_subdi
 
 
 def test_download_artifacts_throws_for_invalid_arguments():
-    with pytest.raises(MlflowException, match="Exactly one of"):
+    with pytest.raises(QCFlowException, match="Exactly one of"):
         qcflow.artifacts.download_artifacts(
             run_id="run_id", artifact_path="path", artifact_uri="uri"
         )
 
-    with pytest.raises(MlflowException, match="Exactly one of"):
+    with pytest.raises(QCFlowException, match="Exactly one of"):
         qcflow.artifacts.download_artifacts()
 
-    with pytest.raises(MlflowException, match="`artifact_path` cannot be specified"):
+    with pytest.raises(QCFlowException, match="`artifact_path` cannot be specified"):
         qcflow.artifacts.download_artifacts(artifact_path="path", artifact_uri="uri")
 
 
@@ -141,7 +141,7 @@ def test_load_dict(run_with_json_artifact):
 
 def test_load_json_invalid_json(run_with_text_artifact):
     artifact = run_with_text_artifact
-    with pytest.raises(qcflow.exceptions.MlflowException, match="Unable to form a JSON object"):
+    with pytest.raises(qcflow.exceptions.QCFlowException, match="Unable to form a JSON object"):
         qcflow.artifacts.load_dict(artifact.uri)
 
 
@@ -155,7 +155,7 @@ def test_load_image(run_with_image_artifact):
 def test_load_image_invalid_image(run_with_text_artifact):
     artifact = run_with_text_artifact
     with pytest.raises(
-        qcflow.exceptions.MlflowException, match="Unable to form a PIL Image object"
+        qcflow.exceptions.QCFlowException, match="Unable to form a PIL Image object"
     ):
         qcflow.artifacts.load_image(artifact.uri)
 
@@ -301,15 +301,15 @@ def test_list_artifacts_with_run_id(run_with_artifacts):
 
 
 def test_list_artifacts_throws_for_invalid_arguments():
-    with pytest.raises(MlflowException, match="Exactly one of"):
+    with pytest.raises(QCFlowException, match="Exactly one of"):
         qcflow.artifacts.list_artifacts(
             artifact_uri="uri",
             run_id="run_id",
             artifact_path="path",
         )
 
-    with pytest.raises(MlflowException, match="Exactly one of"):
+    with pytest.raises(QCFlowException, match="Exactly one of"):
         qcflow.artifacts.list_artifacts()
 
-    with pytest.raises(MlflowException, match="`artifact_path` cannot be specified"):
+    with pytest.raises(QCFlowException, match="`artifact_path` cannot be specified"):
         qcflow.artifacts.list_artifacts(artifact_uri="uri", artifact_path="path")

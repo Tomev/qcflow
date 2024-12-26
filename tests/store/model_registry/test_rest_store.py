@@ -6,7 +6,7 @@ import pytest
 
 from qcflow.entities.model_registry import ModelVersion, ModelVersionTag, RegisteredModelTag
 from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
     CreateRegisteredModel,
@@ -32,14 +32,14 @@ from qcflow.protos.model_registry_pb2 import (
 )
 from qcflow.store.model_registry.rest_store import RestStore
 from qcflow.utils.proto_json_utils import message_to_json
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 
 from tests.helper_functions import mock_http_request_200, mock_http_request_403_200
 
 
 @pytest.fixture
 def creds():
-    return MlflowHostCreds("https://hello")
+    return QCFlowHostCreds("https://hello")
 
 
 @pytest.fixture
@@ -439,7 +439,7 @@ def test_await_model_version_creation_pending(store):
     )
     with (
         mock.patch.object(store, "get_model_version", return_value=pending_mv),
-        pytest.raises(MlflowException, match="Exceeded max wait time"),
+        pytest.raises(QCFlowException, match="Exceeded max wait time"),
     ):
         store._await_model_version_creation(pending_mv, 0.5)
 
@@ -453,6 +453,6 @@ def test_await_model_version_creation_failed(store):
     )
     with (
         mock.patch.object(store, "get_model_version", return_value=pending_mv),
-        pytest.raises(MlflowException, match="Model version creation failed for model name"),
+        pytest.raises(QCFlowException, match="Model version creation failed for model name"),
     ):
         store._await_model_version_creation(pending_mv, 0.5)

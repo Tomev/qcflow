@@ -4,7 +4,7 @@ import warnings
 import pytest
 import yaml
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.config import (
     AnthropicConfig,
     OpenAIConfig,
@@ -81,7 +81,7 @@ def test_api_key_parsing_env(tmp_path, monkeypatch):
 
     assert _resolve_api_key_from_input("$KEY_AS_ENV") == "my_key"
     monkeypatch.delenv("KEY_AS_ENV", raising=False)
-    with pytest.raises(MlflowException, match="Environment variable 'KEY_AS_ENV' is not set"):
+    with pytest.raises(QCFlowException, match="Environment variable 'KEY_AS_ENV' is not set"):
         _resolve_api_key_from_input("$KEY_AS_ENV")
 
     string_key = "my_key_as_a_string"
@@ -213,7 +213,7 @@ def test_invalid_route_definition(tmp_path):
     conf_path = tmp_path.joinpath("config.yaml")
     conf_path.write_text(yaml.safe_dump(invalid_conf))
 
-    with pytest.raises(MlflowException, match=r"The route_type 'invalid/route' is not supported."):
+    with pytest.raises(QCFlowException, match=r"The route_type 'invalid/route' is not supported."):
         _load_route_config(conf_path)
 
 
@@ -240,7 +240,7 @@ def test_invalid_provider(tmp_path):
     conf_path = tmp_path.joinpath("config.yaml")
     conf_path.write_text(yaml.safe_dump(invalid_conf))
 
-    with pytest.raises(MlflowException, match=r"The provider 'my_provider' is not supported."):
+    with pytest.raises(QCFlowException, match=r"The provider 'my_provider' is not supported."):
         _load_route_config(conf_path)
 
 
@@ -263,7 +263,7 @@ def test_invalid_model_definition(tmp_path):
     conf_path.write_text(yaml.safe_dump(invalid_partial_config))
 
     with pytest.raises(
-        MlflowException, match=re.compile(r"validation error.+openai_api_key", re.DOTALL)
+        QCFlowException, match=re.compile(r"validation error.+openai_api_key", re.DOTALL)
     ):
         _load_route_config(conf_path)
 
@@ -285,7 +285,7 @@ def test_invalid_model_definition(tmp_path):
     conf_path.write_text(yaml.safe_dump(invalid_format_config_key_is_not_string))
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The api key provided is not a string",
     ):
         _load_route_config(conf_path)
@@ -325,7 +325,7 @@ def test_invalid_model_definition(tmp_path):
     conf_path.write_text(yaml.safe_dump(invalid_no_config))
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="A config must be supplied when setting a provider. The provider entry",
     ):
         _load_route_config(conf_path)
@@ -355,7 +355,7 @@ def test_invalid_route_name(tmp_path, route_name):
     conf_path.write_text(yaml.safe_dump(bad_name))
 
     with pytest.raises(
-        MlflowException, match="The route name provided contains disallowed characters"
+        QCFlowException, match="The route name provided contains disallowed characters"
     ):
         _load_route_config(conf_path)
 
@@ -413,7 +413,7 @@ def test_duplicate_routes_in_config(tmp_path):
     conf_path = tmp_path.joinpath("config.yaml")
     conf_path.write_text(yaml.safe_dump(route))
     with pytest.raises(
-        MlflowException, match="Duplicate names found in endpoint configurations. Please"
+        QCFlowException, match="Duplicate names found in endpoint configurations. Please"
     ):
         _load_route_config(conf_path)
 

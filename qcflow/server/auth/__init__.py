@@ -18,7 +18,7 @@ import sqlalchemy
 from flask import Flask, Response, flash, jsonify, make_response, render_template_string, request
 from werkzeug.datastructures import Authorization
 
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.entities import Experiment
 from qcflow.entities.model_registry import RegisteredModel
 from qcflow.protos.databricks_pb2 import (
@@ -140,7 +140,7 @@ def _get_request_param(param: str) -> str:
     elif request.method in ("POST", "PATCH", "DELETE"):
         args = request.json
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Unsupported HTTP method '{request.method}'",
             BAD_REQUEST,
         )
@@ -149,7 +149,7 @@ def _get_request_param(param: str) -> str:
         # Special handling for run_id
         if param == "run_id":
             return _get_request_param("run_uuid")
-        raise MlflowException(
+        raise QCFlowException(
             f"Missing value for required parameter '{param}'. "
             "See the API docs for more information about request parameters.",
             INVALID_PARAMETER_VALUE,
@@ -164,7 +164,7 @@ def _get_permission_from_store_or_default(store_permission_func: Callable[[], st
     """
     try:
         perm = store_permission_func()
-    except MlflowException as e:
+    except QCFlowException as e:
         if e.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST):
             perm = auth_config.default_permission
         else:
@@ -203,7 +203,7 @@ def _get_permission_from_experiment_name() -> Permission:
     experiment_name = _get_request_param("experiment_name")
     store_exp = _get_tracking_store().get_experiment_by_name(experiment_name)
     if store_exp is None:
-        raise MlflowException(
+        raise QCFlowException(
             f"Could not find experiment with name {experiment_name}",
             error_code=RESOURCE_DOES_NOT_EXIST,
         )
@@ -466,7 +466,7 @@ def _before_request():
     if isinstance(authorization, Response):
         return authorization
     elif not isinstance(authorization, Authorization):
-        raise MlflowException(
+        raise QCFlowException(
             f"Unsupported result type from {auth_config.authorization_function}: "
             f"'{type(authorization).__name__}'",
             INTERNAL_ERROR,
@@ -661,7 +661,7 @@ def create_admin_user(username, password):
                 "It is recommended that you set a new password as soon as possible "
                 f"on {UPDATE_USER_PASSWORD}."
             )
-        except MlflowException as e:
+        except QCFlowException as e:
             if isinstance(e.__cause__, sqlalchemy.exc.IntegrityError):
                 # When multiple workers are starting up at the same time, it's possible
                 # that they try to create the admin user at the same time and one of them

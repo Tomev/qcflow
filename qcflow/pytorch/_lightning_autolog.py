@@ -6,16 +6,16 @@ import warnings
 from packaging.version import Version
 
 import qcflow.pytorch
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.ml_package_versions import _ML_PACKAGE_VERSIONS
 from qcflow.utils.autologging_utils import (
     BatchMetricsLogger,
     ExceptionSafeAbstractClass,
-    MlflowAutologgingQueueingClient,
+    QCFlowAutologgingQueueingClient,
     disable_autologging,
     get_autologging_config,
 )
-from qcflow.utils.checkpoint_utils import MlflowModelCheckpointCallbackBase
+from qcflow.utils.checkpoint_utils import QCFlowModelCheckpointCallbackBase
 
 logging.basicConfig(level=logging.ERROR)
 MIN_REQ_VERSION = Version(_ML_PACKAGE_VERSIONS["pytorch-lightning"]["autologging"]["minimum"])
@@ -24,15 +24,15 @@ MAX_REQ_VERSION = Version(_ML_PACKAGE_VERSIONS["pytorch-lightning"]["autologging
 import pytorch_lightning as pl
 from pytorch_lightning.utilities import rank_zero_only
 
-# The following are the downsides of using PyTorch Lightning's built-in MlflowLogger.
-# 1. MlflowLogger doesn't provide a mechanism to store an entire model into qcflow.
+# The following are the downsides of using PyTorch Lightning's built-in QCFlowLogger.
+# 1. QCFlowLogger doesn't provide a mechanism to store an entire model into qcflow.
 #    Only model checkpoint is saved.
 # 2. For storing the model into qcflow `qcflow.pytorch` library is used
 # and the library expects `qcflow` object to be instantiated.
-# In case of MlflowLogger, Run management is completely controlled by the class and
+# In case of QCFlowLogger, Run management is completely controlled by the class and
 # hence qcflow object needs to be reinstantiated by setting
 # tracking uri, experiment_id and run_id which may lead to a race condition.
-# TODO: Replace __MlflowPLCallback with Pytorch Lightning's built-in MlflowLogger
+# TODO: Replace __QCFlowPLCallback with Pytorch Lightning's built-in QCFlowLogger
 # once the above mentioned issues have been addressed
 
 _logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ def _get_optimizer_name(optimizer):
         )
 
 
-class __MlflowPLCallback(pl.Callback, metaclass=ExceptionSafeAbstractClass):
+class __QCFlowPLCallback(pl.Callback, metaclass=ExceptionSafeAbstractClass):
     """
     Callback for auto-logging metrics and parameters.
     """
@@ -75,7 +75,7 @@ class __MlflowPLCallback(pl.Callback, metaclass=ExceptionSafeAbstractClass):
         self, client, metrics_logger, run_id, log_models, log_every_n_epoch, log_every_n_step
     ):
         if log_every_n_step and _pl_version < Version("1.1.0"):
-            raise MlflowException(
+            raise QCFlowException(
                 "log_every_n_step is only supported for PyTorch-Lightning >= 1.1.0"
             )
         self.early_stopping = False
@@ -282,7 +282,7 @@ class __MlflowPLCallback(pl.Callback, metaclass=ExceptionSafeAbstractClass):
         self.metrics_logger.flush()
 
 
-class MlflowModelCheckpointCallback(pl.Callback, MlflowModelCheckpointCallbackBase):
+class QCFlowModelCheckpointCallback(pl.Callback, QCFlowModelCheckpointCallbackBase):
     """Callback for auto-logging pytorch-lightning model checkpoints to QCFlow.
     This callback implementation only supports pytorch-lightning >= 1.6.0.
 
@@ -407,7 +407,7 @@ def _log_early_stop_params(early_stop_callback, client, run_id):
 
     Args:
         early_stop_callback: The early stopping callback instance used during training.
-        client: An `MlflowAutologgingQueueingClient` instance used for QCFlow logging.
+        client: An `QCFlowAutologgingQueueingClient` instance used for QCFlow logging.
         run_id: The ID of the QCFlow Run to which to log configuration parameters.
     """
     client.log_params(
@@ -426,7 +426,7 @@ def _log_early_stop_metrics(early_stop_callback, client, run_id):
 
     Args:
         early_stop_callback: The early stopping callback instance used during training.
-        client: An `MlflowAutologgingQueueingClient` instance used for QCFlow logging.
+        client: An `QCFlowAutologgingQueueingClient` instance used for QCFlow logging.
         run_id: The ID of the QCFlow Run to which to log configuration parameters.
     """
     if early_stop_callback.stopped_epoch == 0:
@@ -471,7 +471,7 @@ def patched_fit(original, self, *args, **kwargs):
     with disable_autologging():
         run_id = qcflow.active_run().info.run_id
         tracking_uri = qcflow.get_tracking_uri()
-        client = MlflowAutologgingQueueingClient(tracking_uri)
+        client = QCFlowAutologgingQueueingClient(tracking_uri)
         metrics_logger = BatchMetricsLogger(run_id, tracking_uri)
 
         log_models = get_autologging_config(qcflow.pytorch.FLAVOR_NAME, "log_models", True)
@@ -488,9 +488,9 @@ def patched_fit(original, self, *args, **kwargs):
                 early_stop_callback = callback
                 _log_early_stop_params(early_stop_callback, client, run_id)
 
-        if not any(isinstance(callbacks, __MlflowPLCallback) for callbacks in self.callbacks):
+        if not any(isinstance(callbacks, __QCFlowPLCallback) for callbacks in self.callbacks):
             self.callbacks += [
-                __MlflowPLCallback(
+                __QCFlowPLCallback(
                     client, metrics_logger, run_id, log_models, log_every_n_epoch, log_every_n_step
                 )
             ]
@@ -516,11 +516,11 @@ def patched_fit(original, self, *args, **kwargs):
                 )
 
                 if not any(
-                    isinstance(callbacks, MlflowModelCheckpointCallback)
+                    isinstance(callbacks, QCFlowModelCheckpointCallback)
                     for callbacks in self.callbacks
                 ):
                     self.callbacks += [
-                        MlflowModelCheckpointCallback(
+                        QCFlowModelCheckpointCallback(
                             monitor=checkpoint_monitor,
                             mode=checkpoint_mode,
                             save_best_only=checkpoint_save_best_only,

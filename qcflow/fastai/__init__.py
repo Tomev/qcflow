@@ -292,7 +292,7 @@ def log_model(
 
         import fastai.vision as vis
         import qcflow.fastai
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
 
 
         def main(epochs=5, learning_rate=0.01):
@@ -311,7 +311,7 @@ def log_model(
                 qcflow.fastai.log_model(model, "model")
             # fetch the logged model artifacts
             artifacts = [
-                f.path for f in MlflowClient().list_artifacts(run.info.run_id, "model")
+                f.path for f in QCFlowClient().list_artifacts(run.info.run_id, "model")
             ]
             print(f"artifacts: {artifacts}")
 
@@ -483,12 +483,12 @@ def autolog(
 
         import fastai.vision as vis
         import qcflow.fastai
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
 
 
         def print_auto_logged_info(r):
             tags = {k: v for k, v in r.data.tags.items() if not k.startswith("qcflow.")}
-            artifacts = [f.path for f in MlflowClient().list_artifacts(r.info.run_id, "model")]
+            artifacts = [f.path for f in QCFlowClient().list_artifacts(r.info.run_id, "model")]
             print(f"run_id: {r.info.run_id}")
             print(f"artifacts: {artifacts}")
             print(f"params: {r.data.params}")
@@ -550,9 +550,9 @@ def autolog(
     from fastai.learner import Learner
 
     def getFastaiCallback(metrics_logger, is_fine_tune=False):
-        from qcflow.fastai.callback import __MlflowFastaiCallback
+        from qcflow.fastai.callback import __QCFlowFastaiCallback
 
-        return __MlflowFastaiCallback(
+        return __QCFlowFastaiCallback(
             metrics_logger=metrics_logger,
             log_models=log_models,
             is_fine_tune=is_fine_tune,

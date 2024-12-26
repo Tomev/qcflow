@@ -10,7 +10,7 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.utils import gorilla
 from qcflow.utils.autologging_utils import (
     autologging_is_disabled,
@@ -133,7 +133,7 @@ def test_autolog_respects_exclusive_flag(setup_sklearn_model):
     run = qcflow.start_run()
     model.fit(x, y)
     qcflow.end_run()
-    run_data = MlflowClient().get_run(run.info.run_id).data
+    run_data = QCFlowClient().get_run(run.info.run_id).data
     metrics, params, tags = run_data.metrics, run_data.params, run_data.tags
     assert not metrics
     assert not params
@@ -143,7 +143,7 @@ def test_autolog_respects_exclusive_flag(setup_sklearn_model):
     run = qcflow.start_run()
     model.fit(x, y)
     qcflow.end_run()
-    run_data = MlflowClient().get_run(run.info.run_id).data
+    run_data = QCFlowClient().get_run(run.info.run_id).data
     metrics, params = run_data.metrics, run_data.params
     assert metrics
     assert params
@@ -156,7 +156,7 @@ def test_autolog_respects_disable_flag(setup_sklearn_model):
     run = qcflow.start_run()
     model.fit(x, y)
     qcflow.end_run()
-    run_data = MlflowClient().get_run(run.info.run_id).data
+    run_data = QCFlowClient().get_run(run.info.run_id).data
     metrics, params, tags = run_data.metrics, run_data.params, run_data.tags
     assert not metrics
     assert not params
@@ -166,7 +166,7 @@ def test_autolog_respects_disable_flag(setup_sklearn_model):
     run = qcflow.start_run()
     model.fit(x, y)
     qcflow.end_run()
-    run_data = MlflowClient().get_run(run.info.run_id).data
+    run_data = QCFlowClient().get_run(run.info.run_id).data
     metrics, params = run_data.metrics, run_data.params
     assert metrics
     assert params
@@ -214,7 +214,7 @@ def test_autolog_respects_disable_flag_across_import_orders():
         run = qcflow.start_run()
         svc.fit(iris.data, iris.target)
         qcflow.end_run()
-        run_data = MlflowClient().get_run(run.info.run_id).data
+        run_data = QCFlowClient().get_run(run.info.run_id).data
         metrics, params, tags = run_data.metrics, run_data.params, run_data.tags
         assert not metrics
         assert not params

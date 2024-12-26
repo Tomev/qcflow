@@ -14,7 +14,7 @@ import { TestApolloProvider } from '../../../common/utils/TestApolloProvider';
 import { shouldEnableGraphQLRunDetailsPage } from '../../../common/utils/FeatureUtils';
 import { setupServer } from '../../../common/utils/setup-msw';
 import { graphql } from 'msw';
-import { GetRun, GetRunVariables, MlflowRunStatus } from '../../../graphql/__generated__/graphql';
+import { GetRun, GetRunVariables, QCFlowRunStatus } from '../../../graphql/__generated__/graphql';
 
 jest.mock('../../../common/utils/FeatureUtils', () => ({
   ...jest.requireActual('../../../common/utils/FeatureUtils'),
@@ -171,7 +171,7 @@ describe('RunPage (GraphQL API)', () => {
           return res(
             ctx.data({
               qcflowGetRun: {
-                __typename: 'MlflowGetRunResponse',
+                __typename: 'QCFlowGetRunResponse',
                 apiError: {
                   __typename: 'ApiError',
                   helpUrl: null,
@@ -186,24 +186,24 @@ describe('RunPage (GraphQL API)', () => {
         return res(
           ctx.data({
             qcflowGetRun: {
-              __typename: 'MlflowGetRunResponse',
+              __typename: 'QCFlowGetRunResponse',
               apiError: null,
               run: {
                 // Use 'any' type to satisfy multiple query implementations
-                __typename: 'MlflowRun' as any,
+                __typename: 'QCFlowRun' as any,
                 data: {
-                  __typename: 'MlflowRunData',
+                  __typename: 'QCFlowRunData',
                   metrics: [
-                    { __typename: 'MlflowMetric', key: 'test-metric', value: 100, step: '1', timestamp: '1000' },
+                    { __typename: 'QCFlowMetric', key: 'test-metric', value: 100, step: '1', timestamp: '1000' },
                   ],
-                  params: [{ __typename: 'MlflowParam', key: 'test-param', value: 'test-param-value' }],
+                  params: [{ __typename: 'QCFlowParam', key: 'test-param', value: 'test-param-value' }],
                   tags: [
-                    { __typename: 'MlflowRunTag', key: 'test-tag-a', value: 'test-tag-a-value' },
-                    { __typename: 'MlflowRunTag', key: 'test-tag-b', value: 'test-tag-b-value' },
+                    { __typename: 'QCFlowRunTag', key: 'test-tag-a', value: 'test-tag-a-value' },
+                    { __typename: 'QCFlowRunTag', key: 'test-tag-b', value: 'test-tag-b-value' },
                   ],
                 },
                 experiment: {
-                  __typename: 'MlflowExperiment',
+                  __typename: 'QCFlowExperiment',
                   artifactLocation: null,
                   experimentId: 'test-experiment',
                   lastUpdateTime: null,
@@ -212,24 +212,24 @@ describe('RunPage (GraphQL API)', () => {
                   tags: [],
                 },
                 info: {
-                  __typename: 'MlflowRunInfo',
+                  __typename: 'QCFlowRunInfo',
                   artifactUri: null,
                   experimentId: 'test-experiment',
                   lifecycleStage: null,
                   runName: 'test run',
                   runUuid: 'test-run-uuid',
-                  status: MlflowRunStatus.FINISHED,
+                  status: QCFlowRunStatus.FINISHED,
                   userId: null,
                   startTime: '1672578000000',
                   endTime: '1672578300000',
                 },
                 inputs: {
-                  __typename: 'MlflowRunInputs',
+                  __typename: 'QCFlowRunInputs',
                   datasetInputs: [
                     {
-                      __typename: 'MlflowDatasetInput',
+                      __typename: 'QCFlowDatasetInput',
                       dataset: {
-                        __typename: 'MlflowDataset',
+                        __typename: 'QCFlowDataset',
                         digest: 'digest',
                         name: 'dataset-name',
                         profile: 'profile',
@@ -237,7 +237,7 @@ describe('RunPage (GraphQL API)', () => {
                         source: 'source',
                         sourceType: 'sourceType',
                       },
-                      tags: [{ __typename: 'MlflowInputTag', key: 'tag1', value: 'value1' }],
+                      tags: [{ __typename: 'QCFlowInputTag', key: 'tag1', value: 'value1' }],
                     },
                   ],
                 },
@@ -300,13 +300,13 @@ describe('RunPage (GraphQL API)', () => {
         return res(
           ctx.data({
             qcflowGetRun: {
-              __typename: 'MlflowGetRunResponse',
+              __typename: 'QCFlowGetRunResponse',
               apiError: null,
               run: {
-                __typename: 'MlflowRun' as any,
+                __typename: 'QCFlowRun' as any,
                 data: null,
                 experiment: {
-                  __typename: 'MlflowExperiment',
+                  __typename: 'QCFlowExperiment',
                   artifactLocation: null,
                   experimentId: 'test-experiment',
                   lastUpdateTime: null,
@@ -315,13 +315,13 @@ describe('RunPage (GraphQL API)', () => {
                   tags: [],
                 },
                 info: {
-                  __typename: 'MlflowRunInfo',
+                  __typename: 'QCFlowRunInfo',
                   artifactUri: null,
                   experimentId: 'test-experiment',
                   lifecycleStage: null,
                   runName: 'test run',
                   runUuid: 'test-run-uuid',
-                  status: MlflowRunStatus.RUNNING,
+                  status: QCFlowRunStatus.RUNNING,
                   userId: null,
                   startTime: '1672578000000',
                   endTime: '0',

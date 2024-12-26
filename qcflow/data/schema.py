@@ -1,6 +1,6 @@
 from typing import Any
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.types.schema import Schema
 
@@ -12,12 +12,12 @@ class TensorDatasetSchema:
 
     def __init__(self, features: Schema, targets: Schema = None):
         if not isinstance(features, Schema):
-            raise MlflowException(
+            raise QCFlowException(
                 f"features must be qcflow.types.Schema, got '{type(features)}'",
                 INVALID_PARAMETER_VALUE,
             )
         if targets is not None and not isinstance(targets, Schema):
-            raise MlflowException(
+            raise QCFlowException(
                 f"targets must be either None or qcflow.types.Schema, got '{type(features)}'",
                 INVALID_PARAMETER_VALUE,
             )
@@ -52,7 +52,7 @@ class TensorDatasetSchema:
 
         """
         if "qcflow_tensorspec" not in schema_dict:
-            raise MlflowException(
+            raise QCFlowException(
                 "TensorDatasetSchema dictionary is missing expected key 'qcflow_tensorspec'",
                 INVALID_PARAMETER_VALUE,
             )

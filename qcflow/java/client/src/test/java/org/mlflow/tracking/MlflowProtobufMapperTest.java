@@ -11,10 +11,10 @@ import org.testng.annotations.Test;
 
 import org.qcflow.api.proto.Service;
 
-public class MlflowProtobufMapperTest {
+public class QCFlowProtobufMapperTest {
   @Test
   public void testSerializeSnakeCase() {
-    MlflowProtobufMapper mapper = new MlflowProtobufMapper();
+    QCFlowProtobufMapper mapper = new QCFlowProtobufMapper();
     String result = mapper.makeLogParam("my-id", "my-key", "my-value");
 
     Gson gson = new Gson();
@@ -31,7 +31,7 @@ public class MlflowProtobufMapperTest {
 
   @Test
   public void testDeserializeSnakeCaseAndUnknown() {
-    MlflowProtobufMapper mapper = new MlflowProtobufMapper();
+    QCFlowProtobufMapper mapper = new QCFlowProtobufMapper();
     Service.CreateExperiment.Response result = mapper.toCreateExperimentResponse(
       "{\"experiment_id\": 123, \"what is this field\": \"even\"}");
     Assert.assertEquals(result.getExperimentId(), "123");

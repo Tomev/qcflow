@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.file_utils import read_yaml, write_yaml
 from qcflow.utils.virtualenv import _create_virtualenv
 
@@ -94,7 +94,7 @@ def test_virtualenv_conda_project_execution(create_virtualenv_spy):
 
 
 def test_virtualenv_project_execution_conda():
-    with pytest.raises(MlflowException, match="python_env project cannot be executed using conda"):
+    with pytest.raises(QCFlowException, match="python_env project cannot be executed using conda"):
         qcflow.projects.run(TEST_VIRTUALENV_PROJECT_DIR, env_manager="conda")
 
 

@@ -16,8 +16,8 @@ from qcflow.data.spark_dataset import SparkDataset
 from qcflow.entities import Metric, Param
 from qcflow.entities.dataset_input import DatasetInput
 from qcflow.entities.input_tag import InputTag
-from qcflow.exceptions import MlflowException
-from qcflow.tracking.client import MlflowClient
+from qcflow.exceptions import QCFlowException
+from qcflow.tracking.client import QCFlowClient
 from qcflow.utils import (
     _chunk_dict,
     _get_fully_qualified_class_name,
@@ -40,7 +40,7 @@ from qcflow.utils.qcflow_tags import (
 )
 from qcflow.utils.os import is_windows
 from qcflow.utils.rest_utils import (
-    MlflowHostCreds,
+    QCFlowHostCreds,
     augmented_raise_for_status,
     http_request,
 )
@@ -75,12 +75,12 @@ def _read_log_model_allowlist_from_file(allowlist_file):
         scheme = ""
     if scheme in ("file", ""):
         if not os.path.exists(path):
-            raise MlflowException.invalid_parameter_value(f"{allowlist_file} does not exist")
+            raise QCFlowException.invalid_parameter_value(f"{allowlist_file} does not exist")
 
         with open(allowlist_file) as f:
             return _parse_allowlist_file(f)
     else:
-        host_creds = MlflowHostCreds(
+        host_creds = QCFlowHostCreds(
             host=scheme + "://" + (url_parsed.hostname or ""),
             username=url_parsed.username,
             password=url_parsed.password,
@@ -398,7 +398,7 @@ def _get_instance_param_map(instance, uid_to_indexed_name_map):
 
 
 def _create_child_runs_for_parameter_search(parent_estimator, parent_model, parent_run, child_tags):
-    client = MlflowClient()
+    client = QCFlowClient()
     # Use the start time of the parent parameter search run as a rough estimate for the
     # start time of child runs, since we cannot precisely determine when each point
     # in the parameter search space was explored
@@ -465,7 +465,7 @@ def _log_parameter_search_results_as_artifact(param_maps, metrics_dict, run_id):
     with TempDir() as t:
         results_path = t.path("search_results.csv")
         results_df.to_csv(results_path, index=False)
-        MlflowClient().log_artifact(run_id, results_path)
+        QCFlowClient().log_artifact(run_id, results_path)
 
 
 def _get_warning_msg_for_fit_call_with_a_list_of_params(estimator):
@@ -734,7 +734,7 @@ class _AutologgingMetricsManager:
         """
         # Note: if the case log the same metric key multiple times,
         #  newer value will overwrite old value
-        client = MlflowClient()
+        client = QCFlowClient()
         client.log_metric(run_id=run_id, key=key, value=value)
         if self._metric_info_artifact_need_update[run_id]:
             evaluator_call_list = []
@@ -1226,7 +1226,7 @@ def autolog(
                             dataset_input = DatasetInput(
                                 dataset=dataset._to_qcflow_entity(), tags=tags
                             )
-                            client = MlflowClient()
+                            client = QCFlowClient()
                             client.log_inputs(run_id, [dataset_input])
                         except Exception as e:
                             _logger.warning(

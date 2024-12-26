@@ -1,9 +1,9 @@
 from abc import abstractmethod
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 
 
-class _ModelRegistryEntity(_MlflowObject):
+class _ModelRegistryEntity(_QCFlowObject):
     @classmethod
     @abstractmethod
     def from_proto(cls, proto):

@@ -25,7 +25,7 @@ from qcflow.utils.uri import _DATABRICKS_UNITY_CATALOG_SCHEME, _OSS_UNITY_CATALO
 # the model registry URI:
 #  - via environment variables like QCFLOW_TRACKING_URI, QCFLOW_TRACKING_USERNAME, ...
 # We do support specifying it
-#  - via the ``model_registry_uri`` parameter when creating an ``MlflowClient`` or
+#  - via the ``model_registry_uri`` parameter when creating an ``QCFlowClient`` or
 #    ``ModelRegistryClient``.
 #  - via a utility method ``qcflow.set_registry_uri``
 #  - by not specifying anything: in this case we assume the model registry store URI is

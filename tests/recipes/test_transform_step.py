@@ -6,9 +6,9 @@ import pandas as pd
 import pytest
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_DIRECTORY
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.steps.transform import TransformStep, _validate_user_code_output
 from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
 from qcflow.utils.file_utils import read_yaml
@@ -49,7 +49,7 @@ def set_up_transform_step(recipe_root: Path, transform_user_module):
 
     recipe_yaml = recipe_root.joinpath(_RECIPE_CONFIG_FILE_NAME)
     experiment_name = "demo"
-    MlflowClient().create_experiment(experiment_name)
+    QCFlowClient().create_experiment(experiment_name)
 
     recipe_yaml.write_text(
         f"""
@@ -91,7 +91,7 @@ def test_transform_step_writes_onehot_encoded_dataframe_and_transformer_pkl(
 def test_transform_steps_work_without_step_config(tmp_recipe_root_path, recipe):
     recipe_yaml = tmp_recipe_root_path.joinpath(_RECIPE_CONFIG_FILE_NAME)
     experiment_name = "demo"
-    MlflowClient().create_experiment(experiment_name)
+    QCFlowClient().create_experiment(experiment_name)
 
     recipe_yaml.write_text(
         """
@@ -163,7 +163,7 @@ def test_validate_method_validates_the_transformer():
         return in_correct_fit_transformer
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The transformer provided doesn't have a fit method.",
     ):
         validated_transformer = _validate_user_code_output(incorrect__fit_transformer)
@@ -181,7 +181,7 @@ def test_validate_method_validates_the_transformer():
         return inCorrectTransformer
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The transformer provided doesn't have a transform method.",
     ):
         validated_transformer = _validate_user_code_output(incorrect_transformer)

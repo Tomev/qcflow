@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Union
 import cloudpickle
 import yaml
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.langchain.utils import (
     _BASE_LOAD_KEY,
     _CONFIG_LOAD_KEY,
@@ -69,7 +69,7 @@ def _load_model_from_config(path, model_config):
     elif config_path.endswith(".json"):
         config = _load_from_json(config_path)
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Cannot load runnable without a config file. Got path {config_path}."
         )
     _type = config.get("_type")
@@ -87,7 +87,7 @@ def _load_model_from_config(path, model_config):
         return _patch_loader(load_llm)(config_path)
     elif _type in custom_type_to_loader_dict():
         return custom_type_to_loader_dict()[_type](config)
-    raise MlflowException(f"Unsupported type {_type} for loading.")
+    raise QCFlowException(f"Unsupported type {_type} for loading.")
 
 
 def _load_model_from_path(path: str, model_config=None):
@@ -100,13 +100,13 @@ def _load_model_from_path(path: str, model_config=None):
         return _load_model_from_config(path, model_config)
     if model_load_fn == _PICKLE_LOAD_KEY:
         return _load_from_pickle(os.path.join(path, model_config.get(_MODEL_DATA_KEY)))
-    raise MlflowException(f"Unsupported model load key {model_load_fn}")
+    raise QCFlowException(f"Unsupported model load key {model_load_fn}")
 
 
 def _validate_path(file_path: Union[str, Path]):
     load_path = Path(file_path)
     if not load_path.exists() or not load_path.is_dir():
-        raise MlflowException(
+        raise QCFlowException(
             f"Path {load_path} must be an existing directory in order to load model."
         )
     return load_path
@@ -125,7 +125,7 @@ def _load_runnable_with_steps(file_path: Union[Path, str], model_type: str):
 
     steps_conf_file = load_path / _RUNNABLE_STEPS_FILE_NAME
     if not steps_conf_file.exists():
-        raise MlflowException(
+        raise QCFlowException(
             f"File {steps_conf_file} must exist in order to load runnable with steps."
         )
     steps_conf = _load_from_yaml(steps_conf_file)
@@ -174,7 +174,7 @@ def _load_runnable_branch(file_path: Union[Path, str]):
 
     branches_conf_file = load_path / _RUNNABLE_BRANCHES_FILE_NAME
     if not branches_conf_file.exists():
-        raise MlflowException(
+        raise QCFlowException(
             f"File {branches_conf_file} must exist in order to load runnable with steps."
         )
     branches_conf = _load_from_yaml(branches_conf_file)
@@ -342,7 +342,7 @@ def _save_runnable_with_steps(model, file_path: Union[Path, str], loader_fn=None
     elif isinstance(steps, dict):
         generator = steps.items()
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Runnable {model} steps attribute must be either a list or a dictionary. "
             f"Got {type(steps).__name__}."
         )
@@ -361,7 +361,7 @@ def _save_runnable_with_steps(model, file_path: Union[Path, str], loader_fn=None
             unsaved_runnables[step] = f"{runnable.get_name()} -- {e}"
 
     if unsaved_runnables:
-        raise MlflowException(f"Failed to save runnable sequence: {unsaved_runnables}.")
+        raise QCFlowException(f"Failed to save runnable sequence: {unsaved_runnables}.")
 
     # save steps configs
     with save_path.joinpath(_RUNNABLE_STEPS_FILE_NAME).open("w") as f:
@@ -405,7 +405,7 @@ def _save_runnable_branch(model, file_path, loader_fn, persist_dir):
     except Exception as e:
         unsaved_runnables[_DEFAULT_BRANCH_NAME] = f"{model.default.get_name()} -- {e}"
     if unsaved_runnables:
-        raise MlflowException(f"Failed to save runnable branch: {unsaved_runnables}.")
+        raise QCFlowException(f"Failed to save runnable branch: {unsaved_runnables}.")
 
     # save branches configs
     with save_path.joinpath(_RUNNABLE_BRANCHES_FILE_NAME).open("w") as f:
@@ -422,7 +422,7 @@ def _save_runnable_assign(model, file_path, loader_fn=None, persist_dir=None):
     mapper_path.mkdir()
 
     if not isinstance(model.mapper, RunnableParallel):
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to save model {model} with type {model.__class__.__name__}. "
             "RunnableAssign's mapper must be a RunnableParallel."
         )
@@ -491,7 +491,7 @@ def _save_runnables(model, path, loader_fn=None, persist_dir=None):
         model_data_path = _MODEL_DATA_FOLDER_NAME
         _save_runnable_binding(model, os.path.join(path, model_data_path), loader_fn, persist_dir)
     else:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             get_unsupported_model_message(type(model).__name__)
         )
     model_data_kwargs[_MODEL_DATA_KEY] = model_data_path
@@ -514,7 +514,7 @@ def _load_runnables(path, conf):
         return _load_runnable_assign(os.path.join(path, model_data))
     if model_type in (x.__name__ for x in lc_runnable_binding_types()):
         return _load_runnable_binding(os.path.join(path, model_data))
-    raise MlflowException.invalid_parameter_value(get_unsupported_model_message(model_type))
+    raise QCFlowException.invalid_parameter_value(get_unsupported_model_message(model_type))
 
 
 def get_runnable_steps(model: Runnable):

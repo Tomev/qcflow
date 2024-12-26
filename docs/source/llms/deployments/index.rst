@@ -349,7 +349,7 @@ with the flexibility to add, remove, or modify endpoints as your needs change. I
 of endpoints, providing a seamless experience for any applications or services that interact with the QCFlow AI Gateway.
 
 When defining endpoints in the configuration file, ensure that each name is unique to prevent conflicts.
-Duplicate endpoint names will raise an ``MlflowException``.
+Duplicate endpoint names will raise an ``QCFlowException``.
 
 .. _deployments_models:
 
@@ -953,7 +953,7 @@ As a convenience, accessing the root URL (e.g., ``http://my.deployments:9000``) 
 
 QCFlow Python Client APIs
 -------------------------
-:class:`MlflowDeploymentClient <qcflow.deployments.MlflowDeploymentClient>` is the user-facing client API that is used to interact with the QCFlow AI Gateway.
+:class:`QCFlowDeploymentClient <qcflow.deployments.QCFlowDeploymentClient>` is the user-facing client API that is used to interact with the QCFlow AI Gateway.
 It abstracts the HTTP requests to the gateway server via a simple, easy-to-use Python API.
 
 .. _deployments_client_api:
@@ -961,9 +961,9 @@ It abstracts the HTTP requests to the gateway server via a simple, easy-to-use P
 Client API
 ~~~~~~~~~~
 
-To use the ``MlflowDeploymentClient`` API, see the below examples for the available API methods:
+To use the ``QCFlowDeploymentClient`` API, see the below examples for the available API methods:
 
-1. Create an ``MlflowDeploymentClient``
+1. Create an ``QCFlowDeploymentClient``
 
     .. code-block:: python
 
@@ -973,7 +973,7 @@ To use the ``MlflowDeploymentClient`` API, see the below examples for the availa
 
 2. List all endpoints:
 
-    The :meth:`list_endpoints() <qcflow.deployments.MlflowDeploymentClient.list_endpoints>` method returns a list of all endpoints.
+    The :meth:`list_endpoints() <qcflow.deployments.QCFlowDeploymentClient.list_endpoints>` method returns a list of all endpoints.
 
     .. code-block:: python
 
@@ -983,7 +983,7 @@ To use the ``MlflowDeploymentClient`` API, see the below examples for the availa
 
 3. Query an endpoint:
 
-    The :meth:`predict() <qcflow.deployments.MlflowDeploymentClient.predict>` method submits a query to a configured provider endpoint.
+    The :meth:`predict() <qcflow.deployments.QCFlowDeploymentClient.predict>` method submits a query to a configured provider endpoint.
     The data structure you send in the query depends on the endpoint.
 
     .. code-block:: python
@@ -1006,9 +1006,9 @@ This integration enable users to use prompt engineering, retrieval augmented gen
 
     import qcflow
     from langchain import LLMChain, PromptTemplate
-    from langchain.llms import Mlflow
+    from langchain.llms import QCFlow
 
-    llm = Mlflow(target_uri="http://127.0.0.1:5000", endpoint="completions")
+    llm = QCFlow(target_uri="http://127.0.0.1:5000", endpoint="completions")
     llm_chain = LLMChain(
         llm=llm,
         prompt=PromptTemplate(

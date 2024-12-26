@@ -1,6 +1,6 @@
 from threading import Thread
 
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import Metric
 from qcflow.utils.autologging_utils.metrics_queue import (
     _metrics_queue,
@@ -17,7 +17,7 @@ def test_flush_metrics_queue_is_thread_safe():
     verifies that `_flush_queue` is thread safe.
     """
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.create_run(experiment_id="0")
     metric_queue_item = (run.info.run_id, Metric("foo", 0.1, 100, 1))
     _metrics_queue.append(metric_queue_item)

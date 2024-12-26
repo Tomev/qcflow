@@ -21,7 +21,7 @@ experiments on a tracking server hosted at ``http://localhost:5000``, make a POS
 ===========================
 
 
-.. _qcflowMlflowServicecreateExperiment:
+.. _qcflowQCFlowServicecreateExperiment:
 
 Create Experiment
 =================
@@ -89,7 +89,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServicesearchExperiments:
+.. _qcflowQCFlowServicesearchExperiments:
 
 Search Experiments
 ==================
@@ -171,7 +171,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServicegetExperiment:
+.. _qcflowQCFlowServicegetExperiment:
 
 Get Experiment
 ==============
@@ -226,7 +226,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServicegetExperimentByName:
+.. _qcflowQCFlowServicegetExperimentByName:
 
 Get Experiment By Name
 ======================
@@ -287,7 +287,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServicedeleteExperiment:
+.. _qcflowQCFlowServicedeleteExperiment:
 
 Delete Experiment
 =================
@@ -327,7 +327,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicerestoreExperiment:
+.. _qcflowQCFlowServicerestoreExperiment:
 
 Restore Experiment
 ==================
@@ -370,7 +370,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServiceupdateExperiment:
+.. _qcflowQCFlowServiceupdateExperiment:
 
 Update Experiment
 =================
@@ -411,7 +411,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicecreateRun:
+.. _qcflowQCFlowServicecreateRun:
 
 Create Run
 ==========
@@ -476,7 +476,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServicedeleteRun:
+.. _qcflowQCFlowServicedeleteRun:
 
 Delete Run
 ==========
@@ -515,7 +515,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicerestoreRun:
+.. _qcflowQCFlowServicerestoreRun:
 
 Restore Run
 ===========
@@ -554,7 +554,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicegetRun:
+.. _qcflowQCFlowServicegetRun:
 
 Get Run
 =======
@@ -612,7 +612,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServicelogMetric:
+.. _qcflowQCFlowServicelogMetric:
 
 Log Metric
 ==========
@@ -668,7 +668,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicelogBatch:
+.. _qcflowQCFlowServicelogBatch:
 
 Log Batch
 =========
@@ -761,7 +761,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicelogModel:
+.. _qcflowQCFlowServicelogModel:
 
 Log Model
 =========
@@ -801,7 +801,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicelogInputs:
+.. _qcflowQCFlowServicelogInputs:
 
 Log Inputs
 ==========
@@ -844,7 +844,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicesetExperimentTag:
+.. _qcflowQCFlowServicesetExperimentTag:
 
 Set Experiment Tag
 ==================
@@ -893,7 +893,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicesetTag:
+.. _qcflowQCFlowServicesetTag:
 
 Set Tag
 =======
@@ -944,7 +944,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicedeleteTag:
+.. _qcflowQCFlowServicedeleteTag:
 
 Delete Tag
 ==========
@@ -988,7 +988,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicelogParam:
+.. _qcflowQCFlowServicelogParam:
 
 Log Param
 =========
@@ -1038,7 +1038,7 @@ Request Structure
 
 
 
-.. _qcflowMlflowServicegetMetricHistory:
+.. _qcflowQCFlowServicegetMetricHistory:
 
 Get Metric History
 ==================
@@ -1108,7 +1108,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServicesearchRuns:
+.. _qcflowQCFlowServicesearchRuns:
 
 Search Runs
 ===========
@@ -1191,7 +1191,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServicelistArtifacts:
+.. _qcflowQCFlowServicelistArtifacts:
 
 List Artifacts
 ==============
@@ -1256,7 +1256,7 @@ Response Structure
 
 
 
-.. _qcflowMlflowServiceupdateRun:
+.. _qcflowQCFlowServiceupdateRun:
 
 Update Run
 ==========

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.evaluation.base import EvaluationArtifact
 from qcflow.utils.annotations import developer_stable
 from qcflow.utils.proto_json_utils import NumpyEncoder
@@ -153,7 +153,7 @@ def _infer_artifact_type_and_ext(artifact_name, raw_artifact, custom_metric_tupl
                     from_path=False, type=JsonEvaluationArtifact, ext=".json"
                 )
             except JSONDecodeError:
-                raise MlflowException(
+                raise QCFlowException(
                     f"{exception_header} with string representation '{raw_artifact}' that is "
                     f"neither a valid path to a file nor a JSON string."
                 )
@@ -161,11 +161,11 @@ def _infer_artifact_type_and_ext(artifact_name, raw_artifact, custom_metric_tupl
     # Type inference based on the file extension
     if isinstance(raw_artifact, pathlib.Path):
         if not raw_artifact.exists():
-            raise MlflowException(f"{exception_header} with path '{raw_artifact}' does not exist.")
+            raise QCFlowException(f"{exception_header} with path '{raw_artifact}' does not exist.")
         if not raw_artifact.is_file():
-            raise MlflowException(f"{exception_header} with path '{raw_artifact}' is not a file.")
+            raise QCFlowException(f"{exception_header} with path '{raw_artifact}' is not a file.")
         if raw_artifact.suffix not in _EXT_TO_ARTIFACT_MAP:
-            raise MlflowException(
+            raise QCFlowException(
                 f"{exception_header} with path '{raw_artifact}' does not match any of the supported"
                 f" file extensions: {', '.join(_EXT_TO_ARTIFACT_MAP.keys())}."
             )

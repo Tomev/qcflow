@@ -5,7 +5,7 @@ import posixpath
 
 import pytest
 
-from qcflow.exceptions import MlflowException, MlflowTraceDataCorrupted, MlflowTraceDataNotFound
+from qcflow.exceptions import QCFlowException, QCFlowTraceDataCorrupted, QCFlowTraceDataNotFound
 from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
 from qcflow.utils.file_utils import TempDir
 
@@ -149,7 +149,7 @@ def test_artifacts_are_logged_to_and_downloaded_from_repo_subdirectory_successfu
 def test_log_artifact_throws_exception_for_invalid_artifact_paths(local_artifact_repo):
     with TempDir() as local_dir:
         for bad_artifact_path in ["/", "//", "/tmp", "/bad_path", ".", "../terrible_path"]:
-            with pytest.raises(MlflowException, match="Invalid artifact path"):
+            with pytest.raises(QCFlowException, match="Invalid artifact path"):
                 local_artifact_repo.log_artifact(local_dir.path(), bad_artifact_path)
 
 
@@ -229,15 +229,15 @@ def test_delete_artifacts_with_nonexistent_path_succeeds(local_artifact_repo):
 
 
 def test_download_artifacts_invalid_remote_file_path(local_artifact_repo):
-    with pytest.raises(MlflowException, match="Invalid path"):
+    with pytest.raises(QCFlowException, match="Invalid path"):
         local_artifact_repo.download_artifacts("/absolute/path/to/file")
 
 
 def test_trace_data(local_artifact_repo):
-    with pytest.raises(MlflowTraceDataNotFound, match=r"Trace data not found for path="):
+    with pytest.raises(QCFlowTraceDataNotFound, match=r"Trace data not found for path="):
         local_artifact_repo.download_trace_data()
     local_artifact_repo.upload_trace_data("invalid data")
-    with pytest.raises(MlflowTraceDataCorrupted, match=r"Trace data is corrupted for path="):
+    with pytest.raises(QCFlowTraceDataCorrupted, match=r"Trace data is corrupted for path="):
         local_artifact_repo.download_trace_data()
 
     mock_trace_data = {"spans": [], "request": {"test": 1}, "response": {"test": 2}}

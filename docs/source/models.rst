@@ -319,7 +319,7 @@ Then, logging the model from the file path in a different python script:
 .. warning::
     The :py:func:`qcflow.models.set_model` API is **not threadsafe**. Do not attempt to use this feature if you are logging models concurrently 
     from multiple threads. This fluent API utilizes a global active model state that has no consistency guarantees. If you are interested in threadsafe 
-    logging APIs, please use the :py:class:`qcflow.client.MlflowClient` APIs for logging models. 
+    logging APIs, please use the :py:class:`qcflow.client.QCFlowClient` APIs for logging models. 
 
 
 .. _models_built-in-model-flavors:
@@ -1426,10 +1426,10 @@ To make predictions, we load the saved model from the last run:
 
 .. code-block:: python
 
-    from qcflow import MlflowClient
+    from qcflow import QCFlowClient
 
     # look up the last run info from qcflow
-    client = MlflowClient()
+    client = QCFlowClient()
     last_run = client.search_runs(experiment_ids=["0"], max_results=1)[0]
 
     # We need to append the spacy model directory name to the artifact uri
@@ -1476,7 +1476,7 @@ using a ``fastai`` data loader:
     def print_auto_logged_info(r):
         tags = {k: v for k, v in r.data.tags.items() if not k.startswith("qcflow.")}
         artifacts = [
-            f.path for f in qcflow.MlflowClient().list_artifacts(r.info.run_id, "model")
+            f.path for f in qcflow.QCFlowClient().list_artifacts(r.info.run_id, "model")
         ]
         print(f"run_id: {r.info.run_id}")
         print(f"artifacts: {artifacts}")
@@ -2212,7 +2212,7 @@ For a ``GroupedPmdarima`` model, an example configuration for the ``pyfunc`` ``p
 
 .. note::
     There are several instances in which a configuration ``DataFrame`` submitted to the ``pyfunc`` ``predict()`` method
-    will cause an ``MlflowException`` to be raised:
+    will cause an ``QCFlowException`` to be raised:
 
         * If neither ``horizon`` or ``n_periods`` are provided.
         * The value of ``n_periods`` or ``horizon`` is not an integer.
@@ -3197,7 +3197,7 @@ run.
     import sktime
     import yaml
     from qcflow import pyfunc
-    from qcflow.exceptions import MlflowException
+    from qcflow.exceptions import QCFlowException
     from qcflow.models import Model
     from qcflow.models.model import MLMODEL_FILE_NAME
     from qcflow.models.utils import _save_example
@@ -3324,7 +3324,7 @@ Note: When creating your own custom flavor, be sure rename the ``sktime_model`` 
         _validate_env_arguments(conda_env, pip_requirements, extra_pip_requirements)
 
         if serialization_format not in SUPPORTED_SERIALIZATION_FORMATS:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     f"Unrecognized serialization format: {serialization_format}. "
                     "Please specify one of the following supported formats: "
@@ -3518,7 +3518,7 @@ pass any flavor-specific attributes to the ``_load_model()`` function (i.e., the
             serialization_format = sktime_flavor_conf.get(
                 "serialization_format", SERIALIZATION_FORMAT_PICKLE
             )
-        except MlflowException:
+        except QCFlowException:
             _logger.warning(
                 "Could not find sktime flavor configuration during model "
                 "loading process. Assuming 'pickle' serialization format."
@@ -3554,7 +3554,7 @@ docstrings.
             df_schema = dataframe.columns.values.tolist()
 
             if len(dataframe) > 1:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The provided prediction pd.DataFrame contains {len(dataframe)} rows. "
                     "Only 1 row should be supplied.",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -3566,14 +3566,14 @@ docstrings.
             predict_method = attrs.get("predict_method")
 
             if not predict_method:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The provided prediction configuration pd.DataFrame columns ({df_schema}) do not "
                     "contain the required column `predict_method` for specifying the prediction method.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
 
             if predict_method not in SUPPORTED_SKTIME_PREDICT_METHODS:
-                raise MlflowException(
+                raise QCFlowException(
                     "Invalid `predict_method` value."
                     f"The supported prediction methods are {SUPPORTED_SKTIME_PREDICT_METHODS}",
                     error_code=INVALID_PARAMETER_VALUE,

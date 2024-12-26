@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn import metrics as sk_metrics
 
 import qcflow
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.environment_variables import _QCFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS
 from qcflow.models.evaluation.artifacts import CsvEvaluationArtifact
 from qcflow.models.evaluation.base import EvaluationMetric, EvaluationResult, _ModelType
@@ -51,7 +51,7 @@ class ClassifierEvaluator(BuiltInEvaluator):
         self.pos_label = self.evaluator_config.get("pos_label")
         self.sample_weights = self.evaluator_config.get("sample_weights")
         if self.pos_label and self.label_list and self.pos_label not in self.label_list:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"'pos_label' {self.pos_label} must exist in 'label_list' {self.label_list}."
             )
 
@@ -121,7 +121,7 @@ class ClassifierEvaluator(BuiltInEvaluator):
                     )
                 self.label_list = np.append(self.label_list, self.pos_label)
             if len(self.label_list) < 2:
-                raise MlflowException(
+                raise QCFlowException(
                     "Evaluation dataset for classification must contain at least two unique "
                     f"labels, but only {len(self.label_list)} unique labels were found.",
                 )

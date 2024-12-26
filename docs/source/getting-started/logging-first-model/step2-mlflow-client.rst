@@ -3,7 +3,7 @@ Using the QCFlow Client API
 
 In the previous section, we started an instance of the QCFlow Tracking Server and the QCFlow UI.
 For this stage, we're going to be interfacing with the Tracking Server through one of the primary mechanisms
-that you will use when training ML models, the :py:class:`MlflowClient <qcflow.client.MlflowClient>`.
+that you will use when training ML models, the :py:class:`QCFlowClient <qcflow.client.QCFlowClient>`.
 For the duration of this tutorial, this client API will be your primary interface for QCFlow's tracking
 capabilities, enabling you to:
 
@@ -23,7 +23,7 @@ In order to use the QCFlowClient API, the initial step involves importing the ne
         :name: imports
         :emphasize-lines: 1
 
-        from qcflow import MlflowClient
+        from qcflow import QCFlowClient
         from pprint import pprint
         from sklearn.ensemble import RandomForestRegressor
 
@@ -33,7 +33,7 @@ Configuring the QCFlow Tracking Client
 --------------------------------------
 
 By default, barring any modifications to the ``QCFLOW_TRACKING_URI`` environment variable, initializing
-the MlflowClient will designate your local storage as the tracking server.
+the QCFlowClient will designate your local storage as the tracking server.
 This means your experiments, data, models, and related attributes will be stored within the active execution directory.
 
 For the context of this guide, we'll utilize the tracking server initialized earlier in the documentation, instead of using the
@@ -48,7 +48,7 @@ assigned the server when we started it. The two components that we submitted as 
     .. code-block:: python
         :name: client
 
-        client = MlflowClient(tracking_uri="http://127.0.0.1:8080")
+        client = QCFlowClient(tracking_uri="http://127.0.0.1:8080")
 
 We now have a client interface to the tracking server that can both send data to and retrieve data from the tracking server.
 
@@ -63,13 +63,13 @@ While using QCFlow, you'll be creating new experiments in order to organize proj
 together in a grouped hierarchical collection. However, if you manage to forget to create a new Experiment before using the QCFlow tracking
 capabilities, the Default Experiment is a fallback for you to ensure that your valuable tracking data is not lost when executing a run.
 
-Let's see what this Default Experiment looks like by using the :py:func:`qcflow.client.MlflowClient.search_experiments` API.
+Let's see what this Default Experiment looks like by using the :py:func:`qcflow.client.QCFlowClient.search_experiments` API.
 
 Searching Experiments
 ---------------------
 
 The first thing that we're going to do is to view the metadata associated with the Experiments that are on the server. We can accomplish this through the
-use of the :py:func:`qcflow.client.MlflowClient.search_experiments` API. Let's issue a search query to see what the results are.
+use of the :py:func:`qcflow.client.QCFlowClient.search_experiments` API. Let's issue a search query to see what the results are.
 
 .. code-section::
 

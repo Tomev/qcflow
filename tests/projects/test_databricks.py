@@ -7,10 +7,10 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow import MlflowClient, cli
+from qcflow import QCFlowClient, cli
 from qcflow.entities import RunStatus
 from qcflow.environment_variables import QCFLOW_TRACKING_URI
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.legacy_databricks_cli.configure.provider import DatabricksConfig
 from qcflow.projects import ExecutionException, databricks
 from qcflow.projects.databricks import DatabricksJobRunner, _get_cluster_qcflow_run_cmd
@@ -25,7 +25,7 @@ from qcflow.utils.qcflow_tags import (
     QCFLOW_DATABRICKS_SHELL_JOB_RUN_ID,
     QCFLOW_DATABRICKS_WEBAPP_URL,
 )
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 from qcflow.utils.uri import construct_db_uri_from_profile
 
 from tests import helper_functions
@@ -117,8 +117,8 @@ def before_run_validations_mock():
 
 @pytest.fixture
 def set_tag_mock():
-    with mock.patch("qcflow.projects.databricks.tracking.MlflowClient") as m:
-        qcflow_service_mock = mock.Mock(wraps=MlflowClient())
+    with mock.patch("qcflow.projects.databricks.tracking.QCFlowClient") as m:
+        qcflow_service_mock = mock.Mock(wraps=QCFlowClient())
         m.return_value = qcflow_service_mock
         yield qcflow_service_mock.set_tag
 
@@ -205,8 +205,8 @@ def test_dbfs_path_exists_error_response_handling(response_mock):
         get_databricks_host_creds_mock.return_value = None
         http_request_mock.return_value = response_mock
 
-        # then _dbfs_path_exists should return a MlflowException
-        with pytest.raises(MlflowException, match="API request to check existence of file at DBFS"):
+        # then _dbfs_path_exists should return a QCFlowException
+        with pytest.raises(QCFlowException, match="API request to check existence of file at DBFS"):
             job_runner._dbfs_path_exists("some/path")
 
 
@@ -230,7 +230,7 @@ def test_run_databricks_validations(
             run_databricks_project(cluster_spec_mock, synchronous=True)
         assert db_api_req_mock.call_count == 0
         db_api_req_mock.reset_mock()
-        qcflow_service = MlflowClient()
+        qcflow_service = QCFlowClient()
         assert len(qcflow_service.search_runs([FileStore.DEFAULT_EXPERIMENT_ID])) == 0
         qcflow.set_tracking_uri("databricks")
         # Test misspecified parameters
@@ -387,7 +387,7 @@ def test_run_databricks_throws_exception_when_spec_uses_existing_cluster(monkeyp
         "existing_cluster_id": "1000-123456-clust1",
     }
     with pytest.raises(
-        MlflowException, match="execution against existing clusters is not currently supported"
+        QCFlowException, match="execution against existing clusters is not currently supported"
     ) as exc:
         run_databricks_project(cluster_spec=existing_cluster_spec)
     assert exc.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -461,7 +461,7 @@ def test_databricks_http_request_integration(request):
 
     with mock.patch(
         "qcflow.utils.databricks_utils.get_databricks_host_creds",
-        return_value=MlflowHostCreds(
+        return_value=QCFlowHostCreds(
             host="host", username="user", password="pass", ignore_tls_verification=False
         ),
     ):
@@ -479,7 +479,7 @@ def test_run_databricks_failed(_):
     ):
         runner = DatabricksJobRunner(construct_db_uri_from_profile("profile"))
         with pytest.raises(
-            MlflowException, match="RESOURCE_DOES_NOT_EXIST: Node type not supported"
+            QCFlowException, match="RESOURCE_DOES_NOT_EXIST: Node type not supported"
         ):
             runner._run_shell_command_job("/project", "command", {}, {})
 

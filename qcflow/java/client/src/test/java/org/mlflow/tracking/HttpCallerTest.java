@@ -6,9 +6,9 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.qcflow.tracking.creds.BasicMlflowHostCreds;
-import org.qcflow.tracking.creds.MlflowHostCreds;
-import org.qcflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.tracking.creds.BasicQCFlowHostCreds;
+import org.qcflow.tracking.creds.QCFlowHostCreds;
+import org.qcflow.tracking.creds.QCFlowHostCredsProvider;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
@@ -33,10 +33,10 @@ public class HttpCallerTest {
   static StatusLine statusLine500 = mock(StatusLine.class);
   static String expectedResponseText = "expected response text.";
 
-  MlflowHttpCaller caller = new MlflowHttpCaller(new MlflowHostCredsProvider() {
+  QCFlowHttpCaller caller = new QCFlowHttpCaller(new QCFlowHostCredsProvider() {
     @Override
-    public MlflowHostCreds getHostCreds() {
-      return new BasicMlflowHostCreds("http://some/host");
+    public QCFlowHostCreds getHostCreds() {
+      return new BasicQCFlowHostCreds("http://some/host");
     }
 
     @Override
@@ -92,7 +92,7 @@ public class HttpCallerTest {
             .thenReturn(response429) // sleep for 4 - 3 == 1ms
             .thenReturn(response429) // last response before timing out
             .thenReturn(response200);// should never be returned;
-    MlflowHttpException ex = Assert.expectThrows(MlflowHttpException.class,
+    QCFlowHttpException ex = Assert.expectThrows(QCFlowHttpException.class,
             () -> caller.get("some/path"));
     Assert.assertEquals(429, ex.getStatusCode());
 
@@ -102,7 +102,7 @@ public class HttpCallerTest {
             .thenReturn(response429) // sleep for 4 - 3 == 1ms
             .thenReturn(response429) // last response before timing out
             .thenReturn(response200);// should never be returned;
-    ex = Assert.expectThrows(MlflowHttpException.class,
+    ex = Assert.expectThrows(QCFlowHttpException.class,
             () -> caller.post("some/path", "{\"attr\":\"val\"}"));
     Assert.assertEquals(429, ex.getStatusCode());
   }
@@ -137,7 +137,7 @@ public class HttpCallerTest {
             .thenReturn(response500)
             .thenReturn(response500) // last response before timing out
             .thenReturn(response200);// should never be returned;
-    MlflowHttpException ex = Assert.expectThrows(MlflowHttpException.class,
+    QCFlowHttpException ex = Assert.expectThrows(QCFlowHttpException.class,
             () -> caller.get("some/path"));
     Assert.assertEquals(500, ex.getStatusCode());
 
@@ -146,7 +146,7 @@ public class HttpCallerTest {
             .thenReturn(response500)
             .thenReturn(response500) // last response before timing out
             .thenReturn(response200);// should never be returned;
-    ex = Assert.expectThrows(MlflowHttpException.class,
+    ex = Assert.expectThrows(QCFlowHttpException.class,
             () -> caller.post("some/path", "{\"attr\":\"val\"}"));
     Assert.assertEquals(500, ex.getStatusCode());
   }

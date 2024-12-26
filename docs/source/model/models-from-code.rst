@@ -559,7 +559,7 @@ Due to the fact that the models from code feature stores your script definition 
 including sensitive data such as access keys or other authorization-based secrets is a security risk. If you have accidentally left a sensitive 
 key defined directly in your script when logging your model, it is advisable to:
 
-1. Delete the QCFlow run that contains the leaked key. You can do this via the UI or through `the delete_run API <../python_api/qcflow.client.html#qcflow.client.MlflowClient.delete_run>`_.
+1. Delete the QCFlow run that contains the leaked key. You can do this via the UI or through `the delete_run API <../python_api/qcflow.client.html#qcflow.client.QCFlowClient.delete_run>`_.
 2. Delete the artifacts associated with the run. You can do this via the `qcflow gc <../cli.html#qcflow-gc>`_ cli command.
 3. Rotate your sensitive keys by generating a new key and deleting the leaked secret from the source system administration interface.
 4. Re-log the model to a new run, making sure to not set sensitive keys in your model definition script.

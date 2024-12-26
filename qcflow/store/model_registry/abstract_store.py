@@ -4,7 +4,7 @@ from time import sleep, time
 
 from qcflow.entities.model_registry import ModelVersionTag
 from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import RESOURCE_ALREADY_EXISTS, ErrorCode
 from qcflow.utils.annotations import developer_stable
 from qcflow.utils.logging_utils import eprint
@@ -387,7 +387,7 @@ class AbstractStore:
         try:
             create_model_response = self.create_registered_model(dst_name)
             eprint(f"Successfully registered model '{create_model_response.name}'.")
-        except MlflowException as e:
+        except QCFlowException as e:
             if e.error_code != ErrorCode.Name(RESOURCE_ALREADY_EXISTS):
                 raise
             eprint(
@@ -408,8 +408,8 @@ class AbstractStore:
                 f"Copied version '{src_mv.version}' of model '{src_mv.name}'"
                 f" to version '{mv_copy.version}' of model '{mv_copy.name}'."
             )
-        except MlflowException as e:
-            raise MlflowException(
+        except QCFlowException as e:
+            raise QCFlowException(
                 f"Failed to create model version copy. The current model registry backend "
                 f"may not yet support model version URI sources.\nError: {e}"
             ) from e
@@ -436,7 +436,7 @@ class AbstractStore:
         pending_status = ModelVersionStatus.to_string(ModelVersionStatus.PENDING_REGISTRATION)
         while mv.status == pending_status:
             if time() > max_time:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Exceeded max wait time for model name: {mv.name} version: {mv.version} "
                     f"to become READY. Status: {mv.status} Wait Time: {await_creation_for}"
                     f".{hint}"
@@ -446,7 +446,7 @@ class AbstractStore:
                 break
             sleep(AWAIT_MODEL_VERSION_CREATE_SLEEP_INTERVAL_SECONDS)
         if mv.status != ModelVersionStatus.to_string(ModelVersionStatus.READY):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Model version creation failed for model name: {mv.name} version: "
                 f"{mv.version} with status: {mv.status} and message: {mv.status_message}"
             )

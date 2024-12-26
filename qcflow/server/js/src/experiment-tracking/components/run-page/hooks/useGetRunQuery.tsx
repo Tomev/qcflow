@@ -3,7 +3,7 @@ import type { GetRun, GetRunVariables } from '../../../../graphql/__generated__/
 import { useQuery, useLazyQuery } from '@qcflow/qcflow/src/common/utils/graphQLHooks';
 
 const GET_RUN_QUERY = gql`
-  query GetRun($data: MlflowGetRunInput!) @component(name: "QCFlow.ExperimentRunTracking") {
+  query GetRun($data: QCFlowGetRunInput!) @component(name: "QCFlow.ExperimentRunTracking") {
     qcflowGetRun(input: $data) {
       apiError {
         helpUrl

@@ -5,8 +5,8 @@ Model Versions, and Registered Models. This is a lower level API that directly t
 For a higher level API for managing an "active run", use the :py:mod:`qcflow` module.
 """
 
-from qcflow.tracking.client import MlflowClient
+from qcflow.tracking.client import QCFlowClient
 
 __all__ = [
-    "MlflowClient",
+    "QCFlowClient",
 ]

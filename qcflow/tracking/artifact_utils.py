@@ -9,7 +9,7 @@ import tempfile
 import urllib.parse
 import uuid
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 from qcflow.store.artifact.dbfs_artifact_repo import DbfsRestArtifactRepository
@@ -43,7 +43,7 @@ def get_artifact_uri(run_id, artifact_path=None, tracking_uri=None):
 
     """
     if not run_id:
-        raise MlflowException(
+        raise QCFlowException(
             message="A run_id must be specified in order to obtain an artifact uri!",
             error_code=INVALID_PARAMETER_VALUE,
         )

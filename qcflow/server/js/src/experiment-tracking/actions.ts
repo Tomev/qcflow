@@ -7,11 +7,11 @@
 
 import type { Dispatch, Action } from 'redux';
 import { AsyncAction, ReduxState, ThunkDispatch } from '../redux-types';
-import { MlflowService } from './sdk/MlflowService';
+import { QCFlowService } from './sdk/QCFlowService';
 import { getUUID } from '../common/utils/ActionUtils';
 import { ErrorCodes } from '../common/constants';
 import { isArray, isObject } from 'lodash';
-import { ViewType } from './sdk/MlflowEnums';
+import { ViewType } from './sdk/QCFlowEnums';
 import { fetchEndpoint, jsonBigIntResponseParser } from '../common/utils/FetchUtils';
 import { stringify as queryStringStringify } from 'qs';
 import { fetchEvaluationTableArtifact } from './sdk/EvaluationArtifactService';
@@ -25,7 +25,7 @@ export const SEARCH_EXPERIMENTS_API = 'SEARCH_EXPERIMENTS_API';
 export const searchExperimentsApi = (id = getUUID()) => {
   return {
     type: SEARCH_EXPERIMENTS_API,
-    payload: MlflowService.searchExperiments({
+    payload: QCFlowService.searchExperiments({
       max_results: 20000,
     }),
     meta: { id: id },
@@ -36,7 +36,7 @@ export const GET_EXPERIMENT_API = 'GET_EXPERIMENT_API';
 export const getExperimentApi = (experimentId: any, id = getUUID()) => {
   return {
     type: GET_EXPERIMENT_API,
-    payload: MlflowService.getExperiment({ experiment_id: experimentId }),
+    payload: QCFlowService.getExperiment({ experiment_id: experimentId }),
     meta: { id: id },
   };
 };
@@ -46,7 +46,7 @@ export const createExperimentApi = (experimentName: any, artifactPath = undefine
   return (dispatch: ThunkDispatch) => {
     const createResponse = dispatch({
       type: CREATE_EXPERIMENT_API,
-      payload: MlflowService.createExperiment({
+      payload: QCFlowService.createExperiment({
         name: experimentName,
         artifact_location: artifactPath,
       }),
@@ -61,7 +61,7 @@ export const deleteExperimentApi = (experimentId: any, id = getUUID()) => {
   return (dispatch: ThunkDispatch) => {
     const deleteResponse = dispatch({
       type: DELETE_EXPERIMENT_API,
-      payload: MlflowService.deleteExperiment({ experiment_id: experimentId }),
+      payload: QCFlowService.deleteExperiment({ experiment_id: experimentId }),
       meta: { id: getUUID() },
     });
     return deleteResponse;
@@ -73,7 +73,7 @@ export const updateExperimentApi = (experimentId: any, newExperimentName: any, i
   return (dispatch: ThunkDispatch) => {
     const updateResponse = dispatch({
       type: UPDATE_EXPERIMENT_API,
-      payload: MlflowService.updateExperiment({
+      payload: QCFlowService.updateExperiment({
         experiment_id: experimentId,
         new_name: newExperimentName,
       }),
@@ -88,7 +88,7 @@ export const updateRunApi = (runId: any, newName: any, id = getUUID()) => {
   return (dispatch: ThunkDispatch) => {
     const updateResponse = dispatch({
       type: UPDATE_RUN_API,
-      payload: MlflowService.updateRun({
+      payload: QCFlowService.updateRun({
         run_id: runId,
         run_name: newName,
       }),
@@ -102,7 +102,7 @@ export const GET_RUN_API = 'GET_RUN_API';
 export const getRunApi = (runId: any, id = getUUID()) => {
   return {
     type: GET_RUN_API,
-    payload: MlflowService.getRun({ run_id: runId }),
+    payload: QCFlowService.getRun({ run_id: runId }),
     meta: { id: id },
   };
 };
@@ -112,7 +112,7 @@ export const createRunApi = (experimentId: string, tags?: any, run_name?: string
   return (dispatch: ThunkDispatch) => {
     const createResponse = dispatch({
       type: CREATE_RUN_API,
-      payload: MlflowService.createRun({
+      payload: QCFlowService.createRun({
         experiment_id: experimentId,
         start_time: Date.now(),
         tags: tags,
@@ -137,7 +137,7 @@ export interface UploadArtifactApiAction
 }
 export const UPLOAD_ARTIFACT_API = 'UPLOAD_ARTIFACT_API';
 export const uploadArtifactApi = (runUuid: any, filePath: any, fileContent: any) => {
-  // We are not using MlflowService because this endpoint requires
+  // We are not using QCFlowService because this endpoint requires
   // special query string preparation
   const queryParams = queryStringStringify({
     run_uuid: runUuid,
@@ -169,7 +169,7 @@ export const deleteRunApi = (runUuid: any, id = getUUID()) => {
   return (dispatch: ThunkDispatch) => {
     const deleteResponse = dispatch({
       type: DELETE_RUN_API,
-      payload: MlflowService.deleteRun({ run_id: runUuid }),
+      payload: QCFlowService.deleteRun({ run_id: runUuid }),
       meta: { id: getUUID() },
     });
     return deleteResponse.then(() => dispatch(getRunApi(runUuid, id)));
@@ -180,7 +180,7 @@ export const restoreRunApi = (runUuid: any, id = getUUID()) => {
   return (dispatch: ThunkDispatch) => {
     const restoreResponse = dispatch({
       type: RESTORE_RUN_API,
-      payload: MlflowService.restoreRun({ run_id: runUuid }),
+      payload: QCFlowService.restoreRun({ run_id: runUuid }),
       meta: { id: getUUID() },
     });
     return restoreResponse.then(() => dispatch(getRunApi(runUuid, id)));
@@ -224,7 +224,7 @@ export const fetchMissingParents = (searchRunsResponse: any) =>
   searchRunsResponse.runs && searchRunsResponse.runs.length
     ? Promise.all(
         getParentRunIdsToFetch(searchRunsResponse.runs).map((runId) =>
-          MlflowService.getRun({ run_id: runId })
+          QCFlowService.getRun({ run_id: runId })
             .then((value) => {
               searchRunsResponse.runs.push(value.run);
               // Additional parent runs should be always visible
@@ -256,7 +256,7 @@ export const fetchMissingParentsWithSearchRuns = (searchRunsResponse: any, exper
   searchRunsResponse.runs && searchRunsResponse.runs.length
     ? Promise.all(
         getParentRunIdsToFetch(searchRunsResponse.runs).map((parentRunId) =>
-          MlflowService.searchRuns({
+          QCFlowService.searchRuns({
             experiment_ids: experimentIds,
             filter: `run_id = '${parentRunId}'`,
             max_results: 1,
@@ -328,7 +328,7 @@ export const searchRunsPayload = ({
 }: any) => {
   // Let's start with the base request for the runs
   const promises = [
-    MlflowService.searchRuns({
+    QCFlowService.searchRuns({
       experiment_ids: experimentIds,
       filter: filter,
       run_view_type: runViewType,
@@ -342,7 +342,7 @@ export const searchRunsPayload = ({
   // using another request with different filter
   if (runsPinned?.length) {
     promises.push(
-      MlflowService.searchRuns({
+      QCFlowService.searchRuns({
         experiment_ids: experimentIds,
         filter: createPinnedRowsExpression(runsPinned),
         run_view_type: ViewType.ALL,
@@ -398,7 +398,7 @@ export const LIST_ARTIFACTS_API = 'LIST_ARTIFACTS_API';
 export const listArtifactsApi = (runUuid: any, path?: any, id = getUUID()) => {
   return {
     type: LIST_ARTIFACTS_API,
-    payload: MlflowService.listArtifacts({
+    payload: QCFlowService.listArtifacts({
       run_uuid: runUuid,
       // only pass path if not null or undefined
       ...(path && { path: path }),
@@ -415,7 +415,7 @@ export const LIST_ARTIFACTS_LOGGED_MODEL_API = 'LIST_ARTIFACTS_LOGGED_MODEL_API'
 export const listArtifactsLoggedModelApi = (loggedModelId: any, path?: any, id = getUUID()) => {
   return {
     type: LIST_ARTIFACTS_API,
-    payload: MlflowService.listArtifactsLoggedModel({
+    payload: QCFlowService.listArtifactsLoggedModel({
       loggedModelId,
       path,
     }),
@@ -442,7 +442,7 @@ export const listImagesApi = (runUuid: string, autorefresh = false, id = getUUID
 
     return dispatch({
       type: LIST_IMAGES_API,
-      payload: MlflowService.listArtifacts({
+      payload: QCFlowService.listArtifacts({
         run_uuid: runUuid,
         path: QCFLOW_LOGGED_IMAGE_ARTIFACTS_PATH,
       }),
@@ -456,7 +456,7 @@ export const GET_METRIC_HISTORY_API = 'GET_METRIC_HISTORY_API';
 export const getMetricHistoryApi = (runUuid: any, metricKey: any, maxResults: any, pageToken: any, id = getUUID()) => {
   return {
     type: GET_METRIC_HISTORY_API,
-    payload: MlflowService.getMetricHistory({
+    payload: QCFlowService.getMetricHistory({
       run_uuid: runUuid,
       metric_key: decodeURIComponent(metricKey),
       max_results: maxResults,
@@ -480,7 +480,7 @@ export const getMetricHistoryApiBulk = (
   pageToken: any,
   id = getUUID(),
 ) => {
-  // We are not using MlflowService because this endpoint requires
+  // We are not using QCFlowService because this endpoint requires
   // special query string preparation
   const queryParams = queryStringStringify(
     {
@@ -514,7 +514,7 @@ export const SET_TAG_API = 'SET_TAG_API';
 export const setTagApi = (runUuid: any, tagName: any, tagValue: any, id = getUUID()) => {
   return {
     type: SET_TAG_API,
-    payload: MlflowService.setTag({
+    payload: QCFlowService.setTag({
       run_uuid: runUuid,
       key: tagName,
       value: tagValue,
@@ -528,7 +528,7 @@ export const DELETE_TAG_API = 'DELETE_TAG_API';
 export const deleteTagApi = (runUuid: any, tagName: any, id = getUUID()) => {
   return {
     type: DELETE_TAG_API,
-    payload: MlflowService.deleteTag({
+    payload: QCFlowService.deleteTag({
       run_id: runUuid,
       key: tagName,
     }),
@@ -563,8 +563,8 @@ export const setRunTagsBulkApi = (
 
   // Fire all requests at once
   const updateRequests = Promise.all([
-    ...addedOrModifiedTags.map(({ key, value }) => MlflowService.setTag({ run_uuid, key, value })),
-    ...deletedTags.map(({ key }) => MlflowService.deleteTag({ run_id: run_uuid, key })),
+    ...addedOrModifiedTags.map(({ key, value }) => QCFlowService.setTag({ run_uuid, key, value })),
+    ...deletedTags.map(({ key }) => QCFlowService.deleteTag({ run_id: run_uuid, key })),
   ]);
 
   return {
@@ -578,7 +578,7 @@ export const SET_EXPERIMENT_TAG_API = 'SET_EXPERIMENT_TAG_API';
 export const setExperimentTagApi = (experimentId: any, tagName: any, tagValue: any, id = getUUID()) => {
   return {
     type: SET_EXPERIMENT_TAG_API,
-    payload: MlflowService.setExperimentTag({
+    payload: QCFlowService.setExperimentTag({
       experiment_id: experimentId,
       key: tagName,
       value: tagValue,
@@ -606,7 +606,7 @@ export const SEARCH_DATASETS_API = 'SEARCH_DATASETS';
 export const searchDatasetsApi = (experimentIds: any, id = getUUID()) => {
   return {
     type: SEARCH_DATASETS_API,
-    payload: MlflowService.searchDatasets({
+    payload: QCFlowService.searchDatasets({
       experiment_ids: experimentIds,
     }),
     meta: { id },
@@ -690,7 +690,7 @@ export const createPromptLabRunApi = ({
   };
   return {
     type: CREATE_PROMPT_LAB_RUN,
-    payload: MlflowService.createPromptLabRun(payload),
+    payload: QCFlowService.createPromptLabRun(payload),
     meta: { payload },
   };
 };

@@ -7,23 +7,23 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.qcflow.tracking.MlflowClientException;
+import org.qcflow.tracking.QCFlowClientException;
 
-public class HostCredsProviderChain implements MlflowHostCredsProvider {
+public class HostCredsProviderChain implements QCFlowHostCredsProvider {
   private static final Logger logger = LoggerFactory.getLogger(HostCredsProviderChain.class);
 
-  private final List<MlflowHostCredsProvider> hostCredsProviders = new ArrayList<>();
+  private final List<QCFlowHostCredsProvider> hostCredsProviders = new ArrayList<>();
 
-  public HostCredsProviderChain(MlflowHostCredsProvider... hostCredsProviders) {
+  public HostCredsProviderChain(QCFlowHostCredsProvider... hostCredsProviders) {
     this.hostCredsProviders.addAll(Arrays.asList(hostCredsProviders));
   }
 
   @Override
-  public MlflowHostCreds getHostCreds() {
+  public QCFlowHostCreds getHostCreds() {
     List<String> exceptionMessages = new ArrayList<>();
-    for (MlflowHostCredsProvider provider : hostCredsProviders) {
+    for (QCFlowHostCredsProvider provider : hostCredsProviders) {
       try {
-        MlflowHostCreds hostCreds = provider.getHostCreds();
+        QCFlowHostCreds hostCreds = provider.getHostCreds();
 
         if (hostCreds != null && hostCreds.getHost() != null) {
           logger.debug("Loading credentials from " + provider.toString());
@@ -35,13 +35,13 @@ public class HostCredsProviderChain implements MlflowHostCredsProvider {
         exceptionMessages.add(message);
       }
     }
-    throw new MlflowClientException("Unable to load QCFlow Host/Credentials from any provider in" +
+    throw new QCFlowClientException("Unable to load QCFlow Host/Credentials from any provider in" +
       " the chain: " + exceptionMessages);
   }
 
   @Override
   public void refresh() {
-    for (MlflowHostCredsProvider provider : hostCredsProviders) {
+    for (QCFlowHostCredsProvider provider : hostCredsProviders) {
       provider.refresh();
     }
   }

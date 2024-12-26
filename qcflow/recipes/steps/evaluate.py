@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.recipes.cards import BaseCard
 from qcflow.recipes.step import BaseStep, StepClass
@@ -54,13 +54,13 @@ class EvaluateStep(BaseStep):
     def _validate_and_apply_step_config(self):
         self.target_col = self.step_config.get("target_col")
         if self.target_col is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing target_col config in recipe config.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         self.recipe = self.step_config.get("recipe")
         if self.recipe is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "Missing recipe config in recipe config.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -79,7 +79,7 @@ class EvaluateStep(BaseStep):
         }
         self.evaluation_metrics.update(self.user_defined_custom_metrics)
         if self.primary_metric is not None and self.primary_metric not in self.evaluation_metrics:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The primary metric '{self.primary_metric}' is a custom metric, but its"
                 " corresponding custom metric configuration is missing from `recipe.yaml`.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -94,7 +94,7 @@ class EvaluateStep(BaseStep):
             return
         undefined_metrics = val_metrics.difference(self.evaluation_metrics.keys())
         if undefined_metrics:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Validation criteria contain undefined metrics: {sorted(undefined_metrics)}",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -108,7 +108,7 @@ class EvaluateStep(BaseStep):
             metric_name = val_criterion["metric"]
             metric_val = metrics.get(metric_name)
             if metric_val is None:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The metric {metric_name} is defined in the recipe's validation criteria"
                     " but was not returned from qcflow evaluation.",
                     error_code=INVALID_PARAMETER_VALUE,

@@ -50,7 +50,7 @@ from qcflow.utils.autologging_utils import (
     ENSURE_AUTOLOGGING_ENABLED_TEXT,
     INPUT_EXAMPLE_SAMPLE_ROWS,
     InputExampleInfo,
-    MlflowAutologgingQueueingClient,
+    QCFlowAutologgingQueueingClient,
     autologging_integration,
     batch_metrics_logger,
     get_qcflow_run_params_for_fn_args,
@@ -339,7 +339,7 @@ def log_model(
 
         # Fetch the logged model artifacts
         print(f"run_id: {run.info.run_id}")
-        client = qcflow.MlflowClient()
+        client = qcflow.QCFlowClient()
         artifacts = [f.path for f in client.list_artifacts(run.info.run_id, artifact_path)]
         print(f"artifacts: {artifacts}")
 
@@ -589,11 +589,11 @@ def autolog(
         def print_auto_logged_info(run):
             tags = {k: v for k, v in run.data.tags.items() if not k.startswith("qcflow.")}
             artifacts = [
-                f.path for f in qcflow.MlflowClient().list_artifacts(run.info.run_id, "model")
+                f.path for f in qcflow.QCFlowClient().list_artifacts(run.info.run_id, "model")
             ]
             feature_importances = [
                 f.path
-                for f in qcflow.MlflowClient().list_artifacts(run.info.run_id)
+                for f in qcflow.QCFlowClient().list_artifacts(run.info.run_id)
                 if f.path != "model"
             ]
             print(f"run_id: {run.info.run_id}")
@@ -712,7 +712,7 @@ def autolog(
                 finally:
                     plt.close(fig)
 
-        autologging_client = MlflowAutologgingQueueingClient()
+        autologging_client = QCFlowAutologgingQueueingClient()
 
         # logging booster params separately via qcflow.log_params to extract key/value pairs
         # and make it easier to compare them across runs.

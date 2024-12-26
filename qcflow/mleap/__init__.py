@@ -20,7 +20,7 @@ import sys
 import traceback
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.utils import _save_example
@@ -281,5 +281,5 @@ def _handle_py4j_error(reraised_error_type, reraised_error_text):
     reraise(reraised_error_type, reraised_error_type(reraised_error_text), tb)
 
 
-class MLeapSerializationException(MlflowException):
+class MLeapSerializationException(QCFlowException):
     """Exception thrown when a model or DataFrame cannot be serialized in MLeap format."""

@@ -2,7 +2,7 @@ import paddle
 import pytest
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 
 NUM_EPOCHS = 6
 
@@ -39,7 +39,7 @@ def test_autolog_logs_expected_data():
     with qcflow.start_run() as run:
         train_model()
 
-    client = MlflowClient()
+    client = QCFlowClient()
     data = client.get_run(run.info.run_id).data
 
     # Testing params are logged
@@ -65,7 +65,7 @@ def test_autolog_early_stopping_callback():
     with qcflow.start_run() as run:
         train_model(callbacks=[early_stopping])
 
-    client = MlflowClient()
+    client = QCFlowClient()
     data = client.get_run(run.info.run_id).data
 
     for param_key in ["monitor", "patience", "min_delta", "baseline"]:
@@ -89,7 +89,7 @@ def test_autolog_log_models_configuration(log_models):
     with qcflow.start_run() as run:
         train_model()
 
-    artifacts = MlflowClient().list_artifacts(run.info.run_id)
+    artifacts = QCFlowClient().list_artifacts(run.info.run_id)
     assert any(x.path == "model" for x in artifacts) == log_models
 
 
@@ -100,7 +100,7 @@ def test_autolog_registering_model():
     with qcflow.start_run():
         train_model()
 
-        registered_model = MlflowClient().get_registered_model(registered_model_name)
+        registered_model = QCFlowClient().get_registered_model(registered_model_name)
         assert registered_model.name == registered_model_name
 
 

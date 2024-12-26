@@ -1,8 +1,8 @@
 import { fulfilled, pending } from '../../common/utils/ActionUtils';
 import { AsyncAction, AsyncFulfilledAction } from '../../redux-types';
-import { MlflowDeploymentsEndpoint } from '../sdk/ModelGatewayService';
-import { SearchMlflowDeploymentsModelRoutesAction } from '../actions/ModelGatewayActions';
-import { ModelGatewayRouteTask } from '../sdk/MlflowEnums';
+import { QCFlowDeploymentsEndpoint } from '../sdk/ModelGatewayService';
+import { SearchQCFlowDeploymentsModelRoutesAction } from '../actions/ModelGatewayActions';
+import { ModelGatewayRouteTask } from '../sdk/QCFlowEnums';
 import { modelGatewayReducer } from './ModelGatewayReducer';
 
 describe('modelGatewayReducer - QCFlow deployments endpoints', () => {
@@ -16,7 +16,7 @@ describe('modelGatewayReducer - QCFlow deployments endpoints', () => {
     },
   };
 
-  const MOCK_QCFLOW_DEPLOYMENTS_RESPONSE: Partial<MlflowDeploymentsEndpoint>[] = [
+  const MOCK_QCFLOW_DEPLOYMENTS_RESPONSE: Partial<QCFlowDeploymentsEndpoint>[] = [
     {
       endpoint_type: ModelGatewayRouteTask.LLM_V1_CHAT,
       name: 'test-qcflow-deployment-endpoint-chat',
@@ -39,7 +39,7 @@ describe('modelGatewayReducer - QCFlow deployments endpoints', () => {
 
   const mockFulfilledSearchDeploymentsAction = (
     endpoints: any,
-  ): AsyncFulfilledAction<SearchMlflowDeploymentsModelRoutesAction> => ({
+  ): AsyncFulfilledAction<SearchQCFlowDeploymentsModelRoutesAction> => ({
     type: fulfilled('SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES'),
     payload: { endpoints },
   });

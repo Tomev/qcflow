@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 from pyspark.sql import SparkSession
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.steps.ingest import IngestStep
 from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
 from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
@@ -264,7 +264,7 @@ def test_ingest_throws_for_custom_dataset_when_loader_function_cannot_be_importe
     dataset_path = tmp_path / "df.fooformat"
     pandas_df.to_csv(dataset_path, sep="#")
 
-    with pytest.raises(MlflowException, match="Failed to import custom dataset loader function"):
+    with pytest.raises(QCFlowException, match="Failed to import custom dataset loader function"):
         IngestStep.from_recipe_config(
             recipe_config={
                 "target_col": "C",
@@ -288,7 +288,7 @@ def test_ingest_throws_for_custom_dataset_when_loader_function_not_implemented_f
     pandas_df.to_csv(dataset_path, sep="#")
 
     with pytest.raises(
-        MlflowException, match="Please update the custom loader method to support this format"
+        QCFlowException, match="Please update the custom loader method to support this format"
     ):
         IngestStep.from_recipe_config(
             recipe_config={
@@ -317,7 +317,7 @@ def test_ingest_throws_for_custom_dataset_when_custom_method_returns_array(panda
         "steps.ingest.load_file_as_dataframe",
         custom_load_file_as_array,
     ):
-        with pytest.raises(MlflowException, match="The `ingested_data` is not a DataFrame"):
+        with pytest.raises(QCFlowException, match="The `ingested_data` is not a DataFrame"):
             IngestStep.from_recipe_config(
                 recipe_config={
                     "target_col": "C",
@@ -346,7 +346,7 @@ def test_ingest_throws_for_custom_dataset_when_loader_function_throws_unexpected
     ) as mock_loader:
         mock_loader.__name__ = "load_file_as_dataframe"
         with pytest.raises(
-            MlflowException, match="Unable to load data file at path.*using custom loader method"
+            QCFlowException, match="Unable to load data file at path.*using custom loader method"
         ):
             IngestStep.from_recipe_config(
                 recipe_config={
@@ -665,7 +665,7 @@ def test_ingest_throws_when_spark_unavailable_for_spark_based_dataset(spark_df, 
             side_effect=Exception("Spark unavailable"),
         ),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Encountered an error while searching for an active Spark session",
         ),
     ):
@@ -716,7 +716,7 @@ def test_ingest_throws_when_dataset_format_unspecified():
         },
         recipe_root=os.getcwd(),
     )
-    with pytest.raises(MlflowException, match="Dataset format must be specified"):
+    with pytest.raises(QCFlowException, match="Dataset format must be specified"):
         ingest_step._validate_and_apply_step_config()
 
 
@@ -726,7 +726,7 @@ def test_ingest_throws_when_data_section_unspecified():
         recipe_config={},
         recipe_root=os.getcwd(),
     )
-    with pytest.raises(MlflowException, match="Dataset format must be specified"):
+    with pytest.raises(QCFlowException, match="Dataset format must be specified"):
         ingest_step._validate_and_apply_step_config()
 
 
@@ -744,7 +744,7 @@ def test_ingest_throws_when_required_dataset_config_keys_are_missing():
         },
         recipe_root=os.getcwd(),
     )
-    with pytest.raises(MlflowException, match="The `location` configuration key must be specified"):
+    with pytest.raises(QCFlowException, match="The `location` configuration key must be specified"):
         ingest_step._validate_and_apply_step_config()
 
     ingest_step = IngestStep.from_recipe_config(
@@ -762,7 +762,7 @@ def test_ingest_throws_when_required_dataset_config_keys_are_missing():
 
     ingest_step._validate_and_apply_step_config()
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Either location or sql configuration key must be specified for "
         "dataset with format spark_sql",
     ):
@@ -782,7 +782,7 @@ def test_ingest_throws_when_required_dataset_config_keys_are_missing():
         recipe_root=os.getcwd(),
     )
     with pytest.raises(
-        MlflowException, match="The `loader_method` configuration key must be specified"
+        QCFlowException, match="The `loader_method` configuration key must be specified"
     ):
         ingest_step._validate_and_apply_step_config()
 
@@ -793,7 +793,7 @@ def test_ingest_throws_when_dataset_files_have_wrong_format(pandas_df, tmp_path)
     pandas_df.to_csv(dataset_path)
 
     with pytest.raises(
-        MlflowException, match="Resolved data file.*does not have the expected format"
+        QCFlowException, match="Resolved data file.*does not have the expected format"
     ):
         IngestStep.from_recipe_config(
             recipe_config={
@@ -817,7 +817,7 @@ def test_ingest_throws_when_dataset_files_have_wrong_format(pandas_df, tmp_path)
     pandas_df_part2.to_csv(dataset_path / "df2.csv")
 
     with pytest.raises(
-        MlflowException, match="Did not find any data files with the specified format"
+        QCFlowException, match="Did not find any data files with the specified format"
     ):
         IngestStep.from_recipe_config(
             recipe_config={

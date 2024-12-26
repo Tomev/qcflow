@@ -13,17 +13,17 @@ import { ConfigProvider } from 'antd';
 import { createApolloClient } from './graphql/client';
 import { LegacySkeleton } from '@databricks/design-system';
 // eslint-disable-next-line no-useless-rename
-import { MlflowRouter as MlflowRouter } from './MlflowRouter';
+import { QCFlowRouter as QCFlowRouter } from './QCFlowRouter';
 import { useQCFlowDarkTheme } from './common/hooks/useQCFlowDarkTheme';
 
-export function MLFlowRoot() {
+export function QCFlowRoot() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const intl = useI18nInit();
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const apolloClient = useMemo(() => createApolloClient(), []);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [isDarkTheme, setIsDarkTheme, MlflowThemeGlobalStyles] = useQCFlowDarkTheme();
+  const [isDarkTheme, setIsDarkTheme, QCFlowThemeGlobalStyles] = useQCFlowDarkTheme();
 
   if (!intl) {
     return (
@@ -39,9 +39,9 @@ export function MLFlowRoot() {
         <Provider store={store}>
           <DesignSystemContainer isDarkTheme={isDarkTheme}>
             <ApplyGlobalStyles />
-            <MlflowThemeGlobalStyles />
+            <QCFlowThemeGlobalStyles />
             <ConfigProvider prefixCls="ant">
-              <MlflowRouter isDarkTheme={isDarkTheme} setIsDarkTheme={setIsDarkTheme} />
+              <QCFlowRouter isDarkTheme={isDarkTheme} setIsDarkTheme={setIsDarkTheme} />
             </ConfigProvider>
           </DesignSystemContainer>
         </Provider>

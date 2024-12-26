@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from qcflow.data.dataset_source import DatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
@@ -17,7 +17,7 @@ class SparkDatasetSource(DatasetSource):
         sql: Optional[str] = None,
     ):
         if (path, table_name, sql).count(None) != 2:
-            raise MlflowException(
+            raise QCFlowException(
                 'Must specify exactly one of "path", "table_name", or "sql"',
                 INVALID_PARAMETER_VALUE,
             )

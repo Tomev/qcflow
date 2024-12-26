@@ -1,19 +1,19 @@
 from typing import Optional
 
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.dataset import Dataset
 from qcflow.entities.input_tag import InputTag
 from qcflow.protos.service_pb2 import DatasetInput as ProtoDatasetInput
 
 
-class DatasetInput(_MlflowObject):
+class DatasetInput(_QCFlowObject):
     """DatasetInput object associated with an experiment."""
 
     def __init__(self, dataset: Dataset, tags: Optional[list[InputTag]] = None) -> None:
         self._dataset = dataset
         self._tags = tags or []
 
-    def __eq__(self, other: _MlflowObject) -> bool:
+    def __eq__(self, other: _QCFlowObject) -> bool:
         if type(other) is type(self):
             return self.__dict__ == other.__dict__
         return False

@@ -1,7 +1,7 @@
 import re
 from urllib.parse import urlparse, urlunparse
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.http_artifact_repo import HttpArtifactRepository
 from qcflow.tracking._tracking_service.utils import get_tracking_uri
 
@@ -23,7 +23,7 @@ def _validate_port_mapped_to_hostname(uri_parse):
     # definition, mapping the provided port as a hostname value if this condition is not
     # validated.
     if uri_parse.hostname and _check_if_host_is_numeric(uri_parse.hostname) and not uri_parse.port:
-        raise MlflowException(
+        raise QCFlowException(
             "The qcflow-artifacts uri was supplied with a port number: "
             f"{uri_parse.hostname}, but no host was defined."
         )
@@ -32,7 +32,7 @@ def _validate_port_mapped_to_hostname(uri_parse):
 def _validate_uri_scheme(parsed_uri):
     allowable_schemes = {"http", "https"}
     if parsed_uri.scheme not in allowable_schemes:
-        raise MlflowException(
+        raise QCFlowException(
             "When an qcflow-artifacts URI was supplied, the tracking URI must be a valid "
             f"http or https URI, but it was currently set to {parsed_uri.geturl()}. "
             "Perhaps you forgot to set the tracking URI to the running QCFlow server. "
@@ -44,7 +44,7 @@ def _validate_uri_scheme(parsed_uri):
         )
 
 
-class MlflowArtifactsRepository(HttpArtifactRepository):
+class QCFlowArtifactsRepository(HttpArtifactRepository):
     """Scheme wrapper around HttpArtifactRepository for qcflow-artifacts server functionality"""
 
     def __init__(self, artifact_uri):

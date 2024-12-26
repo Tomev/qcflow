@@ -6,7 +6,7 @@ import pydantic
 import pydantic.fields
 from packaging.version import Version
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.types.schema import (
     COLSPEC_TYPES,
@@ -50,7 +50,7 @@ class ColSpecType(NamedTuple):
     required: bool
 
 
-class InvalidTypeHintException(MlflowException):
+class InvalidTypeHintException(QCFlowException):
     def __init__(self, type_hint, extra_msg=""):
         super().__init__(
             f"Unsupported type hint `{type_hint}`{extra_msg}. Supported types are: "
@@ -77,11 +77,11 @@ def _infer_colspec_type_from_type_hint(type_hint: type[Any]) -> ColSpecType:
         if origin_type is list:
             # a valid list[...] type hint must only contain one argument
             if len(args) == 0:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"List type hint must contain the internal type, got {type_hint}"
                 )
             elif len(args) > 1:
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"List type hint must contain only one internal type, got {type_hint}"
                 )
             else:
@@ -92,21 +92,21 @@ def _infer_colspec_type_from_type_hint(type_hint: type[Any]) -> ColSpecType:
         if origin_type is dict:
             if len(args) == 2:
                 if args[0] != str:
-                    raise MlflowException.invalid_parameter_value(
+                    raise QCFlowException.invalid_parameter_value(
                         f"Dictionary key type must be str, got {args[0]} in type hint {type_hint}"
                     )
                 return ColSpecType(
                     dtype=Map(_infer_colspec_type_from_type_hint(type_hint=args[1]).dtype),
                     required=True,
                 )
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Dictionary type hint must contain two internal types, got {type_hint}"
             )
         if origin_type in UNION_TYPES:
             if NONE_TYPE in args:
                 # This case shouldn't happen, but added for completeness
                 if len(args) < 2:
-                    raise MlflowException.invalid_parameter_value(
+                    raise QCFlowException.invalid_parameter_value(
                         f"Union type hint must contain at least one non-None type, got {type_hint}"
                     )
                 # Optional type
@@ -169,7 +169,7 @@ def _infer_type_from_pydantic_model(model: pydantic.BaseModel) -> Object:
             continue
         colspec_type = _infer_colspec_type_from_type_hint(annotation)
         if colspec_type.required is False and field_required(field_info):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Optional field `{field_name}` in Pydantic model `{model.__name__}` "
                 "doesn't have a default value. Please set default value to None for this field."
             )
@@ -181,7 +181,7 @@ def _infer_type_from_pydantic_model(model: pydantic.BaseModel) -> Object:
             )
         )
     if invalid_fields:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "The following fields in the Pydantic model do not have type annotations: "
             f"{invalid_fields}. Please add type annotations to these fields."
         )
@@ -224,7 +224,7 @@ def _infer_schema_from_type_hint(type_hint: type[Any]) -> Schema:
     col_spec_type = _infer_colspec_type_from_type_hint(type_hint)
     # Creating Schema with unnamed optional inputs is not supported
     if col_spec_type.required is False:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "If you would like to use Optional types, use a Pydantic-based type hint definition."
         )
     return Schema([ColSpec(type=col_spec_type.dtype, required=col_spec_type.required)])
@@ -247,14 +247,14 @@ def _validate_example_against_type_hint(example: Any, type_hint: type[Any]) -> A
         elif isinstance(example, dict):
             example_dict = example
         else:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Expecting example to be a dictionary or pydantic model instance for "
                 f"Pydantic type hint, got {type(example)}"
             )
         try:
             model_validate(type_hint, example_dict)
         except pydantic.ValidationError as e:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 message=f"Input example is not valid for Pydantic model `{type_hint.__name__}`",
             ) from e
         else:
@@ -264,7 +264,7 @@ def _validate_example_against_type_hint(example: Any, type_hint: type[Any]) -> A
     elif type_hint in TYPE_HINTS_TO_DATATYPE_MAPPING:
         if isinstance(example, type_hint):
             return example
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Expected type {type_hint}, but got {type(example).__name__}"
         )
     elif origin_type := get_origin(type_hint):
@@ -298,13 +298,13 @@ def _get_example_validation_result(example: Any, type_hint: type[Any]) -> Valida
     try:
         value = _validate_example_against_type_hint(example=example, type_hint=type_hint)
         return ValidationResult(value=value)
-    except MlflowException as e:
+    except QCFlowException as e:
         return ValidationResult(error_message=e.message)
 
 
 def _validate_list_elements(element_type: type[Any], example: Any) -> list[Any]:
     if not isinstance(example, list):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Expected list, but got {type(example).__name__}"
         )
     invalid_elems = {}
@@ -316,13 +316,13 @@ def _validate_list_elements(element_type: type[Any], example: Any) -> list[Any]:
         else:
             result.append(validation_result.value)
     if invalid_elems:
-        raise MlflowException.invalid_parameter_value(f"Invalid elements in list: {invalid_elems}")
+        raise QCFlowException.invalid_parameter_value(f"Invalid elements in list: {invalid_elems}")
     return result
 
 
 def _validate_dict_elements(element_type: type[Any], example: Any) -> dict[str, Any]:
     if not isinstance(example, dict):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Expected dict, but got {type(example).__name__}"
         )
     invalid_elems = {}
@@ -337,7 +337,7 @@ def _validate_dict_elements(element_type: type[Any], example: Any) -> dict[str, 
         else:
             result[key] = validation_result.value
     if invalid_elems:
-        raise MlflowException.invalid_parameter_value(f"Invalid elements in dict: {invalid_elems}")
+        raise QCFlowException.invalid_parameter_value(f"Invalid elements in dict: {invalid_elems}")
     return result
 
 
@@ -380,7 +380,7 @@ def _convert_data_to_type_hint(data: Any, type_hint: type[Any]) -> Any:
                 "The data will be converted to a list of the first column."
             )
         if origin_type is not list:
-            raise MlflowException(
+            raise QCFlowException(
                 "Only `list[...]` or `Any` type hint supports pandas DataFrame input "
                 f"with a single column. But got {type_hint}."
             )

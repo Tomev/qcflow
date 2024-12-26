@@ -19,7 +19,7 @@ from qcflow.environment_variables import (
     QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT,
     QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.tracking import get_tracking_uri
 from qcflow.utils import PYTHON_VERSION
@@ -36,7 +36,7 @@ from qcflow.utils.requirements_utils import (
     _parse_requirements,
     warn_dependency_requirement_mismatches,
 )
-from qcflow.utils.timeout import MlflowTimeoutError, run_with_timeout
+from qcflow.utils.timeout import QCFlowTimeoutError, run_with_timeout
 from qcflow.version import VERSION
 
 _logger = logging.getLogger(__name__)
@@ -150,13 +150,13 @@ class _PythonEnv:
                 # Python
                 if not python and package == "python":
                     if operator is None:
-                        raise MlflowException.invalid_parameter_value(
+                        raise QCFlowException.invalid_parameter_value(
                             f"Invalid dependency for python: {dep}. "
                             "It must be pinned (e.g. python=3.8.13)."
                         )
 
                     if operator in ("<", ">", "!="):
-                        raise MlflowException(
+                        raise QCFlowException(
                             f"Invalid version comparator for python: '{operator}'. "
                             "Must be one of ['<=', '>=', '=', '=='].",
                             error_code=INVALID_PARAMETER_VALUE,
@@ -173,7 +173,7 @@ class _PythonEnv:
             elif _is_pip_deps(dep):
                 dependencies = dep["pip"]
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid conda dependency: {dep}. Must be str or dict in the form of "
                     '{"pip": [...]}',
                     error_code=INVALID_PARAMETER_VALUE,
@@ -434,7 +434,7 @@ def infer_pip_requirements(model_uri, flavor, fallback=None, timeout=None, extra
         if raise_on_error or (fallback is None):
             raise
 
-        if isinstance(e, MlflowTimeoutError):
+        if isinstance(e, QCFlowTimeoutError):
             msg = (
                 "Attempted to infer pip requirements for the saved model or pipeline but the "
                 f"operation timed out in {timeout} seconds. Fall back to return {fallback}. "
@@ -586,7 +586,7 @@ def _deduplicate_requirements(requirements):
     standard PyPI packages and non-standard requirements (like URLs or local paths). The function
     merges extras and combines version constraints for duplicate packages. The most restrictive
     version specifications or the ones with extras are prioritized. If incompatible version
-    constraints are detected, it raises an MlflowException.
+    constraints are detected, it raises an QCFlowException.
 
     Args:
         requirements (list of str): A list of pip package requirement strings.
@@ -595,7 +595,7 @@ def _deduplicate_requirements(requirements):
         list of str: A deduplicated list of pip package requirements.
 
     Raises:
-        MlflowException: If incompatible version constraints are detected among the provided
+        QCFlowException: If incompatible version constraints are detected among the provided
                          requirements.
 
     Examples:
@@ -609,7 +609,7 @@ def _deduplicate_requirements(requirements):
           Output: ["markdown[extra1,extra2]>=3.5.1,<4"]
 
         - Input: ["scikit-learn==1.1", "scikit-learn<1"]
-          Raises MlflowException indicating incompatible versions.
+          Raises QCFlowException indicating incompatible versions.
 
     Note:
         - Non-standard requirements (like URLs or file paths) are included as-is.
@@ -671,18 +671,18 @@ def _validate_version_constraints(requirements):
 
     This function writes the requirements to a temporary file and then attempts to resolve
     them using pip's `--dry-run` install option. If any version conflicts are detected, it
-    raises an MlflowException with details of the conflict.
+    raises an QCFlowException with details of the conflict.
 
     Args:
         requirements (list of str): A list of package requirements (e.g., `["pandas>=1.15",
         "pandas<2"]`).
 
     Raises:
-        MlflowException: If any version conflicts are detected among the provided requirements.
+        QCFlowException: If any version conflicts are detected among the provided requirements.
 
     Returns:
         None: This function does not return anything. It either completes successfully or raises
-        an MlflowException.
+        an QCFlowException.
 
     Example:
         _validate_version_constraints(["tensorflow<2.0", "tensorflow>2.3"])
@@ -699,7 +699,7 @@ def _validate_version_constraints(requirements):
             capture_output=True,
         )
     except subprocess.CalledProcessError as e:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "The specified requirements versions are incompatible. Detected "
             f"conflicts: \n{e.stderr.decode()}"
         )

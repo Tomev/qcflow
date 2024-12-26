@@ -2,7 +2,7 @@ import pytest
 from opentelemetry import trace as trace_api
 
 from qcflow.entities import SpanStatus, SpanStatusCode
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 
 @pytest.mark.parametrize("status_code", [SpanStatusCode.OK, "OK"])
@@ -12,7 +12,7 @@ def test_span_status_init(status_code):
 
 
 def test_span_status_raise_invalid_status_code():
-    with pytest.raises(MlflowException, match=r"INVALID is not a valid SpanStatusCode value."):
+    with pytest.raises(QCFlowException, match=r"INVALID is not a valid SpanStatusCode value."):
         SpanStatus("INVALID", description="test")
 
 

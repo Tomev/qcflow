@@ -76,8 +76,8 @@ import qcflow
 import qcflow.models.model
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 from qcflow.deployments import PredictionsResponse
-from qcflow.exceptions import MlflowException
-from qcflow.langchain.langchain_tracer import MlflowLangchainTracer
+from qcflow.exceptions import QCFlowException
+from qcflow.langchain.langchain_tracer import QCFlowLangchainTracer
 from qcflow.langchain.utils import (
     IS_PICKLE_SERIALIZATION_RESTRICTED,
     lc_runnables_types,
@@ -378,7 +378,7 @@ def fake_classifier_chat_model():
     from langchain.chat_models.base import SimpleChatModel
     from langchain.schema.messages import BaseMessage
 
-    class FakeMlflowClassifier(SimpleChatModel):
+    class FakeQCFlowClassifier(SimpleChatModel):
         """Fake Chat Model wrapper for testing purposes."""
 
         def _call(
@@ -398,7 +398,7 @@ def fake_classifier_chat_model():
         def _llm_type(self) -> str:
             return "fake qcflow classifier"
 
-    return FakeMlflowClassifier()
+    return FakeQCFlowClassifier()
 
 
 @pytest.mark.skipif(IS_LANGCHAIN_03, reason="LLMChain is deprecated")
@@ -1071,7 +1071,7 @@ def test_saving_not_implemented_chain_type():
 def test_unsupported_class():
     llm = FakeLLM()
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="QCFlow langchain flavor only supports subclasses of "
         + "\\(<class 'langchain.chains.base.Chain'>",
     ):
@@ -1097,7 +1097,7 @@ def test_agent_with_unpicklable_tools(tmp_path):
         )
 
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=(
                 "Error when attempting to pickle the AgentExecutor tools. "
                 "This model likely does not support serialization."
@@ -2188,7 +2188,7 @@ def test_predict_with_builtin_pyfunc_chat_conversion(spark):
             expected_chat_response,
         ]
 
-    with pytest.raises(MlflowException, match="Unrecognized chat message role"):
+    with pytest.raises(QCFlowException, match="Unrecognized chat message role"):
         pyfunc_loaded_model.predict({"messages": [{"role": "foobar", "content": "test content"}]})
 
 
@@ -2405,8 +2405,8 @@ def test_save_load_chain_that_relies_on_pickle_serialization(monkeypatch, model_
 
     if IS_PICKLE_SERIALIZATION_RESTRICTED and Version(langchain.__version__) < Version("0.1.14"):
         # For LangChain between 0.1.12 and 0.1.14, QCFlow cannot load a model that relies on pickle
-        # serialization, instead, raises an MlflowException with a message that explains the issue.
-        with pytest.raises(MlflowException, match=r"Since langchain-community 0.0.27, loading a"):
+        # serialization, instead, raises an QCFlowException with a message that explains the issue.
+        with pytest.raises(QCFlowException, match=r"Since langchain-community 0.0.27, loading a"):
             qcflow.langchain.load_model(model_path)
         return
     loaded_model = qcflow.langchain.load_model(model_path)
@@ -2493,7 +2493,7 @@ def test_save_load_chain_as_code(chain_model_signature, chain_path, model_config
             model_config=model_config,
         )
 
-    client = qcflow.tracking.MlflowClient()
+    client = qcflow.tracking.QCFlowClient()
     run_id = run.info.run_id
     assert client.get_run(run_id).data.params == {
         "llm_prompt_template": "Answer the following question based on "
@@ -2553,7 +2553,7 @@ def test_save_load_chain_as_code(chain_model_signature, chain_path, model_config
     reset_tracer_setup()
 
     request_id = "mock_request_id"
-    tracer = MlflowLangchainTracer(prediction_context=Context(request_id))
+    tracer = QCFlowLangchainTracer(prediction_context=Context(request_id))
     input_example = {"messages": [{"role": "user", "content": TEST_CONTENT}]}
     response = pyfunc_loaded_model._model_impl._predict_with_callbacks(
         data=input_example, callback_handlers=[tracer]
@@ -2765,7 +2765,7 @@ def test_save_load_chain_errors(chain_model_signature, chain_path):
     }
     with qcflow.start_run():
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=f"The provided model path '{chain_path}' does not exist. "
             "Ensure the file path is valid and try again.",
         ):
@@ -3029,7 +3029,7 @@ def test_langchain_model_save_exception(fake_chat_model):
     assert chain.invoke({"industry": "tech"}) == "Databricks"
 
     with pytest.raises(
-        MlflowException, match=r"Failed to save runnable sequence: {'0': 'PromptTemplate -- "
+        QCFlowException, match=r"Failed to save runnable sequence: {'0': 'PromptTemplate -- "
     ):
         with qcflow.start_run():
             qcflow.langchain.log_model(chain, "model_path", input_example={"industry": "tech"})
@@ -3503,7 +3503,7 @@ def test_invoking_model_with_params():
     params = {"config": {"temperature": 3.0}}
     with mock.patch("qcflow.pyfunc._validate_prediction_input", return_value=(data, params)):
         # This proves the temperature is passed to the model
-        with pytest.raises(MlflowException, match=r"Temperature must be between 0.0 and 2.0"):
+        with pytest.raises(QCFlowException, match=r"Temperature must be between 0.0 and 2.0"):
             pyfunc_model.predict(data=data, params=params)
 
 

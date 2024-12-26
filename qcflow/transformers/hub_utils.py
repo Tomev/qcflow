@@ -3,7 +3,7 @@ import logging
 import os
 from typing import Optional
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
 
 _logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ def get_latest_commit_for_repo(repo: str) -> str:
     try:
         import huggingface_hub as hub
     except ImportError:
-        raise MlflowException(
+        raise QCFlowException(
             "Unable to fetch model commit hash from the HuggingFace model hub. "
             "This is required for saving Transformer model without base model "
             "weights, while ensuring the version consistency of the model. "
@@ -41,7 +41,7 @@ def is_valid_hf_repo_id(maybe_repo_id: Optional[str]) -> bool:
     try:
         from huggingface_hub.utils import HFValidationError, validate_repo_id
     except ImportError:
-        raise MlflowException(
+        raise QCFlowException(
             "Unable to validate the repository identifier for the HuggingFace model hub "
             "because the `huggingface-hub` package is not installed. Please install the "
             "package with `pip install huggingface-hub` command and retry."

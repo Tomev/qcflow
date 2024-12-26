@@ -35,7 +35,7 @@ from qcflow.environment_variables import (
     QCFLOW_HUGGINGFACE_USE_LOW_CPU_MEM_USAGE,
     QCFLOW_INPUT_EXAMPLE_INFERENCE_TIMEOUT,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import (
     Model,
     ModelInputExample,
@@ -233,14 +233,14 @@ def _validate_transformers_model_dict(transformers_model):
     if isinstance(transformers_model, dict):
         invalid_keys = [key for key in transformers_model.keys() if key not in _SUPPORTED_SAVE_KEYS]
         if invalid_keys:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid dictionary submitted for 'transformers_model'. The "
                 f"key(s) {invalid_keys} are not permitted. Must be one of: "
                 f"{_SUPPORTED_SAVE_KEYS}",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         if FlavorKey.MODEL not in transformers_model:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The 'transformers_model' dictionary must have an entry for {FlavorKey.MODEL}",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -248,7 +248,7 @@ def _validate_transformers_model_dict(transformers_model):
     else:
         model = transformers_model.model
     if not hasattr(model, "name_or_path"):
-        raise MlflowException(
+        raise QCFlowException(
             f"The submitted model type {type(model).__name__} does not inherit "
             "from a transformers pre-trained model. It is missing the attribute "
             "'name_or_path'. Please verify that the model is a supported "
@@ -512,14 +512,14 @@ def save_model(
             transformers_model = transformers_model.replace("dbfs:", "/dbfs", 1)
 
         if task is None:
-            raise MlflowException(
+            raise QCFlowException(
                 "The `task` argument must be specified when logging a model from a local "
                 "checkpoint. Please provide the task type of the pipeline.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
 
         if not save_pretrained:
-            raise MlflowException(
+            raise QCFlowException(
                 "The `save_pretrained` argument must be set to True when logging a model from a "
                 "local checkpoint. Please set `save_pretrained=True`.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -530,7 +530,7 @@ def save_model(
         DummyPipeline = namedtuple("DummyPipeline", ["task", "model"])
         built_pipeline = DummyPipeline(task=task, model=DummyModel(name_or_path=transformers_model))
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "The `transformers_model` must be one of the following types: \n"
             " (1) a transformers Pipeline\n"
             " (2) a dictionary of components for a transformers Pipeline\n"
@@ -547,7 +547,7 @@ def save_model(
     # We might be able to remove this check once this PR is merged to transformers:
     # https://github.com/huggingface/transformers/issues/20072
     if _is_model_distributed_in_memory(built_pipeline.model):
-        raise MlflowException(
+        raise QCFlowException(
             "The model that is attempting to be saved has been loaded into memory "
             "with an incompatible configuration. If you are using the accelerate "
             "library to load your model, please ensure that it is saved only after "
@@ -595,7 +595,7 @@ def save_model(
         and (metadata_task := qcflow_model.metadata.get(_METADATA_LLM_INFERENCE_TASK_KEY))
         and metadata_task != task
     ):
-        raise MlflowException(
+        raise QCFlowException(
             f"LLM v1 task type '{metadata_task}' is specified in "
             "metadata, but it doesn't match the task type provided in the `task` argument: "
             f"'{task}'. The mismatched task type may cause incorrect model inference behavior. "
@@ -607,7 +607,7 @@ def save_model(
     if prompt_template is not None:
         # prevent saving prompt templates for unsupported pipeline types
         if built_pipeline.task not in _SUPPORTED_PROMPT_TEMPLATING_TASK_TYPES:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Prompt templating is not supported for the `{built_pipeline.task}` task type. "
                 f"Supported task types are: {_SUPPORTED_PROMPT_TEMPLATING_TASK_TYPES}."
             )
@@ -1103,7 +1103,7 @@ def load_model(
     """
 
     if return_type not in _SUPPORTED_RETURN_TYPES:
-        raise MlflowException(
+        raise QCFlowException(
             f"The specified return_type mode '{return_type}' is unsupported. "
             "Please select one of: 'pipeline' or 'components'.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -1116,7 +1116,7 @@ def load_model(
     flavor_config = _get_flavor_configuration_from_uri(model_uri, FLAVOR_NAME, _logger)
 
     if return_type == "pipeline" and FlavorKey.PROCESSOR_TYPE in flavor_config:
-        raise MlflowException(
+        raise QCFlowException(
             "This model has been saved with a processor. Processor objects are "
             "not compatible with Pipelines. Please load this model by specifying "
             "the 'return_type'='components'.",
@@ -1159,7 +1159,7 @@ def persist_pretrained_model(model_uri: str) -> None:
         # The model cannot be registered to the Model Registry as it is
         try:
             qcflow.register_model(f"runs:/{run.info.run_id}/pipeline", "qa_pipeline")
-        except MlflowException as e:
+        except QCFlowException as e:
             print(e.message)
 
         # Use this API to persist the pretrained model weights
@@ -1208,7 +1208,7 @@ def persist_pretrained_model(model_uri: str) -> None:
                 artifact_repo.log_artifacts(local_dir, os.path.join(artifact_path, dir_to_upload))
             except Exception as e:
                 # NB: log_artifacts method doesn't support rollback for partial uploads,
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to upload {local_dir} to the existing model_uri due to {e}."
                     "Some other files may have been uploaded."
                 ) from e
@@ -1274,7 +1274,7 @@ def _load_model(path: str, flavor_config, return_type: str, device=None, **kwarg
         accelerate_model_conf["device_map"] = device_map_strategy
         # Cannot use device with device_map
         if device is not None:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "The environment variable QCFLOW_HUGGINGFACE_USE_DEVICE_MAP is set to True, but "
                 f"the `device` argument is provided with value {device}. The device_map and "
                 "`device` argument cannot be used together. Set QCFLOW_HUGGINGFACE_USE_DEVICE_MAP "
@@ -1485,7 +1485,7 @@ def _build_pipeline_from_model_input(model_dict: dict[str, Any], task: Optional[
     model = model_dict[FlavorKey.MODEL]
 
     if not (isinstance(model, _get_supported_pretrained_model_types()) or is_peft_model(model)):
-        raise MlflowException(
+        raise QCFlowException(
             "The supplied model type is unsupported. The model must be one of: "
             "PreTrainedModel, TFPreTrainedModel, FlaxPreTrainedModel, or PeftModel",
             error_code=INVALID_PARAMETER_VALUE,
@@ -1499,7 +1499,7 @@ def _build_pipeline_from_model_input(model_dict: dict[str, Any], task: Optional[
         with suppress_logs("transformers.pipelines.base", filter_regex=_PEFT_PIPELINE_ERROR_MSG):
             return pipeline(task=task, **model_dict)
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             "The provided model configuration cannot be created as a Pipeline. "
             "Please verify that all required and compatible components are "
             "specified with the correct keys.",
@@ -1529,7 +1529,7 @@ def _get_task_for_model(model_name_or_path: str, default_task=None) -> str:
             )
             return default_task
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Cannot construct transformers pipeline because the task '{model_task}' "
                 "inferred from the model is not supported by the transformers pipeline. "
                 "Please construct the pipeline instance manually and pass it to the "
@@ -1539,7 +1539,7 @@ def _get_task_for_model(model_name_or_path: str, default_task=None) -> str:
     except RuntimeError as e:
         if default_task:
             return default_task
-        raise MlflowException(
+        raise QCFlowException(
             "The task could not be inferred from the model. If you are saving a custom "
             "local model that is not available in the Hugging Face hub, please provide "
             "the `task` argument to the `log_model` or `save_model` function.",
@@ -1556,7 +1556,7 @@ def _validate_llm_inference_task_type(llm_inference_task: str, pipeline_task: st
     )
 
     if llm_inference_task not in supported_llm_inference_tasks:
-        raise MlflowException(
+        raise QCFlowException(
             f"The task provided is invalid. '{llm_inference_task}' is not a supported task for "
             f"the {pipeline_task} pipeline. Must be one of {supported_llm_inference_tasks}",
             error_code=INVALID_PARAMETER_VALUE,
@@ -1710,7 +1710,7 @@ def generate_signature_output(pipeline, data, model_config=None, params=None, fl
     from qcflow.transformers import signature
 
     if not isinstance(pipeline, transformers.Pipeline):
-        raise MlflowException(
+        raise QCFlowException(
             f"The pipeline type submitted is not a valid transformers Pipeline. "
             f"The type {type(pipeline).__name__} is not supported.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -1780,7 +1780,7 @@ class _TransformersWrapper:
             _logger.warning(
                 "params provided to the `predict` method will override the inference "
                 "configuration saved with the model. If the params provided are not "
-                "valid for the pipeline, MlflowException will be raised."
+                "valid for the pipeline, QCFlowException will be raised."
             )
             # Override the inference configuration with any additional kwargs provided by the user.
             return {**model_config, **params}
@@ -1807,7 +1807,7 @@ class _TransformersWrapper:
             return self.pipeline(data, **model_config)
         except ValueError as e:
             if "The following `model_kwargs` are not used by the model" in str(e):
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     "The params provided to the `predict` method are not valid "
                     f"for pipeline {type(self.pipeline).__name__}.",
                 ) from e
@@ -1823,7 +1823,7 @@ class _TransformersWrapper:
                 # transformers > 4.33.3
                 or "Soundfile is either not in the correct format or is malformed" in str(e)
             ):
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     "Failed to process the input audio data. Either the audio file is "
                     "corrupted or a uri was passed in without overriding the default model "
                     "signature. If submitting a string uri, please ensure that the model has "
@@ -1860,7 +1860,7 @@ class _TransformersWrapper:
             input_data = data
         elif isinstance(data, list):
             if not all(isinstance(entry, (str, dict)) for entry in data):
-                raise MlflowException(
+                raise QCFlowException(
                     "Invalid data submission. Ensure all elements in the list are strings "
                     "or dictionaries. If dictionaries are supplied, all keys in the "
                     "dictionaries must be strings and values must be either str or List[str].",
@@ -1868,7 +1868,7 @@ class _TransformersWrapper:
                 )
             input_data = data
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "Input data must be either a pandas.DataFrame, a string, bytes, List[str], "
                 "List[Dict[str, str]], List[Dict[str, Union[str, List[str]]]], "
                 "or Dict[str, Union[str, List[str]]].",
@@ -1950,7 +1950,7 @@ class _TransformersWrapper:
             data = self._convert_audio_input(data)
             output_key = None
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The loaded pipeline type {type(self.pipeline).__name__} is "
                 "not enabled for pyfunc predict functionality.",
                 error_code=BAD_REQUEST,
@@ -2148,7 +2148,7 @@ class _TransformersWrapper:
             if set(payload) - allowable_str_keys and not all(
                 isinstance(key, int) for key in payload.keys()
             ):
-                raise MlflowException(
+                raise QCFlowException(
                     "Text Classification pipelines may only define dictionary inputs with keys "
                     f"defined as {allowable_str_keys}"
                 )
@@ -2178,12 +2178,12 @@ class _TransformersWrapper:
                 except (ValueError, SyntaxError):
                     return data
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     "An unsupported data type has been passed for Text Classification inference. "
                     "Only str, list of str, dict, and list of dict are supported."
                 )
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "An unsupported data type has been passed for Text Classification inference. "
                 "Only str, list of str, dict, and list of dict are supported."
             )
@@ -2199,7 +2199,7 @@ class _TransformersWrapper:
 
     def _parse_input_for_table_question_answering(self, data):
         if "table" not in data:
-            raise MlflowException(
+            raise QCFlowException(
                 "The input dictionary must have the 'table' key.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -2239,7 +2239,7 @@ class _TransformersWrapper:
             for coll in collection:
                 for key, value in coll.items():
                     if key not in parsed:
-                        raise MlflowException(
+                        raise QCFlowException(
                             "Unable to parse the input. The keys within each "
                             "dictionary of the parsed input are not consistent"
                             "among the dictionaries.",
@@ -2295,7 +2295,7 @@ class _TransformersWrapper:
         3  My dog hates going to the vet  happy  0.042925
         """
         if isinstance(data, list) and not all(isinstance(item, dict) for item in data):
-            raise MlflowException(
+            raise QCFlowException(
                 "Encountered an unknown return type from the pipeline type "
                 f"{type(self.pipeline).__name__}. Expecting a List[Dict]",
                 error_code=BAD_REQUEST,
@@ -2331,7 +2331,7 @@ class _TransformersWrapper:
             elif all(isinstance(x, list) for x in data_out):
                 return [elem[output_key] for coll in data_out for elem in coll]
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     "Unable to parse the pipeline output. Expected List[Dict[str,str]] or "
                     f"List[List[Dict[str,str]]] but got {type(data_out)} instead."
                 )
@@ -2371,7 +2371,7 @@ class _TransformersWrapper:
         elif isinstance(input_data, str) and isinstance(output, str):
             return trim_input(input_data, output)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "Unknown data structure after parsing output. Expected str or List[str]. "
                 f"Got {type(output)} instead."
             )
@@ -2537,12 +2537,12 @@ class _TransformersWrapper:
         elif isinstance(data, dict):
             expected_keys = {"question", "context"}
             if not expected_keys.intersection(set(data.keys())) == expected_keys:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid keys were submitted. Keys must be exclusively {expected_keys}"
                 )
             return data
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "An invalid type has been supplied. Must be either List[Dict[str, str]] or "
                 f"Dict[str, str]. {type(data)} is not supported.",
                 error_code=INVALID_PARAMETER_VALUE,
@@ -2588,7 +2588,7 @@ class _TransformersWrapper:
         ):
             return data
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"An invalid type has been supplied: {_truncate_and_ellipsize(data, 100)} "
                 f"(type: {type(data).__name__}). Please supply a Dict[str, str], str, List[str], "
                 "or a List[Dict[str, str]] for a Text2Text Pipeline.",
@@ -2606,7 +2606,7 @@ class _TransformersWrapper:
             return [self._parse_json_encoded_list(entry, key_to_unpack) for entry in data]
         elif isinstance(data, dict):
             if key_to_unpack not in data:
-                raise MlflowException(
+                raise QCFlowException(
                     "Invalid key in inference payload. The expected inference data key "
                     f"is: {key_to_unpack}",
                     error_code=INVALID_PARAMETER_VALUE,
@@ -2686,13 +2686,13 @@ class _TransformersWrapper:
     @staticmethod
     def _validate_str_or_list_str(data):
         if not isinstance(data, (str, list)):
-            raise MlflowException(
+            raise QCFlowException(
                 f"The input data is of an incorrect type. {type(data)} is invalid. "
                 "Must be either string or List[str]",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         elif isinstance(data, list) and not all(isinstance(entry, str) for entry in data):
-            raise MlflowException(
+            raise QCFlowException(
                 "If supplying a list, all values must be of string type.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -2829,7 +2829,7 @@ class _TransformersWrapper:
             else:
                 return audio
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "Invalid audio data. Must be either bytes, str, or np.ndarray.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -2866,7 +2866,7 @@ class _TransformersWrapper:
                 data_str = f"Received: {input_str}"
             else:
                 data_str = f"Received (truncated): {input_str[:20]}..."
-            raise MlflowException(
+            raise QCFlowException(
                 "An invalid string input was provided. String inputs to "
                 "audio or image files must be either a file location or a uri."
                 f"audio files must be either a file location or a uri. {data_str}",
@@ -2883,7 +2883,7 @@ class _TransformersWrapper:
             return input_data
 
         if self.pipeline.task not in _SUPPORTED_PROMPT_TEMPLATING_TASK_TYPES:
-            raise MlflowException(
+            raise QCFlowException(
                 f"_format_prompt_template called on an unexpected pipeline type. "
                 f"Expected one of: {_SUPPORTED_PROMPT_TEMPLATING_TASK_TYPES}. "
                 f"Received: {self.pipeline.task}"
@@ -2897,7 +2897,7 @@ class _TransformersWrapper:
                 return [self.prompt_template.format(prompt=data) for data in input_data]
 
         # throw for unsupported types
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Prompt templating is only supported for data of type str or List[str]. "
             f"Got {type(input_data)} instead."
         )
@@ -2957,7 +2957,7 @@ def autolog(
 
 def _get_prompt_template(model_path):
     if not os.path.exists(model_path):
-        raise MlflowException(
+        raise QCFlowException(
             f'Could not find an "{MLMODEL_FILE_NAME}" configuration file at "{model_path}"',
             RESOURCE_DOES_NOT_EXIST,
         )
@@ -2974,7 +2974,7 @@ def _validate_prompt_template(prompt_template):
         return
 
     if not isinstance(prompt_template, str):
-        raise MlflowException(
+        raise QCFlowException(
             f"Argument `prompt_template` must be a string, received {type(prompt_template)}",
             INVALID_PARAMETER_VALUE,
         )
@@ -2985,7 +2985,7 @@ def _validate_prompt_template(prompt_template):
 
     # expect there to only be one format arg, and for that arg to be "prompt"
     if format_args != ["prompt"]:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Argument `prompt_template` must be a string with a single format arg, 'prompt'. "
             "For example: 'Answer the following question in a friendly tone. Q: {prompt}. A:'\n"
             f"Received {prompt_template}. "

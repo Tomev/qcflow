@@ -28,7 +28,7 @@ import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 import qcflow.sklearn
 from qcflow.entities import Trace
 from qcflow.environment_variables import QCFLOW_RECORD_ENV_VARS_IN_MODEL_LOGGING
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, infer_signature
 from qcflow.models.dependencies_schemas import DependenciesSchemasType
 from qcflow.models.model import _DATABRICKS_FS_LOADER_MODULE
@@ -908,19 +908,19 @@ def test_save_model_with_python_model_argument_of_invalid_type_raises_exception(
     tmp_path,
 ):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="must be a PythonModel instance, callable object, or path to a",
     ):
         qcflow.pyfunc.save_model(path=os.path.join(tmp_path, "model1"), python_model=5)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="must be a PythonModel instance, callable object, or path to a",
     ):
         qcflow.pyfunc.save_model(
             path=os.path.join(tmp_path, "model2"), python_model=["not a python model"]
         )
-    with pytest.raises(MlflowException, match="The provided model path"):
+    with pytest.raises(QCFlowException, match="The provided model path"):
         qcflow.pyfunc.save_model(
             path=os.path.join(tmp_path, "model3"), python_model="not a valid filepath"
         )
@@ -928,7 +928,7 @@ def test_save_model_with_python_model_argument_of_invalid_type_raises_exception(
 
 def test_save_model_with_unsupported_argument_combinations_throws_exception(model_path):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Either `loader_module` or `python_model` must be specified",
     ) as exc_info:
         qcflow.pyfunc.save_model(
@@ -940,7 +940,7 @@ def test_save_model_with_unsupported_argument_combinations_throws_exception(mode
     python_model = ModuleScopedSklearnModel(predict_fn=None)
     loader_module = __name__
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The following sets of parameters cannot be specified together",
     ) as exc_info:
         qcflow.pyfunc.save_model(
@@ -950,7 +950,7 @@ def test_save_model_with_unsupported_argument_combinations_throws_exception(mode
     assert str(loader_module) in str(exc_info)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The following sets of parameters cannot be specified together",
     ) as exc_info:
         qcflow.pyfunc.save_model(
@@ -961,7 +961,7 @@ def test_save_model_with_unsupported_argument_combinations_throws_exception(mode
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Either `loader_module` or `python_model` must be specified",
     ):
         qcflow.pyfunc.save_model(path=model_path, python_model=None, loader_module=None)
@@ -973,7 +973,7 @@ def test_log_model_with_unsupported_argument_combinations_throws_exception():
         "should be a python module. A `python_model` should be a subclass of "
         "PythonModel"
     )
-    with qcflow.start_run(), pytest.raises(MlflowException, match=match):
+    with qcflow.start_run(), pytest.raises(QCFlowException, match=match):
         qcflow.pyfunc.log_model(
             "pyfunc_model",
             artifacts={"artifact": "/path/to/artifact"},
@@ -985,7 +985,7 @@ def test_log_model_with_unsupported_argument_combinations_throws_exception():
     with (
         qcflow.start_run(),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="The following sets of parameters cannot be specified together",
         ) as exc_info,
     ):
@@ -1000,7 +1000,7 @@ def test_log_model_with_unsupported_argument_combinations_throws_exception():
     with (
         qcflow.start_run(),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="The following sets of parameters cannot be specified together",
         ) as exc_info,
     ):
@@ -1014,7 +1014,7 @@ def test_log_model_with_unsupported_argument_combinations_throws_exception():
     with (
         qcflow.start_run(),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Either `loader_module` or `python_model` must be specified",
         ),
     ):
@@ -1168,13 +1168,13 @@ def test_deprecation_warning_for_code_path(tmp_path):
 
 def test_error_when_both_code_path_and_code_paths_specified():
     error_msg = "Both `code_path` and `code_paths` have been specified"
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         qcflow.pyfunc.save_model(
             path="some_path",
             code_path="some_code_path",
             code_paths=["some_code_path"],
         )
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         with qcflow.start_run():
             qcflow.pyfunc.log_model(
                 "some_path",
@@ -1375,7 +1375,7 @@ def multiple_arguments(x: list[str], y: list[str]) -> list[str]:
 
 def test_functional_python_model_multiple_arguments(tmp_path):
     with pytest.raises(
-        MlflowException, match=r"must accept exactly one argument\. Found 2 arguments\."
+        QCFlowException, match=r"must accept exactly one argument\. Found 2 arguments\."
     ):
         qcflow.pyfunc.save_model(path=tmp_path, python_model=multiple_arguments)
 
@@ -1386,7 +1386,7 @@ def no_arguments() -> list[str]:
 
 def test_functional_python_model_no_arguments(tmp_path):
     with pytest.raises(
-        MlflowException, match=r"must accept exactly one argument\. Found 0 arguments\."
+        QCFlowException, match=r"must accept exactly one argument\. Found 0 arguments\."
     ):
         qcflow.pyfunc.save_model(path=tmp_path, python_model=no_arguments)
 
@@ -1428,7 +1428,7 @@ def test_functional_python_model_throws_when_required_arguments_are_missing(tmp_
         python_model=requires_sklearn,
         extra_pip_requirements=["scikit-learn"],
     )
-    with pytest.raises(MlflowException, match="at least one of"):
+    with pytest.raises(QCFlowException, match="at least one of"):
         qcflow.pyfunc.save_model(path=tmp_path / uuid.uuid4().hex, python_model=requires_sklearn)
 
 
@@ -1519,7 +1519,7 @@ def test_load_model_fails_for_feature_store_models(tmp_path):
             code_paths=[__file__],
         )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Note: qcflow.pyfunc.load_model is not supported for Feature Store models",
     ):
         qcflow.pyfunc.load_model(f"runs:/{run.info.run_id}/model")
@@ -1978,7 +1978,7 @@ def test_no_traces_collected_for_pyfunc_as_code_with_dependencies_if_no_tracing_
 
 def test_pyfunc_as_code_log_and_load_wrong_path():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The provided model path",
     ):
         with qcflow.start_run():

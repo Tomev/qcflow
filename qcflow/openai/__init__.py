@@ -47,7 +47,7 @@ from packaging.version import Version
 import qcflow
 from qcflow import pyfunc
 from qcflow.environment_variables import QCFLOW_OPENAI_SECRET_SCOPE
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.signature import _infer_signature_from_input_example
@@ -148,7 +148,7 @@ def _get_model_name(model):
     if Version(_get_openai_package_version()).major < 1 and isinstance(model, openai.Model):
         return model.id
 
-    raise qcflow.MlflowException(
+    raise qcflow.QCFlowException(
         f"Unsupported model type: {type(model)}", error_code=INVALID_PARAMETER_VALUE
     )
 
@@ -157,7 +157,7 @@ def _get_task_name(task):
     mapping = _get_obj_to_task_mapping()
     if isinstance(task, str):
         if task not in mapping.values():
-            raise qcflow.MlflowException(
+            raise qcflow.QCFlowException(
                 f"Unsupported task: {task}", error_code=INVALID_PARAMETER_VALUE
             )
         return task
@@ -168,7 +168,7 @@ def _get_task_name(task):
             or mapping.get(getattr(task, "__func__"))  # if task is a method
         )
         if task_name is None:
-            raise qcflow.MlflowException(
+            raise qcflow.QCFlowException(
                 f"Unsupported task object: {task}", error_code=INVALID_PARAMETER_VALUE
             )
         return task_name
@@ -314,7 +314,7 @@ def save_model(
         )
     """
     if Version(_get_openai_package_version()).major < 1:
-        raise MlflowException("Only openai>=1.0 is supported.")
+        raise QCFlowException("Only openai>=1.0 is supported.")
 
     import numpy as np
 
@@ -337,7 +337,7 @@ def save_model(
         if messages and not (
             all(isinstance(m, dict) for m in messages) and all(map(_is_valid_message, messages))
         ):
-            raise qcflow.MlflowException.invalid_parameter_value(
+            raise qcflow.QCFlowException.invalid_parameter_value(
                 "If `messages` is provided, it must be a list of dictionaries with keys "
                 "'role' and 'content'."
             )
@@ -559,7 +559,7 @@ class _ContentFormatter:
         if task == "completions":
             template = template or "{prompt}"
             if not isinstance(template, str):
-                raise qcflow.MlflowException.invalid_parameter_value(
+                raise qcflow.QCFlowException.invalid_parameter_value(
                     f"Template for task {task} expects type `str`, but got {type(template)}."
                 )
 
@@ -570,7 +570,7 @@ class _ContentFormatter:
             if not template:
                 template = [{"role": "user", "content": "{content}"}]
             if not all(map(_is_valid_message, template)):
-                raise qcflow.MlflowException.invalid_parameter_value(
+                raise qcflow.QCFlowException.invalid_parameter_value(
                     f"Template for task {task} expects type `dict` with keys 'content' "
                     f"and 'role', but got {type(template)}."
                 )
@@ -590,13 +590,13 @@ class _ContentFormatter:
                 self.template.append({"role": "user", "content": "{content}"})
                 self.variables.append("content")
         else:
-            raise qcflow.MlflowException.invalid_parameter_value(
+            raise qcflow.QCFlowException.invalid_parameter_value(
                 f"Task type ``{task}`` is not supported for formatting."
             )
 
     def format(self, **params):
         if missing_params := set(self.variables) - set(params):
-            raise qcflow.MlflowException.invalid_parameter_value(
+            raise qcflow.QCFlowException.invalid_parameter_value(
                 f"Expected parameters {self.variables} to be provided, "
                 f"only got {list(params)}, {list(missing_params)} are missing."
             )
@@ -620,7 +620,7 @@ def _first_string_column(pdf):
     iter_str_cols = (c for c, v in pdf.iloc[0].items() if isinstance(v, str))
     col = next(iter_str_cols, None)
     if col is None:
-        raise qcflow.MlflowException.invalid_parameter_value(
+        raise qcflow.QCFlowException.invalid_parameter_value(
             f"Could not find a string column in the input data: {pdf.dtypes.to_dict()}"
         )
     return col
@@ -630,7 +630,7 @@ class _OpenAIWrapper:
     def __init__(self, model):
         task = model.pop("task")
         if task not in _PYFUNC_SUPPORTED_TASKS:
-            raise qcflow.MlflowException.invalid_parameter_value(
+            raise qcflow.QCFlowException.invalid_parameter_value(
                 f"Unsupported task: {task}. Supported tasks: {_PYFUNC_SUPPORTED_TASKS}."
             )
         self.model = model
@@ -843,7 +843,7 @@ def autolog(
 ):
     """
     Enables (or disables) and configures autologging from OpenAI to QCFlow.
-    Raises :py:class:`MlflowException <qcflow.exceptions.MlflowException>`
+    Raises :py:class:`QCFlowException <qcflow.exceptions.QCFlowException>`
     if the OpenAI version < 1.0.
 
     Args:
@@ -885,7 +885,7 @@ def autolog(
     """
 
     if Version(_get_openai_package_version()).major < 1:
-        raise MlflowException("OpenAI autologging is only supported for openai >= 1.0.0")
+        raise QCFlowException("OpenAI autologging is only supported for openai >= 1.0.0")
 
     from openai.resources.chat.completions import Completions as ChatCompletions
     from openai.resources.completions import Completions

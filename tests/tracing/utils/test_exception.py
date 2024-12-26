@@ -1,6 +1,6 @@
 import pytest
 
-from qcflow.exceptions import MlflowTracingException
+from qcflow.exceptions import QCFlowTracingException
 from qcflow.tracing.utils.exception import raise_as_trace_exception
 
 
@@ -9,7 +9,7 @@ def test_raise_as_trace_exception():
     def test_fn():
         raise ValueError("error")
 
-    with pytest.raises(MlflowTracingException, match="error"):
+    with pytest.raises(QCFlowTracingException, match="error"):
         test_fn()
 
     @raise_as_trace_exception

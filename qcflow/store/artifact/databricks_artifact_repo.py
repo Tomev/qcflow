@@ -23,15 +23,15 @@ from qcflow.environment_variables import (
     QCFLOW_MULTIPART_UPLOAD_MINIMUM_FILE_SIZE,
 )
 from qcflow.exceptions import (
-    MlflowException,
-    MlflowTraceDataCorrupted,
-    MlflowTraceDataNotFound,
+    QCFlowException,
+    QCFlowTraceDataCorrupted,
+    QCFlowTraceDataNotFound,
 )
 from qcflow.protos.databricks_artifacts_pb2 import (
     ArtifactCredentialType,
     CompleteMultipartUpload,
     CreateMultipartUpload,
-    DatabricksMlflowArtifactsService,
+    DatabricksQCFlowArtifactsService,
     GetCredentialsForRead,
     GetCredentialsForTraceDataDownload,
     GetCredentialsForTraceDataUpload,
@@ -43,7 +43,7 @@ from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
 )
-from qcflow.protos.service_pb2 import GetRun, ListArtifacts, MlflowService
+from qcflow.protos.service_pb2 import GetRun, ListArtifacts, QCFlowService
 from qcflow.store.artifact.artifact_repo import write_local_temp_trace_data_file
 from qcflow.store.artifact.cloud_artifact_repo import (
     CloudArtifactRepository,
@@ -77,7 +77,7 @@ _logger = logging.getLogger(__name__)
 _MAX_CREDENTIALS_REQUEST_SIZE = 2000  # Max number of artifact paths in a single credentials request
 _SERVICE_AND_METHOD_TO_INFO = {
     service: extract_api_info_for_service(service, _REST_API_PATH_PREFIX)
-    for service in [MlflowService, DatabricksMlflowArtifactsService]
+    for service in [QCFlowService, DatabricksQCFlowArtifactsService]
 }
 
 
@@ -95,13 +95,13 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
 
     def __init__(self, artifact_uri):
         if not is_valid_dbfs_uri(artifact_uri):
-            raise MlflowException(
+            raise QCFlowException(
                 message="DBFS URI must be of the form dbfs:/<path> or "
                 + "dbfs://profile@databricks/<path>",
                 error_code=INVALID_PARAMETER_VALUE,
             )
         if not is_databricks_acled_artifacts_uri(artifact_uri):
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "Artifact URI incorrect. Expected path prefix to be"
                     " databricks/qcflow-tracking/path/to/artifact/.."
@@ -182,7 +182,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
 
     def _get_run_artifact_root(self, run_id):
         json_body = message_to_json(GetRun(run_id=run_id))
-        run_response = self._call_endpoint(MlflowService, GetRun, json_body)
+        run_response = self._call_endpoint(QCFlowService, GetRun, json_body)
         return run_response.run.info.artifact_uri
 
     def _get_credential_infos(self, request_message_class, run_id, paths):
@@ -210,7 +210,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
                     request_message_class(run_id=run_id, path=paths_chunk, page_token=page_token)
                 )
                 response = self._call_endpoint(
-                    DatabricksMlflowArtifactsService, request_message_class, json_body
+                    DatabricksQCFlowArtifactsService, request_message_class, json_body
                 )
                 credential_infos += response.credential_infos
                 page_token = response.next_page_token
@@ -234,7 +234,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
 
     def download_trace_data(self) -> dict[str, Any]:
         cred = self._call_endpoint(
-            DatabricksMlflowArtifactsService,
+            DatabricksQCFlowArtifactsService,
             GetCredentialsForTraceDataDownload,
             path_params={"request_id": self.run_id},
         )
@@ -245,17 +245,17 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
                 augmented_raise_for_status(resp)
             except requests.HTTPError as e:
                 if e.response.status_code == 404:
-                    raise MlflowTraceDataNotFound(request_id=self.run_id) from e
+                    raise QCFlowTraceDataNotFound(request_id=self.run_id) from e
                 raise
 
             try:
                 return json.loads(resp.content)
             except json.JSONDecodeError as e:
-                raise MlflowTraceDataCorrupted(request_id=self.run_id) from e
+                raise QCFlowTraceDataCorrupted(request_id=self.run_id) from e
 
     def _get_upload_trace_data_cred_info(self):
         res = self._call_endpoint(
-            DatabricksMlflowArtifactsService,
+            DatabricksQCFlowArtifactsService,
             GetCredentialsForTraceDataUpload,
             path_params={"request_id": self.run_id},
         )
@@ -297,7 +297,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
         if type(remote_file_paths) == str:
             remote_file_paths = [remote_file_paths]
         if type(remote_file_paths) != list:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Expected `paths` to be a list of strings. Got {type(remote_file_paths)}"
             )
         run_relative_remote_paths = [
@@ -391,7 +391,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
 
             results, errors = _complete_futures(futures, local_file)
             if errors:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to upload at least one part of {local_file}. Errors: {errors}"
                 )
             # Sort results by the chunk index
@@ -412,7 +412,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
                 else:
                     raise e
         except Exception as err:
-            raise MlflowException(err)
+            raise QCFlowException(err)
 
     def _retryable_adls_function(self, func, artifact_file_path, get_credentials, **kwargs):
         """
@@ -487,7 +487,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
 
             _, errors = _complete_futures(futures, local_file)
             if errors:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Failed to upload at least one part of {artifact_file_path}. Errors: {errors}"
                 )
 
@@ -502,7 +502,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
                     headers=headers,
                 )
         except Exception as err:
-            raise MlflowException(err)
+            raise QCFlowException(err)
 
     def _signed_url_upload_file(self, credentials, local_file):
         try:
@@ -521,7 +521,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
                     ) as response:
                         augmented_raise_for_status(response)
         except Exception as err:
-            raise MlflowException(err)
+            raise QCFlowException(err)
 
     def _upload_to_cloud(self, cloud_credential_info, src_file_path, artifact_file_path):
         """
@@ -558,7 +558,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
         elif cloud_credential_info.type == ArtifactCredentialType.GCP_SIGNED_URL:
             self._signed_url_upload_file(cloud_credential_info, src_file_path)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 message="Cloud provider not supported.", error_code=INTERNAL_ERROR
             )
 
@@ -584,7 +584,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
             ArtifactCredentialType.AWS_PRESIGNED_URL,
             ArtifactCredentialType.GCP_SIGNED_URL,
         ]:
-            raise MlflowException(
+            raise QCFlowException(
                 message="Cloud provider not supported.", error_code=INTERNAL_ERROR
             )
         try:
@@ -595,18 +595,18 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
                 self._extract_headers_from_credentials(cloud_credential_info.headers),
             )
         except Exception as err:
-            raise MlflowException(err)
+            raise QCFlowException(err)
 
     def _create_multipart_upload(self, run_id, path, num_parts):
         return self._call_endpoint(
-            DatabricksMlflowArtifactsService,
+            DatabricksQCFlowArtifactsService,
             CreateMultipartUpload,
             message_to_json(CreateMultipartUpload(run_id=run_id, path=path, num_parts=num_parts)),
         )
 
     def _get_presigned_upload_part_url(self, run_id, path, upload_id, part_number):
         return self._call_endpoint(
-            DatabricksMlflowArtifactsService,
+            DatabricksQCFlowArtifactsService,
             GetPresignedUploadPartUrl,
             message_to_json(
                 GetPresignedUploadPartUrl(
@@ -660,7 +660,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
 
         results, errors = _complete_futures(futures, local_file)
         if errors:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Failed to upload at least one part of {local_file}. Errors: {errors}"
             )
 
@@ -671,7 +671,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
 
     def _complete_multipart_upload(self, run_id, path, upload_id, part_etags):
         return self._call_endpoint(
-            DatabricksMlflowArtifactsService,
+            DatabricksQCFlowArtifactsService,
             CompleteMultipartUpload,
             message_to_json(
                 CompleteMultipartUpload(
@@ -735,7 +735,7 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
             json_body = message_to_json(
                 ListArtifacts(run_id=self.run_id, path=run_relative_path, page_token=page_token)
             )
-            response = self._call_endpoint(MlflowService, ListArtifacts, json_body)
+            response = self._call_endpoint(QCFlowService, ListArtifacts, json_body)
             artifact_list = response.files
             # If `path` is a file, ListArtifacts returns a single list element with the
             # same name as `path`. The list_artifacts API expects us to return an empty list in this
@@ -758,4 +758,4 @@ class DatabricksArtifactRepository(CloudArtifactRepository):
         return infos
 
     def delete_artifacts(self, artifact_path=None):
-        raise MlflowException("Not implemented yet")
+        raise QCFlowException("Not implemented yet")

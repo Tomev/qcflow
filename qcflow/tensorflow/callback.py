@@ -3,10 +3,10 @@ from tensorflow.keras.callbacks import Callback
 
 from qcflow import log_metrics, log_params, log_text
 from qcflow.utils.autologging_utils import ExceptionSafeClass
-from qcflow.utils.checkpoint_utils import MlflowModelCheckpointCallbackBase
+from qcflow.utils.checkpoint_utils import QCFlowModelCheckpointCallbackBase
 
 
-class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
+class QCFlowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
     """Callback for logging Tensorflow training metrics to QCFlow.
 
     This callback logs model information at training start, and logs training metrics every epoch or
@@ -49,7 +49,7 @@ class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
                 label,
                 batch_size=4,
                 epochs=2,
-                callbacks=[qcflow.keras.MlflowCallback(run)],
+                callbacks=[qcflow.keras.QCFlowCallback(run)],
             )
     """
 
@@ -105,7 +105,7 @@ class MlflowCallback(keras.callbacks.Callback, metaclass=ExceptionSafeClass):
         log_metrics(metrics, synchronous=False)
 
 
-class MlflowModelCheckpointCallback(Callback, MlflowModelCheckpointCallbackBase):
+class QCFlowModelCheckpointCallback(Callback, QCFlowModelCheckpointCallbackBase):
     """Callback for automatic Keras model checkpointing to QCFlow.
 
     Args:
@@ -134,7 +134,7 @@ class MlflowModelCheckpointCallback(Callback, MlflowModelCheckpointCallbackBase)
         import tensorflow as tf
         import qcflow
         import numpy as np
-        from qcflow.tensorflow import MlflowModelCheckpointCallback
+        from qcflow.tensorflow import QCFlowModelCheckpointCallback
 
         # Prepare data for a 2-class classification.
         data = tf.random.uniform([8, 28, 28, 3])
@@ -154,7 +154,7 @@ class MlflowModelCheckpointCallback(Callback, MlflowModelCheckpointCallbackBase)
             metrics=[keras.metrics.SparseCategoricalAccuracy()],
         )
 
-        qcflow_checkpoint_callback = MlflowModelCheckpointCallback(
+        qcflow_checkpoint_callback = QCFlowModelCheckpointCallback(
             monitor="sparse_categorical_accuracy",
             mode="max",
             save_best_only=True,
@@ -181,7 +181,7 @@ class MlflowModelCheckpointCallback(Callback, MlflowModelCheckpointCallbackBase)
         save_freq="epoch",
     ):
         Callback.__init__(self)
-        MlflowModelCheckpointCallbackBase.__init__(
+        QCFlowModelCheckpointCallbackBase.__init__(
             self,
             checkpoint_file_suffix=".h5",
             monitor=monitor,

@@ -18,8 +18,8 @@ import {
 } from './actions';
 import { QCFLOW_LOGGED_ARTIFACTS_TAG } from './constants';
 import { fetchEvaluationTableArtifact } from './sdk/EvaluationArtifactService';
-import { ViewType } from './sdk/MlflowEnums';
-import { MlflowService } from './sdk/MlflowService';
+import { ViewType } from './sdk/QCFlowEnums';
+import { QCFlowService } from './sdk/QCFlowService';
 import { RunLoggedArtifactType } from './types';
 import { getUUID } from '@qcflow/qcflow/src/common/utils/ActionUtils';
 
@@ -62,7 +62,7 @@ const getParentRunIdFromFilter = (filter: string) => filter.split(FETCH_PARENT_F
 beforeEach(() => {
   // searchRuns is used distinctly for fetching initial runs and fetching missing parent runs
   // Filtering by a single run_id indicates fetching a missing parent run
-  jest.spyOn(MlflowService, 'searchRuns').mockImplementation(({ filter }) => {
+  jest.spyOn(QCFlowService, 'searchRuns').mockImplementation(({ filter }) => {
     if (filter?.includes(FETCH_PARENT_FILTER_PREFIX)) {
       return Promise.resolve({ runs: [{ info: { run_id: getParentRunIdFromFilter(filter) } }] } as any);
     } else {
@@ -71,10 +71,10 @@ beforeEach(() => {
   });
 
   jest
-    .spyOn(MlflowService, 'getRun')
+    .spyOn(QCFlowService, 'getRun')
     .mockImplementation((data) => Promise.resolve({ run: { info: { run_id: data.run_id } } } as any));
 
-  jest.spyOn(MlflowService, 'createRun').mockImplementation((data) =>
+  jest.spyOn(QCFlowService, 'createRun').mockImplementation((data) =>
     Promise.resolve({
       run: { info: { run_id: getUUID(), experiment_id: data.experiment_id } as any },
     }),
@@ -82,9 +82,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  (MlflowService.searchRuns as any).mockRestore();
-  (MlflowService.getRun as any).mockRestore();
-  (MlflowService.createRun as any).mockRestore();
+  (QCFlowService.searchRuns as any).mockRestore();
+  (QCFlowService.getRun as any).mockRestore();
+  (QCFlowService.createRun as any).mockRestore();
 });
 
 describe('fetchMissingParents', () => {
@@ -122,7 +122,7 @@ describe('fetchMissingParents', () => {
       },
     };
 
-    jest.spyOn(MlflowService, 'getRun').mockImplementation((data) => {
+    jest.spyOn(QCFlowService, 'getRun').mockImplementation((data) => {
       if (data.run_id === 'aParent') {
         return Promise.resolve({ run: { info: { run_id: data.run_id } } }) as any;
       } else {
@@ -142,7 +142,7 @@ describe('fetchMissingParents', () => {
       },
     };
 
-    jest.spyOn(MlflowService, 'getRun').mockImplementation(() => Promise.reject(mockUnexpectedGetRunError));
+    jest.spyOn(QCFlowService, 'getRun').mockImplementation(() => Promise.reject(mockUnexpectedGetRunError));
 
     const res = { runs: [a, b] };
     await expect(fetchMissingParents(res)).rejects.toEqual(mockUnexpectedGetRunError);
@@ -184,7 +184,7 @@ describe('fetchMissingParentsWithSearchRuns', () => {
       },
     };
 
-    jest.spyOn(MlflowService, 'searchRuns').mockImplementation(({ filter }) => {
+    jest.spyOn(QCFlowService, 'searchRuns').mockImplementation(({ filter }) => {
       if (filter?.includes(FETCH_PARENT_FILTER_PREFIX)) {
         // Mock bParent as deleted
         if (getParentRunIdFromFilter(filter) === 'bParent') {
@@ -209,7 +209,7 @@ describe('fetchMissingParentsWithSearchRuns', () => {
       },
     };
 
-    jest.spyOn(MlflowService, 'searchRuns').mockImplementation(() => Promise.reject(mockUnexpectedGetRunError));
+    jest.spyOn(QCFlowService, 'searchRuns').mockImplementation(() => Promise.reject(mockUnexpectedGetRunError));
 
     const res = { runs: [a, b] };
     await expect(fetchMissingParentsWithSearchRuns(res, 'mock_id')).rejects.toEqual(mockUnexpectedGetRunError);
@@ -218,7 +218,7 @@ describe('fetchMissingParentsWithSearchRuns', () => {
 
 describe('createRun', () => {
   it('should create a run under the correct experiment', async () => {
-    expect(await MlflowService.createRun({ experiment_id: '1' })).toEqual(
+    expect(await QCFlowService.createRun({ experiment_id: '1' })).toEqual(
       expect.objectContaining({
         run: expect.objectContaining({
           info: expect.objectContaining({
@@ -258,10 +258,10 @@ const searchRunsPayloadTests = () => {
   });
   it('should make only a single call when no pinned rows are requested', async () => {
     await searchRunsPayload({ shouldFetchParents: false });
-    expect(MlflowService.searchRuns).toBeCalledTimes(1);
-    (MlflowService.searchRuns as any).mockClear();
+    expect(QCFlowService.searchRuns).toBeCalledTimes(1);
+    (QCFlowService.searchRuns as any).mockClear();
     await searchRunsPayload({ shouldFetchParents: false, runsPinned: [] });
-    expect(MlflowService.searchRuns).toBeCalledTimes(1);
+    expect(QCFlowService.searchRuns).toBeCalledTimes(1);
   });
   it('should make an additional call for pinned rows', async () => {
     await searchRunsPayload({
@@ -271,20 +271,20 @@ const searchRunsPayloadTests = () => {
       runViewType: ViewType.ACTIVE_ONLY,
     });
     // We expect creating two requests
-    expect(MlflowService.searchRuns).toBeCalledTimes(2);
+    expect(QCFlowService.searchRuns).toBeCalledTimes(2);
     // One regular call for the runs including filters...
-    expect(MlflowService.searchRuns).toBeCalledWith(
+    expect(QCFlowService.searchRuns).toBeCalledWith(
       expect.objectContaining({ filter: 'metric.m1 > 2', run_view_type: ViewType.ACTIVE_ONLY }),
     );
     // ...and the second dedicated to the pinned runs
-    expect(MlflowService.searchRuns).toBeCalledWith(
+    expect(QCFlowService.searchRuns).toBeCalledWith(
       expect.objectContaining({ filter: "run_id IN ('r1','r2')", run_view_type: ViewType.ALL }),
     );
   });
   it('should properly fetch for pinned runs and calculate runs matching filter', async () => {
     // Create mocked version of searchRuns() that will return
     // a specialized set of runs when asked for pinned runs
-    jest.spyOn(MlflowService, 'searchRuns').mockImplementation(({ filter }) => {
+    jest.spyOn(QCFlowService, 'searchRuns').mockImplementation(({ filter }) => {
       if (filter?.includes('run_id IN')) {
         return Promise.resolve({ runs: [b] }) as any;
       }
@@ -305,7 +305,7 @@ const searchRunsPayloadTests = () => {
   it('should properly handle result with pinned runs only', async () => {
     // Create mocked version of searchRuns() that will return
     // only pinned row
-    jest.spyOn(MlflowService, 'searchRuns').mockImplementation(({ filter }) => {
+    jest.spyOn(QCFlowService, 'searchRuns').mockImplementation(({ filter }) => {
       if (filter?.includes('run_id IN')) {
         return Promise.resolve({ runs: [b] });
       }
@@ -329,7 +329,7 @@ const searchRunsPayloadTests = () => {
   });
   it('throws proper error when received an invalid response', async () => {
     jest
-      .spyOn(MlflowService, 'searchRuns')
+      .spyOn(QCFlowService, 'searchRuns')
       .mockImplementation(() => Promise.resolve('this is a non-object response') as any);
     await expect(async () => searchRunsPayload({ shouldFetchParents: true })).rejects.toThrow(
       /Invalid format of the runs search response/,

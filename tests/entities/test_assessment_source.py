@@ -1,7 +1,7 @@
 import pytest
 
 from qcflow.entities.assessment_source import AssessmentSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 
 def test_assessment_source_equality():
@@ -46,7 +46,7 @@ def test_assessment_source_type_validation():
     AssessmentSource(source_type="AI_JUDGE", source_id="judge_1")
 
     # Invalid source type
-    with pytest.raises(MlflowException, match="Invalid assessment source type"):
+    with pytest.raises(QCFlowException, match="Invalid assessment source type"):
         AssessmentSource(source_type="ROBOT", source_id="robot_1")
 
 

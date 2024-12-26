@@ -11,7 +11,7 @@ public class RunsPage implements Page<Run> {
   private final String token;
   private final List<Run> runs;
 
-  private final MlflowClient client;
+  private final QCFlowClient client;
   private final List<String> experimentIds;
   private final String searchFilter;
   private final ViewType runViewType;
@@ -28,7 +28,7 @@ public class RunsPage implements Page<Run> {
                   ViewType runViewType,
                   int maxResults,
                   List<String> orderBy,
-                  MlflowClient client) {
+                  QCFlowClient client) {
     this.runs = Collections.unmodifiableList(runs);
     this.token = token;
     this.experimentIds = experimentIds;

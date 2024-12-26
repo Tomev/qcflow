@@ -22,13 +22,13 @@ from qcflow.deployments.databricks import DatabricksDeploymentClient, Databricks
 from qcflow.deployments.interface import get_deploy_client, run_local
 from qcflow.deployments.openai import OpenAIDeploymentClient
 from qcflow.deployments.utils import get_deployments_target, set_deployments_target
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 with contextlib.suppress(Exception):
-    # MlflowDeploymentClient depends on optional dependencies and can't be imported
+    # QCFlowDeploymentClient depends on optional dependencies and can't be imported
     # if they are not installed.
-    from qcflow.deployments.qcflow import MlflowDeploymentClient
+    from qcflow.deployments.qcflow import QCFlowDeploymentClient
 
 
 class PredictionsResponse(dict):
@@ -69,7 +69,7 @@ class PredictionsResponse(dict):
         elif predictions_format == "ndarray":
             return np.array(self["predictions"], dtype)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Unrecognized predictions format: '{predictions_format}'",
                 INVALID_PARAMETER_VALUE,
             )
@@ -96,9 +96,9 @@ class PredictionsResponse(dict):
         try:
             parsed_response = json.loads(json_str)
         except Exception as e:
-            raise MlflowException("Predictions response contents are not valid JSON") from e
+            raise QCFlowException("Predictions response contents are not valid JSON") from e
         if not isinstance(parsed_response, dict) or "predictions" not in parsed_response:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid response. Predictions response contents must be a dictionary"
                 f" containing a 'predictions' field. Instead, received: {parsed_response}"
             )
@@ -112,7 +112,7 @@ __all__ = [
     "DatabricksDeploymentClient",
     "OpenAIDeploymentClient",
     "DatabricksEndpoint",
-    "MlflowDeploymentClient",
+    "QCFlowDeploymentClient",
     "PredictionsResponse",
     "get_deployments_target",
     "set_deployments_target",

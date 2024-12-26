@@ -65,7 +65,7 @@ def log_everything():
         qcflow.set_tags({"tag": "run"})
         model_info = qcflow.pyfunc.log_model("model", python_model=Model())
 
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     registered_model_name = uuid.uuid4().hex
     client.create_registered_model(
         registered_model_name, tags={"tag": "registered_model"}, description="description"

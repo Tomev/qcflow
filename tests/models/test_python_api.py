@@ -10,7 +10,7 @@ import pytest
 import scipy.sparse
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.python_api import (
     _CONTENT_TYPE_CSV,
     _CONTENT_TYPE_JSON,
@@ -148,7 +148,7 @@ def test_predict_with_model_alias(env_manager):
             python_model=TestModel(),
             registered_model_name="model_name",
         )
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     client.set_registered_model_alias("model_name", "test_alias", 1)
 
     qcflow.models.predict(
@@ -194,7 +194,7 @@ def test_predict_with_extra_envs_errors():
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Extra environment variables are only "
         r"supported when env_manager is set to 'virtualenv', 'conda' or 'uv'",
     ):
@@ -207,7 +207,7 @@ def test_predict_with_extra_envs_errors():
         )
 
     with pytest.raises(
-        MlflowException, match=r"An exception occurred while running model prediction"
+        QCFlowException, match=r"An exception occurred while running model prediction"
     ):
         qcflow.models.predict(
             model_uri=model_info.model_uri,
@@ -224,7 +224,7 @@ def mock_backend():
 
 
 def test_predict_with_both_input_data_and_path_raise(mock_backend):
-    with pytest.raises(MlflowException, match=r"Both input_data and input_path are provided"):
+    with pytest.raises(QCFlowException, match=r"Both input_data and input_path are provided"):
         qcflow.models.predict(
             model_uri="runs:/test/Model",
             input_data={"inputs": [1, 2, 3]},
@@ -234,7 +234,7 @@ def test_predict_with_both_input_data_and_path_raise(mock_backend):
 
 
 def test_predict_invalid_content_type(mock_backend):
-    with pytest.raises(MlflowException, match=r"Content type must be one of"):
+    with pytest.raises(QCFlowException, match=r"Content type must be one of"):
         qcflow.models.predict(
             model_uri="runs:/test/Model",
             input_data={"inputs": [1, 2, 3]},
@@ -341,5 +341,5 @@ def test_serialize_input_data(input_data, content_type, expected):
     ],
 )
 def test_serialize_input_data_invalid_format(input_data, content_type):
-    with pytest.raises(MlflowException):  # noqa: PT011
+    with pytest.raises(QCFlowException):  # noqa: PT011
         _serialize_input_data(input_data, content_type)

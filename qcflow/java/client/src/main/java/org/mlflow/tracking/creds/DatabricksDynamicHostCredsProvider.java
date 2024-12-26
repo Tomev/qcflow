@@ -32,8 +32,8 @@ public class DatabricksDynamicHostCredsProvider extends DatabricksHostCredsProvi
   }
 
   @Override
-  public DatabricksMlflowHostCreds getHostCreds() {
-    return new DatabricksMlflowHostCreds(
+  public DatabricksQCFlowHostCreds getHostCreds() {
+    return new DatabricksQCFlowHostCreds(
       configProvider.get("host"),
       configProvider.get("username"),
       configProvider.get("password"),

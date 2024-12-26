@@ -69,7 +69,7 @@ def test_get_unknown_scheme():
     artifact_repository_registry = ArtifactRepositoryRegistry()
 
     with pytest.raises(
-        qcflow.exceptions.MlflowException, match="Could not find a registered artifact repository"
+        qcflow.exceptions.QCFlowException, match="Could not find a registered artifact repository"
     ):
         artifact_repository_registry.get_artifact_repository("unknown-scheme://")
 

@@ -22,7 +22,7 @@ import {
   SET_COMPARE_EXPERIMENTS,
   SEARCH_DATASETS_API,
 } from '../actions';
-import { Param, RunTag, ExperimentTag } from '../sdk/MlflowMessages';
+import { Param, RunTag, ExperimentTag } from '../sdk/QCFlowMessages';
 import { ArtifactNode } from '../utils/ArtifactUtils';
 import { metricsByRunUuid, latestMetricsByRunUuid, minMetricsByRunUuid, maxMetricsByRunUuid } from './MetricReducer';
 import modelRegistryReducers from '../../model-registry/reducers';

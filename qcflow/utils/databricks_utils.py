@@ -18,7 +18,7 @@ from qcflow.environment_variables import (
     QCFLOW_ENABLE_DB_SDK,
     QCFLOW_TRACKING_URI,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.legacy_databricks_cli.configure.provider import (
     DatabricksConfig,
     DatabricksConfigProvider,
@@ -28,7 +28,7 @@ from qcflow.legacy_databricks_cli.configure.provider import (
     SparkTaskContextConfigProvider,
 )
 from qcflow.utils._spark_utils import _get_active_spark_session
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 from qcflow.utils.uri import (
     _DATABRICKS_UNITY_CATALOG_SCHEME,
     get_db_info_from_uri,
@@ -87,10 +87,10 @@ def get_qcflow_credential_context_by_run_id(run_id):
 
     run_root_artifact_uri = get_artifact_uri(run_id=run_id)
     profile = get_databricks_profile_uri_from_artifact_uri(run_root_artifact_uri)
-    return MlflowCredentialContext(profile)
+    return QCFlowCredentialContext(profile)
 
 
-class MlflowCredentialContext:
+class QCFlowCredentialContext:
     """Sets and clears credentials on a context using the provided profile URL."""
 
     def __init__(self, databricks_profile_url):
@@ -99,7 +99,7 @@ class MlflowCredentialContext:
 
     def __enter__(self):
         db_creds = _get_databricks_creds_config(self.databricks_profile_url)
-        self.db_utils.notebook.entry_point.putMlflowProperties(
+        self.db_utils.notebook.entry_point.putQCFlowProperties(
             db_creds.host,
             db_creds.insecure,
             db_creds.token,
@@ -108,7 +108,7 @@ class MlflowCredentialContext:
         )
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        self.db_utils.notebook.entry_point.clearMlflowProperties()
+        self.db_utils.notebook.entry_point.clearQCFlowProperties()
 
 
 def _get_dbutils():
@@ -665,7 +665,7 @@ def _fail_malformed_databricks_auth(uri):
         uri_name = "tracking URI"
         uri_scheme = "databricks"
     if is_in_databricks_model_serving_environment():
-        raise MlflowException(
+        raise QCFlowException(
             f"Reading Databricks credential configuration in model serving failed. "
             f"Most commonly, this happens because the model currently "
             f"being served was logged without Databricks resource dependencies "
@@ -679,7 +679,7 @@ def _fail_malformed_databricks_auth(uri):
             f"#manual-authentication. "
             f"Additional debug info: the QCFlow {uri_name} was set to '{uri}'"
         )
-    raise MlflowException(
+    raise QCFlowException(
         f"Reading Databricks credential configuration failed with QCFlow {uri_name} '{uri}'. "
         "Please ensure that the 'databricks-sdk' PyPI library is installed, the tracking "
         "URI is set correctly, and Databricks authentication is properly configured. "
@@ -706,7 +706,7 @@ def get_model_dependency_oauth_token(should_retry=True):
             time.sleep(0.5)
             return get_model_dependency_oauth_token(should_retry=False)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 "Unable to read Oauth credentials from file mount for Databricks "
                 "Model Serving dependency failed"
             ) from e
@@ -759,7 +759,7 @@ def get_databricks_host_creds(server_uri=None):
             requests.
 
     Returns:
-        MlflowHostCreds which includes the hostname if databricks sdk authentication is available,
+        QCFlowHostCreds which includes the hostname if databricks sdk authentication is available,
         otherwise includes the hostname and authentication information necessary to
         talk to the Databricks server.
 
@@ -774,14 +774,14 @@ def get_databricks_host_creds(server_uri=None):
             try:
                 config = TrackingURIConfigProvider(server_uri).get_config()
                 WorkspaceClient(host=config.host, token=config.token)
-                return MlflowHostCreds(
+                return QCFlowHostCreds(
                     config.host,
                     token=config.token,
                     use_databricks_sdk=True,
                     use_secret_scope_token=True,
                 )
             except Exception as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The hostname and credentials configured by {server_uri} is invalid. "
                     "Please create valid hostname secret by command "
                     f"'databricks secrets put-secret {profile} {key_prefix}-host' and "
@@ -821,7 +821,7 @@ def get_databricks_host_creds(server_uri=None):
     if not config:
         _fail_malformed_databricks_auth(profile)
 
-    return MlflowHostCreds(
+    return QCFlowHostCreds(
         config.host,
         username=config.username,
         password=config.password,
@@ -915,7 +915,7 @@ def get_databricks_run_url(tracking_uri: str, run_id: str, artifact_path=None) -
         (and artifact path, if specified), or None if the QCFlow Run does not belong to a
         Databricks Workspace.
     """
-    from qcflow.tracking.client import MlflowClient
+    from qcflow.tracking.client import QCFlowClient
 
     try:
         workspace_info = (
@@ -923,7 +923,7 @@ def get_databricks_run_url(tracking_uri: str, run_id: str, artifact_path=None) -
             or get_databricks_workspace_info_from_uri(tracking_uri)
         )
         if workspace_info is not None:
-            experiment_id = MlflowClient(tracking_uri).get_run(run_id).info.experiment_id
+            experiment_id = QCFlowClient(tracking_uri).get_run(run_id).info.experiment_id
             return _construct_databricks_run_url(
                 host=workspace_info.host,
                 experiment_id=experiment_id,
@@ -1117,7 +1117,7 @@ def get_databricks_env_vars(tracking_uri):
     config = _get_databricks_creds_config(tracking_uri)
 
     if config.auth_type == "databricks-cli":
-        raise MlflowException(
+        raise QCFlowException(
             "You configured authentication type to 'databricks-cli', in this case, QCFlow cannot "
             "read credential values, so that QCFlow cannot construct the databricks environment "
             "variables for child process authentication."
@@ -1191,7 +1191,7 @@ class DatabricksRuntimeVersion(NamedTuple):
                 minor = int(dbr_version_splits[1])
             return cls(is_client_image, major, minor)
         except Exception:
-            raise MlflowException(f"Failed to parse databricks runtime version '{dbr_version}'.")
+            raise QCFlowException(f"Failed to parse databricks runtime version '{dbr_version}'.")
 
 
 def get_databricks_runtime_major_minor_version():

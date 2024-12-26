@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 from qcflow import server
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 
 @pytest.fixture
@@ -19,7 +19,7 @@ def test_find_app_custom_app_plugin():
 
 
 def test_find_app_non_existing_app():
-    with pytest.raises(MlflowException, match=r"Failed to find app 'does_not_exist'"):
+    with pytest.raises(QCFlowException, match=r"Failed to find app 'does_not_exist'"):
         server._find_app("does_not_exist")
 
 

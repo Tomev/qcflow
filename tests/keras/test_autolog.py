@@ -8,7 +8,7 @@ import pytest
 import yaml
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.tracking.fluent import flush_async_logging
 from qcflow.types import Schema, TensorSpec
 from qcflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS
@@ -39,7 +39,7 @@ def _create_keras_model():
 
 def _check_logged_model_signature_is_expected(run, input_schema, output_schema):
     artifacts_dir = run.info.artifact_uri.replace("file://", "")
-    client = MlflowClient()
+    client = QCFlowClient()
     artifacts = [x.path for x in client.list_artifacts(run.info.run_id, "model")]
     ml_model_filename = "MLmodel"
     assert str(os.path.join("model", ml_model_filename)) in artifacts
@@ -76,7 +76,7 @@ def test_default_autolog_behavior():
             epochs=num_epochs,
         )
     flush_async_logging()
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     qcflow_run = client.get_run(run.info.run_id)
     run_metrics = qcflow_run.data.metrics
     model_info = qcflow_run.data.params
@@ -163,7 +163,7 @@ def test_custom_autolog_behavior(
             epochs=num_epochs,
         )
     flush_async_logging()
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     qcflow_run = client.get_run(run.info.run_id)
     run_metrics = qcflow_run.data.metrics
     model_info = qcflow_run.data.params
@@ -208,7 +208,7 @@ def test_keras_autolog_log_datasets(log_datasets):
 
     model.fit(data, label, epochs=2)
     flush_async_logging()
-    client = qcflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     dataset_inputs = client.get_run(qcflow.last_active_run().info.run_id).inputs.dataset_inputs
     if log_datasets:
         assert len(dataset_inputs) == 1

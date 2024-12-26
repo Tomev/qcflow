@@ -21,7 +21,7 @@ import qcflow
 import qcflow.models.cli as models_cli
 import qcflow.sklearn
 from qcflow.environment_variables import QCFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.flavor_backend_registry import get_flavor_backend
 from qcflow.models.model import get_model_requirements_files, update_model_requirements
 from qcflow.models.utils import load_serving_example
@@ -775,7 +775,7 @@ def test_env_manager_warning_for_use_of_conda(monkeypatch):
 
 
 def test_env_manager_unsupported_value():
-    with pytest.raises(MlflowException, match=r"Invalid value for `env_manager`"):
+    with pytest.raises(QCFlowException, match=r"Invalid value for `env_manager`"):
         CliRunner().invoke(
             models_cli.serve,
             ["--model-uri", "model", "--env-manager", "abc"],
@@ -973,7 +973,7 @@ def test_update_requirements_cli_throws_on_incompatible_input():
     model_uri = assert_base_model_reqs()
 
     with pytest.raises(
-        MlflowException, match="The specified requirements versions are incompatible"
+        QCFlowException, match="The specified requirements versions are incompatible"
     ):
         CliRunner().invoke(
             models_cli.update_pip_requirements,

@@ -4,9 +4,9 @@ from unittest import mock
 
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from qcflow.store.artifact.qcflow_artifacts_repo import MlflowArtifactsRepository
+from qcflow.store.artifact.qcflow_artifacts_repo import QCFlowArtifactsRepository
 from qcflow.utils.credentials import get_default_host_creds
 
 
@@ -21,7 +21,7 @@ def set_tracking_uri():
 
 def test_artifact_uri_factory():
     repo = get_artifact_repository("qcflow-artifacts://test.com")
-    assert isinstance(repo, MlflowArtifactsRepository)
+    assert isinstance(repo, QCFlowArtifactsRepository)
 
 
 base_url = "/api/2.0/qcflow-artifacts/artifacts"
@@ -50,15 +50,15 @@ conditions = [
 @pytest.mark.parametrize("tracking_uri", ["http://localhost:5000", "http://localhost:5000/"])
 @pytest.mark.parametrize(("artifact_uri", "resolved_uri"), conditions)
 def test_qcflow_artifact_uri_formats_resolved(artifact_uri, resolved_uri, tracking_uri):
-    assert MlflowArtifactsRepository.resolve_uri(artifact_uri, tracking_uri) == resolved_uri
+    assert QCFlowArtifactsRepository.resolve_uri(artifact_uri, tracking_uri) == resolved_uri
 
 
 def test_qcflow_artifact_uri_raises_with_invalid_tracking_uri():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="When an qcflow-artifacts URI was supplied, the tracking URI must be a valid",
     ):
-        MlflowArtifactsRepository.resolve_uri(
+        QCFlowArtifactsRepository.resolve_uri(
             artifact_uri=f"qcflow-artifacts://myhostname:4242{base_path}/hostport",
             tracking_uri="file:///tmp",
         )
@@ -69,11 +69,11 @@ def test_qcflow_artifact_uri_raises_with_invalid_artifact_uri():
 
     for failing_condition in failing_conditions:
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="The qcflow-artifacts uri was supplied with a port number: 5000, but no "
             "host was defined.",
         ):
-            MlflowArtifactsRepository(failing_condition)
+            QCFlowArtifactsRepository(failing_condition)
 
 
 class MockResponse:
@@ -112,13 +112,13 @@ class FileObjectMatcher:
 @pytest.fixture
 def qcflow_artifact_repo():
     artifact_uri = "qcflow-artifacts:/api/2.0/qcflow-artifacts/artifacts"
-    return MlflowArtifactsRepository(artifact_uri)
+    return QCFlowArtifactsRepository(artifact_uri)
 
 
 @pytest.fixture
 def qcflow_artifact_repo_with_host():
     artifact_uri = "qcflow-artifacts://test.com:5000/api/2.0/qcflow-artifacts/artifacts"
-    return MlflowArtifactsRepository(artifact_uri)
+    return QCFlowArtifactsRepository(artifact_uri)
 
 
 @pytest.mark.parametrize("artifact_path", [None, "dir", "path/to/artifacts/storage"])

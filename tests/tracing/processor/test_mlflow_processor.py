@@ -15,7 +15,7 @@ from qcflow.tracing.constant import (
     SpanAttributeKey,
     TraceMetadataKey,
 )
-from qcflow.tracing.processor.qcflow import MlflowSpanProcessor
+from qcflow.tracing.processor.qcflow import QCFlowSpanProcessor
 from qcflow.tracing.trace_manager import InMemoryTraceManager
 from qcflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
 from qcflow.utils.os import is_windows
@@ -38,7 +38,7 @@ def test_on_start(monkeypatch):
 
     mock_client = mock.MagicMock()
     mock_client._start_tracked_trace.return_value = trace_info
-    processor = MlflowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
+    processor = QCFlowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
 
     processor.on_start(span)
 
@@ -78,7 +78,7 @@ def test_on_start_adjust_span_timestamp_to_exclude_backend_latency(monkeypatch):
         return trace_info
 
     mock_client._start_tracked_trace.side_effect = _mock_start_tracked_trace
-    processor = MlflowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
+    processor = QCFlowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
 
     original_start_time = time.time_ns()
     span = create_mock_otel_span(trace_id=_TRACE_ID, span_id=1, start_time=original_start_time)
@@ -105,7 +105,7 @@ def test_on_start_with_experiment_id(monkeypatch):
 
     mock_client = mock.MagicMock()
     mock_client._start_tracked_trace.return_value = trace_info
-    processor = MlflowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
+    processor = QCFlowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
 
     processor.on_start(span)
 
@@ -129,7 +129,7 @@ def test_on_start_during_model_evaluation():
     span = create_mock_otel_span(trace_id=_TRACE_ID, span_id=1)
     mock_client = mock.MagicMock()
     mock_client._start_tracked_trace.return_value = create_test_trace_info(_REQUEST_ID, 0)
-    processor = MlflowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
+    processor = QCFlowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
 
     with set_prediction_context(Context(request_id=_REQUEST_ID, is_evaluate=True)):
         processor.on_start(span)
@@ -156,7 +156,7 @@ def test_on_start_during_run(monkeypatch):
     trace_info = create_test_trace_info(_REQUEST_ID)
     mock_client = mock.MagicMock()
     mock_client._start_tracked_trace.return_value = trace_info
-    processor = MlflowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
+    processor = QCFlowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
 
     with qcflow.start_run(experiment_id=run_experiment_id) as run:
         processor.on_start(span)
@@ -184,7 +184,7 @@ def test_on_start_warns_default_experiment(monkeypatch):
     mock_logger = mock.MagicMock()
     monkeypatch.setattr("qcflow.tracing.processor.qcflow._logger", mock_logger)
 
-    processor = MlflowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
+    processor = QCFlowSpanProcessor(span_exporter=mock.MagicMock(), client=mock_client)
 
     processor.on_start(create_mock_otel_span(trace_id=123, span_id=1))
     processor.on_start(create_mock_otel_span(trace_id=234, span_id=1))
@@ -216,7 +216,7 @@ def test_on_end():
     mock_exporter = mock.MagicMock()
     mock_client = mock.MagicMock()
     mock_client._start_tracked_trace.side_effect = Exception("error")
-    processor = MlflowSpanProcessor(span_exporter=mock_exporter, client=mock_client)
+    processor = QCFlowSpanProcessor(span_exporter=mock_exporter, client=mock_client)
 
     processor.on_end(otel_span)
 

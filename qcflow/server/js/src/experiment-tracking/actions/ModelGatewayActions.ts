@@ -1,4 +1,4 @@
-import { MlflowService } from '@qcflow/qcflow/src/experiment-tracking/sdk/MlflowService';
+import { QCFlowService } from '@qcflow/qcflow/src/experiment-tracking/sdk/QCFlowService';
 import { getUUID } from '../../common/utils/ActionUtils';
 import type { AsyncAction } from '../../redux-types';
 import {
@@ -6,25 +6,25 @@ import {
   ModelGatewayRoute,
   ModelGatewayRouteLegacy,
   ModelGatewayService,
-  SearchMlflowDeploymentsModelRoutesResponse,
+  SearchQCFlowDeploymentsModelRoutesResponse,
 } from '../sdk/ModelGatewayService';
 
 export const SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES = 'SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES';
 
-export interface SearchMlflowDeploymentsModelRoutesAction
-  extends AsyncAction<SearchMlflowDeploymentsModelRoutesResponse> {
+export interface SearchQCFlowDeploymentsModelRoutesAction
+  extends AsyncAction<SearchQCFlowDeploymentsModelRoutesResponse> {
   type: 'SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES';
 }
 
-export const searchMlflowDeploymentsRoutesApi = (filter?: string): SearchMlflowDeploymentsModelRoutesAction => ({
+export const searchQCFlowDeploymentsRoutesApi = (filter?: string): SearchQCFlowDeploymentsModelRoutesAction => ({
   type: SEARCH_QCFLOW_DEPLOYMENTS_MODEL_ROUTES,
-  payload: MlflowService.gatewayProxyGet({
+  payload: QCFlowService.gatewayProxyGet({
     gateway_path: 'api/2.0/endpoints/',
-  }) as Promise<SearchMlflowDeploymentsModelRoutesResponse>,
+  }) as Promise<SearchQCFlowDeploymentsModelRoutesResponse>,
   meta: { id: getUUID() },
 });
 export const QUERY_QCFLOW_DEPLOYMENTS_ROUTE_API = 'QUERY_QCFLOW_DEPLOYMENTS_ROUTE_API';
-export const queryMlflowDeploymentsRouteApi = (route: ModelGatewayRoute, data: ModelGatewayQueryPayload) => {
+export const queryQCFlowDeploymentsRouteApi = (route: ModelGatewayRoute, data: ModelGatewayQueryPayload) => {
   return {
     type: QUERY_QCFLOW_DEPLOYMENTS_ROUTE_API,
     payload: ModelGatewayService.queryQCFlowDeploymentEndpointRoute(route, data),

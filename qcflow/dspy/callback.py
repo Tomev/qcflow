@@ -14,11 +14,11 @@ from qcflow.tracing.utils.token import SpanWithToken
 _logger = logging.getLogger(__name__)
 
 
-class MlflowCallback(BaseCallback):
+class QCFlowCallback(BaseCallback):
     """Callback for generating QCFlow traces for DSPy components"""
 
     def __init__(self, prediction_context: Optional[Context] = None):
-        self._client = qcflow.MlflowClient()
+        self._client = qcflow.QCFlowClient()
         self._prediction_context = prediction_context or Context()
         # call_id: (LiveSpan, OTel token)
         self._call_id_to_span: dict[str, SpanWithToken] = {}

@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 
 from qcflow.entities import FileInfo
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.utils.file_utils import TempDir
 
@@ -68,7 +68,7 @@ class FailureArtifactRepositoryImpl(ArtifactRepository):
         raise NotImplementedError()
 
     def _download_file(self, remote_file_path, local_path):
-        raise MlflowException(_MOCK_ERROR)
+        raise QCFlowException(_MOCK_ERROR)
 
 
 @pytest.mark.parametrize(
@@ -108,7 +108,7 @@ def test_download_artifacts_dst_path_does_not_exist(tmp_path):
     repo = ArtifactRepositoryImpl(_PARENT_DIR)
     dst_path = tmp_path.joinpath("does_not_exist")
     with pytest.raises(
-        MlflowException, match="The destination path for downloaded artifacts does not exist"
+        QCFlowException, match="The destination path for downloaded artifacts does not exist"
     ):
         repo.download_artifacts(_MODEL_DIR, dst_path)
 
@@ -118,7 +118,7 @@ def test_download_artifacts_dst_path_is_file(tmp_path):
     dst_path = tmp_path.joinpath("file")
     dst_path.touch()
     with pytest.raises(
-        MlflowException, match="The destination path for downloaded artifacts must be a directory"
+        QCFlowException, match="The destination path for downloaded artifacts must be a directory"
     ):
         repo.download_artifacts(_MODEL_DIR, dst_path)
 
@@ -202,7 +202,7 @@ def test_download_artifacts_provides_failure_info(base_uri, download_arg, list_r
         list_artifacts_mock.side_effect = list_artifacts
         repo = FailureArtifactRepositoryImpl(base_uri)
         match = r"The following failures occurred while downloading one or more artifacts."
-        with pytest.raises(MlflowException, match=match) as exc:
+        with pytest.raises(QCFlowException, match=match) as exc:
             repo.download_artifacts(download_arg)
 
         err_msg = str(exc.value)
@@ -229,7 +229,7 @@ def test_download_artifacts_provides_traceback_info(debug, reset_logging_level):
         repo = FailureArtifactRepositoryImpl(_PARENT_MODEL_DIR)
         try:
             repo.download_artifacts("")
-        except MlflowException as exc:
+        except QCFlowException as exc:
             err_msg = str(exc.message)
             if debug:
                 assert "Traceback" in err_msg

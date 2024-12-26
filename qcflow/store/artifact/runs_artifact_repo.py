@@ -1,6 +1,6 @@
 import urllib.parse
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.utils.uri import (
     add_databricks_profile_info_to_artifact_uri,
@@ -44,14 +44,14 @@ class RunsArtifactRepository(ArtifactRepository):
     def parse_runs_uri(run_uri):
         parsed = urllib.parse.urlparse(run_uri)
         if parsed.scheme != "runs":
-            raise MlflowException(
+            raise QCFlowException(
                 f"Not a proper runs:/ URI: {run_uri}. "
                 + "Runs URIs must be of the form 'runs:/<run_id>/run-relative/path/to/artifact'"
             )
 
         path = parsed.path
         if not path.startswith("/") or len(path) <= 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Not a proper runs:/ URI: {run_uri}. "
                 + "Runs URIs must be of the form 'runs:/<run_id>/run-relative/path/to/artifact'"
             )
@@ -60,7 +60,7 @@ class RunsArtifactRepository(ArtifactRepository):
         path_parts = path.split("/")
         run_id = path_parts[0]
         if run_id == "":
-            raise MlflowException(
+            raise QCFlowException(
                 f"Not a proper runs:/ URI: {run_uri}. "
                 + "Runs URIs must be of the form 'runs:/<run_id>/run-relative/path/to/artifact'"
             )

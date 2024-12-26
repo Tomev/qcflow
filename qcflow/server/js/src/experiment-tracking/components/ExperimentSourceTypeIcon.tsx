@@ -1,5 +1,5 @@
 import { FolderBranchIcon, HomeIcon, NotebookIcon, WorkflowsIcon } from '@databricks/design-system';
-import { SourceType } from '../sdk/MlflowEnums';
+import { SourceType } from '../sdk/QCFlowEnums';
 
 /**
  * Displays an icon corresponding to the source type of an experiment run.

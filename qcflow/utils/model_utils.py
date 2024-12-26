@@ -8,7 +8,7 @@ from typing import Any
 
 import yaml
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.protos.databricks_pb2 import (
@@ -61,7 +61,7 @@ def _get_flavor_configuration(model_path, flavor_name):
     try:
         return Model.load(model_path).flavors[flavor_name]
     except KeyError as ex:
-        raise MlflowException(
+        raise QCFlowException(
             f'Model does not have the "{flavor_name}" flavor', RESOURCE_DOES_NOT_EXIST
         ) from ex
 
@@ -104,7 +104,7 @@ def _get_flavor_configuration_from_uri(model_uri, flavor_name, logger):
                 artifact_path=MLMODEL_FILE_NAME
             )
     except Exception as ex:
-        raise MlflowException(
+        raise QCFlowException(
             f'Failed to download an "{MLMODEL_FILE_NAME}" model file from "{model_uri}"',
             RESOURCE_DOES_NOT_EXIST,
         ) from ex
@@ -114,7 +114,7 @@ def _get_flavor_configuration_from_uri(model_uri, flavor_name, logger):
 def _get_flavor_configuration_from_ml_model_file(ml_model_file, flavor_name):
     model_conf = Model.load(ml_model_file)
     if flavor_name not in model_conf.flavors:
-        raise MlflowException(
+        raise QCFlowException(
             f'Model does not have the "{flavor_name}" flavor',
             RESOURCE_DOES_NOT_EXIST,
         )
@@ -147,7 +147,7 @@ def _validate_and_copy_code_paths(code_paths, path, default_subpath="code"):
                 # A common error is code-paths includes Databricks Notebook. We include it in error
                 # message when running in Databricks, but not in other envs tp avoid confusion.
                 example = ", such as Databricks Notebooks" if is_in_databricks_runtime() else ""
-                raise MlflowException(
+                raise QCFlowException(
                     message=(
                         f"Failed to copy the specified code path '{code_path}' into the model "
                         "artifacts. It appears that your code path includes file(s) that cannot "
@@ -213,7 +213,7 @@ def _validate_infer_and_copy_code_paths(
 ):
     if infer_code_paths:
         if code_paths:
-            raise MlflowException(
+            raise QCFlowException(
                 "If 'infer_code_path' is set to True, 'code_paths' param cannot be set."
             )
         return _infer_and_copy_code_paths(flavor, path, default_subpath)
@@ -223,7 +223,7 @@ def _validate_infer_and_copy_code_paths(
 
 def _validate_path_exists(path, name):
     if path and not os.path.exists(path):
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Failed to copy the specified {name} path '{path}' into the model "
                 f"artifacts. The specified {name }path does not exist. Please specify a valid "
@@ -248,7 +248,7 @@ def _validate_and_copy_file_to_directory(file_path: str, dir_path: str, name: st
         # A common error is code-paths includes Databricks Notebook. We include it in error
         # message when running in Databricks, but not in other envs tp avoid confusion.
         example = ", such as Databricks Notebooks" if is_in_databricks_runtime() else ""
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Failed to copy the specified code path '{file_path}' into the model "
                 "artifacts. It appears that your code path includes file(s) that cannot "
@@ -265,7 +265,7 @@ def _add_code_to_system_path(code_path):
 
 def _validate_and_prepare_target_save_path(path):
     if os.path.exists(path) and any(os.scandir(path)):
-        raise MlflowException(
+        raise QCFlowException(
             message=f"Path '{path}' already exists and is not empty",
             error_code=RESOURCE_ALREADY_EXISTS,
         )
@@ -388,13 +388,13 @@ def _validate_and_get_model_config_from_file(model_config):
             try:
                 return yaml.safe_load(file)
             except yaml.YAMLError as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The provided `model_config` file '{model_config}' is not a valid YAML "
                     f"file: {e}",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "An invalid `model_config` file was passed. The provided `model_config` "
             f"file '{model_config}'is not a valid file path.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -418,13 +418,13 @@ def _validate_pyfunc_model_config(model_config):
         try:
             json.dumps(model_config)
         except (TypeError, OverflowError):
-            raise MlflowException(
+            raise QCFlowException(
                 "Values in the provided ``model_config`` are of an unsupported type. Only "
                 "JSON-serializable data types can be provided as values.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "An invalid ``model_config`` structure was passed. ``model_config`` must be a "
             "valid file path or of type ``dict`` with string keys.",
             error_code=INVALID_PARAMETER_VALUE,

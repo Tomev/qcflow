@@ -1,7 +1,7 @@
 import pytest
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 
 class UnpicklableModel(qcflow.pyfunc.PythonModel):
@@ -16,7 +16,7 @@ def test_pyfunc_unpicklable_exception(tmp_path):
     model = UnpicklableModel(tmp_path / "model.pkl")
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Please save the model into a python file and use code-based logging method instead",
     ):
         qcflow.pyfunc.save_model(python_model=model, path=tmp_path / "model")

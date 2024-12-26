@@ -16,7 +16,7 @@ from spacy.util import compounding, minibatch
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 import qcflow.spacy
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, infer_signature
 from qcflow.models.utils import _read_example, load_serving_example
 from qcflow.tracking.artifact_utils import _download_artifact_from_uri
@@ -141,8 +141,8 @@ def test_predict_df_with_wrong_shape(spacy_model_with_data, model_path):
     pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     # Concatenating with itself to duplicate column and mess up input shape
-    # then asserting n MlflowException is raised
-    with pytest.raises(MlflowException, match="Shape of input dataframe must be"):
+    # then asserting n QCFlowException is raised
+    with pytest.raises(QCFlowException, match="Shape of input dataframe must be"):
         pyfunc_loaded.predict(
             pd.concat(
                 [spacy_model_with_data.inference_data, spacy_model_with_data.inference_data], axis=1

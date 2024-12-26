@@ -5,7 +5,7 @@ from aiohttp import ClientTimeout
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.config import OpenAIConfig, RouteConfig
 from qcflow.gateway.constants import QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
 from qcflow.gateway.exceptions import AIGatewayException
@@ -683,7 +683,7 @@ def test_invalid_openai_configs_throw_on_construction(
     api_version,
     organization,
 ):
-    with pytest.raises(MlflowException, match="OpenAI"):
+    with pytest.raises(QCFlowException, match="OpenAI"):
         OpenAIConfig(
             openai_api_key="mock-api-key",
             openai_api_type=api_type,

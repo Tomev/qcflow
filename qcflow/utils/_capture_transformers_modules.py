@@ -7,7 +7,7 @@ import os
 import sys
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.utils._capture_modules import (
     _CaptureImportedModules,
@@ -45,22 +45,22 @@ def main():
     sys.path = json.loads(args.sys_path)
 
     if flavor != qcflow.transformers.FLAVOR_NAME:
-        raise MlflowException(
+        raise QCFlowException(
             f"This script is only applicable to '{qcflow.transformers.FLAVOR_NAME}' flavor, "
             "if you're applying other flavors, please use _capture_modules script.",
         )
 
     if module_to_throw == "":
-        raise MlflowException("Please specify the module to throw.")
+        raise QCFlowException("Please specify the module to throw.")
     elif module_to_throw == "tensorflow":
         if os.environ.get("USE_TORCH", None) != "TRUE":
-            raise MlflowException(
+            raise QCFlowException(
                 "The environment variable USE_TORCH has to be set to TRUE to disable Tensorflow.",
                 error_code=INVALID_PARAMETER_VALUE,
             )
     elif module_to_throw == "torch":
         if os.environ.get("USE_TF", None) != "TRUE":
-            raise MlflowException(
+            raise QCFlowException(
                 "The environment variable USE_TF has to be set to TRUE to disable Pytorch.",
                 error_code=INVALID_PARAMETER_VALUE,
             )

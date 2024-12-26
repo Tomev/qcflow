@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 import pandas as pd
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.recipes.artifacts import DataframeArtifact
 from qcflow.recipes.cards import BaseCard
@@ -42,7 +42,7 @@ class BaseIngestStep(BaseStep, metaclass=abc.ABCMeta):
     def _validate_and_apply_step_config(self):
         dataset_format = self.step_config.get("using")
         if not dataset_format:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "Dataset format must be specified via the `using` key within the `ingest`"
                     " section of recipe.yaml"
@@ -53,7 +53,7 @@ class BaseIngestStep(BaseStep, metaclass=abc.ABCMeta):
         if self.step_class() == StepClass.TRAINING:
             self.target_col = self.step_config.get("target_col")
             if self.target_col is None:
-                raise MlflowException(
+                raise QCFlowException(
                     "Missing target_col config in recipe config.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
@@ -66,7 +66,7 @@ class BaseIngestStep(BaseStep, metaclass=abc.ABCMeta):
                 )
                 break
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 message=f"Unrecognized dataset format: {dataset_format}",
                 error_code=INVALID_PARAMETER_VALUE,
             )
@@ -82,7 +82,7 @@ class BaseIngestStep(BaseStep, metaclass=abc.ABCMeta):
         ingested_df = read_parquet_as_pandas_df(data_parquet_path=dataset_dst_path)
         if self.step_class() == StepClass.TRAINING:
             if self.target_col not in ingested_df.columns:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Target column '{self.target_col}' not found in ingested dataset.",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
@@ -92,13 +92,13 @@ class BaseIngestStep(BaseStep, metaclass=abc.ABCMeta):
                 )
                 cardinality = ingested_df[self.target_col].nunique()
                 if cardinality > 2 and self.positive_class is not None:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Target column '{self.target_col}' must have a cardinality of 2,"
                         f"found '{cardinality}'.",
                         error_code=INVALID_PARAMETER_VALUE,
                     )
                 if self.positive_class is not None and cardinality != 2:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"`For binary classification problems, "
                         f"target column '{self.target_col}' must have a cardinality of 2,"
                         f"found '{cardinality}'. `positive_class` was set, "
@@ -155,7 +155,7 @@ class BaseIngestStep(BaseStep, metaclass=abc.ABCMeta):
 
         """
         if dataset_src_location is None and dataset_sql is None:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "Failed to build step card because neither a dataset location nor a"
                     " dataset Spark SQL query were specified"

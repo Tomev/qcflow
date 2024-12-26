@@ -116,11 +116,11 @@ def test_display_is_called_in_correct_functions(monkeypatch):
     mock_ipython.mock_run_cell()
     assert mock_display.call_count == 1
 
-    class MockMlflowClient:
+    class MockQCFlowClient:
         def search_traces(self, *args, **kwargs):
             return [create_trace("a"), create_trace("b"), create_trace("c")]
 
-    monkeypatch.setattr("qcflow.tracing.fluent.MlflowClient", MockMlflowClient)
+    monkeypatch.setattr("qcflow.tracing.fluent.QCFlowClient", MockQCFlowClient)
     qcflow.search_traces(["123"])
     mock_ipython.mock_run_cell()
 

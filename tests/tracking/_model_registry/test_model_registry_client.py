@@ -14,7 +14,7 @@ from qcflow.entities.model_registry import (
     RegisteredModel,
     RegisteredModelTag,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.entities.paged_list import PagedList
 from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_DEFAULT,
@@ -109,7 +109,7 @@ def test_rename_registered_model(mock_store):
 
 
 def test_update_registered_model_validation_errors_on_empty_new_name(mock_store):
-    with pytest.raises(MlflowException, match="The name must not be an empty string"):
+    with pytest.raises(QCFlowException, match="The name must not be an empty string"):
         newModelRegistryClient().rename_registered_model("Model 1", " ")
 
 
@@ -323,7 +323,7 @@ def test_transition_model_version_stage(mock_store):
 
 
 def test_transition_model_version_stage_validation_errors(mock_store):
-    with pytest.raises(MlflowException, match="The stage must not be an empty string"):
+    with pytest.raises(QCFlowException, match="The stage must not be an empty string"):
         newModelRegistryClient().transition_model_version_stage("Model 1", "12", stage=" ")
 
 

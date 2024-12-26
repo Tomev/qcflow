@@ -4,12 +4,12 @@ import qcflow
 from qcflow.utils.autologging_utils import (
     BatchMetricsLogger,
     ExceptionSafeAbstractClass,
-    MlflowAutologgingQueueingClient,
+    QCFlowAutologgingQueueingClient,
     get_autologging_config,
 )
 
 
-class __MlflowPaddleCallback(paddle.callbacks.Callback, metaclass=ExceptionSafeAbstractClass):
+class __QCFlowPaddleCallback(paddle.callbacks.Callback, metaclass=ExceptionSafeAbstractClass):
     """Callback for auto-logging metrics and parameters."""
 
     def __init__(self, client, metrics_logger, run_id, log_models, log_every_n_epoch):
@@ -59,7 +59,7 @@ def _log_early_stop_params(early_stop_callback, client, run_id):
 
     Args:
         early_stop_callback: The early stopping callback instance used during training.
-        client: An `MlflowAutologgingQueueingClient` instance used for QCFlow logging.
+        client: An `QCFlowAutologgingQueueingClient` instance used for QCFlow logging.
         run_id: The ID of the QCFlow Run to which to log configuration parameters.
     """
     client.log_params(
@@ -78,7 +78,7 @@ def _log_early_stop_metrics(early_stop_callback, client, run_id):
 
     Args:
         early_stop_callback: The early stopping callback instance used during training.
-        client: An `MlflowAutologgingQueueingClient` instance used for QCFlow logging.
+        client: An `QCFlowAutologgingQueueingClient` instance used for QCFlow logging.
         run_id: The ID of the QCFlow Run to which to log configuration parameters.
     """
     if early_stop_callback.stopped_epoch == 0:
@@ -94,14 +94,14 @@ def _log_early_stop_metrics(early_stop_callback, client, run_id):
 def patched_fit(original, self, *args, **kwargs):
     run_id = qcflow.active_run().info.run_id
     tracking_uri = qcflow.get_tracking_uri()
-    client = MlflowAutologgingQueueingClient(tracking_uri)
+    client = QCFlowAutologgingQueueingClient(tracking_uri)
     metrics_logger = BatchMetricsLogger(run_id, tracking_uri)
 
     log_models = get_autologging_config(qcflow.paddle.FLAVOR_NAME, "log_models", True)
     log_every_n_epoch = get_autologging_config(qcflow.paddle.FLAVOR_NAME, "log_every_n_epoch", 1)
 
     early_stop_callback = None
-    qcflow_callback = __MlflowPaddleCallback(
+    qcflow_callback = __QCFlowPaddleCallback(
         client, metrics_logger, run_id, log_models, log_every_n_epoch
     )
     if "callbacks" in kwargs:

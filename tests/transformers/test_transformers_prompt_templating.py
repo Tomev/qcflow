@@ -6,7 +6,7 @@ import yaml
 from packaging.version import Version
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.transformers import _SUPPORTED_PROMPT_TEMPLATING_TASK_TYPES, _validate_prompt_template
 from qcflow.transformers.flavor_config import FlavorKey
@@ -80,7 +80,7 @@ def test_prompt_validation_throws_on_invalid_templates(template):
         if isinstance(template, str)
         else "Argument `prompt_template` must be a string"
     )
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_prompt_template(template)
 
 
@@ -129,7 +129,7 @@ def test_saving_prompt_throws_on_unsupported_task():
         model.task = pipeline_type
 
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=f"Prompt templating is not supported for the `{pipeline_type}` task type.",
         ):
             qcflow.transformers.save_model(
@@ -148,7 +148,7 @@ def test_prompt_formatting(saved_transformers_model_path):
     for pipeline_type in UNSUPPORTED_PIPELINES:
         model_impl.pipeline = MagicMock(task=pipeline_type, return_value="")
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="_format_prompt_template called on an unexpected pipeline type.",
         ):
             result = model_impl._format_prompt_template("test")

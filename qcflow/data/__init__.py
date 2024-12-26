@@ -9,7 +9,7 @@ from qcflow.data.dataset_source import DatasetSource
 from qcflow.data.dataset_source_registry import get_dataset_source_from_json, get_registered_sources
 from qcflow.entities import Dataset as DatasetEntity
 from qcflow.entities import DatasetInput
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 with suppress(ImportError):
@@ -40,7 +40,7 @@ def get_source(dataset: Union[DatasetEntity, DatasetInput, Dataset]) -> DatasetS
     elif isinstance(dataset, Dataset):
         dataset_source: DatasetSource = dataset.source
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Unrecognized dataset type {type(dataset)}. Expected one of: "
             f"`qcflow.data.dataset.Dataset`,"
             f" `qcflow.entities.Dataset`, `qcflow.entities.DatasetInput`.",

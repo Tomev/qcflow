@@ -2,7 +2,7 @@ import urllib.parse
 from typing import NamedTuple, Optional
 
 import qcflow.tracking
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.uri import get_databricks_profile_uri_from_artifact_uri, is_databricks_uri
 
 _MODELS_URI_SUFFIX_LATEST = "latest"
@@ -31,7 +31,7 @@ def _get_latest_model_version(client, name, stage):
     latest = client.get_latest_versions(name, None if stage is None else [stage])
     if len(latest) == 0:
         stage_str = "" if stage is None else f" and stage '{stage}'"
-        raise MlflowException(f"No versions of model with name '{name}'{stage_str} found")
+        raise QCFlowException(f"No versions of model with name '{name}'{stage_str} found")
     return max(int(x.version) for x in latest)
 
 
@@ -53,19 +53,19 @@ def _parse_model_uri(uri):
     """
     parsed = urllib.parse.urlparse(uri, allow_fragments=False)
     if parsed.scheme != "models":
-        raise MlflowException(_improper_model_uri_msg(uri))
+        raise QCFlowException(_improper_model_uri_msg(uri))
     path = parsed.path
     if not path.startswith("/") or len(path) <= 1:
-        raise MlflowException(_improper_model_uri_msg(uri))
+        raise QCFlowException(_improper_model_uri_msg(uri))
 
     parts = path.lstrip("/").split("/")
     if len(parts) > 2 or parts[0].strip() == "":
-        raise MlflowException(_improper_model_uri_msg(uri))
+        raise QCFlowException(_improper_model_uri_msg(uri))
 
     if len(parts) == 2:
         name, suffix = parts
         if suffix.strip() == "":
-            raise MlflowException(_improper_model_uri_msg(uri))
+            raise QCFlowException(_improper_model_uri_msg(uri))
         # The URI is in the suffix format
         if suffix.isdigit():
             # The suffix is a specific version, e.g. "models:/AdsModel1/123"
@@ -80,7 +80,7 @@ def _parse_model_uri(uri):
         # The URI is an alias URI, e.g. "models:/AdsModel1@Champion"
         alias_parts = parts[0].rsplit("@", 1)
         if len(alias_parts) != 2 or alias_parts[1].strip() == "":
-            raise MlflowException(_improper_model_uri_msg(uri))
+            raise QCFlowException(_improper_model_uri_msg(uri))
         return ParsedModelUri(alias_parts[0], alias=alias_parts[1])
 
 

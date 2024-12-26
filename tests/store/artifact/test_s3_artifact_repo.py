@@ -11,7 +11,7 @@ import pytest
 import requests
 
 from qcflow.entities.multipart_upload import MultipartUploadPart
-from qcflow.exceptions import MlflowTraceDataCorrupted
+from qcflow.exceptions import QCFlowTraceDataCorrupted
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
 from qcflow.store.artifact.s3_artifact_repo import (
@@ -432,7 +432,7 @@ def test_trace_data(s3_artifact_root):
     with pytest.raises(Exception, match=r"Trace data not found"):
         repo.download_trace_data()
     repo.upload_trace_data("invalid data")
-    with pytest.raises(MlflowTraceDataCorrupted, match=r"Trace data is corrupted for path="):
+    with pytest.raises(QCFlowTraceDataCorrupted, match=r"Trace data is corrupted for path="):
         repo.download_trace_data()
 
     mock_trace_data = {"spans": [], "request": {"test": 1}, "response": {"test": 2}}

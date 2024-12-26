@@ -12,7 +12,7 @@ from qcflow.entities.multipart_upload import (
     MultipartUploadCredential,
 )
 from qcflow.environment_variables import QCFLOW_ARTIFACT_UPLOAD_DOWNLOAD_TIMEOUT
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repo import ArtifactRepository, MultipartUploadMixin
 from qcflow.utils.credentials import get_default_host_creds
 
@@ -167,7 +167,7 @@ class AzureBlobArtifactRepository(ArtifactRepository, MultipartUploadMixin):
                 continue
 
             if not result.name.startswith(artifact_path):
-                raise MlflowException(
+                raise QCFlowException(
                     "The name of the listed Azure blob does not begin with the specified"
                     f" artifact path. Artifact path: {artifact_path}. Blob name: {result.name}"
                 )
@@ -197,7 +197,7 @@ class AzureBlobArtifactRepository(ArtifactRepository, MultipartUploadMixin):
             blob.readinto(file)
 
     def delete_artifacts(self, artifact_path=None):
-        raise MlflowException("Not implemented yet")
+        raise QCFlowException("Not implemented yet")
 
     def create_multipart_upload(self, local_file, num_parts=1, artifact_path=None):
         from azure.storage.blob import BlobSasPermissions, generate_blob_sas

@@ -119,7 +119,7 @@ class AsyncLoggingQueue:
     def _logging_loop(self) -> None:
         """
         Continuously logs run data until `self._continue_to_process_data` is set to False.
-        If an exception occurs during logging, a `MlflowException` is raised.
+        If an exception occurs during logging, a `QCFlowException` is raised.
         """
         try:
             while not self._stop_data_logging_thread_event.is_set():
@@ -128,9 +128,9 @@ class AsyncLoggingQueue:
             while not self._queue.empty():
                 self._log_run_data()
         except Exception as e:
-            from qcflow.exceptions import MlflowException
+            from qcflow.exceptions import QCFlowException
 
-            raise MlflowException(f"Exception inside the run data logging thread: {e}")
+            raise QCFlowException(f"Exception inside the run data logging thread: {e}")
 
     def _fetch_batch_from_queue(self) -> list[RunBatch]:
         """Fetches a batch of run data from the queue.
@@ -299,10 +299,10 @@ class AsyncLoggingQueue:
                 to check the status of the operation and retrieve any exceptions
                 that occurred during the operation.
         """
-        from qcflow import MlflowException
+        from qcflow import QCFlowException
 
         if not self.is_active():
-            raise MlflowException("AsyncLoggingQueue is not activated.")
+            raise QCFlowException("AsyncLoggingQueue is not activated.")
         batch = RunBatch(
             run_id=run_id,
             params=params,

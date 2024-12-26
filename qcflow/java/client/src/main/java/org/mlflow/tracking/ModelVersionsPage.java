@@ -10,7 +10,7 @@ public class ModelVersionsPage implements Page<ModelVersion> {
   private final String token;
   private final List<ModelVersion> mvs;
 
-  private final MlflowClient client;
+  private final QCFlowClient client;
   private final String searchFilter;
   private final List<String> orderBy;
   private final int maxResults;
@@ -23,7 +23,7 @@ public class ModelVersionsPage implements Page<ModelVersion> {
                     String searchFilter,
                     int maxResults,
                     List<String> orderBy,
-                    MlflowClient client) {
+                    QCFlowClient client) {
     this.mvs = Collections.unmodifiableList(mvs);
     this.token = token;
     this.searchFilter = searchFilter;

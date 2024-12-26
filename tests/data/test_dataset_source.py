@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import qcflow.data
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 from tests.resources.data.dataset_source import SampleDatasetSource
 
@@ -69,5 +69,5 @@ def test_get_source_obtains_expected_code_source():
 
 
 def test_get_source_throws_for_invalid_input(tmp_path):
-    with pytest.raises(MlflowException, match="Unrecognized dataset type.*str"):
+    with pytest.raises(QCFlowException, match="Unrecognized dataset type.*str"):
         qcflow.data.get_source(str(tmp_path))

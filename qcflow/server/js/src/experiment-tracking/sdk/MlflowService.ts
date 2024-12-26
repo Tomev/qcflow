@@ -50,7 +50,7 @@ type GetCredentialsForLoggedModelArtifactReadResult = {
 };
 const searchRunsPath = () => 'ajax-api/2.0/qcflow/runs/search';
 
-export class MlflowService {
+export class QCFlowService {
   /**
    * Create a qcflow experiment
    */

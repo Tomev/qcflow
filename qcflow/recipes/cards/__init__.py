@@ -14,7 +14,7 @@ from typing import Optional, Union
 
 from packaging.version import Version
 
-from qcflow.exceptions import INVALID_PARAMETER_VALUE, MlflowException
+from qcflow.exceptions import INVALID_PARAMETER_VALUE, QCFlowException
 
 CARD_PICKLE_NAME = "card.pkl"
 CARD_HTML_NAME = "card.html"
@@ -56,7 +56,7 @@ class CardTab:
             The updated card instance.
         """
         if name not in self._variables:
-            raise MlflowException(
+            raise QCFlowException(
                 f"{name} is not a valid template variable defined in template: '{self.template}'",
                 error_code=INVALID_PARAMETER_VALUE,
             )

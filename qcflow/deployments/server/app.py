@@ -5,7 +5,7 @@ TODO: Remove this module once after Deployments Server deprecation window elapse
 from qcflow.environment_variables import (
     QCFLOW_DEPLOYMENTS_CONFIG,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.gateway.app import GatewayAPI
 from qcflow.gateway.app import (
     create_app_from_config as gateway_create_app_from_config,
@@ -25,7 +25,7 @@ def create_app_from_env() -> GatewayAPI:
     if config_path := QCFLOW_DEPLOYMENTS_CONFIG.get():
         return create_app_from_path(config_path)
 
-    raise MlflowException(
+    raise QCFlowException(
         f"Environment variable {QCFLOW_DEPLOYMENTS_CONFIG!r} is not set. "
         "Please set it to the path of the gateway configuration file."
     )

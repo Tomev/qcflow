@@ -15,7 +15,7 @@ from packaging.version import Version
 
 import qcflow
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import (
     Model,
     ModelSignature,
@@ -167,7 +167,7 @@ def test_column_schema_enforcement():
     pdf["h"] = pdf["h"].astype(np.dtype("datetime64[ns]"))
     # test that missing column raises
     match_missing_inputs = "Model is missing inputs"
-    with pytest.raises(MlflowException, match=match_missing_inputs):
+    with pytest.raises(QCFlowException, match=match_missing_inputs):
         res = pyfunc_model.predict(pdf[["b", "d", "a", "e", "g", "f", "h"]])
 
     # test that extra column is ignored
@@ -190,7 +190,7 @@ def test_column_schema_enforcement():
     # 1. long -> integer raises
     pdf["a"] = pdf["a"].astype(np.int64)
     match_incompatible_inputs = "Incompatible input types"
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["a"] = pdf["a"].astype(np.int32)
     # 2. integer -> long works
@@ -209,13 +209,13 @@ def test_column_schema_enforcement():
 
     # 4. unsigned int -> int raises
     pdf["a"] = pdf["a"].astype(np.uint32)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["a"] = pdf["a"].astype(np.int32)
 
     # 5. double -> float raises
     pdf["c"] = pdf["c"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["c"] = pdf["c"].astype(np.float32)
 
@@ -225,13 +225,13 @@ def test_column_schema_enforcement():
     assert res.dtypes.to_dict() == expected_types
     pdf["d"] = pdf["d"].astype(np.float64)
     pdf["c"] = pdf["c"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["c"] = pdf["c"].astype(np.float32)
 
     # 7. int -> float raises
     pdf["c"] = pdf["c"].astype(np.int32)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["c"] = pdf["c"].astype(np.float32)
 
@@ -243,26 +243,26 @@ def test_column_schema_enforcement():
 
     # 9. long -> double raises
     pdf["d"] = pdf["d"].astype(np.int64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["d"] = pdf["d"].astype(np.float64)
 
     # 10. any float -> any int raises
     pdf["a"] = pdf["a"].astype(np.float32)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     # 10. any float -> any int raises
     pdf["a"] = pdf["a"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["a"] = pdf["a"].astype(np.int32)
     pdf["b"] = pdf["b"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["b"] = pdf["b"].astype(np.int64)
 
     pdf["b"] = pdf["b"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["b"] = pdf["b"].astype(np.int64)
 
@@ -282,7 +282,7 @@ def test_column_schema_enforcement():
     pdf["h"] = pdf["h"].astype("datetime64[s]")
 
     # 13. np.ndarrays can be converted to dataframe but have no columns
-    with pytest.raises(MlflowException, match=match_missing_inputs):
+    with pytest.raises(QCFlowException, match=match_missing_inputs):
         pyfunc_model.predict(pdf.values)
 
     # 14. dictionaries of str -> list/nparray work,
@@ -316,7 +316,7 @@ def test_column_schema_enforcement():
         "f": [[bytes(0), bytes(1), bytes(1)]],
         "h": [np.array(["2020-01-01", "2020-02-02", "2020-03-03"], dtype=np.datetime64)],
     }
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(d)
 
     # 16. conversion to dataframe fails
@@ -326,7 +326,7 @@ def test_column_schema_enforcement():
         "c": [1, 2, 3],
     }
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model contains a column-based signature, which suggests a DataFrame input.",
     ):
         pyfunc_model.predict(d)
@@ -364,7 +364,7 @@ def test_tensor_multi_named_schema_enforcement():
 
     # test that missing column raises
     inp1 = inp.copy()
-    with pytest.raises(MlflowException, match="Model is missing inputs"):
+    with pytest.raises(QCFlowException, match="Model is missing inputs"):
         pyfunc_model.predict(inp1.pop("b"))
 
     # test that extra column is ignored
@@ -394,7 +394,7 @@ def test_tensor_multi_named_schema_enforcement():
     inp4 = inp.copy()
     inp4["a"] = inp4["a"].astype(np.int32)
     with pytest.raises(
-        MlflowException, match="dtype of input int32 does not match expected dtype uint64"
+        QCFlowException, match="dtype of input int32 does not match expected dtype uint64"
     ):
         pyfunc_model.predict(inp4)
 
@@ -405,7 +405,7 @@ def test_tensor_multi_named_schema_enforcement():
         "c": np.array([[[0, 0]]], dtype=np.float32),
     }
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Shape of input (1, 4) does not match expected shape (-1, 5)"),
     ):
         pyfunc_model.predict(inp5)
@@ -417,7 +417,7 @@ def test_tensor_multi_named_schema_enforcement():
         np.array([[[0, 0]]], dtype=np.float32),
     ]
     with pytest.raises(
-        MlflowException, match=re.escape("Model is missing inputs ['a', 'b', 'c'].")
+        QCFlowException, match=re.escape("Model is missing inputs ['a', 'b', 'c'].")
     ):
         pyfunc_model.predict(inp6)
 
@@ -425,7 +425,7 @@ def test_tensor_multi_named_schema_enforcement():
     inp7 = inp.copy()
     inp7["a"] = np.array([])
     with pytest.raises(
-        MlflowException, match=re.escape("Shape of input (0,) does not match expected shape")
+        QCFlowException, match=re.escape("Shape of input (0,) does not match expected shape")
     ):
         pyfunc_model.predict(inp7)
 
@@ -436,7 +436,7 @@ def test_tensor_multi_named_schema_enforcement():
         r"suggests a dictionary input mapping input name to a numpy array, but a dict"
         r" with value type <class 'list'> was found"
     )
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         pyfunc_model.predict(inp8)
 
     # test dataframe input fails at shape enforcement
@@ -445,7 +445,7 @@ def test_tensor_multi_named_schema_enforcement():
     pdf["b"] = pdf["b"].astype(np.short)
     pdf["c"] = pdf["c"].astype(np.float32)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "The input pandas dataframe column 'a' contains scalar values, which requires the "
             "shape to be (-1,) or (-1, 1), but got tensor spec shape of (-1, 5)"
@@ -479,7 +479,7 @@ def test_schema_enforcement_single_named_tensor_schema():
     assert expected_types == actual_types
 
     # test list does not work
-    with pytest.raises(MlflowException, match="Model is missing inputs"):
+    with pytest.raises(QCFlowException, match="Model is missing inputs"):
         pyfunc_model.predict(input_array.tolist())
 
 
@@ -504,7 +504,7 @@ def test_schema_enforcement_single_unnamed_tensor_schema():
 
     input_df = input_df.drop("c3", axis=1)
     with pytest.raises(
-        expected_exception=MlflowException,
+        expected_exception=QCFlowException,
         match=re.escape(
             "This model contains a model signature with an unnamed input. Since the "
             "input data is a pandas DataFrame containing multiple columns, "
@@ -552,7 +552,7 @@ def test_schema_enforcement_named_tensor_schema_1d():
     )
     wrong_pyfunc_model = PyFuncModel(model_meta=wrong_m, model_impl=TestModel())
     with pytest.raises(
-        expected_exception=MlflowException,
+        expected_exception=QCFlowException,
         match=re.escape(
             "The input pandas dataframe column 'a' contains scalar "
             "values, which requires the shape to be (-1,) or (-1, 1), but got tensor spec "
@@ -568,7 +568,7 @@ def test_schema_enforcement_named_tensor_schema_1d():
         ]
     )
     with pytest.raises(
-        expected_exception=MlflowException,
+        expected_exception=QCFlowException,
         match=re.escape(
             "For pandas dataframe input, the first dimension of shape must be a variable "
             "dimension and other dimensions must be fixed, but in model signature the shape "
@@ -621,7 +621,7 @@ def test_schema_enforcement_named_tensor_schema_multidimensional():
     assert expected_types == actual_types
 
     with pytest.raises(
-        expected_exception=MlflowException,
+        expected_exception=QCFlowException,
         match=re.escape(
             "The value in the Input DataFrame column 'a' could not be converted to the expected "
             "shape of: '(-1, 2, 3)'. Ensure that each of the input list elements are of uniform "
@@ -647,16 +647,16 @@ def test_missing_value_hint_is_displayed_when_it_should():
     pyfunc_model = PyFuncModel(model_meta=m, model_impl=TestModel())
     pdf = pd.DataFrame(data=[[1], [None]], columns=["a"])
     match = "Incompatible input types"
-    with pytest.raises(MlflowException, match=match) as ex:
+    with pytest.raises(QCFlowException, match=match) as ex:
         pyfunc_model.predict(pdf)
     hint = "Hint: the type mismatch is likely caused by missing values."
     assert hint in str(ex.value.message)
     pdf = pd.DataFrame(data=[[1.5], [None]], columns=["a"])
-    with pytest.raises(MlflowException, match=match) as ex:
+    with pytest.raises(QCFlowException, match=match) as ex:
         pyfunc_model.predict(pdf)
     assert hint not in str(ex.value.message)
     pdf = pd.DataFrame(data=[[1], [2]], columns=["a"], dtype=np.float64)
-    with pytest.raises(MlflowException, match=match) as ex:
+    with pytest.raises(QCFlowException, match=match) as ex:
         pyfunc_model.predict(pdf)
     assert hint not in str(ex.value.message)
 
@@ -686,15 +686,15 @@ def test_column_schema_enforcement_no_col_names():
     pd.testing.assert_frame_equal(pyfunc_model.predict(pdf), pdf)
 
     # Must provide the right number of arguments
-    with pytest.raises(MlflowException, match="the provided value only has 2 inputs."):
+    with pytest.raises(QCFlowException, match="the provided value only has 2 inputs."):
         pyfunc_model.predict([[1.0, 2.0]])
 
     # Must provide the right types
-    with pytest.raises(MlflowException, match="Can not safely convert int64 to float64"):
+    with pytest.raises(QCFlowException, match="Can not safely convert int64 to float64"):
         pyfunc_model.predict([[1, 2, 3]])
 
     # Can only provide data type that can be converted to dataframe...
-    with pytest.raises(MlflowException, match="Expected input to be DataFrame. Found: set"):
+    with pytest.raises(QCFlowException, match="Expected input to be DataFrame. Found: set"):
         pyfunc_model.predict({1, 2, 3})
 
     # 9. dictionaries of str -> list/nparray work
@@ -717,28 +717,28 @@ def test_tensor_schema_enforcement_no_col_names():
 
     # Can not call with a list
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model contains a tensor-based model signature with no input names",
     ):
         pyfunc_model.predict([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
 
     # Can not call with a dict
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model contains a tensor-based model signature with no input names",
     ):
         pyfunc_model.predict({"blah": test_data})
 
     # Can not call with a np.ndarray of a wrong shape
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Shape of input (2, 2) does not match expected shape (-1, 3)"),
     ):
         pyfunc_model.predict(np.array([[1.0, 2.0], [4.0, 5.0]]))
 
     # Can not call with a np.ndarray of a wrong type
     with pytest.raises(
-        MlflowException, match="dtype of input uint32 does not match expected dtype float32"
+        QCFlowException, match="dtype of input uint32 does not match expected dtype float32"
     ):
         pyfunc_model.predict(test_data.astype(np.uint32))
 
@@ -748,7 +748,7 @@ def test_tensor_schema_enforcement_no_col_names():
 
     # Can not call with an empty ndarray
     with pytest.raises(
-        MlflowException, match=re.escape("Shape of input () does not match expected shape (-1, 3)")
+        QCFlowException, match=re.escape("Shape of input () does not match expected shape (-1, 3)")
     ):
         pyfunc_model.predict(np.ndarray([]))
 
@@ -871,9 +871,9 @@ def test_schema_enforcement_for_inputs_style_orientation_of_dataframe(orient):
     pd_data = pd.DataFrame([data])
     # Schema enforcement explicitly only provides support for strings that meet primitives in
     # np.arrays criteria. All other data types should fail.
-    with pytest.raises(MlflowException, match="This model contains a column-based"):
+    with pytest.raises(QCFlowException, match="This model contains a column-based"):
         _enforce_schema(data, signature.inputs)
-    with pytest.raises(MlflowException, match="Incompatible input types for column a. Can not"):
+    with pytest.raises(QCFlowException, match="Incompatible input types for column a. Can not"):
         _enforce_schema(pd_data.to_dict(orient=orient), signature.inputs)
 
     # Test bytes
@@ -929,13 +929,13 @@ def test_schema_enforcement_for_optional_columns():
     # Ensure wrong data type for optional column throws
     test_bad_data = {"a": [1.0], "b": [1.0], "d": ["not the right type"]}
     pd_data = pd.DataFrame(test_bad_data)
-    with pytest.raises(MlflowException, match="Incompatible input types for column d."):
+    with pytest.raises(QCFlowException, match="Incompatible input types for column d."):
         _enforce_schema(pd_data, signature.inputs)
 
     # Ensure it still validates for required columns
     test_missing_required = {"b": [2.0], "c": ["something"]}
     pd_data = pd.DataFrame(test_missing_required)
-    with pytest.raises(MlflowException, match="Model is missing inputs"):
+    with pytest.raises(QCFlowException, match="Model is missing inputs"):
         _enforce_schema(pd_data, signature.inputs)
 
 
@@ -1352,7 +1352,7 @@ def test_enforce_params_schema_errors():
         [ParamSpec("datetime_param", DataType.datetime, np.datetime64("2023-06-06"))]
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to convert value `1.0` from type `<class 'float'>` to `DataType.datetime`",
     ):
         _enforce_params_schema({"datetime_param": 1.0}, test_schema)
@@ -1368,7 +1368,7 @@ def test_enforce_params_schema_errors():
         ]
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to convert value `1.0` from type `<class 'float'>` to `DataType.datetime`",
     ):
         _enforce_params_schema({"datetime_array": [1.0, 2.0]}, test_schema)
@@ -1376,7 +1376,7 @@ def test_enforce_params_schema_errors():
     # Raise error when failing to convert value to DataType.float
     test_schema = ParamSchema([ParamSpec("float_param", DataType.float, np.float32(1))])
     with pytest.raises(
-        MlflowException, match=r"Failed to validate type and shape for 'float_param'"
+        QCFlowException, match=r"Failed to validate type and shape for 'float_param'"
     ):
         _enforce_params_schema({"float_param": "a"}, test_schema)
     # With array
@@ -1384,7 +1384,7 @@ def test_enforce_params_schema_errors():
         [ParamSpec("float_array", DataType.float, np.array([np.float32(1), np.float32(2)]), (-1,))]
     )
     with pytest.raises(
-        MlflowException, match=r"Failed to validate type and shape for 'float_array'"
+        QCFlowException, match=r"Failed to validate type and shape for 'float_array'"
     ):
         _enforce_params_schema(
             {"float_array": [np.float32(1), np.float32(2), np.float64(3)]}, test_schema
@@ -1393,24 +1393,24 @@ def test_enforce_params_schema_errors():
     # Raise error for any other conversions
     error_msg = r"Failed to validate type and shape for 'int_param'"
     test_schema = ParamSchema([ParamSpec("int_param", DataType.long, np.int32(1))])
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"int_param": np.float32(1)}, test_schema)
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"int_param": "1"}, test_schema)
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"int_param": np.datetime64("2023-06-06")}, test_schema)
 
     error_msg = r"Failed to validate type and shape for 'str_param'"
     test_schema = ParamSchema([ParamSpec("str_param", DataType.string, "1")])
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"str_param": np.float32(1)}, test_schema)
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"str_param": b"string"}, test_schema)
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"str_param": np.datetime64("2023-06-06")}, test_schema)
 
     # Raise error if parameters is not dictionary
-    with pytest.raises(MlflowException, match=r"Parameters must be a dictionary. Got type 'int'."):
+    with pytest.raises(QCFlowException, match=r"Parameters must be a dictionary. Got type 'int'."):
         _enforce_params_schema(100, test_schema)
 
     # Raise error if invalid parameters are passed
@@ -1423,7 +1423,7 @@ def test_enforce_params_schema_errors():
         ]
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "Value must be a 1D array with shape (-1,) for param 'b': string "
             "(default: []) (shape: (-1,)), received tuple"
@@ -1431,7 +1431,7 @@ def test_enforce_params_schema_errors():
     ):
         _enforce_params_schema(test_parameters, test_schema)
     # Raise error for non-1D array
-    with pytest.raises(MlflowException, match=r"received list with ndim 2"):
+    with pytest.raises(QCFlowException, match=r"received list with ndim 2"):
         _enforce_params_schema(
             {"a": [[1, 2], [3, 4]]}, ParamSchema([ParamSpec("a", DataType.long, [], (-1,))])
         )
@@ -1473,7 +1473,7 @@ def test_enforce_params_schema_errors_with_model_with_params():
         )
 
     loaded_model_with_params = qcflow.pyfunc.load_model(model_info.model_uri)
-    with pytest.raises(MlflowException, match=r"Parameters must be a dictionary. Got type 'list'"):
+    with pytest.raises(QCFlowException, match=r"Parameters must be a dictionary. Got type 'list'"):
         loaded_model_with_params.predict(["input"], params=[1, 2, 3])
 
     with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
@@ -1517,38 +1517,38 @@ def test_param_spec_with_success():
 
 def test_param_spec_errors():
     # Raise error if default value can not be converted to specified type
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'a'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'a'"):
         ParamSpec("a", DataType.integer, "1.0")
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'a'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'a'"):
         ParamSpec("a", DataType.integer, [1.0, 2.0], (-1,))
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'a'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'a'"):
         ParamSpec("a", DataType.string, True)
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'a'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'a'"):
         ParamSpec("a", DataType.string, [1.0, 2.0], (-1,))
-    with pytest.raises(MlflowException, match=r"Binary type is not supported for parameters"):
+    with pytest.raises(QCFlowException, match=r"Binary type is not supported for parameters"):
         ParamSpec("a", DataType.binary, 1.0)
-    with pytest.raises(MlflowException, match=r"Failed to convert value"):
+    with pytest.raises(QCFlowException, match=r"Failed to convert value"):
         ParamSpec("a", DataType.datetime, 1.0)
-    with pytest.raises(MlflowException, match=r"Failed to convert value"):
+    with pytest.raises(QCFlowException, match=r"Failed to convert value"):
         ParamSpec("a", DataType.datetime, [1.0, 2.0], (-1,))
-    with pytest.raises(MlflowException, match=r"Failed to convert value to `DataType.datetime`"):
+    with pytest.raises(QCFlowException, match=r"Failed to convert value to `DataType.datetime`"):
         ParamSpec("a", DataType.datetime, np.datetime64("20230606"))
 
     # Raise error if shape is not specified for list value
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Value must be a scalar for type `DataType.long`"),
     ):
         ParamSpec("a", DataType.long, [1, 2, 3], shape=None)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Value must be a scalar for type `DataType.integer`"),
     ):
         ParamSpec("a", DataType.integer, np.array([1, 2, 3]), shape=None)
 
     # Raise error if shape is specified for scalar value
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "Value must be a 1D array with shape (-1,) for param 'a': boolean (default: True) "
             "(shape: (-1,)), received bool"
@@ -1558,7 +1558,7 @@ def test_param_spec_errors():
 
     # Raise error if shape specified is not allowed
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Shape must be None for scalar or dictionary value, "
         r"or \(-1,\) for 1D array value",
     ):
@@ -1566,7 +1566,7 @@ def test_param_spec_errors():
 
     # Raise error if default value is not scalar or 1D array
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "Value must be a 1D array with shape (-1,) for param 'a': boolean (default: {'a': 1}) "
             "(shape: (-1,)), received dict"
@@ -1958,18 +1958,18 @@ def test_enforce_schema_with_arrays_in_python_model_predict(sample_params_with_a
 
     # Raise error if failing to convert the type
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to convert value `1.0` from type `<class 'float'>` to `DataType.datetime`",
     ):
         loaded_model.predict(["a", "b"], params={"datetime_array": [1.0, 2.0]})
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'int_array'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'int_array'"):
         loaded_model.predict(["a", "b"], params={"int_array": np.array([1.0, 2.0])})
     with pytest.raises(
-        MlflowException, match=r"Failed to validate type and shape for 'float_array'"
+        QCFlowException, match=r"Failed to validate type and shape for 'float_array'"
     ):
         loaded_model.predict(["a", "b"], params={"float_array": [True, False]})
     with pytest.raises(
-        MlflowException, match=r"Failed to validate type and shape for 'double_array'"
+        QCFlowException, match=r"Failed to validate type and shape for 'double_array'"
     ):
         loaded_model.predict(["a", "b"], params={"double_array": [1.0, "2.0"]})
 

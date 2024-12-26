@@ -6,7 +6,7 @@ import pytest
 
 from qcflow.data.dataset_source_registry import get_dataset_source_from_json
 from qcflow.data.delta_dataset_source import DeltaDatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_managed_catalog_messages_pb2 import GetTable, GetTableResponse
 from qcflow.utils.proto_json_utils import message_to_json
 
@@ -103,7 +103,7 @@ def test_delta_dataset_source_too_many_inputs(spark_session, tmp_path):
         "default.temp_delta_too_many_inputs", path=tmp_path
     )
 
-    with pytest.raises(MlflowException, match='Must specify exactly one of "path" or "table_name"'):
+    with pytest.raises(QCFlowException, match='Must specify exactly one of "path" or "table_name"'):
         DeltaDatasetSource(path=tmp_path, delta_table_name="temp_delta_too_many_inputs")
 
 

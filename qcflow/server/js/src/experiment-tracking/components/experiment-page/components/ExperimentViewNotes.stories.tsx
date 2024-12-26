@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { MemoryRouter } from '../../../../common/utils/RoutingUtils';
 import { applyMiddleware, compose, createStore } from 'redux';
 import promiseMiddleware from 'redux-promise-middleware';
-import { ExperimentTag } from '../../../sdk/MlflowMessages';
+import { ExperimentTag } from '../../../sdk/QCFlowMessages';
 import { ExperimentEntity } from '../../../types';
 import { GetExperimentsContextProvider } from '../contexts/GetExperimentsContext';
 import { ExperimentViewNotes } from './ExperimentViewNotes';

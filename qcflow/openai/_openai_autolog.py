@@ -9,7 +9,7 @@ from typing import Any, Iterator
 from packaging.version import Version
 
 import qcflow
-from qcflow import MlflowException
+from qcflow import QCFlowException
 from qcflow.entities import RunTag, SpanType
 from qcflow.entities.span_event import SpanEvent
 from qcflow.entities.span_status import SpanStatusCode
@@ -43,12 +43,12 @@ def _get_input_from_model(model, kwargs):
         # openai tasks accept only keyword arguments
         if param := kwargs.get(param_name):
             return param
-        input_example_exc = MlflowException(
+        input_example_exc = QCFlowException(
             "Inference function signature changes, please contact QCFlow team to "
             "fix OpenAI autologging.",
         )
     else:
-        input_example_exc = MlflowException(
+        input_example_exc = QCFlowException(
             "Unsupported OpenAI task. Only support chat completions, completions and embeddings."
         )
     _logger.warning(
@@ -127,7 +127,7 @@ def patched_call(original, self, *args, **kwargs):
     # Active run should always take precedence over the run_id stored in the model
     run_id = active_run.info.run_id if active_run else getattr(self, "_qcflow_run_id", None)
 
-    qcflow_client = qcflow.MlflowClient()
+    qcflow_client = qcflow.QCFlowClient()
     request_id = None
 
     # If optional artifacts logging are enabled e.g. log_models, we need to create a run

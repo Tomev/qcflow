@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 import pandas as pd
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.types import DataType
 from qcflow.types.schema import (
     HAS_PYSPARK,
@@ -32,7 +32,7 @@ MULTIPLE_TYPES_ERROR_MSG = (
 _logger = logging.getLogger(__name__)
 
 
-class TensorsNotSupportedException(MlflowException):
+class TensorsNotSupportedException(QCFlowException):
     def __init__(self, msg):
         super().__init__(f"Multidimensional arrays (aka tensors) are not supported. {msg}")
 
@@ -62,7 +62,7 @@ def _get_tensor_shape(data, variable_dimension: Optional[int] = 0) -> tuple:
             variable_input_data_shape = list(variable_input_data_shape)
             variable_input_data_shape[variable_dimension] = -1
         except IndexError:
-            raise MlflowException(
+            raise QCFlowException(
                 f"The specified variable_dimension {variable_dimension} is out of bounds with "
                 f"respect to the number of dimensions {data.ndim} in the input dataset"
             )
@@ -106,7 +106,7 @@ def _infer_colspec_type(data: Any) -> Union[DataType, Array, Object, AnyType]:
     dtype = _infer_datatype(data)
 
     if dtype is None:
-        raise MlflowException(
+        raise QCFlowException(
             f"Numpy array must include at least one non-empty item. Invalid input `{data}`."
         )
 
@@ -139,7 +139,7 @@ def _infer_datatype(data: Any) -> Optional[Union[DataType, Array, Object, AnyTyp
         for k, v in data.items():
             dtype = _infer_datatype(v)
             if dtype is None:
-                raise MlflowException("Dictionary value must not be an empty numpy array.")
+                raise QCFlowException("Dictionary value must not be an empty numpy array.")
             properties.append(
                 Property(name=k, dtype=dtype, required=not isinstance(dtype, AnyType))
             )
@@ -183,13 +183,13 @@ def _infer_array_datatype(data: Union[list, np.ndarray]) -> Optional[Array]:
         elif isinstance(result.dtype, (Array, Object, Map, AnyType)):
             try:
                 result = Array(result.dtype._merge(dtype))
-            except MlflowException as e:
-                raise MlflowException.invalid_parameter_value(MULTIPLE_TYPES_ERROR_MSG) from e
+            except QCFlowException as e:
+                raise QCFlowException.invalid_parameter_value(MULTIPLE_TYPES_ERROR_MSG) from e
         elif isinstance(result.dtype, DataType):
             if not isinstance(dtype, AnyType) and dtype != result.dtype:
-                raise MlflowException.invalid_parameter_value(MULTIPLE_TYPES_ERROR_MSG)
+                raise QCFlowException.invalid_parameter_value(MULTIPLE_TYPES_ERROR_MSG)
         else:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"{dtype} is not a valid type for an item of a list or numpy array."
             )
     return result
@@ -223,7 +223,7 @@ def _infer_scalar_datatype(data) -> DataType:
         for data_type in DataType.all_types():
             if isinstance(data, type(data_type.to_spark())):
                 return data_type
-    raise MlflowException.invalid_parameter_value(
+    raise QCFlowException.invalid_parameter_value(
         f"Data {data} is not one of the supported DataType"
     )
 
@@ -340,7 +340,7 @@ def _infer_schema(data: Any) -> Schema:
         # Dict[str, Union[DataType, List, Dict]]
         else:
             if any(not isinstance(key, str) for key in data):
-                raise MlflowException("The dictionary keys are not all strings.")
+                raise QCFlowException("The dictionary keys are not all strings.")
             schema = Schema(
                 [
                     ColSpec(
@@ -412,8 +412,8 @@ def _infer_schema(data: Any) -> Schema:
         try:
             # We set required=True as unnamed optional inputs is not allowed
             schema = Schema([ColSpec(_infer_colspec_type(data))])
-        except MlflowException as e:
-            raise MlflowException.invalid_parameter_value(
+        except QCFlowException as e:
+            raise QCFlowException.invalid_parameter_value(
                 "Failed to infer schema. Expected one of the following types:\n"
                 "- pandas.DataFrame\n"
                 "- pandas.Series\n"
@@ -484,7 +484,7 @@ def _infer_numpy_dtype(dtype) -> DataType:
         )
     elif dtype.kind == "M":
         return DataType.datetime
-    raise MlflowException(f"Unsupported numpy data type '{dtype}', kind '{dtype.kind}'")
+    raise QCFlowException(f"Unsupported numpy data type '{dtype}', kind '{dtype.kind}'")
 
 
 def _is_none_or_nan(x):
@@ -503,7 +503,7 @@ def _infer_pandas_column(col: pd.Series) -> DataType:
     if not isinstance(col, pd.Series):
         raise TypeError(f"Expected pandas.Series, got '{type(col)}'.")
     if len(col.values.shape) > 1:
-        raise MlflowException(f"Expected 1d array, got array with shape {col.shape}")
+        raise QCFlowException(f"Expected 1d array, got array with shape {col.shape}")
 
     if col.dtype.kind == "O":
         col = col.infer_objects()
@@ -519,7 +519,7 @@ def _infer_pandas_column(col: pd.Series) -> DataType:
             # This is for diviner test where df field is ('key2', 'key1', 'key0')
             if pd.api.types.is_string_dtype(col):
                 return DataType.string
-            raise MlflowException(f"Failed to infer schema for pandas.Series {col}. Error: {e}")
+            raise QCFlowException(f"Failed to infer schema for pandas.Series {col}. Error: {e}")
     else:
         # NB: The following works for numpy types as well as pandas extension types.
         return _infer_numpy_dtype(col.dtype)
@@ -564,7 +564,7 @@ def _infer_spark_type(x, data=None, col_name=None) -> DataType:
         )
     elif isinstance(x, pyspark.sql.types.MapType):
         if data is None or col_name is None:
-            raise MlflowException("Cannot infer schema for MapType without data and column name.")
+            raise QCFlowException("Cannot infer schema for MapType without data and column name.")
         # Map MapType to StructType
         # Note that MapType assumes all values are of same type,
         # if they're not then spark picks the first item's type
@@ -577,7 +577,7 @@ def _infer_spark_type(x, data=None, col_name=None) -> DataType:
         # |{a -> 1, b -> null}|
         # +-------------------+
         if isinstance(x.valueType, pyspark.sql.types.MapType):
-            raise MlflowException(
+            raise QCFlowException(
                 "Please construct spark DataFrame with schema using StructType "
                 "for dictionary/map fields, QCFlow schema inference only supports "
                 "scalar, array and struct types."
@@ -603,7 +603,7 @@ def _infer_spark_type(x, data=None, col_name=None) -> DataType:
         return SparkMLVector()
 
     else:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Unsupported Spark Type '{type(x)}' for QCFlow schema."
         )
 
@@ -631,13 +631,13 @@ def _validate_input_dictionary_contains_only_strings_and_lists_of_strings(data) 
         key for key in data.keys() if not isinstance(key, (str, int)) or isinstance(key, bool)
     ]
     if invalid_keys:
-        raise MlflowException(
+        raise QCFlowException(
             f"The dictionary keys are not all strings or indexes. Invalid keys: {invalid_keys}"
         )
     if any(isinstance(value, np.ndarray) for value in data.values()) and not all(
         isinstance(value, np.ndarray) for value in data.values()
     ):
-        raise MlflowException("The dictionary values are not all numpy.ndarray.")
+        raise QCFlowException("The dictionary values are not all numpy.ndarray.")
 
     invalid_values = [
         key
@@ -646,7 +646,7 @@ def _validate_input_dictionary_contains_only_strings_and_lists_of_strings(data) 
         or (not isinstance(value, (np.ndarray, list, str, bytes)))
     ]
     if invalid_values:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             "Invalid values in dictionary. If passing a dictionary containing strings, all "
             "values must be either strings or lists of strings. If passing a dictionary containing "
             "numeric values, the data must be enclosed in a numpy.ndarray. The following keys "
@@ -682,7 +682,7 @@ def _infer_type_and_shape(value):
     if isinstance(value, (list, np.ndarray)):
         ndim = _get_array_depth(value)
         if ndim != 1:
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 f"Expected parameters to be 1D array or scalar, got {ndim}D array",
             )
         if all(DataType.check_type(DataType.datetime, v) for v in value):
@@ -695,8 +695,8 @@ def _infer_type_and_shape(value):
         try:
             value_type = _infer_numpy_dtype(np.array(value).dtype)
             return value_type, None
-        except (Exception, MlflowException) as e:
-            raise MlflowException.invalid_parameter_value(
+        except (Exception, QCFlowException) as e:
+            raise QCFlowException.invalid_parameter_value(
                 f"Failed to infer schema for parameter {value}: {e!r}"
             )
     elif isinstance(value, dict):
@@ -705,14 +705,14 @@ def _infer_type_and_shape(value):
         schema = _infer_schema({"value": value})
         object_type = schema.inputs[0].type
         return object_type, None
-    raise MlflowException.invalid_parameter_value(
+    raise QCFlowException.invalid_parameter_value(
         f"Expected parameters to be 1D array or scalar, got {type(value).__name__}",
     )
 
 
 def _infer_param_schema(parameters: dict[str, Any]):
     if not isinstance(parameters, dict):
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Expected parameters to be dict, got {type(parameters).__name__}",
         )
 
@@ -728,7 +728,7 @@ def _infer_param_schema(parameters: dict[str, Any]):
             invalid_params.append((name, value, e))
 
     if invalid_params:
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             f"Failed to infer schema for parameters: {invalid_params}",
         )
 

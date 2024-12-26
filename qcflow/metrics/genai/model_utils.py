@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 import requests
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 if TYPE_CHECKING:
@@ -69,7 +69,7 @@ def score_model_on_payload(
             prefix, suffix, payload, eval_parameters, extra_headers, proxy_url
         )
 
-    raise MlflowException(
+    raise QCFlowException(
         f"Unknown model uri prefix '{prefix}'",
         error_code=INVALID_PARAMETER_VALUE,
     )
@@ -80,7 +80,7 @@ def _parse_model_uri(model_uri):
     scheme = parsed.scheme
     path = parsed.path
     if not path.startswith("/") or len(path) <= 1:
-        raise MlflowException(
+        raise QCFlowException(
             f"Malformed model uri '{model_uri}'", error_code=INVALID_PARAMETER_VALUE
         )
     path = path.lstrip("/")
@@ -166,7 +166,7 @@ def _call_llm_provider_api(
         )
     chat_response = provider.adapter_class.model_to_chat(response, provider.config)
     if len(chat_response.choices) == 0:
-        raise MlflowException(
+        raise QCFlowException(
             "Failed to score the provided input as the judge LLM did not return "
             "any chat completion results in the response."
         )
@@ -253,7 +253,7 @@ def _get_provider_instance(provider: str, model: str) -> "BaseProvider":
         config = TogetherAIConfig(togetherai_api_key=os.environ.get("TOGETHERAI_API_KEY"))
         return TogetherAIProvider(_get_route_config(config))
 
-    raise MlflowException(f"Provider '{provider}' is not supported for evaluation.")
+    raise QCFlowException(f"Provider '{provider}' is not supported for evaluation.")
 
 
 def _send_request(
@@ -268,7 +268,7 @@ def _send_request(
         )
         response.raise_for_status()
     except requests.exceptions.HTTPError as e:
-        raise MlflowException(
+        raise QCFlowException(
             f"Failed to call LLM endpoint at {endpoint}.\n- Error: {e}\n- Input payload: {payload}."
         )
 
@@ -306,7 +306,7 @@ def call_deployments_api(
         # If the input is a dictionary, we assume it is already in the correct format
         payload = input_data
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Invalid input data type {type(input_data)}. Must be a string or a dictionary.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -315,7 +315,7 @@ def call_deployments_api(
     try:
         response = client.predict(endpoint=deployment_uri, inputs=payload)
     except Exception as e:
-        raise MlflowException(
+        raise QCFlowException(
             _PREDICT_ERROR_MSG.format(e=e, uri=deployment_uri, payload=payload)
         ) from e
 
@@ -341,7 +341,7 @@ def _call_gateway_api(gateway_uri, payload, eval_parameters):
         response = query(gateway_uri, chat_payload)
         return _parse_chat_response_format(response)
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Unsupported gateway route type: {route_info['endpoint_type']}. Use a "
             "route of type 'llm/v1/completions' or 'llm/v1/chat' instead.",
             error_code=INVALID_PARAMETER_VALUE,
@@ -358,7 +358,7 @@ def _construct_payload_from_str(prompt: str, endpoint_type: str) -> dict[str, An
     elif endpoint_type == "llm/v1/chat":
         return {"messages": [{"role": "user", "content": prompt}]}
     else:
-        raise MlflowException(
+        raise QCFlowException(
             f"Unsupported endpoint type: {endpoint_type}. If string input is provided, "
             "the endpoint type must be 'llm/v1/completions' or 'llm/v1/chat'.",
             error_code=INVALID_PARAMETER_VALUE,

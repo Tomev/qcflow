@@ -20,11 +20,11 @@ import org.testng.annotations.Test;
 
 import org.qcflow.api.proto.Service.FileInfo;
 import org.qcflow.api.proto.Service.RunInfo;
-import org.qcflow.tracking.MlflowClient;
+import org.qcflow.tracking.QCFlowClient;
 import org.qcflow.tracking.TestClientProvider;
-import org.qcflow.tracking.creds.BasicMlflowHostCreds;
-import org.qcflow.tracking.creds.DatabricksMlflowHostCreds;
-import org.qcflow.tracking.creds.MlflowHostCreds;
+import org.qcflow.tracking.creds.BasicQCFlowHostCreds;
+import org.qcflow.tracking.creds.DatabricksQCFlowHostCreds;
+import org.qcflow.tracking.creds.QCFlowHostCreds;
 
 public class CliBasedArtifactRepositoryTest {
   private static final Logger logger = LoggerFactory.getLogger(
@@ -32,7 +32,7 @@ public class CliBasedArtifactRepositoryTest {
 
   private final TestClientProvider testClientProvider = new TestClientProvider();
 
-  private MlflowClient client;
+  private QCFlowClient client;
 
   @BeforeSuite
   public void beforeAll() throws IOException {
@@ -139,7 +139,7 @@ public class CliBasedArtifactRepositoryTest {
   @Test
   public void testSettingProcessEnvBasic() {
     CliBasedArtifactRepository repo = newRepo();
-    MlflowHostCreds hostCreds = new BasicMlflowHostCreds("just-host");
+    QCFlowHostCreds hostCreds = new BasicQCFlowHostCreds("just-host");
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironment(env, hostCreds);
     Map<String, String> expectedEnv = new HashMap<>();
@@ -150,7 +150,7 @@ public class CliBasedArtifactRepositoryTest {
   @Test
   public void testSettingProcessEnvUserPass() {
     CliBasedArtifactRepository repo = newRepo();
-    MlflowHostCreds hostCreds = new BasicMlflowHostCreds("just-host", "user", "pass");
+    QCFlowHostCreds hostCreds = new BasicQCFlowHostCreds("just-host", "user", "pass");
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironment(env, hostCreds);
     Map<String, String> expectedEnv = new HashMap<>();
@@ -163,7 +163,7 @@ public class CliBasedArtifactRepositoryTest {
   @Test
   public void testSettingProcessEnvToken() {
     CliBasedArtifactRepository repo = newRepo();
-    MlflowHostCreds hostCreds = new BasicMlflowHostCreds("just-host", "token");
+    QCFlowHostCreds hostCreds = new BasicQCFlowHostCreds("just-host", "token");
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironment(env, hostCreds);
     Map<String, String> expectedEnv = new HashMap<>();
@@ -175,7 +175,7 @@ public class CliBasedArtifactRepositoryTest {
   @Test
   public void testSettingProcessEnvInsecure() {
     CliBasedArtifactRepository repo = newRepo();
-    MlflowHostCreds hostCreds = new BasicMlflowHostCreds("insecure-host", null, null, null,
+    QCFlowHostCreds hostCreds = new BasicQCFlowHostCreds("insecure-host", null, null, null,
       true);
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironment(env, hostCreds);
@@ -188,7 +188,7 @@ public class CliBasedArtifactRepositoryTest {
   @Test
   public void testSettingProcessEnvDatabricksUserPass() {
     CliBasedArtifactRepository repo = newRepo();
-    DatabricksMlflowHostCreds hostCreds = new DatabricksMlflowHostCreds(
+    DatabricksQCFlowHostCreds hostCreds = new DatabricksQCFlowHostCreds(
       "just-host", "user", "pass");
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironmentDatabricks(env, hostCreds);
@@ -202,7 +202,7 @@ public class CliBasedArtifactRepositoryTest {
   @Test
   public void testSettingProcessEnvDatabricksToken() {
     CliBasedArtifactRepository repo = newRepo();
-    DatabricksMlflowHostCreds hostCreds = new DatabricksMlflowHostCreds("just-host", "token");
+    DatabricksQCFlowHostCreds hostCreds = new DatabricksQCFlowHostCreds("just-host", "token");
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironmentDatabricks(env, hostCreds);
     Map<String, String> expectedEnv = new HashMap<>();
@@ -214,7 +214,7 @@ public class CliBasedArtifactRepositoryTest {
   @Test
   public void testSettingProcessEnvDatabricksInsecure() {
     CliBasedArtifactRepository repo = newRepo();
-    DatabricksMlflowHostCreds hostCreds = new DatabricksMlflowHostCreds(
+    DatabricksQCFlowHostCreds hostCreds = new DatabricksQCFlowHostCreds(
       "insecure-host", null, null, null, true);
     Map<String, String> env = new HashMap<>();
     repo.setProcessEnvironmentDatabricks(env, hostCreds);

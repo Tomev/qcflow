@@ -1,4 +1,4 @@
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.model_registry.rest_store import RestStore
 
 
@@ -11,7 +11,7 @@ def _raise_unsupported_method(method, message=None):
     ]
     if message is not None:
         messages.append(message)
-    raise MlflowException(" ".join(messages))
+    raise QCFlowException(" ".join(messages))
 
 
 class DatabricksWorkspaceModelRegistryRestStore(RestStore):

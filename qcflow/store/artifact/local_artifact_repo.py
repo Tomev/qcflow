@@ -135,8 +135,8 @@ class LocalArtifactRepository(ArtifactRepository):
             The trace data as a dictionary.
 
         Raises:
-            - `MlflowTraceDataNotFound`: The trace data is not found.
-            - `MlflowTraceDataCorrupted`: The trace data is corrupted.
+            - `QCFlowTraceDataNotFound`: The trace data is not found.
+            - `QCFlowTraceDataCorrupted`: The trace data is corrupted.
         """
         trace_data_path = os.path.join(self.artifact_dir, TRACE_DATA_FILE_NAME)
         return try_read_trace_data(trace_data_path)

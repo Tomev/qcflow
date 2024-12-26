@@ -6,7 +6,7 @@ import uuid
 import pytest
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities.metric import Metric
 from qcflow.entities.param import Param
 from qcflow.entities.run_tag import RunTag
@@ -21,12 +21,12 @@ def flush_async_logging():
 
 def test_async_logging_qcflow_client_pickle():
     experiment_name = f"qcflow-async-logging-pickle-test-{str(uuid.uuid4())[:8]}"
-    qcflow_client = MlflowClient()
+    qcflow_client = QCFlowClient()
 
     buffer = io.BytesIO()
     pickle.dump(qcflow_client, buffer)
 
-    deserialized_qcflow_client = pickle.loads(buffer.getvalue())  # Type: MlflowClient
+    deserialized_qcflow_client = pickle.loads(buffer.getvalue())  # Type: QCFlowClient
     experiment_id = deserialized_qcflow_client.create_experiment(experiment_name)
 
     run = deserialized_qcflow_client.create_run(experiment_id=experiment_id)
@@ -50,7 +50,7 @@ def test_async_logging_qcflow_client_pickle():
 
 def test_async_logging_qcflow_client():
     experiment_name = f"qcflow-async-logging-test-{str(uuid.uuid4())[:8]}"
-    qcflow_client = MlflowClient()
+    qcflow_client = QCFlowClient()
     experiment_id = qcflow_client.create_experiment(experiment_name)
 
     run = qcflow_client.create_run(experiment_id=experiment_id)

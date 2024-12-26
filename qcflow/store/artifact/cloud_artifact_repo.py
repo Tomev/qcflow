@@ -15,7 +15,7 @@ from qcflow.environment_variables import (
     QCFLOW_MULTIPART_DOWNLOAD_MINIMUM_FILE_SIZE,
     QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE,
 )
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repo import ArtifactRepository
 from qcflow.utils import chunk_list
 from qcflow.utils.file_utils import (
@@ -44,7 +44,7 @@ def _validate_chunk_size_aws(chunk_size: int) -> None:
     Validates the specified chunk size in bytes is in valid range for AWS multipart uploads.
     """
     if chunk_size < _AWS_MIN_CHUNK_SIZE or chunk_size > _AWS_MAX_CHUNK_SIZE:
-        raise MlflowException(
+        raise QCFlowException(
             message=(
                 f"Multipart chunk size {_readable_size(chunk_size)} must be in range: "
                 f"{_readable_size(_AWS_MIN_CHUNK_SIZE)} to {_readable_size(_AWS_MAX_CHUNK_SIZE)}."
@@ -169,7 +169,7 @@ class CloudArtifactRepository(ArtifactRepository):
                     failed_uploads[src_file_path] = repr(e)
 
         if len(failed_uploads) > 0:
-            raise MlflowException(
+            raise QCFlowException(
                 message=(
                     "The following failures occurred while uploading one or more artifacts"
                     f" to {self.artifact_uri}: {failed_uploads}"
@@ -268,7 +268,7 @@ class CloudArtifactRepository(ArtifactRepository):
                 time.sleep(interval)
 
             if failed_downloads:
-                raise MlflowException(
+                raise QCFlowException(
                     message=("All retries have been exhausted. Download has failed.")
                 )
 

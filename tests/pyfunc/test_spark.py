@@ -42,7 +42,7 @@ from sklearn.preprocessing import FunctionTransformer
 import qcflow
 import qcflow.pyfunc
 import qcflow.sklearn
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import ModelSignature
 from qcflow.models.signature import infer_signature
 from qcflow.pyfunc import (
@@ -621,7 +621,7 @@ def test_spark_udf_autofills_no_arguments(spark):
             spark, f"runs:/{run.info.run_id}/model", result_type=ArrayType(StringType())
         )
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Cannot apply udf because no column names specified",
         ):
             good_data.withColumn("res", udf())
@@ -632,7 +632,7 @@ def test_spark_udf_autofills_no_arguments(spark):
         udf = qcflow.pyfunc.spark_udf(
             spark, f"runs:/{run.info.run_id}/model", result_type=ArrayType(StringType())
         )
-        with pytest.raises(MlflowException, match="Attempting to apply udf on zero columns"):
+        with pytest.raises(QCFlowException, match="Attempting to apply udf on zero columns"):
             res = good_data.withColumn("res", udf()).select("res").toPandas()
 
     named_signature_with_optional_input = ModelSignature(
@@ -654,7 +654,7 @@ def test_spark_udf_autofills_no_arguments(spark):
             spark, f"runs:/{run.info.run_id}/model", result_type=ArrayType(StringType())
         )
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Cannot apply UDF without column names specified when model "
             r"signature contains optional columns",
         ):
@@ -1181,7 +1181,7 @@ def test_spark_udf_with_params_with_errors(spark):
             signature=signature,
         )
 
-        with pytest.raises(MlflowException, match=r"Invalid 'spark_udf' result type"):
+        with pytest.raises(QCFlowException, match=r"Invalid 'spark_udf' result type"):
             qcflow.pyfunc.spark_udf(
                 spark,
                 f"runs:/{run.info.run_id}/model",
@@ -1368,7 +1368,7 @@ def test_spark_df_schema_inference_for_map_type(spark):
 
     complex_df = spark.createDataFrame([{"map": {"nested_map": {"a": 1}}}])
     with pytest.raises(
-        MlflowException, match=r"Please construct spark DataFrame with schema using StructType"
+        QCFlowException, match=r"Please construct spark DataFrame with schema using StructType"
     ):
         _infer_schema(complex_df)
 
@@ -1627,7 +1627,7 @@ def test_build_model_env(spark, sklearn_model, model_path, tmp_path, monkeypatch
         shutil.rmtree(f"/tmp/{archive_name}", ignore_errors=True)
 
 
-class CustomModelWithMlflowConfig(qcflow.pyfunc.PythonModel):
+class CustomModelWithQCFlowConfig(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input, params=None):
         alpha = context.model_config["alpha"]
         return [x + alpha for x in model_input[model_input.columns[0]]]
@@ -1638,7 +1638,7 @@ class CustomModelWithMlflowConfig(qcflow.pyfunc.PythonModel):
     [("local", None), ("virtualenv", False), ("virtualenv", True)],
 )
 def test_spark_udf_with_model_config(spark, model_path, monkeypatch, env_manager, use_stdin_serve):
-    model = CustomModelWithMlflowConfig()
+    model = CustomModelWithQCFlowConfig()
     qcflow.pyfunc.save_model(
         model_path,
         python_model=model,

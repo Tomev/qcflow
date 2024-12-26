@@ -12,7 +12,7 @@ from qcflow.data.dataset_source_registry import get_dataset_source_from_json
 from qcflow.data.evaluation_dataset import EvaluationDataset
 from qcflow.data.huggingface_dataset import HuggingFaceDataset
 from qcflow.data.huggingface_dataset_source import HuggingFaceDatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.types.schema import Schema
 from qcflow.types.utils import _infer_schema
 
@@ -159,7 +159,7 @@ def test_from_huggingface_dataset_throws_for_dataset_dict():
     assert isinstance(ds, datasets.DatasetDict)
 
     with pytest.raises(
-        MlflowException, match="must be an instance of `datasets.Dataset`.*DatasetDict"
+        QCFlowException, match="must be an instance of `datasets.Dataset`.*DatasetDict"
     ):
         qcflow.data.from_huggingface(ds, path="rotten_tomatoes")
 

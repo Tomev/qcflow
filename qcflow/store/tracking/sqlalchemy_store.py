@@ -29,7 +29,7 @@ from qcflow.entities import (
 from qcflow.entities.lifecycle_stage import LifecycleStage
 from qcflow.entities.metric import MetricWithRunId
 from qcflow.entities.trace_status import TraceStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
@@ -286,7 +286,7 @@ class SqlAlchemyStore(AbstractStore):
                     eid = session.query(SqlExperiment).filter_by(name=name).first().experiment_id
                     experiment.artifact_location = self._get_artifact_location(eid)
             except sqlalchemy.exc.IntegrityError as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Experiment(name={name}) already exists. Error: {e}",
                     RESOURCE_ALREADY_EXISTS,
                 )
@@ -373,7 +373,7 @@ class SqlAlchemyStore(AbstractStore):
         )
 
         if experiment is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"No Experiment with id={experiment_id} exists", RESOURCE_DOES_NOT_EXIST
             )
 
@@ -466,7 +466,7 @@ class SqlAlchemyStore(AbstractStore):
         with self.ManagedSessionMaker() as session:
             experiment = self._get_experiment(session, experiment_id, ViewType.ALL)
             if experiment.lifecycle_stage != LifecycleStage.ACTIVE:
-                raise MlflowException("Cannot rename a non-active experiment.", INVALID_STATE)
+                raise QCFlowException("Cannot rename a non-active experiment.", INVALID_STATE)
 
             experiment.name = new_name
             experiment.last_update_time = get_current_time_millis()
@@ -490,7 +490,7 @@ class SqlAlchemyStore(AbstractStore):
             tags = tags.copy() if tags else []
             run_name_tag = _get_run_name_from_tags(tags)
             if run_name and run_name_tag and (run_name != run_name_tag):
-                raise MlflowException(
+                raise QCFlowException(
                     "Both 'run_name' argument and 'qcflow.runName' tag are specified, but with "
                     f"different values (run_name='{run_name}', qcflow.runName='{run_name_tag}').",
                     INVALID_PARAMETER_VALUE,
@@ -534,9 +534,9 @@ class SqlAlchemyStore(AbstractStore):
         )
 
         if len(runs) == 0:
-            raise MlflowException(f"Run with id={run_uuid} not found", RESOURCE_DOES_NOT_EXIST)
+            raise QCFlowException(f"Run with id={run_uuid} not found", RESOURCE_DOES_NOT_EXIST)
         if len(runs) > 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Expected only 1 run with id={run_uuid}. Found {len(runs)}.",
                 INVALID_STATE,
             )
@@ -603,7 +603,7 @@ class SqlAlchemyStore(AbstractStore):
 
     def _check_run_is_active(self, run):
         if run.lifecycle_stage != LifecycleStage.ACTIVE:
-            raise MlflowException(
+            raise QCFlowException(
                 (
                     f"The run {run.run_uuid} must be in the 'active' state. "
                     f"Current state is {run.lifecycle_stage}."
@@ -613,7 +613,7 @@ class SqlAlchemyStore(AbstractStore):
 
     def _check_experiment_is_active(self, experiment):
         if experiment.lifecycle_stage != LifecycleStage.ACTIVE:
-            raise MlflowException(
+            raise QCFlowException(
                 (
                     f"The experiment {experiment.experiment_id} must be in the 'active' state. "
                     f"Current state is {experiment.lifecycle_stage}."
@@ -920,7 +920,7 @@ class SqlAlchemyStore(AbstractStore):
                 implemented for SQLAlchemyStore and is unused in this store's implementation.
             page_token: An indicator for paginated results. This functionality is not
                 implemented for SQLAlchemyStore and if the value is overridden with a value other
-                than ``None``, an MlflowException will be thrown.
+                than ``None``, an QCFlowException will be thrown.
 
         Returns:
             A List of :py:class:`qcflow.entities.Metric` entities if ``metric_key`` values
@@ -931,7 +931,7 @@ class SqlAlchemyStore(AbstractStore):
         # Raise if `page_token` is specified, as the functionality to support paged queries
         # is not implemented.
         if page_token is not None:
-            raise MlflowException(
+            raise QCFlowException(
                 "The SQLAlchemyStore backend does not support pagination for the "
                 f"`get_metric_history` API. Supplied argument `page_token` '{page_token}' must be "
                 "`None`."
@@ -1107,7 +1107,7 @@ class SqlAlchemyStore(AbstractStore):
                 if len(existing_params) > 0:
                     old_value = existing_params[0]
                     if old_value != param.value:
-                        raise MlflowException(
+                        raise QCFlowException(
                             "Changing param values is not allowed. Param with key='{}' was already"
                             " logged with value='{}' for run ID='{}'. Attempted logging new value"
                             " '{}'.".format(param.key, old_value, run_id, param.value),
@@ -1140,7 +1140,7 @@ class SqlAlchemyStore(AbstractStore):
                 new_params.append(SqlParam(run_uuid=run_id, key=param.key, value=param.value))
 
             if non_matching_params:
-                raise MlflowException(
+                raise QCFlowException(
                     "Changing param values is not allowed. Params were already"
                     f" logged='{non_matching_params}' for run ID='{run_id}'.",
                     INVALID_PARAMETER_VALUE,
@@ -1258,7 +1258,7 @@ class SqlAlchemyStore(AbstractStore):
                     # two concurrent operations may try to attempt to insert tags.
                     # apply retry here.
                     if attempt_number > max_retries:
-                        raise MlflowException(
+                        raise QCFlowException(
                             "Failed to set tags with given within {} retries. Keys: {}".format(
                                 max_retries, [t.key for t in tags]
                             )
@@ -1283,12 +1283,12 @@ class SqlAlchemyStore(AbstractStore):
             self._check_run_is_active(run)
             filtered_tags = session.query(SqlTag).filter_by(run_uuid=run_id, key=key).all()
             if len(filtered_tags) == 0:
-                raise MlflowException(
+                raise QCFlowException(
                     f"No tag with name: {key} in run with id {run_id}",
                     error_code=RESOURCE_DOES_NOT_EXIST,
                 )
             elif len(filtered_tags) > 1:
-                raise MlflowException(
+                raise QCFlowException(
                     "Bad data in database - tags for a specific run must have "
                     "a single unique value. "
                     "See https://qcflow.org/docs/latest/tracking.html#adding-tags-to-runs",
@@ -1389,10 +1389,10 @@ class SqlAlchemyStore(AbstractStore):
                 self._log_params(run_id, params)
                 self._log_metrics(run_id, metrics, path="metrics")
                 self._set_tags(run_id, tags, path="tags")
-            except MlflowException as e:
+            except QCFlowException as e:
                 raise e
             except Exception as e:
-                raise MlflowException(e, INTERNAL_ERROR)
+                raise QCFlowException(e, INTERNAL_ERROR)
 
     def record_logged_model(self, run_id, qcflow_model):
         from qcflow.models import Model
@@ -1437,10 +1437,10 @@ class SqlAlchemyStore(AbstractStore):
             self._check_run_is_active(run)
             try:
                 self._log_inputs_impl(experiment_id, run_id, datasets)
-            except MlflowException as e:
+            except QCFlowException as e:
                 raise e
             except Exception as e:
-                raise MlflowException(e, INTERNAL_ERROR)
+                raise QCFlowException(e, INTERNAL_ERROR)
 
     def _log_inputs_impl(
         self, experiment_id, run_id, dataset_inputs: Optional[list[DatasetInput]] = None
@@ -1449,7 +1449,7 @@ class SqlAlchemyStore(AbstractStore):
             return
         for dataset_input in dataset_inputs:
             if dataset_input.dataset is None:
-                raise MlflowException(
+                raise QCFlowException(
                     "Dataset input must have a dataset associated with it.",
                     INTERNAL_ERROR,
                 )
@@ -1675,7 +1675,7 @@ class SqlAlchemyStore(AbstractStore):
             session.query(SqlTraceInfo).filter(SqlTraceInfo.request_id == request_id).one_or_none()
         )
         if sql_trace_info is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Trace with request_id '{request_id}' not found.",
                 RESOURCE_DOES_NOT_EXIST,
             )
@@ -1755,14 +1755,14 @@ class SqlAlchemyStore(AbstractStore):
 
     def _validate_max_results_param(self, max_results: int, allow_null=False):
         if (not allow_null and max_results is None) or max_results < 1:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid value {max_results} for parameter 'max_results' supplied. It must be "
                 f"a positive integer",
                 INVALID_PARAMETER_VALUE,
             )
 
         if max_results > SEARCH_MAX_RESULTS_THRESHOLD:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid value {max_results} for parameter 'max_results' supplied. It must be at "
                 f"most {SEARCH_MAX_RESULTS_THRESHOLD}",
                 INVALID_PARAMETER_VALUE,
@@ -1792,7 +1792,7 @@ class SqlAlchemyStore(AbstractStore):
         with self.ManagedSessionMaker() as session:
             tags = session.query(SqlTraceTag).filter_by(request_id=request_id, key=key)
             if tags.count() == 0:
-                raise MlflowException(
+                raise QCFlowException(
                     f"No trace tag with key '{key}' for trace with request_id '{request_id}'",
                     RESOURCE_DOES_NOT_EXIST,
                 )
@@ -1892,7 +1892,7 @@ def _get_sqlalchemy_filter_clauses(parsed, session, dialect):
             elif SearchUtils.is_dataset(key_type, comparator):
                 entity = SqlDataset
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid search expression type '{key_type}'",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
@@ -1965,7 +1965,7 @@ def _get_orderby_clauses(order_by_list, session):
                 elif SearchUtils.is_param(key_type, "="):
                     entity = SqlParam
                 else:
-                    raise MlflowException(
+                    raise QCFlowException(
                         f"Invalid identifier type '{key_type}'",
                         error_code=INVALID_PARAMETER_VALUE,
                     )
@@ -2001,7 +2001,7 @@ def _get_orderby_clauses(order_by_list, session):
             select_clauses.append(order_value)
 
             if (key_type, key) in observed_order_by_clauses:
-                raise MlflowException(f"`order_by` contains duplicate fields: {order_by_list}")
+                raise QCFlowException(f"`order_by` contains duplicate fields: {order_by_list}")
             observed_order_by_clauses.add((key_type, key))
 
             if ascending:
@@ -2030,13 +2030,13 @@ def _get_search_experiments_filter_clauses(parsed_filters, dialect):
             if SearchExperimentsUtils.is_string_attribute(
                 type_, key, comparator
             ) and comparator not in ("=", "!=", "LIKE", "ILIKE"):
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Invalid comparator for string attribute: {comparator}"
                 )
             if SearchExperimentsUtils.is_numeric_attribute(
                 type_, key, comparator
             ) and comparator not in ("=", "!=", "<", "<=", ">", ">="):
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Invalid comparator for numeric attribute: {comparator}"
                 )
             attr = getattr(SqlExperiment, key)
@@ -2044,7 +2044,7 @@ def _get_search_experiments_filter_clauses(parsed_filters, dialect):
             attribute_filters.append(attr_filter)
         elif type_ == "tag":
             if comparator not in ("=", "!=", "LIKE", "ILIKE"):
-                raise MlflowException.invalid_parameter_value(
+                raise QCFlowException.invalid_parameter_value(
                     f"Invalid comparator for tag: {comparator}"
                 )
             val_filter = SearchUtils.get_sql_comparison_func(comparator, dialect)(
@@ -2057,7 +2057,7 @@ def _get_search_experiments_filter_clauses(parsed_filters, dialect):
                 select(SqlExperimentTag).filter(key_filter, val_filter).subquery()
             )
         else:
-            raise MlflowException.invalid_parameter_value(f"Invalid token type: {type_}")
+            raise QCFlowException.invalid_parameter_value(f"Invalid token type: {type_}")
 
     return attribute_filters, non_attribute_filters
 
@@ -2071,7 +2071,7 @@ def _get_search_experiments_order_by_clauses(order_by):
         if type_ == "attribute":
             order_by_clauses.append((getattr(SqlExperiment, key), ascending))
         else:
-            raise MlflowException.invalid_parameter_value(f"Invalid order_by entity: {type_}")
+            raise QCFlowException.invalid_parameter_value(f"Invalid order_by entity: {type_}")
 
     # Add a tie-breaker
     if not any(col == SqlExperiment.experiment_id for col, _ in order_by_clauses):
@@ -2102,7 +2102,7 @@ def _get_orderby_clauses_for_search_traces(order_by_list: list[str], session):
             elif SearchTraceUtils.is_request_metadata(key_type, "="):
                 entity = SqlTraceRequestMetadata
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid identifier type '{key_type}'",
                     error_code=INVALID_PARAMETER_VALUE,
                 )
@@ -2117,7 +2117,7 @@ def _get_orderby_clauses_for_search_traces(order_by_list: list[str], session):
         select_clauses.append(order_value)
 
         if (key_type, key) in observed_order_by_clauses:
-            raise MlflowException(f"`order_by` contains duplicate fields: {order_by_list}")
+            raise QCFlowException(f"`order_by` contains duplicate fields: {order_by_list}")
         observed_order_by_clauses.add((key_type, key))
         clauses.append(order_value if ascending else order_value.desc())
 
@@ -2161,7 +2161,7 @@ def _get_filter_clauses_for_search_traces(filter_string, session, dialect):
             elif SearchTraceUtils.is_request_metadata(key_type, comparator):
                 entity = SqlTraceRequestMetadata
             else:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid search expression type '{key_type}'",
                     error_code=INVALID_PARAMETER_VALUE,
                 )

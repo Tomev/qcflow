@@ -12,7 +12,7 @@ import warnings
 from pathlib import Path
 
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import FlavorBackend, Model, docker_utils
 from qcflow.models.docker_utils import PYTHON_SLIM_BASE_IMAGE, UBUNTU_BASE_IMAGE
 from qcflow.pyfunc import (
@@ -213,14 +213,14 @@ class PyFuncBackend(FlavorBackend):
             try:
                 environment.execute(" ".join(predict_cmd))
             except ShellCommandException as e:
-                raise MlflowException(
+                raise QCFlowException(
                     f"{e}\n\nAn exception occurred while running model prediction within a "
                     f"{self._env_manager} environment. You can find the error message "
                     f"from the prediction subprocess by scrolling above."
                 ) from None
         else:
             if pip_requirements_override:
-                raise MlflowException(
+                raise QCFlowException(
                     "`pip_requirements_override` is not supported for local env manager."
                     "Please use conda or virtualenv instead."
                 )
@@ -417,7 +417,7 @@ class PyFuncBackend(FlavorBackend):
                 # installing python on ubuntu image is problematic and not recommended officially
                 # , so we recommend using conda or virtualenv instead on ubuntu image
                 if env_manager == em.LOCAL:
-                    raise MlflowException.invalid_parameter_value(LOCAL_ENV_MANAGER_ERROR_MESSAGE)
+                    raise QCFlowException.invalid_parameter_value(LOCAL_ENV_MANAGER_ERROR_MESSAGE)
 
             model_install_steps = self._model_installation_steps(
                 model_path, env_manager, install_qcflow, enable_mlserver
@@ -429,7 +429,7 @@ class PyFuncBackend(FlavorBackend):
             base_image = base_image or UBUNTU_BASE_IMAGE
             env_manager = self._env_manager or em.VIRTUALENV
             if env_manager == em.LOCAL:
-                raise MlflowException.invalid_parameter_value(LOCAL_ENV_MANAGER_ERROR_MESSAGE)
+                raise QCFlowException.invalid_parameter_value(LOCAL_ENV_MANAGER_ERROR_MESSAGE)
 
             model_install_steps = ""
             # If model_uri is not specified, dependencies are installed at runtime

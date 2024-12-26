@@ -1,6 +1,6 @@
 import { type ModelTraceInfo } from '@databricks/web-shared/model-trace-explorer';
 import { useCallback, useEffect, useState } from 'react';
-import { MlflowService } from '../../../sdk/MlflowService';
+import { QCFlowService } from '../../../sdk/QCFlowService';
 
 /**
  * Fetches single trace info object for a given trace request ID.
@@ -17,7 +17,7 @@ export const useExperimentTraceInfo = (requestId: string, enabled = true) => {
     setError(undefined);
 
     try {
-      const response = await MlflowService.getExperimentTraceInfo(requestId);
+      const response = await QCFlowService.getExperimentTraceInfo(requestId);
 
       if (!response.trace_info) {
         setTraceInfoData(undefined);

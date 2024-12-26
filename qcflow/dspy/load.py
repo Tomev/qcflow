@@ -22,9 +22,9 @@ def _set_tracer_context(model_path, callbacks):
     """
     Set dependency schemas from the saved model metadata to the tracer's prediction context.
     """
-    from qcflow.dspy.callback import MlflowCallback
+    from qcflow.dspy.callback import QCFlowCallback
 
-    tracer = next((cb for cb in callbacks if isinstance(cb, MlflowCallback)), None)
+    tracer = next((cb for cb in callbacks if isinstance(cb, QCFlowCallback)), None)
     if tracer is None:
         return
     context = tracer._prediction_context

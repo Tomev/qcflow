@@ -21,7 +21,7 @@ from qcflow import pyfunc
 from qcflow.cli import doctor, gc, server
 from qcflow.data import numpy_dataset
 from qcflow.entities import ViewType
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.server import handlers
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 from qcflow.store.tracking.file_store import FileStore
@@ -213,7 +213,7 @@ def test_qcflow_gc_sqlite(sqlite_store, create_artifacts_in_run):
     )
     runs = store.search_runs(experiment_ids=["0"], filter_string="", run_view_type=ViewType.ALL)
     assert len(runs) == 0
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         store.get_run(run.info.run_uuid)
 
     artifact_path = url2pathname(unquote(urlparse(run.info.artifact_uri).path))
@@ -275,7 +275,7 @@ def test_qcflow_gc_file_store(file_store, create_artifacts_in_run):
     )
     runs = store.search_runs(experiment_ids=["0"], filter_string="", run_view_type=ViewType.ALL)
     assert len(runs) == 0
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         store.get_run(run.info.run_uuid)
 
     artifact_path = url2pathname(unquote(urlparse(run.info.artifact_uri).path))
@@ -300,7 +300,7 @@ def test_qcflow_gc_file_store_passing_explicit_run_ids(file_store):
     )
     runs = store.search_runs(experiment_ids=["0"], filter_string="", run_view_type=ViewType.ALL)
     assert len(runs) == 0
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         store.get_run(run.info.run_uuid)
 
 
@@ -418,7 +418,7 @@ def test_qcflow_gc_experiments(get_store_details, request):
 
     exp_id_5 = store.create_experiment("5")
     store.delete_experiment(exp_id_5)
-    with pytest.raises(MlflowException, match=r"Experiments .+ can be deleted."):
+    with pytest.raises(QCFlowException, match=r"Experiments .+ can be deleted."):
         invoke_gc(
             "--backend-store-uri", uri, "--experiment-ids", exp_id_5, "--older-than", "10d10h10m10s"
         )
@@ -477,7 +477,7 @@ def test_qcflow_gc_sqlite_with_s3_artifact_repository(
 
         runs = store.search_runs(experiment_ids=["0"], filter_string="", run_view_type=ViewType.ALL)
         assert len(runs) == 0
-        with pytest.raises(MlflowException, match=r"Run .+ not found"):
+        with pytest.raises(QCFlowException, match=r"Run .+ not found"):
             store.get_run(run.info.run_uuid)
 
 
@@ -671,5 +671,5 @@ def test_qcflow_gc_with_datasets(sqlite_store):
     # only default is left after GC
     assert len(experiments) == 1
     assert experiments[0].experiment_id == "0"
-    with pytest.raises(MlflowException, match=f"No Experiment with id={experiment_id} exists"):
+    with pytest.raises(QCFlowException, match=f"No Experiment with id={experiment_id} exists"):
         store.get_experiment(experiment_id)

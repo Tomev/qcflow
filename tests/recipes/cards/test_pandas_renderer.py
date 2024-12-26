@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from google.protobuf import text_format
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos import facet_feature_statistics_pb2
 from qcflow.recipes.cards import pandas_renderer
 
@@ -38,17 +38,17 @@ def test_get_facet_type_from_numpy_type():
     assert fs_proto.STRING == pandas_renderer.get_facet_type_from_numpy_type(np.dtype(np.void))
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Found type complex, but expected one of: int, long, float, string, bool",
     ):
         pandas_renderer.get_facet_type_from_numpy_type(np.dtype(np.csingle))
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Found type complex, but expected one of: int, long, float, string, bool",
     ):
         pandas_renderer.get_facet_type_from_numpy_type(np.dtype(np.cdouble))
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Found type complex, but expected one of: int, long, float, string, bool",
     ):
         pandas_renderer.get_facet_type_from_numpy_type(np.dtype(np.clongdouble))

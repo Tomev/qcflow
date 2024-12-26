@@ -6,9 +6,9 @@ import pytest
 from google.cloud.storage import Client
 from requests import Response
 
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities.file_info import FileInfo
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_uc_registry_messages_pb2 import (
     AwsCredentials,
     StorageMode,
@@ -58,7 +58,7 @@ def test_uc_models_artifact_repo_init_not_using_databricks_registry_raises():
     non_databricks_uri = "non_databricks_uri"
     model_uri = "models:/MyModel/12"
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Attempted to instantiate an artifact repo to access models in the Unity "
         "Catalog with non-Unity Catalog registry URI",
     ):
@@ -80,7 +80,7 @@ def test_uc_models_artifact_repo_with_stage_uri_raises(model_uri, expected_error
     with (
         mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=expected_error_msg,
         ),
     ):
@@ -91,7 +91,7 @@ def test_uc_models_artifact_repo_with_stage_uri_raises(model_uri, expected_error
 
 def test_uc_models_artifact_uri_with_scope_and_prefix_throws():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Remote model registry access via model URIs of the form "
         "'models://<scope>@<prefix>/<model_name>/<version_or_stage>'",
     ):
@@ -129,7 +129,7 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_aws(mon
     with (
         mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"),
         mock.patch.object(
-            MlflowClient, "get_model_version_download_uri", return_value=artifact_location
+            QCFlowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
         mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch(
@@ -179,7 +179,7 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_azure(m
     fake_local_path = "/tmp/fake_path"
     with (
         mock.patch.object(
-            MlflowClient, "get_model_version_download_uri", return_value=artifact_location
+            QCFlowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
         mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch(
@@ -228,7 +228,7 @@ def test_uc_models_artifact_repo_download_artifacts_uses_temporary_creds_gcp(mon
     with (
         mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"),
         mock.patch.object(
-            MlflowClient, "get_model_version_download_uri", return_value=artifact_location
+            QCFlowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
         mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch("google.cloud.storage.Client") as gcs_client_class_mock,
@@ -300,7 +300,7 @@ def test_uc_models_artifact_repo_list_artifacts_uses_temporary_creds(monkeypatch
     with (
         mock.patch("qcflow.utils.databricks_utils.get_databricks_host_creds"),
         mock.patch.object(
-            MlflowClient, "get_model_version_download_uri", return_value=artifact_location
+            QCFlowClient, "get_model_version_download_uri", return_value=artifact_location
         ),
         mock.patch("qcflow.utils.rest_utils.http_request") as request_mock,
         mock.patch(

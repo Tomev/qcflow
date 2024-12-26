@@ -1,4 +1,4 @@
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.entities.metric import Metric
 from qcflow.entities.param import Param
 from qcflow.entities.run_tag import RunTag
@@ -7,7 +7,7 @@ from qcflow.protos.service_pb2 import RunData as ProtoRunData
 from qcflow.protos.service_pb2 import RunTag as ProtoRunTag
 
 
-class RunData(_MlflowObject):
+class RunData(_QCFlowObject):
     """
     Run data (metrics and parameters).
     """

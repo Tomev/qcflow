@@ -2,28 +2,28 @@ from unittest import mock
 
 import pytest
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.oss_registry_utils import get_oss_host_creds
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 
 
 @pytest.mark.parametrize(
     ("server_uri", "expected_creds"),
     [
-        ("uc:databricks-uc", MlflowHostCreds(host="databricks-uc")),
-        ("uc:http://localhost:8081", MlflowHostCreds(host="http://localhost:8081")),
-        ("invalid_scheme:http://localhost:8081", MlflowException),
-        ("databricks-uc", MlflowException),
+        ("uc:databricks-uc", QCFlowHostCreds(host="databricks-uc")),
+        ("uc:http://localhost:8081", QCFlowHostCreds(host="http://localhost:8081")),
+        ("invalid_scheme:http://localhost:8081", QCFlowException),
+        ("databricks-uc", QCFlowException),
     ],
 )
 def test_get_oss_host_creds(server_uri, expected_creds):
     with mock.patch(
         "qcflow.utils.oss_registry_utils.get_databricks_host_creds",
-        return_value=MlflowHostCreds(host="databricks-uc"),
+        return_value=QCFlowHostCreds(host="databricks-uc"),
     ):
-        if expected_creds == MlflowException:
+        if expected_creds == QCFlowException:
             with pytest.raises(
-                MlflowException, match="The scheme of the server_uri should be 'uc'"
+                QCFlowException, match="The scheme of the server_uri should be 'uc'"
             ):
                 get_oss_host_creds(server_uri)
         else:

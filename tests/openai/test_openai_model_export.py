@@ -420,7 +420,7 @@ def test_chat_no_messages(tmp_path):
 )
 def test_invalid_messages(tmp_path, messages):
     with pytest.raises(
-        qcflow.MlflowException,
+        qcflow.QCFlowException,
         match="it must be a list of dictionaries with keys 'role' and 'content'",
     ):
         qcflow.openai.save_model(
@@ -603,7 +603,7 @@ def test_inference_params(tmp_path):
 
 
 def test_inference_params_overlap(tmp_path):
-    with pytest.raises(qcflow.MlflowException, match=r"any of \['prefix'\] as parameters"):
+    with pytest.raises(qcflow.QCFlowException, match=r"any of \['prefix'\] as parameters"):
         qcflow.openai.save_model(
             model="text-davinci-003",
             task=completions(),

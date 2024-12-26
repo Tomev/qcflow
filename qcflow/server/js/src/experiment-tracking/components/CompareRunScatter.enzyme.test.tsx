@@ -12,7 +12,7 @@ import promiseMiddleware from 'redux-promise-middleware';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from '../../common/utils/RoutingUtils';
 import { mount } from 'enzyme';
-import { Metric, Param } from '../sdk/MlflowMessages';
+import { Metric, Param } from '../sdk/QCFlowMessages';
 import { CompareRunScatter, CompareRunScatterImpl } from './CompareRunScatter';
 import { ArtifactNode } from '../utils/ArtifactUtils';
 import { mountWithIntl } from '@qcflow/qcflow/src/common/utils/TestUtils.enzyme';

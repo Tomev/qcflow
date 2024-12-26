@@ -5,7 +5,7 @@ import pytest
 from pandas import DataFrame
 
 import qcflow.recipes.utils.step as step_utils
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.recipes.cards import pandas_renderer
 from qcflow.recipes.utils.step import (
     display_html,
@@ -16,7 +16,7 @@ from qcflow.recipes.utils.step import (
 
 
 def test_display_html_raises_without_input():
-    with pytest.raises(MlflowException, match="At least one HTML source must be provided"):
+    with pytest.raises(QCFlowException, match="At least one HTML source must be provided"):
         display_html()
 
 
@@ -54,7 +54,7 @@ def test_display_html_throws_error_on_old_dbr():
             return_value="10.4.x",
         ),
         pytest.raises(
-            MlflowException, match="Use Databricks Runtime 11 or newer with QCFlow Recipes"
+            QCFlowException, match="Use Databricks Runtime 11 or newer with QCFlow Recipes"
         ),
     ):
         display_html(html_data=html_data)

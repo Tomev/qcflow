@@ -1,8 +1,8 @@
-from qcflow.entities._qcflow_object import _MlflowObject
+from qcflow.entities._qcflow_object import _QCFlowObject
 from qcflow.protos.service_pb2 import ExperimentTag as ProtoExperimentTag
 
 
-class ExperimentTag(_MlflowObject):
+class ExperimentTag(_QCFlowObject):
     """Tag object associated with an experiment."""
 
     def __init__(self, key, value):

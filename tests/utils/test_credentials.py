@@ -5,7 +5,7 @@ import pytest
 
 from qcflow import get_tracking_uri
 from qcflow.environment_variables import QCFLOW_TRACKING_PASSWORD, QCFLOW_TRACKING_USERNAME
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.credentials import login, read_qcflow_creds
 
 
@@ -123,7 +123,7 @@ def test_qcflow_login(tmp_path, monkeypatch):
 
         with patch(
             "qcflow.utils.credentials._validate_databricks_auth",
-            side_effect=[MlflowException("Invalid databricks credentials."), success()],
+            side_effect=[QCFlowException("Invalid databricks credentials."), success()],
         ):
             login("databricks")
 
@@ -139,13 +139,13 @@ def test_qcflow_login(tmp_path, monkeypatch):
 
 
 def test_qcflow_login_noninteractive():
-    # Forces qcflow.utils.credentials._validate_databricks_auth to raise `MlflowException()`
+    # Forces qcflow.utils.credentials._validate_databricks_auth to raise `QCFlowException()`
     with patch(
         "qcflow.utils.credentials._validate_databricks_auth",
-        side_effect=MlflowException("Failed to validate databricks credentials."),
+        side_effect=QCFlowException("Failed to validate databricks credentials."),
     ):
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="No valid Databricks credentials found while running in non-interactive mode",
         ):
             login(backend="databricks", interactive=False)

@@ -8,7 +8,7 @@ Create Date: 2024-11-11 15:27:53.189685
 from alembic import op
 import sqlalchemy as sa
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.tracking.dbmodels.models import SqlDataset, SqlExperiment
 
 
@@ -34,7 +34,7 @@ def get_datasets_experiment_fk_name():
             constraint.column_keys[0] == "experiment_id"):
             return constraint.name
     
-    raise MlflowException(
+    raise QCFlowException(
         "Unable to find the foreign key constraint name from datasets to experiments. "
         "All foreign key constraints in datasets table: \n"
         f"{datasets_table.foreign_key_constraints}"

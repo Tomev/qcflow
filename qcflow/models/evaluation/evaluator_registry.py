@@ -1,6 +1,6 @@
 import warnings
 
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.utils.import_hooks import register_post_import_hook
 from qcflow.utils.plugins import get_entry_points
 
@@ -42,7 +42,7 @@ class ModelEvaluatorRegistry:
         """
         evaluator_cls = self._registry.get(evaluator_name)
         if evaluator_cls is None:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Could not find a registered model evaluator for: {evaluator_name}. "
                 f"Currently registered evaluator names are: {list(self._registry.keys())}"
             )

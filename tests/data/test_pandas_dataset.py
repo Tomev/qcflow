@@ -11,7 +11,7 @@ from qcflow.data.filesystem_dataset_source import FileSystemDatasetSource
 from qcflow.data.pandas_dataset import PandasDataset
 from qcflow.data.pyfunc_dataset_mixin import PyFuncInputsOutputs
 from qcflow.data.spark_dataset_source import SparkDatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.types.schema import Schema
 from qcflow.types.utils import _infer_schema
 
@@ -106,7 +106,7 @@ def test_with_invalid_targets():
     source = SampleDatasetSource._resolve(source_uri)
     df = pd.DataFrame([[1, 2, 3], [1, 2, 3]], columns=["a", "b", "c"])
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The specified pandas DataFrame does not contain the specified targets column 'd'.",
     ):
         PandasDataset(

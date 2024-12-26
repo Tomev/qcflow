@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 from qcflow.entities.file_info import FileInfo
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
 from qcflow.store.artifact.uc_volume_artifact_repo import UCVolumesArtifactRepository
 
@@ -58,7 +58,7 @@ def test_get_artifact_repository(artifact_uri: str):
     ],
 )
 def test_get_artifact_repository_invalid_uri(artifact_uri: str):
-    with pytest.raises(MlflowException, match="UC volumes URI must be of the form"):
+    with pytest.raises(QCFlowException, match="UC volumes URI must be of the form"):
         get_artifact_repository(artifact_uri)
 
 

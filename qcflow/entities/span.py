@@ -12,7 +12,7 @@ from opentelemetry.trace import Span as OTelSpan
 import qcflow
 from qcflow.entities.span_event import SpanEvent
 from qcflow.entities.span_status import SpanStatus, SpanStatusCode
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.tracing.constant import SpanAttributeKey
 from qcflow.tracing.utils import (
@@ -62,7 +62,7 @@ def create_qcflow_span(
     if isinstance(otel_span, OTelReadableSpan):
         return Span(otel_span)
 
-    raise MlflowException(
+    raise QCFlowException(
         "The `otel_span` argument must be an instance of one of valid "
         f"OpenTelemetry span classes, but got {type(otel_span)}.",
         INVALID_PARAMETER_VALUE,
@@ -81,7 +81,7 @@ class Span:
 
     def __init__(self, otel_span: OTelReadableSpan):
         if not isinstance(otel_span, OTelReadableSpan):
-            raise MlflowException(
+            raise QCFlowException(
                 "The `otel_span` argument for the Span class must be an instance of ReadableSpan, "
                 f"but got {type(otel_span)}.",
                 INVALID_PARAMETER_VALUE,
@@ -231,7 +231,7 @@ class Span:
         try:
             request_id = data.get("attributes", {}).get(SpanAttributeKey.REQUEST_ID)
             if not request_id:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The {SpanAttributeKey.REQUEST_ID} attribute is empty or missing.",
                     INVALID_PARAMETER_VALUE,
                 )
@@ -259,7 +259,7 @@ class Span:
             )
             return cls(otel_span)
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 "Failed to create a Span object from the given dictionary",
                 INVALID_PARAMETER_VALUE,
             ) from e
@@ -289,7 +289,7 @@ class LiveSpan(Span):
         initialization logic is a bit different from the immutable span.
         """
         if not isinstance(otel_span, OTelReadableSpan):
-            raise MlflowException(
+            raise QCFlowException(
                 "The `otel_span` argument for the LiveSpan class must be an instance of "
                 f"trace.Span, but got {type(otel_span)}.",
                 INVALID_PARAMETER_VALUE,
@@ -371,7 +371,7 @@ class LiveSpan(Span):
         to handle the status update.
 
         This method should not be called directly by the user, only by called via fluent APIs
-        context exit or by MlflowClient APIs.
+        context exit or by QCFlowClient APIs.
 
         :meta private:
         """
@@ -608,6 +608,6 @@ class _CachedSpanAttributesRegistry(_SpanAttributesRegistry):
         return super().get(key)
 
     def set(self, key: str, value: Any):
-        raise MlflowException(
+        raise QCFlowException(
             "The attributes of the immutable span must not be updated.", INVALID_PARAMETER_VALUE
         )

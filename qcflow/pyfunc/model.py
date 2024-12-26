@@ -18,7 +18,7 @@ import yaml
 
 import qcflow.pyfunc
 import qcflow.utils
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model
 from qcflow.models.model import MLMODEL_FILE_NAME, MODEL_CODE_PATH
 from qcflow.models.rag_signatures import ChatCompletionRequest, SplitChatMessagesRequest
@@ -374,7 +374,7 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
             with open(os.path.join(path, saved_python_model_subpath), "wb") as out:
                 cloudpickle.dump(python_model, out)
         except Exception as e:
-            raise MlflowException(
+            raise QCFlowException(
                 "Failed to serialize Python model. Please save the model into a python file "
                 "and use code-based logging method instead. See"
                 "https://qcflow.org/docs/latest/models.html#models-from-code for more information."
@@ -392,7 +392,7 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
                     try:
                         from huggingface_hub import snapshot_download
                     except ImportError as e:
-                        raise MlflowException(
+                        raise QCFlowException(
                             "Failed to import huggingface_hub. Please install huggingface_hub "
                             f"to log the model with artifact_uri {artifact_uri}. Error: {e}"
                         )
@@ -407,7 +407,7 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
                             local_dir_use_symlinks=False,
                         )
                     except Exception as e:
-                        raise MlflowException.invalid_parameter_value(
+                        raise QCFlowException.invalid_parameter_value(
                             "Failed to download snapshot from Hugging Face Hub with artifact_uri: "
                             f"{artifact_uri}. Error: {e}"
                         )
@@ -445,7 +445,7 @@ def _save_model_with_class_artifacts_params(  # noqa: D417
     elif python_model:
         loader_module = _get_pyfunc_loader_module(python_model)
     else:
-        raise MlflowException(
+        raise QCFlowException(
             "Either `python_model` or `model_code_path` must be provided to save the model.",
             error_code=INVALID_PARAMETER_VALUE,
         )
@@ -546,7 +546,7 @@ def _load_context_model_and_signature(
 
         python_model_subpath = pyfunc_config.get(CONFIG_KEY_PYTHON_MODEL, None)
         if python_model_subpath is None:
-            raise MlflowException("Python model path was not specified in the model configuration")
+            raise QCFlowException("Python model path was not specified in the model configuration")
         with open(os.path.join(model_path, python_model_subpath), "rb") as f:
             python_model = cloudpickle.load(f)
 
@@ -605,7 +605,7 @@ class _PythonModelPyfuncWrapper:
             if _is_list_str(hints.input):
                 first_string_column = _get_first_string_column(model_input)
                 if first_string_column is None:
-                    raise MlflowException.invalid_parameter_value(
+                    raise QCFlowException.invalid_parameter_value(
                         "Expected model input to contain at least one string column"
                     )
                 return model_input[first_string_column].tolist()
@@ -624,7 +624,7 @@ class _PythonModelPyfuncWrapper:
                 # If the type hint is a RAG dataclass, we hydrate it
                 # If there are multiple rows, we should throw
                 if len(model_input) > 1:
-                    raise MlflowException(
+                    raise QCFlowException(
                         "Expected a single input for dataclass type hint, but got multiple rows"
                     )
                 # Since single input is expected, we take the first row
@@ -738,7 +738,7 @@ class ModelFromDeploymentEndpoint(PythonModel):
             return [self._predict_single(data) for data in model_input]
         elif isinstance(model_input, pd.DataFrame):
             if len(model_input.columns) != 1:
-                raise MlflowException(
+                raise QCFlowException(
                     f"The number of input columns must be 1, but got {model_input.columns}. "
                     "Multi-column input is not supported for evaluating an QCFlow Deployments "
                     "endpoint. Please include the input text or payload in a single column.",
@@ -749,7 +749,7 @@ class ModelFromDeploymentEndpoint(PythonModel):
             predictions = [self._predict_single(data) for data in model_input[input_column]]
             return pd.Series(predictions)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid input data type: {type(model_input)}. The input data must be either "
                 "a Pandas DataFrame, a dictionary, or a list of dictionaries containing the "
                 "request payloads for evaluating an QCFlow Deployments endpoint.",
@@ -783,7 +783,7 @@ class ModelFromDeploymentEndpoint(PythonModel):
             # compatible format for the endpoint.
             prediction = call_deployments_api(self.endpoint, data, self.params, endpoint_type)
         else:
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid input data type: {type(data)}. The feature column of the evaluation "
                 "dataset must contain only strings or dictionaries containing the request "
                 "payload for evaluating an QCFlow Deployments endpoint.",

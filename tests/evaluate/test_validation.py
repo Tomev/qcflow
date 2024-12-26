@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models.evaluation import (
     EvaluationResult,
     MetricThreshold,
@@ -162,7 +162,7 @@ def faulty_baseline_model_param_test_spec(request):
     ],
 )
 def test_validation_faulty_validation_thresholds(validation_thresholds):
-    with pytest.raises(MlflowException, match="The validation thresholds argument"):
+    with pytest.raises(QCFlowException, match="The validation thresholds argument"):
         qcflow.validate_evaluation_results(
             candidate_result={},
             baseline_result={},

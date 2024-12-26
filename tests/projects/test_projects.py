@@ -10,10 +10,10 @@ import pytest
 import yaml
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.entities import RunStatus, SourceType, ViewType
 from qcflow.environment_variables import QCFLOW_CONDA_CREATE_ENV_CMD, QCFLOW_CONDA_HOME
-from qcflow.exceptions import ExecutionException, MlflowException
+from qcflow.exceptions import ExecutionException, QCFlowException
 from qcflow.projects import _parse_kubernetes_config, _resolve_experiment_id
 from qcflow.store.tracking.file_store import FileStore
 from qcflow.utils import PYTHON_VERSION
@@ -75,7 +75,7 @@ def test_resolve_experiment_id(experiment_name, experiment_id, expected):
 
 def test_resolve_experiment_id_should_not_allow_both_name_and_id_in_use():
     with pytest.raises(
-        MlflowException, match="Specify only one of 'experiment_name' or 'experiment_id'."
+        QCFlowException, match="Specify only one of 'experiment_name' or 'experiment_id'."
     ):
         _resolve_experiment_id(experiment_name="experiment_named", experiment_id="44")
 
@@ -89,7 +89,7 @@ def test_invalid_run_mode():
 
 
 def test_expected_tags_logged_when_using_conda():
-    with mock.patch.object(MlflowClient, "set_tag") as tag_mock:
+    with mock.patch.object(QCFlowClient, "set_tag") as tag_mock:
         try:
             qcflow.projects.run(TEST_PROJECT_DIR, env_manager="conda")
         finally:
@@ -137,7 +137,7 @@ def test_run_local_git_repo(
     validate_exit_status(submitted_run.get_status(), RunStatus.FINISHED)
     # Validate run contents in the FileStore
     run_id = submitted_run.run_id
-    qcflow_service = MlflowClient()
+    qcflow_service = QCFlowClient()
     runs = qcflow_service.search_runs(
         [FileStore.DEFAULT_EXPERIMENT_ID], run_view_type=ViewType.ACTIVE_ONLY
     )
@@ -198,7 +198,7 @@ def test_run(use_start_run):
     validate_exit_status(submitted_run.get_status(), RunStatus.FINISHED)
     # Validate run contents in the FileStore
     run_id = submitted_run.run_id
-    qcflow_service = MlflowClient()
+    qcflow_service = QCFlowClient()
 
     runs = qcflow_service.search_runs(
         [FileStore.DEFAULT_EXPERIMENT_ID], run_view_type=ViewType.ACTIVE_ONLY
@@ -236,7 +236,7 @@ def test_run_with_parent():
     assert submitted_run.run_id is not None
     validate_exit_status(submitted_run.get_status(), RunStatus.FINISHED)
     run_id = submitted_run.run_id
-    run = MlflowClient().get_run(run_id)
+    run = QCFlowClient().get_run(run_id)
     assert run.data.tags[QCFLOW_PARENT_RUN_ID] == parent_run_id
 
 

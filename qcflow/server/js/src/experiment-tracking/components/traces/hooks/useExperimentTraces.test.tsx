@@ -1,6 +1,6 @@
 import { renderHook, cleanup, waitFor, act } from '@testing-library/react';
 import { useExperimentTraces } from './useExperimentTraces';
-import { MlflowService } from '../../../sdk/MlflowService';
+import { QCFlowService } from '../../../sdk/QCFlowService';
 import { type ModelTraceInfo } from '@databricks/web-shared/model-trace-explorer';
 import { first, last } from 'lodash';
 import { KeyValueEntity } from '../../../types';
@@ -45,7 +45,7 @@ describe('useExperimentTraces', () => {
   test('fetches traces and navigates through pages', async () => {
     // Mocking the getExperimentTraces function to return 100 traces per page.
     // We will use simple {"page": 1} token to simulate pagination.
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
       const page = token ? JSON.parse(token).page : 1;
       const traces = new Array(100).fill(0).map((_, i) => generateMockTrace(`trace-page${page}-${i + 1}`, i));
       const next_page_token = page < pagesCount ? JSON.stringify({ page: page + 1 }) : undefined;
@@ -101,7 +101,7 @@ describe('useExperimentTraces', () => {
   test('navigates through pages maintaining the same sort by value', async () => {
     // Mocking the getExperimentTraces function to return 100 traces per page.
     // We will use simple {"page": 1} token to simulate pagination.
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
       const page = token ? JSON.parse(token).page : 1;
       const traces = new Array(100).fill(0).map((_, i) => generateMockTrace(`trace-page${page}-${i + 1}`, i));
       const next_page_token = page < pagesCount ? JSON.stringify({ page: page + 1 }) : undefined;
@@ -114,7 +114,7 @@ describe('useExperimentTraces', () => {
       expect(result.current.loading).toEqual(false);
     });
 
-    expect(MlflowService.getExperimentTraces).toHaveBeenLastCalledWith(
+    expect(QCFlowService.getExperimentTraces).toHaveBeenLastCalledWith(
       ['some-experiment-id'],
       'timestamp_ms ASC',
       undefined,
@@ -126,7 +126,7 @@ describe('useExperimentTraces', () => {
       result.current.fetchNextPage();
     });
 
-    expect(MlflowService.getExperimentTraces).toHaveBeenLastCalledWith(
+    expect(QCFlowService.getExperimentTraces).toHaveBeenLastCalledWith(
       ['some-experiment-id'],
       'timestamp_ms ASC',
       '{"page":2}',
@@ -137,7 +137,7 @@ describe('useExperimentTraces', () => {
   test('returns error when necessary', async () => {
     // Mocking the getExperimentTraces function to return 100 traces per page.
     // On the second page, we will return an error.
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
       if (token) {
         return Promise.reject(new Error('Some error'));
       }
@@ -171,7 +171,7 @@ describe('useExperimentTraces', () => {
   });
 
   test('requests for run names', async () => {
-    jest.spyOn(MlflowService, 'searchRuns').mockImplementation(
+    jest.spyOn(QCFlowService, 'searchRuns').mockImplementation(
       async () =>
         ({
           runs: [
@@ -185,7 +185,7 @@ describe('useExperimentTraces', () => {
         } as any),
     );
 
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation((_, __, token) => {
       const traces = [
         // First two traces reference the same run, third trace references another one, last one does not have any run
         generateMockTrace('trace-1', 0, [{ key: 'qcflow.sourceRun', value: 'run-1' }]),
@@ -217,7 +217,7 @@ describe('useExperimentTraces', () => {
   });
 
   test('sends proper filter query', async () => {
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation(() => Promise.resolve({ traces: [] }));
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation(() => Promise.resolve({ traces: [] }));
 
     // Render the hook and wait for the traces to be fetched.
     const { result } = renderTestHook('tags.test_tag="xyz"');
@@ -226,7 +226,7 @@ describe('useExperimentTraces', () => {
     });
 
     // Check that the trace API is called with the correct filter query.
-    expect(MlflowService.getExperimentTraces).toHaveBeenCalledWith(
+    expect(QCFlowService.getExperimentTraces).toHaveBeenCalledWith(
       testExperimentIds,
       expect.anything(),
       undefined,
@@ -235,7 +235,7 @@ describe('useExperimentTraces', () => {
   });
 
   test('does correct run ID filtering', async () => {
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation(() => Promise.resolve({ traces: [] }));
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation(() => Promise.resolve({ traces: [] }));
 
     // Render the hook and wait for the traces to be fetched.
     const { result } = renderTestHook(undefined, undefined, 'test-run-id');
@@ -244,7 +244,7 @@ describe('useExperimentTraces', () => {
     });
 
     // Check that the trace API is called with the correct filter query.
-    expect(MlflowService.getExperimentTraces).toHaveBeenLastCalledWith(
+    expect(QCFlowService.getExperimentTraces).toHaveBeenLastCalledWith(
       testExperimentIds,
       expect.anything(),
       undefined,
@@ -253,7 +253,7 @@ describe('useExperimentTraces', () => {
   });
 
   test('sends proper filter query with run ID filtering', async () => {
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation(() => Promise.resolve({ traces: [] }));
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation(() => Promise.resolve({ traces: [] }));
 
     // Render the hook and wait for the traces to be fetched.
     const { result } = renderTestHook('tags.test_tag="xyz"', undefined, 'test-run-id');
@@ -262,7 +262,7 @@ describe('useExperimentTraces', () => {
     });
 
     // Check that the trace API is called with the correct filter query.
-    expect(MlflowService.getExperimentTraces).toHaveBeenLastCalledWith(
+    expect(QCFlowService.getExperimentTraces).toHaveBeenLastCalledWith(
       testExperimentIds,
       expect.anything(),
       undefined,
@@ -271,7 +271,7 @@ describe('useExperimentTraces', () => {
   });
 
   test('sends proper sorting query', async () => {
-    jest.spyOn(MlflowService, 'getExperimentTraces').mockImplementation(() => Promise.resolve({ traces: [] }));
+    jest.spyOn(QCFlowService, 'getExperimentTraces').mockImplementation(() => Promise.resolve({ traces: [] }));
 
     // Render the hook and wait for the traces to be fetched.
     const { result } = renderTestHook('tags.test_tag="xyz"', [{ id: 'timestamp_ms', desc: false }]);
@@ -280,7 +280,7 @@ describe('useExperimentTraces', () => {
     });
 
     // Check that the trace API is called with the correct filter query.
-    expect(MlflowService.getExperimentTraces).toHaveBeenCalledWith(
+    expect(QCFlowService.getExperimentTraces).toHaveBeenCalledWith(
       testExperimentIds,
       'timestamp_ms ASC',
       undefined,

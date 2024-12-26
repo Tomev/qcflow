@@ -49,7 +49,7 @@ import { getLoggedTablesFromTags } from '@qcflow/qcflow/src/common/utils/TagUtil
 import { CopyButton } from '../../shared/building_blocks/CopyButton';
 import { isExperimentLoggedModelsUIEnabled } from '../../common/utils/FeatureUtils';
 import type { LoggedModelArtifactViewerProps } from './artifact-view-components/ArtifactViewComponents.types';
-import { MlflowService } from '../sdk/MlflowService';
+import { QCFlowService } from '../sdk/QCFlowService';
 
 const { Text } = Typography;
 

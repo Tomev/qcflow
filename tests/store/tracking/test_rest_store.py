@@ -19,7 +19,7 @@ from qcflow.entities import (
 )
 from qcflow.entities.trace_info import TraceInfo
 from qcflow.entities.trace_status import TraceStatus
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model
 from qcflow.protos.databricks_pb2 import RESOURCE_DOES_NOT_EXIST
 from qcflow.protos.service_pb2 import (
@@ -53,7 +53,7 @@ from qcflow.tracking.request_header.default_request_header_provider import (
     DefaultRequestHeaderProvider,
 )
 from qcflow.utils.proto_json_utils import message_to_json
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 
 
 class MyCoolException(Exception):
@@ -92,7 +92,7 @@ def test_successful_http_request(request):
 
     request.side_effect = mock_request
 
-    store = RestStore(lambda: MlflowHostCreds("https://hello"))
+    store = RestStore(lambda: QCFlowHostCreds("https://hello"))
     experiments = store.search_experiments()
     assert experiments[0].name == "Exp!"
 
@@ -104,8 +104,8 @@ def test_failed_http_request(request):
     response.text = '{"error_code": "RESOURCE_DOES_NOT_EXIST", "message": "No experiment"}'
     request.return_value = response
 
-    store = RestStore(lambda: MlflowHostCreds("https://hello"))
-    with pytest.raises(MlflowException, match="RESOURCE_DOES_NOT_EXIST: No experiment"):
+    store = RestStore(lambda: QCFlowHostCreds("https://hello"))
+    with pytest.raises(QCFlowException, match="RESOURCE_DOES_NOT_EXIST: No experiment"):
         store.search_experiments()
 
 
@@ -116,7 +116,7 @@ def test_failed_http_request_custom_handler(request):
     response.text = '{"error_code": "RESOURCE_DOES_NOT_EXIST", "message": "No experiment"}'
     request.return_value = response
 
-    store = CustomErrorHandlingRestStore(lambda: MlflowHostCreds("https://hello"))
+    store = CustomErrorHandlingRestStore(lambda: QCFlowHostCreds("https://hello"))
     with pytest.raises(MyCoolException, match="cool"):
         store.search_experiments()
 
@@ -137,7 +137,7 @@ def test_response_with_unknown_fields(request):
     response.text = json.dumps(experiments)
     request.return_value = response
 
-    store = RestStore(lambda: MlflowHostCreds("https://hello"))
+    store = RestStore(lambda: QCFlowHostCreds("https://hello"))
     experiments = store.search_experiments()
     assert len(experiments) == 1
     assert experiments[0].name == "My experiment"
@@ -161,7 +161,7 @@ def _verify_requests(http_request, host_creds, endpoint, method, json_body):
 
 
 def test_requestor():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
 
     user_name = "mock user"
@@ -363,7 +363,7 @@ def test_requestor():
 
 
 def test_get_experiment_by_name():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
     with mock.patch("qcflow.utils.rest_utils.http_request") as mock_http:
         response = mock.MagicMock()
@@ -395,7 +395,7 @@ def test_get_experiment_by_name():
         mock_http.reset_mock()
         nonexistent_exp_response = mock.MagicMock()
         nonexistent_exp_response.status_code = 404
-        nonexistent_exp_response.text = MlflowException(
+        nonexistent_exp_response.text = QCFlowException(
             "Exp doesn't exist!", RESOURCE_DOES_NOT_EXIST
         ).serialize_as_json()
         mock_http.return_value = nonexistent_exp_response
@@ -412,7 +412,7 @@ def test_get_experiment_by_name():
 
 
 def test_search_experiments():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
 
     with mock_http_request() as mock_http:
@@ -447,7 +447,7 @@ def _mock_response_with_200_status_code():
 
 
 def test_get_metric_history_paginated():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
 
     response_1 = _mock_response_with_200_status_code()
@@ -506,7 +506,7 @@ def test_get_metric_history_paginated():
 
 
 def test_get_metric_history_on_non_existent_metric_key():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     rest_store = RestStore(lambda: creds)
     empty_metric_response = _mock_response_with_200_status_code()
     empty_metric_response.text = json.dumps({})
@@ -519,7 +519,7 @@ def test_get_metric_history_on_non_existent_metric_key():
 
 
 def test_start_trace():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
 
     request_id = "tr-123"
@@ -570,7 +570,7 @@ def test_start_trace():
 
 
 def test_end_trace():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
 
     experiment_id = "447585625682310"
@@ -623,7 +623,7 @@ def test_end_trace():
 
 
 def test_search_traces():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
     response = mock.MagicMock()
     response.status_code = 200
@@ -682,7 +682,7 @@ def test_search_traces():
     ],
 )
 def test_delete_traces(delete_traces_kwargs):
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
     response = mock.MagicMock()
     response.status_code = 200
@@ -695,7 +695,7 @@ def test_delete_traces(delete_traces_kwargs):
 
 
 def test_set_trace_tag():
-    creds = MlflowHostCreds("https://hello")
+    creds = QCFlowHostCreds("https://hello")
     store = RestStore(lambda: creds)
     response = mock.MagicMock()
     response.status_code = 200

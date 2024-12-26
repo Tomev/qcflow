@@ -7,7 +7,7 @@ import yaml
 
 import qcflow
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.llama_index.pyfunc_wrapper import create_pyfunc_wrapper
 from qcflow.models import Model, ModelInputExample, ModelSignature
 from qcflow.models.model import MLMODEL_FILE_NAME, MODEL_CODE_PATH, MODEL_CONFIG
@@ -89,7 +89,7 @@ def _get_llama_index_version() -> str:
 
         return llama_index.core.__version__
     except ImportError:
-        raise MlflowException(
+        raise QCFlowException(
             "The llama_index module is not installed. "
             "Please install it via `pip install llama-index`."
         )
@@ -221,7 +221,7 @@ def save_model(
             llama_index_model = model_or_code_path
 
         elif isinstance(model_or_code_path, _supported_classes()):
-            raise MlflowException.invalid_parameter_value(
+            raise QCFlowException.invalid_parameter_value(
                 "Saving a non-index object is only supported in the 'Model-from-Code' saving mode. "
                 "The legacy serialization method is exclusively for saving index objects. Please "
                 "pass the path to the script containing the model definition to save a non-index "
@@ -462,7 +462,7 @@ def _validate_and_prepare_llama_index_model_or_path(llama_index_model, temp_dir=
 
     if not isinstance(llama_index_model, _supported_classes()):
         supported_cls_names = [cls.__name__ for cls in _supported_classes()]
-        raise MlflowException.invalid_parameter_value(
+        raise QCFlowException.invalid_parameter_value(
             message=f"The provided object of type {type(llama_index_model).__name__} is not "
             "supported. QCFlow llama-index flavor only supports saving LlamaIndex objects "
             f"subclassed from one of the following classes: {supported_cls_names}.",

@@ -5,7 +5,7 @@ from typing import Callable, Optional
 
 import qcflow.data
 from qcflow.data.dataset import Dataset
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.utils.plugins import get_entry_points
 
@@ -62,7 +62,7 @@ class DatasetRegistry:
     @staticmethod
     def _validate_constructor(constructor_fn: Callable, constructor_name: str):
         if not constructor_name.startswith("load_") and not constructor_name.startswith("from_"):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid dataset constructor name: {constructor_name}."
                 f" Constructor name must start with 'load_' or 'from_'.",
                 INVALID_PARAMETER_VALUE,
@@ -75,14 +75,14 @@ class DatasetRegistry:
                 inspect.Parameter.KEYWORD_ONLY,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
             ]:
-                raise MlflowException(
+                raise QCFlowException(
                     f"Invalid dataset constructor function: {constructor_fn.__name__}. Function"
                     f" must define an optional parameter named '{expected_kwarg}'.",
                     INVALID_PARAMETER_VALUE,
                 )
 
         if not issubclass(signature.return_annotation, Dataset):
-            raise MlflowException(
+            raise QCFlowException(
                 f"Invalid dataset constructor function: {constructor_fn.__name__}. Function must"
                 f" have a return type annotation that is a subclass of"
                 f" :py:class:`qcflow.data.dataset.Dataset`.",

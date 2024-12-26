@@ -23,32 +23,32 @@ import java.util.stream.Collectors;
 /**
  * Client to an QCFlow Tracking Sever.
  */
-public class MlflowClient implements Serializable, Closeable {
+public class QCFlowClient implements Serializable, Closeable {
   protected static final String DEFAULT_EXPERIMENT_ID = "0";
   private static final String DEFAULT_MODELS_ARTIFACT_REPOSITORY_SCHEME = "models";
 
-  private final MlflowProtobufMapper mapper = new MlflowProtobufMapper();
+  private final QCFlowProtobufMapper mapper = new QCFlowProtobufMapper();
   private final ArtifactRepositoryFactory artifactRepositoryFactory;
-  private final MlflowHttpCaller httpCaller;
-  private final MlflowHostCredsProvider hostCredsProvider;
+  private final QCFlowHttpCaller httpCaller;
+  private final QCFlowHostCredsProvider hostCredsProvider;
 
   /** Return a default client based on the QCFLOW_TRACKING_URI environment variable. */
-  public MlflowClient() {
+  public QCFlowClient() {
     this(getDefaultTrackingUri());
   }
 
   /** Instantiate a new client using the provided tracking uri. */
-  public MlflowClient(String trackingUri) {
+  public QCFlowClient(String trackingUri) {
     this(getHostCredsProviderFromTrackingUri(trackingUri));
   }
 
   /**
-   * Create a new MlflowClient; users should prefer constructing ApiClients via
-   * {@link #MlflowClient()} or {@link #MlflowClient(String)} if possible.
+   * Create a new QCFlowClient; users should prefer constructing ApiClients via
+   * {@link #QCFlowClient()} or {@link #QCFlowClient(String)} if possible.
    */
-  public MlflowClient(MlflowHostCredsProvider hostCredsProvider) {
+  public QCFlowClient(QCFlowHostCredsProvider hostCredsProvider) {
     this.hostCredsProvider = hostCredsProvider;
-    this.httpCaller = new MlflowHttpCaller(hostCredsProvider);
+    this.httpCaller = new QCFlowHttpCaller(hostCredsProvider);
     this.artifactRepositoryFactory = new ArtifactRepositoryFactory(hostCredsProvider);
   }
 
@@ -378,7 +378,7 @@ public class MlflowClient implements Serializable, Closeable {
       return Optional.of(
           mapper.toGetExperimentByNameResponse(httpCaller.get(builder.toString())).getExperiment()
       );
-    } catch (MlflowHttpException e) {
+    } catch (QCFlowHttpException e) {
       if (e.getStatusCode() == 404) {
         return Optional.<Experiment>empty();
       } else {
@@ -567,9 +567,9 @@ public class MlflowClient implements Serializable, Closeable {
   }
 
   /**
-   * @return HostCredsProvider backing this MlflowClient. Visible for testing.
+   * @return HostCredsProvider backing this QCFlowClient. Visible for testing.
    */
-  MlflowHostCredsProvider getInternalHostCredsProvider() {
+  QCFlowHostCredsProvider getInternalHostCredsProvider() {
     return hostCredsProvider;
   }
 
@@ -577,7 +577,7 @@ public class MlflowClient implements Serializable, Closeable {
     try {
       return new URIBuilder(base);
     } catch (URISyntaxException e) {
-      throw new MlflowClientException("Failed to construct URI for " + base, e);
+      throw new QCFlowClientException("Failed to construct URI for " + base, e);
     }
   }
 
@@ -596,19 +596,19 @@ public class MlflowClient implements Serializable, Closeable {
   }
 
   /**
-   * Return the MlflowHostCredsProvider associated with the given tracking URI.
+   * Return the QCFlowHostCredsProvider associated with the given tracking URI.
    * This is used as the body of the String-argument constructor, as constructors must first call
    * this().
    */
-  private static MlflowHostCredsProvider getHostCredsProviderFromTrackingUri(String trackingUri) {
+  private static QCFlowHostCredsProvider getHostCredsProviderFromTrackingUri(String trackingUri) {
     URI uri = URI.create(trackingUri);
-    MlflowHostCredsProvider provider;
+    QCFlowHostCredsProvider provider;
 
     if ("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())) {
-      provider = new BasicMlflowHostCreds(trackingUri);
+      provider = new BasicQCFlowHostCreds(trackingUri);
     } else if (trackingUri.equals("databricks")) {
-      MlflowHostCredsProvider profileProvider = new DatabricksConfigHostCredsProvider();
-      MlflowHostCredsProvider dynamicProvider =
+      QCFlowHostCredsProvider profileProvider = new DatabricksConfigHostCredsProvider();
+      QCFlowHostCredsProvider dynamicProvider =
         DatabricksDynamicHostCredsProvider.createIfAvailable();
       if (dynamicProvider != null) {
         provider = new HostCredsProviderChain(dynamicProvider, profileProvider);
@@ -921,7 +921,7 @@ public class MlflowClient implements Serializable, Closeable {
       List<ModelVersion> versions = getLatestVersions(modelName, Lists.newArrayList(stage));
 
       if (versions.size() < 1) {
-        throw new MlflowClientException("No model version found for " + modelName +
+        throw new QCFlowClientException("No model version found for " + modelName +
                 "and stage " + stage);
       }
 
@@ -1000,7 +1000,7 @@ public class MlflowClient implements Serializable, Closeable {
   }
 
   /**
-   * Closes the MlflowClient and releases any associated resources.
+   * Closes the QCFlowClient and releases any associated resources.
    */
   public void close() {
     this.httpCaller.close();

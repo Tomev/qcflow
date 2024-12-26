@@ -16,7 +16,7 @@ import {
   maxMetricsByRunUuid,
 } from './MetricReducer';
 import { GET_METRIC_HISTORY_API, GET_METRIC_HISTORY_API_BULK } from '../actions';
-import { Metric } from '../sdk/MlflowMessages';
+import { Metric } from '../sdk/QCFlowMessages';
 import { fulfilled } from '../../common/utils/ActionUtils';
 
 describe('test getMetricsByKey', () => {

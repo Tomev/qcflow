@@ -314,7 +314,7 @@ The logged index can be loaded back using the :py:func:`qcflow.llama_index.load_
 How to log and load a LlamaIndex Workflow?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Mlflow supports logging and loading a LlamaIndex Workflow via the `Model-from-Code <../../../models.html#models-from-code>`_ feature. For a detailed example of logging and loading a LlamaIndex Workflow, see the `LlamaIndex Workflows with QCFlow <notebooks/llama_index_workflow_tutorial.html>`_ notebook.
+QCFlow supports logging and loading a LlamaIndex Workflow via the `Model-from-Code <../../../models.html#models-from-code>`_ feature. For a detailed example of logging and loading a LlamaIndex Workflow, see the `LlamaIndex Workflows with QCFlow <notebooks/llama_index_workflow_tutorial.html>`_ notebook.
 
 .. code-block:: python
 

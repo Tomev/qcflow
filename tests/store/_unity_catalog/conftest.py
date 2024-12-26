@@ -3,13 +3,13 @@ from unittest import mock
 import pytest
 
 import qcflow
-from qcflow.utils.rest_utils import MlflowHostCreds
+from qcflow.utils.rest_utils import QCFlowHostCreds
 
 _DATABRICKS_UC_REGISTRY_URI = "databricks-uc"
 _DATABRICKS_TRACKING_URI = "databricks"
 _DATABRICKS_UC_OSS_REGISTRY_URI = "uc"
-_REGISTRY_HOST_CREDS = MlflowHostCreds("https://hello-registry")
-_TRACKING_HOST_CREDS = MlflowHostCreds("https://hello-tracking")
+_REGISTRY_HOST_CREDS = QCFlowHostCreds("https://hello-registry")
+_TRACKING_HOST_CREDS = QCFlowHostCreds("https://hello-tracking")
 
 
 def mock_host_creds(uri):

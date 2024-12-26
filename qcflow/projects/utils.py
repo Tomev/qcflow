@@ -253,7 +253,7 @@ def _fetch_zip_repo(uri):
 
 def get_or_create_run(run_id, uri, experiment_id, work_dir, version, entry_point, parameters):
     if run_id:
-        return tracking.MlflowClient().get_run(run_id)
+        return tracking.QCFlowClient().get_run(run_id)
     else:
         return _create_run(uri, experiment_id, work_dir, version, entry_point, parameters)
 
@@ -292,7 +292,7 @@ def _create_run(uri, experiment_id, work_dir, version, entry_point, parameters):
     if _is_valid_branch_name(work_dir, version):
         tags[QCFLOW_GIT_BRANCH] = version
         tags[LEGACY_QCFLOW_GIT_BRANCH_NAME] = version
-    active_run = tracking.MlflowClient().create_run(experiment_id=experiment_id, tags=tags)
+    active_run = tracking.QCFlowClient().create_run(experiment_id=experiment_id, tags=tags)
 
     project = _project_spec.load_project(work_dir)
     # Consolidate parameters for logging.
@@ -306,7 +306,7 @@ def _create_run(uri, experiment_id, work_dir, version, entry_point, parameters):
             Param(key, value)
             for key, value in list(final_params.items()) + list(extra_params.items())
         ]
-        tracking.MlflowClient().log_batch(active_run.info.run_id, params=params_list)
+        tracking.QCFlowClient().log_batch(active_run.info.run_id, params=params_list)
     return active_run
 
 

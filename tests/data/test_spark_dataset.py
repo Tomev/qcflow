@@ -10,7 +10,7 @@ from qcflow.data.delta_dataset_source import DeltaDatasetSource
 from qcflow.data.evaluation_dataset import EvaluationDataset
 from qcflow.data.spark_dataset import SparkDataset
 from qcflow.data.spark_dataset_source import SparkDatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.types.schema import Schema
 from qcflow.types.utils import _infer_schema
 
@@ -167,7 +167,7 @@ def test_targets_property(spark_session, tmp_path, df):
     assert dataset_with_targets.targets == "c"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The specified Spark dataset does not contain the specified targets column",
     ):
         SparkDataset(
@@ -199,7 +199,7 @@ def test_predictions_property(spark_session, tmp_path, df):
     assert dataset_with_predictions.predictions == "b"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The specified Spark dataset does not contain the specified predictions column",
     ):
         SparkDataset(
@@ -225,7 +225,7 @@ def test_from_spark_with_sql_and_version(spark_session, tmp_path, df):
     path = str(tmp_path / "temp.parquet")
     df_spark.write.parquet(path)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="`version` may not be specified when `sql` is specified. `version` may only be"
         " specified when `table_name` or `path` is specified.",
     ):
@@ -282,7 +282,7 @@ def test_from_spark_table_name_with_version(spark_session, df):
     df_spark.createOrReplaceTempView("my_spark_table")
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Version '1' was specified, but could not find a Delta table "
         "with name 'my_spark_table'",
     ):
@@ -311,7 +311,7 @@ def test_from_spark_delta_table_name_and_version(spark_session, df):
 
 def test_load_delta_with_no_source_info():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Must specify exactly one of `table_name` or `path`.",
     ):
         qcflow.data.load_delta()
@@ -319,7 +319,7 @@ def test_load_delta_with_no_source_info():
 
 def test_load_delta_with_both_table_name_and_path():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Must specify exactly one of `table_name` or `path`.",
     ):
         qcflow.data.load_delta(table_name="my_table", path="my_path")

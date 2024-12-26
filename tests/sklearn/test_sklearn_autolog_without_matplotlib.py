@@ -5,7 +5,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.ensemble import RandomForestClassifier
 
 import qcflow
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 
 from tests.helper_functions import AnyStringWith
 
@@ -33,7 +33,7 @@ def test_sklearn_autolog_works_without_matplotlib():
         model.fit(X, y)
         mock_warning.assert_called_once_with(AnyStringWith("Failed to import matplotlib"))
 
-    run = MlflowClient().get_run(run.info.run_id)
+    run = QCFlowClient().get_run(run.info.run_id)
     expected_metric_keys = {
         "training_score",
         "training_accuracy_score",

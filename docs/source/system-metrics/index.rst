@@ -69,7 +69,7 @@ start an QCFlow server, as the metrics are logged locally.
     with qcflow.start_run() as run:
         time.sleep(15)
 
-    print(qcflow.MlflowClient().get_run(run.info.run_id).data)
+    print(qcflow.QCFlowClient().get_run(run.info.run_id).data)
 
 Your output should look like this:
 
@@ -119,7 +119,7 @@ Running the following code will have the same effect as setting
     with qcflow.start_run() as run:
         time.sleep(15)
 
-    print(qcflow.MlflowClient().get_run(run.info.run_id).data)
+    print(qcflow.QCFlowClient().get_run(run.info.run_id).data)
 
 Enabling System Metrics Logging for a Single Run
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,7 +132,7 @@ single run. To do so, set ``log_system_metrics`` as ``True`` or ``False`` accord
     with qcflow.start_run(log_system_metrics=True) as run:
         time.sleep(15)
 
-    print(qcflow.MlflowClient().get_run(run.info.run_id).data)
+    print(qcflow.QCFlowClient().get_run(run.info.run_id).data)
 
 Please also note that using ``log_system_metrics`` will ignore the global status of system metrics logging.
 In other words, the above code will log system metrics for the specific run even if you have disabled
@@ -220,7 +220,7 @@ the average of the samples.
     with qcflow.start_run(log_system_metrics=True) as run:
         time.sleep(15)
 
-    metric_history = qcflow.MlflowClient().get_metric_history(
+    metric_history = qcflow.QCFlowClient().get_metric_history(
         run.info.run_id,
         "system/cpu_utilization_percentage",
     )

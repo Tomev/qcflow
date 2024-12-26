@@ -12,7 +12,7 @@ from operator import itemgetter
 import numpy as np
 from packaging.version import Version
 
-from qcflow import MlflowClient
+from qcflow import QCFlowClient
 from qcflow.utils.arguments_utils import _get_arg_names
 from qcflow.utils.file_utils import TempDir
 from qcflow.utils.qcflow_tags import QCFLOW_PARENT_RUN_ID
@@ -574,7 +574,7 @@ def _log_specialized_estimator_content(
                 except Exception as e:
                     _log_warning_for_artifacts(artifact.name, artifact.function, e)
 
-            MlflowClient().log_artifacts(run_id, tmp_dir.path())
+            QCFlowClient().log_artifacts(run_id, tmp_dir.path())
 
     return metrics
 
@@ -604,7 +604,7 @@ def _log_estimator_html(run_id, estimator):
   </body>
 </html>
     """
-    MlflowClient().log_text(run_id, estimator_html_string, artifact_file="estimator.html")
+    QCFlowClient().log_text(run_id, estimator_html_string, artifact_file="estimator.html")
 
 
 def _log_estimator_content(
@@ -623,7 +623,7 @@ def _log_estimator_content(
     are required for metric computation; metrics will be omitted if labels are not available.
 
     Args:
-        autologging_client: An instance of `MlflowAutologgingQueueingClient` used for
+        autologging_client: An instance of `QCFlowAutologgingQueueingClient` used for
             efficiently logging run data to QCFlow Tracking.
         estimator: The estimator used to compute metrics and artifacts.
         run_id: The run under which the content is logged.
@@ -725,7 +725,7 @@ def _log_parameter_search_results_as_artifact(cv_results_df, run_id):
     with TempDir() as t:
         results_path = t.path("cv_results.csv")
         cv_results_df.to_csv(results_path, index=False)
-        MlflowClient().log_artifact(run_id, results_path)
+        QCFlowClient().log_artifact(run_id, results_path)
 
 
 # Log how many child runs will be created vs omitted based on `max_tuning_runs`.
@@ -763,7 +763,7 @@ def _create_child_runs_for_parameter_search(  # noqa: D417
     `https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html`_.
 
     Args:
-        autologging_client: An instance of `MlflowAutologgingQueueingClient` used for
+        autologging_client: An instance of `QCFlowAutologgingQueueingClient` used for
             efficiently logging run data to QCFlow Tracking.
         cv_estimator: The trained parameter search estimator for which to create
             child runs.

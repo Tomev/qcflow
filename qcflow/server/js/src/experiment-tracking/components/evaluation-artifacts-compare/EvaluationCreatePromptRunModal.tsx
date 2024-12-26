@@ -26,7 +26,7 @@ import { ThunkDispatch } from '../../../redux-types';
 import { createPromptLabRunApi } from '../../actions';
 import { ModelGatewayReduxState } from '../../reducers/ModelGatewayReducer';
 import { ModelGatewayResponseType, ModelGatewayService } from '../../sdk/ModelGatewayService';
-import { ModelGatewayRouteTask } from '../../sdk/MlflowEnums';
+import { ModelGatewayRouteTask } from '../../sdk/QCFlowEnums';
 import { generateRandomRunName, getDuplicatedRunName } from '../../utils/RunNameUtils';
 import { useExperimentIds } from '../experiment-page/hooks/useExperimentIds';
 import {

@@ -13,7 +13,7 @@ from diviner.utils.example_utils import example_data_generator
 import qcflow.diviner
 import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
 from qcflow import pyfunc
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.models import Model, infer_signature
 from qcflow.models.model import MLMODEL_FILE_NAME
 from qcflow.models.utils import _read_example, load_serving_example
@@ -119,7 +119,7 @@ def test_diviner_pyfunc_invalid_config_raises(grouped_prophet, model_path):
     loaded_pyfunc_model = pyfunc.load_pyfunc(model_uri=model_path)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The provided prediction configuration Pandas "
         "DataFrame does not contain either the `n_periods` "
         "or `horizon` columns.",
@@ -127,20 +127,20 @@ def test_diviner_pyfunc_invalid_config_raises(grouped_prophet, model_path):
         loaded_pyfunc_model.predict(pd.DataFrame({"bogus": "config"}, index=[0]))
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The `n_periods` column contains invalid data. Supplied type must be an integer.",
     ):
         loaded_pyfunc_model.predict(pd.DataFrame({"n_periods": "20D"}, index=[0]))
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Diviner's GroupedProphet model requires a `frequency` value to be submitted",
     ):
         loaded_pyfunc_model.predict(pd.DataFrame({"horizon": 30}, index=[0]))
 
     bad_conf = pd.DataFrame({"n_periods": 30, "horizon": 20, "frequency": "D"}, index=[0])
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The provided prediction configuration contains both "
         "`n_periods` and `horizon` with different values.",
     ):
@@ -501,7 +501,7 @@ def test_diviner_model_fit_with_spark_cannot_be_loaded_as_pyfunc(grouped_prophet
 
     diviner_model_info_path.write_text(yaml.safe_dump(diviner_model_info))
 
-    with pytest.raises(MlflowException, match="The model being loaded was fit in Spark. Diviner"):
+    with pytest.raises(QCFlowException, match="The model being loaded was fit in Spark. Diviner"):
         pyfunc.load_model(model_uri=model_path)
 
 
@@ -509,5 +509,5 @@ def test_diviner_model_fit_with_spark_cannot_be_loaded_as_pyfunc(grouped_prophet
 def test_diviner_model_fit_with_spark_raises_with_invalid_paths(grouped_prophet, path):
     mod_model = deepcopy(grouped_prophet)
     setattr(mod_model, "_fit_with_spark", True)
-    with pytest.raises(MlflowException, match="The save path provided must be a relative"):
+    with pytest.raises(QCFlowException, match="The save path provided must be a relative"):
         qcflow.diviner._save_diviner_model(mod_model, Path(path))

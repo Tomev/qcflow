@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.qcflow.tracking.creds.MlflowHostCredsProvider;
+import org.qcflow.tracking.creds.QCFlowHostCredsProvider;
 
 /**
  * Provides an QCFlow API client for testing. This is a real client, pointed to a real server.
@@ -28,13 +28,13 @@ public class TestClientProvider {
 
   private Process serverProcess;
 
-  private MlflowClient client;
+  private QCFlowClient client;
 
   /**
    * Intializes an QCFlow client and, if necessary, a local QCFlow server process as well.
    * Callers should always call {@link #cleanupClientAndServer()}.
    */
-  public MlflowClient initializeClientAndServer() throws IOException {
+  public QCFlowClient initializeClientAndServer() throws IOException {
     if (serverProcess != null) {
       throw new IllegalStateException("Previous server process not cleaned up");
     }
@@ -42,7 +42,7 @@ public class TestClientProvider {
     String trackingUri = System.getenv("QCFLOW_TRACKING_URI");
     if (trackingUri != null) {
       logger.info("QCFLOW_TRACKING_URI was set, test will run against that server");
-      client = new MlflowClient(trackingUri);
+      client = new QCFlowClient(trackingUri);
       return client;
     } else {
       Path tempDir = Files.createTempDirectory(getClass().getSimpleName());
@@ -51,7 +51,7 @@ public class TestClientProvider {
     }
   }
 
-  public MlflowClient initializeClientAndSqlLiteBasedServer() throws IOException {
+  public QCFlowClient initializeClientAndSqlLiteBasedServer() throws IOException {
     if (serverProcess != null) {
       throw new IllegalStateException("Previous server process not cleaned up");
     }
@@ -59,7 +59,7 @@ public class TestClientProvider {
     String trackingUri = System.getenv("QCFLOW_TRACKING_URI");
     if (trackingUri != null) {
       logger.info("QCFLOW_TRACKING_URI was set, test will run against that server");
-      client = new MlflowClient(trackingUri);
+      client = new QCFlowClient(trackingUri);
       return client;
     } else {
       Path tempDir = Files.createTempDirectory(getClass().getSimpleName());
@@ -96,7 +96,7 @@ public class TestClientProvider {
     serverProcess = null;
   }
 
-  public MlflowHostCredsProvider getClientHostCredsProvider(MlflowClient client) {
+  public QCFlowHostCredsProvider getClientHostCredsProvider(QCFlowClient client) {
     return client.getInternalHostCredsProvider();
   }
 
@@ -110,9 +110,9 @@ public class TestClientProvider {
    * This method will wait until the server is up and running
    * @param backendStoreUri the backend store uri to use
    * @param
-   * @return MlflowClient pointed at the local server.
+   * @return QCFlowClient pointed at the local server.
    */
-  private MlflowClient startServerProcess(String backendStoreUri,
+  private QCFlowClient startServerProcess(String backendStoreUri,
                                           String defaultArtifactRoot) throws IOException {
     ProcessBuilder pb = new ProcessBuilder();
     int freePort = getFreePort();
@@ -149,7 +149,7 @@ public class TestClientProvider {
         + MAX_SERVER_WAIT_TIME_MILLIS + " milliseconds.");
     }
 
-    client = new MlflowClient("http://" + bindAddress + ":" + freePort);
+    client = new QCFlowClient("http://" + bindAddress + ":" + freePort);
     return client;
   }
 

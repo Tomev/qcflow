@@ -1,7 +1,7 @@
 import os
 
 from qcflow.deployments import BaseDeploymentClient
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 from qcflow.utils.openai_utils import (
     _OAITokenHolder,
@@ -246,7 +246,7 @@ def _get_api_config_without_openai_dep() -> _OpenAIApiConfig:
 
 def _check_openai_key():
     if "OPENAI_API_KEY" not in os.environ:
-        raise MlflowException(
+        raise QCFlowException(
             "OPENAI_API_KEY environment variable not set",
             error_code=INVALID_PARAMETER_VALUE,
         )

@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from qcflow.artifacts import download_artifacts
 from qcflow.data.dataset_source import DatasetSource
-from qcflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
@@ -46,7 +46,7 @@ class DummyDatasetSource(DatasetSource):
     def _from_dict(cls, source_dict: dict[Any, Any]) -> DatasetSource:
         uri = source_dict.get("uri")
         if uri is None:
-            raise MlflowException(
+            raise QCFlowException(
                 'Failed to parse dummy dataset source. Missing expected key: "uri"',
                 INVALID_PARAMETER_VALUE,
             )
