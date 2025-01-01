@@ -1,7 +1,7 @@
 from typing import Optional
 
-from mlflow.environment_variables import MLFLOW_TRACKING_PASSWORD, MLFLOW_TRACKING_USERNAME
-from mlflow.server.auth import auth_config
+from qcflow.environment_variables import QCFLOW_TRACKING_PASSWORD, QCFLOW_TRACKING_USERNAME
+from qcflow.server.auth import auth_config
 
 from tests.helper_functions import random_str
 from tests.tracking.integration_test_utils import _send_rest_tracking_post_request
@@ -17,7 +17,7 @@ def create_user(tracking_uri: str, username: Optional[str] = None, password: Opt
     password = random_str() if password is None else password
     response = _send_rest_tracking_post_request(
         tracking_uri,
-        "/api/2.0/mlflow/users/create",
+        "/api/2.0/qcflow/users/create",
         {
             "username": username,
             "password": password,
@@ -37,12 +37,12 @@ class User:
     def __enter__(self):
         self.monkeypatch.setenvs(
             {
-                MLFLOW_TRACKING_USERNAME.name: self.username,
-                MLFLOW_TRACKING_PASSWORD.name: self.password,
+                QCFLOW_TRACKING_USERNAME.name: self.username,
+                QCFLOW_TRACKING_PASSWORD.name: self.password,
             }
         )
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.monkeypatch.delenvs(
-            [MLFLOW_TRACKING_PASSWORD.name, MLFLOW_TRACKING_PASSWORD.name], raising=False
+            [QCFLOW_TRACKING_PASSWORD.name, QCFLOW_TRACKING_PASSWORD.name], raising=False
         )

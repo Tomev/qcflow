@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "clint"
 version = "0.1.0"
-description = "A custom linter for mlflow to enforce rules that ruff doesn't cover."
+description = "A custom linter for qcflow to enforce rules that ruff doesn't cover."
 readme = "README.md"
-authors = [{ name = "mlflow", email = "mlflow@mlflow.com" }]
+authors = [{ name = "qcflow", email = "qcflow@qcflow.com" }]
 dependencies = ["tomli"]
 
 [tool.setuptools]

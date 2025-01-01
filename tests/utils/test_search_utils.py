@@ -4,7 +4,7 @@ import re
 
 import pytest
 
-from mlflow.entities import (
+from qcflow.entities import (
     Dataset,
     DatasetInput,
     InputTag,
@@ -18,9 +18,9 @@ from mlflow.entities import (
     RunStatus,
     RunTag,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.utils.mlflow_tags import MLFLOW_DATASET_CONTEXT
-from mlflow.utils.search_utils import SearchUtils
+from qcflow.exceptions import QCFlowException
+from qcflow.utils.qcflow_tags import QCFLOW_DATASET_CONTEXT
+from qcflow.utils.search_utils import SearchUtils
 
 
 @pytest.mark.parametrize(
@@ -157,7 +157,7 @@ def test_correct_quote_trimming(filter_string, parsed_filter):
     ],
 )
 def test_error_filter(filter_string, error_message):
-    with pytest.raises(MlflowException, match=re.escape(error_message)):
+    with pytest.raises(QCFlowException, match=re.escape(error_message)):
         SearchUtils.parse_search_filter(filter_string)
 
 
@@ -174,7 +174,7 @@ def test_error_filter(filter_string, error_message):
     ],
 )
 def test_error_comparison_clauses(filter_string, error_message):
-    with pytest.raises(MlflowException, match=error_message):
+    with pytest.raises(QCFlowException, match=error_message):
         SearchUtils.parse_search_filter(filter_string)
 
 
@@ -194,7 +194,7 @@ def test_error_comparison_clauses(filter_string, error_message):
     ],
 )
 def test_bad_quotes(filter_string, error_message):
-    with pytest.raises(MlflowException, match=re.escape(error_message)):
+    with pytest.raises(QCFlowException, match=re.escape(error_message)):
         SearchUtils.parse_search_filter(filter_string)
 
 
@@ -211,7 +211,7 @@ def test_bad_quotes(filter_string, error_message):
     ],
 )
 def test_invalid_clauses(filter_string, error_message):
-    with pytest.raises(MlflowException, match=re.escape(error_message)):
+    with pytest.raises(QCFlowException, match=re.escape(error_message)):
         SearchUtils.parse_search_filter(filter_string)
 
 
@@ -242,7 +242,7 @@ def test_bad_comparators(entity_type, bad_comparators, key, entity_value):
     )
     for bad_comparator in bad_comparators:
         bad_filter = f"{entity_type}.{key} {bad_comparator} {entity_value}"
-        with pytest.raises(MlflowException, match="Invalid comparator"):
+        with pytest.raises(QCFlowException, match="Invalid comparator"):
             SearchUtils.filter([run], bad_filter)
 
 
@@ -292,7 +292,7 @@ def test_correct_filtering(filter_string, matching_runs):
                             source_type="my_source_type",
                             source="source",
                         ),
-                        tags=[InputTag(MLFLOW_DATASET_CONTEXT, "train")],
+                        tags=[InputTag(QCFLOW_DATASET_CONTEXT, "train")],
                     )
                 ]
             ),
@@ -562,7 +562,7 @@ def test_order_by_metric_with_nans_infs_nones():
     ],
 )
 def test_invalid_order_by_search_runs(order_by, error_message):
-    with pytest.raises(MlflowException, match=error_message):
+    with pytest.raises(QCFlowException, match=error_message):
         SearchUtils.parse_order_by_for_search_runs(order_by)
 
 
@@ -597,7 +597,7 @@ def test_space_order_by_search_runs(order_by, ascending_expected):
     ],
 )
 def test_invalid_order_by_search_registered_models(order_by, error_message):
-    with pytest.raises(MlflowException, match=re.escape(error_message)):
+    with pytest.raises(QCFlowException, match=re.escape(error_message)):
         SearchUtils.parse_order_by_for_search_registered_models(order_by)
 
 
@@ -689,5 +689,5 @@ def test_pagination(page_token, max_results, matching_runs, expected_next_page_t
     ],
 )
 def test_invalid_page_tokens(page_token, error_message):
-    with pytest.raises(MlflowException, match=error_message):
+    with pytest.raises(QCFlowException, match=error_message):
         SearchUtils.paginate([], page_token, 1)

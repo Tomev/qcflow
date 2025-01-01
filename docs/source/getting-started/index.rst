@@ -1,15 +1,15 @@
-Getting Started with MLflow
+Getting Started with QCFlow
 ===========================
 
-For those new to MLflow or seeking a refresher on its core functionalities, the
+For those new to QCFlow or seeking a refresher on its core functionalities, the
 quickstart tutorials here are the perfect starting point. They will guide you
 step-by-step through fundamental concepts, focusing purely on a task that will maximize your understanding of 
-how to use MLflow to solve a particular task. 
+how to use QCFlow to solve a particular task. 
 
 Guidance on Running Tutorials
 -----------------------------
 
-If you are new to MLflow and have never interfaced with the `MLflow Tracking Server <../tracking/server.html>`_, we highly encourage you to head on over to quickly **read the guide below**. It 
+If you are new to QCFlow and have never interfaced with the `QCFlow Tracking Server <../tracking/server.html>`_, we highly encourage you to head on over to quickly **read the guide below**. It 
 will help you get started as quickly as possible with tutorial content throughout the documentation.
 
 .. raw:: html
@@ -22,7 +22,7 @@ will help you get started as quickly as possible with tutorial content throughou
                         Tracking Server Options
                     </div>
                     <p>
-                    Learn about your options for running an MLflow Tracking Server for executing any of the guides and tutorials in the MLflow documentation
+                    Learn about your options for running an QCFlow Tracking Server for executing any of the guides and tutorials in the QCFlow documentation
                     </p>
                 </a>
             </div>
@@ -38,26 +38,26 @@ will help you get started as quickly as possible with tutorial content throughou
 Getting Started Guides
 ----------------------
 
-MLflow Tracking
+QCFlow Tracking
 ^^^^^^^^^^^^^^^
 
-:ref:`MLflow Tracking <tracking>` is one of the primary service components of MLflow. In these guides, you will gain an understanding of what MLflow Tracking can do to 
+:ref:`QCFlow Tracking <tracking>` is one of the primary service components of QCFlow. In these guides, you will gain an understanding of what QCFlow Tracking can do to 
 enhance your MLOps related activities while building ML models.
 
 .. figure:: ../_static/images/tutorials/introductory/tracking-basics.png
     :width: 100%
     :align: center
-    :alt: The basics of MLflow tracking.
+    :alt: The basics of QCFlow tracking.
 
-In these introductory guides to MLflow Tracking, you will learn how to leverage MLflow to:
+In these introductory guides to QCFlow Tracking, you will learn how to leverage QCFlow to:
 
 * **Log** training statistics (loss, accuracy, etc.) and hyperparameters for a model
 * **Log** (save) a model for later retrieval
-* **Register** a model using the :ref:`MLflow Model Registry <registry>` to enable deployment
+* **Register** a model using the :ref:`QCFlow Model Registry <registry>` to enable deployment
 * **Load** the model and use it for inference
 
-In the process of learning these key concepts, you will be exposed to the `MLflow Tracking APIs <../tracking/tracking-api.html>`_, the MLflow Tracking UI, and learn how to add metadata associated with 
-a model training event to an MLflow run.
+In the process of learning these key concepts, you will be exposed to the `QCFlow Tracking APIs <../tracking/tracking-api.html>`_, the QCFlow Tracking UI, and learn how to add metadata associated with 
+a model training event to an QCFlow run.
 
 .. raw:: html
 
@@ -66,20 +66,20 @@ a model training event to an MLflow run.
             <div class="simple-card">
                 <a href="intro-quickstart/index.html" >
                     <div class="header">
-                        MLflow Tracking Quickstart Guide
+                        QCFlow Tracking Quickstart Guide
                     </div>
                     <p>
-                    Learn the basics of MLflow Tracking in a fast-paced guide with a focus on seeing your first model in the MLflow UI
+                    Learn the basics of QCFlow Tracking in a fast-paced guide with a focus on seeing your first model in the QCFlow UI
                     </p>
                 </a>
             </div>
             <div class="simple-card">
                 <a href="logging-first-model/index.html" >
                     <div class="header">
-                        In-depth Tutorial for MLflow Tracking
+                        In-depth Tutorial for QCFlow Tracking
                     </div>
                     <p>
-                        Learn the nuances of interfacing with the MLflow Tracking Server in an in-depth tutorial
+                        Learn the nuances of interfacing with the QCFlow Tracking Server in an in-depth tutorial
                     </p>
                 </a>
             </div>
@@ -95,15 +95,15 @@ a model training event to an MLflow run.
 Autologging Basics
 ^^^^^^^^^^^^^^^^^^
 
-A great way to get started with MLflow is to use the autologging feature. Autologging automatically logs your model, metrics, examples, signature, and parameters 
+A great way to get started with QCFlow is to use the autologging feature. Autologging automatically logs your model, metrics, examples, signature, and parameters 
 with only a single line of code for many of the most popular ML libraries in the Python ecosystem.
 
 .. figure:: ../_static/images/tutorials/introductory/autologging-intro.png
     :width: 80%
     :align: center
-    :alt: The basics of MLflow tracking.
+    :alt: The basics of QCFlow tracking.
 
-In this brief tutorial, you'll learn how to leverage MLflow's autologging feature to simplify your model logging activities.
+In this brief tutorial, you'll learn how to leverage QCFlow's autologging feature to simplify your model logging activities.
 
 .. raw:: html
 
@@ -112,10 +112,10 @@ In this brief tutorial, you'll learn how to leverage MLflow's autologging featur
             <div class="simple-card">
                 <a href="../tracking/autolog.html" >
                     <div class="header">
-                        MLflow Autologging Quickstart
+                        QCFlow Autologging Quickstart
                     </div>
                     <p>
-                    Get started with logging to MLflow with the high-level autologging API in a fast-paced guide 
+                    Get started with logging to QCFlow with the high-level autologging API in a fast-paced guide 
                     </p>
                 </a>
             </div>
@@ -127,14 +127,14 @@ In this brief tutorial, you'll learn how to leverage MLflow's autologging featur
 Run Comparison Basics
 ^^^^^^^^^^^^^^^^^^^^^
 
-This quickstart tutorial focuses on the MLflow UI's run comparison feature and provides a step-by-step walkthrough of registering the best model found from a 
+This quickstart tutorial focuses on the QCFlow UI's run comparison feature and provides a step-by-step walkthrough of registering the best model found from a 
 hyperparameter tuning execution. After locally serving the registered model, a brief example of preparing a model for remote `deployment <../deployment/index.html>`_ 
 by containerizing the model using Docker is covered. 
 
 .. figure:: ../_static/images/tutorials/introductory/intro-run-comparison.png
     :width: 100%
     :align: center
-    :alt: The basics of MLflow run comparison.
+    :alt: The basics of QCFlow run comparison.
 
 .. raw:: html
 
@@ -143,10 +143,10 @@ by containerizing the model using Docker is covered.
             <div class="simple-card">
                 <a href="quickstart-2/index.html" >
                     <div class="header">
-                        MLflow Run Comparison Quickstart
+                        QCFlow Run Comparison Quickstart
                     </div>
                     <p>
-                    Get started with using the MLflow UI to compare runs and register a model for deployment
+                    Get started with using the QCFlow UI to compare runs and register a model for deployment
                     </p>
                 </a>
             </div>
@@ -162,8 +162,8 @@ by containerizing the model using Docker is covered.
 Tracking Server Quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This quickstart tutorial walks through different types of `MLflow Tracking Servers <../tracking/server.html>`_ and how to use them to log 
-your MLflow experiments.
+This quickstart tutorial walks through different types of `QCFlow Tracking Servers <../tracking/server.html>`_ and how to use them to log 
+your QCFlow experiments.
 
 .. raw:: html
 
@@ -176,7 +176,7 @@ your MLflow experiments.
                     </div>
                 </a>
                 <p>
-                    Learn how to log MLflow experiments with different tracking servers
+                    Learn how to log QCFlow experiments with different tracking servers
                 </p>
             </div>
         </article>
@@ -192,7 +192,7 @@ your MLflow experiments.
 Model Registry Quickstart
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This quickstart tutorial walks through registering a model in the MLflow model registry and how to
+This quickstart tutorial walks through registering a model in the QCFlow model registry and how to
 retrieve registered models. 
 
 .. raw:: html
@@ -206,7 +206,7 @@ retrieve registered models.
                     </div>
                 </a>
                 <p>
-                    Learn how to log MLflow models to the model registry
+                    Learn how to log QCFlow models to the model registry
                 </p>
             </div>
         </article>
@@ -224,14 +224,14 @@ Further Learning - What's Next?
 -------------------------------
 
 Now that you have the essentials under your belt, below are some recommended collections of tutorial and guide content that will help to broaden your 
-understanding of MLflow and its APIs. 
+understanding of QCFlow and its APIs. 
 
-- **Tracking** - Learn more abou the MLflow tracking APIs by `reading the tracking guide <../tracking.html>`_.
+- **Tracking** - Learn more abou the QCFlow tracking APIs by `reading the tracking guide <../tracking.html>`_.
 - **LLMs** - Discover how you can leverage cutting-edge advanced LLMs to power your ML applications by `reading the LLMs guide <../llms/index.html>`_.
-- **MLflow Deployment** - Follow the comprehensive `guide on model deployment <../deployment/index.html>`_ to learn how to deploy your MLflow models to a variety of deployment targets.
-- **Model Registry** - Learn about the `MLflow Model Registry <../model-registry.html>`_ and how it can help you manage the lifecycle of your ML models.
-- **Deep Learning Library Integrations** - From PyTorch to TensorFlow and more, learn about the integrated deep learning capabilities in MLflow by `reading the deep learning guide <../deep-learning/index.html>`_.
-- **Traditional ML** - Learn about the `traditional ML capabilities <../traditional-ml/index.html>`_ in MLflow and how they can help you manage your traditional ML workflows.
+- **QCFlow Deployment** - Follow the comprehensive `guide on model deployment <../deployment/index.html>`_ to learn how to deploy your QCFlow models to a variety of deployment targets.
+- **Model Registry** - Learn about the `QCFlow Model Registry <../model-registry.html>`_ and how it can help you manage the lifecycle of your ML models.
+- **Deep Learning Library Integrations** - From PyTorch to TensorFlow and more, learn about the integrated deep learning capabilities in QCFlow by `reading the deep learning guide <../deep-learning/index.html>`_.
+- **Traditional ML** - Learn about the `traditional ML capabilities <../traditional-ml/index.html>`_ in QCFlow and how they can help you manage your traditional ML workflows.
 
 
 .. toctree::

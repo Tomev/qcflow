@@ -3,10 +3,10 @@ set -ex
 
 cd tests/db
 
-# Install the lastest version of mlflow from PyPI
-pip install mlflow
+# Install the lastest version of qcflow from PyPI
+pip install qcflow
 python check_migration.py pre-migration
-# Install mlflow from the repository
+# Install qcflow from the repository
 pip install -e ../..
-mlflow db upgrade $MLFLOW_TRACKING_URI
+qcflow db upgrade $QCFLOW_TRACKING_URI
 python check_migration.py post-migration

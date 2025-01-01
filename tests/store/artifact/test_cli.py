@@ -5,11 +5,11 @@ from unittest import mock
 import pytest
 from click.testing import CliRunner
 
-import mlflow
-import mlflow.pyfunc
-from mlflow.entities import FileInfo
-from mlflow.store.artifact.cli import _file_infos_to_json, download_artifacts
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
+import qcflow
+import qcflow.pyfunc
+from qcflow.entities import FileInfo
+from qcflow.store.artifact.cli import _file_infos_to_json, download_artifacts
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
 
 
 @pytest.fixture
@@ -18,8 +18,8 @@ def run_with_artifact(tmp_path):
     artifact_content = "content"
     local_path = tmp_path.joinpath("file.txt")
     local_path.write_text(artifact_content)
-    with mlflow.start_run() as run:
-        mlflow.log_artifact(local_path, artifact_path)
+    with qcflow.start_run() as run:
+        qcflow.log_artifact(local_path, artifact_path)
 
     return (run, artifact_path, artifact_content)
 
@@ -73,7 +73,7 @@ def test_download_from_uri():
         ("s3://path/to/dir", ("s3://path/to", "dir")),
     ]
     with mock.patch(
-        "mlflow.tracking.artifact_utils.get_artifact_repository"
+        "qcflow.tracking.artifact_utils.get_artifact_repository"
     ) as get_artifact_repo_mock:
         get_artifact_repo_mock.side_effect = test_get_artifact_repository
 
@@ -85,7 +85,7 @@ def test_download_from_uri():
 def _run_download_artifact_command(args) -> pathlib.Path:  # noqa: D417
     """
     Args:
-        command: An `mlflow artifacts` command list.
+        command: An `qcflow artifacts` command list.
 
     Returns:
         Path to the downloaded artifact.
@@ -105,9 +105,9 @@ def test_download_artifacts_with_uri(run_with_artifact):
         downloaded_content = _run_download_artifact_command(["-u", uri]).read_text()
         assert downloaded_content == artifact_content
 
-    # Check for backwards compatibility with preexisting behavior in MLflow <= 1.24.0 where
+    # Check for backwards compatibility with preexisting behavior in QCFlow <= 1.24.0 where
     # specifying `artifact_uri` and `artifact_path` together did not throw an exception (unlike
-    # `mlflow.artifacts.download_artifacts()`) and instead used `artifact_uri` while ignoring
+    # `qcflow.artifacts.download_artifacts()`) and instead used `artifact_uri` while ignoring
     # `run_id` and `artifact_path`
     downloaded_content = _run_download_artifact_command(
         ["-u", uri, "--run-id", "bad", "--artifact-path", "bad"]

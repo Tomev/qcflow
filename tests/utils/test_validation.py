@@ -2,11 +2,11 @@ import copy
 
 import pytest
 
-from mlflow.entities import Metric, Param, RunTag
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, ErrorCode
-from mlflow.utils.os import is_windows
-from mlflow.utils.validation import (
+from qcflow.entities import Metric, Param, RunTag
+from qcflow.exceptions import QCFlowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE, ErrorCode
+from qcflow.utils.os import is_windows
+from qcflow.utils.validation import (
     MAX_TAG_VAL_LENGTH,
     _is_numeric,
     _validate_batch_log_data,
@@ -137,7 +137,7 @@ def _bad_parameter_pattern(name):
 @pytest.mark.parametrize("metric_name", BAD_METRIC_OR_PARAM_NAMES)
 def test_validate_metric_name_bad(metric_name):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=_bad_parameter_pattern(metric_name),
     ) as e:
         _validate_metric_name(metric_name)
@@ -151,7 +151,7 @@ def test_validate_param_name_good(param_name):
 
 @pytest.mark.parametrize("param_name", BAD_METRIC_OR_PARAM_NAMES)
 def test_validate_param_name_bad(param_name):
-    with pytest.raises(MlflowException, match=_bad_parameter_pattern(param_name)) as e:
+    with pytest.raises(QCFlowException, match=_bad_parameter_pattern(param_name)) as e:
         _validate_param_name(param_name)
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -165,7 +165,7 @@ def test_validate_param_name_bad(param_name):
     ],
 )
 def test_validate_colon_name_bad_windows(param_name):
-    with pytest.raises(MlflowException, match=_bad_parameter_pattern(param_name)) as e:
+    with pytest.raises(QCFlowException, match=_bad_parameter_pattern(param_name)) as e:
         _validate_param_name(param_name)
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -177,7 +177,7 @@ def test_validate_tag_name_good(tag_name):
 
 @pytest.mark.parametrize("tag_name", BAD_METRIC_OR_PARAM_NAMES)
 def test_validate_tag_name_bad(tag_name):
-    with pytest.raises(MlflowException, match=_bad_parameter_pattern(tag_name)) as e:
+    with pytest.raises(QCFlowException, match=_bad_parameter_pattern(tag_name)) as e:
         _validate_tag_name(tag_name)
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -189,7 +189,7 @@ def test_validate_model_alias_name_good(alias_name):
 
 @pytest.mark.parametrize("alias_name", BAD_ALIAS_NAMES)
 def test_validate_model_alias_name_bad(alias_name):
-    with pytest.raises(MlflowException, match="alias name") as e:
+    with pytest.raises(QCFlowException, match="alias name") as e:
         _validate_model_alias_name(alias_name)
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -215,7 +215,7 @@ def test_validate_run_id_good(run_id):
 
 @pytest.mark.parametrize("run_id", ["a/bc" * 8, "", "a" * 400, "*" * 5])
 def test_validate_run_id_bad(run_id):
-    with pytest.raises(MlflowException, match=_bad_parameter_pattern(run_id)) as e:
+    with pytest.raises(QCFlowException, match=_bad_parameter_pattern(run_id)) as e:
         _validate_run_id(run_id)
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
@@ -236,10 +236,10 @@ def test_validate_batch_log_limits():
         for arg_value in arg_values:
             final_kwargs = copy.deepcopy(good_kwargs)
             final_kwargs[arg_name] = arg_value
-            with pytest.raises(MlflowException, match=match):
+            with pytest.raises(QCFlowException, match=match):
                 _validate_batch_log_limits(**final_kwargs)
     # Test the case where there are too many entities in aggregate
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         _validate_batch_log_limits(too_many_metrics[:900], too_many_params[:51], too_many_tags[:50])
     # Test that we don't reject entities within the limit
     _validate_batch_log_limits(too_many_metrics[:1000], [], [])
@@ -286,12 +286,12 @@ def test_validate_batch_log_data(monkeypatch):
         "tags": [tags_with_bad_key, tags_with_bad_val],
     }
     good_kwargs = {"metrics": [], "params": [], "tags": []}
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "false")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
     for arg_name, arg_values in bad_kwargs.items():
         for arg_value in arg_values:
             final_kwargs = copy.deepcopy(good_kwargs)
             final_kwargs[arg_name] = arg_value
-            with pytest.raises(MlflowException, match=r".+"):
+            with pytest.raises(QCFlowException, match=r".+"):
                 _validate_batch_log_data(**final_kwargs)
     # Test that we don't reject entities within the limit
     _validate_batch_log_data(
@@ -308,7 +308,7 @@ def test_validate_experiment_artifact_location_good(location):
 
 @pytest.mark.parametrize("location", ["runs:/blah/bleh/blergh"])
 def test_validate_experiment_artifact_location_bad(location):
-    with pytest.raises(MlflowException, match="Artifact location cannot be a runs:/ URI"):
+    with pytest.raises(QCFlowException, match="Artifact location cannot be a runs:/ URI"):
         _validate_experiment_artifact_location(location)
 
 
@@ -319,7 +319,7 @@ def test_validate_experiment_name_good(experiment_name):
 
 @pytest.mark.parametrize("experiment_name", ["", 12, 12.7, None, {}, []])
 def test_validate_experiment_name_bad(experiment_name):
-    with pytest.raises(MlflowException, match="Invalid experiment name"):
+    with pytest.raises(QCFlowException, match="Invalid experiment name"):
         _validate_experiment_name(experiment_name)
 
 
@@ -330,6 +330,6 @@ def test_validate_db_type_string_good(db_type):
 
 @pytest.mark.parametrize("db_type", ["MySQL", "mongo", "cassandra", "sql", ""])
 def test_validate_db_type_string_bad(db_type):
-    with pytest.raises(MlflowException, match="Invalid database engine") as e:
+    with pytest.raises(QCFlowException, match="Invalid database engine") as e:
         _validate_db_type_string(db_type)
     assert "Invalid database engine" in e.value.message

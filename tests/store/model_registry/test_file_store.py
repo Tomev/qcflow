@@ -5,20 +5,20 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModelTag,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import (
+from qcflow.exceptions import QCFlowException
+from qcflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.store.model_registry.file_store import FileStore
-from mlflow.utils.file_utils import path_to_local_file_uri, write_yaml
-from mlflow.utils.time import get_current_time_millis
+from qcflow.store.model_registry.file_store import FileStore
+from qcflow.utils.file_utils import path_to_local_file_uri, write_yaml
+from qcflow.utils.time import get_current_time_millis
 
 from tests.helper_functions import random_int, random_str
 
@@ -58,9 +58,9 @@ def rm_data(registered_model_names, tmp_path):
 
 def test_create_registered_model(store):
     # Error cases
-    with pytest.raises(MlflowException, match=r"Registered model name cannot be empty\."):
+    with pytest.raises(QCFlowException, match=r"Registered model name cannot be empty\."):
         store.create_registered_model(None)
-    with pytest.raises(MlflowException, match=r"Registered model name cannot be empty\."):
+    with pytest.raises(QCFlowException, match=r"Registered model name cannot be empty\."):
         store.create_registered_model("")
 
     name = random_str()
@@ -74,14 +74,14 @@ def test_create_registered_model(store):
 def test_create_registered_model_with_name_that_looks_like_path(store, tmp_path):
     name = str(tmp_path.joinpath("test"))
     with pytest.raises(
-        MlflowException, match=r"Registered model name cannot contain path separator"
+        QCFlowException, match=r"Registered model name cannot contain path separator"
     ):
         store.get_registered_model(name)
 
 
 def test_create_registered_model_with_percent_in_name(store, tmp_path):
     with pytest.raises(
-        MlflowException, match=r"Registered model name cannot contain '%' character"
+        QCFlowException, match=r"Registered model name cannot contain '%' character"
     ):
         store.get_registered_model("m%6fdel")
 
@@ -102,12 +102,12 @@ def test_get_registered_model(store, registered_model_names, rm_data):
 
     # test that fake registered models dont exist.
     name = random_str()
-    with pytest.raises(MlflowException, match=f"Registered Model with name={name} not found"):
+    with pytest.raises(QCFlowException, match=f"Registered Model with name={name} not found"):
         store.get_registered_model(name)
 
     name = "../../path"
     with pytest.raises(
-        MlflowException, match="Registered model name cannot contain path separator"
+        QCFlowException, match="Registered model name cannot contain path separator"
     ):
         store.get_registered_model(name)
 
@@ -123,13 +123,13 @@ def test_list_registered_model(store, registered_model_names, rm_data):
 def test_rename_registered_model(store, registered_model_names):
     # Error cases
     model_name = registered_model_names[0]
-    with pytest.raises(MlflowException, match=r"Registered model name cannot be empty\."):
+    with pytest.raises(QCFlowException, match=r"Registered model name cannot be empty\."):
         store.rename_registered_model(model_name, None)
 
     # test that names of existing registered models are checked before renaming
     other_model_name = registered_model_names[1]
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Registered Model \(name={other_model_name}\) already exists\.",
     ):
         store.rename_registered_model(model_name, other_model_name)
@@ -149,7 +149,7 @@ def test_delete_registered_model(store, registered_model_names):
 
     # Error cases
     with pytest.raises(
-        MlflowException, match=f"Registered Model with name={model_name}!!! not found"
+        QCFlowException, match=f"Registered Model with name={model_name}!!! not found"
     ):
         store.delete_registered_model(model_name + "!!!")
 
@@ -158,7 +158,7 @@ def test_delete_registered_model(store, registered_model_names):
         store.list_registered_models(max_results=10, page_token=None)
     )
     # Cannot delete a deleted model
-    with pytest.raises(MlflowException, match=f"Registered Model with name={model_name} not found"):
+    with pytest.raises(QCFlowException, match=f"Registered Model with name={model_name} not found"):
         store.delete_registered_model(model_name)
 
 
@@ -203,14 +203,14 @@ def test_list_registered_model_paginated_errors(store):
     rms = [store.create_registered_model(f"RM{i:03}").name for i in range(50)]
     # test that providing a completely invalid page token throws
     with pytest.raises(
-        MlflowException, match=r"Invalid page token, could not base64-decode"
+        QCFlowException, match=r"Invalid page token, could not base64-decode"
     ) as exception_context:
         store.list_registered_models(page_token="evilhax", max_results=20)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     # test that providing too large of a max_results throws
     with pytest.raises(
-        MlflowException, match=r"Invalid value for max_results"
+        QCFlowException, match=r"Invalid value for max_results"
     ) as exception_context:
         store.list_registered_models(page_token="evilhax", max_results=1e15)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -353,14 +353,14 @@ def test_set_registered_model_tag(store):
     # can not set tag on deleted (non-existed) registered model
     store.delete_registered_model(name1)
     with pytest.raises(
-        MlflowException, match=f"Registered Model with name={name1} not found"
+        QCFlowException, match=f"Registered Model with name={name1} not found"
     ) as exception_context:
         store.set_registered_model_tag(name1, overriding_tag)
     assert exception_context.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
     # test cannot set tags that are too long
     long_tag = RegisteredModelTag("longTagKey", "a" * 5001)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=("'value' exceeds the maximum length of 5000 characters"),
     ) as exception_context:
         store.set_registered_model_tag(name2, long_tag)
@@ -370,13 +370,13 @@ def test_set_registered_model_tag(store):
     store.set_registered_model_tag(name2, long_tag)
     # can not set invalid tag
     with pytest.raises(
-        MlflowException, match=r"Missing value for required parameter 'key'"
+        QCFlowException, match=r"Missing value for required parameter 'key'"
     ) as exception_context:
         store.set_registered_model_tag(name2, RegisteredModelTag(key=None, value=""))
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     # can not use invalid model name
     with pytest.raises(
-        MlflowException, match=r"Registered model name cannot be empty"
+        QCFlowException, match=r"Registered model name cannot be empty"
     ) as exception_context:
         store.set_registered_model_tag(None, RegisteredModelTag(key="key", value="value"))
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -412,19 +412,19 @@ def test_delete_registered_model_tag(store):
     # can not delete tag on deleted (non-existed) registered model
     store.delete_registered_model(name1)
     with pytest.raises(
-        MlflowException, match=f"Registered Model with name={name1} not found"
+        QCFlowException, match=f"Registered Model with name={name1} not found"
     ) as exception_context:
         store.delete_registered_model_tag(name1, "anotherKey")
     assert exception_context.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
     # can not delete tag with invalid key
     with pytest.raises(
-        MlflowException, match=r"Missing value for required parameter 'key'"
+        QCFlowException, match=r"Missing value for required parameter 'key'"
     ) as exception_context:
         store.delete_registered_model_tag(name2, None)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     # can not use invalid model name
     with pytest.raises(
-        MlflowException, match=r"Registered model name cannot be empty"
+        QCFlowException, match=r"Registered model name cannot be empty"
     ) as exception_context:
         store.delete_registered_model_tag(None, "key")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -529,7 +529,7 @@ def test_update_model_version(store):
 
     # only valid stages can be set
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             r"Invalid Model Version stage: unknown\. "
             r"Value must be one of None, Staging, Production, Archived\."
@@ -602,7 +602,7 @@ def test_transition_model_version_stage_when_archive_existing_versions_is_true(s
     # test that when `archive_existing_versions` is True, transitioning a model version
     # to the inactive stages ("Archived" and "None") throws.
     for stage in ["Archived", "None"]:
-        with pytest.raises(MlflowException, match=msg):
+        with pytest.raises(QCFlowException, match=msg):
             store.transition_model_version_stage(name, mv1.version, stage, True)
 
     store.transition_model_version_stage(name, mv1.version, "Staging", False)
@@ -657,7 +657,7 @@ def test_delete_model_version(store):
 
     # cannot get a deleted model version
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Model Version \(name={mv.name}, version={mv.version}\) not found",
     ) as exception_context:
         store.get_model_version(name=mv.name, version=mv.version)
@@ -665,7 +665,7 @@ def test_delete_model_version(store):
 
     # cannot update a delete
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Model Version \(name={mv.name}, version={mv.version}\) not found",
     ) as exception_context:
         store.update_model_version(mv.name, mv.version, description="deleted!")
@@ -673,7 +673,7 @@ def test_delete_model_version(store):
 
     # cannot delete it again
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Model Version \(name={mv.name}, version={mv.version}\) not found",
     ) as exception_context:
         store.delete_model_version(name=mv.name, version=mv.version)
@@ -740,7 +740,7 @@ def test_search_model_versions(store):
 
     # search using the IN operator with bad lists should return exceptions
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             r"While parsing a list in the query, "
             r"expected string value, punctuation, or whitespace, "
@@ -756,7 +756,7 @@ def test_search_model_versions(store):
 
     # search using the IN operator with empty lists should return exceptions
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             r"While parsing a list in the query, "
             r"expected a non-empty list of string values, "
@@ -768,25 +768,25 @@ def test_search_model_versions(store):
 
     # search using an ill-formed IN operator correctly throws exception
     with pytest.raises(
-        MlflowException, match=r"Invalid clause\(s\) in filter string"
+        QCFlowException, match=r"Invalid clause\(s\) in filter string"
     ) as exception_context:
         search_versions("run_id IN (")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     with pytest.raises(
-        MlflowException, match=r"Invalid clause\(s\) in filter string"
+        QCFlowException, match=r"Invalid clause\(s\) in filter string"
     ) as exception_context:
         search_versions("run_id IN")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     with pytest.raises(
-        MlflowException, match=r"Invalid clause\(s\) in filter string"
+        QCFlowException, match=r"Invalid clause\(s\) in filter string"
     ) as exception_context:
         search_versions("name LIKE")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             r"While parsing a list in the query, "
             r"expected a non-empty list of string values, "
@@ -797,7 +797,7 @@ def test_search_model_versions(store):
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             r"While parsing a list in the query, "
             r"expected a non-empty list of string values, "
@@ -926,14 +926,14 @@ def test_search_model_versions_pagination(store):
 
     # test that providing a completely invalid page token throws
     with pytest.raises(
-        MlflowException, match=r"Invalid page token, could not base64-decode"
+        QCFlowException, match=r"Invalid page token, could not base64-decode"
     ) as exception_context:
         search_versions(query, page_token="evilhax", max_results=20)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     # test that providing too large of a max_results throws
     with pytest.raises(
-        MlflowException, match=r"Invalid value for max_results."
+        QCFlowException, match=r"Invalid value for max_results."
     ) as exception_context:
         search_versions(query, page_token="evilhax", max_results=1e15)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -1075,7 +1075,7 @@ def test_search_registered_models(store):
 
     # cannot search by invalid comparator types
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Parameter value is either not quoted or unidentified quote types used for "
         "string value something",
     ) as exception_context:
@@ -1084,7 +1084,7 @@ def test_search_registered_models(store):
 
     # cannot search by run_id
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid attribute key 'run_id' specified. Valid keys are '{'name'}'",
     ) as exception_context:
         _search_registered_models(store, "run_id='somerunID'")
@@ -1092,7 +1092,7 @@ def test_search_registered_models(store):
 
     # cannot search by source_path
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid attribute key 'source_path' specified\. Valid keys are '{'name'}'",
     ) as exception_context:
         _search_registered_models(store, "source_path = 'A/D'")
@@ -1100,7 +1100,7 @@ def test_search_registered_models(store):
 
     # cannot search by other params
     with pytest.raises(
-        MlflowException, match=r"Invalid clause\(s\) in filter string"
+        QCFlowException, match=r"Invalid clause\(s\) in filter string"
     ) as exception_context:
         _search_registered_models(store, "evilhax = true")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -1224,14 +1224,14 @@ def test_search_registered_model_pagination(store):
 
     # test that providing a completely invalid page token throws
     with pytest.raises(
-        MlflowException, match=r"Invalid page token, could not base64-decode"
+        QCFlowException, match=r"Invalid page token, could not base64-decode"
     ) as exception_context:
         _search_registered_models(store, query, page_token="evilhax", max_results=20)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
 
     # test that providing too large of a max_results throws
     with pytest.raises(
-        MlflowException, match=r"Invalid value for max_results."
+        QCFlowException, match=r"Invalid value for max_results."
     ) as exception_context:
         _search_registered_models(store, query, page_token="evilhax", max_results=1e15)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -1291,12 +1291,12 @@ def test_search_registered_model_order_by(store):
     )
     assert res.names == rms
     with mock.patch(
-        "mlflow.store.model_registry.file_store.get_current_time_millis", return_value=1
+        "qcflow.store.model_registry.file_store.get_current_time_millis", return_value=1
     ):
         rm1 = store.create_registered_model("MR1").name
         rm2 = store.create_registered_model("MR2").name
     with mock.patch(
-        "mlflow.store.model_registry.file_store.get_current_time_millis", return_value=2
+        "qcflow.store.model_registry.file_store.get_current_time_millis", return_value=2
     ):
         rm3 = store.create_registered_model("MR3").name
         rm4 = store.create_registered_model("MR4").name
@@ -1329,7 +1329,7 @@ def test_search_registered_model_order_by_errors(store):
     query = "name LIKE 'RM%'"
     # test that invalid columns throw even if they come after valid columns
     with pytest.raises(
-        MlflowException, match="Invalid attribute key 'description' specified."
+        QCFlowException, match="Invalid attribute key 'description' specified."
     ) as exception_context:
         _search_registered_models(
             store,
@@ -1340,7 +1340,7 @@ def test_search_registered_model_order_by_errors(store):
         )
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     # test that invalid columns with random text throw even if they come after valid columns
-    with pytest.raises(MlflowException, match=r"Invalid order_by clause '.+'") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Invalid order_by clause '.+'") as exception_context:
         _search_registered_models(
             store,
             query,
@@ -1387,14 +1387,14 @@ def test_set_model_version_tag(store):
     # can not set tag on deleted (non-existed) model version
     store.delete_model_version(name1, 2)
     with pytest.raises(
-        MlflowException, match=rf"Model Version \(name={name1}, version=2\) not found"
+        QCFlowException, match=rf"Model Version \(name={name1}, version=2\) not found"
     ) as exception_context:
         store.set_model_version_tag(name1, 2, overriding_tag)
     assert exception_context.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
     # test cannot set tags that are too long
     long_tag = ModelVersionTag("longTagKey", "a" * 5001)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="'value' exceeds the maximum length of 5000 characters",
     ) as exception_context:
         store.set_model_version_tag(name1, 1, long_tag)
@@ -1404,18 +1404,18 @@ def test_set_model_version_tag(store):
     store.set_model_version_tag(name1, 1, long_tag)
     # can not set invalid tag
     with pytest.raises(
-        MlflowException, match=r"Missing value for required parameter 'key'"
+        QCFlowException, match=r"Missing value for required parameter 'key'"
     ) as exception_context:
         store.set_model_version_tag(name2, 1, ModelVersionTag(key=None, value=""))
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     # can not use invalid model name or version
     with pytest.raises(
-        MlflowException, match=r"Registered model name cannot be empty"
+        QCFlowException, match=r"Registered model name cannot be empty"
     ) as exception_context:
         store.set_model_version_tag(None, 1, ModelVersionTag(key="key", value="value"))
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     with pytest.raises(
-        MlflowException, match=r"Model version must be an integer"
+        QCFlowException, match=r"Model version must be an integer"
     ) as exception_context:
         store.set_model_version_tag(
             name2, "I am not a version", ModelVersionTag(key="key", value="value")
@@ -1461,24 +1461,24 @@ def test_delete_model_version_tag(store):
     # can not delete tag on deleted (non-existed) model version
     store.delete_model_version(name2, 1)
     with pytest.raises(
-        MlflowException, match=rf"Model Version \(name={name2}, version=1\) not found"
+        QCFlowException, match=rf"Model Version \(name={name2}, version=1\) not found"
     ) as exception_context:
         store.delete_model_version_tag(name2, 1, "key")
     assert exception_context.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
     # can not delete tag with invalid key
     with pytest.raises(
-        MlflowException, match=r"Missing value for required parameter 'key'"
+        QCFlowException, match=r"Missing value for required parameter 'key'"
     ) as exception_context:
         store.delete_model_version_tag(name1, 2, None)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     # can not use invalid model name or version
     with pytest.raises(
-        MlflowException, match=r"Registered model name cannot be empty"
+        QCFlowException, match=r"Registered model name cannot be empty"
     ) as exception_context:
         store.delete_model_version_tag(None, 2, "key")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
     with pytest.raises(
-        MlflowException, match=r"Model version must be an integer"
+        QCFlowException, match=r"Model version must be an integer"
     ) as exception_context:
         store.delete_model_version_tag(name1, "I am not a version", "key")
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -1511,7 +1511,7 @@ def test_delete_registered_model_alias(store):
     assert model.aliases == {}
     mv2 = store.get_model_version(model_name, 2)
     assert mv2.aliases == []
-    with pytest.raises(MlflowException, match=r"Registered model alias test_alias not found."):
+    with pytest.raises(QCFlowException, match=r"Registered model alias test_alias not found."):
         store.get_model_version_by_alias(model_name, "test_alias")
 
 
@@ -1528,7 +1528,7 @@ def test_delete_model_version_deletes_alias(store):
     store.delete_model_version(model_name, 2)
     model = store.get_registered_model(model_name)
     assert model.aliases == {}
-    with pytest.raises(MlflowException, match=r"Registered model alias test_alias not found."):
+    with pytest.raises(QCFlowException, match=r"Registered model alias test_alias not found."):
         store.get_model_version_by_alias(model_name, "test_alias")
 
 
@@ -1537,28 +1537,28 @@ def test_delete_model_deletes_alias(store):
     _setup_and_test_aliases(store, model_name)
     store.delete_registered_model(model_name)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Registered Model with name=DeleteModelDeletesAlias_TestMod not found",
     ):
         store.get_model_version_by_alias(model_name, "test_alias")
 
 
 def test_pyfunc_model_registry_with_file_store(store):
-    import mlflow
-    from mlflow.pyfunc import PythonModel
+    import qcflow
+    from qcflow.pyfunc import PythonModel
 
     class MyModel(PythonModel):
         def predict(self, context, model_input, params=None):
             return 7
 
-    mlflow.set_registry_uri(path_to_local_file_uri(store.root_directory))
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model("foo", python_model=MyModel(), registered_model_name="model1")
-        mlflow.pyfunc.log_model("foo", python_model=MyModel(), registered_model_name="model2")
-        mlflow.pyfunc.log_model("model", python_model=MyModel(), registered_model_name="model1")
+    qcflow.set_registry_uri(path_to_local_file_uri(store.root_directory))
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model("foo", python_model=MyModel(), registered_model_name="model1")
+        qcflow.pyfunc.log_model("foo", python_model=MyModel(), registered_model_name="model2")
+        qcflow.pyfunc.log_model("model", python_model=MyModel(), registered_model_name="model1")
 
-    with mlflow.start_run():
-        mlflow.log_param("A", "B")
+    with qcflow.start_run():
+        qcflow.log_param("A", "B")
 
         models = store.search_registered_models(max_results=10)
         assert len(models) == 2

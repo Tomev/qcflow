@@ -1,10 +1,10 @@
 .. meta::
-  :description: MLflow Tracing is a feature that enables LLM observability in your apps. MLflow automatically logs traces for LangChain, LlamaIndex, and more.
+  :description: QCFlow Tracing is a feature that enables LLM observability in your apps. QCFlow automatically logs traces for LangChain, LlamaIndex, and more.
 
-MLflow Tracing for LLM Observability
+QCFlow Tracing for LLM Observability
 ====================================
 
-**MLflow Tracing** is a feature that enhances LLM observability in your Generative AI (GenAI) applications by capturing detailed information about the execution of your application's services.
+**QCFlow Tracing** is a feature that enhances LLM observability in your Generative AI (GenAI) applications by capturing detailed information about the execution of your application's services.
 Tracing provides a way to record the inputs, outputs, and metadata associated with each intermediate step of a request, enabling you to easily pinpoint the source of bugs and unexpected behaviors.
 
 .. figure:: ../../_static/images/llms/tracing/tracing-top.gif
@@ -85,17 +85,17 @@ Tracing provides a way to record the inputs, outputs, and metadata associated wi
     </section>
 
 
-MLflow offers a number of different options to enable tracing of your GenAI applications. 
+QCFlow offers a number of different options to enable tracing of your GenAI applications. 
 
-- **Automated tracing**: MLflow provides fully automated integrations with various GenAI libraries such as LangChain, OpenAI, LlamaIndex, DSPy, AutoGen, and more that can be activated by simply enabling ``mlflow.<library>.autolog()``.
+- **Automated tracing**: QCFlow provides fully automated integrations with various GenAI libraries such as LangChain, OpenAI, LlamaIndex, DSPy, AutoGen, and more that can be activated by simply enabling ``qcflow.<library>.autolog()``.
 - **Manual trace instrumentation with high-level fluent APIs**: Decorators, function wrappers and context managers via the fluent API allow you to add tracing functionality with minor code modifications.
-- **Low-level client APIs for tracing**: The MLflow client API provides a thread-safe way to handle trace implementations, even in aysnchronous modes of operation.
+- **Low-level client APIs for tracing**: The QCFlow client API provides a thread-safe way to handle trace implementations, even in aysnchronous modes of operation.
 
 
 If you are new to the tracing or observability concepts, we recommend starting with the `Tracing Concepts Overview <./overview.html>`_ guide.
 
 .. note::
-    MLflow Tracing support is available with the **MLflow 2.14.0** release.
+    QCFlow Tracing support is available with the **QCFlow 2.14.0** release.
 
 .. contents:: Table of Contents
     :local:
@@ -106,12 +106,12 @@ Automatic Tracing
 
 .. hint::
 
-    Is your favorite library missing from the list? Consider `contributing to MLflow Tracing <contribute.html>`_ or `submitting a feature request <https://github.com/mlflow/mlflow/issues/new?assignees=&labels=enhancement&projects=&template=feature_request_template.yaml&title=%5BFR%5D>`_ to our Github repository.
+    Is your favorite library missing from the list? Consider `contributing to QCFlow Tracing <contribute.html>`_ or `submitting a feature request <https://github.com/qcflow/qcflow/issues/new?assignees=&labels=enhancement&projects=&template=feature_request_template.yaml&title=%5BFR%5D>`_ to our Github repository.
 
-The easiest way to get started with MLflow Tracing is to leverage the built-in capabilities with MLflow's integrated libraries. MLflow provides automatic tracing capabilities for some of the integrated libraries such as
+The easiest way to get started with QCFlow Tracing is to leverage the built-in capabilities with QCFlow's integrated libraries. QCFlow provides automatic tracing capabilities for some of the integrated libraries such as
 LangChain, OpenAI, LlamaIndex, and AutoGen. For these libraries, you can instrument your code with
-just a single command ``mlflow.<library>.autolog()`` and MLflow will automatically log traces
-for model/API invocations to the active MLflow Experiment.
+just a single command ``qcflow.<library>.autolog()`` and QCFlow will automatically log traces
+for model/API invocations to the active QCFlow Experiment.
 
 
 .. tabs::
@@ -124,14 +124,14 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        As part of the LangChain autologging integration, traces are logged to the active MLflow Experiment when calling invocation APIs on chains. You can enable tracing
-        for LangChain by calling the :py:func:`mlflow.langchain.autolog` function.
+        As part of the LangChain autologging integration, traces are logged to the active QCFlow Experiment when calling invocation APIs on chains. You can enable tracing
+        for LangChain by calling the :py:func:`qcflow.langchain.autolog` function.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.langchain.autolog()
+            qcflow.langchain.autolog()
 
 
         In the full example below, the model and its associated metadata will be logged as a run, while the traces are logged separately to the active experiment. To learn more, please visit `LangChain Autologging documentation <../langchain/autologging.html>`_.
@@ -141,22 +141,22 @@ for model/API invocations to the active MLflow Experiment.
 
             .. code-block:: shell
 
-                pip install mlflow==2.18.0 langchain==0.3.0 langchain-openai==0.2.9
+                pip install qcflow==2.18.0 langchain==0.3.0 langchain-openai==0.2.9
 
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             import os
 
             from langchain.prompts import PromptTemplate
             from langchain_core.output_parsers import StrOutputParser
             from langchain_openai import ChatOpenAI
 
-            mlflow.set_experiment("LangChain Tracing")
+            qcflow.set_experiment("LangChain Tracing")
 
             # Enabling autolog for LangChain will enable trace logging.
-            mlflow.langchain.autolog()
+            qcflow.langchain.autolog()
 
             llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, max_tokens=1000)
 
@@ -176,7 +176,7 @@ for model/API invocations to the active MLflow Experiment.
                 }
             )
 
-        If we navigate to the MLflow UI, we can see not only the model that has been auto-logged, but the traces as well, as shown in the video above.
+        If we navigate to the QCFlow UI, we can see not only the model that has been auto-logged, but the traces as well, as shown in the video above.
 
 
         .. figure:: ../../_static/images/llms/tracing/langchain-tracing.png
@@ -193,30 +193,30 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        The `MLflow OpenAI flavor <../openai/index.html>`_'s autologging feature has a direct integration with MLflow tracing. When OpenAI autologging is enabled with :py:func:`mlflow.openai.autolog`, 
+        The `QCFlow OpenAI flavor <../openai/index.html>`_'s autologging feature has a direct integration with QCFlow tracing. When OpenAI autologging is enabled with :py:func:`qcflow.openai.autolog`, 
         usage of the OpenAI SDK will automatically record generated traces during interactive development. 
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.openai.autolog()
+            qcflow.openai.autolog()
 
 
         For example, the code below will log traces to the currently active experiment (in this case, the activated experiment ``"OpenAI"``, set through the use 
-        of the :py:func:`mlflow.set_experiment` API).
+        of the :py:func:`qcflow.set_experiment` API).
         To learn more about OpenAI autologging, you can `view the documentation here <../openai/autologging.html>`_.
 
         .. code-block:: python
 
             import os
             import openai
-            import mlflow
+            import qcflow
 
             # Calling the autolog API will enable trace logging by default.
-            mlflow.openai.autolog()
+            qcflow.openai.autolog()
 
-            mlflow.set_experiment("OpenAI")
+            qcflow.set_experiment("OpenAI")
 
             openai_client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
@@ -235,7 +235,7 @@ for model/API invocations to the active MLflow Experiment.
 
             print(response)
 
-        The logged trace, associated with the ``OpenAI`` experiment, can be seen in the MLflow UI, as shown below:
+        The logged trace, associated with the ``OpenAI`` experiment, can be seen in the QCFlow UI, as shown below:
 
         .. figure:: ../../_static/images/llms/tracing/openai-tracing.png
             :alt: OpenAI Tracing
@@ -250,29 +250,29 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        The `MLflow OpenAI flavor <../openai/index.html>`_ supports automatic tracing for `Swarm <https://github.com/openai/swarm>`_, a multi-agent orchestration
-        framework from OpenAI. To enable tracing for **Swarm**, just call :py:func:`mlflow.openai.autolog`
-        before running your multi-agent interactions. MLflow will trace all LLM interactions,
+        The `QCFlow OpenAI flavor <../openai/index.html>`_ supports automatic tracing for `Swarm <https://github.com/openai/swarm>`_, a multi-agent orchestration
+        framework from OpenAI. To enable tracing for **Swarm**, just call :py:func:`qcflow.openai.autolog`
+        before running your multi-agent interactions. QCFlow will trace all LLM interactions,
         tool calls, and agent operations automatically.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.openai.autolog()
+            qcflow.openai.autolog()
 
 
         For example, the code below will run the simplest example of multi-agent interaction using OpenAI Swarm.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             from swarm import Swarm, Agent
 
             # Calling the autolog API will enable trace logging by default.
-            mlflow.openai.autolog()
+            qcflow.openai.autolog()
 
-            mlflow.set_experiment("OpenAI Swarm")
+            qcflow.set_experiment("OpenAI Swarm")
 
             client = Swarm()
 
@@ -298,7 +298,7 @@ for model/API invocations to the active MLflow Experiment.
             )
             print(response)
 
-        The logged trace, associated with the ``OpenAI Swarm`` experiment, can be seen in the MLflow UI, as shown below:
+        The logged trace, associated with the ``OpenAI Swarm`` experiment, can be seen in the QCFlow UI, as shown below:
 
         .. figure:: ../../_static/images/llms/tracing/openai-swarm-tracing.png
             :alt: OpenAI Swarm Tracing
@@ -315,7 +315,7 @@ for model/API invocations to the active MLflow Experiment.
 
         `Ollama <https://github.com/ollama/ollama>`_ is an open-source platform that enables users to run large language models (LLMs) locally on their devices, such as Llama 3.2, Gemma 2, Mistral, Code Llama, and more.
 
-        Since the local LLM endpoint served by Ollama is compatible with the OpenAI API, you can query it via OpenAI SDK and enable tracing for Ollama with :py:func:`mlflow.openai.autolog`. Any LLM interactions via Ollama will be recorded to the active MLflow Experiment.
+        Since the local LLM endpoint served by Ollama is compatible with the OpenAI API, you can query it via OpenAI SDK and enable tracing for Ollama with :py:func:`qcflow.openai.autolog`. Any LLM interactions via Ollama will be recorded to the active QCFlow Experiment.
 
         1. Run the Ollama server with the desired LLM model.
 
@@ -327,14 +327,14 @@ for model/API invocations to the active MLflow Experiment.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.openai.autolog()
+            qcflow.openai.autolog()
 
             # Optional, create an experiment to store traces
-            mlflow.set_experiment("Ollama")
+            qcflow.set_experiment("Ollama")
 
-        3. Query the LLM and see the traces in the MLflow UI.
+        3. Query the LLM and see the traces in the QCFlow UI.
 
         .. code-block:: python
 
@@ -368,10 +368,10 @@ for model/API invocations to the active MLflow Experiment.
 
         `Instructor <https://python.useinstructor.com>`_ is an open-source Python library built on top of Pydantic, simplifying structured LLM outputs with validation, retries, and streaming.
 
-        MLflow Tracing works with Instructor by enabling auto-tracing for the underlying LLM libraries.
-        For example, if you use Instructor for OpenAI LLMs, you can enable tracing with :py:func:`mlflow.openai.autolog` and the generated traces will capture the structured outputs from Instructor.
+        QCFlow Tracing works with Instructor by enabling auto-tracing for the underlying LLM libraries.
+        For example, if you use Instructor for OpenAI LLMs, you can enable tracing with :py:func:`qcflow.openai.autolog` and the generated traces will capture the structured outputs from Instructor.
 
-        Similarly, you can also trace Instructor with other LLM providers, such as Anthropic, Gemini, and LiteLLM, by enabling the corresponding autologging in MLflow.
+        Similarly, you can also trace Instructor with other LLM providers, such as Anthropic, Gemini, and LiteLLM, by enabling the corresponding autologging in QCFlow.
 
         .. code-block:: python
 
@@ -379,11 +379,11 @@ for model/API invocations to the active MLflow Experiment.
             from pydantic import BaseModel
             from openai import OpenAI
 
-            # Use other autologging function e.g., mlflow.anthropic.autolog() if you are using Instructor with different LLM providers
-            mlflow.openai.autolog()
+            # Use other autologging function e.g., qcflow.anthropic.autolog() if you are using Instructor with different LLM providers
+            qcflow.openai.autolog()
 
             # Optional, create an experiment to store traces
-            mlflow.set_experiment("Instructor")
+            qcflow.set_experiment("Instructor")
 
 
             # Use Instructor as usual
@@ -411,14 +411,14 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        The `MLflow LlamaIndex flavor <../llama-index/index.html>`_'s autologging feature has a direct integration with MLflow tracing. When LlamaIndex autologging is enabled with :py:func:`mlflow.llama_index.autolog`, invocation of components
+        The `QCFlow LlamaIndex flavor <../llama-index/index.html>`_'s autologging feature has a direct integration with QCFlow tracing. When LlamaIndex autologging is enabled with :py:func:`qcflow.llama_index.autolog`, invocation of components
         such as LLMs, agents, and query/chat engines will automatically record generated traces during interactive development.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.llama_index.autolog()
+            qcflow.llama_index.autolog()
 
 
         To see the full example of tracing LlamaIndex, please visit `LLamaIndex Tracing documentation <../llama-index/index.html##enable-tracing>`_.
@@ -436,19 +436,19 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        The `MLflow DSPy flavor <../dspy/index.html>`_'s autologging feature has a direct integration with MLflow tracing. When DSPy autologging is enabled with :py:func:`mlflow.dspy.autolog`, invocation of components
+        The `QCFlow DSPy flavor <../dspy/index.html>`_'s autologging feature has a direct integration with QCFlow tracing. When DSPy autologging is enabled with :py:func:`qcflow.dspy.autolog`, invocation of components
         such as LMs, Adapters and Modules, will automatically record generated traces during interactive development.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
             import dspy
 
             # Enable tracing for DSPy
-            mlflow.dspy.autolog()
+            qcflow.dspy.autolog()
 
             # Set an experiment to log the traces to
-            mlflow.set_experiment("DSPy Tracing")
+            qcflow.set_experiment("DSPy Tracing")
 
             # Define a simple ChainOfThought model and run it
             lm = dspy.LM("openai/gpt-4o-mini")
@@ -474,7 +474,7 @@ for model/API invocations to the active MLflow Experiment.
             summarizer = Summarize()
             summarizer(
                 passage=(
-                    "MLflow Tracing is a feature that enhances LLM observability in your Generative AI (GenAI) applications "
+                    "QCFlow Tracing is a feature that enhances LLM observability in your Generative AI (GenAI) applications "
                     "by capturing detailed information about the execution of your application's services. Tracing provides "
                     "a way to record the inputs, outputs, and metadata associated with each intermediate step of a request, "
                     "enabling you to easily pinpoint the source of bugs and unexpected behaviors."
@@ -495,16 +495,16 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        MLflow Tracing ensures observability for your AutoGen application that involves complex multi-agent interactions. You can enable auto-tracing by calling :py:func:`mlflow.autogen.autolog`, then the internal steps of the agents chat session will be logged to the active MLflow Experiment.
+        QCFlow Tracing ensures observability for your AutoGen application that involves complex multi-agent interactions. You can enable auto-tracing by calling :py:func:`qcflow.autogen.autolog`, then the internal steps of the agents chat session will be logged to the active QCFlow Experiment.
 
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.autogen.autolog()
+            qcflow.autogen.autolog()
 
-        To see the full example of tracing AutoGen, please refer to the `AutoGen Tracing example <https://github.com/mlflow/mlflow/tree/master/examples/autogen/tracing.py>`_.
+        To see the full example of tracing AutoGen, please refer to the `AutoGen Tracing example <https://github.com/qcflow/qcflow/tree/master/examples/autogen/tracing.py>`_.
 
         .. figure:: ../../_static/images/llms/autogen/autogen-trace.png
             :alt: AutoGen Tracing
@@ -519,19 +519,19 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        MLflow Tracing ensures observability for your interactions with Gemini AI models.
-        When Gemini autologging is enabled with :py:func:`mlflow.gemini.autolog`, 
+        QCFlow Tracing ensures observability for your interactions with Gemini AI models.
+        When Gemini autologging is enabled with :py:func:`qcflow.gemini.autolog`, 
         usage of the Gemini SDK will automatically record generated traces during interactive development.
         Note that only synchronous calls for text interactions are supported. Asynchronous API is not traced, and full inputs cannnot be recorded for multi-modal inputs.
 
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.gemini.autolog()
+            qcflow.gemini.autolog()
 
-        To see the full example of tracing Gemini, please refer to the `Gemini Tracing example <https://github.com/mlflow/mlflow/tree/master/examples/gemini/tracing.py>`_.
+        To see the full example of tracing Gemini, please refer to the `Gemini Tracing example <https://github.com/qcflow/qcflow/tree/master/examples/gemini/tracing.py>`_.
 
         .. figure:: ../../_static/images/llms/gemini/gemini-tracing.png
             :alt: Gemini Tracing
@@ -547,13 +547,13 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        LiteLLM allows developers to call all LLM APIs using the OpenAI format. MLflow support auto-tracing for LiteLLM. You can enable it by calling :py:func:`mlflow.litellm.autolog`, then any LLM interactions via LiteLLM will be recorded to the active MLflow Experiment, including various metadata such as token usage, cost, cache hit, and more.
+        LiteLLM allows developers to call all LLM APIs using the OpenAI format. QCFlow support auto-tracing for LiteLLM. You can enable it by calling :py:func:`qcflow.litellm.autolog`, then any LLM interactions via LiteLLM will be recorded to the active QCFlow Experiment, including various metadata such as token usage, cost, cache hit, and more.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.litellm.autolog()
+            qcflow.litellm.autolog()
 
             # Call Anthropic API via LiteLLM
             response = litellm.completion(
@@ -575,19 +575,19 @@ for model/API invocations to the active MLflow Experiment.
         |
 
 
-        MLflow Tracing ensures observability for your interactions with Anthropic AI models.
-        When Anthropic autologging is enabled with :py:func:`mlflow.anthropic.autolog`,
+        QCFlow Tracing ensures observability for your interactions with Anthropic AI models.
+        When Anthropic autologging is enabled with :py:func:`qcflow.anthropic.autolog`,
         usage of the Anthropic SDK will automatically record generated traces during interactive development.
         Note that only synchronous calls for text interactions are supported.
         Asynchronous API and streaming methods are not traced.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.anthropic.autolog()
+            qcflow.anthropic.autolog()
 
-        To see the full example of tracing Anthropic, please refer to the `Anthropic Tracing example <https://github.com/mlflow/mlflow/tree/master/examples/anthropic/tracing.py>`_.
+        To see the full example of tracing Anthropic, please refer to the `Anthropic Tracing example <https://github.com/qcflow/qcflow/tree/master/examples/anthropic/tracing.py>`_.
 
         .. figure:: ../../_static/images/llms/anthropic/anthropic-tracing.png
             :alt: Anthropic Tracing
@@ -602,18 +602,18 @@ for model/API invocations to the active MLflow Experiment.
 
         |
 
-        MLflow Tracing ensures observability for the interactions of CrewAI agents.
-        When CrewAI autologging is enabled with :py:func:`mlflow.crewai.autolog`, 
+        QCFlow Tracing ensures observability for the interactions of CrewAI agents.
+        When CrewAI autologging is enabled with :py:func:`qcflow.crewai.autolog`, 
         traces are generated for the usage of the CrewAI framework.
         Note that asynchronous task and kickoff are not supported now.
 
         .. code-block:: python
 
-            import mlflow
+            import qcflow
 
-            mlflow.crewai.autolog()
+            qcflow.crewai.autolog()
 
-        To see the full example of tracing CrewAI, please refer to the `CrewAI Tracing example <https://github.com/mlflow/mlflow/tree/master/examples/crewai/tracing.py>`_.
+        To see the full example of tracing CrewAI, please refer to the `CrewAI Tracing example <https://github.com/qcflow/qcflow/tree/master/examples/crewai/tracing.py>`_.
 
         .. figure:: ../../_static/images/llms/crewai/crewai-trace.png
             :alt: CrewAI Tracing
@@ -625,27 +625,27 @@ Jupyter Notebook integration
 ----------------------------
 
 .. note::
-    Jupyter integration is available in **MLflow 2.20 and above**
+    Jupyter integration is available in **QCFlow 2.20 and above**
 
 The trace UI is also available within Jupyter notebooks! 
 
 .. figure:: ../../_static/images/llms/tracing/jupyter-trace-ui.png
-    :alt: MLflow Trace UI in Jupyter Notebook
+    :alt: QCFlow Trace UI in Jupyter Notebook
     :width: 80%
     :align: center
 
-This feature requires using an `MLflow Tracking Server <../../tracking/server.html>`_, as
-this is where the UI assets are fetched from. To get started, simply ensure that the MLflow
-Tracking URI is set to your tracking server (e.g. ``mlflow.set_tracking_uri("http://localhost:5000")``).
+This feature requires using an `QCFlow Tracking Server <../../tracking/server.html>`_, as
+this is where the UI assets are fetched from. To get started, simply ensure that the QCFlow
+Tracking URI is set to your tracking server (e.g. ``qcflow.set_tracking_uri("http://localhost:5000")``).
 
 By default, the trace UI will automatically be displayed for the following events:
 
 1. When the cell code generates a trace (e.g. via  `automatic tracing <#automatic-tracing>`_, or by running a manually traced function)
-2. When :py:func:`mlflow.search_traces` is called
-3. When a :py:class:`mlflow.entities.Trace` object is displayed (e.g. via IPython's ``display`` function, or when it is the last value returned in a cell)
+2. When :py:func:`qcflow.search_traces` is called
+3. When a :py:class:`qcflow.entities.Trace` object is displayed (e.g. via IPython's ``display`` function, or when it is the last value returned in a cell)
 
-To disable the display, simply call :py:func:`mlflow.tracing.disable_notebook_display`, and rerun the cell
-containing the UI. To enable it again, call :py:func:`mlflow.tracing.enable_notebook_display`.
+To disable the display, simply call :py:func:`qcflow.tracing.disable_notebook_display`, and rerun the cell
+containing the UI. To enable it again, call :py:func:`qcflow.tracing.enable_notebook_display`.
 
 For a more complete example, try running this `demo notebook <./notebooks/jupyter-trace-demo.html>`_!
 
@@ -653,7 +653,7 @@ For a more complete example, try running this `demo notebook <./notebooks/jupyte
 Tracing Fluent APIs
 -------------------
 
-MLflow's :py:func:`fluent APIs <mlflow.start_span>` provide a straightforward way to add tracing to your functions and code blocks. 
+QCFlow's :py:func:`fluent APIs <qcflow.start_span>` provide a straightforward way to add tracing to your functions and code blocks. 
 By using decorators, function wrappers, and context managers, you can easily capture detailed trace data with minimal code changes. 
 
 As a comparison between the fluent and the client APIs for tracing, the figure below illustrates the differences in complexity between the two APIs, 
@@ -669,25 +669,25 @@ This section will cover how to initiate traces using these fluent APIs.
 Initiating a Trace
 ^^^^^^^^^^^^^^^^^^
 
-In this section, we will explore different methods to initiate a trace using MLflow's fluent APIs. These methods allow you to add tracing 
+In this section, we will explore different methods to initiate a trace using QCFlow's fluent APIs. These methods allow you to add tracing 
 functionality to your code with minimal modifications, enabling you to capture detailed information about the execution of your functions and workflows.
 
 Trace Decorator
 ###############
 
-The trace decorator allows you to automatically capture the inputs and outputs of a function by simply adding the :py:func:`@mlflow.trace <mlflow.trace>` decorator 
+The trace decorator allows you to automatically capture the inputs and outputs of a function by simply adding the :py:func:`@qcflow.trace <qcflow.trace>` decorator 
 to its definition. This approach is ideal for quickly adding tracing to individual functions without significant changes to your existing code.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
     # Create a new experiment to log the trace to
-    mlflow.set_experiment("Tracing Demo")
+    qcflow.set_experiment("Tracing Demo")
 
 
     # Mark any function with the trace decorator to automatically capture input(s) and output(s)
-    @mlflow.trace
+    @qcflow.trace
     def some_function(x, y, z=2):
         return x + (y - z)
 
@@ -699,15 +699,15 @@ You can add additional metadata to the tracing decorator as follows:
 
 .. code-block:: python
 
-    @mlflow.trace(name="My Span", span_type="func", attributes={"a": 1, "b": 2})
+    @qcflow.trace(name="My Span", span_type="func", attributes={"a": 1, "b": 2})
     def my_func(x, y):
         return x + y
 
 When adding additional metadata to the trace decorator constructor, these additional components will be logged along with the span entry within 
-the trace that is stored within the active MLflow experiment.
+the trace that is stored within the active QCFlow experiment.
 
 
-Since MLflow 2.16.0, the trace decorator also supports async functions:
+Since QCFlow 2.16.0, the trace decorator also supports async functions:
 
 .. code-block:: python
 
@@ -716,19 +716,19 @@ Since MLflow 2.16.0, the trace decorator also supports async functions:
     client = AsyncOpenAI()
 
 
-    @mlflow.trace
+    @qcflow.trace
     async def async_func(message: str):
         return await client.chat.completion.create(
             model="gpt-4o", messages=[{"role": "user", "content": message}]
         )
 
 
-    await async_func("What is MLflow Tracing?")
+    await async_func("What is QCFlow Tracing?")
 
 What is captured?
 #################
 
-If we navigate to the MLflow UI, we can see that the trace decorator automatically captured the following information, in addition to the basic
+If we navigate to the QCFlow UI, we can see that the trace decorator automatically captured the following information, in addition to the basic
 metadata associated with any span (start time, end time, status, etc):
 
 - **Inputs**: In the case of our decorated function, this includes the state of all input arguments (including the default `z` value that is applied).
@@ -756,20 +756,20 @@ parent span, all using decorators.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
 
-    @mlflow.trace(span_type="func", attributes={"key": "value"})
+    @qcflow.trace(span_type="func", attributes={"key": "value"})
     def add_1(x):
         return x + 1
 
 
-    @mlflow.trace(span_type="func", attributes={"key1": "value1"})
+    @qcflow.trace(span_type="func", attributes={"key1": "value1"})
     def minus_1(x):
         return x - 1
 
 
-    @mlflow.trace(name="Trace Test")
+    @qcflow.trace(name="Trace Test")
     def trace_test(x):
         step1 = add_1(x)
         return minus_1(step1)
@@ -777,7 +777,7 @@ parent span, all using decorators.
 
     trace_test(4)
 
-If we look at this trace from within the MLflow UI, we can see the relationship of the call order shown in the structure of the trace. 
+If we look at this trace from within the QCFlow UI, we can see the relationship of the call order shown in the structure of the trace. 
 
 .. figure:: ../../_static/images/llms/tracing/trace-decorator.png
     :alt: Trace Decorator
@@ -788,7 +788,7 @@ If we look at this trace from within the MLflow UI, we can see the relationship 
 Span Type
 #########
 
-Span types are a way to categorize spans within a trace. By default, the span type is set to ``"UNKNOWN"`` when using the trace decorator. MLflow provides a set of predefined span types for common use cases, while also allowing you to setting custom span types.
+Span types are a way to categorize spans within a trace. By default, the span type is set to ``"UNKNOWN"`` when using the trace decorator. QCFlow provides a set of predefined span types for common use cases, while also allowing you to setting custom span types.
 
 The following span types are available:
 
@@ -818,22 +818,22 @@ The following span types are available:
     * - ``"UNKNOWN"``
       - A default span type that is used when no other span type is specified.
 
-To set a span type, you can pass the ``span_type`` parameter to the :py:func:`@mlflow.trace <mlflow.trace>` decorator or :py:func:`mlflow.start_span <mlflow.start_span>` context manager. When you are using `automatic tracing <#automatic-tracing>`_, the span type is automatically set by MLflow.
+To set a span type, you can pass the ``span_type`` parameter to the :py:func:`@qcflow.trace <qcflow.trace>` decorator or :py:func:`qcflow.start_span <qcflow.start_span>` context manager. When you are using `automatic tracing <#automatic-tracing>`_, the span type is automatically set by QCFlow.
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.entities import SpanType
+    import qcflow
+    from qcflow.entities import SpanType
 
 
     # Using a built-in span type
-    @mlflow.trace(span_type=SpanType.RETRIEVER)
+    @qcflow.trace(span_type=SpanType.RETRIEVER)
     def retrieve_documents(query: str):
         ...
 
 
     # Setting a custom span type
-    with mlflow.start_span(name="add", span_type="MATH") as span:
+    with qcflow.start_span(name="add", span_type="MATH") as span:
         span.set_inputs({"x": z, "y": y})
         z = x + y
         span.set_outputs({"z": z})
@@ -846,7 +846,7 @@ Context Handler
 ###############
 
 The context handler provides a way to create nested traces or spans, which can be useful for capturing complex interactions within your code. 
-By using the :py:func:`mlflow.start_span` context manager, you can group multiple traced functions under a single parent span, making it easier to understand 
+By using the :py:func:`qcflow.start_span` context manager, you can group multiple traced functions under a single parent span, making it easier to understand 
 the relationships between different parts of your code.
 
 The context handler is recommended when you need to refine the scope of data capture for a given span. If your code is logically constructed such that 
@@ -855,22 +855,22 @@ and less complex.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
 
-    @mlflow.trace
+    @qcflow.trace
     def first_func(x, y=2):
         return x + y
 
 
-    @mlflow.trace
+    @qcflow.trace
     def second_func(a, b=3):
         return a * b
 
 
     def do_math(a, x, operation="add"):
         # Use the fluent API context handler to create a new span
-        with mlflow.start_span(name="Math") as span:
+        with qcflow.start_span(name="Math") as span:
             # Specify the inputs and attributes that will be associated with the span
             span.set_inputs({"a": a, "x": x})
             span.set_attributes({"mode": operation})
@@ -895,8 +895,8 @@ and less complex.
             return result
 
 When calling the ``do_math`` function, a trace will be generated that has the root span (parent) defined as the 
-context handler ``with mlflow.start_span():`` call. The ``first_func`` and ``second_func`` calls will be associated as child spans
-to this parent span due to the fact that they are both decorated functions (having ``@mlflow.trace`` decorated on the function definition). 
+context handler ``with qcflow.start_span():`` call. The ``first_func`` and ``second_func`` calls will be associated as child spans
+to this parent span due to the fact that they are both decorated functions (having ``@qcflow.trace`` decorated on the function definition). 
 
 Running the following code will generate a trace. 
 
@@ -904,10 +904,10 @@ Running the following code will generate a trace.
 
     do_math(8, 3, "add")
 
-This trace can be seen within the MLflow UI:
+This trace can be seen within the QCFlow UI:
 
 .. figure:: ../../_static/images/llms/tracing/trace-view.png
-    :alt: Trace within the MLflow UI 
+    :alt: Trace within the QCFlow UI 
     :width: 100%
     :align: center
 
@@ -917,7 +917,7 @@ Function wrapping
 #################
 
 Function wrapping provides a flexible way to add tracing to existing functions without modifying their definitions. This is particularly useful when 
-you want to add tracing to third-party functions or functions defined outside of your control. By wrapping an external function with :py:func:`mlflow.trace`, you can
+you want to add tracing to third-party functions or functions defined outside of your control. By wrapping an external function with :py:func:`qcflow.trace`, you can
 capture its inputs, outputs, and execution context.
 
 
@@ -925,30 +925,30 @@ capture its inputs, outputs, and execution context.
 
     import math
 
-    import mlflow
+    import qcflow
 
-    mlflow.set_experiment("External Function Tracing")
+    qcflow.set_experiment("External Function Tracing")
 
 
     def invocation(x, y=4, exp=2):
         # Initiate a context handler for parent logging
-        with mlflow.start_span(name="Parent") as span:
+        with qcflow.start_span(name="Parent") as span:
             span.set_attributes({"level": "parent", "override": y == 4})
             span.set_inputs({"x": x, "y": y, "exp": exp})
 
             # Wrap an external function instead of modifying
-            traced_pow = mlflow.trace(math.pow)
+            traced_pow = qcflow.trace(math.pow)
 
             # Call the wrapped function as you would call it directly
             raised = traced_pow(x, exp)
 
             # Wrap another external function
-            traced_factorial = mlflow.trace(math.factorial)
+            traced_factorial = qcflow.trace(math.factorial)
 
             factorial = traced_factorial(int(raised))
 
             # Wrap another and call it directly
-            response = mlflow.trace(math.sqrt)(factorial)
+            response = qcflow.trace(math.sqrt)(factorial)
 
             # Set the outputs to the parent span prior to returning
             span.set_outputs({"result": response})
@@ -959,7 +959,7 @@ capture its inputs, outputs, and execution context.
     for i in range(8):
         invocation(i)
 
-The screenshot below shows our external function wrapping runs within the MLflow UI. 
+The screenshot below shows our external function wrapping runs within the QCFlow UI. 
 
 .. figure:: ../../_static/images/llms/tracing/external-trace.png
     :alt: External Function tracing
@@ -974,23 +974,23 @@ Tracing Client APIs
 
     Client APIs are advanced features. We recommend using the client APIs only when you have specific requirements that are not met by the other APIs.
 
-The MLflow client API provides a comprehensive set of thread-safe methods for manually managing traces. These APIs allow for fine-grained 
+The QCFlow client API provides a comprehensive set of thread-safe methods for manually managing traces. These APIs allow for fine-grained 
 control over tracing, enabling you to create, manipulate, and retrieve traces programmatically. This section will cover how to use these APIs 
 to manually trace a model, providing step-by-step instructions and examples.
 
 Starting a Trace
 ^^^^^^^^^^^^^^^^
 
-Unlike with the fluent API, the MLflow Trace Client API requires that you explicitly start a trace before adding child spans. This initial API call 
+Unlike with the fluent API, the QCFlow Trace Client API requires that you explicitly start a trace before adding child spans. This initial API call 
 starts the root span for the trace, providing a context request_id that is used for associating subsequent spans to the root span. 
 
-To start a new trace, use the :py:meth:`mlflow.client.MlflowClient.start_trace` method. This method creates a new trace and returns the root span object.
+To start a new trace, use the :py:meth:`qcflow.client.QCFlowClient.start_trace` method. This method creates a new trace and returns the root span object.
 
 .. code-block:: python
 
-    from mlflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     # Start a new trace
     root_span = client.start_trace("my_trace")
@@ -1001,7 +1001,7 @@ To start a new trace, use the :py:meth:`mlflow.client.MlflowClient.start_trace` 
 Adding a Child Span
 ^^^^^^^^^^^^^^^^^^^
 
-Once a trace is started, you can add child spans to it with the :py:meth:`mlflow.client.MlflowClient.start_span` API. Child spans allow you to break down the trace into smaller, more manageable segments, 
+Once a trace is started, you can add child spans to it with the :py:meth:`qcflow.client.QCFlowClient.start_span` API. Child spans allow you to break down the trace into smaller, more manageable segments, 
 each representing a specific operation or step within the overall process.
 
 .. code-block:: python
@@ -1018,7 +1018,7 @@ each representing a specific operation or step within the overall process.
 Ending a Span
 ^^^^^^^^^^^^^
 
-After performing the operations associated with a span, you must end the span explicitly using the :py:meth:`mlflow.client.MlflowClient.end_span` method. Make note of the two required fields 
+After performing the operations associated with a span, you must end the span explicitly using the :py:meth:`qcflow.client.QCFlowClient.end_span` method. Make note of the two required fields 
 that are in the API signature:
 
 - **request_id**: The identifier associated with the root span
@@ -1045,7 +1045,7 @@ The initiating ``request_id`` can be accessed from any parent span object's prop
 Ending a Trace
 ^^^^^^^^^^^^^^
 
-To complete the trace, end the root span using the :py:meth:`mlflow.client.MlflowClient.end_trace` method. This will also ensure that all associated child 
+To complete the trace, end the root span using the :py:meth:`qcflow.client.QCFlowClient.end_trace` method. This will also ensure that all associated child 
 spans are properly ended.
 
 .. code-block:: python
@@ -1062,14 +1062,14 @@ spans are properly ended.
 Searching and Retrieving Traces
 -------------------------------
 
-You can search for traces based on various criteria using the :py:meth:`mlflow.client.MlflowClient.search_traces` method or the fluent API :py:func:`mlflow.search_traces`. 
+You can search for traces based on various criteria using the :py:meth:`qcflow.client.QCFlowClient.search_traces` method or the fluent API :py:func:`qcflow.search_traces`. 
 See `Searching and Retrieving Traces <./search-traces.html>`_ for the usages of these APIs.
 
 
 Deleting Traces
 ---------------
 
-You can delete traces based on specific criteria using the :py:meth:`mlflow.client.MlflowClient.delete_traces` method. This method allows you to delete traces by **experiment ID**,
+You can delete traces based on specific criteria using the :py:meth:`qcflow.client.QCFlowClient.delete_traces` method. This method allows you to delete traces by **experiment ID**,
 **maximum timestamp**, or **request IDs**.
 
 .. tip::
@@ -1091,13 +1091,13 @@ You can delete traces based on specific criteria using the :py:meth:`mlflow.clie
 Data Model and Schema
 ---------------------
 
-To explore the structure and schema of MLflow Tracing, please see the `Tracing Schema <./tracing-schema.html>`_ guide.
+To explore the structure and schema of QCFlow Tracing, please see the `Tracing Schema <./tracing-schema.html>`_ guide.
 
 
 Trace Tags
 ----------
 
-Tags can be added to traces to provide additional metadata at the trace level. For example, you can attach a session ID to a trace to group traces by a conversation session. MLflow provides APIs to set and delete tags on traces. Select the right API based on whether you want to set tags on an active trace or on an already finished trace.
+Tags can be added to traces to provide additional metadata at the trace level. For example, you can attach a session ID to a trace to group traces by a conversation session. QCFlow provides APIs to set and delete tags on traces. Select the right API based on whether you want to set tags on an active trace or on an already finished trace.
 
 
 .. list-table::
@@ -1106,44 +1106,44 @@ Tags can be added to traces to provide additional metadata at the trace level. F
     * - API / Method
       - Use Case
 
-    * - :py:func:`mlflow.update_current_trace` API.
+    * - :py:func:`qcflow.update_current_trace` API.
       - Setting tags on an **active** trace during the code execution.
-    * - :py:meth:`mlflow.client.MlflowClient.set_trace_tag` API
+    * - :py:meth:`qcflow.client.QCFlowClient.set_trace_tag` API
       - Programmatically setting tags on a finished trace.
-    * - MLflow UI
+    * - QCFlow UI
       - Setting tags on a finished trace conveniently.
 
 
 Setting Tags on an Active Trace
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are using automatic tracing or fluent APIs to create traces and want to add tags to the trace during its execution, you can use the :py:func:`mlflow.update_current_trace` function.
+If you are using automatic tracing or fluent APIs to create traces and want to add tags to the trace during its execution, you can use the :py:func:`qcflow.update_current_trace` function.
 
 For example, the following code example adds the ``"fruit": "apple"`` tag to the trace created for the ``my_func`` function:
 
 .. code-block:: python
 
-    @mlflow.trace
+    @qcflow.trace
     def my_func(x):
-        mlflow.update_current_trace(tags={"fruit": "apple"})
+        qcflow.update_current_trace(tags={"fruit": "apple"})
         return x + 1
 
 
 .. note::
 
-    The ::py:func:`mlflow.update_current_trace` function adds the specified tag(s) to the current trace when the key is not already present. If the key is already present, it updates the key with the new value.
+    The ::py:func:`qcflow.update_current_trace` function adds the specified tag(s) to the current trace when the key is not already present. If the key is already present, it updates the key with the new value.
 
 
 Setting Tags on a Finished Trace
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To set tags on a trace that has already been completed and logged in the backend store, use the :py:meth:`mlflow.client.MlflowClient.set_trace_tag` method to set a tag on a trace, 
-and the :py:meth:`mlflow.client.MlflowClient.delete_trace_tag` method to remove a tag from a trace.
+To set tags on a trace that has already been completed and logged in the backend store, use the :py:meth:`qcflow.client.QCFlowClient.set_trace_tag` method to set a tag on a trace, 
+and the :py:meth:`qcflow.client.QCFlowClient.delete_trace_tag` method to remove a tag from a trace.
 
 .. code-block:: python
 
     # Get the request ID fof the most recently created trace
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     request_id = trace.info.request_id
 
     # Set a tag on a trace
@@ -1153,10 +1153,10 @@ and the :py:meth:`mlflow.client.MlflowClient.delete_trace_tag` method to remove 
     client.delete_trace_tag(request_id=request_id, key="tag_key")
 
 
-Setting Tags via the MLflow UI
+Setting Tags via the QCFlow UI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Alternatively, you can update or delete tags on a trace from the MLflow UI. To do this, navigate to the trace tab, then click on the pencil icon next to the tag you want to update.
+Alternatively, you can update or delete tags on a trace from the QCFlow UI. To do this, navigate to the trace tab, then click on the pencil icon next to the tag you want to update.
 
 .. figure:: ../../_static/images/llms/tracing/trace-set-tag.gif
     :alt: Traces tag update
@@ -1167,23 +1167,23 @@ Alternatively, you can update or delete tags on a trace from the MLflow UI. To d
 Async Logging
 -------------
 
-By default, MLflow Traces are logged synchronously. This may introduce a performance overhead when logging Traces, especially when your MLflow Tracking Server is running on a remote server. If the performance overhead is a concern for you, you can enable **asynchronous logging** for tracing in MLflow 2.16.0 and later.
+By default, QCFlow Traces are logged synchronously. This may introduce a performance overhead when logging Traces, especially when your QCFlow Tracking Server is running on a remote server. If the performance overhead is a concern for you, you can enable **asynchronous logging** for tracing in QCFlow 2.16.0 and later.
 
-To enable async logging for tracing, call :py:func:`mlflow.config.enable_async_logging` in your code. This will make the trace logging operation non-blocking and reduce the performance overhead.
+To enable async logging for tracing, call :py:func:`qcflow.config.enable_async_logging` in your code. This will make the trace logging operation non-blocking and reduce the performance overhead.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    mlflow.config.enable_async_logging()
+    qcflow.config.enable_async_logging()
 
     # Traces will be logged asynchronously
-    with mlflow.start_span(name="foo") as span:
+    with qcflow.start_span(name="foo") as span:
         span.set_inputs({"a": 1})
         span.set_outputs({"b": 2})
 
     # If you don't see the traces in the UI after waiting for a while, you can manually flush the traces
-    # mlflow.flush_trace_async_logging()
+    # qcflow.flush_trace_async_logging()
 
 
 Note that the async logging does not fully eliminate the performance overhead. Some backend calls still need to be made synchronously and there are other factors such as data serialization. However, async logging can significantly reduce the overall overhead of logging traces, empirically about ~80% for typical workloads.
@@ -1191,14 +1191,14 @@ Note that the async logging does not fully eliminate the performance overhead. S
 Using OpenTelemetry Collector for Exporting Traces
 --------------------------------------------------
 
-Traces generated by MLflow are compatible with the `OpenTelemetry trace specs <https://opentelemetry.io/docs/specs/otel/trace/api/#span>`_.
-Therefore, MLflow Tracing supports exporting traces to an OpenTelemetry Collector, which can then be used to export traces to various backends such as Jaeger, Zipkin, and AWS X-Ray.
+Traces generated by QCFlow are compatible with the `OpenTelemetry trace specs <https://opentelemetry.io/docs/specs/otel/trace/api/#span>`_.
+Therefore, QCFlow Tracing supports exporting traces to an OpenTelemetry Collector, which can then be used to export traces to various backends such as Jaeger, Zipkin, and AWS X-Ray.
 
-By default, MLflow exports traces to the MLflow Tracking Server. To enable exporting traces to an OpenTelemetry Collector, set the ``OTEL_EXPORTER_OTLP_ENDPOINT`` environment variable (or ``OTEL_EXPORTER_OTLP_TRACES_ENDPOINT``) to the target URL of the OpenTelemetry Collector **before starting any trace**.
+By default, QCFlow exports traces to the QCFlow Tracking Server. To enable exporting traces to an OpenTelemetry Collector, set the ``OTEL_EXPORTER_OTLP_ENDPOINT`` environment variable (or ``OTEL_EXPORTER_OTLP_TRACES_ENDPOINT``) to the target URL of the OpenTelemetry Collector **before starting any trace**.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import os
 
     # Set the endpoint of the OpenTelemetry Collector
@@ -1207,20 +1207,20 @@ By default, MLflow exports traces to the MLflow Tracking Server. To enable expor
     os.environ["OTEL_SERVICE_NAME"] = "<your-service-name>"
 
     # Trace will be exported to the OTel collector at http://localhost:4317/v1/traces
-    with mlflow.start_span(name="foo") as span:
+    with qcflow.start_span(name="foo") as span:
         span.set_inputs({"a": 1})
         span.set_outputs({"b": 2})
 
 .. warning::
 
-    MLflow only exports traces to a single destination. When  the ``OTEL_EXPORTER_OTLP_ENDPOINT`` environment variable is configured, MLflow will **not** export traces to the MLflow Tracking Server and you will not see traces in the MLflow UI.
+    QCFlow only exports traces to a single destination. When  the ``OTEL_EXPORTER_OTLP_ENDPOINT`` environment variable is configured, QCFlow will **not** export traces to the QCFlow Tracking Server and you will not see traces in the QCFlow UI.
 
-    Similarly, if you deploy the model to the `Databricks Model Serving with tracing enabled <https://docs.databricks.com/en/mlflow/mlflow-tracing.html#use-mlflow-tracing-in-production>`_, using the OpenTelemetry Collector will result in traces not being recorded in the Inference Table.
+    Similarly, if you deploy the model to the `Databricks Model Serving with tracing enabled <https://docs.databricks.com/en/qcflow/qcflow-tracing.html#use-qcflow-tracing-in-production>`_, using the OpenTelemetry Collector will result in traces not being recorded in the Inference Table.
 
 Configurations
 ^^^^^^^^^^^^^^
 
-MLflow uses the standard OTLP Exporter for exporting traces to OpenTelemetry Collector instances. Thereby, you can use `all of the configurations <https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/>`_ supported by OpenTelemetry. The following example configures the OTLP Exporter to use HTTP protocol instead of the default gRPC and sets custom headers:
+QCFlow uses the standard OTLP Exporter for exporting traces to OpenTelemetry Collector instances. Thereby, you can use `all of the configurations <https://opentelemetry.io/docs/languages/sdk-configuration/otlp-exporter/>`_ supported by OpenTelemetry. The following example configures the OTLP Exporter to use HTTP protocol instead of the default gRPC and sets custom headers:
 
 .. code-block:: bash
 
@@ -1237,17 +1237,17 @@ Q: Can I disable and re-enable tracing globally?
 
 Yes. 
 
-There are two fluent APIs that are used for blanket enablement or disablement of the MLflow Tracing feature in order to support 
+There are two fluent APIs that are used for blanket enablement or disablement of the QCFlow Tracing feature in order to support 
 users who may not wish to record interactions with their trace-enabled models for a brief period, or if they have concerns about long-term storage 
 of data that was sent along with a request payload to a model in interactive mode. 
 
-To **disable** tracing, the :py:func:`mlflow.tracing.disable` API will cease the collection of trace data from within MLflow and will not log 
-any data to the MLflow Tracking service regarding traces. 
+To **disable** tracing, the :py:func:`qcflow.tracing.disable` API will cease the collection of trace data from within QCFlow and will not log 
+any data to the QCFlow Tracking service regarding traces. 
 
-To **enable** tracing (if it had been temporarily disabled), the :py:func:`mlflow.tracing.enable` API will re-enable tracing functionality for instrumented models 
+To **enable** tracing (if it had been temporarily disabled), the :py:func:`qcflow.tracing.enable` API will re-enable tracing functionality for instrumented models 
 that are invoked. 
 
-Q: How can I associate a trace with an MLflow Run?
+Q: How can I associate a trace with an QCFlow Run?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If a trace is generated within a run context, the recorded traces to an active Experiment will be associated with the active Run. 
@@ -1256,39 +1256,39 @@ For example, in the following code, the traces are generated within the ``start_
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
     # Create and activate an Experiment
-    mlflow.set_experiment("Run Associated Tracing")
+    qcflow.set_experiment("Run Associated Tracing")
 
-    # Start a new MLflow Run
-    with mlflow.start_run() as run:
+    # Start a new QCFlow Run
+    with qcflow.start_run() as run:
         # Initiate a trace by starting a Span context from within the Run context
-        with mlflow.start_span(name="Run Span") as parent_span:
+        with qcflow.start_span(name="Run Span") as parent_span:
             parent_span.set_inputs({"input": "a"})
             parent_span.set_outputs({"response": "b"})
             parent_span.set_attribute("a", "b")
             # Initiate a child span from within the parent Span's context
-            with mlflow.start_span(name="Child Span") as child_span:
+            with qcflow.start_span(name="Child Span") as child_span:
                 child_span.set_inputs({"input": "b"})
                 child_span.set_outputs({"response": "c"})
                 child_span.set_attributes({"b": "c", "c": "d"})
 
-When navigating to the MLflow UI and selecting the active Experiment, the trace display view will show the run that is associated with the trace, as 
-well as providing a link to navigate to the run within the MLflow UI. See the below video for an example of this in action.
+When navigating to the QCFlow UI and selecting the active Experiment, the trace display view will show the run that is associated with the trace, as 
+well as providing a link to navigate to the run within the QCFlow UI. See the below video for an example of this in action.
 
 .. figure:: ../../_static/images/llms/tracing/run-trace.gif
     :alt: Tracing within a Run Context
     :width: 100%
     :align: center
 
-You can also programmatically retrieve the traces associated to a particular Run by using the :py:meth:`mlflow.client.MlflowClient.search_traces` method.
+You can also programmatically retrieve the traces associated to a particular Run by using the :py:meth:`qcflow.client.QCFlowClient.search_traces` method.
 
 .. code-block:: python
 
-    from mlflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     # Retrieve traces associated with a specific Run
     traces = client.search_traces(run_id=run.info.run_id)
@@ -1308,10 +1308,10 @@ For example, the following will work:
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
     # Initiate a fluent span creation context
-    with mlflow.start_span(name="Testing!") as span:
+    with qcflow.start_span(name="Testing!") as span:
         # Use the client API to start a child span
         child_span = client.start_span(
             name="Child Span From Client",
@@ -1342,11 +1342,11 @@ There are several ways.
 Fluent API
 ##########
 
-1. Within the :py:func:`mlflow.start_span` constructor itself. 
+1. Within the :py:func:`qcflow.start_span` constructor itself. 
 
 .. code-block:: python
 
-    with mlflow.start_span(
+    with qcflow.start_span(
         name="Parent", attributes={"attribute1": "value1", "attribute2": "value2"}
     ) as span:
         span.set_inputs({"input1": "value1", "input2": "value2"})
@@ -1356,7 +1356,7 @@ Fluent API
 
 .. code-block:: python
 
-    with mlflow.start_span(name="Parent") as span:
+    with qcflow.start_span(name="Parent") as span:
         # Set multiple attributes
         span.set_attributes({"attribute1": "value1", "attribute2": "value2"})
         # Set a single attribute
@@ -1409,43 +1409,43 @@ Client API
         attributes={"attribute3": "value3", "attribute4": "value4"},
     )
 
-Q: I cannot open my trace in the MLflow UI. What should I do?
+Q: I cannot open my trace in the QCFlow UI. What should I do?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are multiple possible reasons why a trace may not be viewable in the MLflow UI.
+There are multiple possible reasons why a trace may not be viewable in the QCFlow UI.
 
-1. **The trace is not completed yet**: If the trace is still being collected, MLflow cannot display spans in the UI. Ensure that all spans are properly ended with either "OK" or "ERROR" status.
+1. **The trace is not completed yet**: If the trace is still being collected, QCFlow cannot display spans in the UI. Ensure that all spans are properly ended with either "OK" or "ERROR" status.
 
-2. **The browser cache is outdated**: When you upgrade MLflow to a new version, the browser cache may contain outdated data and prevent the UI from displaying traces correctly. Clear your browser cache (Shift+F5) and refresh the page.
+2. **The browser cache is outdated**: When you upgrade QCFlow to a new version, the browser cache may contain outdated data and prevent the UI from displaying traces correctly. Clear your browser cache (Shift+F5) and refresh the page.
 
 
 Q. How to group multiple traces within a single conversation session?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In conversational AI applications, it is common that users interact with the model multiple times within a single conversation session. Since each interaction generates a trace in the typical MLflow setup, it is useful to group these traces together to analyze the conversation as a whole. You can achieve this by attaching the session ID as a **tag** to each trace.
+In conversational AI applications, it is common that users interact with the model multiple times within a single conversation session. Since each interaction generates a trace in the typical QCFlow setup, it is useful to group these traces together to analyze the conversation as a whole. You can achieve this by attaching the session ID as a **tag** to each trace.
 
-The following example shows how to use session ID in a chat model that has been implemented using the :py:class:`mlflow.pyfunc.ChatModel` class. Refer to the `Trace Tags <#trace-tags>`_ section for more information on how to set tags on traces.
+The following example shows how to use session ID in a chat model that has been implemented using the :py:class:`qcflow.pyfunc.ChatModel` class. Refer to the `Trace Tags <#trace-tags>`_ section for more information on how to set tags on traces.
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.entities import SpanType
-    from mlflow.types.llm import ChatMessage, ChatParams, ChatCompletionResponse
+    import qcflow
+    from qcflow.entities import SpanType
+    from qcflow.types.llm import ChatMessage, ChatParams, ChatCompletionResponse
 
     import openai
     from typing import Optional
 
-    mlflow.set_experiment("Tracing Session ID Demo")
+    qcflow.set_experiment("Tracing Session ID Demo")
 
 
-    class ChatModelWithSession(mlflow.pyfunc.ChatModel):
-        @mlflow.trace(span_type=SpanType.CHAT_MODEL)
+    class ChatModelWithSession(qcflow.pyfunc.ChatModel):
+        @qcflow.trace(span_type=SpanType.CHAT_MODEL)
         def predict(
             self, context, messages: list[ChatMessage], params: Optional[ChatParams] = None
         ) -> ChatCompletionResponse:
             if session_id := (params.custom_inputs or {}).get("session_id"):
                 # Set session ID tag on the current trace
-                mlflow.update_current_trace(tags={"session_id": session_id})
+                qcflow.update_current_trace(tags={"session_id": session_id})
 
             response = openai.OpenAI().chat.completions.create(
                 messages=[m.to_dict() for m in messages],
@@ -1459,7 +1459,7 @@ The following example shows how to use session ID in a chat model that has been 
 
     # Invoke the chat model multiple times with the same session ID
     session_id = "123"
-    messages = [ChatMessage(role="user", content="What is MLflow Tracing?")]
+    messages = [ChatMessage(role="user", content="What is QCFlow Tracing?")]
     response = model.predict(
         None, messages, ChatParams(custom_inputs={"session_id": session_id})
     )
@@ -1473,7 +1473,7 @@ The following example shows how to use session ID in a chat model that has been 
         None, messages, ChatParams(custom_inputs={"session_id": session_id})
     )
 
-The above code creates two new traces with the same session ID tag. Within the MLflow UI, you can search for these traces that have this defined session ID using ``tag.session_id = '123'``.
+The above code creates two new traces with the same session ID tag. Within the QCFlow UI, you can search for these traces that have this defined session ID using ``tag.session_id = '123'``.
 
 .. figure:: ../../_static/images/llms/tracing/trace-session-id.gif
     :alt: Traces with session IDs
@@ -1481,25 +1481,25 @@ The above code creates two new traces with the same session ID tag. Within the M
     :align: center
 
 
-Alternatively, you can use the :py:func:`mlflow.search_traces` function to get these traces programmatically.
+Alternatively, you can use the :py:func:`qcflow.search_traces` function to get these traces programmatically.
 
 .. code-block:: python
 
-    traces = mlflow.search_traces(filter_string="tag.session_id = '123456'")
+    traces = qcflow.search_traces(filter_string="tag.session_id = '123456'")
 
 
 Q: How to find a particular span within a trace?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When you have a large number of spans in a trace, it can be cumbersome to find a particular span. You can use the :py:meth:`Trace.search_spans <mlflow.entities.Trace.search_spans>` method to search for spans based on several criteria.
+When you have a large number of spans in a trace, it can be cumbersome to find a particular span. You can use the :py:meth:`Trace.search_spans <qcflow.entities.Trace.search_spans>` method to search for spans based on several criteria.
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.entities import SpanType
+    import qcflow
+    from qcflow.entities import SpanType
 
 
-    @mlflow.trace(span_type=SpanType.CHAIN)
+    @qcflow.trace(span_type=SpanType.CHAIN)
     def run(x: int) -> int:
         x = add_one(x)
         x = add_two(x)
@@ -1507,26 +1507,26 @@ When you have a large number of spans in a trace, it can be cumbersome to find a
         return x
 
 
-    @mlflow.trace(span_type=SpanType.TOOL)
+    @qcflow.trace(span_type=SpanType.TOOL)
     def add_one(x: int) -> int:
         return x + 1
 
 
-    @mlflow.trace(span_type=SpanType.TOOL)
+    @qcflow.trace(span_type=SpanType.TOOL)
     def add_two(x: int) -> int:
         return x + 2
 
 
-    @mlflow.trace(span_type=SpanType.TOOL)
+    @qcflow.trace(span_type=SpanType.TOOL)
     def multiply_by_two(x: int) -> int:
         return x * 2
 
 
     # Run the function and get the trace
     y = run(2)
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
 
-This will create a :py:class:`~mlflow.entities.Trace` object with four spans.
+This will create a :py:class:`~qcflow.entities.Trace` object with four spans.
 
 .. code-block::
 
@@ -1535,7 +1535,7 @@ This will create a :py:class:`~mlflow.entities.Trace` object with four spans.
       ├── add_two (TOOL)
       └── multiply_by_two (TOOL)
 
-Then you can use the :py:meth:`Trace.search_spans <mlflow.entities.Trace.search_spans>` method to search for a particular spans:
+Then you can use the :py:meth:`Trace.search_spans <qcflow.entities.Trace.search_spans>` method to search for a particular spans:
 
 .. code-block:: python
 

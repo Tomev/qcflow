@@ -5,10 +5,10 @@ from unittest import mock
 import pytest
 from fastapi.encoders import jsonable_encoder
 
-from mlflow.gateway.config import RouteConfig
-from mlflow.gateway.providers.openai import OpenAIProvider
-from mlflow.gateway.schemas import chat
-from mlflow.gateway.uc_function_utils import uc_type_to_json_schema_type
+from qcflow.gateway.config import RouteConfig
+from qcflow.gateway.providers.openai import OpenAIProvider
+from qcflow.gateway.schemas import chat
+from qcflow.gateway.uc_function_utils import uc_type_to_json_schema_type
 
 from tests.gateway.tools import (
     MockAsyncResponse,
@@ -67,7 +67,7 @@ async def test_uc_functions(monkeypatch):
     from databricks.sdk.service.catalog import ColumnTypeName
     from databricks.sdk.service.sql import StatementState
 
-    monkeypatch.setenv("MLFLOW_ENABLE_UC_FUNCTIONS", "true")
+    monkeypatch.setenv("QCFLOW_ENABLE_UC_FUNCTIONS", "true")
     monkeypatch.setenv("DATABRICKS_WAREHOUSE_ID", "1234")
 
     config = chat_config()
@@ -159,7 +159,7 @@ async def test_uc_functions(monkeypatch):
     with (
         mock.patch("aiohttp.ClientSession", return_value=mock_client_session),
         mock.patch(
-            "mlflow.gateway.providers.openai._get_workspace_client",
+            "qcflow.gateway.providers.openai._get_workspace_client",
             return_value=mock_workspace_client,
         ) as mock_workspace_client,
     ):
@@ -227,7 +227,7 @@ async def test_uc_functions_user_defined_functions(monkeypatch):
     from databricks.sdk.service.catalog import ColumnTypeName
     from databricks.sdk.service.sql import StatementState
 
-    monkeypatch.setenv("MLFLOW_ENABLE_UC_FUNCTIONS", "true")
+    monkeypatch.setenv("QCFLOW_ENABLE_UC_FUNCTIONS", "true")
     monkeypatch.setenv("DATABRICKS_WAREHOUSE_ID", "1234")
 
     config = chat_config()
@@ -327,7 +327,7 @@ async def test_uc_functions_user_defined_functions(monkeypatch):
     with (
         mock.patch("aiohttp.ClientSession", return_value=mock_client_session),
         mock.patch(
-            "mlflow.gateway.providers.openai._get_workspace_client",
+            "qcflow.gateway.providers.openai._get_workspace_client",
             return_value=mock_workspace_client,
         ) as mock_workspace_client,
     ):

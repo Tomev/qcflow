@@ -5,13 +5,13 @@ from unittest import mock
 import pytest
 from click.testing import CliRunner
 
-import mlflow
-from mlflow import experiments
-from mlflow.runs import list_run
+import qcflow
+from qcflow import experiments
+from qcflow.runs import list_run
 
 
 def test_list_run():
-    with mlflow.start_run(run_name="apple"):
+    with qcflow.start_run(run_name="apple"):
         pass
     result = CliRunner().invoke(list_run, ["--experiment-id", "0"])
     assert "apple" in result.output
@@ -23,7 +23,7 @@ def test_list_run_experiment_id_required():
 
 
 @pytest.mark.skipif(
-    "MLFLOW_SKINNY" in os.environ,
+    "QCFLOW_SKINNY" in os.environ,
     reason="Skinny Client does not support predict due to the pandas dependency",
 )
 def test_csv_generation(tmp_path):
@@ -31,7 +31,7 @@ def test_csv_generation(tmp_path):
     import pandas as pd
 
     with mock.patch(
-        "mlflow.experiments.fluent.search_runs",
+        "qcflow.experiments.fluent.search_runs",
         return_value=pd.DataFrame(
             {
                 "run_id": np.array(["all_set", "with_none", "with_nan"]),

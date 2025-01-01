@@ -1,4 +1,4 @@
-from mlflow.models import set_model
+from qcflow.models import set_model
 
 
 def predict(model_input):

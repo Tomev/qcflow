@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import mlflow
-from mlflow.environment_variables import MLFLOW_RECIPES_EXECUTION_DIRECTORY
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.steps.split import (
+import qcflow
+from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_DIRECTORY
+from qcflow.exceptions import QCFlowException
+from qcflow.recipes.steps.split import (
     _OUTPUT_TEST_FILE_NAME,
     _OUTPUT_TRAIN_FILE_NAME,
     _OUTPUT_VALIDATION_FILE_NAME,
@@ -20,8 +20,8 @@ from mlflow.recipes.steps.split import (
     _make_elem_hashable,
     _validate_user_code_output,
 )
-from mlflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
-from mlflow.utils.file_utils import read_yaml
+from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
+from qcflow.utils.file_utils import read_yaml
 
 
 def set_up_dataset(tmp_path, num_classes=2):
@@ -47,8 +47,8 @@ def test_split_step_run(tmp_path, monkeypatch):
 
     split_ratios = [0.6, 0.3, 0.1]
 
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
-    with mock.patch("mlflow.recipes.step.get_recipe_name", return_value="fake_name"):
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
+    with mock.patch("qcflow.recipes.step.get_recipe_name", return_value="fake_name"):
         split_step = SplitStep(
             {"split_ratios": split_ratios, "target_col": "y", "recipe": "classification/v1"},
             "fake_root",
@@ -85,8 +85,8 @@ def test_split_step_run_with_multiple_classes(tmp_path, monkeypatch):
 
     split_ratios = [0.6, 0.3, 0.1]
 
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
-    with mock.patch("mlflow.recipes.step.get_recipe_name", return_value="fake_name"):
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
+    with mock.patch("qcflow.recipes.step.get_recipe_name", return_value="fake_name"):
         split_step = SplitStep(
             {"split_ratios": split_ratios, "target_col": "y", "recipe": "classification/v1"},
             "fake_root",
@@ -142,7 +142,7 @@ def test_hash_pandas_dataframe_deterministic():
 
 
 def test_get_split_df():
-    with mock.patch("mlflow.recipes.steps.split._SPLIT_HASH_BUCKET_NUM", 6):
+    with mock.patch("qcflow.recipes.steps.split._SPLIT_HASH_BUCKET_NUM", 6):
         split_ratios = [3, 2, 1]
         hash_buckets = pd.Series([0.3, 0.9, 0.1, 0.7, 0.2, 0.6])
         dataset = pd.DataFrame({"v": [10, 20, 30, 40, 50, 60]})
@@ -155,16 +155,16 @@ def test_get_split_df():
 
 
 def test_from_recipe_config_fails_without_target_col(tmp_path, monkeypatch):
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
-    with mock.patch("mlflow.recipes.step.get_recipe_name", return_value="fake_name"):
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
+    with mock.patch("qcflow.recipes.step.get_recipe_name", return_value="fake_name"):
         split_step = SplitStep.from_recipe_config({}, "fake_root")
-        with pytest.raises(MlflowException, match="Missing target_col config"):
+        with pytest.raises(QCFlowException, match="Missing target_col config"):
             split_step._validate_and_apply_step_config()
 
 
 def test_from_recipe_config_works_with_target_col(tmp_path, monkeypatch):
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
-    with mock.patch("mlflow.recipes.step.get_recipe_name", return_value="fake_name"):
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
+    with mock.patch("qcflow.recipes.step.get_recipe_name", return_value="fake_name"):
         assert SplitStep.from_recipe_config({"target_col": "fake_col"}, "fake_root") is not None
 
 
@@ -185,10 +185,10 @@ def test_split_step_skips_profiling_when_specified(tmp_path, monkeypatch):
     )
     input_dataframe.to_parquet(str(ingest_output_dir / "dataset.parquet"))
 
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_DIRECTORY.name, str(tmp_path))
     with (
-        mock.patch("mlflow.recipes.utils.step.get_pandas_data_profiles") as mock_profiling,
-        mock.patch("mlflow.recipes.step.get_recipe_name", return_value="fake_name"),
+        mock.patch("qcflow.recipes.utils.step.get_pandas_data_profiles") as mock_profiling,
+        mock.patch("qcflow.recipes.step.get_recipe_name", return_value="fake_name"),
     ):
         split_step = SplitStep({"target_col": "y", "skip_data_profiling": True}, "fake_root")
         split_step.run(str(split_output_dir))
@@ -217,7 +217,7 @@ def test_validation_split_step_validates_split_correctly():
         return (train_df, validation_df, test_df)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Column list for train dataset pre-slit .* and post split is .*",
     ):
         (out_train_df, out_validation_df, out_test_df) = _validate_user_code_output(
@@ -228,7 +228,7 @@ def test_validation_split_step_validates_split_correctly():
         return ([], validation_df, test_df)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The split data is not a DataFrame, please return the correct data.",
     ):
         (out_train_df, out_validation_df, out_test_df) = _validate_user_code_output(
@@ -274,7 +274,7 @@ def test_custom_split_method(tmp_recipe_root_path: Path, tmp_recipe_exec_path: P
             step: "split"
         experiment:
             name: "demo"
-            tracking_uri: {mlflow.get_tracking_uri()}
+            tracking_uri: {qcflow.get_tracking_uri()}
         steps:
             split:
                 using: custom
@@ -336,7 +336,7 @@ def test_custom_error_split_method(tmp_recipe_root_path: Path, tmp_recipe_exec_p
             step: "split"
         experiment:
             name: "demo"
-            tracking_uri: {mlflow.get_tracking_uri()}
+            tracking_uri: {qcflow.get_tracking_uri()}
         steps:
             split:
                 using: custom
@@ -352,7 +352,7 @@ def test_custom_error_split_method(tmp_recipe_root_path: Path, tmp_recipe_exec_p
     with (
         mock.patch.dict("sys.modules", {"steps.split": m_split}),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Value returned back: \['VALIDATE' 'TESTING'\]",
         ),
     ):

@@ -6,27 +6,27 @@ from datetime import datetime
 import pytest
 from packaging.version import Version
 
-import mlflow
-import mlflow.tracking.context.default_context
-from mlflow.entities import SpanType, Trace, TraceData
-from mlflow.environment_variables import MLFLOW_TRACKING_USERNAME
-from mlflow.exceptions import MlflowException
-from mlflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY
-from mlflow.tracing.utils import TraceJSONEncoder
-from mlflow.utils.mlflow_tags import MLFLOW_ARTIFACT_LOCATION
+import qcflow
+import qcflow.tracking.context.default_context
+from qcflow.entities import SpanType, Trace, TraceData
+from qcflow.environment_variables import QCFLOW_TRACKING_USERNAME
+from qcflow.exceptions import QCFlowException
+from qcflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY
+from qcflow.tracing.utils import TraceJSONEncoder
+from qcflow.utils.qcflow_tags import QCFLOW_ARTIFACT_LOCATION
 
 from tests.tracing.helper import create_test_trace_info
 
 
 def _test_model(datetime=datetime.now()):
     class TestModel:
-        @mlflow.trace()
+        @qcflow.trace()
         def predict(self, x, y):
             z = x + y
             z = self.add_one(z)
             return z  # noqa: RET504
 
-        @mlflow.trace(
+        @qcflow.trace(
             span_type=SpanType.LLM,
             name="add_one_with_custom_name",
             attributes={
@@ -43,14 +43,14 @@ def _test_model(datetime=datetime.now()):
 
 
 def test_json_deserialization(monkeypatch):
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
     datetime_now = datetime.now()
 
     model = _test_model(datetime_now)
     model.predict(2, 5)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     trace_json = trace.to_json()
 
     trace_json_as_dict = json.loads(trace_json)
@@ -62,15 +62,15 @@ def test_json_deserialization(monkeypatch):
             "execution_time_ms": trace.info.execution_time_ms,
             "status": "OK",
             "request_metadata": {
-                "mlflow.traceInputs": '{"x": 2, "y": 5}',
-                "mlflow.traceOutputs": "8",
+                "qcflow.traceInputs": '{"x": 2, "y": 5}',
+                "qcflow.traceOutputs": "8",
                 TRACE_SCHEMA_VERSION_KEY: str(TRACE_SCHEMA_VERSION),
             },
             "tags": {
-                "mlflow.traceName": "predict",
-                "mlflow.source.name": "test",
-                "mlflow.source.type": "LOCAL",
-                "mlflow.artifactLocation": trace.info.tags[MLFLOW_ARTIFACT_LOCATION],
+                "qcflow.traceName": "predict",
+                "qcflow.source.name": "test",
+                "qcflow.source.type": "LOCAL",
+                "qcflow.artifactLocation": trace.info.tags[QCFLOW_ARTIFACT_LOCATION],
             },
         },
         "data": {
@@ -89,11 +89,11 @@ def test_json_deserialization(monkeypatch):
                     "status_code": "OK",
                     "status_message": "",
                     "attributes": {
-                        "mlflow.traceRequestId": json.dumps(trace.info.request_id),
-                        "mlflow.spanType": '"UNKNOWN"',
-                        "mlflow.spanFunctionName": '"predict"',
-                        "mlflow.spanInputs": '{"x": 2, "y": 5}',
-                        "mlflow.spanOutputs": "8",
+                        "qcflow.traceRequestId": json.dumps(trace.info.request_id),
+                        "qcflow.spanType": '"UNKNOWN"',
+                        "qcflow.spanFunctionName": '"predict"',
+                        "qcflow.spanInputs": '{"x": 2, "y": 5}',
+                        "qcflow.spanOutputs": "8",
                     },
                     "events": [],
                 },
@@ -109,11 +109,11 @@ def test_json_deserialization(monkeypatch):
                     "status_code": "OK",
                     "status_message": "",
                     "attributes": {
-                        "mlflow.traceRequestId": json.dumps(trace.info.request_id),
-                        "mlflow.spanType": '"LLM"',
-                        "mlflow.spanFunctionName": '"add_one"',
-                        "mlflow.spanInputs": '{"z": 7}',
-                        "mlflow.spanOutputs": "8",
+                        "qcflow.traceRequestId": json.dumps(trace.info.request_id),
+                        "qcflow.spanType": '"LLM"',
+                        "qcflow.spanFunctionName": '"add_one"',
+                        "qcflow.spanInputs": '{"z": 7}',
+                        "qcflow.spanOutputs": "8",
                         "delta": "1",
                         "datetime": json.dumps(str(datetime_now)),
                         "metadata": '{"foo": "bar"}',
@@ -195,7 +195,7 @@ def test_trace_to_from_dict_and_json():
     model = _test_model()
     model.predict(2, 5)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
 
     spans = trace.search_spans(span_type=SpanType.LLM)
     assert len(spans) == 1
@@ -256,27 +256,27 @@ def test_trace_pandas_dataframe_columns():
     ],
 )
 def test_search_spans(span_type, name, expected):
-    @mlflow.trace(span_type=SpanType.CHAIN)
+    @qcflow.trace(span_type=SpanType.CHAIN)
     def run(x: int) -> int:
         x = add_one(x)
         x = add_one(x)
         x = add_two(x)
         return multiply_by_two(x)
 
-    @mlflow.trace(span_type=SpanType.TOOL)
+    @qcflow.trace(span_type=SpanType.TOOL)
     def add_one(x: int) -> int:
         return x + 1
 
-    @mlflow.trace(span_type=SpanType.TOOL)
+    @qcflow.trace(span_type=SpanType.TOOL)
     def add_two(x: int) -> int:
         return x + 2
 
-    @mlflow.trace(span_type=SpanType.TOOL)
+    @qcflow.trace(span_type=SpanType.TOOL)
     def multiply_by_two(x: int) -> int:
         return x * 2
 
     run(2)
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
 
     spans = trace.search_spans(span_type=span_type, name=name)
 
@@ -284,15 +284,15 @@ def test_search_spans(span_type, name, expected):
 
 
 def test_search_spans_raise_for_invalid_param_type():
-    @mlflow.trace(span_type=SpanType.CHAIN)
+    @qcflow.trace(span_type=SpanType.CHAIN)
     def run(x: int) -> int:
         return x + 1
 
     run(2)
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
 
-    with pytest.raises(MlflowException, match="Invalid type for 'span_type'"):
+    with pytest.raises(QCFlowException, match="Invalid type for 'span_type'"):
         trace.search_spans(span_type=123)
 
-    with pytest.raises(MlflowException, match="Invalid type for 'name'"):
+    with pytest.raises(QCFlowException, match="Invalid type for 'name'"):
         trace.search_spans(name=123)

@@ -4,9 +4,9 @@ import langchain
 import pytest
 from packaging.version import Version
 
-import mlflow
-from mlflow.entities.span import SpanType
-from mlflow.entities.span_status import SpanStatusCode
+import qcflow
+from qcflow.entities.span import SpanType
+from qcflow.entities.span_status import SpanStatusCode
 
 from tests.tracing.helper import get_traces
 
@@ -18,8 +18,8 @@ from tests.tracing.helper import get_traces
 def test_langgraph_save_as_code():
     input_example = {"messages": [{"role": "user", "content": "what is the weather in sf?"}]}
 
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(
             "tests/langchain/sample_code/langgraph_prebuilt.py",
             "langgraph",
             input_example=input_example,
@@ -33,7 +33,7 @@ def test_langgraph_save_as_code():
         ("agent", "The weather in San Francisco is always sunny!"),
     ]
 
-    loaded_graph = mlflow.langchain.load_model(model_info.model_uri)
+    loaded_graph = qcflow.langchain.load_model(model_info.model_uri)
     response = loaded_graph.invoke(input_example)
     messages = response["messages"]
     assert len(messages) == 4
@@ -41,13 +41,13 @@ def test_langgraph_save_as_code():
         assert msg.content == expected_content
 
     # Need to reload to reset the iterator in FakeOpenAI
-    loaded_graph = mlflow.langchain.load_model(model_info.model_uri)
+    loaded_graph = qcflow.langchain.load_model(model_info.model_uri)
     response = loaded_graph.stream(input_example)
     # .stream() response does not includes the first Human message
     for chunk, (role, expected_content) in zip(response, expected_messages[1:]):
         assert chunk[role]["messages"][0].content == expected_content
 
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_info.model_uri)
     response = loaded_pyfunc.predict(input_example)[0]
     messages = response["messages"]
     assert len(messages) == 4
@@ -56,7 +56,7 @@ def test_langgraph_save_as_code():
     # response should be json serializable
     assert json.dumps(response) is not None
 
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_info.model_uri)
     response = loaded_pyfunc.predict_stream(input_example)
     for chunk, (role, expected_content) in zip(response, expected_messages[1:]):
         assert chunk[role]["messages"][0]["content"] == expected_content
@@ -67,21 +67,21 @@ def test_langgraph_save_as_code():
     reason="Agent behavior is not stable across minor versions",
 )
 def test_langgraph_tracing_prebuilt():
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     input_example = {"messages": [{"role": "user", "content": "what is the weather in sf?"}]}
 
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(
             "tests/langchain/sample_code/langgraph_prebuilt.py",
             "langgraph",
             input_example=input_example,
         )
 
-    loaded_graph = mlflow.langchain.load_model(model_info.model_uri)
+    loaded_graph = qcflow.langchain.load_model(model_info.model_uri)
 
     # No trace should be created for the first call
-    assert mlflow.get_last_active_trace() is None
+    assert qcflow.get_last_active_trace() is None
 
     loaded_graph.invoke(input_example)
 
@@ -119,17 +119,17 @@ def test_langgraph_tracing_prebuilt():
     reason="Agent behavior is not stable across minor versions",
 )
 def test_langgraph_tracing_diy_graph():
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     input_example = {"messages": [{"role": "user", "content": "hi"}]}
 
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(
             "tests/langchain/sample_code/langgraph_diy.py",
             "langgraph",
         )
 
-    loaded_graph = mlflow.langchain.load_model(model_info.model_uri)
+    loaded_graph = qcflow.langchain.load_model(model_info.model_uri)
     loaded_graph.invoke(input_example)
 
     traces = get_traces()
@@ -147,21 +147,21 @@ def test_langgraph_tracing_diy_graph():
     reason="Agent behavior is not stable across minor versions",
 )
 def test_langgraph_tracing_with_custom_span():
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     input_example = {"messages": [{"role": "user", "content": "what is the weather in sf?"}]}
 
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(
             "tests/langchain/sample_code/langgraph_with_custom_span.py",
             "langgraph",
             input_example=input_example,
         )
 
-    loaded_graph = mlflow.langchain.load_model(model_info.model_uri)
+    loaded_graph = qcflow.langchain.load_model(model_info.model_uri)
 
     # No trace should be created for the first call
-    assert mlflow.get_last_active_trace() is None
+    assert qcflow.get_last_active_trace() is None
 
     loaded_graph.invoke(input_example)
 

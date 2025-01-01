@@ -1,7 +1,7 @@
 Search Runs
 ===========
 
-This guide will walk you through how to search your MLflow runs through the MLflow UI and Python API.
+This guide will walk you through how to search your QCFlow runs through the QCFlow UI and Python API.
 This resource will be valuable if you're interested in querying specific runs based on their metrics,
 params, tags, dataset information, or run metadata.
 
@@ -10,42 +10,42 @@ Note that the ``OR`` keyword is not supported and there are a few other differen
 mentioned below, but despite these limitations, the run search functionality is quite powerful.
 
 
-Search Runs on MLflow UI
+Search Runs on QCFlow UI
 ------------------------
 
-The MLflow UI provides a powerful search interface that allows you to filter runs. Below we'll...
+The QCFlow UI provides a powerful search interface that allows you to filter runs. Below we'll...
 
-1. Create example MLflow runs
+1. Create example QCFlow runs
 2. Look at a simple querying example
 3. Deep dive into query syntax
 4. Provide a variety of example queries
 
-Create Example MLflow Runs
+Create Example QCFlow Runs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, let's create some example MLflow runs. This documentation is based on experiments created 
+First, let's create some example QCFlow runs. This documentation is based on experiments created 
 with the below script. If you don't want to interactively explore this on your machine, skip 
 this section.
 
-Before running the script, let's simply start the MLflow UI on a local host. 
+Before running the script, let's simply start the QCFlow UI on a local host. 
 
 .. code-block:: bash
 
-  mlflow ui
+  qcflow ui
 
 Let's visit ``http://localhost:5000/`` in our web browser. After doing so, you'll notice that we don't 
-have any experiments or models. Let's resolve this by creating a few MLflow runs via the script
+have any experiments or models. Let's resolve this by creating a few QCFlow runs via the script
 below. 
 
 Note that when you run this script, you'll want to do so from the same directory that you ran
-the ``mlflow ui`` command.
+the ``qcflow ui`` command.
 
 .. code-block:: python
 
-  import mlflow
+  import qcflow
   import numpy as np
 
-  mlflow.set_experiment("search-run-guide")
+  qcflow.set_experiment("search-run-guide")
 
   accuracy = np.arange(0, 1, 0.1)
   loss = np.arange(1, 0, -0.1)
@@ -64,8 +64,8 @@ the ``mlflow ui`` command.
   dataset_context = ["train"] * 5 + ["test"] * 5
 
   for i in range(10):
-      with mlflow.start_run():
-          mlflow.log_metrics(
+      with qcflow.start_run():
+          qcflow.log_metrics(
               {
                   "loss": loss[i],
                   "accuracy": accuracy[i],
@@ -74,7 +74,7 @@ the ``mlflow ui`` command.
               }
           )
 
-          mlflow.log_params(
+          qcflow.log_params(
               {
                   "batch_size": batch_size[i],
                   "learning rate": learning_rate[i],
@@ -82,32 +82,32 @@ the ``mlflow ui`` command.
               }
           )
 
-          mlflow.set_tags(
+          qcflow.set_tags(
               {
                   "task": task[i],
                   "environment": environment[i],
               }
           )
 
-          dataset = mlflow.data.from_numpy(
+          dataset = qcflow.data.from_numpy(
               features=np.random.uniform(size=[20, 28, 28, 3]),
               targets=np.random.randint(0, 10, size=[20]),
               name=dataset_name[i],
               digest=dataset_digest[i],
           )
-          mlflow.log_input(dataset, context=dataset_context[i])
+          qcflow.log_input(dataset, context=dataset_context[i])
 
 
-The code above creates 10 MLflow runs with different metrics, params, tags and dataset information. 
-After successful execution, if you return to the MLflow UI in your browser, you should find all of 
+The code above creates 10 QCFlow runs with different metrics, params, tags and dataset information. 
+After successful execution, if you return to the QCFlow UI in your browser, you should find all of 
 these runs under the experiment "search-run-guide", as shown by the following screenshot:
 
-.. figure:: _static/images/search-runs/created_mlflow_runs.png
+.. figure:: _static/images/search-runs/created_qcflow_runs.png
    :alt: testing runs
    :width: 90%
    :align: center
 
-In real-world production deployments of MLflow, it's common to have thousands or even hundreds of thousands of  
+In real-world production deployments of QCFlow, it's common to have thousands or even hundreds of thousands of  
 runs. In such cases, it's important to be able to filter and search for runs based on specific criteria.
 
 .. _search-runs-syntax:
@@ -115,22 +115,22 @@ runs. In such cases, it's important to be able to filter and search for runs bas
 Search Query Example 
 ^^^^^^^^^^^^^^^^^^^^
 
-In order to filter your MLflow runs, you will need to write **search queries**, which are pseudo-SQL
+In order to filter your QCFlow runs, you will need to write **search queries**, which are pseudo-SQL
 conditions expressed in a distinct syntax. 
 
 To showcase this functionality, let's look at the below code examples.
 
 .. code-block:: python
 
-  import mlflow
+  import qcflow
 
-  all_runs = mlflow.search_runs(search_all_experiments=True)
+  all_runs = qcflow.search_runs(search_all_experiments=True)
   print(all_runs)
 
 .. code-block:: text
   :caption: Output
 
-                               run_id  ... tags.mlflow.user
+                               run_id  ... tags.qcflow.user
   0  5984a3488161440f92de9847e846b342  ...     michael.berk
   1  41160f238a5841998dda263794b26067  ...     michael.berk
   2  babe221a676b4fa4b204f8240f2c4f14  ...     michael.berk
@@ -148,9 +148,9 @@ Second, let's try filtering the runs for our really bad models: ``metrics.loss >
 
 .. code-block:: python
   
-  import mlflow
+  import qcflow
 
-  bad_runs = mlflow.search_runs(
+  bad_runs = qcflow.search_runs(
       filter_string="metrics.loss > 0.8", search_all_experiments=True
   )
   print(bad_runs)
@@ -158,7 +158,7 @@ Second, let's try filtering the runs for our really bad models: ``metrics.loss >
 .. code-block:: text
   :caption: Output
 
-                               run_id  ... tags.mlflow.source.name
+                               run_id  ... tags.qcflow.source.name
   0  67973142b9c0470d8d764ada07c5a988  ...               delete.py
   1  59853d5f17f946218f63de1dc82de07b  ...               delete.py
 
@@ -169,7 +169,7 @@ You'll notice that we now are displaying 2 runs instead of 10. Pretty easy, righ
 Search Syntax Overview
 ^^^^^^^^^^^^^^^^^^^^^^
 
-MLflow's Search functionality leverages a Domain Specific Language (DSL) for querying. It is inspired by SQL but does not 
+QCFlow's Search functionality leverages a Domain Specific Language (DSL) for querying. It is inspired by SQL but does not 
 offer the full range of SQL capabilities.
 
 This section describes the syntax formatting, focusing on "left side" and "right side" elements in search queries. The 
@@ -218,7 +218,7 @@ the field is being compared, like ``0.8``.
 Search Query Syntax Deep Dive
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As noted above, MLflow search syntax is similar to SQL with a few notable exceptions.
+As noted above, QCFlow search syntax is similar to SQL with a few notable exceptions.
 
 * The SQL ``OR`` keyword is not supported.
 * For fields that contain special characters or start with numbers, these should be wrapped in **backticks**.
@@ -250,10 +250,10 @@ As noted above, MLflow search syntax is similar to SQL with a few notable except
 Other than the that, the syntax should be intuitive to anyone who has used SQL. To assemble
 a single search condition, you must assemble an inequality using the following components...
 
-1. **An MLflow field**: a metric, param, tag, dataset or run metadata.
+1. **An QCFlow field**: a metric, param, tag, dataset or run metadata.
 2. **A comparator**: an inequality operator. 
 
-  * For numerics, MLflow supports ``=``, ``!=``, ``>``, ``>=``, ``<``, and ``<=``. Examples include:
+  * For numerics, QCFlow supports ``=``, ``!=``, ``>``, ``>=``, ``<``, and ``<=``. Examples include:
 
     .. code-block:: sql
 
@@ -261,7 +261,7 @@ a single search condition, you must assemble an inequality using the following c
       metrics.loss <= 0.15
       metrics.accuracy != 0.15
 
-  * For strings, MLflow supports ``=``, ``!=``, ``LIKE`` (case-sensitive) and ``ILIKE`` (case-insensitive). Examples include:
+  * For strings, QCFlow supports ``=``, ``!=``, ``LIKE`` (case-sensitive) and ``ILIKE`` (case-insensitive). Examples include:
 
     .. code-block:: sql
 
@@ -269,7 +269,7 @@ a single search condition, you must assemble an inequality using the following c
       params.model LIKE "GPT%"
       params.model ILIKE "gpt%"
 
-  * For sets, MLflow supports ``IN``. Examples include:
+  * For sets, QCFlow supports ``IN``. Examples include:
 
     .. code-block:: sql
 
@@ -284,7 +284,7 @@ Let's look at some more examples.
 Example Queries
 ^^^^^^^^^^^^^^^
 
-In this section we will go over how to search by different categories of MLflow fields. For each category we provide
+In this section we will go over how to search by different categories of QCFlow fields. For each category we provide
 a few sample queries. If you have executed the run creation script we provided, these queries should fetch certain runs
 but sometimes require modification for run-specific information, such as ``start_time``.
 
@@ -293,8 +293,8 @@ but sometimes require modification for run-specific information, such as ``start
 
 Metrics are quantitative measures typically used to evaluate the model's performance during 
 or after training. Metrics can include values like accuracy, precision, recall, F1 score, etc., and 
-can change over time as the model trains. They are logged manually via ``mlflow.log_metric`` or 
-``mlflow.log_metrics`` or automatically via autologging.
+can change over time as the model trains. They are logged manually via ``qcflow.log_metric`` or 
+``qcflow.log_metrics`` or automatically via autologging.
 
 To search for runs by filtering on metrics, you must include the ``metrics`` prefix in the left 
 side of the inequality. Note that they are **stored as numbers**, so you must use numeric comparators.
@@ -312,8 +312,8 @@ side of the inequality. Note that they are **stored as numbers**, so you must us
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Params are strings that typically represent the configuration aspects of the model. Parameters can include values 
-like learning rate, batch size, and number of epochs. They are logged manually via ``mlflow.log_param``
-or ``mlflow.log_params`` or automatically via autologging.
+like learning rate, batch size, and number of epochs. They are logged manually via ``qcflow.log_param``
+or ``qcflow.log_params`` or automatically via autologging.
 
 To search for runs by filtering on params, you must include the ``params`` prefix in the left 
 side of the inequality. Note that they are **stored as strings**, so you must use string 
@@ -329,17 +329,17 @@ When querying for numeric parameters, you must specify them as strings by enclos
     params.model ILIKE "gPt%"
     params.model LIKE "GPT%" AND params.batch_size = "2"
 
-.. _mlflow_tags:
+.. _qcflow_tags:
 
 3 - Searching By Tags
 ~~~~~~~~~~~~~~~~~~~~~
 
 Tags are metadata that typically provide additional context about the run. Tags can include values
-like user name, team, etc. They are logged manually via ``mlflow.set_tag``
-or ``mlflow.set_tags``. In addition, `system tags <https://mlflow.org/docs/latest/tracking/tracking-api.html#system-tags>`_,
-such as ``mlflow.user``, are automatically logged.
+like user name, team, etc. They are logged manually via ``qcflow.set_tag``
+or ``qcflow.set_tags``. In addition, `system tags <https://qcflow.org/docs/latest/tracking/tracking-api.html#system-tags>`_,
+such as ``qcflow.user``, are automatically logged.
 
-To search for runs by filtering on tags, you must include the ``tags`` or ``mlflow`` prefixes in
+To search for runs by filtering on tags, you must include the ``tags`` or ``qcflow`` prefixes in
 the left side of the inequality. Note that tags are **stored as strings**, so you must use string 
 comparators, such as ``=`` and ``!=``.
 
@@ -355,7 +355,7 @@ comparators, such as ``=`` and ``!=``.
 
 Datasets represent data used in model training or evaluation, including features, targets, 
 predictions, and metadata such as the dataset's name, digest (hash) schema, profile, and source. 
-They are logged via ``mlflow.log_input`` or automatically via autologging.
+They are logged via ``qcflow.log_input`` or automatically via autologging.
 
 To search for runs by filtering on dataset information, you must filter on one of the below fields
 
@@ -380,10 +380,10 @@ Run metadata are a variety of user-specified and system-generated attributes tha
 To search for runs by filtering on the metadata of runs, you must include the ``attributes`` prefix in the left
 side of the inequality. Note that run metadata can be either a string or a numeric depending on the 
 attribute, so you must use the appropriate comparator. For a complete list of attributes, see
-:py:class:`mlflow.entities.RunInfo`, however note that not all fields in the RunInfo object are
+:py:class:`qcflow.entities.RunInfo`, however note that not all fields in the RunInfo object are
 searchable.
 
-To search for runs by filtering on tags, you must include the ``tags`` or ``mlflow`` prefixes in
+To search for runs by filtering on tags, you must include the ``tags`` or ``qcflow`` prefixes in
 the left side of the inequality. Note that tags are **stored as strings**, so you must use string 
 comparators, such as ``=`` and ``!=``.
 
@@ -455,12 +455,12 @@ Programmatically Searching Runs
 --------------------------------
 
 When scaling out to large production systems, typically you'll want to interact with your runs
-outside the MLflow UI. This can be done programmatically using the MLflow client APIs.
+outside the QCFlow UI. This can be done programmatically using the QCFlow client APIs.
 
 Python
 ^^^^^^
 
-:py:func:`mlflow.client.MlflowClient.search_runs()` or :py:func:`mlflow.search_runs()` 
+:py:func:`qcflow.client.QCFlowClient.search_runs()` or :py:func:`qcflow.search_runs()` 
 take the same arguments as the above UI examples and more! They return all the runs that 
 match the specified filters. Your best resource is the dosctrings for each of these functions, but
 here are some useful examples.
@@ -477,7 +477,7 @@ Python provides powerful ways to build these queries programmatically. Some tips
 
 .. code-block:: python
 
-  import mlflow
+  import qcflow
 
   run_ids = ["22db81f070f6413588641c8c343cdd72", "c3680e37d0fa44eb9c9fb7828f6b5481"]
   run_id_condition = "'" + "','".join(run_ids) + "'"
@@ -489,7 +489,7 @@ Python provides powerful ways to build these queries programmatically. Some tips
     AND params.model LIKE "GPT%"
   """
 
-  runs_with_complex_filter = mlflow.search_runs(
+  runs_with_complex_filter = qcflow.search_runs(
       experiment_names=["search-run-guide"],
       filter_string=complex_filter,
   )
@@ -499,7 +499,7 @@ The output will be a pandas DataFrame with the runs that match the specified fil
 
 .. code-block:: text
 
-                                run_id  ... tags.mlflow.runName
+                                run_id  ... tags.qcflow.runName
   0  22db81f070f6413588641c8c343cdd72  ...   orderly-quail-568
   1  c3680e37d0fa44eb9c9fb7828f6b5481  ...    melodic-lynx-301
 
@@ -509,15 +509,15 @@ The output will be a pandas DataFrame with the runs that match the specified fil
 ~~~~~~~~~~~~~~~~~~~
 
 The ``run_view_type`` parameter exposes additional filtering options, as noted in the 
-:py:class:`mlflow.entities.ViewType` enum. For example, if you want to filter only active runs,
+:py:class:`qcflow.entities.ViewType` enum. For example, if you want to filter only active runs,
 which is a dropdown in the UI, simply pass ``run_view_type=ViewType.ACTIVE_ONLY``.
 
 .. code-block:: python
 
-  import mlflow
-  from mlflow.entities import ViewType
+  import qcflow
+  from qcflow.entities import ViewType
 
-  active_runs = mlflow.search_runs(
+  active_runs = qcflow.search_runs(
       experiment_names=["search-run-guide"],
       run_view_type=ViewType.ACTIVE_ONLY,
       order_by=["metrics.accuracy DESC"],
@@ -534,10 +534,10 @@ the ``order_by`` parameter is omitted is to sort by ``start_time DESC``, then ``
 
 .. code-block:: python
 
-  import mlflow
-  from mlflow.entities import ViewType
+  import qcflow
+  from qcflow.entities import ViewType
 
-  active_runs_ordered_by_accuracy = mlflow.search_runs(
+  active_runs_ordered_by_accuracy = qcflow.search_runs(
       experiment_names=["search-run-guide"],
       run_view_type=ViewType.ACTIVE_ONLY,
       order_by=["metrics.accuracy DESC"],
@@ -548,10 +548,10 @@ combined with the ``max_results`` parameter, you can get the top ``n`` that matc
 
 .. code-block:: python
 
-  import mlflow
-  from mlflow.entities import ViewType
+  import qcflow
+  from qcflow.entities import ViewType
 
-  highest_accuracy_run = mlflow.search_runs(
+  highest_accuracy_run = qcflow.search_runs(
       experiment_names=["search-run-guide"],
       run_view_type=ViewType.ACTIVE_ONLY,
       max_results=1,
@@ -567,18 +567,18 @@ Now you might be wondering how to search all experiments. It's as simple as spec
 
 .. code-block:: python
 
-  import mlflow
-  from mlflow.entities import ViewType
+  import qcflow
+  from qcflow.entities import ViewType
 
   model_of_interest = "GPT-4"
-  gpt_4_runs_global = mlflow.search_runs(
+  gpt_4_runs_global = qcflow.search_runs(
       filter_string=f"params.model = '{model_of_interest}'",
       run_view_type=ViewType.ALL,
       search_all_experiments=True,
   )
 
 Finally, there are additioanl useful features in the 
-:py:func:`mlflow.client.MlflowClient.search_runs()` or :py:func:`mlflow.search_runs()` methods, so be sure to 
+:py:func:`qcflow.client.QCFlowClient.search_runs()` or :py:func:`qcflow.search_runs()` methods, so be sure to 
 check out the documentation for more details.
 
 R
@@ -588,8 +588,8 @@ behavior, right-hand side conditional elements must be wrapped in single quotes 
 
 .. code-block:: r
 
-  library(mlflow)
-  mlflow_search_runs(
+  library(qcflow)
+  qcflow_search_runs(
     filter = "metrics.rmse < 0.9 and tags.production = 'true'",
     experiment_ids = as.character(1:2),
     order_by = "params.lr DESC"

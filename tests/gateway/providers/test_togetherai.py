@@ -5,11 +5,11 @@ import pytest
 from aiohttp import ClientTimeout
 from fastapi.encoders import jsonable_encoder
 
-from mlflow.gateway.config import RouteConfig
-from mlflow.gateway.constants import MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.togetherai import TogetherAIProvider
-from mlflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.config import RouteConfig
+from qcflow.gateway.constants import QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.togetherai import TogetherAIProvider
+from qcflow.gateway.schemas import chat, completions, embeddings
 
 from tests.gateway.tools import MockAsyncResponse, MockAsyncStreamingResponse
 
@@ -108,7 +108,7 @@ async def test_completions():
                 "temperature": 1,
                 "n": 1,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -216,7 +216,7 @@ async def test_completions_stream(resp):
                 "n": 1,
                 "prompt": "This is a test",
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -360,7 +360,7 @@ async def test_embeddings():
                 "input": "Our solar system orbits the Milky Way galaxy at about 515,000 mph.",
                 "model": "togethercomputer/m2-bert-80M-8k-retrieval",
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -439,7 +439,7 @@ async def test_chat():
                 "temperature": 1.0,
                 "n": 1,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -553,5 +553,5 @@ async def test_chat_stream(resp):
                 ],
                 "n": 1,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )

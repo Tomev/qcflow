@@ -1,13 +1,13 @@
-MLflow OpenAI Autologging
+QCFlow OpenAI Autologging
 =========================
 
-The OpenAI flavor for MLflow supports autologging to ensure that experimentation, testing, and validation of your ideas can be captured dynamically without 
+The OpenAI flavor for QCFlow supports autologging to ensure that experimentation, testing, and validation of your ideas can be captured dynamically without 
 having to wrap your code with logging boilerplate. 
 
 .. attention::
     Autologging is **only supported** for versions of the OpenAI SDK that are 1.17 and higher.
 
-MLflow autologging for the OpenAI SDK supports the following interfaces:
+QCFlow autologging for the OpenAI SDK supports the following interfaces:
 
 - **Chat Completions** via ``client.chat.completions.create()``
 - **Completions** (legacy) via ``client.completions.create()``
@@ -23,22 +23,22 @@ In this guide, we'll discuss some of the key features that are available in the 
 
 Quickstart
 ----------
-To get started with MLflow's OpenAI autologging, you simply need to call :py:func:`mlflow.openai.autolog` at the beginning of your script or notebook. 
+To get started with QCFlow's OpenAI autologging, you simply need to call :py:func:`qcflow.openai.autolog` at the beginning of your script or notebook. 
 Enabling autologging with no argument overrides will behave as the ``default`` configuration in the table in the next section. Overriding any of these settings 
 will allow you to log additional elements. 
 
 .. tip::
-    The only element that is **enabled by default** when autologging is activated is the recording of trace information. You can read more about MLflow tracing 
+    The only element that is **enabled by default** when autologging is activated is the recording of trace information. You can read more about QCFlow tracing 
     `here <../tracing/index.html>`_. 
 
 .. code-block:: python
 
     import os
     import openai
-    import mlflow
+    import qcflow
 
     # Enables trace logging by default
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     openai_client = openai.OpenAI()
 
@@ -62,8 +62,8 @@ will allow you to log additional elements.
 Configuration of OpenAI Autologging
 -----------------------------------
 
-MLflow OpenAI autologging can log various information about the model and its inference. **By default, only trace logging is enabled**, but you can enable 
-autologging of other information by setting the corresponding parameters when calling :py:func:`mlflow.openai.autolog()`. 
+QCFlow OpenAI autologging can log various information about the model and its inference. **By default, only trace logging is enabled**, but you can enable 
+autologging of other information by setting the corresponding parameters when calling :py:func:`qcflow.openai.autolog()`. 
 
 The available options and their default values are shown below. To learn more about additional parameters, see the API documentation.
 
@@ -78,7 +78,7 @@ The available options and their default values are shown below. To learn more ab
     * - Traces
       - ``true``
       - ``log_traces``
-      - Whether to generate and log traces for the model. See `MLflow Tracing <../tracing/index.html>`_ for more details about the tracing feature.
+      - Whether to generate and log traces for the model. See `QCFlow Tracing <../tracing/index.html>`_ for more details about the tracing feature.
     * - Model Artifacts
       - ``false``
       - ``log_models``
@@ -86,7 +86,7 @@ The available options and their default values are shown below. To learn more ab
     * - Model Signatures
       - ``false``
       - ``log_model_signatures``
-      - If set to ``True``, :py:class:`ModelSignatures <mlflow.models.ModelSignature>` describing model inputs and outputs are collected and logged along with OpenAI model artifacts during inference. This option is only available when ``log_models`` is enabled.
+      - If set to ``True``, :py:class:`ModelSignatures <qcflow.models.ModelSignature>` describing model inputs and outputs are collected and logged along with OpenAI model artifacts during inference. This option is only available when ``log_models`` is enabled.
     * - Input Example
       - ``false``
       - ``log_input_examples``
@@ -97,9 +97,9 @@ For example, to disable logging of traces, and instead enable model logging, run
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    mlflow.openai.autolog(
+    qcflow.openai.autolog(
         log_traces=False,
         log_models=True,
     )
@@ -111,7 +111,7 @@ Example of using OpenAI Autologging
 
     import os
 
-    import mlflow
+    import qcflow
     import openai
 
     API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -119,7 +119,7 @@ Example of using OpenAI Autologging
     REGISTERED_MODEL_NAME = "openai-auto"
     MODEL_VERSION = 1
 
-    mlflow.openai.autolog(
+    qcflow.openai.autolog(
         log_input_examples=True,
         log_model_signatures=True,
         log_models=True,
@@ -127,7 +127,7 @@ Example of using OpenAI Autologging
         registered_model_name=REGISTERED_MODEL_NAME,
     )
 
-    mlflow.set_experiment(EXPERIMENT_NAME)
+    qcflow.set_experiment(EXPERIMENT_NAME)
 
     openai_client = openai.OpenAI(api_key=API_KEY)
 
@@ -155,7 +155,7 @@ The model can be loaded by using the ``models`` uri via the model that was logge
 
 .. code-block:: python
 
-    loaded_autologged_model = mlflow.pyfunc.load_model(
+    loaded_autologged_model = qcflow.pyfunc.load_model(
         f"models:/{REGISTERED_MODEL_NAME}/{MODEL_VERSION}"
     )
 
@@ -167,20 +167,20 @@ The model can be loaded by using the ``models`` uri via the model that was logge
 Auto-tracing for OpenAI Swarm
 -----------------------------
 
-MLflow 2.17.1 introduced built-in tracing capability for `OpenAI Swarm <https://github.com/openai/swarm/tree/main>`_, a multi-agent orchestration framework from OpenAI. The framework provides a clean interface to build multi-agent systems on top of the OpenAI's Function Calling capability and the concept of `handoff & routines patterns <https://cookbook.openai.com/examples/orchestrating_agents>`_.
+QCFlow 2.17.1 introduced built-in tracing capability for `OpenAI Swarm <https://github.com/openai/swarm/tree/main>`_, a multi-agent orchestration framework from OpenAI. The framework provides a clean interface to build multi-agent systems on top of the OpenAI's Function Calling capability and the concept of `handoff & routines patterns <https://cookbook.openai.com/examples/orchestrating_agents>`_.
 
-MLflow's automatic tracing capability offers seamless tracking of interactions between agents, tool calls, and their collective outputs. You can enable auto-tracing for OpenAI Swarm just by calling the :py:func:`mlflow.openai.autolog()` function.
+QCFlow's automatic tracing capability offers seamless tracking of interactions between agents, tool calls, and their collective outputs. You can enable auto-tracing for OpenAI Swarm just by calling the :py:func:`qcflow.openai.autolog()` function.
 
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     from swarm import Swarm, Agent
 
     # Calling the autolog API will enable trace logging by default.
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
-    mlflow.set_experiment("OpenAI Swarm")
+    qcflow.set_experiment("OpenAI Swarm")
 
     client = Swarm()
 
@@ -206,7 +206,7 @@ MLflow's automatic tracing capability offers seamless tracking of interactions b
     )
     print(response)
 
-The logged trace, associated with the ``OpenAI Swarm`` experiment, can be seen in the MLflow UI, as shown below:
+The logged trace, associated with the ``OpenAI Swarm`` experiment, can be seen in the QCFlow UI, as shown below:
 
 .. figure:: ../../_static/images/llms/tracing/openai-swarm-tracing.png
     :alt: OpenAI Swarm Tracing
@@ -217,18 +217,18 @@ The logged trace, associated with the ``OpenAI Swarm`` experiment, can be seen i
 FAQ
 ---
 
-How can I manually log traces for the OpenAI SDK with MLflow?
+How can I manually log traces for the OpenAI SDK with QCFlow?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 By setting an active experiment (it is not recommended to use the Default Experiment for this), you can use the high-level tracing fluent API
-when working on an interface to your model (whether you log the model or not) by utilizing the MLflow tracing fluent API. 
+when working on an interface to your model (whether you log the model or not) by utilizing the QCFlow tracing fluent API. 
 
 You can discover how to use the `fluent API here <../tracing/index.html#tracing-fluent-apis>`_.
 
 If I'm using streaming for my OpenAI model, will autologging log the trace data correctly?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Yes. For each of the MLflow-supported client interface types that have the ability to stream responses from OpenAI, autologging will record the 
+Yes. For each of the QCFlow-supported client interface types that have the ability to stream responses from OpenAI, autologging will record the 
 iterator response chunks in the output. 
 
 As an example:
@@ -236,12 +236,12 @@ As an example:
 .. code-block:: python
 
     import openai
-    import mlflow
+    import qcflow
 
-    mlflow.set_experiment("OpenAI")
+    qcflow.set_experiment("OpenAI")
 
     # Enable trace logging
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     client = openai.OpenAI()
 
@@ -255,7 +255,7 @@ As an example:
     for chunk in stream:
         print(chunk.choices[0].delta.content or "", end="")
 
-Within the MLflow UI, the traces for a streaming model will be displayed as shown below:
+Within the QCFlow UI, the traces for a streaming model will be displayed as shown below:
 
 .. figure:: ../../_static/images/tutorials/llms/openai-stream-trace.png
     :alt: OpenAI Autologging stream traces
@@ -264,14 +264,14 @@ Within the MLflow UI, the traces for a streaming model will be displayed as show
 
 .. note::
 
-    OpenAI configurations that specify streaming responses are **not yet supported** for using the ``predict_stream()`` pyfunc invocation API in MLflow.
-    However, you can still record streaming traces. When loading a the logged openai model as pyfunc via :py:func:`mlflow.pyfunc.load_model`, the only 
+    OpenAI configurations that specify streaming responses are **not yet supported** for using the ``predict_stream()`` pyfunc invocation API in QCFlow.
+    However, you can still record streaming traces. When loading a the logged openai model as pyfunc via :py:func:`qcflow.pyfunc.load_model`, the only 
     available interface for inference is the synchronous blocking ``predict()`` API. 
 
 Are asynchronous APIs supported in autologging?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The MLflow OpenAI autologging feature **does not support asynchronous APIs** for logging models or traces.
+The QCFlow OpenAI autologging feature **does not support asynchronous APIs** for logging models or traces.
 
 Saving your async implementation is best done by using the `models from code feature <../../models.html#models-from-code>`_.
 
@@ -280,11 +280,11 @@ If you would like to log trace events for an async OpenAI API, below is a simpli
 .. code-block:: python
 
     import openai
-    import mlflow
+    import qcflow
     import asyncio
 
     # Activate an experiment for logging traces to
-    mlflow.set_experiment("OpenAI")
+    qcflow.set_experiment("OpenAI")
 
 
     async def fetch_openai_response(messages, model="gpt-4o", temperature=0.99):
@@ -310,7 +310,7 @@ If you would like to log trace events for an async OpenAI API, below is a simpli
         )
 
         # Manually log traces using the tracing fluent API
-        with mlflow.start_span() as trace:
+        with qcflow.start_span() as trace:
             trace.set_inputs(messages)
             full_response = []
 

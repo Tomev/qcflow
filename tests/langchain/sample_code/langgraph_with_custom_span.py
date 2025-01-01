@@ -8,8 +8,8 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 
-import mlflow
-from mlflow.entities.span import SpanType
+import qcflow
+from qcflow.entities.span import SpanType
 
 
 class FakeOpenAI(ChatOpenAI, extra="allow"):
@@ -39,7 +39,7 @@ def get_inner_runnable():
 @tool
 def get_weather(city: Literal["nyc", "sf"]):
     """Use this to get weather information."""
-    with mlflow.start_span(name="get_weather_inner", span_type=SpanType.CHAIN) as span:
+    with qcflow.start_span(name="get_weather_inner", span_type=SpanType.CHAIN) as span:
         span.set_inputs(city)
 
         # Call another LangChain module
@@ -58,4 +58,4 @@ llm = FakeOpenAI()
 tools = [get_weather]
 graph = create_react_agent(llm, tools)
 
-mlflow.models.set_model(graph)
+qcflow.models.set_model(graph)

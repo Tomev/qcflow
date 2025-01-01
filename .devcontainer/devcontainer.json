@@ -1,9 +1,9 @@
 {
   // https://code.visualstudio.com/docs/remote/devcontainerjson-reference
-  "name": "mlflow-devcontainer",
+  "name": "qcflow-devcontainer",
   "dockerComposeFile": "docker-compose.yml",
-  "workspaceFolder": "/workspaces/mlflow",
-  "service": "mlflow",
+  "workspaceFolder": "/workspaces/qcflow",
+  "service": "qcflow",
   "postCreateCommand": ".devcontainer/postCreate.sh",
   "overrideCommand": true,
   "customizations": {
@@ -24,8 +24,8 @@
           "editor.defaultFormatter": "charliermarsh.ruff"
         },
         "python.formatting.provider": "none",
-        "prettier.prettierPath": "/workspaces/mlflow/mlflow/server/js/node_modules/prettier",
-        "prettier.configPath": "/workspaces/mlflow/mlflow/server/js/.prettierrc.js"
+        "prettier.prettierPath": "/workspaces/qcflow/qcflow/server/js/node_modules/prettier",
+        "prettier.configPath": "/workspaces/qcflow/qcflow/server/js/.prettierrc.js"
       },
       "extensions": [
         "charliermarsh.ruff",

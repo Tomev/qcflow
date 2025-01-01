@@ -10,12 +10,12 @@ from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 
-import mlflow.db
-from mlflow.exceptions import MlflowException
-from mlflow.store.db.base_sql_model import Base
-from mlflow.store.db.utils import _get_alembic_config, _verify_schema
-from mlflow.store.tracking.dbmodels.initial_models import Base as InitialBase
-from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
+import qcflow.db
+from qcflow.exceptions import QCFlowException
+from qcflow.store.db.base_sql_model import Base
+from qcflow.store.db.utils import _get_alembic_config, _verify_schema
+from qcflow.store.tracking.dbmodels.initial_models import Base as InitialBase
+from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
 
 from tests.integration.utils import invoke_cli_runner
 from tests.store.dump_schema import dump_db_schema
@@ -45,7 +45,7 @@ def _assert_schema_files_equal(generated_schema_file, expected_schema_file):
             f"definition:\n{generated_schema_table}\nExpected schema had table definition:"
             f"\n{expected_schema_table}\nIf you intended to make schema changes, run "
             f"'python tests/store/dump_schema.py {expected_schema_file}' from your checkout"
-            " of MLflow to update the schema snapshot."
+            " of QCFlow to update the schema snapshot."
         )
 
 
@@ -79,7 +79,7 @@ def test_running_migrations_generates_expected_schema(tmp_path, expected_schema_
     """Test that migrating an existing database generates the desired schema."""
     engine = sqlalchemy.create_engine(db_url)
     InitialBase.metadata.create_all(engine)
-    invoke_cli_runner(mlflow.db.commands, ["upgrade", db_url])
+    invoke_cli_runner(qcflow.db.commands, ["upgrade", db_url])
     generated_schema_file = tmp_path.joinpath("generated-schema.sql")
     dump_db_schema(db_url, generated_schema_file)
     _assert_schema_files_equal(generated_schema_file, expected_schema_file)
@@ -87,7 +87,7 @@ def test_running_migrations_generates_expected_schema(tmp_path, expected_schema_
 
 def test_sqlalchemy_store_detects_schema_mismatch(db_url):
     def _assert_invalid_schema(engine):
-        with pytest.raises(MlflowException, match="Detected out-of-date database schema."):
+        with pytest.raises(QCFlowException, match="Detected out-of-date database schema."):
             _verify_schema(engine)
 
     # Initialize an empty database & verify that we detect a schema mismatch
@@ -105,7 +105,7 @@ def test_sqlalchemy_store_detects_schema_mismatch(db_url):
         command.upgrade(config, rev.revision)
         _assert_invalid_schema(engine)
     # Run migrations, schema verification should now pass
-    invoke_cli_runner(mlflow.db.commands, ["upgrade", db_url])
+    invoke_cli_runner(qcflow.db.commands, ["upgrade", db_url])
     _verify_schema(engine)
 
 
@@ -117,17 +117,17 @@ def test_store_generated_schema_matches_base(tmp_path, db_url):
     mc = MigrationContext.configure(engine.connect(), opts={"compare_type": False})
     diff = compare_metadata(mc, Base.metadata)
     # `diff` contains several `remove_index` operations because `Base.metadata` does not contain
-    # index metadata but `mc` does. Note this doesn't mean the MLflow database is missing indexes
+    # index metadata but `mc` does. Note this doesn't mean the QCFlow database is missing indexes
     # as tested in `test_create_index_on_run_uuid`.
     diff = [d for d in diff if (d[0] not in ["remove_index", "add_index", "add_fk"])]
     assert len(diff) == 0, (
         "if this test is failing after writing a DB migration, please make sure you've "
-        "updated the ORM definitions in `mlflow/store/tracking/dbmodels/models.py`."
+        "updated the ORM definitions in `qcflow/store/tracking/dbmodels/models.py`."
     )
 
 
 def test_create_index_on_run_uuid(tmp_path, db_url):
-    # Test for mlflow/store/db_migrations/versions/bd07f7e963c5_create_index_on_run_uuid.py
+    # Test for qcflow/store/db_migrations/versions/bd07f7e963c5_create_index_on_run_uuid.py
     SqlAlchemyStore(db_url, tmp_path.joinpath("ARTIFACTS").as_uri())
     with sqlite3.connect(db_url[len("sqlite:///") :]) as conn:
         cursor = conn.cursor()
@@ -144,7 +144,7 @@ def test_create_index_on_run_uuid(tmp_path, db_url):
 
 def test_index_for_dataset_tables(tmp_path, db_url):
     # Test for
-    # mlflow/store/db_migrations/versions/7f2a7d5fae7d_add_datasets_inputs_input_tags_tables.py
+    # qcflow/store/db_migrations/versions/7f2a7d5fae7d_add_datasets_inputs_input_tags_tables.py
     SqlAlchemyStore(db_url, tmp_path.joinpath("ARTIFACTS").as_uri())
     with sqlite3.connect(db_url[len("sqlite:///") :]) as conn:
         cursor = conn.cursor()

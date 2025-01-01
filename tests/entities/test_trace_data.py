@@ -2,24 +2,24 @@ import json
 
 import pytest
 
-import mlflow
-from mlflow.entities import SpanType, TraceData
-from mlflow.entities.span_event import SpanEvent
+import qcflow
+from qcflow.entities import SpanType, TraceData
+from qcflow.entities.span_event import SpanEvent
 
 
 def test_json_deserialization():
     class TestModel:
-        @mlflow.trace()
+        @qcflow.trace()
         def predict(self, x, y):
             z = x + y
 
-            with mlflow.start_span(name="with_ok_event") as span:
+            with qcflow.start_span(name="with_ok_event") as span:
                 span.add_event(SpanEvent(name="ok_event", attributes={"foo": "bar"}))
 
             self.always_fail()
             return z
 
-        @mlflow.trace(span_type=SpanType.LLM, name="always_fail_name", attributes={"delta": 1})
+        @qcflow.trace(span_type=SpanType.LLM, name="always_fail_name", attributes={"delta": 1})
         def always_fail(self):
             raise Exception("Error!")
 
@@ -29,7 +29,7 @@ def test_json_deserialization():
     with pytest.raises(Exception, match="Error!"):
         model.predict(2, 5)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     trace_data = trace.data
 
     # Compare events separately as it includes exception stacktrace which is hard to hardcode
@@ -52,10 +52,10 @@ def test_json_deserialization():
                 "status_code": "ERROR",
                 "status_message": "Exception: Error!",
                 "attributes": {
-                    "mlflow.traceRequestId": json.dumps(trace.info.request_id),
-                    "mlflow.spanType": '"UNKNOWN"',
-                    "mlflow.spanFunctionName": '"predict"',
-                    "mlflow.spanInputs": '{"x": 2, "y": 5}',
+                    "qcflow.traceRequestId": json.dumps(trace.info.request_id),
+                    "qcflow.spanType": '"UNKNOWN"',
+                    "qcflow.spanFunctionName": '"predict"',
+                    "qcflow.spanInputs": '{"x": 2, "y": 5}',
                 },
                 # "events": ...,
             },
@@ -71,8 +71,8 @@ def test_json_deserialization():
                 "status_code": "OK",
                 "status_message": "",
                 "attributes": {
-                    "mlflow.traceRequestId": json.dumps(trace.info.request_id),
-                    "mlflow.spanType": '"UNKNOWN"',
+                    "qcflow.traceRequestId": json.dumps(trace.info.request_id),
+                    "qcflow.spanType": '"UNKNOWN"',
                 },
                 # "events": ...,
             },
@@ -89,10 +89,10 @@ def test_json_deserialization():
                 "status_message": "Exception: Error!",
                 "attributes": {
                     "delta": "1",
-                    "mlflow.traceRequestId": json.dumps(trace.info.request_id),
-                    "mlflow.spanType": '"LLM"',
-                    "mlflow.spanFunctionName": '"always_fail"',
-                    "mlflow.spanInputs": "{}",
+                    "qcflow.traceRequestId": json.dumps(trace.info.request_id),
+                    "qcflow.spanType": '"LLM"',
+                    "qcflow.spanFunctionName": '"always_fail"',
+                    "qcflow.spanInputs": "{}",
                 },
                 # "events": ...,
             },

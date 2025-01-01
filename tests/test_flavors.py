@@ -1,7 +1,7 @@
 import ast
 import os
 
-import mlflow
+import qcflow
 
 
 def read_file(path):
@@ -21,7 +21,7 @@ def is_model_flavor(src):
 
 
 def iter_flavor_names():
-    for root, _, files in os.walk("mlflow"):
+    for root, _, files in os.walk("qcflow"):
         for f in files:
             if f != "__init__.py":
                 continue
@@ -33,8 +33,8 @@ def iter_flavor_names():
                 yield os.path.splitext(basename)[0]
 
 
-def test_all_flavors_can_be_accessed_from_mlflow():
+def test_all_flavors_can_be_accessed_from_qcflow():
     flavor_names = list(iter_flavor_names())
     assert len(flavor_names) != 0
     for flavor_name in flavor_names:
-        assert hasattr(mlflow, flavor_name)
+        assert hasattr(qcflow, flavor_name)

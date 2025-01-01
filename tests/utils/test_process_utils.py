@@ -3,8 +3,8 @@ import uuid
 
 import pytest
 
-from mlflow.utils.os import is_windows
-from mlflow.utils.process import cache_return_value_per_process
+from qcflow.utils.os import is_windows
+from qcflow.utils.process import cache_return_value_per_process
 
 
 @cache_return_value_per_process

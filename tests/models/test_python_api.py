@@ -9,14 +9,14 @@ import pandas as pd
 import pytest
 import scipy.sparse
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.models.python_api import (
+import qcflow
+from qcflow.exceptions import QCFlowException
+from qcflow.models.python_api import (
     _CONTENT_TYPE_CSV,
     _CONTENT_TYPE_JSON,
     _serialize_input_data,
 )
-from mlflow.utils.env_manager import CONDA, LOCAL, UV, VIRTUALENV
+from qcflow.utils.env_manager import CONDA, LOCAL, UV, VIRTUALENV
 
 
 @pytest.mark.parametrize(
@@ -60,7 +60,7 @@ from mlflow.utils.env_manager import CONDA, LOCAL, UV, VIRTUALENV
     [VIRTUALENV, UV],
 )
 def test_predict(input_data, expected_data, content_type, env_manager):
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             if isinstance(model_input, pd.DataFrame):
                 assert model_input.equals(expected_data)
@@ -70,14 +70,14 @@ def test_predict(input_data, expected_data, content_type, env_manager):
                 assert model_input == expected_data
             return {}
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             extra_pip_requirements=["pytest"],
         )
 
-    mlflow.models.predict(
+    qcflow.models.predict(
         model_uri=model_info.model_uri,
         input_data=input_data,
         content_type=content_type,
@@ -94,7 +94,7 @@ def test_predict_with_pip_requirements_override(env_manager):
         if sys.platform == "win32":
             pytest.skip("Skipping conda tests on Windows")
 
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             # XGBoost should be installed by pip_requirements_override
             import xgboost
@@ -106,8 +106,8 @@ def test_predict_with_pip_requirements_override(env_manager):
 
             assert sklearn.__version__ == "1.3.0"
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             extra_pip_requirements=["scikit-learn==1.3.2", "pytest"],
@@ -116,7 +116,7 @@ def test_predict_with_pip_requirements_override(env_manager):
     requirements_override = ["xgboost==1.7.3", "scikit-learn==1.3.0"]
     if env_manager == CONDA:
         # Install charset-normalizer with conda-forge to work around pip-vs-conda issue during
-        # CI tests. At the beginning of the CI test, it installs MLflow dependencies via pip,
+        # CI tests. At the beginning of the CI test, it installs QCFlow dependencies via pip,
         # which includes charset-normalizer. Then when it runs this test case, the conda env
         # is created but charset-normalizer is installed via the default channel, which is one
         # major version behind the version installed via pip (as of 2024 Jan). As a result,
@@ -126,7 +126,7 @@ def test_predict_with_pip_requirements_override(env_manager):
         # TODO: Implement better isolation approach for pip and conda environments during testing.
         requirements_override.append("conda-forge::charset-normalizer")
 
-    mlflow.models.predict(
+    qcflow.models.predict(
         model_uri=model_info.model_uri,
         input_data={"inputs": [1, 2, 3]},
         content_type=_CONTENT_TYPE_JSON,
@@ -137,21 +137,21 @@ def test_predict_with_pip_requirements_override(env_manager):
 
 @pytest.mark.parametrize("env_manager", [VIRTUALENV, CONDA, UV])
 def test_predict_with_model_alias(env_manager):
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             assert os.environ["TEST"] == "test"
             return model_input
 
-    with mlflow.start_run():
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             registered_model_name="model_name",
         )
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     client.set_registered_model_alias("model_name", "test_alias", 1)
 
-    mlflow.models.predict(
+    qcflow.models.predict(
         model_uri="models:/model_name@test_alias",
         input_data="abc",
         env_manager=env_manager,
@@ -161,18 +161,18 @@ def test_predict_with_model_alias(env_manager):
 
 @pytest.mark.parametrize("env_manager", [VIRTUALENV, CONDA, UV])
 def test_predict_with_extra_envs(env_manager):
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             assert os.environ["TEST"] == "test"
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
         )
 
-    mlflow.models.predict(
+    qcflow.models.predict(
         model_uri=model_info.model_uri,
         input_data="abc",
         content_type=_CONTENT_TYPE_JSON,
@@ -182,23 +182,23 @@ def test_predict_with_extra_envs(env_manager):
 
 
 def test_predict_with_extra_envs_errors():
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             assert os.environ["TEST"] == "test"
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Extra environment variables are only "
         r"supported when env_manager is set to 'virtualenv', 'conda' or 'uv'",
     ):
-        mlflow.models.predict(
+        qcflow.models.predict(
             model_uri=model_info.model_uri,
             input_data="abc",
             content_type=_CONTENT_TYPE_JSON,
@@ -207,9 +207,9 @@ def test_predict_with_extra_envs_errors():
         )
 
     with pytest.raises(
-        MlflowException, match=r"An exception occurred while running model prediction"
+        QCFlowException, match=r"An exception occurred while running model prediction"
     ):
-        mlflow.models.predict(
+        qcflow.models.predict(
             model_uri=model_info.model_uri,
             input_data="abc",
             content_type=_CONTENT_TYPE_JSON,
@@ -219,13 +219,13 @@ def test_predict_with_extra_envs_errors():
 @pytest.fixture
 def mock_backend():
     mock_backend = mock.MagicMock()
-    with mock.patch("mlflow.models.python_api.get_flavor_backend", return_value=mock_backend):
+    with mock.patch("qcflow.models.python_api.get_flavor_backend", return_value=mock_backend):
         yield mock_backend
 
 
 def test_predict_with_both_input_data_and_path_raise(mock_backend):
-    with pytest.raises(MlflowException, match=r"Both input_data and input_path are provided"):
-        mlflow.models.predict(
+    with pytest.raises(QCFlowException, match=r"Both input_data and input_path are provided"):
+        qcflow.models.predict(
             model_uri="runs:/test/Model",
             input_data={"inputs": [1, 2, 3]},
             input_path="input.csv",
@@ -234,8 +234,8 @@ def test_predict_with_both_input_data_and_path_raise(mock_backend):
 
 
 def test_predict_invalid_content_type(mock_backend):
-    with pytest.raises(MlflowException, match=r"Content type must be one of"):
-        mlflow.models.predict(
+    with pytest.raises(QCFlowException, match=r"Content type must be one of"):
+        qcflow.models.predict(
             model_uri="runs:/test/Model",
             input_data={"inputs": [1, 2, 3]},
             content_type="any",
@@ -243,7 +243,7 @@ def test_predict_invalid_content_type(mock_backend):
 
 
 def test_predict_with_input_none(mock_backend):
-    mlflow.models.predict(
+    qcflow.models.predict(
         model_uri="runs:/test/Model",
         content_type=_CONTENT_TYPE_CSV,
     )
@@ -341,5 +341,5 @@ def test_serialize_input_data(input_data, content_type, expected):
     ],
 )
 def test_serialize_input_data_invalid_format(input_data, content_type):
-    with pytest.raises(MlflowException):  # noqa: PT011
+    with pytest.raises(QCFlowException):  # noqa: PT011
         _serialize_input_data(input_data, content_type)

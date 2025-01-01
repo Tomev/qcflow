@@ -1,4 +1,4 @@
-MODELS_ARTIFACT_REPOSITORY_PACKAGE = "mlflow.store.artifact.models_artifact_repo"
+MODELS_ARTIFACT_REPOSITORY_PACKAGE = "qcflow.store.artifact.models_artifact_repo"
 MODELS_ARTIFACT_REPOSITORY = MODELS_ARTIFACT_REPOSITORY_PACKAGE + ".ModelsArtifactRepository"
 WORKSPACE_MODELS_ARTIFACT_REPOSITORY = (
     f"{MODELS_ARTIFACT_REPOSITORY_PACKAGE}.DatabricksModelsArtifactRepository"

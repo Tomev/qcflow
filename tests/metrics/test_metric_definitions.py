@@ -6,7 +6,7 @@ from unittest import mock
 import pandas as pd
 import pytest
 
-from mlflow.metrics import (
+from qcflow.metrics import (
     MetricValue,
     ari_grade_level,
     bleu,
@@ -176,16 +176,16 @@ def test_rougeLsum():
 
 
 def test_fails_to_load_metric():
-    from mlflow.metrics.metric_definitions import _cached_evaluate_load
+    from qcflow.metrics.metric_definitions import _cached_evaluate_load
 
     _cached_evaluate_load.cache_clear()
 
     predictions = pd.Series(["random text", "This is a sentence"])
     e = ImportError("mocked error")
     with mock.patch(
-        "mlflow.metrics.metric_definitions._cached_evaluate_load", side_effect=e
+        "qcflow.metrics.metric_definitions._cached_evaluate_load", side_effect=e
     ) as mock_load:
-        with mock.patch("mlflow.metrics.metric_definitions._logger.warning") as mock_warning:
+        with mock.patch("qcflow.metrics.metric_definitions._logger.warning") as mock_warning:
             toxicity().eval_fn(predictions, None, {})
             mock_load.assert_called_once_with("toxicity", module_type="measurement")
             mock_warning.assert_called_once_with(

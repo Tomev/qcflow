@@ -1,4 +1,4 @@
-MLflow Model Signatures and Input Examples Guide
+QCFlow Model Signatures and Input Examples Guide
 ================================================
 
 .. _intro-model-signature-input-example:
@@ -6,15 +6,15 @@ MLflow Model Signatures and Input Examples Guide
 Introduction to Model Signatures and Input Examples
 ---------------------------------------------------
 
-In MLflow, the concepts of *Model Signature* and *Model Input Example* are essential for effectively working with machine learning models. 
+In QCFlow, the concepts of *Model Signature* and *Model Input Example* are essential for effectively working with machine learning models. 
 These components do more than just provide metadata; they establish crucial guidelines for model interaction, enhancing integration and 
-usability within MLflow's ecosystem.
+usability within QCFlow's ecosystem.
 
 **Model Signature**
 ^^^^^^^^^^^^^^^^^^^
-The :ref:`Model Signature <model-signature>` in MLflow is integral to the clear and accurate operation of models. It defines the expected 
+The :ref:`Model Signature <model-signature>` in QCFlow is integral to the clear and accurate operation of models. It defines the expected 
 format for model inputs and outputs, including any additional parameters needed for inference. This specification acts as a 
-definitive guide, ensuring seamless model integration with MLflow's tools and external services.
+definitive guide, ensuring seamless model integration with QCFlow's tools and external services.
 
 **Model Input Example**
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -38,25 +38,25 @@ thus preventing miscommunication and errors that can arise from incorrect or une
 Model Signature
 ---------------
 
-In MLflow, a model signature precisely defines the schema for model inputs, outputs, and any additional parameters required for effective model 
+In QCFlow, a model signature precisely defines the schema for model inputs, outputs, and any additional parameters required for effective model 
 operation. This definition serves as a uniform interface, guiding users in the appropriate and accurate use of their models. Model signatures are 
-integral to the MLflow ecosystem, enabling both the MLflow Tracking UI and Model Registry UI to clearly display the model's required inputs, 
-outputs, and parameters. Additionally, :ref:`MLflow model deployment tools <built-in-deployment>` utilize these signatures to ensure that 
+integral to the QCFlow ecosystem, enabling both the QCFlow Tracking UI and Model Registry UI to clearly display the model's required inputs, 
+outputs, and parameters. Additionally, :ref:`QCFlow model deployment tools <built-in-deployment>` utilize these signatures to ensure that 
 the data used at inference aligns with the model's established specifications, thus maintaining the model's integrity and performance. For 
 more insights into how these signatures enforce data accuracy, see the :ref:`Signature enforcement <signature-enforcement>` section.
 
-Embedding a signature in your model is a straightforward process in MLflow. When using functions like :py:func:`sklearn.log_model() <mlflow.sklearn.log_model>` 
-to log or save a model, simply include a :ref:`model input example <input-example>`. This action enables MLflow to **automatically infer the model's signature**. 
+Embedding a signature in your model is a straightforward process in QCFlow. When using functions like :py:func:`sklearn.log_model() <qcflow.sklearn.log_model>` 
+to log or save a model, simply include a :ref:`model input example <input-example>`. This action enables QCFlow to **automatically infer the model's signature**. 
 Detailed instructions on this process can be found in the :ref:`How to log models with signatures <how-to-log-models-with-signatures>` section. 
 The inferred signatures, along with other essential model metadata, are stored in a JSON format within the :ref:`MLmodel file <pyfunc-model-config>` of 
 your model artifacts. If there's a need to add a signature to a model that has already been logged or saved, the 
-:py:func:`set_signature() <mlflow.models.set_signature>` API is available for this purpose. Consult the 
+:py:func:`set_signature() <qcflow.models.set_signature>` API is available for this purpose. Consult the 
 :ref:`How to set signatures on models <how-to-set-signatures-on-models>` section for a detailed guide on implementing this functionality.
 
 Model Signature Components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The structure of a model signature in MLflow is composed of three distinct schema types: **(1) inputs**, **(2) outputs**, and **(3) parameters (params)**. 
+The structure of a model signature in QCFlow is composed of three distinct schema types: **(1) inputs**, **(2) outputs**, and **(3) parameters (params)**. 
 The **inputs** and **outputs** schemas specify the data structure that the model expects to receive and produce, respectively. These can be tailored to handle 
 a variety of data formats, including columnar data and tensors, as well as Array and Object type inputs, catering to the diverse needs of different models.
 
@@ -64,10 +64,10 @@ a variety of data formats, including columnar data and tensors, as well as Array
 These parameters provide added flexibility, allowing for fine-tuning and customization of the inference process.
 
 .. note::
-    The capability to handle Objects and Arrays in model signatures was introduced in **MLflow version 2.10.0** and onwards. In versions prior to 2.10.0, 
+    The capability to handle Objects and Arrays in model signatures was introduced in **QCFlow version 2.10.0** and onwards. In versions prior to 2.10.0, 
     column-based signatures were limited to scalar input types and certain conditional types specific to lists and dictionary inputs, with support primarily 
     for the `transformers <../../llms/transformers/index.html>`_ flavor. This enhancement in later versions significantly broadens the scope of data types and 
-    structures that MLflow can seamlessly accommodate.
+    structures that QCFlow can seamlessly accommodate.
 
 
 Signature Playground
@@ -87,7 +87,7 @@ Alternatively, if you'd like to download the notebook locally and test it out wi
 
 .. raw:: html
 
-    <a href="https://raw.githubusercontent.com/mlflow/mlflow/master/docs/source/model/notebooks/signature_examples.ipynb" class="notebook-download-btn">
+    <a href="https://raw.githubusercontent.com/qcflow/qcflow/master/docs/source/model/notebooks/signature_examples.ipynb" class="notebook-download-btn">
         <i class="fas fa-download"></i>Download the Signature Playground Notebook</a><br/>
 
 Required vs. Optional Input fields
@@ -99,13 +99,13 @@ most notable is the concept of required vs. optional with regards to input data.
 Required fields are those that must be present in the input data in order for the model to be able to make a prediction. If a required field is missing, 
 the signature enforcement validation will raise an exception stating that the required input field is missing. 
 
-In order to configure a field as optional, you must pass in a value of `None` or `np.nan` for that field when using the :py:func:`mlflow.models.infer_signature` 
+In order to configure a field as optional, you must pass in a value of `None` or `np.nan` for that field when using the :py:func:`qcflow.models.infer_signature` 
 function. Alternatively, you can manually define the signature and set the `required` field to `false` for that field.
 
 Model Signature Types
 ---------------------
 
-MLflow supports two primary types of signatures: a column-based signature for tabular-based data, and a tensor-based signature for tensor data. 
+QCFlow supports two primary types of signatures: a column-based signature for tabular-based data, and a tensor-based signature for tensor data. 
 
 Column-based Signatures
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -121,7 +121,7 @@ left out if necessary (see :ref:`Optional Column <optional-column>` for more det
 Supported Data Types
 ~~~~~~~~~~~~~~~~~~~~
 
-Column-based signatures support data primitives defined within the :py:class:`MLflow DataType <mlflow.types.DataType>` specification:
+Column-based signatures support data primitives defined within the :py:class:`QCFlow DataType <qcflow.types.DataType>` specification:
 
 * string
 * integer :sup:`1`
@@ -136,7 +136,7 @@ Column-based signatures support data primitives defined within the :py:class:`ML
  +-----------------------------------------------+---------------------------------------------------------------------------+
  | .. code-block:: python                        | .. code-block:: yaml                                                      |
  |                                               |                                                                           |
- |   from mlflow.models import infer_signature   |   signature:                                                              |
+ |   from qcflow.models import infer_signature   |   signature:                                                              |
  |                                               |       input: '[                                                           |
  |    infer_signature(model_input={              |           {"name": "long_col", "type": "long",    "required": "true"},    |
  |        "long_col": 1,                         |           {"name": "str_col",  "type": "string",  "required": "true"},    |
@@ -149,7 +149,7 @@ Column-based signatures support data primitives defined within the :py:class:`ML
 
 .. note::
     :sup:`1` Python often represents missing values in integer data as floats, causing type variability in integer columns and potential schema 
-    enforcement errors in MLflow. To avoid such issues, particularly when using Python in MLflow for model serving and Spark deployments, 
+    enforcement errors in QCFlow. To avoid such issues, particularly when using Python in QCFlow for model serving and Spark deployments, 
     define integer columns with missing values as doubles (float64).
 
 
@@ -162,16 +162,16 @@ Column-based signature also support composite data types of these primitives.
 
 .. note::
     AnyType is a special type that can be used to represent any data type, including None values. If this type is used, input data is not validated at all during schema enforcement process in pyfunc predict.
-    `mlflow.models.infer_signature` function infers a field as AnyType only if the field is always None (e.g. ``{"a": None} --> ['a': Any (optional)]``); if the field has other valid types, the field is inferred
+    `qcflow.models.infer_signature` function infers a field as AnyType only if the field is always None (e.g. ``{"a": None} --> ['a': Any (optional)]``); if the field has other valid types, the field is inferred
     as optional instead (e.g. ``[{"a": None}, {"a": "abc"}] --> ['a': string (optional)]``).
     If one field explicitly accepts multiple valid types (e.g. ``[{"a": "string"}, {"a": 123}]``), `infer_signature` function would fail and you need to manually construct the signature using `ModelSignature` object
     with `AnyType` type for the field. (e.g. ``ModelSignature(Schema([ColSpec(AnyType(), "a", required=False)]))``)
 
 .. warning::
 
-    * Support for Array and Object types was introduced in MLflow version **2.10.0**. These types will not be recognized in previous versions of MLflow.  If you are saving a model that uses these signature types, you should ensure that any other environment that attempts to load these models  has a version of MLflow installed that is at least 2.10.0.
-    * Support for Spark ML vector type was introduced in MLflow version **2.15.0**, These type will not be recognized in previous versions of MLflow.
-    * Support for AnyType was introduced in MLflow version **2.19.0**. This type will not be recognized in previous versions of MLflow.
+    * Support for Array and Object types was introduced in QCFlow version **2.10.0**. These types will not be recognized in previous versions of QCFlow.  If you are saving a model that uses these signature types, you should ensure that any other environment that attempts to load these models  has a version of QCFlow installed that is at least 2.10.0.
+    * Support for Spark ML vector type was introduced in QCFlow version **2.15.0**, These type will not be recognized in previous versions of QCFlow.
+    * Support for AnyType was introduced in QCFlow version **2.19.0**. This type will not be recognized in previous versions of QCFlow.
 
 Additional examples for composite data types can be seen by viewing the `signature examples notebook <notebooks/signature_examples.html>`_.
 
@@ -180,7 +180,7 @@ Additional examples for composite data types can be seen by viewing the `signatu
  +-----------------------------------------------+-------------------------------------------------------------------------------------------------------+
  | .. code-block:: python                        | .. code-block:: yaml                                                                                  |
  |                                               |                                                                                                       |
- |   from mlflow.models import infer_signature   |   signature:                                                                                          |
+ |   from qcflow.models import infer_signature   |   signature:                                                                                          |
  |                                               |       input: '[                                                                                       |
  |   infer_signature(model_input={               |            {"list_col": Array(string) (required)},                                                    |
  |       # Python list                           |            {"numpy_col": Array(Array(long)) (required)},                                              |
@@ -207,7 +207,7 @@ Columns that contain `None` or `np.nan` values within the input data will be inf
  +-----------------------------------------------+---------------------------------------------------------------------------+
  | .. code-block:: python                        | .. code-block:: yaml                                                      |
  |                                               |                                                                           |
- |   from mlflow.models import infer_signature   |   signature:                                                              |
+ |   from qcflow.models import infer_signature   |   signature:                                                              |
  |                                               |       input: '[                                                           |
  |   infer_signature(model_input=                |           {"name": "col", "type": "double", "required": false}            |
  |       pd.DataFrame({                          |       ]'                                                                  |
@@ -273,7 +273,7 @@ Tensor-based schemas support `numpy data types <https://numpy.org/devdocs/user/b
  +-----------------------------------------------+---------------------------------------------------------------------------------------------+
  | .. code-block:: python                        | .. code-block:: yaml                                                                        |
  |                                               |                                                                                             |
- |   from mlflow.models import infer_signature   |   signature:                                                                                |
+ |   from qcflow.models import infer_signature   |   signature:                                                                                |
  |                                               |       input: '[{"type": "tensor", "tensor-spec": {"dtype": "int64", "shape": [-1, 2, 3]}}]' |
  |   infer_signature(model_input=np.array([      |       output: None                                                                          |
  |       [[1, 2, 3], [4, 5, 6]],                 |       params: None                                                                          |
@@ -295,18 +295,18 @@ like ``temperature`` and ``max_length`` in Language Learning Models (LLMs). Thes
 tailoring the behavior of a model at the time of inference. This kind of configuration becomes increasingly important with foundational models, 
 as the same model might need different parameter settings for various inference scenarios. 
 
-MLflow's **2.6.0** release introduced the specification of a dictionary of inference params during model inference. This feature enhances the flexibility 
+QCFlow's **2.6.0** release introduced the specification of a dictionary of inference params during model inference. This feature enhances the flexibility 
 and control over the inference outcomes, enabling more nuanced model behavior adjustments.
 
 To leverage params at inference time, they must be incorporated into the :ref:`Model Signature <model-signature>`. The schema for params is 
-defined as a sequence of :py:class:`ParamSpec <mlflow.types.ParamSpec>` elements, each comprising:
+defined as a sequence of :py:class:`ParamSpec <qcflow.types.ParamSpec>` elements, each comprising:
 
 * **name**: The identifier of the parameter, e.g., ``temperature``.
 * **type**: The data type of the parameter, which must align with one of the :ref:`supported data types <supported-data-types-params>`.
 * **default**: The default value for the parameter, ensuring a fallback option if a specific value isn't provided.
 * **shape**: The shape of the parameter, typically ``None`` for scalar values and ``(-1,)`` for lists.
 
-This feature marks a significant advancement in how MLflow handles model inference, offering a more dynamic and adaptable approach to model parameterization.
+This feature marks a significant advancement in how QCFlow handles model inference, offering a more dynamic and adaptable approach to model parameterization.
 
 
 .. code-block:: yaml
@@ -336,11 +336,11 @@ within a model signature and demonstrates their application in model inference.
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.models import infer_signature
+    import qcflow
+    from qcflow.models import infer_signature
 
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params):
             return list(params.values())
 
@@ -349,12 +349,12 @@ within a model signature and demonstrates their application in model inference.
     # params' default values are saved with ModelSignature
     signature = infer_signature(["input"], params=params)
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             python_model=MyModel(), artifact_path="my_model", signature=signature
         )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     # Not passing params -- predict with default values
     loaded_predict = loaded_model.predict(["input"])
@@ -375,8 +375,8 @@ within a model signature and demonstrates their application in model inference.
 Supported Data Types for Params
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Parameters in MLflow are defined to accept values of the :py:class:`MLflow DataType <mlflow.types.DataType>`, including a one-dimensional 
-list of these data types. Currently, MLflow supports only 1D lists for parameters.
+Parameters in QCFlow are defined to accept values of the :py:class:`QCFlow DataType <qcflow.types.DataType>`, including a one-dimensional 
+list of these data types. Currently, QCFlow supports only 1D lists for parameters.
 
 .. note::
     When validating param values, the values will be converted to python native types.
@@ -386,11 +386,11 @@ list of these data types. Currently, MLflow supports only 1D lists for parameter
 
 Signature Enforcement
 ---------------------
-MLflow's schema enforcement rigorously validates the provided inputs and parameters against the model's signature. It raises an exception 
+QCFlow's schema enforcement rigorously validates the provided inputs and parameters against the model's signature. It raises an exception 
 if the inputs are incompatible and either issues a warning or raises an exception for incompatible parameters. This enforcement is applied 
 prior to invoking the underlying model implementation and throughout the model inference process. Note, however, that this enforcement is 
-specific to scenarios where :ref:`MLflow model deployment tools <built-in-deployment>` are used or when models are loaded as ``python_function``. 
-It does not apply to models loaded in their native format, such as through :py:func:`mlflow.sklearn.load_model() <mlflow.sklearn.load_model>`.
+specific to scenarios where :ref:`QCFlow model deployment tools <built-in-deployment>` are used or when models are loaded as ``python_function``. 
+It does not apply to models loaded in their native format, such as through :py:func:`qcflow.sklearn.load_model() <qcflow.sklearn.load_model>`.
 
 .. figure:: ../_static/images/models/signature-enforcement.png
     :align: center
@@ -398,27 +398,27 @@ It does not apply to models loaded in their native format, such as through :py:f
 
 Name Ordering Enforcement
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-In MLflow, input names are verified against the model signature. Missing required inputs trigger an exception, whereas missing optional inputs do 
+In QCFlow, input names are verified against the model signature. Missing required inputs trigger an exception, whereas missing optional inputs do 
 not. Inputs not declared in the signature are disregarded. When the input schema in the signature specifies input names, matching is conducted by 
-name, and inputs are reordered accordingly. If the schema lacks input names, matching is based on the order of inputs, with MLflow checking only 
+name, and inputs are reordered accordingly. If the schema lacks input names, matching is based on the order of inputs, with QCFlow checking only 
 the number of inputs provided.
 
 Input Type Enforcement
 ^^^^^^^^^^^^^^^^^^^^^^
-MLflow enforces input types as defined in the model's signature. For column-based signature models (such as those using DataFrame inputs), MLflow 
+QCFlow enforces input types as defined in the model's signature. For column-based signature models (such as those using DataFrame inputs), QCFlow 
 performs safe type conversions where necessary, allowing only lossless conversions. For example, converting int to long or int to double is 
-permissible, but converting long to double is not. In cases where types cannot be made compatible, MLflow will raise an error.
+permissible, but converting long to double is not. In cases where types cannot be made compatible, QCFlow will raise an error.
 
-For Pyspark DataFrame inputs, MLflow casts a sample of the PySpark DataFrame into a Pandas DataFrame. MLflow will only enforce the schema on a subset of the data rows.
+For Pyspark DataFrame inputs, QCFlow casts a sample of the PySpark DataFrame into a Pandas DataFrame. QCFlow will only enforce the schema on a subset of the data rows.
 
 For tensor-based signature models, type checking is more stringent. An exception is thrown if the input type does not align with the schema-specified type.
 
 Params Type and Shape Enforcement
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In MLflow, the types and shapes of parameters (params) are meticulously checked against the model's signature. During inference, each parameter's type 
+In QCFlow, the types and shapes of parameters (params) are meticulously checked against the model's signature. During inference, each parameter's type 
 and shape are validated to ensure they align with the specifications in the signature. Scalar values are expected to have a shape of ``None``, while list 
-values should have a shape of ``(-1,)``. If a parameter's type or shape is found to be incompatible, MLflow raises an exception. Additionally, the parameter's 
-value undergoes a validation check against its designated type in the signature. If the conversion to the specified type fails, an `MlflowException` is 
+values should have a shape of ``(-1,)``. If a parameter's type or shape is found to be incompatible, QCFlow raises an exception. Additionally, the parameter's 
+value undergoes a validation check against its designated type in the signature. If the conversion to the specified type fails, an `QCFlowException` is 
 triggered. For a comprehensive list of valid params, refer to the :ref:`Model Inference Params <inference-params>` section. 
 
 .. important::
@@ -429,8 +429,8 @@ Handling Integers With Missing Values
 In Python, integer data with missing values is often represented as floats. This leads to variability in the data types of integer columns, potentially 
 causing schema enforcement errors during runtime, as integers and floats are not inherently compatible. For instance, if a column 'c' in your training data 
 is entirely integers, it will be recognized as such. However, if a missing value is introduced in 'c', it will be represented as a float. If the model's 
-signature expects 'c' to be an integer, MLflow will raise an error due to the inability to convert float to int. To mitigate this issue, especially since 
-MLflow uses Python for model serving and Spark deployments, it's advisable to define integer columns with missing values as doubles (float64).
+signature expects 'c' to be an integer, QCFlow will raise an error due to the inability to convert float to int. To mitigate this issue, especially since 
+QCFlow uses Python for model serving and Spark deployments, it's advisable to define integer columns with missing values as doubles (float64).
 
 Handling Date and Timestamp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -447,18 +447,18 @@ of a ragged array, such as ``Tensor('float64', (-1, -1, -1, 3))``. Enforcement i
 
 How To Log Models With Signatures
 ---------------------------------
-Including a signature with your model in MLflow is straightforward. Simply provide a :ref:`model input example <input-example>` when making a 
-call to either the log_model or save_model functions, such as with :py:func:`sklearn.log_model() <mlflow.sklearn.log_model>`. MLflow will then 
+Including a signature with your model in QCFlow is straightforward. Simply provide a :ref:`model input example <input-example>` when making a 
+call to either the log_model or save_model functions, such as with :py:func:`sklearn.log_model() <qcflow.sklearn.log_model>`. QCFlow will then 
 automatically infer the model's signature based on this input example and the model's predicted output for the given example.
 
-Alternatively, you can explicitly attach a signature object to your model. This is done by passing a :py:class:`signature object <mlflow.models.ModelSignature>` 
-to your log_model or save_model function. You can manually create a model signature object or use the :py:func:`infer_signature <mlflow.models.infer_signature>` 
+Alternatively, you can explicitly attach a signature object to your model. This is done by passing a :py:class:`signature object <qcflow.models.ModelSignature>` 
+to your log_model or save_model function. You can manually create a model signature object or use the :py:func:`infer_signature <qcflow.models.infer_signature>` 
 function to generate it from datasets with valid model inputs (for instance, a training dataset minus the target column), valid model outputs (such as 
 predictions made on the training dataset), and valid model parameters (like a dictionary of parameters used for model inference, commonly seen in 
 `Generation Configs for transformers <https://huggingface.co/docs/transformers/main_classes/text_generation#transformers.GenerationConfig>`_).
 
 .. note::
-    Model signatures play a crucial role in :ref:`MLflow model deployment tools <built-in-deployment>`, particularly for serving models in the Python 
+    Model signatures play a crucial role in :ref:`QCFlow model deployment tools <built-in-deployment>`, particularly for serving models in the Python 
     Function (PyFunc) flavor. Therefore, when attaching a signature to your log_model or save_model call, it's important to ensure that the signature 
     accurately reflects the inputs and outputs expected by the model's PyFunc representation. This consideration becomes especially significant if the
     model's input schema, when loaded as a PyFunc, differs from that of the dataset used for testing (an example of this scenario is with the 
@@ -474,25 +474,25 @@ on the ``Iris dataset``:
     import pandas as pd
     from sklearn import datasets
     from sklearn.ensemble import RandomForestClassifier
-    import mlflow
+    import qcflow
 
     iris = datasets.load_iris()
     iris_train = pd.DataFrame(iris.data, columns=iris.feature_names)
     clf = RandomForestClassifier(max_depth=7, random_state=0)
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         clf.fit(iris_train, iris.target)
         # Take the first row of the training dataset as the model input example.
         input_example = iris_train.iloc[[0]]
         # The signature is automatically inferred from the input example and its predicted output.
-        mlflow.sklearn.log_model(clf, "iris_rf", input_example=input_example)
+        qcflow.sklearn.log_model(clf, "iris_rf", input_example=input_example)
 
 The same signature can be explicitly created and logged as follows:
 
 .. code-block:: python
 
-    from mlflow.models import ModelSignature, infer_signature
-    from mlflow.types.schema import Schema, ColSpec
+    from qcflow.models import ModelSignature, infer_signature
+    from qcflow.types.schema import Schema, ColSpec
 
     # Option 1: Manually construct the signature object
     input_schema = Schema(
@@ -509,8 +509,8 @@ The same signature can be explicitly created and logged as follows:
     # Option 2: Infer the signature
     signature = infer_signature(iris_train, clf.predict(iris_train))
 
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(clf, "iris_rf", signature=signature)
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(clf, "iris_rf", signature=signature)
 
 Tensor-based Signature Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -520,7 +520,7 @@ on the ``MNIST dataset``:
 .. code-block:: python
 
     import tensorflow as tf
-    import mlflow
+    import qcflow
 
     mnist = tf.keras.datasets.mnist
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -537,19 +537,19 @@ on the ``MNIST dataset``:
     loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     model.compile(optimizer="adam", loss=loss_fn, metrics=["accuracy"])
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         model.fit(x_train, y_train, epochs=5)
         # Take the first three training examples as the model input example.
         input_example = x_train[:3, :]
-        mlflow.tensorflow.log_model(model, "mnist_cnn", input_example=input_example)
+        qcflow.tensorflow.log_model(model, "mnist_cnn", input_example=input_example)
 
 The same signature can be explicitly created and logged as follows:
 
 .. code-block:: python
 
     import numpy as np
-    from mlflow.models import ModelSignature, infer_signature
-    from mlflow.types.schema import Schema, TensorSpec
+    from qcflow.models import ModelSignature, infer_signature
+    from qcflow.types.schema import Schema, TensorSpec
 
     # Option 1: Manually construct the signature object
     input_schema = Schema(
@@ -563,8 +563,8 @@ The same signature can be explicitly created and logged as follows:
     # Option 2: Infer the signature
     signature = infer_signature(testX, model.predict(testX))
 
-    with mlflow.start_run():
-        mlflow.tensorflow.log_model(model, "mnist_cnn", signature=signature)
+    with qcflow.start_run():
+        qcflow.tensorflow.log_model(model, "mnist_cnn", signature=signature)
 
 
 Signature with params Example
@@ -574,8 +574,8 @@ for a simple transformers model:
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.models import infer_signature
+    import qcflow
+    from qcflow.models import infer_signature
     import transformers
 
     architecture = "mrm8488/t5-base-finetuned-common_gen"
@@ -599,17 +599,17 @@ for a simple transformers model:
     # infer signature with params
     signature = infer_signature(
         data,
-        mlflow.transformers.generate_signature_output(model, data),
+        qcflow.transformers.generate_signature_output(model, data),
         params,
     )
 
     # save model with signature
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         model,
         "text2text",
         signature=signature,
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model("text2text")
+    pyfunc_loaded = qcflow.pyfunc.load_model("text2text")
 
     # predict with params
     result = pyfunc_loaded.predict(data, params=params)
@@ -618,8 +618,8 @@ The same signature can be created explicitly as follows:
 
 .. code-block:: python
 
-    from mlflow.models import ModelSignature
-    from mlflow.types.schema import ColSpec, ParamSchema, ParamSpec, Schema
+    from qcflow.models import ModelSignature
+    from qcflow.types.schema import ColSpec, ParamSchema, ParamSpec, Schema
 
     input_schema = Schema([ColSpec(type="string")])
     output_schema = Schema([ColSpec(type="string")])
@@ -647,7 +647,7 @@ Manually defining the structure is complex and error-prone. Instead, you should 
 generate the model signature based on an input example.
 
 When logging a GenAI flavor model, you can pass the input example to the `input_example` parameter of the `log_model` method.
-MLflow will infer the model signature from the provided input and apply it to the logged model. Additionally, this input example 
+QCFlow will infer the model signature from the provided input and apply it to the logged model. Additionally, this input example 
 helps validate that the model can run predictions successfully, making it **strongly recommended to always include an input example when logging a GenAI model**.
 
 .. note::
@@ -670,11 +670,11 @@ To log a langchain model successfully, **it is highly recommended to use** `mode
     from langchain_core.runnables import RunnableLambda
     from langchain_openai import OpenAI
 
-    import mlflow
+    import qcflow
 
-    mlflow.set_experiment("Homework Helper")
+    qcflow.set_experiment("Homework Helper")
 
-    mlflow.langchain.autolog()
+    qcflow.langchain.autolog()
 
     prompt = PromptTemplate(
         template="You are a helpful tutor that evaluates my homework assignments and provides suggestions on areas for me to study further."
@@ -707,16 +707,16 @@ To log a langchain model successfully, **it is highly recommended to use** `mode
         | prompt
         | model
         # Add this parser to convert the model output to a string
-        # so that MLflow can correctly infer the output schema
+        # so that QCFlow can correctly infer the output schema
         | StrOutputParser()
     )
 
-    mlflow.models.set_model(chain)
+    qcflow.models.set_model(chain)
 
 .. note::
-    MLflow can only infer model signature for :ref:`certain data types <supported-data-types-column>`, so for
+    QCFlow can only infer model signature for :ref:`certain data types <supported-data-types-column>`, so for
     a langchain model, it is essential to add a parser such as `StrOutputParser` to parse the output to a format 
-    that MLflow accepts. 
+    that QCFlow accepts. 
 
 2. Log the langchain model with a valid input example:
 
@@ -735,8 +735,8 @@ To log a langchain model successfully, **it is highly recommended to use** `mode
     }
 
     chain_path = "langchain_model.py"
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(
             lc_model=chain_path, artifact_path="model", input_example=input_example
         )
 
@@ -752,7 +752,7 @@ If your model has an optional input field, you can use below input_example as a 
 
 .. code-block:: python
 
-    from mlflow.models import infer_signature
+    from qcflow.models import infer_signature
 
     input_example = {
         "messages": [
@@ -769,8 +769,8 @@ If your model has an optional input field, you can use below input_example as a 
                 # no name field in the second message, so `name` will be inferred as optional
                 "role": "user",
                 "content": {
-                    "question": "What is MLflow?",
-                    "answer": "MLflow is an open-source platform",
+                    "question": "What is QCFlow?",
+                    "answer": "QCFlow is an open-source platform",
                 },
             },
         ]
@@ -778,11 +778,11 @@ If your model has an optional input field, you can use below input_example as a 
 
     print(infer_signature(input_example))
 
-If your model's output contains None values, these fields will be inferred as AnyType (since MLflow 2.19.0), for example:
+If your model's output contains None values, these fields will be inferred as AnyType (since QCFlow 2.19.0), for example:
 
 .. code-block:: python
 
-    from mlflow.models import infer_signature
+    from qcflow.models import infer_signature
 
     data = [
         {
@@ -795,7 +795,7 @@ If your model's output contains None values, these fields will be inferred as An
                     "index": 0,
                     "message": {
                         "role": "assistant",
-                        "content": "MLflow",
+                        "content": "QCFlow",
                     },
                     "finish_reason": None,
                 }
@@ -839,7 +839,7 @@ If your model's output contains None values, these fields will be inferred as An
 
 .. code-block:: python
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     result = loaded_model.predict(input_example)
 
     print(result)
@@ -851,7 +851,7 @@ instance to** `infer_signature` **will generate the corresponding model signatur
 
     from dataclasses import dataclass
     from typing import List
-    from mlflow.models import infer_signature
+    from qcflow.models import infer_signature
 
 
     @dataclass
@@ -871,7 +871,7 @@ instance to** `infer_signature` **will generate the corresponding model signatur
                 role="user",
                 content="What is the primary function of control rods in a nuclear reactor?",
             ),
-            Message(role="user", content="What is MLflow?"),
+            Message(role="user", content="What is QCFlow?"),
         ]
     )
 
@@ -892,7 +892,7 @@ instance to** `infer_signature` **will generate the corresponding model signatur
 How To Set Signatures on Models
 -------------------------------
 Models can be saved without model signatures or with incorrect ones. To add or update a signature for an existing logged model, 
-use the :py:func:`mlflow.models.set_signature() <mlflow.models.set_signature>` API. Below are some examples demonstrating its usage.
+use the :py:func:`qcflow.models.set_signature() <qcflow.models.set_signature>` API. Below are some examples demonstrating its usage.
 
 
 Setting a Signature on a Logged Model
@@ -905,13 +905,13 @@ Suppose that you've logged a sklearn model without a signature like below:
     import pandas as pd
     from sklearn import datasets
     from sklearn.ensemble import RandomForestClassifier
-    import mlflow
+    import qcflow
 
     X, y = datasets.load_iris(return_X_y=True, as_frame=True)
     clf = RandomForestClassifier(max_depth=7, random_state=0)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         clf.fit(X, y)
-        mlflow.sklearn.log_model(clf, "iris_rf")
+        qcflow.sklearn.log_model(clf, "iris_rf")
 
 You can set a signature on the logged model as follows:
 
@@ -919,13 +919,13 @@ You can set a signature on the logged model as follows:
 
     import pandas as pd
     from sklearn import datasets
-    import mlflow
-    from mlflow.models.model import get_model_info
-    from mlflow.models import infer_signature, set_signature
+    import qcflow
+    from qcflow.models.model import get_model_info
+    from qcflow.models import infer_signature, set_signature
 
     # load the logged model
     model_uri = f"runs:/{run.info.run_id}/iris_rf"
-    model = mlflow.pyfunc.load_model(model_uri)
+    model = qcflow.pyfunc.load_model(model_uri)
 
     # construct the model signature from test dataset
     X_test, _ = datasets.load_iris(return_X_y=True, as_frame=True)
@@ -937,7 +937,7 @@ You can set a signature on the logged model as follows:
     # now when you load the model again, it will have the desired signature
     assert get_model_info(model_uri).signature == signature
 
-Note that model signatures can also be set on model artifacts saved outside of MLflow Tracking. For instance, 
+Note that model signatures can also be set on model artifacts saved outside of QCFlow Tracking. For instance, 
 you can easily set a signature on a locally saved iris model by altering the model_uri
 variable in the previous code snippet to point to the model's local directory.
 
@@ -946,7 +946,7 @@ variable in the previous code snippet to point to the model's local directory.
 Setting a Signature on a Registered Model
 -----------------------------------------
 
-As MLflow Model Registry artifacts are meant to be read-only, you cannot directly set a signature on
+As QCFlow Model Registry artifacts are meant to be read-only, you cannot directly set a signature on
 a model version or model artifacts represented by ``models:/`` URI schemes. Instead, you should first set
 the signature on the source model artifacts and generate a new model version using the updated 
 model artifacts. The following example illustrates how this can be done.
@@ -956,16 +956,16 @@ Supposed you have created the following model version without a signature like b
 .. code-block:: python
 
     from sklearn.ensemble import RandomForestClassifier
-    import mlflow
-    from mlflow.client import MlflowClient
+    import qcflow
+    from qcflow.client import QCFlowClient
 
     model_name = "add_signature_model"
 
-    with mlflow.start_run() as run:
-        mlflow.sklearn.log_model(RandomForestClassifier(), "sklearn-model")
+    with qcflow.start_run() as run:
+        qcflow.sklearn.log_model(RandomForestClassifier(), "sklearn-model")
 
     model_uri = f"runs:/{run.info.run_id}/sklearn-model"
-    mlflow.register_model(model_uri=model_uri, name=model_name)
+    qcflow.register_model(model_uri=model_uri, name=model_name)
 
 To set a signature on the model version, create a duplicate model version with the new signature
 as follows:
@@ -973,10 +973,10 @@ as follows:
 .. code-block:: python
 
     from sklearn.ensemble import RandomForestClassifier
-    import mlflow
-    from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
+    import qcflow
+    from qcflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
 
-    client = mlflow.client.MlflowClient()
+    client = qcflow.client.QCFlowClient()
     model_name = "add_signature_model"
     model_version = 1
     mv = client.get_model_version(name=model_name, version=model_version)
@@ -998,7 +998,7 @@ Model Input Example
 A model input example provides an instance of a valid model input. Input examples are stored with 
 the model as separate artifacts and are referenced in the :ref:`MLmodel file <pyfunc-model-config>`.
 To include an input example with your model, add it to the appropriate log_model call, e.g.
-:py:func:`sklearn.log_model() <mlflow.sklearn.log_model>`. Input examples are also used to infer
+:py:func:`sklearn.log_model() <qcflow.sklearn.log_model>`. Input examples are also used to infer
 model signatures in log_model calls when signatures aren't specified.
 
 .. tip::
@@ -1007,7 +1007,7 @@ model signatures in log_model calls when signatures aren't specified.
     using the model that is about to be logged, thereby enhancing the accuracy in identifying model requirement dependencies.
     It is **highly recommended** to always include an input example along with your models when you log them.
 
-Since MLflow 2.16.0, when logging a model with an input example, there are two files saved into the model's artifacts directory:
+Since QCFlow 2.16.0, when logging a model with an input example, there are two files saved into the model's artifacts directory:
 
 - ``input_example.json``: The input example in JSON format.
 - ``serving_input_example.json``: The input example in JSON format, with additional transformation to have compatible schema for querying a deployed model REST endpoint.
@@ -1016,22 +1016,22 @@ The following example demonstrates the difference between the two files:
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             python_model=MyModel(),
             artifact_path="model",
-            input_example={"question": "What is MLflow?"},
+            input_example={"question": "What is QCFlow?"},
         )
 
-Example files logged by MLflow:
+Example files logged by QCFlow:
 
 .. list-table::
    :header-rows: 1
@@ -1045,7 +1045,7 @@ Example files logged by MLflow:
         .. code-block:: json
 
             {
-              "question": "What is MLflow?"
+              "question": "What is QCFlow?"
             }
 
      - The input example in its original format.
@@ -1055,14 +1055,14 @@ Example files logged by MLflow:
 
             {
               "inputs": {
-                "question": "What is MLflow?"
+                "question": "What is QCFlow?"
               }
             }
 
-     - JSON-serialized version of the input example with one of the predefined keys (``dataframe_split``, ``instances``, ``inputs`` or ``dataframe_records``) that mlflow scoring server requires when `querying a deployed model endpoint <../../deployment/deploy-model-locally.html#local-inference-server-spec>`_.
+     - JSON-serialized version of the input example with one of the predefined keys (``dataframe_split``, ``instances``, ``inputs`` or ``dataframe_records``) that qcflow scoring server requires when `querying a deployed model endpoint <../../deployment/deploy-model-locally.html#local-inference-server-spec>`_.
 
 .. note::
-    Prior to MLflow 2.16.0, dictionary input example was converted to Pandas DataFrame format when saving. In later versions, the input
+    Prior to QCFlow 2.16.0, dictionary input example was converted to Pandas DataFrame format when saving. In later versions, the input
     example is simply saved in its JSON serialized format. For pandas DataFrame, it is converted to dictionary format 
     with ``to_dict(orient='split')`` and saved into json format. ``example_no_conversion`` parameter for langchain, openai, pyfunc and
     transformers flavors is no longer used and safe to be removed, it will be dropped in a future release.
@@ -1096,7 +1096,7 @@ input example with your model:
             }
         ]
     )
-    mlflow.sklearn.log_model(..., input_example=input_example)
+    qcflow.sklearn.log_model(..., input_example=input_example)
 
 How To Log Models With a Tensor-based Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1121,7 +1121,7 @@ The following example demonstrates how you can log a tensor-based input example 
         ],
         dtype=np.uint8,
     )
-    mlflow.tensorflow.log_model(..., input_example=input_example)
+    qcflow.tensorflow.log_model(..., input_example=input_example)
 
 How To Log Models Using a JSON Object Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1140,10 +1140,10 @@ The following example demonstrates how you can log a json object input example w
         "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "assistant", "content": "What would you like to ask?"},
-            {"role": "user", "content": "Who owns MLflow?"},
+            {"role": "user", "content": "Who owns QCFlow?"},
         ]
     }
-    mlflow.langchain.log_model(..., input_example=input_example)
+    qcflow.langchain.log_model(..., input_example=input_example)
 
 How To Log Model With an Example that Contains Params
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1165,13 +1165,13 @@ The following example demonstrates how to log a model with an example containing
     input_data = "Hello, Dolly!"
     params = {"temperature": 0.5, "top_k": 1}
     input_example = (input_data, params)
-    mlflow.transformers.log_model(..., input_example=input_example)
+    qcflow.transformers.log_model(..., input_example=input_example)
 
 .. _model-serving-payload-example:
 
 Model Serving Payload Example
 -----------------------------
-Once an MLflow model is deployed to a REST endpoint for inference, the request payload will be
+Once an QCFlow model is deployed to a REST endpoint for inference, the request payload will be
 JSON serialized and may have subtle difference from in-memory representation.
 To validate your model works for inference, you can use the ``serving_input_example.json`` file.
 It is automatically logged along with the model when an ``input_example`` is provided and contains
@@ -1181,17 +1181,17 @@ The following example demonstrates how to load the serving payload from a logged
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.models.utils import load_serving_example
+    import qcflow
+    from qcflow.models.utils import load_serving_example
 
     input_example = {
         "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "assistant", "content": "What would you like to ask?"},
-            {"role": "user", "content": "Who owns MLflow?"},
+            {"role": "user", "content": "Who owns QCFlow?"},
         ]
     }
-    model_info = mlflow.langchain.log_model(..., input_example=input_example)
+    model_info = qcflow.langchain.log_model(..., input_example=input_example)
     print(f"model_uri: {model_info.model_uri}")
     serving_example = load_serving_example(model_info.model_uri)
     print(f"serving_example: {serving_example}")
@@ -1200,7 +1200,7 @@ You can validate the input example works prior to serving:
 
 .. code-block:: python
 
-    from mlflow.models import validate_serving_input
+    from qcflow.models import validate_serving_input
 
     result = validate_serving_input(model_info.model_uri, serving_example)
     print(f"prediction result: {result}")
@@ -1209,7 +1209,7 @@ Serve the model locally
 
 .. code-block:: bash
 
-    mlflow models serve --model-uri "<YOUR_MODEL_URI>"
+    qcflow models serve --model-uri "<YOUR_MODEL_URI>"
 
 Validate model inference with the serving payload example
 

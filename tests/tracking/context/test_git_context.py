@@ -3,8 +3,8 @@ from unittest import mock
 import git
 import pytest
 
-from mlflow.tracking.context.git_context import GitRunContext
-from mlflow.utils.mlflow_tags import MLFLOW_GIT_COMMIT
+from qcflow.tracking.context.git_context import GitRunContext
+from qcflow.utils.qcflow_tags import QCFLOW_GIT_COMMIT
 
 MOCK_SCRIPT_NAME = "/path/to/script.py"
 MOCK_COMMIT_HASH = "commit-hash"
@@ -37,7 +37,7 @@ def test_git_run_context_in_context_false(patch_script_name):
 
 
 def test_git_run_context_tags(patch_script_name, patch_git_repo):
-    assert GitRunContext().tags() == {MLFLOW_GIT_COMMIT: MOCK_COMMIT_HASH}
+    assert GitRunContext().tags() == {QCFLOW_GIT_COMMIT: MOCK_COMMIT_HASH}
 
 
 def test_git_run_context_caching(patch_script_name):

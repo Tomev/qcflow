@@ -20,20 +20,20 @@ from llama_index.llms.openai import OpenAI
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from packaging.version import Version
 
-import mlflow
-import mlflow.llama_index
-import mlflow.pyfunc
-from mlflow.exceptions import MlflowException
-from mlflow.llama_index.pyfunc_wrapper import (
+import qcflow
+import qcflow.llama_index
+import qcflow.pyfunc
+from qcflow.exceptions import QCFlowException
+from qcflow.llama_index.pyfunc_wrapper import (
     _CHAT_MESSAGE_HISTORY_PARAMETER_NAME,
     ChatEngineWrapper,
     QueryEngineWrapper,
     create_pyfunc_wrapper,
 )
-from mlflow.models.utils import load_serving_example
-from mlflow.pyfunc.scoring_server import CONTENT_TYPE_JSON
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types.schema import ColSpec, DataType, Schema
+from qcflow.models.utils import load_serving_example
+from qcflow.pyfunc.scoring_server import CONTENT_TYPE_JSON
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types.schema import ColSpec, DataType, Schema
 
 from tests.helper_functions import pyfunc_scoring_endpoint
 
@@ -56,8 +56,8 @@ def model_path(tmp_path):
 )
 def test_llama_index_native_save_and_load_model(request, index_fixture, model_path):
     index = request.getfixturevalue(index_fixture)
-    mlflow.llama_index.save_model(index, model_path, engine_type="query")
-    loaded_model = mlflow.llama_index.load_model(model_path)
+    qcflow.llama_index.save_model(index, model_path, engine_type="query")
+    loaded_model = qcflow.llama_index.load_model(model_path)
 
     assert type(loaded_model) == type(index)
     assert loaded_model.as_query_engine().query(_TEST_QUERY).response != ""
@@ -73,10 +73,10 @@ def test_llama_index_native_save_and_load_model(request, index_fixture, model_pa
 )
 def test_llama_index_native_log_and_load_model(request, index_fixture):
     index = request.getfixturevalue(index_fixture)
-    with mlflow.start_run():
-        logged_model = mlflow.llama_index.log_model(index, "model", engine_type="query")
+    with qcflow.start_run():
+        logged_model = qcflow.llama_index.log_model(index, "model", engine_type="query")
 
-    loaded_model = mlflow.llama_index.load_model(logged_model.model_uri)
+    loaded_model = qcflow.llama_index.load_model(logged_model.model_uri)
 
     assert "llama_index" in logged_model.flavors
     assert type(loaded_model) == type(index)
@@ -86,11 +86,11 @@ def test_llama_index_native_log_and_load_model(request, index_fixture):
 
 
 def test_llama_index_save_invalid_object_raise(single_index):
-    with pytest.raises(MlflowException, match="The provided object of type "):
-        mlflow.llama_index.save_model(llama_index_model=OpenAI(), path="model", engine_type="query")
+    with pytest.raises(QCFlowException, match="The provided object of type "):
+        qcflow.llama_index.save_model(llama_index_model=OpenAI(), path="model", engine_type="query")
 
-    with pytest.raises(MlflowException, match="Saving a non-index object is only supported"):
-        mlflow.llama_index.save_model(
+    with pytest.raises(QCFlowException, match="Saving a non-index object is only supported"):
+        qcflow.llama_index.save_model(
             llama_index_model=single_index.as_query_engine(),
             path="model",
         )
@@ -99,15 +99,15 @@ def test_llama_index_save_invalid_object_raise(single_index):
 def test_llama_index_load_with_model_config(single_index):
     from llama_index.core.response_synthesizers import Refine
 
-    with mlflow.start_run():
-        logged_model = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        logged_model = qcflow.llama_index.log_model(
             single_index,
             "model",
             engine_type="query",
             model_config={"response_mode": "refine"},
         )
 
-    loaded_model = mlflow.pyfunc.load_model(logged_model.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(logged_model.model_uri)
     engine = loaded_model.get_raw_model()
 
     assert isinstance(engine._response_synthesizer, Refine)
@@ -187,8 +187,8 @@ def test_format_predict_input_correct_schema_complex(single_index, engine_type):
     ],
 )
 def test_query_engine_predict(single_index, with_input_example, payload):
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             single_index,
             "model",
             input_example=payload if with_input_example else None,
@@ -199,7 +199,7 @@ def test_query_engine_predict(single_index, with_input_example, payload):
         assert model_info.signature.inputs is not None
         assert model_info.signature.outputs == Schema([ColSpec(type=DataType.string)])
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     prediction = model.predict(payload)
     assert isinstance(prediction, str)
@@ -223,8 +223,8 @@ def test_query_engine_predict(single_index, with_input_example, payload):
     ],
 )
 def test_query_engine_predict_list(single_index, with_input_example, payload):
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             single_index,
             "model",
             input_example=payload if with_input_example else None,
@@ -235,7 +235,7 @@ def test_query_engine_predict_list(single_index, with_input_example, payload):
         assert model_info.signature.inputs is not None
         assert model_info.signature.outputs == Schema([ColSpec(type=DataType.string)])
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
     predictions = model.predict(payload)
 
     assert isinstance(predictions, list)
@@ -251,17 +251,17 @@ def test_query_engine_predict_numeric(model_path, single_index, with_input_examp
     input_example = payload if with_input_example else None
     if with_input_example:
         with pytest.raises(ValueError, match="Unsupported input type"):
-            mlflow.llama_index.save_model(
+            qcflow.llama_index.save_model(
                 llama_index_model=single_index,
                 input_example=input_example,
                 path=model_path,
                 engine_type="query",
             )
     else:
-        mlflow.llama_index.save_model(
+        qcflow.llama_index.save_model(
             llama_index_model=single_index, path=model_path, engine_type="query"
         )
-        model = mlflow.pyfunc.load_model(model_path)
+        model = qcflow.pyfunc.load_model(model_path)
         with pytest.raises(ValueError, match="Unsupported input type"):
             _ = model.predict(payload)
 
@@ -284,8 +284,8 @@ def test_query_engine_predict_numeric(model_path, single_index, with_input_examp
     ],
 )
 def test_chat_engine_predict(single_index, with_input_example, payload):
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             single_index,
             "model",
             input_example=payload if with_input_example else None,
@@ -296,7 +296,7 @@ def test_chat_engine_predict(single_index, with_input_example, payload):
         assert model_info.signature.inputs is not None
         assert model_info.signature.outputs == Schema([ColSpec(type=DataType.string)])
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = model.predict(payload)
     assert isinstance(prediction, str)
     assert prediction.startswith('[{"role": "user",')
@@ -312,21 +312,21 @@ def test_chat_engine_dict_raises(model_path, single_index, with_input_example):
     input_example = payload if with_input_example else None
     if with_input_example:
         with pytest.raises(TypeError, match="got an unexpected keyword argument"):
-            mlflow.llama_index.save_model(
+            qcflow.llama_index.save_model(
                 llama_index_model=single_index,
                 input_example=input_example,
                 path=model_path,
                 engine_type="chat",
             )
     else:
-        mlflow.llama_index.save_model(
+        qcflow.llama_index.save_model(
             llama_index_model=single_index,
             input_example=input_example,
             path=model_path,
             engine_type="chat",
         )
 
-        model = mlflow.pyfunc.load_model(model_path)
+        model = qcflow.pyfunc.load_model(model_path)
         with pytest.raises(TypeError, match="unexpected keyword argument"):
             _ = model.predict(payload)
 
@@ -334,8 +334,8 @@ def test_chat_engine_dict_raises(model_path, single_index, with_input_example):
 @pytest.mark.parametrize("with_input_example", [True, False])
 def test_retriever_engine_predict(single_index, with_input_example):
     payload = "string"
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             single_index,
             "model",
             input_example=payload if with_input_example else None,
@@ -348,7 +348,7 @@ def test_retriever_engine_predict(single_index, with_input_example):
         # does not allow None value. This is a bug in the schema inference.
         # assert model_info.signature.outputs is not None
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     predictions = model.predict(payload)
     assert all(p["class_name"] == "NodeWithScore" for p in predictions)
@@ -362,7 +362,7 @@ def test_llama_index_databricks_integration(monkeypatch, document, model_path, m
     )
 
     index = VectorStoreIndex(nodes=[document])
-    mlflow.llama_index.save_model(
+    qcflow.llama_index.save_model(
         llama_index_model=index, path=model_path, input_example="hi", engine_type="query"
     )
 
@@ -396,7 +396,7 @@ def test_llama_index_databricks_integration(monkeypatch, document, model_path, m
     with pytest.raises(Exception, match="Should not be called"):
         index.as_query_engine().query(_TEST_QUERY)
 
-    loaded_model = mlflow.pyfunc.load_model(model_path)
+    loaded_model = qcflow.pyfunc.load_model(model_path)
 
     response = loaded_model.predict(_TEST_QUERY)
     assert isinstance(response, str)
@@ -417,8 +417,8 @@ def test_llama_index_databricks_integration(monkeypatch, document, model_path, m
     ],
 )
 def test_save_load_index_as_code_index(index_code_path, vector_store_class):
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             index_code_path,
             "model",
             engine_type="query",
@@ -430,31 +430,31 @@ def test_save_load_index_as_code_index(index_code_path, vector_store_class):
     assert not os.path.exists(artifact_path / "index")
     assert os.path.exists(artifact_path / "settings.json")
 
-    loaded_index = mlflow.llama_index.load_model(model_info.model_uri)
+    loaded_index = qcflow.llama_index.load_model(model_info.model_uri)
     assert isinstance(loaded_index.vector_store, vector_store_class)
 
-    pyfunc_loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc_loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     assert isinstance(pyfunc_loaded_model.get_raw_model(), BaseQueryEngine)
     assert _TEST_QUERY in pyfunc_loaded_model.predict(_TEST_QUERY)
 
 
 def test_save_load_query_engine_as_code():
     index_code_path = "tests/llama_index/sample_code/query_engine_with_reranker.py"
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             index_code_path,
             "model",
             input_example="hi",
         )
 
-    loaded_engine = mlflow.llama_index.load_model(model_info.model_uri)
+    loaded_engine = qcflow.llama_index.load_model(model_info.model_uri)
     assert isinstance(loaded_engine, BaseQueryEngine)
     processors = loaded_engine._node_postprocessors
     assert len(processors) == 2
     assert processors[0].__class__.__name__ == "LLMRerank"
     assert processors[1].__class__.__name__ == "CustomNodePostprocessor"
 
-    pyfunc_loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc_loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     assert isinstance(pyfunc_loaded_model._model_impl, QueryEngineWrapper)
     assert isinstance(pyfunc_loaded_model.get_raw_model(), BaseQueryEngine)
     assert pyfunc_loaded_model.predict(_TEST_QUERY) != ""
@@ -464,18 +464,18 @@ def test_save_load_query_engine_as_code():
 
 def test_save_load_chat_engine_as_code():
     index_code_path = "tests/llama_index/sample_code/basic_chat_engine.py"
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             index_code_path,
             "model",
             input_example="hi",
         )
 
-    loaded_engine = mlflow.llama_index.load_model(model_info.model_uri)
+    loaded_engine = qcflow.llama_index.load_model(model_info.model_uri)
     # The sample code sets chat mode to SIMPLE, so it should be a SimpleChatEngine
     assert isinstance(loaded_engine, SimpleChatEngine)
 
-    pyfunc_loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc_loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     assert isinstance(pyfunc_loaded_model._model_impl, ChatEngineWrapper)
     assert isinstance(pyfunc_loaded_model.get_raw_model(), SimpleChatEngine)
     assert pyfunc_loaded_model.predict(_TEST_QUERY) != ""
@@ -498,14 +498,14 @@ def test_save_load_chat_engine_as_code():
     ],
 )
 def test_save_load_as_code_with_model_config(index_code_path, model_config):
-    with mlflow.start_run():
-        logged_model = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        logged_model = qcflow.llama_index.log_model(
             index_code_path,
             "model",
             model_config=model_config,
         )
 
-    loaded_model = mlflow.pyfunc.load_model(logged_model.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(logged_model.model_uri)
     engine = loaded_model.get_raw_model()
     assert engine._llm.model == "gpt-4o-mini"
     assert engine._llm.temperature == 0.7
@@ -514,8 +514,8 @@ def test_save_load_as_code_with_model_config(index_code_path, model_config):
 def test_save_engine_with_engine_type_issues_warning(model_path):
     index_code_path = "tests/llama_index/sample_code/query_engine_with_reranker.py"
 
-    with mock.patch("mlflow.llama_index._logger") as mock_logger:
-        mlflow.llama_index.save_model(
+    with mock.patch("qcflow.llama_index._logger") as mock_logger:
+        qcflow.llama_index.save_model(
             llama_index_model=index_code_path,
             path=model_path,
             engine_type="query",
@@ -534,8 +534,8 @@ async def test_save_load_workflow_as_code():
     from llama_index.core.workflow import Workflow
 
     index_code_path = "tests/llama_index/sample_code/simple_workflow.py"
-    with mlflow.start_run():
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.llama_index.log_model(
             index_code_path,
             "model",
             input_example={"topic": "pirates"},
@@ -546,14 +546,14 @@ async def test_save_load_workflow_as_code():
     assert model_info.signature.outputs == Schema([ColSpec(DataType.string)])
 
     # Native inference
-    loaded_workflow = mlflow.llama_index.load_model(model_info.model_uri)
+    loaded_workflow = qcflow.llama_index.load_model(model_info.model_uri)
     assert isinstance(loaded_workflow, Workflow)
     result = await loaded_workflow.run(topic="pirates")
     assert isinstance(result, str)
     assert "pirates" in result
 
     # Pyfunc inference
-    pyfunc_loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc_loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     assert isinstance(pyfunc_loaded_model.get_raw_model(), Workflow)
     result = pyfunc_loaded_model.predict({"topic": "pirates"})
     assert isinstance(result, str)

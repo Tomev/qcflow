@@ -1,6 +1,6 @@
 import pytest
 
-from mlflow.utils.autologging_utils import _get_new_training_session_class
+from qcflow.utils.autologging_utils import _get_new_training_session_class
 
 _TrainingSession = _get_new_training_session_class()
 

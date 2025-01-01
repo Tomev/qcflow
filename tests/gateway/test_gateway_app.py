@@ -3,10 +3,10 @@ from unittest import mock
 import pytest
 from fastapi.testclient import TestClient
 
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.app import create_app_from_config, create_app_from_env
-from mlflow.gateway.config import GatewayConfig
-from mlflow.gateway.constants import MLFLOW_GATEWAY_CRUD_ROUTE_BASE, MLFLOW_GATEWAY_ROUTE_BASE
+from qcflow.exceptions import QCFlowException
+from qcflow.gateway.app import create_app_from_config, create_app_from_env
+from qcflow.gateway.config import GatewayConfig
+from qcflow.gateway.constants import QCFLOW_GATEWAY_CRUD_ROUTE_BASE, QCFLOW_GATEWAY_ROUTE_BASE
 
 from tests.gateway.tools import MockAsyncResponse
 
@@ -71,7 +71,7 @@ def test_docs(client: TestClient):
 
 
 def test_search_routes(client: TestClient):
-    response = client.get(MLFLOW_GATEWAY_CRUD_ROUTE_BASE)
+    response = client.get(QCFLOW_GATEWAY_CRUD_ROUTE_BASE)
     assert response.status_code == 200
     assert response.json()["routes"] == [
         {
@@ -98,7 +98,7 @@ def test_search_routes(client: TestClient):
 
 
 def test_get_route(client: TestClient):
-    response = client.get(f"{MLFLOW_GATEWAY_CRUD_ROUTE_BASE}chat-gpt4")
+    response = client.get(f"{QCFLOW_GATEWAY_CRUD_ROUTE_BASE}chat-gpt4")
     assert response.status_code == 200
     assert response.json() == {
         "name": "chat-gpt4",
@@ -162,7 +162,7 @@ def test_dynamic_route():
         "aiohttp.ClientSession.post", return_value=MockAsyncResponse(resp)
     ) as mock_post:
         resp = client.post(
-            f"{MLFLOW_GATEWAY_ROUTE_BASE}chat/invocations",
+            f"{QCFLOW_GATEWAY_ROUTE_BASE}chat/invocations",
             json={"messages": [{"role": "user", "content": "Tell me a joke"}]},
         )
         mock_post.assert_called_once()
@@ -192,7 +192,7 @@ def test_dynamic_route():
         }
 
 
-def test_create_app_from_env_fails_if_MLFLOW_GATEWAY_CONFIG_is_not_set(monkeypatch):
-    monkeypatch.delenv("MLFLOW_GATEWAY_CONFIG", raising=False)
-    with pytest.raises(MlflowException, match="'MLFLOW_GATEWAY_CONFIG' is not set"):
+def test_create_app_from_env_fails_if_QCFLOW_GATEWAY_CONFIG_is_not_set(monkeypatch):
+    monkeypatch.delenv("QCFLOW_GATEWAY_CONFIG", raising=False)
+    with pytest.raises(QCFlowException, match="'QCFLOW_GATEWAY_CONFIG' is not set"):
         create_app_from_env()

@@ -3,8 +3,8 @@ from unittest.mock import patch
 import google.generativeai as genai
 import pytest
 
-import mlflow
-from mlflow.entities.span import SpanType
+import qcflow
+from qcflow.entities.span import SpanType
 
 from tests.tracing.helper import get_traces
 
@@ -45,7 +45,7 @@ def embed_content(model, content):
 
 def test_generate_content_enable_disable_autolog():
     with patch("google.generativeai.GenerativeModel.generate_content", new=generate_content):
-        mlflow.gemini.autolog()
+        qcflow.gemini.autolog()
         model = genai.GenerativeModel("gemini-1.5-flash")
         model.generate_content("test content")
 
@@ -59,7 +59,7 @@ def test_generate_content_enable_disable_autolog():
         assert span.inputs == {"contents": "test content", "model_name": "models/gemini-1.5-flash"}
         assert span.outputs == DUMMY_GENERATE_CONTENT_RESPONSE
 
-        mlflow.gemini.autolog(disable=True)
+        qcflow.gemini.autolog(disable=True)
         model = genai.GenerativeModel("gemini-1.5-flash")
         model.generate_content("test content")
 
@@ -72,7 +72,7 @@ def test_generate_content_tracing_with_error():
     with patch(
         "google.generativeai.GenerativeModel.generate_content", side_effect=Exception("dummy error")
     ):
-        mlflow.gemini.autolog()
+        qcflow.gemini.autolog()
         model = genai.GenerativeModel("gemini-1.5-flash")
 
         with pytest.raises(Exception, match="dummy error"):
@@ -85,12 +85,12 @@ def test_generate_content_tracing_with_error():
         assert traces[0].data.spans[0].status.description == "Exception: dummy error"
 
         # for preventing potential side effects for other tests
-        mlflow.gemini.autolog(disable=True)
+        qcflow.gemini.autolog(disable=True)
 
 
 def test_chat_session_autolog():
     with patch("google.generativeai.ChatSession.send_message", new=send_message):
-        mlflow.gemini.autolog()
+        qcflow.gemini.autolog()
         model = genai.GenerativeModel("gemini-1.5-flash")
         chat = model.start_chat(history=[])
         chat.send_message("test content")
@@ -105,7 +105,7 @@ def test_chat_session_autolog():
         assert span.inputs == {"content": "test content"}
         assert span.outputs == DUMMY_GENERATE_CONTENT_RESPONSE
 
-        mlflow.gemini.autolog(disable=True)
+        qcflow.gemini.autolog(disable=True)
         model = genai.GenerativeModel("gemini-1.5-flash")
         chat = model.start_chat(history=[])
         chat.send_message("test content")
@@ -117,7 +117,7 @@ def test_chat_session_autolog():
 
 def test_count_tokens_autolog():
     with patch("google.generativeai.GenerativeModel.count_tokens", new=count_tokens):
-        mlflow.gemini.autolog()
+        qcflow.gemini.autolog()
         model = genai.GenerativeModel("gemini-1.5-flash")
         model.count_tokens("test content")
 
@@ -131,7 +131,7 @@ def test_count_tokens_autolog():
         assert span.inputs == {"contents": "test content", "model_name": "models/gemini-1.5-flash"}
         assert span.outputs == DUMMY_COUNT_TOKENS_RESPONSE
 
-        mlflow.gemini.autolog(disable=True)
+        qcflow.gemini.autolog(disable=True)
         model = genai.GenerativeModel("gemini-1.5-flash")
         model.count_tokens("test content")
 
@@ -142,7 +142,7 @@ def test_count_tokens_autolog():
 
 def test_embed_content_autolog():
     with patch("google.generativeai.embed_content", new=embed_content):
-        mlflow.gemini.autolog()
+        qcflow.gemini.autolog()
         genai.embed_content(model="models/text-embedding-004", content="Hello World")
 
         traces = get_traces()
@@ -155,7 +155,7 @@ def test_embed_content_autolog():
         assert span.inputs == {"content": "Hello World", "model": "models/text-embedding-004"}
         assert span.outputs == DUMMY_EMBEDDING_RESPONSE
 
-        mlflow.gemini.autolog(disable=True)
+        qcflow.gemini.autolog(disable=True)
         genai.embed_content(model="models/text-embedding-004", content="Hello World")
 
         # No new trace should be created

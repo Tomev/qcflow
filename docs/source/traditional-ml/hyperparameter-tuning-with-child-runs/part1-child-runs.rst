@@ -1,16 +1,16 @@
-Understanding Parent and Child Runs in MLflow
+Understanding Parent and Child Runs in QCFlow
 =============================================
 
 Introduction
 ------------
 Machine learning projects often involve intricate relationships. These connections can emerge at
 various stages, be it the project's conception, during data preprocessing, in the model's architecture,
-or even during the model's tuning process. MLflow provides tools to efficiently capture and represent
+or even during the model's tuning process. QCFlow provides tools to efficiently capture and represent
 these relationships.
 
-Core Concepts of MLflow: Tags, Experiments, and Runs
+Core Concepts of QCFlow: Tags, Experiments, and Runs
 ----------------------------------------------------
-In our foundational MLflow tutorial, we highlighted a fundamental relationship: the association
+In our foundational QCFlow tutorial, we highlighted a fundamental relationship: the association
 between **tags**, **experiments**, and **runs**. This association is crucial when dealing with
 complex ML projects, such as forecasting models for individual products in a supermarket, as
 presented in our example. The diagram below offers a visual representation:
@@ -53,13 +53,13 @@ But here lies the challenge: How do we systematically store the extensive data p
 
    The quandary of storing hyperparameter data
 
-In the upcoming sections, we'll delve deeper, exploring MLflow's capabilities to address this
+In the upcoming sections, we'll delve deeper, exploring QCFlow's capabilities to address this
 challenge, focusing on the concepts of Parent and Child Runs.
 
 What are Parent and Child Runs?
 -------------------------------
 
-At its core, MLflow allows users to track experiments, which are essentially named groups of runs.
+At its core, QCFlow allows users to track experiments, which are essentially named groups of runs.
 A "run" in this context refers to a single execution of a model training event, where you can log
 parameters, metrics, tags, and artifacts associated with the training process.
 The concept of Parent and Child Runs introduces a hierarchical structure to these runs.
@@ -99,17 +99,17 @@ Naive Approach with no child runs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In this first phase, we will be trying relatively small batches of different combinations of parameters and
-evaluating them within the MLflow UI to determine whether we should include or exempt certain values based on the
+evaluating them within the QCFlow UI to determine whether we should include or exempt certain values based on the
 relatively performance amongst our iterative trials.
 
-If we were to use each iteration as its own MLflow run, our code might look something like this:
+If we were to use each iteration as its own QCFlow run, our code might look something like this:
 
 .. code-section::
 
     .. code-block:: python
 
         import random
-        import mlflow
+        import qcflow
         from functools import partial
         from itertools import starmap
         from more_itertools import consume
@@ -117,11 +117,11 @@ If we were to use each iteration as its own MLflow run, our code might look some
 
         # Define a function to log parameters and metrics
         def log_run(run_name, test_no):
-            with mlflow.start_run(run_name=run_name):
-                mlflow.log_param("param1", random.choice(["a", "b", "c"]))
-                mlflow.log_param("param2", random.choice(["d", "e", "f"]))
-                mlflow.log_metric("metric1", random.uniform(0, 1))
-                mlflow.log_metric("metric2", abs(random.gauss(5, 2.5)))
+            with qcflow.start_run(run_name=run_name):
+                qcflow.log_param("param1", random.choice(["a", "b", "c"]))
+                qcflow.log_param("param2", random.choice(["d", "e", "f"]))
+                qcflow.log_metric("metric1", random.uniform(0, 1))
+                qcflow.log_metric("metric2", abs(random.gauss(5, 2.5)))
 
 
         # Generate run names
@@ -142,13 +142,13 @@ If we were to use each iteration as its own MLflow run, our code might look some
 
 
         # Set the tracking uri and experiment
-        mlflow.set_tracking_uri("http://localhost:8080")
-        mlflow.set_experiment("No Child Runs")
+        qcflow.set_tracking_uri("http://localhost:8080")
+        qcflow.set_experiment("No Child Runs")
 
         # Execute 5 hyperparameter tuning runs
         consume(starmap(execute_tuning, ((x,) for x in range(5))))
 
-After executing this, we can navigate to the MLflow UI to see the results of the iterations and compare each run's
+After executing this, we can navigate to the QCFlow UI to see the results of the iterations and compare each run's
 error metrics to the parameters that were selected.
 
 .. figure:: ../../_static/images/guides/introductory/hyperparameter-tuning-with-child-runs/no-child-first.gif
@@ -167,8 +167,8 @@ Our code might change in-place with the values being tested:
     .. code-block:: python
 
         def log_run(run_name, test_no):
-            with mlflow.start_run(run_name=run_name):
-                mlflow.log_param("param1", random.choice(["a", "c"]))  # remove 'b'
+            with qcflow.start_run(run_name=run_name):
+                qcflow.log_param("param1", random.choice(["a", "c"]))  # remove 'b'
                 # remainder of code ...
 
 When we execute this and navigate back to the UI, it is now significantly more difficult to determine
@@ -210,7 +210,7 @@ The code below demonstrates these modifications to our original hyperparameter t
     .. code-block:: python
 
         import random
-        import mlflow
+        import qcflow
         from functools import partial
         from itertools import starmap
         from more_itertools import consume
@@ -219,12 +219,12 @@ The code below demonstrates these modifications to our original hyperparameter t
         # Define a function to log parameters and metrics and add tag
         # logging for search_runs functionality
         def log_run(run_name, test_no, param1_choices, param2_choices, tag_ident):
-            with mlflow.start_run(run_name=run_name, nested=True):
-                mlflow.log_param("param1", random.choice(param1_choices))
-                mlflow.log_param("param2", random.choice(param2_choices))
-                mlflow.log_metric("metric1", random.uniform(0, 1))
-                mlflow.log_metric("metric2", abs(random.gauss(5, 2.5)))
-                mlflow.set_tag("test_identifier", tag_ident)
+            with qcflow.start_run(run_name=run_name, nested=True):
+                qcflow.log_param("param1", random.choice(param1_choices))
+                qcflow.log_param("param2", random.choice(param2_choices))
+                qcflow.log_metric("metric1", random.uniform(0, 1))
+                qcflow.log_metric("metric2", abs(random.gauss(5, 2.5)))
+                qcflow.set_tag("test_identifier", tag_ident)
 
 
         # Generate run names
@@ -242,7 +242,7 @@ The code below demonstrates these modifications to our original hyperparameter t
         ):
             ident = "default" if not test_identifier else test_identifier
             # Use a parent run to encapsulate the child runs
-            with mlflow.start_run(run_name=f"parent_run_test_{ident}_{test_no}"):
+            with qcflow.start_run(run_name=f"parent_run_test_{ident}_{test_no}"):
                 # Partial application of the log_run function
                 log_current_run = partial(
                     log_run,
@@ -251,7 +251,7 @@ The code below demonstrates these modifications to our original hyperparameter t
                     param2_choices=param2_choices,
                     tag_ident=ident,
                 )
-                mlflow.set_tag("test_identifier", ident)
+                qcflow.set_tag("test_identifier", ident)
                 # Generate run names and apply log_current_run function to each run name
                 runs = starmap(
                     log_current_run, ((run_name,) for run_name in generate_run_names(test_no))
@@ -261,8 +261,8 @@ The code below demonstrates these modifications to our original hyperparameter t
 
 
         # Set the tracking uri and experiment
-        mlflow.set_tracking_uri("http://localhost:8080")
-        mlflow.set_experiment("Nested Child Association")
+        qcflow.set_tracking_uri("http://localhost:8080")
+        qcflow.set_experiment("Nested Child Association")
 
         # Define custom parameters
         param_1_values = ["x", "y", "z"]
@@ -331,7 +331,7 @@ code within in order to achieve this.
 
 .. raw:: html
 
-   <a href="https://raw.githubusercontent.com/mlflow/mlflow/master/docs/source/traditional-ml/hyperparameter-tuning-with-child-runs/notebooks/parent-child-runs.ipynb" class="notebook-download-btn">Download the notebook</a>
+   <a href="https://raw.githubusercontent.com/qcflow/qcflow/master/docs/source/traditional-ml/hyperparameter-tuning-with-child-runs/notebooks/parent-child-runs.ipynb" class="notebook-download-btn">Download the notebook</a>
 
 The notebook contains an example implementation of this, but it is
 recommended to develop your own implementation that fulfills the following requirements:

@@ -3,7 +3,7 @@ Configuring and Starting the gateway server
 
 Step 1: Install
 ---------------
-First, install MLflow along with the ``genai`` extras to get access to a range of serving-related
+First, install QCFlow along with the ``genai`` extras to get access to a range of serving-related
 dependencies, including ``uvicorn`` and ``fastapi``. Note that direct dependencies on OpenAI are
 unnecessary, as all supported providers are abstracted from the developer.
 
@@ -12,13 +12,13 @@ unnecessary, as all supported providers are abstracted from the developer.
     .. code-block:: bash
         :name: install-genai
 
-        pip install 'mlflow[genai]'
+        pip install 'qcflow[genai]'
 
 Step 2: Set the OpenAI Token as an Environment Variable
 -------------------------------------------------------
 Next, set the OpenAI API key as an environment variable in your CLI.
 
-This approach allows the MLflow AI Gateway to read the sensitive API key safely, reducing the risk
+This approach allows the QCFlow AI Gateway to read the sensitive API key safely, reducing the risk
 of leaking the token in code. The gateway server, when started, will read the value set by this environment
 variable without any additional action required.
 
@@ -86,15 +86,15 @@ To launch the gateway server using a YAML config file, use the deployments CLI c
 
 The gateway server will automatically start on ``localhost`` at port ``5000``, accessible via
 the URL: ``http://localhost:5000``. To modify these default settings, use the
-``mlflow gateway start --help`` command to view additional configuration options.
+``qcflow gateway start --help`` command to view additional configuration options.
 
 .. code-section::
 
     .. code-block:: bash
         :name: start-server
 
-        mlflow gateway start --config-path config.yaml
+        qcflow gateway start --config-path config.yaml
 
 .. note::
-    MLflow AI Gateway automatically creates API docs. You can validate your deployment server
+    QCFlow AI Gateway automatically creates API docs. You can validate your deployment server
     is running by viewing the docs. Go to `http://{host}:{port}` in your web browser.

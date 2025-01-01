@@ -6,15 +6,15 @@ import opentelemetry.trace as trace_api
 import pytest
 from opentelemetry.sdk.trace import ReadableSpan
 
-import mlflow
-from mlflow.entities import Trace, TraceData, TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.ml_package_versions import FLAVOR_TO_MODULE_NAME
-from mlflow.tracing.processor.mlflow import MlflowSpanProcessor
-from mlflow.tracing.provider import _get_tracer
-from mlflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
-from mlflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS, get_autolog_function
-from mlflow.utils.autologging_utils.safety import revert_patches
+import qcflow
+from qcflow.entities import Trace, TraceData, TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.ml_package_versions import FLAVOR_TO_MODULE_NAME
+from qcflow.tracing.processor.qcflow import QCFlowSpanProcessor
+from qcflow.tracing.provider import _get_tracer
+from qcflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
+from qcflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS, get_autolog_function
+from qcflow.utils.autologging_utils.safety import revert_patches
 
 
 def create_mock_otel_span(
@@ -120,12 +120,12 @@ def create_test_trace_info(
 
 def get_traces(experiment_id=DEFAULT_EXPERIMENT_ID) -> list[Trace]:
     # Get all traces from the backend
-    return mlflow.MlflowClient().search_traces(experiment_ids=[experiment_id])
+    return qcflow.QCFlowClient().search_traces(experiment_ids=[experiment_id])
 
 
 def purge_traces(experiment_id=DEFAULT_EXPERIMENT_ID):
     # Delete all traces from the backend
-    mlflow.tracking.MlflowClient().delete_traces(
+    qcflow.tracking.QCFlowClient().delete_traces(
         experiment_id=experiment_id, max_traces=1000, max_timestamp_millis=0
     )
 
@@ -139,7 +139,7 @@ def get_tracer_tracking_uri() -> Optional[str]:
         tracer = tracer._tracer
     span_processor = tracer.span_processor._span_processors[0]
 
-    if isinstance(span_processor, MlflowSpanProcessor):
+    if isinstance(span_processor, QCFlowSpanProcessor):
         return span_processor._client.tracking_uri
 
 
@@ -149,8 +149,8 @@ def reset_autolog_state():
     yield
 
     for flavor in FLAVOR_TO_MODULE_NAME:
-        # 1. Remove post-import hooks (registered by global mlflow.autolog() function)
-        mlflow.utils.import_hooks._post_import_hooks.pop(flavor, None)
+        # 1. Remove post-import hooks (registered by global qcflow.autolog() function)
+        qcflow.utils.import_hooks._post_import_hooks.pop(flavor, None)
 
     for flavor in AUTOLOGGING_INTEGRATIONS.keys():
         # 2. Disable autologging for the flavor. This is necessary because some autologging

@@ -18,7 +18,7 @@ const isNewCommand = (comment) => {
 };
 
 const isOldCommand = (comment) => {
-  return /^@mlflow-automation\s+autoformat$/.test(comment.body.trim());
+  return /^@qcflow-automation\s+autoformat$/.test(comment.body.trim());
 };
 
 const shouldAutoformat = (comment) => {
@@ -62,15 +62,15 @@ const createReaction = async (context, github) => {
       repo: context.repo.repo,
       owner: context.repo.owner,
       issue_number: context.issue.number,
-      body: "The command `@mlflow-automation autoformat` has been deprecated and will be removed soon. Please use `/autoformat` instead.",
+      body: "The command `@qcflow-automation autoformat` has been deprecated and will be removed soon. Please use `/autoformat` instead.",
     });
   }
 };
 
 const createStatus = async (context, github, core) => {
   const { head_sha, head_ref, repository } = await getPullInfo(context, github);
-  if (repository === "mlflow/mlflow" && head_ref === "master") {
-    core.setFailed("Running autoformat bot against master branch of mlflow/mlflow is not allowed.");
+  if (repository === "qcflow/qcflow" && head_ref === "master") {
+    core.setFailed("Running autoformat bot against master branch of qcflow/qcflow is not allowed.");
   }
   await createCommitStatus(context, github, head_sha, "pending");
 };
@@ -93,7 +93,7 @@ const fetchWorkflowRuns = async ({ context, github, head_sha }) => {
       repo,
       head_sha,
       status: "action_required",
-      actor: "mlflow-app[bot]",
+      actor: "qcflow-app[bot]",
     });
 
     // If the number of runs has not changed since the last attempt,

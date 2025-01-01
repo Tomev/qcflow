@@ -4,9 +4,9 @@ from unittest import mock
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.config import Route, RouteModelInfo
-from mlflow.metrics.genai.model_utils import (
+from qcflow.exceptions import QCFlowException
+from qcflow.gateway.config import Route, RouteModelInfo
+from qcflow.metrics.genai.model_utils import (
     _parse_model_uri,
     call_deployments_api,
     get_endpoint_type,
@@ -28,7 +28,7 @@ def set_envs(monkeypatch):
 def set_deployment_envs(monkeypatch):
     monkeypatch.setenvs(
         {
-            "MLFLOW_DEPLOYMENTS_TARGET": "databricks",
+            "QCFLOW_DEPLOYMENTS_TARGET": "databricks",
         }
     )
 
@@ -79,18 +79,18 @@ def test_parse_model_uri():
 
 
 def test_parse_model_uri_throws_for_malformed():
-    with pytest.raises(MlflowException, match="Malformed model uri"):
+    with pytest.raises(QCFlowException, match="Malformed model uri"):
         _parse_model_uri("gpt-4o-mini")
 
 
 def test_score_model_on_payload_throws_for_invalid():
-    with pytest.raises(MlflowException, match="Unknown model uri prefix"):
+    with pytest.raises(QCFlowException, match="Unknown model uri prefix"):
         score_model_on_payload("myprovider:/gpt-4o-mini", "")
 
 
 def test_score_model_openai_without_key():
     with pytest.raises(
-        MlflowException, match="OpenAI API key must be set in the ``OPENAI_API_KEY``"
+        QCFlowException, match="OpenAI API key must be set in the ``OPENAI_API_KEY``"
     ):
         score_model_on_payload("openai:/gpt-4o-mini", "")
 
@@ -121,7 +121,7 @@ _OAI_RESPONSE = {
 
 def test_score_model_openai(set_envs):
     with mock.patch(
-        "mlflow.metrics.genai.model_utils._send_request", return_value=_OAI_RESPONSE
+        "qcflow.metrics.genai.model_utils._send_request", return_value=_OAI_RESPONSE
     ) as mock_post:
         resp = score_model_on_payload("openai:/gpt-4o-mini", "my prompt", {"temperature": 0.1})
 
@@ -139,7 +139,7 @@ def test_score_model_openai(set_envs):
 
 def test_score_model_openai_with_custom_header_and_proxy_url(set_envs):
     with mock.patch(
-        "mlflow.metrics.genai.model_utils._send_request", return_value=_OAI_RESPONSE
+        "qcflow.metrics.genai.model_utils._send_request", return_value=_OAI_RESPONSE
     ) as mock_post:
         resp = score_model_on_payload(
             model_uri="openai:/gpt-4o-mini",
@@ -163,7 +163,7 @@ def test_score_model_openai_with_custom_header_and_proxy_url(set_envs):
 
 def test_openai_other_error(set_envs):
     with mock.patch(
-        "mlflow.metrics.genai.model_utils._send_request",
+        "qcflow.metrics.genai.model_utils._send_request",
         side_effect=Exception("foo"),
     ):
         with pytest.raises(Exception, match="foo"):
@@ -172,7 +172,7 @@ def test_openai_other_error(set_envs):
 
 def test_score_model_azure_openai(set_azure_envs):
     with mock.patch(
-        "mlflow.metrics.genai.model_utils._send_request", return_value=_OAI_RESPONSE
+        "qcflow.metrics.genai.model_utils._send_request", return_value=_OAI_RESPONSE
     ) as mock_post:
         resp = score_model_on_payload("openai:/gpt-4o-mini", "my prompt", {"temperature": 0.1})
 
@@ -207,7 +207,7 @@ def test_score_model_anthropic(monkeypatch):
     }
 
     with mock.patch(
-        "mlflow.metrics.genai.model_utils._send_request", return_value=resp
+        "qcflow.metrics.genai.model_utils._send_request", return_value=resp
     ) as mock_request:
         response = score_model_on_payload(
             model_uri="anthropic:/claude-3-5-sonnet-20241022",
@@ -298,7 +298,7 @@ def test_score_model_mistral(monkeypatch):
 
     # Mistral AI API is compatible with OpenAI format
     with mock.patch(
-        "mlflow.metrics.genai.model_utils._send_request", return_value=_OAI_RESPONSE
+        "qcflow.metrics.genai.model_utils._send_request", return_value=_OAI_RESPONSE
     ) as mock_request:
         response = score_model_on_payload(
             model_uri="mistral:/mistral-small-latest",
@@ -331,7 +331,7 @@ def test_score_model_togetherai(monkeypatch):
     }
 
     with mock.patch(
-        "mlflow.metrics.genai.model_utils._send_request", return_value=resp
+        "qcflow.metrics.genai.model_utils._send_request", return_value=resp
     ) as mock_request:
         response = score_model_on_payload(
             model_uri="togetherai:/mistralai/Mixtral-8x7B-Instruct-v0.1",
@@ -367,7 +367,7 @@ def test_score_model_gateway_completions():
     }
 
     with mock.patch(
-        "mlflow.gateway.get_route",
+        "qcflow.gateway.get_route",
         return_value=Route(
             name="my-route",
             route_type="llm/v1/completions",
@@ -375,7 +375,7 @@ def test_score_model_gateway_completions():
             route_url="my-route",
         ).to_endpoint(),
     ):
-        with mock.patch("mlflow.gateway.query", return_value=expected_output):
+        with mock.patch("qcflow.gateway.query", return_value=expected_output):
             response = score_model_on_payload("gateway:/my-route", "")
             assert response == expected_output["choices"][0]["text"]
 
@@ -402,7 +402,7 @@ def test_score_model_gateway_chat():
     }
 
     with mock.patch(
-        "mlflow.gateway.get_route",
+        "qcflow.gateway.get_route",
         return_value=Route(
             name="my-route",
             route_type="llm/v1/chat",
@@ -410,7 +410,7 @@ def test_score_model_gateway_chat():
             route_url="my-route",
         ).to_endpoint(),
     ):
-        with mock.patch("mlflow.gateway.query", return_value=expected_output):
+        with mock.patch("qcflow.gateway.query", return_value=expected_output):
             response = score_model_on_payload("gateway:/my-route", "")
             assert response == expected_output["choices"][0]["message"]["content"]
 
@@ -424,7 +424,7 @@ def test_score_model_gateway_chat():
     ],
 )
 def test_get_endpoint_type(get_endpoint_response, expected):
-    with mock.patch("mlflow.deployments.get_deploy_client") as mock_get_deploy_client:
+    with mock.patch("qcflow.deployments.get_deploy_client") as mock_get_deploy_client:
         mock_client = mock_get_deploy_client.return_value
         mock_client.get_endpoint.return_value = get_endpoint_response
         assert get_endpoint_type("endpoints:/my-endpoint") == expected
@@ -451,7 +451,7 @@ _TEST_CHAT_RESPONSE = {
 
 
 def test_score_model_endpoints_chat(set_deployment_envs):
-    with mock.patch("mlflow.deployments.get_deploy_client") as mock_get_deploy_client:
+    with mock.patch("qcflow.deployments.get_deploy_client") as mock_get_deploy_client:
         mock_get_deploy_client().predict.return_value = _TEST_CHAT_RESPONSE
         response = score_model_on_payload(
             model_uri="endpoints:/my-endpoint",
@@ -479,7 +479,7 @@ _TEST_COMPLETION_RESPONSE = {
 
 
 def test_score_model_endpoints_completions(set_deployment_envs):
-    with mock.patch("mlflow.deployments.get_deploy_client") as mock_get_deploy_client:
+    with mock.patch("qcflow.deployments.get_deploy_client") as mock_get_deploy_client:
         mock_get_deploy_client().predict.return_value = _TEST_COMPLETION_RESPONSE
         response = score_model_on_payload(
             model_uri="endpoints:/my-endpoint",
@@ -498,7 +498,7 @@ def test_score_model_endpoints_completions(set_deployment_envs):
     ],
 )
 def test_call_deployments_api_chat(input_data, set_deployment_envs):
-    with mock.patch("mlflow.deployments.get_deploy_client") as mock_get_deploy_client:
+    with mock.patch("qcflow.deployments.get_deploy_client") as mock_get_deploy_client:
         mock_get_deploy_client().predict.return_value = _TEST_CHAT_RESPONSE
         response = call_deployments_api(
             deployment_uri="my-endpoint",
@@ -517,7 +517,7 @@ def test_call_deployments_api_chat(input_data, set_deployment_envs):
     ],
 )
 def test_call_deployments_api_completion(input_data, set_deployment_envs):
-    with mock.patch("mlflow.deployments.get_deploy_client") as mock_get_deploy_client:
+    with mock.patch("qcflow.deployments.get_deploy_client") as mock_get_deploy_client:
         mock_get_deploy_client().predict.return_value = _TEST_COMPLETION_RESPONSE
         response = call_deployments_api(
             deployment_uri="my-endpoint",
@@ -529,7 +529,7 @@ def test_call_deployments_api_completion(input_data, set_deployment_envs):
 
 
 def test_call_deployments_api_no_endpoint_type(set_deployment_envs):
-    with mock.patch("mlflow.deployments.get_deploy_client") as mock_get_deploy_client:
+    with mock.patch("qcflow.deployments.get_deploy_client") as mock_get_deploy_client:
         mock_get_deploy_client().predict.return_value = {"result": "ok"}
         response = call_deployments_api(
             deployment_uri="my-endpoint",
@@ -541,5 +541,5 @@ def test_call_deployments_api_no_endpoint_type(set_deployment_envs):
 
 
 def test_call_deployments_api_str_input_requires_endpoint_type(set_deployment_envs):
-    with pytest.raises(MlflowException, match="If string input is provided,"):
+    with pytest.raises(QCFlowException, match="If string input is provided,"):
         call_deployments_api("my-endpoint", "my prompt", endpoint_type=None)

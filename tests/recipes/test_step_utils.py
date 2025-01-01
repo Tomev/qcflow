@@ -4,10 +4,10 @@ import numpy as np
 import pytest
 from pandas import DataFrame
 
-import mlflow.recipes.utils.step as step_utils
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.cards import pandas_renderer
-from mlflow.recipes.utils.step import (
+import qcflow.recipes.utils.step as step_utils
+from qcflow.exceptions import QCFlowException
+from qcflow.recipes.cards import pandas_renderer
+from qcflow.recipes.utils.step import (
     display_html,
     get_merged_eval_metrics,
     get_pandas_data_profiles,
@@ -16,14 +16,14 @@ from mlflow.recipes.utils.step import (
 
 
 def test_display_html_raises_without_input():
-    with pytest.raises(MlflowException, match="At least one HTML source must be provided"):
+    with pytest.raises(QCFlowException, match="At least one HTML source must be provided"):
         display_html()
 
 
 def test_display_html_opens_html_data():
     html_data = "<!DOCTYPE html><html><body><p>Hey</p></body></html>"
     with mock.patch(
-        "mlflow.recipes.utils.step.is_running_in_ipython_environment", return_value=True
+        "qcflow.recipes.utils.step.is_running_in_ipython_environment", return_value=True
     ):
         with mock.patch("IPython.display.display") as patched_display:
             display_html(html_data=html_data)
@@ -46,15 +46,15 @@ def test_display_html_throws_error_on_old_dbr():
     html_data = "<!DOCTYPE html><html><body><p>Hey</p></body></html>"
     with (
         mock.patch(
-            "mlflow.recipes.utils.step.is_running_in_ipython_environment", return_value=True
+            "qcflow.recipes.utils.step.is_running_in_ipython_environment", return_value=True
         ),
-        mock.patch("mlflow.recipes.utils.step.is_in_databricks_runtime", return_value=True),
+        mock.patch("qcflow.recipes.utils.step.is_in_databricks_runtime", return_value=True),
         mock.patch(
-            "mlflow.recipes.utils.step.get_databricks_runtime_version",
+            "qcflow.recipes.utils.step.get_databricks_runtime_version",
             return_value="10.4.x",
         ),
         pytest.raises(
-            MlflowException, match="Use Databricks Runtime 11 or newer with MLflow Recipes"
+            QCFlowException, match="Use Databricks Runtime 11 or newer with QCFlow Recipes"
         ),
     ):
         display_html(html_data=html_data)

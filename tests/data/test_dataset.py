@@ -1,6 +1,6 @@
 import json
 
-from mlflow.types.schema import Schema
+from qcflow.types.schema import Schema
 
 from tests.resources.data.dataset import SampleDataset
 from tests.resources.data.dataset_source import SampleDatasetSource
@@ -20,7 +20,7 @@ def test_conversion_to_json():
     assert parsed_json["source_type"] == dataset.source._get_source_type()
     assert parsed_json["profile"] == json.dumps(dataset.profile)
 
-    schema_json = json.dumps(json.loads(parsed_json["schema"])["mlflow_colspec"])
+    schema_json = json.dumps(json.loads(parsed_json["schema"])["qcflow_colspec"])
     assert Schema.from_json(schema_json) == dataset.schema
 
 

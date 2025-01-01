@@ -2,16 +2,16 @@ Explore the Registered Model
 ============================
 
 Now that we've logged an experiment and registered the model associated with that experiment run, 
-let's observe how this information is actually stored both in the MLflow UI and in our local
+let's observe how this information is actually stored both in the QCFlow UI and in our local
 directory. Note that we can also get this information programmatically, but for explanatory purposes
-we'll use the MLflow UI. 
+we'll use the QCFlow UI. 
 
 Step 1: Explore the `mlruns` Directory
 --------------------------------------
 Given that we're using our local filesystem as our tracking server and model registry, let's observe
 the directory structure created when running the python script in the prior step.
 
-Before diving in, it's import to note that MLflow is designed to abstract complexity from the user
+Before diving in, it's import to note that QCFlow is designed to abstract complexity from the user
 and this directory structure is just for illustration purposes. Furthermore, on remote deployments,
 which is recommended for production use cases, the tracking server will be 
 on object store (S3, ADLS, GCS, etc.) and the model registry will be on a relational database
@@ -28,17 +28,17 @@ on object store (S3, ADLS, GCS, etc.) and the model registry will be on a relati
     │   │   │   └── sklearn-model/            
     │   │   │       ├── python_env.yaml       
     │   │   │       ├── requirements.txt      # Python package requirements
-    │   │   │       ├── MLmodel               # MLflow model file with model metadata
+    │   │   │       ├── MLmodel               # QCFlow model file with model metadata
     │   │   │       ├── model.pkl             # Serialized model file
     │   │   │       ├── input_example.json    
     │   │   │       └── conda.yaml            
     │   │   ├── tags/                         
-    │   │   │   ├── mlflow.user               
-    │   │   │   ├── mlflow.source.git.commit  
-    │   │   │   ├── mlflow.runName            
-    │   │   │   ├── mlflow.source.name        
-    │   │   │   ├── mlflow.log-model.history  
-    │   │   │   └── mlflow.source.type        
+    │   │   │   ├── qcflow.user               
+    │   │   │   ├── qcflow.source.git.commit  
+    │   │   │   ├── qcflow.runName            
+    │   │   │   ├── qcflow.source.name        
+    │   │   │   ├── qcflow.log-model.history  
+    │   │   │   └── qcflow.source.type        
     │   │   ├── params/                       
     │   │   │   ├── max_depth                 
     │   │   │   └── random_state              
@@ -56,7 +56,7 @@ experiment artifacts, parameters, and metrics. The model registry, on the other 
 metadata with pointers to our tracking server.
 
 As you can see, flavors that support
-`autologging <https://mlflow.org/docs/latest/tracking/autolog.html>`_ provide lots of additional
+`autologging <https://qcflow.org/docs/latest/tracking/autolog.html>`_ provide lots of additional
 information out-of-the-box. Also note that even if we don't have autologging for our model of
 interest, we can easily store this information with explicit logging calls.
 
@@ -64,7 +64,7 @@ One more interesting callout is that by default you get three way to manage your
 environment: ``python_env.yaml`` (python virtualenv), ``requirements.txt`` (PyPi requirements), and
 ``conda.yaml`` (conda env).
 
-Ok, now that we have a very high-level understanding of what is logged, let's use the MLflow UI to
+Ok, now that we have a very high-level understanding of what is logged, let's use the QCFlow UI to
 view this information.
 
 Step 2: Start the Tracking Server
@@ -73,7 +73,7 @@ In the same directory as your ``mlruns`` foder, run the below command.
 
 .. code-block:: bash
 
-    mlflow server --host 127.0.0.1 --port 8080
+    qcflow server --host 127.0.0.1 --port 8080
 
 
 .. code-block:: text
@@ -89,17 +89,17 @@ In the same directory as your ``mlruns`` foder, run the below command.
 Step 3: View the Tracking Server
 --------------------------------
 Assuming there are no errors, you can go to your web browser and visit ``http://localhost:8080`` to
-view the MLflow UI.
+view the QCFlow UI.
 
 First, let's leave the experiment tracking tab and visit the model registry.
 
 .. figure:: ../../_static/images/quickstart/model-registry-quickstart/model-registry-ui.png
    :width: 1024px
    :align: center
-   :alt: Model information from the mlflow ui.
+   :alt: Model information from the qcflow ui.
 
 Next, let's add tags and a model version alias to
-`facilitate model deployment <https://mlflow.org/docs/latest/model-registry.html#new-model-deployment-tools>`_.
+`facilitate model deployment <https://qcflow.org/docs/latest/model-registry.html#new-model-deployment-tools>`_.
 You can add or edit tags and aliases by clicking on the corresponding ``Add`` link or pencil icon in
 the model version table. Let's...
 
@@ -109,4 +109,4 @@ the model version table. Let's...
 .. figure:: ../../_static/images/quickstart/model-registry-quickstart/model-alias-and-tags.png
    :width: 1024px
    :align: center
-   :alt: Model information from the mlflow ui.
+   :alt: Model information from the qcflow ui.

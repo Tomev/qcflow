@@ -6,10 +6,10 @@ from unittest import mock
 import git
 import pytest
 
-import mlflow
-from mlflow.exceptions import ExecutionException
-from mlflow.projects import _project_spec
-from mlflow.projects.utils import (
+import qcflow
+from qcflow.exceptions import ExecutionException
+from qcflow.projects import _project_spec
+from qcflow.projects.utils import (
     _fetch_git_repo,
     _fetch_project,
     _get_storage_dir,
@@ -20,7 +20,7 @@ from mlflow.projects.utils import (
     get_or_create_run,
     load_project,
 )
-from mlflow.utils.mlflow_tags import MLFLOW_PROJECT_ENTRY_POINT, MLFLOW_SOURCE_NAME
+from qcflow.utils.qcflow_tags import QCFLOW_PROJECT_ENTRY_POINT, QCFLOW_SOURCE_NAME
 
 from tests.projects.utils import (
     GIT_PROJECT_BRANCH,
@@ -111,7 +111,7 @@ def test__fetch_git_repo(local_git_repo, local_git_repo_uri, version, expected_v
     ["0651d1c962aa35e4dd02608c51a7b0efc2412407", "3c0711f8868232f17a9adbb69fb1186ec8a3c0c7"],
 )
 def test_fetch_git_repo_commit(tmp_path, commit):
-    _fetch_git_repo("https://github.com/mlflow/mlflow-example.git", commit, tmp_path)
+    _fetch_git_repo("https://github.com/qcflow/qcflow-example.git", commit, tmp_path)
     repo = git.Repo(tmp_path)
     assert repo.commit().hexsha == commit
 
@@ -190,13 +190,13 @@ def test_fetch_create_and_log(tmp_path):
         docker_env=None,
         name="my_project",
     )
-    experiment_id = mlflow.create_experiment("test_fetch_project")
+    experiment_id = qcflow.create_experiment("test_fetch_project")
     expected_dir = str(tmp_path)
     project_uri = "http://someuri/myproject.git"
     user_param = {"method_name": "newton"}
-    with mock.patch("mlflow.projects.utils._fetch_project", return_value=expected_dir):
+    with mock.patch("qcflow.projects.utils._fetch_project", return_value=expected_dir):
         with mock.patch(
-            "mlflow.projects._project_spec.load_project", return_value=mock_fetched_project
+            "qcflow.projects._project_spec.load_project", return_value=mock_fetched_project
         ):
             work_dir = fetch_and_validate_project("", "", entry_point_name, user_param)
             project = load_project(work_dir)
@@ -214,9 +214,9 @@ def test_fetch_create_and_log(tmp_path):
             )
 
             # check tags
-            run = mlflow.get_run(active_run.info.run_id)
-            assert MLFLOW_PROJECT_ENTRY_POINT in run.data.tags
-            assert MLFLOW_SOURCE_NAME in run.data.tags
-            assert entry_point_name == run.data.tags[MLFLOW_PROJECT_ENTRY_POINT]
-            assert project_uri == run.data.tags[MLFLOW_SOURCE_NAME]
+            run = qcflow.get_run(active_run.info.run_id)
+            assert QCFLOW_PROJECT_ENTRY_POINT in run.data.tags
+            assert QCFLOW_SOURCE_NAME in run.data.tags
+            assert entry_point_name == run.data.tags[QCFLOW_PROJECT_ENTRY_POINT]
+            assert project_uri == run.data.tags[QCFLOW_SOURCE_NAME]
             assert user_param == run.data.params

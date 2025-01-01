@@ -1,6 +1,6 @@
 from llama_index.core.schema import NodeWithScore, TextNode
 
-from mlflow.entities import Document
+from qcflow.entities import Document
 
 
 def test_from_llama_index_node_with_score():

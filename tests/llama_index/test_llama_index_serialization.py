@@ -7,7 +7,7 @@ from llama_index.core import PromptTemplate, Settings
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 
-from mlflow.llama_index.serialize_objects import (
+from qcflow.llama_index.serialize_objects import (
     _construct_prompt_template_object,
     _get_object_import_path,
     _sanitize_api_key,
@@ -19,7 +19,7 @@ from mlflow.llama_index.serialize_objects import (
 
 @pytest.fixture
 def mock_logger():
-    with mock.patch("mlflow.llama_index.serialize_objects._logger") as mock_logger:
+    with mock.patch("qcflow.llama_index.serialize_objects._logger") as mock_logger:
         yield mock_logger
 
 

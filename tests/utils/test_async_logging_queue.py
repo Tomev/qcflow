@@ -9,12 +9,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-import mlflow.utils.async_logging.async_logging_queue
-from mlflow import MlflowException
-from mlflow.entities.metric import Metric
-from mlflow.entities.param import Param
-from mlflow.entities.run_tag import RunTag
-from mlflow.utils.async_logging.async_logging_queue import AsyncLoggingQueue, QueueStatus
+import qcflow.utils.async_logging.async_logging_queue
+from qcflow import QCFlowException
+from qcflow.entities.metric import Metric
+from qcflow.entities.param import Param
+from qcflow.entities.run_tag import RunTag
+from qcflow.utils.async_logging.async_logging_queue import AsyncLoggingQueue, QueueStatus
 
 METRIC_PER_BATCH = 250
 TAGS_PER_BATCH = 1
@@ -38,7 +38,7 @@ class RunData:
     def consume_queue_data(self, run_id, metrics, tags, params):
         self.batch_count += 1
         if self.batch_count in self.throw_exception_on_batch_number:
-            raise MlflowException("Failed to log run data")
+            raise QCFlowException("Failed to log run data")
         self.received_run_id = run_id
         self.received_metrics.extend(metrics or [])
         self.received_params.extend(params or [])
@@ -55,7 +55,7 @@ def generate_async_logging_queue(clazz):
 
 
 def test_single_thread_publish_consume_queue(monkeypatch):
-    monkeypatch.setenv("MLFLOW_ASYNC_LOGGING_BUFFERING_SECONDS", "3")
+    monkeypatch.setenv("QCFLOW_ASYNC_LOGGING_BUFFERING_SECONDS", "3")
 
     with (
         patch.object(
@@ -133,7 +133,7 @@ def test_queue_activation():
             )
             for val in range(METRIC_PER_BATCH)
         ]
-        with pytest.raises(MlflowException, match="AsyncLoggingQueue is not activated."):
+        with pytest.raises(QCFlowException, match="AsyncLoggingQueue is not activated."):
             async_logging_queue.log_batch_async(run_id=run_id, metrics=metrics, tags=[], params=[])
 
         async_logging_queue.activate()
@@ -180,7 +180,7 @@ def test_partial_logging_failed():
         batch_id = 1
         for params, tags, metrics in _get_run_data():
             if batch_id in [3, 4]:
-                with pytest.raises(MlflowException, match="Failed to log run data"):
+                with pytest.raises(QCFlowException, match="Failed to log run data"):
                     async_logging_queue.log_batch_async(
                         run_id=run_id, metrics=metrics, tags=tags, params=params
                     ).wait()
@@ -377,9 +377,9 @@ def _assert_sent_received_data(
 
 
 def test_batch_split(monkeypatch):
-    monkeypatch.setattr(mlflow.utils.async_logging.async_logging_queue, "_MAX_ITEMS_PER_BATCH", 10)
-    monkeypatch.setattr(mlflow.utils.async_logging.async_logging_queue, "_MAX_PARAMS_PER_BATCH", 6)
-    monkeypatch.setattr(mlflow.utils.async_logging.async_logging_queue, "_MAX_TAGS_PER_BATCH", 8)
+    monkeypatch.setattr(qcflow.utils.async_logging.async_logging_queue, "_MAX_ITEMS_PER_BATCH", 10)
+    monkeypatch.setattr(qcflow.utils.async_logging.async_logging_queue, "_MAX_PARAMS_PER_BATCH", 6)
+    monkeypatch.setattr(qcflow.utils.async_logging.async_logging_queue, "_MAX_TAGS_PER_BATCH", 8)
 
     run_data = RunData()
     with generate_async_logging_queue(run_data) as async_logging_queue:

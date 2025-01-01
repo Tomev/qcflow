@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Build MLflow package.")
+    parser = argparse.ArgumentParser(description="Build QCFlow package.")
     parser.add_argument(
         "--package-type",
         help="Package type to build. Default is 'dev'.",
@@ -32,7 +32,7 @@ def restore_changes():
 def main():
     args = parse_args()
 
-    for path in map(Path, ["build", "dist", "mlflow.egg-info", "mlflow_skinny.egg-info"]):
+    for path in map(Path, ["build", "dist", "qcflow.egg-info", "qcflow_skinny.egg-info"]):
         if not path.exists():
             continue
         if path.is_file():
@@ -56,7 +56,7 @@ def main():
 
     if args.sha:
         # If build succeeds, there should be one wheel in the dist directory
-        wheel = next(Path("dist").glob("mlflow*.whl"))
+        wheel = next(Path("dist").glob("qcflow*.whl"))
         name, version, rest = wheel.name.split("-", 2)
         build_tag = f"0.sha.{args.sha}"  # build tag must start with a digit
         wheel.rename(wheel.with_name(f"{name}-{version}-{build_tag}-{rest}"))

@@ -2,7 +2,7 @@ import functools
 
 import pytest
 
-from mlflow.utils.arguments_utils import _get_arg_names
+from qcflow.utils.arguments_utils import _get_arg_names
 
 
 def no_args():

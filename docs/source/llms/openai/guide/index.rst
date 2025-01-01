@@ -1,4 +1,4 @@
-OpenAI within MLflow
+OpenAI within QCFlow
 ====================
 
 .. attention::
@@ -7,76 +7,76 @@ OpenAI within MLflow
 
 Overview
 --------
-The integration of OpenAI's advanced language models within MLflow opens up new frontiers in creating and using NLP-based applications. It enables users to harness 
+The integration of OpenAI's advanced language models within QCFlow opens up new frontiers in creating and using NLP-based applications. It enables users to harness 
 the cutting-edge capabilities of models like GPT-4 for varied tasks, ranging from conversational AI to complex text analysis 
-and embeddings generation. This integration is a leap forward in making advanced NLP accessible and manageable within a robust framework like MLflow.
+and embeddings generation. This integration is a leap forward in making advanced NLP accessible and manageable within a robust framework like QCFlow.
 
-Beyond Simple Deployment: Building Powerful NLP Applications with OpenAI and MLflow
+Beyond Simple Deployment: Building Powerful NLP Applications with OpenAI and QCFlow
 -----------------------------------------------------------------------------------
-While the openai flavor within MLflow simplifies the logging and deployment of OpenAI models, its true potential lies in unlocking the full power of NLP 
-applications. By seamlessly integrating with MLflow, you can:
+While the openai flavor within QCFlow simplifies the logging and deployment of OpenAI models, its true potential lies in unlocking the full power of NLP 
+applications. By seamlessly integrating with QCFlow, you can:
 
 Craft Task-Specific Services
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Raw access to a large language model doesn't guarantee a valuable service. While powerful, unprompted models can be overly general, leading to unintended 
-outputs or inappropriate responses for the intent of the application. MLflow enables users to tailor models for specific tasks, achieving desired functionalities 
+outputs or inappropriate responses for the intent of the application. QCFlow enables users to tailor models for specific tasks, achieving desired functionalities 
 while ensuring context and control. 
 
 This allows you to:
 
 - **Define prompts and parameters**: Instead of relying on open-ended inputs, you can define specific prompts and parameters that guide the model's responses, focusing its capabilities on the desired task.
 - **Save and deploy customized models**: The saved models, along with their prompts and parameters, can be easily deployed and shared, ensuring consistent behavior and performance.
-- **Perform champion/challenger evaluations**: MLflow allows users to easily compare different prompts, parameters, and deployment configurations, facilitating the selection of the most effective model for a specific task.
+- **Perform champion/challenger evaluations**: QCFlow allows users to easily compare different prompts, parameters, and deployment configurations, facilitating the selection of the most effective model for a specific task.
 
 Simplify Deployment and Comparison
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-MLflow streamlines the deployment process, enabling you to:
+QCFlow streamlines the deployment process, enabling you to:
 
 - **Package and deploy models as applications**: The openai flavor simplifies model packaging, including prompts, configuration parameters, and inference parameters, into a single, portable artifact.
 - **Compare different approaches**: With consistent packaging, you can easily compare different models, prompts, configurations, and deployment options, facilitating informed decision-making.
-- **Leverage MLflow's ecosystem**: MLflow integrates with various tools and platforms, allowing users to deploy models on diverse environments, from cloud platforms to local servers.
+- **Leverage QCFlow's ecosystem**: QCFlow integrates with various tools and platforms, allowing users to deploy models on diverse environments, from cloud platforms to local servers.
 
-Advanced Prompt Engineering and Version Tracking with MLflow and OpenAI: Unleashing the True Potential of LLMs
+Advanced Prompt Engineering and Version Tracking with QCFlow and OpenAI: Unleashing the True Potential of LLMs
 --------------------------------------------------------------------------------------------------------------
 
-The integration of MLflow and OpenAI marks a paradigm shift in the field of prompt engineering for large language models (LLMs). While basic prompts can 
+The integration of QCFlow and OpenAI marks a paradigm shift in the field of prompt engineering for large language models (LLMs). While basic prompts can 
 enable rudimentary functionalities, this powerful combination unlocks the full potential of LLMs, empowering developers and data scientists to meticulously 
 craft and refine prompts, ushering in a new era of targeted and impactful applications.
 
 Beyond the Basics: Embracing Iterative Experimentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forget static prompts and limited applications! MLflow and OpenAI revolutionize the process by facilitating iterative experimentation through:
+Forget static prompts and limited applications! QCFlow and OpenAI revolutionize the process by facilitating iterative experimentation through:
 
-- **Tracking and Comparison**: MLflow logs and meticulously tracks every iteration of a prompt alongside its performance metrics. This allows for a granular comparison of different versions, enabling informed decisions and identification of the most effective prompts.
-- **Version Control for Reproducible Experimentation**: Each prompt iteration is safely stored and version-controlled within MLflow. This allows for easy rollback and comparison, fostering experimentation and refinement while ensuring reproducibility, a crucial aspect of scientific advancement.
-- **Flexible Parameterization**: MLflow enables control over which parameters are permitted to be modified at inference time, giving you the power to control creativity (temperature) and maximum token length (for cost).
+- **Tracking and Comparison**: QCFlow logs and meticulously tracks every iteration of a prompt alongside its performance metrics. This allows for a granular comparison of different versions, enabling informed decisions and identification of the most effective prompts.
+- **Version Control for Reproducible Experimentation**: Each prompt iteration is safely stored and version-controlled within QCFlow. This allows for easy rollback and comparison, fostering experimentation and refinement while ensuring reproducibility, a crucial aspect of scientific advancement.
+- **Flexible Parameterization**: QCFlow enables control over which parameters are permitted to be modified at inference time, giving you the power to control creativity (temperature) and maximum token length (for cost).
 
 Refining for Optimum Results: A/B Testing and Fine-Tuning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-MLflow and OpenAI empower you to push the boundaries of LLM performance by:
+QCFlow and OpenAI empower you to push the boundaries of LLM performance by:
 
 - **A/B Testing for Optimal Prompt Selection**: Perform efficient A/B testing of different prompt variations and parameter configurations. This allows for the identification of the most effective combination for specific tasks and user profiles, leading to remarkable performance gains.
-- **Tailoring Prompts for Desired Outcomes**: Iterative and organized experimentation allows you to focus on what makes the most sense for your applications. Whether you prioritize factual accuracy, creative expression, or conversational fluency, MLflow and OpenAI empower you to tailor prompts to optimize specific performance metrics. This ensures that your LLM applications deliver the desired results, time and time again.
+- **Tailoring Prompts for Desired Outcomes**: Iterative and organized experimentation allows you to focus on what makes the most sense for your applications. Whether you prioritize factual accuracy, creative expression, or conversational fluency, QCFlow and OpenAI empower you to tailor prompts to optimize specific performance metrics. This ensures that your LLM applications deliver the desired results, time and time again.
 
 Collaboration and Sharing: Fueling Innovation and Progress
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The power of MLflow and OpenAI extends beyond individual projects. By facilitating collaboration and sharing, they accelerate the advancement of LLM applications:
+The power of QCFlow and OpenAI extends beyond individual projects. By facilitating collaboration and sharing, they accelerate the advancement of LLM applications:
 
-- **Shareable Artifacts for Collaborative Innovation**: MLflow packages prompts, parameters, model versions, and performance metrics into shareable artifacts. This enables researchers and developers to collaborate seamlessly, leveraging each other's insights and refined prompts to accelerate progress.
+- **Shareable Artifacts for Collaborative Innovation**: QCFlow packages prompts, parameters, model versions, and performance metrics into shareable artifacts. This enables researchers and developers to collaborate seamlessly, leveraging each other's insights and refined prompts to accelerate progress.
 
-Leveraging MLflow for Optimized Prompt Engineering
+Leveraging QCFlow for Optimized Prompt Engineering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-- **Iterative Improvement**: MLflow's tracking system supports an iterative approach to prompt engineering. By logging each experiment, users can incrementally refine their prompts, driving towards the most effective model interaction.
-- **Collaborative Experimentation**: MLflow's collaborative features enable teams to share and discuss prompt versions and experiment results, fostering a collaborative environment for prompt development.
+- **Iterative Improvement**: QCFlow's tracking system supports an iterative approach to prompt engineering. By logging each experiment, users can incrementally refine their prompts, driving towards the most effective model interaction.
+- **Collaborative Experimentation**: QCFlow's collaborative features enable teams to share and discuss prompt versions and experiment results, fostering a collaborative environment for prompt development.
 
 Real-World Impact
 ^^^^^^^^^^^^^^^^^
-In real-world applications, the ability to track and refine prompts using MLflow and OpenAI leads to more accurate, reliable, and efficient language model 
+In real-world applications, the ability to track and refine prompts using QCFlow and OpenAI leads to more accurate, reliable, and efficient language model 
 implementations. Whether in customer service chatbots, content generation, or complex decision support systems, the meticulous management of prompts 
 and model versions directly translates to enhanced performance and user experience.
 
@@ -86,7 +86,7 @@ ensuring that each prompt-driven interaction is as effective and impactful as po
 
 Direct OpenAI Service Usage
 ---------------------------
-Direct usage of OpenAI's service through MLflow allows for seamless interaction with the latest GPT models for a variety of NLP tasks.
+Direct usage of OpenAI's service through QCFlow allows for seamless interaction with the latest GPT models for a variety of NLP tasks.
 
 .. literalinclude:: ../../../../../examples/openai/chat_completions.py
     :language: python
@@ -111,9 +111,9 @@ To successfully log a model targeting Azure OpenAI Service, specific environment
 - **OPENAI_API_TYPE**: If using Azure OpenAI endpoints, this value should be set to ``"azure"``.
 - **OPENAI_DEPLOYMENT_NAME**: The deployment name that you chose when you deployed the model in Azure. To learn more, visit the `Azure OpenAI deployment documentation <https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/create-resource?pivots=web-portal>`_.
 
-Azure OpenAI Service in MLflow
+Azure OpenAI Service in QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Integrating Azure OpenAI models within MLflow follows similar procedures to direct OpenAI service usage, with additional Azure-specific configurations.
+Integrating Azure OpenAI models within QCFlow follows similar procedures to direct OpenAI service usage, with additional Azure-specific configurations.
 
 .. literalinclude:: ../../../../../examples/openai/azure_openai.py
     :language: python
@@ -126,11 +126,11 @@ OpenAI Autologging
 
 To learn more about autologging support for the OpenAI flavor, please `see the autologging guide <../autologging.html>`_.
 
-For more examples, please click `here <https://github.com/mlflow/mlflow/blob/master/examples/openai/autologging>`_.
+For more examples, please click `here <https://github.com/qcflow/qcflow/blob/master/examples/openai/autologging>`_.
 
 Next Steps in Your NLP Journey
 ------------------------------
-We invite you to harness the combined power of MLflow and OpenAI for developing innovative NLP applications. Whether it's creating interactive 
+We invite you to harness the combined power of QCFlow and OpenAI for developing innovative NLP applications. Whether it's creating interactive 
 AI-driven platforms, enhancing data analysis with deep NLP insights, or exploring new frontiers in AI, this integration serves as a robust foundation 
 for your explorations
 

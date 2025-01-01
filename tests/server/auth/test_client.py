@@ -3,18 +3,18 @@ from contextlib import contextmanager
 
 import pytest
 
-import mlflow
-from mlflow import MlflowException
-from mlflow.environment_variables import MLFLOW_TRACKING_PASSWORD, MLFLOW_TRACKING_USERNAME
-from mlflow.protos.databricks_pb2 import (
+import qcflow
+from qcflow import QCFlowException
+from qcflow.environment_variables import QCFLOW_TRACKING_PASSWORD, QCFLOW_TRACKING_USERNAME
+from qcflow.protos.databricks_pb2 import (
     PERMISSION_DENIED,
     RESOURCE_DOES_NOT_EXIST,
     UNAUTHENTICATED,
     ErrorCode,
 )
-from mlflow.server.auth import auth_config
-from mlflow.server.auth.client import AuthServiceClient
-from mlflow.utils.os import is_windows
+from qcflow.server.auth import auth_config
+from qcflow.server.auth.client import AuthServiceClient
+from qcflow.utils.os import is_windows
 
 from tests.helper_functions import random_str
 from tests.server.auth.auth_test_utils import (
@@ -31,7 +31,7 @@ from tests.tracking.integration_test_utils import _init_server
 @pytest.fixture(autouse=True)
 def clear_credentials(monkeypatch):
     monkeypatch.delenvs(
-        [MLFLOW_TRACKING_USERNAME.name, MLFLOW_TRACKING_PASSWORD.name], raising=False
+        [QCFLOW_TRACKING_USERNAME.name, QCFLOW_TRACKING_PASSWORD.name], raising=False
     )
 
 
@@ -48,27 +48,27 @@ def client(tmp_path):
     with _init_server(
         backend_uri=backend_uri,
         root_artifact_uri=tmp_path.joinpath("artifacts").as_uri(),
-        app="mlflow.server.auth:create_app",
+        app="qcflow.server.auth:create_app",
     ) as url:
         yield AuthServiceClient(url)
 
 
 @contextmanager
 def assert_unauthenticated():
-    with pytest.raises(MlflowException, match=r"You are not authenticated.") as exception_context:
+    with pytest.raises(QCFlowException, match=r"You are not authenticated.") as exception_context:
         yield
     assert exception_context.value.error_code == ErrorCode.Name(UNAUTHENTICATED)
 
 
 @contextmanager
 def assert_unauthorized():
-    with pytest.raises(MlflowException, match=r"Permission denied.") as exception_context:
+    with pytest.raises(QCFlowException, match=r"Permission denied.") as exception_context:
         yield
     assert exception_context.value.error_code == ErrorCode.Name(PERMISSION_DENIED)
 
 
 def test_get_client():
-    client = mlflow.server.get_app_client("basic-auth", "uri:/fake")
+    client = qcflow.server.get_app_client("basic-auth", "uri:/fake")
     assert isinstance(client, AuthServiceClient)
 
 
@@ -170,7 +170,7 @@ def test_delete_user(client, monkeypatch):
         client.update_user_admin(username, True)
         client.delete_user(username)
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=rf"User with username={username} not found",
         ) as exception_context:
             client.get_user(username)
@@ -246,7 +246,7 @@ def test_client_delete_experiment_permission(client, monkeypatch):
         client.create_experiment_permission(experiment_id, username, PERMISSION)
         client.delete_experiment_permission(experiment_id, username)
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=rf"Experiment permission with experiment_id={experiment_id} "
             rf"and username={username} not found",
         ) as exception_context:
@@ -319,7 +319,7 @@ def test_client_delete_registered_model_permission(client, monkeypatch):
         client.create_registered_model_permission(name, username, PERMISSION)
         client.delete_registered_model_permission(name, username)
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=rf"Registered model permission with name={name} "
             rf"and username={username} not found",
         ) as exception_context:

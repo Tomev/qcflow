@@ -8,27 +8,27 @@ from unittest.mock import ANY
 
 import pytest
 
-from mlflow.entities.model_registry import (
+from qcflow.entities.model_registry import (
     ModelVersion,
     ModelVersionTag,
     RegisteredModel,
     RegisteredModelTag,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.model_registry import (
+from qcflow.exceptions import QCFlowException
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.model_registry import (
     SEARCH_MODEL_VERSION_MAX_RESULTS_DEFAULT,
     SEARCH_REGISTERED_MODEL_MAX_RESULTS_DEFAULT,
 )
-from mlflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
-from mlflow.tracking._model_registry.client import ModelRegistryClient
+from qcflow.store.model_registry.sqlalchemy_store import SqlAlchemyStore
+from qcflow.tracking._model_registry.client import ModelRegistryClient
 
 
 @pytest.fixture
 def mock_store():
     mock_store = mock.MagicMock()
     mock_store.create_model_version = mock.create_autospec(SqlAlchemyStore.create_model_version)
-    with mock.patch("mlflow.tracking._model_registry.utils._get_store", return_value=mock_store):
+    with mock.patch("qcflow.tracking._model_registry.utils._get_store", return_value=mock_store):
         yield mock_store
 
 
@@ -109,7 +109,7 @@ def test_rename_registered_model(mock_store):
 
 
 def test_update_registered_model_validation_errors_on_empty_new_name(mock_store):
-    with pytest.raises(MlflowException, match="The name must not be an empty string"):
+    with pytest.raises(QCFlowException, match="The name must not be an empty string"):
         newModelRegistryClient().rename_registered_model("Model 1", " ")
 
 
@@ -323,7 +323,7 @@ def test_transition_model_version_stage(mock_store):
 
 
 def test_transition_model_version_stage_validation_errors(mock_store):
-    with pytest.raises(MlflowException, match="The stage must not be an empty string"):
+    with pytest.raises(QCFlowException, match="The stage must not be an empty string"):
         newModelRegistryClient().transition_model_version_stage("Model 1", "12", stage=" ")
 
 

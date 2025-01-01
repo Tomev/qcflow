@@ -1,6 +1,6 @@
 import pytest
 
-from mlflow.types.llm import (
+from qcflow.types.llm import (
     ChatChoice,
     ChatCompletionRequest,
     ChatCompletionResponse,

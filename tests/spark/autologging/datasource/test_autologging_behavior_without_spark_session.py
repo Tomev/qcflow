@@ -1,4 +1,4 @@
-import mlflow
+import qcflow
 
 
 def test_enabling_autologging_does_not_throw_when_spark_hasnt_been_started():
@@ -6,4 +6,4 @@ def test_enabling_autologging_does_not_throw_when_spark_hasnt_been_started():
 
     assert SparkSession.getActiveSession() is None
 
-    mlflow.spark.autolog(disable=True)
+    qcflow.spark.autolog(disable=True)

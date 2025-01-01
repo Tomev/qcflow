@@ -7,10 +7,10 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow import MlflowClient, flush_async_logging
-from mlflow.config import enable_async_logging
-from mlflow.entities import (
+import qcflow
+from qcflow import QCFlowClient, flush_async_logging
+from qcflow.config import enable_async_logging
+from qcflow.entities import (
     ExperimentTag,
     Run,
     RunInfo,
@@ -23,37 +23,37 @@ from mlflow.entities import (
     TraceInfo,
     ViewType,
 )
-from mlflow.entities.metric import Metric
-from mlflow.entities.model_registry import ModelVersion, ModelVersionTag
-from mlflow.entities.model_registry.model_version_status import ModelVersionStatus
-from mlflow.entities.param import Param
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.environment_variables import MLFLOW_TRACKING_USERNAME
-from mlflow.exceptions import MlflowException, MlflowTraceDataCorrupted, MlflowTraceDataNotFound
-from mlflow.store.artifact.artifact_repo import ArtifactRepository
-from mlflow.store.model_registry.sqlalchemy_store import (
+from qcflow.entities.metric import Metric
+from qcflow.entities.model_registry import ModelVersion, ModelVersionTag
+from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
+from qcflow.entities.param import Param
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.environment_variables import QCFLOW_TRACKING_USERNAME
+from qcflow.exceptions import QCFlowException, QCFlowTraceDataCorrupted, QCFlowTraceDataNotFound
+from qcflow.store.artifact.artifact_repo import ArtifactRepository
+from qcflow.store.model_registry.sqlalchemy_store import (
     SqlAlchemyStore as SqlAlchemyModelRegistryStore,
 )
-from mlflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
-from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore as SqlAlchemyTrackingStore
-from mlflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, TraceMetadataKey
-from mlflow.tracing.fluent import TRACE_BUFFER
-from mlflow.tracing.provider import _get_tracer, trace_disabled
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracking import set_registry_uri
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking._model_registry.utils import (
+from qcflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
+from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore as SqlAlchemyTrackingStore
+from qcflow.tracing.constant import TRACE_SCHEMA_VERSION, TRACE_SCHEMA_VERSION_KEY, TraceMetadataKey
+from qcflow.tracing.fluent import TRACE_BUFFER
+from qcflow.tracing.provider import _get_tracer, trace_disabled
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracking import set_registry_uri
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking._model_registry.utils import (
     _get_store_registry as _get_model_registry_store_registry,
 )
-from mlflow.tracking._tracking_service.utils import _register, _use_tracking_uri
-from mlflow.utils.databricks_utils import _construct_databricks_run_url
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_GIT_COMMIT,
-    MLFLOW_PARENT_RUN_ID,
-    MLFLOW_PROJECT_ENTRY_POINT,
-    MLFLOW_SOURCE_NAME,
-    MLFLOW_SOURCE_TYPE,
-    MLFLOW_USER,
+from qcflow.tracking._tracking_service.utils import _register, _use_tracking_uri
+from qcflow.utils.databricks_utils import _construct_databricks_run_url
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_GIT_COMMIT,
+    QCFLOW_PARENT_RUN_ID,
+    QCFLOW_PROJECT_ENTRY_POINT,
+    QCFLOW_SOURCE_NAME,
+    QCFLOW_SOURCE_TYPE,
+    QCFLOW_USER,
 )
 
 from tests.tracing.conftest import async_logging_enabled  # noqa: F401
@@ -69,14 +69,14 @@ def reset_registry_uri():
 
 @pytest.fixture
 def mock_store():
-    with mock.patch("mlflow.tracking._tracking_service.utils._get_store") as mock_get_store:
+    with mock.patch("qcflow.tracking._tracking_service.utils._get_store") as mock_get_store:
         yield mock_get_store.return_value
 
 
 @pytest.fixture
 def mock_artifact_repo():
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.get_artifact_repository"
+        "qcflow.tracking._tracking_service.client.get_artifact_repository"
     ) as mock_get_repo:
         yield mock_get_repo.return_value
 
@@ -87,7 +87,7 @@ def mock_registry_store():
     mock_store.create_model_version = mock.create_autospec(
         SqlAlchemyModelRegistryStore.create_model_version
     )
-    with mock.patch("mlflow.tracking._model_registry.utils._get_store", return_value=mock_store):
+    with mock.patch("qcflow.tracking._model_registry.utils._get_store", return_value=mock_store):
         yield mock_store
 
 
@@ -109,7 +109,7 @@ def mock_databricks_tracking_store():
     mock_tracking_store = MockDatabricksTrackingStore(run_id, experiment_id)
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils._tracking_store_registry.get_store",
+        "qcflow.tracking._tracking_service.utils._tracking_store_registry.get_store",
         return_value=mock_tracking_store,
     ):
         yield mock_tracking_store
@@ -118,7 +118,7 @@ def mock_databricks_tracking_store():
 @pytest.fixture
 def mock_spark_session():
     with mock.patch(
-        "mlflow.utils.databricks_utils._get_active_spark_session"
+        "qcflow.utils.databricks_utils._get_active_spark_session"
     ) as mock_spark_session:
         yield mock_spark_session.return_value
 
@@ -141,7 +141,7 @@ def setup_async_logging():
 def test_client_create_run(mock_store, mock_time):
     experiment_id = mock.Mock()
 
-    MlflowClient().create_run(experiment_id)
+    QCFlowClient().create_run(experiment_id)
 
     mock_store.create_run.assert_called_once_with(
         experiment_id=experiment_id,
@@ -155,7 +155,7 @@ def test_client_create_run(mock_store, mock_time):
 def test_client_create_run_with_name(mock_store, mock_time):
     experiment_id = mock.Mock()
 
-    MlflowClient().create_run(experiment_id, run_name="my name")
+    QCFlowClient().create_run(experiment_id, run_name="my name")
 
     mock_store.create_run.assert_called_once_with(
         experiment_id=experiment_id,
@@ -173,7 +173,7 @@ def test_client_get_trace(mock_store, mock_artifact_repo):
         timestamp_ms=123,
         execution_time_ms=456,
         status=TraceStatus.OK,
-        tags={"mlflow.artifactLocation": "dbfs:/path/to/artifacts"},
+        tags={"qcflow.artifactLocation": "dbfs:/path/to/artifacts"},
     )
     mock_artifact_repo.download_trace_data.return_value = {
         "request": '{"prompt": "What is the meaning of life?"}',
@@ -191,17 +191,17 @@ def test_client_get_trace(mock_store, mock_artifact_repo):
                 "status_code": "OK",
                 "status_message": "",
                 "attributes": {
-                    "mlflow.traceRequestId": '"tr-1234567"',
-                    "mlflow.spanType": '"LLM"',
-                    "mlflow.spanFunctionName": '"predict"',
-                    "mlflow.spanInputs": '{"prompt": "What is the meaning of life?"}',
-                    "mlflow.spanOutputs": '{"answer": 42}',
+                    "qcflow.traceRequestId": '"tr-1234567"',
+                    "qcflow.spanType": '"LLM"',
+                    "qcflow.spanFunctionName": '"predict"',
+                    "qcflow.spanInputs": '{"prompt": "What is the meaning of life?"}',
+                    "qcflow.spanOutputs": '{"answer": 42}',
                 },
                 "events": [],
             }
         ],
     }
-    trace = MlflowClient().get_trace("1234567")
+    trace = QCFlowClient().get_trace("1234567")
     mock_store.get_trace_info.assert_called_once_with("1234567")
     mock_artifact_repo.download_trace_data.assert_called_once()
 
@@ -210,7 +210,7 @@ def test_client_get_trace(mock_store, mock_artifact_repo):
     assert trace.info.timestamp_ms == 123
     assert trace.info.execution_time_ms == 456
     assert trace.info.status == TraceStatus.OK
-    assert trace.info.tags == {"mlflow.artifactLocation": "dbfs:/path/to/artifacts"}
+    assert trace.info.tags == {"qcflow.artifactLocation": "dbfs:/path/to/artifacts"}
     assert trace.data.request == '{"prompt": "What is the meaning of life?"}'
     assert trace.data.response == '{"answer": 42}'
     assert len(trace.data.spans) == 1
@@ -230,22 +230,22 @@ def test_client_get_trace_throws_for_missing_or_corrupted_data(mock_store, mock_
         timestamp_ms=123,
         execution_time_ms=456,
         status=TraceStatus.OK,
-        tags={"mlflow.artifactLocation": "dbfs:/path/to/artifacts"},
+        tags={"qcflow.artifactLocation": "dbfs:/path/to/artifacts"},
     )
-    mock_artifact_repo.download_trace_data.side_effect = MlflowTraceDataNotFound("1234567")
+    mock_artifact_repo.download_trace_data.side_effect = QCFlowTraceDataNotFound("1234567")
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Trace with ID 1234567 cannot be loaded because it is missing span data",
     ):
-        MlflowClient().get_trace("1234567")
+        QCFlowClient().get_trace("1234567")
 
-    mock_artifact_repo.download_trace_data.side_effect = MlflowTraceDataCorrupted("1234567")
+    mock_artifact_repo.download_trace_data.side_effect = QCFlowTraceDataCorrupted("1234567")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Trace with ID 1234567 cannot be loaded because its span data is corrupted",
     ):
-        MlflowClient().get_trace("1234567")
+        QCFlowClient().get_trace("1234567")
 
 
 def test_client_search_traces(mock_store, mock_artifact_repo):
@@ -256,7 +256,7 @@ def test_client_search_traces(mock_store, mock_artifact_repo):
             timestamp_ms=123,
             execution_time_ms=456,
             status=TraceStatus.OK,
-            tags={"mlflow.artifactLocation": "dbfs:/path/to/artifacts/1"},
+            tags={"qcflow.artifactLocation": "dbfs:/path/to/artifacts/1"},
         ),
         TraceInfo(
             request_id="8910",
@@ -264,12 +264,12 @@ def test_client_search_traces(mock_store, mock_artifact_repo):
             timestamp_ms=456,
             execution_time_ms=789,
             status=TraceStatus.OK,
-            tags={"mlflow.artifactLocation": "dbfs:/path/to/artifacts/2"},
+            tags={"qcflow.artifactLocation": "dbfs:/path/to/artifacts/2"},
         ),
     ]
     mock_store.search_traces.return_value = (mock_traces, None)
     mock_artifact_repo.download_trace_data.return_value = {}
-    MlflowClient().search_traces(experiment_ids=["1", "2", "3"])
+    QCFlowClient().search_traces(experiment_ids=["1", "2", "3"])
 
     mock_store.search_traces.assert_called_once_with(
         experiment_ids=["1", "2", "3"],
@@ -299,7 +299,7 @@ def test_client_search_traces_trace_data_download_error(mock_store):
             raise Exception("Failed to download trace data")
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.get_artifact_repository",
+        "qcflow.tracking._tracking_service.client.get_artifact_repository",
         return_value=CustomArtifactRepository("test"),
     ) as mock_get_artifact_repository:
         mock_traces = [
@@ -309,16 +309,16 @@ def test_client_search_traces_trace_data_download_error(mock_store):
                 timestamp_ms=123,
                 execution_time_ms=456,
                 status=TraceStatus.OK,
-                tags={"mlflow.artifactLocation": "test"},
+                tags={"qcflow.artifactLocation": "test"},
             ),
         ]
         mock_store.search_traces.return_value = (mock_traces, None)
-        assert MlflowClient().search_traces(experiment_ids=["1"]) == []
+        assert QCFlowClient().search_traces(experiment_ids=["1"]) == []
         mock_get_artifact_repository.assert_called()
 
 
 def test_client_delete_traces(mock_store):
-    MlflowClient().delete_traces(
+    QCFlowClient().delete_traces(
         experiment_id="0",
         max_timestamp_millis=1,
         max_traces=2,
@@ -334,11 +334,11 @@ def test_client_delete_traces(mock_store):
 
 @pytest.fixture(params=["file", "sqlalchemy"])
 def tracking_uri(request, tmp_path):
-    """Set an MLflow Tracking URI with different type of backend."""
-    if "MLFLOW_SKINNY" in os.environ and request.param == "sqlalchemy":
+    """Set an QCFlow Tracking URI with different type of backend."""
+    if "QCFLOW_SKINNY" in os.environ and request.param == "sqlalchemy":
         pytest.skip("SQLAlchemy store is not available in skinny.")
 
-    original_tracking_uri = mlflow.get_tracking_uri()
+    original_tracking_uri = qcflow.get_tracking_uri()
 
     if request.param == "file":
         tracking_uri = tmp_path.joinpath("file").as_uri()
@@ -348,21 +348,21 @@ def tracking_uri(request, tmp_path):
             len("file://") :
         ]
 
-    # NB: MLflow tracer does not handle the change of tracking URI well,
+    # NB: QCFlow tracer does not handle the change of tracking URI well,
     # so we need to reset the tracer to switch the tracking URI during testing.
-    mlflow.tracing.disable()
-    mlflow.set_tracking_uri(tracking_uri)
-    mlflow.tracing.enable()
+    qcflow.tracing.disable()
+    qcflow.set_tracking_uri(tracking_uri)
+    qcflow.tracing.enable()
 
     yield tracking_uri
 
     # Reset tracking URI
-    mlflow.set_tracking_uri(original_tracking_uri)
+    qcflow.set_tracking_uri(original_tracking_uri)
 
 
 @pytest.mark.parametrize("with_active_run", [True, False])
 def test_start_and_end_trace(tracking_uri, with_active_run, async_logging_enabled):
-    client = MlflowClient(tracking_uri)
+    client = QCFlowClient(tracking_uri)
 
     experiment_id = client.create_experiment("test_experiment")
 
@@ -419,16 +419,16 @@ def test_start_and_end_trace(tracking_uri, with_active_run, async_logging_enable
 
     model = TestModel()
     if with_active_run:
-        with mlflow.start_run(experiment_id=experiment_id) as run:
+        with qcflow.start_run(experiment_id=experiment_id) as run:
             model.predict(1, 2)
             run_id = run.info.run_id
     else:
         model.predict(1, 2)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
-    request_id = mlflow.get_last_active_trace().info.request_id
+    request_id = qcflow.get_last_active_trace().info.request_id
 
     # Validate that trace is logged to the backend
     trace = client.get_trace(request_id)
@@ -456,37 +456,37 @@ def test_start_and_end_trace(tracking_uri, with_active_run, async_logging_enable
     # assert root_span.start_time_ns // 1e6 == trace.info.timestamp_ms
     assert root_span.parent_id is None
     assert root_span.attributes == {
-        "mlflow.experimentId": experiment_id,
-        "mlflow.traceRequestId": trace.info.request_id,
-        "mlflow.spanType": "UNKNOWN",
-        "mlflow.spanInputs": {"x": 1, "y": 2},
-        "mlflow.spanOutputs": {"output": 25},
+        "qcflow.experimentId": experiment_id,
+        "qcflow.traceRequestId": trace.info.request_id,
+        "qcflow.spanType": "UNKNOWN",
+        "qcflow.spanInputs": {"x": 1, "y": 2},
+        "qcflow.spanOutputs": {"output": 25},
     }
 
     child_span_1 = span_name_to_span["child_span_1"]
     assert child_span_1.parent_id == root_span.span_id
     assert child_span_1.attributes == {
-        "mlflow.traceRequestId": trace.info.request_id,
-        "mlflow.spanType": "LLM",
-        "mlflow.spanInputs": {"z": 3},
-        "mlflow.spanOutputs": {"output": 5},
+        "qcflow.traceRequestId": trace.info.request_id,
+        "qcflow.spanType": "LLM",
+        "qcflow.spanInputs": {"z": 3},
+        "qcflow.spanOutputs": {"output": 5},
         "delta": 2,
     }
 
     child_span_2 = span_name_to_span["child_span_2"]
     assert child_span_2.parent_id == root_span.span_id
     assert child_span_2.attributes == {
-        "mlflow.traceRequestId": trace.info.request_id,
-        "mlflow.spanType": "UNKNOWN",
-        "mlflow.spanInputs": {"t": 5},
-        "mlflow.spanOutputs": {"output": 25},
+        "qcflow.traceRequestId": trace.info.request_id,
+        "qcflow.spanType": "UNKNOWN",
+        "qcflow.spanInputs": {"t": 5},
+        "qcflow.spanOutputs": {"output": 25},
     }
     assert child_span_2.start_time_ns <= child_span_2.end_time_ns - 0.1 * 1e6
 
 
 def test_start_and_end_trace_capture_falsy_input_and_output(tracking_uri):
     # This test is to verify that falsy input and output values are correctly logged
-    client = MlflowClient(tracking_uri)
+    client = QCFlowClient(tracking_uri)
     experiment_id = client.create_experiment("test_experiment")
 
     root = client.start_trace(name="root", experiment_id=experiment_id, inputs=[])
@@ -506,11 +506,11 @@ def test_start_and_end_trace_capture_falsy_input_and_output(tracking_uri):
 @pytest.mark.usefixtures("reset_active_experiment")
 def test_start_and_end_trace_before_all_span_end(async_logging_enabled):
     # This test is to verify that the trace is still exported even if some spans are not ended
-    exp_id = mlflow.set_experiment("test_experiment_1").experiment_id
+    exp_id = qcflow.set_experiment("test_experiment_1").experiment_id
 
     class TestModel:
         def __init__(self):
-            self._client = MlflowClient()
+            self._client = QCFlowClient()
 
         def predict(self, x):
             root_span = self._client.start_trace(name="predict")
@@ -537,9 +537,9 @@ def test_start_and_end_trace_before_all_span_end(async_logging_enabled):
     model.predict(1)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
-    traces = MlflowClient().search_traces(experiment_ids=[exp_id])
+    traces = QCFlowClient().search_traces(experiment_ids=[exp_id])
     assert len(traces) == 1
 
     trace_info = traces[0].info
@@ -572,13 +572,13 @@ def test_start_and_end_trace_before_all_span_end(async_logging_enabled):
     assert non_ended_span.status.status_code == SpanStatusCode.UNSET
 
 
-@mock.patch("mlflow.tracking._tracking_service.utils.get_tracking_uri", return_value="databricks")
+@mock.patch("qcflow.tracking._tracking_service.utils.get_tracking_uri", return_value="databricks")
 def test_log_trace_with_databricks_tracking_uri(
     databricks_tracking_uri, mock_store_for_tracing, monkeypatch, async_logging_enabled
 ):
-    monkeypatch.setenv("MLFLOW_EXPERIMENT_NAME", "test")
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv("QCFLOW_EXPERIMENT_NAME", "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
 
     mock_experiment = mock.MagicMock()
     mock_experiment.experiment_id = "test_experiment_id"
@@ -590,14 +590,14 @@ def test_log_trace_with_databricks_tracking_uri(
 
     class TestModel:
         def __init__(self):
-            self._client = MlflowClient()
+            self._client = QCFlowClient()
 
         def predict(self, x, y):
             root_span = self._client.start_trace(
                 name="predict",
                 inputs={"x": x, "y": y},
-                # Trying to override mlflow.user tag, which will be ignored
-                tags={"tag": "tag_value", "mlflow.user": "unknown"},
+                # Trying to override qcflow.user tag, which will be ignored
+                tags={"tag": "tag_value", "qcflow.user": "unknown"},
             )
             request_id = root_span.request_id
 
@@ -631,28 +631,28 @@ def test_log_trace_with_databricks_tracking_uri(
 
     with (
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient._upload_trace_data"
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient._upload_trace_data"
         ) as mock_upload_trace_data,
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tags",
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tags",
         ),
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
         ),
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.get_trace_info",
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.get_trace_info",
         ),
         mock.patch(
-            "mlflow.tracing.trace_manager.InMemoryTraceManager.update_trace_info",
+            "qcflow.tracing.trace_manager.InMemoryTraceManager.update_trace_info",
             side_effect=_mock_update_trace_info,
         ),
     ):
         model.predict(1, 2)
 
         if async_logging_enabled:
-            mlflow.flush_trace_async_logging(terminate=True)
+            qcflow.flush_trace_async_logging(terminate=True)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.request_id == "tr-0"
     assert trace.info.experiment_id == "test_experiment_id"
     assert trace.info.status == TraceStatus.OK
@@ -662,11 +662,11 @@ def test_log_trace_with_databricks_tracking_uri(
         TRACE_SCHEMA_VERSION_KEY: str(TRACE_SCHEMA_VERSION),
     }
     assert trace.info.tags == {
-        "mlflow.traceName": "predict",
-        "mlflow.artifactLocation": "test",
-        "mlflow.user": "bob",
-        "mlflow.source.name": "test",
-        "mlflow.source.type": "LOCAL",
+        "qcflow.traceName": "predict",
+        "qcflow.artifactLocation": "test",
+        "qcflow.user": "bob",
+        "qcflow.source.name": "test",
+        "qcflow.source.type": "LOCAL",
         "tag": "tag_value",
     }
 
@@ -682,7 +682,7 @@ def test_log_trace_with_databricks_tracking_uri(
 def test_start_and_end_trace_does_not_log_trace_when_disabled(
     tracking_uri, monkeypatch, async_logging_enabled
 ):
-    client = MlflowClient(tracking_uri)
+    client = QCFlowClient(tracking_uri)
     experiment_id = client.create_experiment("test_experiment")
 
     @trace_disabled
@@ -708,7 +708,7 @@ def test_start_and_end_trace_does_not_log_trace_when_disabled(
         return "done"
 
     mock_logger = mock.MagicMock()
-    monkeypatch.setattr(mlflow.tracking.client, "_logger", mock_logger)
+    monkeypatch.setattr(qcflow.tracking.client, "_logger", mock_logger)
 
     res = func()
 
@@ -719,10 +719,10 @@ def test_start_and_end_trace_does_not_log_trace_when_disabled(
 
 
 def test_start_trace_within_active_run(async_logging_enabled):
-    exp_id = mlflow.create_experiment("test")
+    exp_id = qcflow.create_experiment("test")
 
-    client = mlflow.MlflowClient()
-    with mlflow.start_run():
+    client = qcflow.QCFlowClient()
+    with qcflow.start_run():
         root_span = client.start_trace(
             name="test",
             experiment_id=exp_id,
@@ -730,7 +730,7 @@ def test_start_trace_within_active_run(async_logging_enabled):
         client.end_trace(root_span.request_id)
 
     if async_logging_enabled:
-        mlflow.flush_trace_async_logging(terminate=True)
+        qcflow.flush_trace_async_logging(terminate=True)
 
     traces = client.search_traces(experiment_ids=[exp_id])
     assert len(traces) == 1
@@ -738,24 +738,24 @@ def test_start_trace_within_active_run(async_logging_enabled):
 
 
 def test_start_trace_raise_error_when_active_trace_exists():
-    with mlflow.start_span("fluent_span"):
-        with pytest.raises(MlflowException, match=r"Another trace is already set in the global"):
-            mlflow.tracking.MlflowClient().start_trace("test")
+    with qcflow.start_span("fluent_span"):
+        with pytest.raises(QCFlowException, match=r"Another trace is already set in the global"):
+            qcflow.tracking.QCFlowClient().start_trace("test")
 
 
 def test_end_trace_raise_error_when_trace_not_exist():
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.QCFlowClient()
     mock_tracking_client = mock.MagicMock()
     mock_tracking_client.get_trace.return_value = None
     client._tracking_client = mock_tracking_client
 
-    with pytest.raises(MlflowException, match=r"Trace with ID test not found"):
+    with pytest.raises(QCFlowException, match=r"Trace with ID test not found"):
         client.end_trace("test")
 
 
 @pytest.mark.parametrize("status", TraceStatus.pending_statuses())
 def test_end_trace_works_for_trace_in_pending_status(status):
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.QCFlowClient()
     mock_tracking_client = mock.MagicMock()
     mock_tracking_client.get_trace.return_value = Trace(
         info=create_test_trace_info("test", status=status), data=None
@@ -768,14 +768,14 @@ def test_end_trace_works_for_trace_in_pending_status(status):
 
 @pytest.mark.parametrize("status", TraceStatus.end_statuses())
 def test_end_trace_raise_error_for_trace_in_end_status(status):
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.QCFlowClient()
     mock_tracking_client = mock.MagicMock()
     mock_tracking_client.get_trace.return_value = Trace(
         info=create_test_trace_info("test", status=status), data=None
     )
     client._tracking_client = mock_tracking_client
 
-    with pytest.raises(MlflowException, match=r"Trace with ID test already finished"):
+    with pytest.raises(QCFlowException, match=r"Trace with ID test already finished"):
         client.end_trace("test")
 
 
@@ -790,12 +790,12 @@ def test_trace_status_either_pending_or_end():
 
 
 def test_start_span_raise_error_when_parent_id_is_not_provided():
-    with pytest.raises(MlflowException, match=r"start_span\(\) must be called with"):
-        mlflow.tracking.MlflowClient().start_span("span_name", request_id="test", parent_id=None)
+    with pytest.raises(QCFlowException, match=r"start_span\(\) must be called with"):
+        qcflow.tracking.QCFlowClient().start_span("span_name", request_id="test", parent_id=None)
 
 
 def test_log_trace(tracking_uri):
-    client = MlflowClient(tracking_uri)
+    client = QCFlowClient(tracking_uri)
     experiment_id = client.create_experiment("test_experiment")
 
     span = client.start_trace(
@@ -806,7 +806,7 @@ def test_log_trace(tracking_uri):
     )
     client.end_trace(span.request_id, status="OK")
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
 
     # Purge all traces in the backend once
     client.delete_traces(experiment_id=experiment_id, request_ids=[trace.info.request_id])
@@ -829,8 +829,8 @@ def test_log_trace(tracking_uri):
 
 
 def test_ignore_exception_from_tracing_logic(monkeypatch, async_logging_enabled):
-    exp_id = mlflow.set_experiment("test_experiment_1").experiment_id
-    client = MlflowClient()
+    exp_id = qcflow.set_experiment("test_experiment_1").experiment_id
+    client = QCFlowClient()
     TRACE_BUFFER.clear()
 
     class TestModel:
@@ -866,47 +866,47 @@ def test_ignore_exception_from_tracing_logic(monkeypatch, async_logging_enabled)
 
 
 def test_set_and_delete_trace_tag_on_active_trace(monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
 
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.QCFlowClient()
 
     root_span = client.start_trace(name="test")
     request_id = root_span.request_id
     client.set_trace_tag(request_id, "foo", "bar")
     client.end_trace(request_id)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.tags["foo"] == "bar"
 
 
 def test_set_trace_tag_on_logged_trace(mock_store):
-    mlflow.tracking.MlflowClient().set_trace_tag("test", "foo", "bar")
+    qcflow.tracking.QCFlowClient().set_trace_tag("test", "foo", "bar")
     mock_store.set_trace_tag.assert_called_once_with("test", "foo", "bar")
 
 
 def test_delete_trace_tag_on_active_trace(monkeypatch):
-    monkeypatch.setenv(MLFLOW_TRACKING_USERNAME.name, "bob")
-    monkeypatch.setattr(mlflow.tracking.context.default_context, "_get_source_name", lambda: "test")
+    monkeypatch.setenv(QCFLOW_TRACKING_USERNAME.name, "bob")
+    monkeypatch.setattr(qcflow.tracking.context.default_context, "_get_source_name", lambda: "test")
 
-    client = mlflow.tracking.MlflowClient()
+    client = qcflow.tracking.QCFlowClient()
     root_span = client.start_trace(name="test", tags={"foo": "bar", "baz": "qux"})
     request_id = root_span.request_id
     client.delete_trace_tag(request_id, "foo")
     client.end_trace(request_id)
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert "baz" in trace.info.tags
     assert "foo" not in trace.info.tags
 
 
 def test_delete_trace_tag_on_logged_trace(mock_store):
-    mlflow.tracking.MlflowClient().delete_trace_tag("test", "foo")
+    qcflow.tracking.QCFlowClient().delete_trace_tag("test", "foo")
     mock_store.delete_trace_tag.assert_called_once_with("test", "foo")
 
 
 def test_client_create_experiment(mock_store):
-    MlflowClient().create_experiment("someName", "someLocation", {"key1": "val1", "key2": "val2"})
+    QCFlowClient().create_experiment("someName", "someLocation", {"key1": "val1", "key2": "val2"})
 
     mock_store.create_experiment.assert_called_once_with(
         artifact_location="someLocation",
@@ -921,16 +921,16 @@ def test_client_create_run_overrides(mock_store):
     start_time = mock.Mock()
     run_name = mock.Mock()
     tags = {
-        MLFLOW_USER: user,
-        MLFLOW_PARENT_RUN_ID: mock.Mock(),
-        MLFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.JOB),
-        MLFLOW_SOURCE_NAME: mock.Mock(),
-        MLFLOW_PROJECT_ENTRY_POINT: mock.Mock(),
-        MLFLOW_GIT_COMMIT: mock.Mock(),
+        QCFLOW_USER: user,
+        QCFLOW_PARENT_RUN_ID: mock.Mock(),
+        QCFLOW_SOURCE_TYPE: SourceType.to_string(SourceType.JOB),
+        QCFLOW_SOURCE_NAME: mock.Mock(),
+        QCFLOW_PROJECT_ENTRY_POINT: mock.Mock(),
+        QCFLOW_GIT_COMMIT: mock.Mock(),
         "other-key": "other-value",
     }
 
-    MlflowClient().create_run(experiment_id, start_time, tags, run_name)
+    QCFlowClient().create_run(experiment_id, start_time, tags, run_name)
 
     mock_store.create_run.assert_called_once_with(
         experiment_id=experiment_id,
@@ -940,7 +940,7 @@ def test_client_create_run_overrides(mock_store):
         run_name=run_name,
     )
     mock_store.reset_mock()
-    MlflowClient().create_run(experiment_id, start_time, tags)
+    QCFlowClient().create_run(experiment_id, start_time, tags)
     mock_store.create_run.assert_called_once_with(
         experiment_id=experiment_id,
         user_id=user,
@@ -952,14 +952,14 @@ def test_client_create_run_overrides(mock_store):
 
 def test_client_set_terminated_no_change_name(mock_store):
     experiment_id = mock.Mock()
-    run = MlflowClient().create_run(experiment_id, run_name="my name")
-    MlflowClient().set_terminated(run.info.run_id)
+    run = QCFlowClient().create_run(experiment_id, run_name="my name")
+    QCFlowClient().set_terminated(run.info.run_id)
     _, kwargs = mock_store.update_run_info.call_args
     assert kwargs["run_name"] is None
 
 
 def test_client_search_runs_defaults(mock_store):
-    MlflowClient().search_runs([1, 2, 3])
+    QCFlowClient().search_runs([1, 2, 3])
     mock_store.search_runs.assert_called_once_with(
         experiment_ids=[1, 2, 3],
         filter_string="",
@@ -971,7 +971,7 @@ def test_client_search_runs_defaults(mock_store):
 
 
 def test_client_search_runs_filter(mock_store):
-    MlflowClient().search_runs(["a", "b", "c"], "my filter")
+    QCFlowClient().search_runs(["a", "b", "c"], "my filter")
     mock_store.search_runs.assert_called_once_with(
         experiment_ids=["a", "b", "c"],
         filter_string="my filter",
@@ -983,7 +983,7 @@ def test_client_search_runs_filter(mock_store):
 
 
 def test_client_search_runs_view_type(mock_store):
-    MlflowClient().search_runs(["a", "b", "c"], "my filter", ViewType.DELETED_ONLY)
+    QCFlowClient().search_runs(["a", "b", "c"], "my filter", ViewType.DELETED_ONLY)
     mock_store.search_runs.assert_called_once_with(
         experiment_ids=["a", "b", "c"],
         filter_string="my filter",
@@ -995,7 +995,7 @@ def test_client_search_runs_view_type(mock_store):
 
 
 def test_client_search_runs_max_results(mock_store):
-    MlflowClient().search_runs([5], "my filter", ViewType.ALL, 2876)
+    QCFlowClient().search_runs([5], "my filter", ViewType.ALL, 2876)
     mock_store.search_runs.assert_called_once_with(
         experiment_ids=[5],
         filter_string="my filter",
@@ -1007,7 +1007,7 @@ def test_client_search_runs_max_results(mock_store):
 
 
 def test_client_search_runs_int_experiment_id(mock_store):
-    MlflowClient().search_runs(123)
+    QCFlowClient().search_runs(123)
     mock_store.search_runs.assert_called_once_with(
         experiment_ids=[123],
         filter_string="",
@@ -1019,7 +1019,7 @@ def test_client_search_runs_int_experiment_id(mock_store):
 
 
 def test_client_search_runs_string_experiment_id(mock_store):
-    MlflowClient().search_runs("abc")
+    QCFlowClient().search_runs("abc")
     mock_store.search_runs.assert_called_once_with(
         experiment_ids=["abc"],
         filter_string="",
@@ -1031,7 +1031,7 @@ def test_client_search_runs_string_experiment_id(mock_store):
 
 
 def test_client_search_runs_order_by(mock_store):
-    MlflowClient().search_runs([5], order_by=["a", "b"])
+    QCFlowClient().search_runs([5], order_by=["a", "b"])
     mock_store.search_runs.assert_called_once_with(
         experiment_ids=[5],
         filter_string="",
@@ -1043,7 +1043,7 @@ def test_client_search_runs_order_by(mock_store):
 
 
 def test_client_search_runs_page_token(mock_store):
-    MlflowClient().search_runs([5], page_token="blah")
+    QCFlowClient().search_runs([5], page_token="blah")
     mock_store.search_runs.assert_called_once_with(
         experiment_ids=[5],
         filter_string="",
@@ -1062,7 +1062,7 @@ def test_update_registered_model(mock_registry_store):
     mock_registry_store.rename_registered_model.return_value = expected_return_value
     expected_return_value_2 = "other expected return value."
     mock_registry_store.update_registered_model.return_value = expected_return_value_2
-    res = MlflowClient(registry_uri="sqlite:///somedb.db").update_registered_model(
+    res = QCFlowClient(registry_uri="sqlite:///somedb.db").update_registered_model(
         name="orig name", description="new description"
     )
     assert expected_return_value_2 == res
@@ -1077,7 +1077,7 @@ def test_create_model_version(mock_registry_store):
     Basic test for create model version.
     """
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    res = MlflowClient(registry_uri="sqlite:///somedb.db").create_model_version(
+    res = QCFlowClient(registry_uri="sqlite:///somedb.db").create_model_version(
         "orig name", "source", "run-id", tags={"key": "value"}, description="desc"
     )
     assert res == _default_model_version()
@@ -1097,7 +1097,7 @@ def test_update_model_version(mock_registry_store):
     Update registered model no longer support state changes.
     """
     mock_registry_store.update_model_version.return_value = _default_model_version()
-    res = MlflowClient(registry_uri="sqlite:///somedb.db").update_model_version(
+    res = QCFlowClient(registry_uri="sqlite:///somedb.db").update_model_version(
         name="orig name", version="1", description="desc"
     )
     assert _default_model_version() == res
@@ -1113,7 +1113,7 @@ def test_transition_model_version_stage(mock_registry_store):
     stage = "Production"
     expected_result = ModelVersion(name, version, creation_timestamp=123, current_stage=stage)
     mock_registry_store.transition_model_version_stage.return_value = expected_result
-    actual_result = MlflowClient(registry_uri="sqlite:///somedb.db").transition_model_version_stage(
+    actual_result = QCFlowClient(registry_uri="sqlite:///somedb.db").transition_model_version_stage(
         name, version, stage
     )
     mock_registry_store.transition_model_version_stage.assert_called_once_with(
@@ -1124,14 +1124,14 @@ def test_transition_model_version_stage(mock_registry_store):
 
 def test_registry_uri_set_as_param():
     uri = "sqlite:///somedb.db"
-    client = MlflowClient(tracking_uri="databricks://tracking", registry_uri=uri)
+    client = QCFlowClient(tracking_uri="databricks://tracking", registry_uri=uri)
     assert client._registry_uri == uri
 
 
 def test_registry_uri_from_set_registry_uri():
     uri = "sqlite:///somedb.db"
     set_registry_uri(uri)
-    client = MlflowClient(tracking_uri="databricks://tracking")
+    client = QCFlowClient(tracking_uri="databricks://tracking")
     assert client._registry_uri == uri
     set_registry_uri(None)
 
@@ -1139,26 +1139,26 @@ def test_registry_uri_from_set_registry_uri():
 def test_registry_uri_from_tracking_uri_param():
     tracking_uri = "databricks://tracking_vhawoierj"
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils.get_tracking_uri",
+        "qcflow.tracking._tracking_service.utils.get_tracking_uri",
         return_value=tracking_uri,
     ):
-        client = MlflowClient(tracking_uri=tracking_uri)
+        client = QCFlowClient(tracking_uri=tracking_uri)
         assert client._registry_uri == tracking_uri
 
 
 def test_registry_uri_from_implicit_tracking_uri():
     tracking_uri = "databricks://tracking_wierojasdf"
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils.get_tracking_uri",
+        "qcflow.tracking._tracking_service.utils.get_tracking_uri",
         return_value=tracking_uri,
     ):
-        client = MlflowClient()
+        client = QCFlowClient()
         assert client._registry_uri == tracking_uri
 
 
 def test_create_model_version_nondatabricks_source_no_runlink(mock_registry_store):
     run_id = "runid"
-    client = MlflowClient(tracking_uri="http://10.123.1231.11")
+    client = QCFlowClient(tracking_uri="http://10.123.1231.11")
     mock_registry_store.create_model_version.return_value = ModelVersion(
         "name",
         1,
@@ -1178,7 +1178,7 @@ def test_create_model_version_nondatabricks_source_no_runlink(mock_registry_stor
 
 
 def test_create_model_version_nondatabricks_source_no_run_id(mock_registry_store):
-    client = MlflowClient(tracking_uri="http://10.123.1231.11")
+    client = QCFlowClient(tracking_uri="http://10.123.1231.11")
     mock_registry_store.create_model_version.return_value = ModelVersion(
         "name", 1, 0, 1, source="source"
     )
@@ -1210,13 +1210,13 @@ def test_create_model_version_explicitly_set_run_link(
 
     # mocks to make sure that even if you're in a notebook, this setting is respected.
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_in_databricks_notebook", return_value=True),
+        mock.patch("qcflow.utils.databricks_utils.is_in_databricks_notebook", return_value=True),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_workspace_info_from_dbutils",
+            "qcflow.utils.databricks_utils.get_workspace_info_from_dbutils",
             return_value=(hostname, workspace_id),
         ),
     ):
-        client = MlflowClient(tracking_uri="databricks", registry_uri="otherplace")
+        client = QCFlowClient(tracking_uri="databricks", registry_uri="otherplace")
         model_version = client.create_model_version("name", "source", "runid", run_link=run_link)
         assert model_version.run_link == run_link
         # verify that the store was provided with the explicitly passed in run link
@@ -1238,13 +1238,13 @@ def test_create_model_version_run_link_in_notebook_with_default_profile(
     )
 
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_in_databricks_notebook", return_value=True),
+        mock.patch("qcflow.utils.databricks_utils.is_in_databricks_notebook", return_value=True),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_workspace_info_from_dbutils",
+            "qcflow.utils.databricks_utils.get_workspace_info_from_dbutils",
             return_value=(hostname, workspace_id),
         ),
     ):
-        client = MlflowClient(tracking_uri="databricks", registry_uri="otherplace")
+        client = QCFlowClient(tracking_uri="databricks", registry_uri="otherplace")
         mock_registry_store.create_model_version.return_value = ModelVersion(
             "name",
             1,
@@ -1263,7 +1263,7 @@ def test_create_model_version_run_link_in_notebook_with_default_profile(
 
 
 def test_creation_default_values_in_unity_catalog(mock_registry_store):
-    client = MlflowClient(tracking_uri="databricks", registry_uri="databricks-uc")
+    client = QCFlowClient(tracking_uri="databricks", registry_uri="databricks-uc")
     mock_registry_store.create_model_version.return_value = ModelVersion(
         "name",
         1,
@@ -1291,7 +1291,7 @@ def test_await_model_version_creation(mock_registry_store):
     )
     mock_registry_store.create_model_version.return_value = mv
 
-    client = MlflowClient(tracking_uri="http://10.123.1231.11")
+    client = QCFlowClient(tracking_uri="http://10.123.1231.11")
 
     client.create_model_version("name", "source")
     mock_registry_store._await_model_version_creation.assert_called_once_with(
@@ -1312,13 +1312,13 @@ def test_create_model_version_run_link_with_configured_profile(
     )
 
     with (
-        mock.patch("mlflow.utils.databricks_utils.is_in_databricks_notebook", return_value=False),
+        mock.patch("qcflow.utils.databricks_utils.is_in_databricks_notebook", return_value=False),
         mock.patch(
-            "mlflow.utils.databricks_utils.get_workspace_info_from_databricks_secrets",
+            "qcflow.utils.databricks_utils.get_workspace_info_from_databricks_secrets",
             return_value=(hostname, workspace_id),
         ),
     ):
-        client = MlflowClient(tracking_uri="databricks", registry_uri="otherplace")
+        client = QCFlowClient(tracking_uri="databricks", registry_uri="otherplace")
         mock_registry_store.create_model_version.return_value = ModelVersion(
             "name",
             1,
@@ -1337,12 +1337,12 @@ def test_create_model_version_run_link_with_configured_profile(
 
 
 def test_create_model_version_copy_called_db_to_db(mock_registry_store):
-    client = MlflowClient(
+    client = QCFlowClient(
         tracking_uri="databricks://tracking",
         registry_uri="databricks://registry:workspace",
     )
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    with mock.patch("mlflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
+    with mock.patch("qcflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
         client.create_model_version(
             "model name",
             "dbfs:/source",
@@ -1358,11 +1358,11 @@ def test_create_model_version_copy_called_db_to_db(mock_registry_store):
 
 
 def test_create_model_version_copy_called_nondb_to_db(mock_registry_store):
-    client = MlflowClient(
+    client = QCFlowClient(
         tracking_uri="https://tracking", registry_uri="databricks://registry:workspace"
     )
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    with mock.patch("mlflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
+    with mock.patch("qcflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
         client.create_model_version(
             "model name", "s3:/source", "run_12345", run_link="not:/important/for/test"
         )
@@ -1375,12 +1375,12 @@ def test_create_model_version_copy_called_nondb_to_db(mock_registry_store):
 
 
 def test_create_model_version_copy_not_called_to_db(mock_registry_store):
-    client = MlflowClient(
+    client = QCFlowClient(
         tracking_uri="databricks://registry:workspace",
         registry_uri="databricks://registry:workspace",
     )
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    with mock.patch("mlflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
+    with mock.patch("qcflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
         client.create_model_version(
             "model name",
             "dbfs:/source",
@@ -1391,9 +1391,9 @@ def test_create_model_version_copy_not_called_to_db(mock_registry_store):
 
 
 def test_create_model_version_copy_not_called_to_nondb(mock_registry_store):
-    client = MlflowClient(tracking_uri="databricks://tracking", registry_uri="https://registry")
+    client = QCFlowClient(tracking_uri="databricks://tracking", registry_uri="https://registry")
     mock_registry_store.create_model_version.return_value = _default_model_version()
-    with mock.patch("mlflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
+    with mock.patch("qcflow.tracking.client._upload_artifacts_to_databricks") as upload_mock:
         client.create_model_version(
             "model name",
             "dbfs:/source",
@@ -1409,7 +1409,7 @@ def _default_model_version():
 
 def test_client_can_be_serialized_with_pickle(tmp_path):
     """
-    Verifies that instances of `MlflowClient` can be serialized using pickle, even if the underlying
+    Verifies that instances of `QCFlowClient` can be serialized using pickle, even if the underlying
     Tracking and Model Registry stores used by the client are not serializable using pickle
     """
 
@@ -1442,9 +1442,9 @@ def test_client_can_be_serialized_with_pickle(tmp_path):
         "pickle", lambda *args, **kwargs: mock_model_registry_store
     )
 
-    # Create an MlflowClient with the store that cannot be pickled, perform
+    # Create an QCFlowClient with the store that cannot be pickled, perform
     # tracking & model registry operations, and verify that the client can still be pickled
-    client = MlflowClient("pickle://foo")
+    client = QCFlowClient("pickle://foo")
     client.create_experiment("test_experiment")
     client.create_registered_model("test_model")
     pickle.dumps(client)
@@ -1467,7 +1467,7 @@ def mock_registry_store_with_get_latest_version(mock_registry_store):
 
 def test_set_model_version_tag(mock_registry_store_with_get_latest_version):
     # set_model_version_tag using version
-    MlflowClient().set_model_version_tag("model_name", 1, "tag1", "foobar")
+    QCFlowClient().set_model_version_tag("model_name", 1, "tag1", "foobar")
     mock_registry_store_with_get_latest_version.set_model_version_tag.assert_called_once_with(
         "model_name", 1, ModelVersionTag(key="tag1", value="foobar")
     )
@@ -1475,23 +1475,23 @@ def test_set_model_version_tag(mock_registry_store_with_get_latest_version):
     mock_registry_store_with_get_latest_version.set_model_version_tag.reset_mock()
 
     # set_model_version_tag using stage
-    MlflowClient().set_model_version_tag("model_name", key="tag1", value="foobar", stage="Staging")
+    QCFlowClient().set_model_version_tag("model_name", key="tag1", value="foobar", stage="Staging")
     mock_registry_store_with_get_latest_version.set_model_version_tag.assert_called_once_with(
         "model_name", 1, ModelVersionTag(key="tag1", value="foobar")
     )
 
     # set_model_version_tag with version and stage set
-    with pytest.raises(MlflowException, match="version and stage cannot be set together"):
-        MlflowClient().set_model_version_tag("model_name", 1, "tag1", "foobar", stage="Staging")
+    with pytest.raises(QCFlowException, match="version and stage cannot be set together"):
+        QCFlowClient().set_model_version_tag("model_name", 1, "tag1", "foobar", stage="Staging")
 
     # set_model_version_tag with version and stage not set
-    with pytest.raises(MlflowException, match="version or stage must be set"):
-        MlflowClient().set_model_version_tag("model_name", key="tag1", value="foobar")
+    with pytest.raises(QCFlowException, match="version or stage must be set"):
+        QCFlowClient().set_model_version_tag("model_name", key="tag1", value="foobar")
 
 
 def test_delete_model_version_tag(mock_registry_store_with_get_latest_version):
     # delete_model_version_tag using version
-    MlflowClient().delete_model_version_tag("model_name", 1, "tag1")
+    QCFlowClient().delete_model_version_tag("model_name", 1, "tag1")
     mock_registry_store_with_get_latest_version.delete_model_version_tag.assert_called_once_with(
         "model_name", 1, "tag1"
     )
@@ -1499,31 +1499,31 @@ def test_delete_model_version_tag(mock_registry_store_with_get_latest_version):
     mock_registry_store_with_get_latest_version.delete_model_version_tag.reset_mock()
 
     # delete_model_version_tag using stage
-    MlflowClient().delete_model_version_tag("model_name", key="tag1", stage="Staging")
+    QCFlowClient().delete_model_version_tag("model_name", key="tag1", stage="Staging")
     mock_registry_store_with_get_latest_version.delete_model_version_tag.assert_called_once_with(
         "model_name", 1, "tag1"
     )
 
     # delete_model_version_tag with version and stage set
-    with pytest.raises(MlflowException, match="version and stage cannot be set together"):
-        MlflowClient().delete_model_version_tag(
+    with pytest.raises(QCFlowException, match="version and stage cannot be set together"):
+        QCFlowClient().delete_model_version_tag(
             "model_name", version=1, key="tag1", stage="staging"
         )
 
     # delete_model_version_tag with version and stage not set
-    with pytest.raises(MlflowException, match="version or stage must be set"):
-        MlflowClient().delete_model_version_tag("model_name", key="tag1")
+    with pytest.raises(QCFlowException, match="version or stage must be set"):
+        QCFlowClient().delete_model_version_tag("model_name", key="tag1")
 
 
 def test_set_registered_model_alias(mock_registry_store):
-    MlflowClient().set_registered_model_alias("model_name", "test_alias", 1)
+    QCFlowClient().set_registered_model_alias("model_name", "test_alias", 1)
     mock_registry_store.set_registered_model_alias.assert_called_once_with(
         "model_name", "test_alias", 1
     )
 
 
 def test_delete_registered_model_alias(mock_registry_store):
-    MlflowClient().delete_registered_model_alias("model_name", "test_alias")
+    QCFlowClient().delete_registered_model_alias("model_name", "test_alias")
     mock_registry_store.delete_registered_model_alias.assert_called_once_with(
         "model_name", "test_alias"
     )
@@ -1531,7 +1531,7 @@ def test_delete_registered_model_alias(mock_registry_store):
 
 def test_get_model_version_by_alias(mock_registry_store):
     mock_registry_store.get_model_version_by_alias.return_value = _default_model_version()
-    res = MlflowClient().get_model_version_by_alias("model_name", "test_alias")
+    res = QCFlowClient().get_model_version_by_alias("model_name", "test_alias")
     assert res == _default_model_version()
     mock_registry_store.get_model_version_by_alias.assert_called_once_with(
         "model_name", "test_alias"
@@ -1539,7 +1539,7 @@ def test_get_model_version_by_alias(mock_registry_store):
 
 
 def test_update_run(mock_store):
-    MlflowClient().update_run(run_id="run_id", status="FINISHED", name="my name")
+    QCFlowClient().update_run(run_id="run_id", status="FINISHED", name="my name")
     mock_store.update_run_info.assert_called_once_with(
         run_id="run_id",
         run_status=RunStatus.from_string("FINISHED"),
@@ -1552,16 +1552,16 @@ def test_client_log_metric_params_tags_overrides(mock_store):
     experiment_id = mock.Mock()
     start_time = mock.Mock()
     run_name = mock.Mock()
-    run = MlflowClient().create_run(experiment_id, start_time, tags={}, run_name=run_name)
+    run = QCFlowClient().create_run(experiment_id, start_time, tags={}, run_name=run_name)
     run_id = run.info.run_id
 
-    run_operation = MlflowClient().log_metric(run_id, "m1", 0.87, 123456789, 1, synchronous=False)
+    run_operation = QCFlowClient().log_metric(run_id, "m1", 0.87, 123456789, 1, synchronous=False)
     run_operation.wait()
 
-    run_operation = MlflowClient().log_param(run_id, "p1", "pv1", synchronous=False)
+    run_operation = QCFlowClient().log_param(run_id, "p1", "pv1", synchronous=False)
     run_operation.wait()
 
-    run_operation = MlflowClient().set_tag(run_id, "t1", "tv1", synchronous=False)
+    run_operation = QCFlowClient().set_tag(run_id, "t1", "tv1", synchronous=False)
     run_operation.wait()
 
     mock_store.log_metric_async.assert_called_once_with(run_id, Metric("m1", 0.87, 123456789, 1))
@@ -1571,11 +1571,11 @@ def test_client_log_metric_params_tags_overrides(mock_store):
     mock_store.reset_mock()
 
     # log_batch_async
-    MlflowClient().create_run(experiment_id, start_time, {})
+    QCFlowClient().create_run(experiment_id, start_time, {})
     metrics = [Metric("m1", 0.87, 123456789, 1), Metric("m2", 0.87, 123456789, 1)]
     tags = [RunTag("t1", "tv1"), RunTag("t2", "tv2")]
     params = [Param("p1", "pv1"), Param("p2", "pv2")]
-    run_operation = MlflowClient().log_batch(run_id, metrics, params, tags, synchronous=False)
+    run_operation = QCFlowClient().log_batch(run_id, metrics, params, tags, synchronous=False)
     run_operation.wait()
 
     mock_store.log_batch_async.assert_called_once_with(
@@ -1585,33 +1585,33 @@ def test_client_log_metric_params_tags_overrides(mock_store):
 
 def test_invalid_run_id_log_artifact():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid run id.*",
     ):
-        MlflowClient().log_artifact("tr-123", "path")
+        QCFlowClient().log_artifact("tr-123", "path")
 
 
 def test_enable_async_logging(mock_store, setup_async_logging):
-    MlflowClient().log_param(run_id="run_id", key="key", value="val")
+    QCFlowClient().log_param(run_id="run_id", key="key", value="val")
     mock_store.log_param_async.assert_called_once_with("run_id", Param("key", "val"))
 
-    MlflowClient().log_metric(run_id="run_id", key="key", value="val", step=1, timestamp=1)
+    QCFlowClient().log_metric(run_id="run_id", key="key", value="val", step=1, timestamp=1)
     mock_store.log_metric_async.assert_called_once_with("run_id", Metric("key", "val", 1, 1))
 
 
 def test_file_store_download_upload_trace_data(tmp_path):
     with _use_tracking_uri(tmp_path.joinpath("mlruns").as_uri()):
-        client = MlflowClient()
+        client = QCFlowClient()
         span = client.start_trace("test", inputs={"test": 1})
         client.end_trace(span.request_id, outputs={"result": 2})
-        trace = mlflow.get_trace(span.request_id)
+        trace = qcflow.get_trace(span.request_id)
         trace_data = client.get_trace(span.request_id).data
         assert trace_data.request == trace.data.request
         assert trace_data.response == trace.data.response
 
 
 def test_store_trace_spans_tag():
-    client = MlflowClient()
+    client = QCFlowClient()
 
     trace_spans_tag_value = {
         "name": "test",
@@ -1621,29 +1621,29 @@ def test_store_trace_spans_tag():
     }
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+        "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
     ) as mock_set_trace_tag:
         span = client.start_trace("test", inputs={"test": 1})
         client.end_trace(span.request_id, outputs={"result": 2})
         mock_set_trace_tag.assert_called_once()
         assert mock_set_trace_tag.call_args[0][0] == span.request_id
-        assert mock_set_trace_tag.call_args[0][1] == "mlflow.traceSpans"
+        assert mock_set_trace_tag.call_args[0][1] == "qcflow.traceSpans"
         result = json.loads(mock_set_trace_tag.call_args[0][2])
         for key in trace_spans_tag_value:
             assert result[0][key] == trace_spans_tag_value[key]
 
 
 def test_store_trace_span_tag_when_not_dict_input_outputs():
-    client = MlflowClient()
+    client = QCFlowClient()
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+        "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
     ) as mock_set_trace_tag:
         span = client.start_trace("trace_name", inputs="test")
         client.end_trace(span.request_id, outputs={"result": 2})
         mock_set_trace_tag.assert_called_once()
         assert mock_set_trace_tag.call_args[0][0] == span.request_id
-        assert mock_set_trace_tag.call_args[0][1] == "mlflow.traceSpans"
+        assert mock_set_trace_tag.call_args[0][1] == "qcflow.traceSpans"
         result = json.loads(mock_set_trace_tag.call_args[0][2])
         assert result[0]["name"] == "trace_name"
         assert result[0]["type"] == "UNKNOWN"
@@ -1651,13 +1651,13 @@ def test_store_trace_span_tag_when_not_dict_input_outputs():
         assert "inputs" not in result[0]
 
     with mock.patch(
-        "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+        "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
     ) as mock_set_trace_tag:
         span = client.start_trace("trace_name", inputs="{'input': 2}")
         client.end_trace(span.request_id, outputs="result")
         mock_set_trace_tag.assert_called_once()
         assert mock_set_trace_tag.call_args[0][0] == span.request_id
-        assert mock_set_trace_tag.call_args[0][1] == "mlflow.traceSpans"
+        assert mock_set_trace_tag.call_args[0][1] == "qcflow.traceSpans"
         result = json.loads(mock_set_trace_tag.call_args[0][2])
         assert result[0]["name"] == "trace_name"
         assert result[0]["type"] == "UNKNOWN"
@@ -1667,15 +1667,15 @@ def test_store_trace_span_tag_when_not_dict_input_outputs():
 
 # when JSON is too large, we skip logging the tag. The trace should still be logged.
 def test_store_trace_span_tag_when_exception_raised():
-    client = MlflowClient()
+    client = QCFlowClient()
 
     with (
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient._upload_trace_data"
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient._upload_trace_data"
         ) as mock_upload_trace_data,
         mock.patch(
-            "mlflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
-            side_effect=MlflowException("Failed to log parameters"),
+            "qcflow.tracking._tracking_service.client.TrackingServiceClient.set_trace_tag",
+            side_effect=QCFlowException("Failed to log parameters"),
         ) as mock_set_trace_tag,
     ):
         # This should not raise an exception

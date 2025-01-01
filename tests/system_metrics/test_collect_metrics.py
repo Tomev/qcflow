@@ -1,7 +1,7 @@
-from mlflow.system_metrics.metrics.cpu_monitor import CPUMonitor
-from mlflow.system_metrics.metrics.disk_monitor import DiskMonitor
-from mlflow.system_metrics.metrics.gpu_monitor import GPUMonitor
-from mlflow.system_metrics.metrics.network_monitor import NetworkMonitor
+from qcflow.system_metrics.metrics.cpu_monitor import CPUMonitor
+from qcflow.system_metrics.metrics.disk_monitor import DiskMonitor
+from qcflow.system_metrics.metrics.gpu_monitor import GPUMonitor
+from qcflow.system_metrics.metrics.network_monitor import NetworkMonitor
 
 
 def test_cpu_monitor():

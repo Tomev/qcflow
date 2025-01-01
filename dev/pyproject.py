@@ -37,7 +37,7 @@ def read_requirements(path: Path) -> list[str]:
 
 
 def read_package_versions_yml():
-    with open("mlflow/ml-package-versions.yml") as f:
+    with open("qcflow/ml-package-versions.yml") as f:
         return yaml.safe_load(f)
 
 
@@ -46,7 +46,7 @@ def build(package_type: PackageType) -> None:
     core_requirements = read_requirements(Path("requirements", "core-requirements.txt"))
     gateways_requirements = read_requirements(Path("requirements", "gateway-requirements.txt"))
     package_version = re.search(
-        r'^VERSION = "([a-z0-9\.]+)"$', Path("mlflow", "version.py").read_text(), re.MULTILINE
+        r'^VERSION = "([a-z0-9\.]+)"$', Path("qcflow", "version.py").read_text(), re.MULTILINE
     ).group(1)
     python_version = Path("requirements", "python-version.txt").read_text().strip()
     versions_yaml = read_package_versions_yml()
@@ -66,14 +66,14 @@ def build(package_type: PackageType) -> None:
     if package_type is PackageType.SKINNY:
         dependencies = sorted(skinny_requirements)
     elif package_type is PackageType.RELEASE:
-        dependencies = [f"mlflow-skinny=={package_version}"] + sorted(core_requirements)
+        dependencies = [f"qcflow-skinny=={package_version}"] + sorted(core_requirements)
     else:
         dependencies = sorted(core_requirements + skinny_requirements)
 
     if dep_duplicates := find_duplicates(dependencies):
         raise RuntimeError(f"Duplicated dependencies are found: {dep_duplicates}")
 
-    package_name = "mlflow-skinny" if package_type is PackageType.SKINNY else "mlflow"
+    package_name = "qcflow-skinny" if package_type is PackageType.SKINNY else "qcflow"
     extra_package_data = (
         []
         if package_type is PackageType.SKINNY
@@ -89,16 +89,16 @@ def build(package_type: PackageType) -> None:
             "name": package_name,
             "version": package_version,
             "maintainers": [
-                {"name": "Databricks", "email": "mlflow-oss-maintainers@googlegroups.com"}
+                {"name": "Databricks", "email": "qcflow-oss-maintainers@googlegroups.com"}
             ],
             "description": (
-                "MLflow is an open source platform for the complete machine learning lifecycle"
+                "QCFlow is an open source platform for the complete machine learning lifecycle"
             ),
             "readme": "README.md",
             "license": {
                 "file": "LICENSE.txt",
             },
-            "keywords": ["mlflow", "ai", "databricks"],
+            "keywords": ["qcflow", "ai", "databricks"],
             "classifiers": [
                 "Development Status :: 5 - Production/Stable",
                 "Intended Audience :: Developers",
@@ -127,12 +127,12 @@ def build(package_type: PackageType) -> None:
                     "azureml-core>=1.2.0",
                     # Required to log artifacts to SFTP artifact locations
                     "pysftp",
-                    # Required by the mlflow.projects module, when running projects against
+                    # Required by the qcflow.projects module, when running projects against
                     # a remote Kubernetes cluster
                     "kubernetes",
                     "virtualenv",
-                    # Required for exporting metrics from the MLflow server to Prometheus
-                    # as part of the MLflow server monitoring add-on
+                    # Required for exporting metrics from the QCFlow server to Prometheus
+                    # as part of the QCFlow server monitoring add-on
                     "prometheus-flask-exporter",
                 ],
                 "databricks": [
@@ -145,37 +145,37 @@ def build(package_type: PackageType) -> None:
                 "mlserver": [
                     # Required to serve models through MLServer
                     "mlserver>=1.2.0,!=1.3.1",
-                    "mlserver-mlflow>=1.2.0,!=1.3.1",
+                    "mlserver-qcflow>=1.2.0,!=1.3.1",
                 ],
                 "gateway": gateways_requirements,
                 "genai": gateways_requirements,
-                "sqlserver": ["mlflow-dbstore"],
+                "sqlserver": ["qcflow-dbstore"],
                 "aliyun-oss": ["aliyunstoreplugin"],
-                "xethub": ["mlflow-xethub"],
-                "jfrog": ["mlflow-jfrog-plugin"],
+                "xethub": ["qcflow-xethub"],
+                "jfrog": ["qcflow-jfrog-plugin"],
                 "langchain": langchain_requirements,
             },
             "urls": {
-                "homepage": "https://mlflow.org",
-                "issues": "https://github.com/mlflow/mlflow/issues",
-                "documentation": "https://mlflow.org/docs/latest/index.html",
-                "repository": "https://github.com/mlflow/mlflow",
+                "homepage": "https://qcflow.org",
+                "issues": "https://github.com/qcflow/qcflow/issues",
+                "documentation": "https://qcflow.org/docs/latest/index.html",
+                "repository": "https://github.com/qcflow/qcflow",
             },
             "scripts": {
-                "mlflow": "mlflow.cli:cli",
+                "qcflow": "qcflow.cli:cli",
             },
             "entry-points": {
-                "mlflow.app": {
-                    "basic-auth": "mlflow.server.auth:create_app",
+                "qcflow.app": {
+                    "basic-auth": "qcflow.server.auth:create_app",
                 },
-                "mlflow.app.client": {
-                    "basic-auth": "mlflow.server.auth.client:AuthServiceClient",
+                "qcflow.app.client": {
+                    "basic-auth": "qcflow.server.auth.client:AuthServiceClient",
                 },
-                "mlflow.deployments": {
-                    "databricks": "mlflow.deployments.databricks",
-                    "http": "mlflow.deployments.mlflow",
-                    "https": "mlflow.deployments.mlflow",
-                    "openai": "mlflow.deployments.openai",
+                "qcflow.deployments": {
+                    "databricks": "qcflow.deployments.databricks",
+                    "http": "qcflow.deployments.qcflow",
+                    "https": "qcflow.deployments.qcflow",
+                    "openai": "qcflow.deployments.openai",
                 },
             },
         },
@@ -184,12 +184,12 @@ def build(package_type: PackageType) -> None:
                 "packages": {
                     "find": {
                         "where": ["."],
-                        "include": ["mlflow", "mlflow.*"],
+                        "include": ["qcflow", "qcflow.*"],
                         "exclude": ["tests", "tests.*"],
                     }
                 },
                 "package-data": {
-                    "mlflow": [
+                    "qcflow": [
                         "store/db_migrations/alembic.ini",
                         "temporary_db_migrations_for_pre_1_users/alembic.ini",
                         "pypi_package_index.json",

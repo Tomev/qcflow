@@ -1,25 +1,25 @@
 Creating Experiments
 ====================
 
-In the previous section, we became familiar with the MLflow Client and its ``search_experiments`` API.
+In the previous section, we became familiar with the QCFlow Client and its ``search_experiments`` API.
 Before we get into creating experiments and adding metadata tags to them, let's take a brief look at the
-MLflow UI.
+QCFlow UI.
 
-In the first section of this tutorial, we started the MLflow Tracking Server from a command prompt, specifying the
+In the first section of this tutorial, we started the QCFlow Tracking Server from a command prompt, specifying the
 host as ``127.0.0.1`` and the port as ``8080``.  Let's go to the UI and see what the Default Experiment looks like.
 
-Viewing the MLflow UI
+Viewing the QCFlow UI
 ---------------------
 
-In order to see the MLflow UI, we simply have to use a web browser to connect to the MLflow Tracking Server and navigate to http://127.0.0.1:8080.
-Once navigating to the url for the MLflow UI, you will see the default experiment with no run data.
+In order to see the QCFlow UI, we simply have to use a web browser to connect to the QCFlow Tracking Server and navigate to http://127.0.0.1:8080.
+Once navigating to the url for the QCFlow UI, you will see the default experiment with no run data.
 
 .. figure:: ../../_static/images/tutorials/introductory/logging-first-model/default-ui.png
    :width: 95%
    :align: center
-   :alt: A freshly initialized MLflow UI
+   :alt: A freshly initialized QCFlow UI
 
-   The default MLflow UI
+   The default QCFlow UI
 
 As you can see, there are no runs recorded and only the Default Experiment (with an ID of `0`) is present.
 This won't be the case for long, as we're about to add a new Experiment.
@@ -27,7 +27,7 @@ This won't be the case for long, as we're about to add a new Experiment.
 Notes on Tags vs Experiments
 ----------------------------
 
-While MLflow does provide a default experiment, it primarily serves as a 'catch-all' safety net for
+While QCFlow does provide a default experiment, it primarily serves as a 'catch-all' safety net for
 runs initiated without a specified active experiment. However, it's not recommended for regular use.
 Instead, creating unique experiments for specific collections of runs offers numerous advantages,
 as we'll explore below.
@@ -121,7 +121,7 @@ Creating the Apples Experiment with Meaningful tags
             "store_dept": "produce",
             "team": "stores-ml",
             "project_quarter": "Q3-2023",
-            "mlflow.note.content": experiment_description,
+            "qcflow.note.content": experiment_description,
         }
 
         # Create the Experiment, providing a unique name

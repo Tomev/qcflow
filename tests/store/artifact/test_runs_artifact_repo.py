@@ -3,10 +3,10 @@ from unittest.mock import Mock
 
 import pytest
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+import qcflow
+from qcflow.exceptions import QCFlowException
+from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
 
 
 @pytest.mark.parametrize(
@@ -37,7 +37,7 @@ def test_parse_runs_uri_valid_input(uri, expected_run_id, expected_artifact_path
     ],
 )
 def test_parse_runs_uri_invalid_input(uri):
-    with pytest.raises(MlflowException, match="Not a proper runs"):
+    with pytest.raises(QCFlowException, match="Not a proper runs"):
         RunsArtifactRepository.parse_runs_uri(uri)
 
 
@@ -68,7 +68,7 @@ def test_parse_runs_uri_invalid_input(uri):
 )
 def test_get_artifact_uri(uri, expected_tracking_uri, mock_uri, expected_result_uri):
     with mock.patch(
-        "mlflow.tracking.artifact_utils.get_artifact_uri", return_value=mock_uri
+        "qcflow.tracking.artifact_utils.get_artifact_uri", return_value=mock_uri
     ) as get_artifact_uri_mock:
         result_uri = RunsArtifactRepository.get_underlying_uri(uri)
         get_artifact_uri_mock.assert_called_once_with(
@@ -79,9 +79,9 @@ def test_get_artifact_uri(uri, expected_tracking_uri, mock_uri, expected_result_
 
 def test_runs_artifact_repo_init_with_real_run():
     artifact_location = "s3://blah_bucket/"
-    experiment_id = mlflow.create_experiment("expr_abc", artifact_location)
-    with mlflow.start_run(experiment_id=experiment_id):
-        run_id = mlflow.active_run().info.run_id
+    experiment_id = qcflow.create_experiment("expr_abc", artifact_location)
+    with qcflow.start_run(experiment_id=experiment_id):
+        run_id = qcflow.active_run().info.run_id
     runs_uri = f"runs:/{run_id}/path/to/model"
     runs_repo = RunsArtifactRepository(runs_uri)
 
@@ -97,9 +97,9 @@ def test_runs_artifact_repo_uses_repo_download_artifacts():
     function
     """
     artifact_location = "s3://blah_bucket/"
-    experiment_id = mlflow.create_experiment("expr_abcd", artifact_location)
-    with mlflow.start_run(experiment_id=experiment_id):
-        run_id = mlflow.active_run().info.run_id
+    experiment_id = qcflow.create_experiment("expr_abcd", artifact_location)
+    with qcflow.start_run(experiment_id=experiment_id):
+        run_id = qcflow.active_run().info.run_id
     runs_repo = RunsArtifactRepository(f"runs:/{run_id}")
     runs_repo.repo = Mock()
     runs_repo.download_artifacts("artifact_path", "dst_path")

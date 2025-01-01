@@ -16,11 +16,11 @@ import pytest
 import sqlalchemy
 from packaging.version import Version
 
-import mlflow
-import mlflow.db
-import mlflow.store.db.base_sql_model
-from mlflow import entities
-from mlflow.entities import (
+import qcflow
+import qcflow.db
+import qcflow.store.db.base_sql_model
+from qcflow import entities
+from qcflow.entities import (
     Experiment,
     ExperimentTag,
     Metric,
@@ -31,29 +31,29 @@ from mlflow.entities import (
     ViewType,
     _DatasetSummary,
 )
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.environment_variables import MLFLOW_TRACKING_URI
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model
-from mlflow.protos.databricks_pb2 import (
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.environment_variables import QCFLOW_TRACKING_URI
+from qcflow.exceptions import QCFlowException
+from qcflow.models import Model
+from qcflow.protos.databricks_pb2 import (
     BAD_REQUEST,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     TEMPORARILY_UNAVAILABLE,
     ErrorCode,
 )
-from mlflow.store.db.db_types import MSSQL, MYSQL, POSTGRES, SQLITE
-from mlflow.store.db.utils import (
+from qcflow.store.db.db_types import MSSQL, MYSQL, POSTGRES, SQLITE
+from qcflow.store.db.utils import (
     _get_latest_schema_revision,
     _get_schema_version,
 )
-from mlflow.store.tracking import (
+from qcflow.store.tracking import (
     SEARCH_MAX_RESULTS_DEFAULT,
     SEARCH_MAX_RESULTS_THRESHOLD,
 )
-from mlflow.store.tracking.dbmodels import models
-from mlflow.store.tracking.dbmodels.models import (
+from qcflow.store.tracking.dbmodels import models
+from qcflow.store.tracking.dbmodels.models import (
     SqlDataset,
     SqlExperiment,
     SqlExperimentTag,
@@ -68,20 +68,20 @@ from mlflow.store.tracking.dbmodels.models import (
     SqlTraceRequestMetadata,
     SqlTraceTag,
 )
-from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore, _get_orderby_clauses
-from mlflow.tracing.constant import TraceMetadataKey
-from mlflow.utils import mlflow_tags
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_ARTIFACT_LOCATION,
-    MLFLOW_DATASET_CONTEXT,
-    MLFLOW_RUN_NAME,
+from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore, _get_orderby_clauses
+from qcflow.tracing.constant import TraceMetadataKey
+from qcflow.utils import qcflow_tags
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_ARTIFACT_LOCATION,
+    QCFLOW_DATASET_CONTEXT,
+    QCFLOW_RUN_NAME,
 )
-from mlflow.utils.name_utils import _GENERATOR_PREDICATES
-from mlflow.utils.os import is_windows
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.uri import extract_db_type_from_uri
-from mlflow.utils.validation import (
+from qcflow.utils.name_utils import _GENERATOR_PREDICATES
+from qcflow.utils.os import is_windows
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.uri import extract_db_type_from_uri
+from qcflow.utils.validation import (
     MAX_DATASET_DIGEST_SIZE,
     MAX_DATASET_NAME_SIZE,
     MAX_DATASET_PROFILE_SIZE,
@@ -157,18 +157,18 @@ def test_correct_db_type_from_uri(db_type, driver):
     ],
 )
 def test_fail_on_unsupported_db_type(db_uri):
-    with pytest.raises(MlflowException, match=r"Invalid database engine"):
+    with pytest.raises(QCFlowException, match=r"Invalid database engine"):
         extract_db_type_from_uri(db_uri)
 
 
 def test_fail_on_multiple_drivers():
-    with pytest.raises(MlflowException, match=r"Invalid database URI"):
+    with pytest.raises(QCFlowException, match=r"Invalid database URI"):
         extract_db_type_from_uri("mysql+pymsql+pyodbc://...")
 
 
 @pytest.fixture
 def store(tmp_path: Path):
-    db_uri = MLFLOW_TRACKING_URI.get() or f"{DB_URI}{tmp_path / 'temp.db'}"
+    db_uri = QCFLOW_TRACKING_URI.get() or f"{DB_URI}{tmp_path / 'temp.db'}"
     artifact_uri = tmp_path / "artifacts"
     artifact_uri.mkdir(exist_ok=True)
     store = SqlAlchemyStore(db_uri, artifact_uri.as_uri())
@@ -177,7 +177,7 @@ def store(tmp_path: Path):
 
 
 def _get_store(tmp_path: Path):
-    db_uri = MLFLOW_TRACKING_URI.get() or f"{DB_URI}{tmp_path / 'temp.db'}"
+    db_uri = QCFLOW_TRACKING_URI.get() or f"{DB_URI}{tmp_path / 'temp.db'}"
     artifact_uri = tmp_path / "artifacts"
     artifact_uri.mkdir(exist_ok=True)
     return SqlAlchemyStore(db_uri, artifact_uri.as_uri())
@@ -271,7 +271,7 @@ def _search_runs(
 
 def _get_ordered_runs(store: SqlAlchemyStore, order_clauses, experiment_id):
     return [
-        r.data.tags[mlflow_tags.MLFLOW_RUN_NAME]
+        r.data.tags[qcflow_tags.QCFLOW_RUN_NAME]
         for r in store.search_runs(
             experiment_ids=[experiment_id],
             filter_string="",
@@ -633,19 +633,19 @@ def test_search_experiments_max_results(store: SqlAlchemyStore):
 
 def test_search_experiments_max_results_validation(store: SqlAlchemyStore):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value None for parameter 'max_results' supplied. "
         r"It must be a positive integer",
     ):
         store.search_experiments(max_results=None)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value 0 for parameter 'max_results' supplied. "
         r"It must be a positive integer",
     ):
         store.search_experiments(max_results=0)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value 1000000 for parameter 'max_results' supplied. "
         r"It must be at most 50000",
     ):
@@ -691,7 +691,7 @@ def test_create_experiments(store: SqlAlchemyStore):
     assert actual.creation_time >= time_before_create
     assert actual.last_update_time == actual.creation_time
 
-    with pytest.raises(MlflowException, match=r"'name' exceeds the maximum length"):
+    with pytest.raises(QCFlowException, match=r"'name' exceeds the maximum length"):
         store.create_experiment(name="x" * (MAX_EXPERIMENT_NAME_LENGTH + 1))
 
 
@@ -719,7 +719,7 @@ def test_run_tag_model(store: SqlAlchemyStore):
         session.commit()
         added_tags = [tag for tag in session.query(models.SqlTag).all() if tag.key == new_tag.key]
         assert len(added_tags) == 1
-        added_tag = added_tags[0].to_mlflow_entity()
+        added_tag = added_tags[0].to_qcflow_entity()
         assert added_tag.value == new_tag.value
 
 
@@ -736,7 +736,7 @@ def test_metric_model(store: SqlAlchemyStore):
         metrics = session.query(models.SqlMetric).all()
         assert len(metrics) == 1
 
-        added_metric = metrics[0].to_mlflow_entity()
+        added_metric = metrics[0].to_qcflow_entity()
         assert added_metric.value == new_metric.value
         assert added_metric.key == new_metric.key
 
@@ -754,7 +754,7 @@ def test_param_model(store: SqlAlchemyStore):
         params = session.query(models.SqlParam).all()
         assert len(params) == 1
 
-        added_param = params[0].to_mlflow_entity()
+        added_param = params[0].to_qcflow_entity()
         assert added_param.value == new_param.value
         assert added_param.key == new_param.key
 
@@ -769,7 +769,7 @@ def test_run_needs_uuid(store: SqlAlchemyStore):
     # Depending on the implementation, a NULL identity key may result in different
     # exceptions, including IntegrityError (sqlite) and FlushError (MysQL).
     # Therefore, we check for the more generic 'SQLAlchemyError'
-    with pytest.raises(MlflowException, match=regex) as exception_context:
+    with pytest.raises(QCFlowException, match=regex) as exception_context:
         with store.ManagedSessionMaker() as session:
             session.add(models.SqlRun())
     assert exception_context.value.error_code == ErrorCode.Name(BAD_REQUEST)
@@ -808,11 +808,11 @@ def test_run_info(store: SqlAlchemyStore):
         "entry_point_name": "main.py",
         "start_time": get_current_time_millis(),
         "end_time": get_current_time_millis(),
-        "source_version": mlflow.__version__,
+        "source_version": qcflow.__version__,
         "lifecycle_stage": entities.LifecycleStage.ACTIVE,
         "artifact_uri": "//",
     }
-    run = models.SqlRun(**config).to_mlflow_entity()
+    run = models.SqlRun(**config).to_qcflow_entity()
 
     for k, v in config.items():
         # These keys were removed from RunInfo.
@@ -840,7 +840,7 @@ def test_create_run_with_tags(store: SqlAlchemyStore):
     actual = store.create_run(**expected)
 
     # run name should be added as a tag by the store
-    tags.append(RunTag(mlflow_tags.MLFLOW_RUN_NAME, expected["run_name"]))
+    tags.append(RunTag(qcflow_tags.QCFLOW_RUN_NAME, expected["run_name"]))
 
     assert actual.info.experiment_id == experiment_id
     assert actual.info.user_id == expected["user_id"]
@@ -856,23 +856,23 @@ def test_create_run_sets_name(store: SqlAlchemyStore):
     run_id = store.create_run(**configs).info.run_id
     run = store.get_run(run_id)
     assert run.info.run_name == configs["run_name"]
-    assert run.data.tags.get(mlflow_tags.MLFLOW_RUN_NAME) == configs["run_name"]
+    assert run.data.tags.get(qcflow_tags.QCFLOW_RUN_NAME) == configs["run_name"]
 
     run_id = store.create_run(
         experiment_id=experiment_id,
         user_id="user",
         start_time=0,
         run_name=None,
-        tags=[RunTag(mlflow_tags.MLFLOW_RUN_NAME, "test")],
+        tags=[RunTag(qcflow_tags.QCFLOW_RUN_NAME, "test")],
     ).info.run_id
     run = store.get_run(run_id)
     assert run.info.run_name == "test"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
-            "Both 'run_name' argument and 'mlflow.runName' tag are specified, but with "
-            "different values (run_name='test', mlflow.runName='test_2').",
+            "Both 'run_name' argument and 'qcflow.runName' tag are specified, but with "
+            "different values (run_name='test', qcflow.runName='test_2').",
         ),
     ):
         store.create_run(
@@ -880,7 +880,7 @@ def test_create_run_sets_name(store: SqlAlchemyStore):
             user_id="user",
             start_time=0,
             run_name="test",
-            tags=[RunTag(mlflow_tags.MLFLOW_RUN_NAME, "test_2")],
+            tags=[RunTag(qcflow_tags.QCFLOW_RUN_NAME, "test_2")],
         )
 
 
@@ -912,7 +912,7 @@ def test_get_run_with_name(store: SqlAlchemyStore):
     assert run_name.split("-")[0] in _GENERATOR_PREDICATES
 
 
-def test_to_mlflow_entity_and_proto(store: SqlAlchemyStore):
+def test_to_qcflow_entity_and_proto(store: SqlAlchemyStore):
     # Create a run and log metrics, params, tags to the run
     created_run = _run_factory(store)
     run_id = created_run.info.run_id
@@ -1011,7 +1011,7 @@ def test_log_metric(store: SqlAlchemyStore):
 
     # SQL store _get_run method returns full history of recorded metrics.
     # Should return duplicates as well
-    # MLflow RunData contains only the last reported values for metrics.
+    # QCFlow RunData contains only the last reported values for metrics.
     with store.ManagedSessionMaker() as session:
         sql_run_metrics = store._get_run(session, run.info.run_id).metrics
         assert len(sql_run_metrics) == 5
@@ -1024,7 +1024,7 @@ def test_log_metric(store: SqlAlchemyStore):
 def test_log_metric_concurrent_logging_succeeds(store: SqlAlchemyStore):
     """
     Verifies that concurrent logging succeeds without deadlock, which has been an issue
-    in previous MLflow releases
+    in previous QCFlow releases
     """
     experiment_id = _create_experiments(store, "concurrency_exp")
     run_config = _get_run_configs(experiment_id=experiment_id)
@@ -1092,7 +1092,7 @@ def test_record_logged_model(
     store.record_logged_model(run.info.run_id, m_with_config)
     with store.ManagedSessionMaker() as session:
         run = store._get_run(run_uuid=run.info.run_id, session=session)
-        tags = [t.value for t in run.tags if t.key == mlflow_tags.MLFLOW_LOGGED_MODELS]
+        tags = [t.value for t in run.tags if t.key == qcflow_tags.QCFLOW_LOGGED_MODELS]
         flavors = m_with_config.get_tags_dict().get("flavors", {})
         assert all("config" not in v for v in flavors.values())
         assert tags[0] == json.dumps([m_with_config.get_tags_dict()])
@@ -1135,7 +1135,7 @@ def test_log_metric_allows_multiple_values_at_same_ts_and_run_data_uses_max_ts_v
 
 def test_get_metric_history_paginated_request_raises(store: SqlAlchemyStore):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The SQLAlchemyStore backend does not support pagination for the "
         "`get_metric_history` API.",
     ):
@@ -1150,7 +1150,7 @@ def test_log_null_metric(store: SqlAlchemyStore):
     metric = entities.Metric(tkey, tval, get_current_time_millis(), 0)
 
     with pytest.raises(
-        MlflowException, match=r"Missing value for required parameter 'value'"
+        QCFlowException, match=r"Missing value for required parameter 'value'"
     ) as exception_context:
         store.log_metric(run.info.run_id, metric)
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -1182,7 +1182,7 @@ def test_log_param_uniqueness(store: SqlAlchemyStore):
     param2 = entities.Param(tkey, "newval")
     store.log_param(run.info.run_id, param)
 
-    with pytest.raises(MlflowException, match=r"Changing param values is not allowed"):
+    with pytest.raises(QCFlowException, match=r"Changing param values is not allowed"):
         store.log_param(run.info.run_id, param2)
 
 
@@ -1216,7 +1216,7 @@ def test_log_null_param(store: SqlAlchemyStore):
         MYSQL: r"Column .+ cannot be null",
         MSSQL: r"Cannot insert the value NULL into column .+, table .+",
     }[dialect]
-    with pytest.raises(MlflowException, match=regex) as exception_context:
+    with pytest.raises(QCFlowException, match=regex) as exception_context:
         store.log_param(run.info.run_id, param)
     if dialect != MYSQL:
         assert exception_context.value.error_code == ErrorCode.Name(BAD_REQUEST)
@@ -1234,7 +1234,7 @@ def test_log_null_param(store: SqlAlchemyStore):
 
 @pytest.mark.skipif(
     Version(sqlalchemy.__version__) < Version("2.0")
-    and mlflow.get_tracking_uri().startswith("mssql"),
+    and qcflow.get_tracking_uri().startswith("mssql"),
     reason="large string parameters are sent as TEXT/NTEXT; "
     "see tests/db/compose.yml for details",
 )
@@ -1246,11 +1246,11 @@ def test_log_param_max_length_value(store: SqlAlchemyStore, monkeypatch):
     store.log_param(run.info.run_id, param)
     run = store.get_run(run.info.run_id)
     assert run.data.params[tkey] == str(tval)
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "false")
-    with pytest.raises(MlflowException, match="exceeds the maximum length"):
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
+    with pytest.raises(QCFlowException, match="exceeds the maximum length"):
         store.log_param(run.info.run_id, entities.Param(tkey, "x" * 6001))
 
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "true")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "true")
     store.log_param(run.info.run_id, entities.Param(tkey, "x" * 6001))
 
 
@@ -1283,14 +1283,14 @@ def test_set_experiment_tag(store: SqlAlchemyStore):
     assert experiment.tags["multiline tag"] == "value2\nvalue2\nvalue2"
     # test cannot set tags that are too long
     long_tag = entities.ExperimentTag("longTagKey", "a" * 5001)
-    with pytest.raises(MlflowException, match="exceeds the maximum length of 5000"):
+    with pytest.raises(QCFlowException, match="exceeds the maximum length of 5000"):
         store.set_experiment_tag(exp_id, long_tag)
     # test can set tags that are somewhat long
     long_tag = entities.ExperimentTag("longTagKey", "a" * 4999)
     store.set_experiment_tag(exp_id, long_tag)
     # test cannot set tags on deleted experiments
     store.delete_experiment(exp_id)
-    with pytest.raises(MlflowException, match="must be in the 'active' state"):
+    with pytest.raises(QCFlowException, match="must be in the 'active' state"):
         store.set_experiment_tag(exp_id, entities.ExperimentTag("should", "notset"))
 
 
@@ -1306,15 +1306,15 @@ def test_set_tag(store: SqlAlchemyStore, monkeypatch):
     # Overwriting tags is allowed
     store.set_tag(run.info.run_id, new_tag)
     # test setting tags that are too long fails.
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "false")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
     with pytest.raises(
-        MlflowException, match=f"exceeds the maximum length of {MAX_TAG_VAL_LENGTH} characters"
+        QCFlowException, match=f"exceeds the maximum length of {MAX_TAG_VAL_LENGTH} characters"
     ):
         store.set_tag(
             run.info.run_id, entities.RunTag("longTagKey", "a" * (MAX_TAG_VAL_LENGTH + 1))
         )
 
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "true")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "true")
     store.set_tag(run.info.run_id, entities.RunTag("longTagKey", "a" * (MAX_TAG_VAL_LENGTH + 1)))
 
     # test can set tags that are somewhat long
@@ -1349,14 +1349,14 @@ def test_delete_tag(store: SqlAlchemyStore):
     assert k0 not in run.data.tags
     assert k0 in run2.data.tags
     # test that you cannot delete tags that don't exist.
-    with pytest.raises(MlflowException, match="No tag with name"):
+    with pytest.raises(QCFlowException, match="No tag with name"):
         store.delete_tag(run.info.run_id, "fakeTag")
     # test that you cannot delete tags for nonexistent runs
-    with pytest.raises(MlflowException, match="Run with id=randomRunId not found"):
+    with pytest.raises(QCFlowException, match="Run with id=randomRunId not found"):
         store.delete_tag("randomRunId", k0)
     # test that you cannot delete tags for deleted runs.
     store.delete_run(run.info.run_id)
-    with pytest.raises(MlflowException, match="must be in the 'active' state"):
+    with pytest.raises(QCFlowException, match="must be in the 'active' state"):
         store.delete_tag(run.info.run_id, k1)
 
 
@@ -1365,8 +1365,8 @@ def test_get_metric_history(store: SqlAlchemyStore):
 
     key = "test"
     expected = [
-        models.SqlMetric(key=key, value=0.6, timestamp=1, step=0).to_mlflow_entity(),
-        models.SqlMetric(key=key, value=0.7, timestamp=2, step=0).to_mlflow_entity(),
+        models.SqlMetric(key=key, value=0.6, timestamp=1, step=0).to_qcflow_entity(),
+        models.SqlMetric(key=key, value=0.7, timestamp=2, step=0).to_qcflow_entity(),
     ]
 
     for metric in expected:
@@ -1424,41 +1424,41 @@ def test_update_run_name(store: SqlAlchemyStore):
     store.update_run_info(run_id, RunStatus.FINISHED, 1000, "new name")
     run = store.get_run(run_id)
     assert run.info.run_name == "new name"
-    assert run.data.tags.get(mlflow_tags.MLFLOW_RUN_NAME) == "new name"
+    assert run.data.tags.get(qcflow_tags.QCFLOW_RUN_NAME) == "new name"
 
     store.update_run_info(run_id, RunStatus.FINISHED, 1000, None)
     run = store.get_run(run_id)
     assert run.info.run_name == "new name"
-    assert run.data.tags.get(mlflow_tags.MLFLOW_RUN_NAME) == "new name"
+    assert run.data.tags.get(qcflow_tags.QCFLOW_RUN_NAME) == "new name"
 
     store.update_run_info(run_id, RunStatus.FINISHED, 1000, "")
     run = store.get_run(run_id)
     assert run.info.run_name == "new name"
-    assert run.data.tags.get(mlflow_tags.MLFLOW_RUN_NAME) == "new name"
+    assert run.data.tags.get(qcflow_tags.QCFLOW_RUN_NAME) == "new name"
 
-    store.delete_tag(run_id, mlflow_tags.MLFLOW_RUN_NAME)
+    store.delete_tag(run_id, qcflow_tags.QCFLOW_RUN_NAME)
     run = store.get_run(run_id)
     assert run.info.run_name == "new name"
-    assert run.data.tags.get(mlflow_tags.MLFLOW_RUN_NAME) is None
+    assert run.data.tags.get(qcflow_tags.QCFLOW_RUN_NAME) is None
 
     store.update_run_info(run_id, RunStatus.FINISHED, 1000, "newer name")
     run = store.get_run(run_id)
     assert run.info.run_name == "newer name"
-    assert run.data.tags.get(mlflow_tags.MLFLOW_RUN_NAME) == "newer name"
+    assert run.data.tags.get(qcflow_tags.QCFLOW_RUN_NAME) == "newer name"
 
-    store.set_tag(run_id, entities.RunTag(mlflow_tags.MLFLOW_RUN_NAME, "newest name"))
+    store.set_tag(run_id, entities.RunTag(qcflow_tags.QCFLOW_RUN_NAME, "newest name"))
     run = store.get_run(run_id)
-    assert run.data.tags.get(mlflow_tags.MLFLOW_RUN_NAME) == "newest name"
+    assert run.data.tags.get(qcflow_tags.QCFLOW_RUN_NAME) == "newest name"
     assert run.info.run_name == "newest name"
 
     store.log_batch(
         run_id,
         metrics=[],
         params=[],
-        tags=[entities.RunTag(mlflow_tags.MLFLOW_RUN_NAME, "batch name")],
+        tags=[entities.RunTag(qcflow_tags.QCFLOW_RUN_NAME, "batch name")],
     )
     run = store.get_run(run_id)
-    assert run.data.tags.get(mlflow_tags.MLFLOW_RUN_NAME) == "batch name"
+    assert run.data.tags.get(qcflow_tags.QCFLOW_RUN_NAME) == "batch name"
     assert run.info.run_name == "batch name"
 
 
@@ -1513,13 +1513,13 @@ def test_error_logging_to_deleted_run(store: SqlAlchemyStore):
 
     store.delete_run(run_id)
     assert store.get_run(run_id).info.lifecycle_stage == entities.LifecycleStage.DELETED
-    with pytest.raises(MlflowException, match=r"The run .+ must be in the 'active' state"):
+    with pytest.raises(QCFlowException, match=r"The run .+ must be in the 'active' state"):
         store.log_param(run_id, entities.Param("p1345", "v1"))
 
-    with pytest.raises(MlflowException, match=r"The run .+ must be in the 'active' state"):
+    with pytest.raises(QCFlowException, match=r"The run .+ must be in the 'active' state"):
         store.log_metric(run_id, entities.Metric("m1345", 1.0, 123, 0))
 
-    with pytest.raises(MlflowException, match=r"The run .+ must be in the 'active' state"):
+    with pytest.raises(QCFlowException, match=r"The run .+ must be in the 'active' state"):
         store.set_tag(run_id, entities.RunTag("t1345", "tv1"))
 
     # restore this run and try again
@@ -2037,7 +2037,7 @@ def test_search_attrs(store: SqlAlchemyStore, tmp_path):
     assert _search_runs(store, [e1, e2], filter_string) == [r1]
 
     for k, v in {"experiment_id": e1, "lifecycle_stage": "ACTIVE"}.items():
-        with pytest.raises(MlflowException, match=r"Invalid attribute key '.+' specified"):
+        with pytest.raises(QCFlowException, match=r"Invalid attribute key '.+' specified"):
             _search_runs(store, [e1, e2], f"attribute.{k} = '{v}'")
 
 
@@ -2115,7 +2115,7 @@ def test_search_with_max_results(store: SqlAlchemyStore):
     maxPlusOne = SEARCH_MAX_RESULTS_THRESHOLD + 1
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"Invalid value {maxPlusOne} for parameter 'max_results'",
     ):
         _search_runs(store, exp, max_results=maxPlusOne)
@@ -2179,7 +2179,7 @@ def test_search_runs_run_name(store: SqlAlchemyStore):
     assert [r.info.run_id for r in result] == [run2.info.run_id]
     result = store.search_runs(
         [exp_id],
-        filter_string="tags.`mlflow.runName` = 'run_name2'",
+        filter_string="tags.`qcflow.runName` = 'run_name2'",
         run_view_type=ViewType.ACTIVE_ONLY,
     )
     assert [r.info.run_id for r in result] == [run2.info.run_id]
@@ -2199,7 +2199,7 @@ def test_search_runs_run_name(store: SqlAlchemyStore):
 
     # TODO: Test attribute-based search after set_tag
 
-    # Test run name filter works for runs logged in MLflow <= 1.29.0
+    # Test run name filter works for runs logged in QCFlow <= 1.29.0
     with store.ManagedSessionMaker() as session:
         sql_run1 = session.query(SqlRun).filter(SqlRun.run_uuid == run1.info.run_id).one()
         sql_run1.name = ""
@@ -2213,7 +2213,7 @@ def test_search_runs_run_name(store: SqlAlchemyStore):
 
     result = store.search_runs(
         [exp_id],
-        filter_string="tags.`mlflow.runName` = 'new_run_name1'",
+        filter_string="tags.`qcflow.runName` = 'new_run_name1'",
         run_view_type=ViewType.ACTIVE_ONLY,
     )
     assert [r.info.run_id for r in result] == [run1.info.run_id]
@@ -2365,9 +2365,9 @@ def test_search_runs_datasets(store: SqlAlchemyStore):
         profile="profile3",
     )
 
-    test_tag = [entities.InputTag(key=MLFLOW_DATASET_CONTEXT, value="test")]
-    train_tag = [entities.InputTag(key=MLFLOW_DATASET_CONTEXT, value="train")]
-    eval_tag = [entities.InputTag(key=MLFLOW_DATASET_CONTEXT, value="eval")]
+    test_tag = [entities.InputTag(key=QCFLOW_DATASET_CONTEXT, value="test")]
+    train_tag = [entities.InputTag(key=QCFLOW_DATASET_CONTEXT, value="train")]
+    eval_tag = [entities.InputTag(key=QCFLOW_DATASET_CONTEXT, value="eval")]
 
     inputs_run1 = [
         entities.DatasetInput(dataset1, train_tag),
@@ -2521,9 +2521,9 @@ def test_search_datasets(store: SqlAlchemyStore):
         profile="profile4",
     )
 
-    test_tag = [entities.InputTag(key=MLFLOW_DATASET_CONTEXT, value="test")]
-    train_tag = [entities.InputTag(key=MLFLOW_DATASET_CONTEXT, value="train")]
-    eval_tag = [entities.InputTag(key=MLFLOW_DATASET_CONTEXT, value="eval")]
+    test_tag = [entities.InputTag(key=QCFLOW_DATASET_CONTEXT, value="test")]
+    train_tag = [entities.InputTag(key=QCFLOW_DATASET_CONTEXT, value="train")]
+    eval_tag = [entities.InputTag(key=QCFLOW_DATASET_CONTEXT, value="eval")]
     no_context_tag = [entities.InputTag(key="not_context", value="test")]
 
     inputs_run1 = [
@@ -2583,7 +2583,7 @@ def test_search_datasets_returns_no_more_than_max_results(store: SqlAlchemyStore
             schema="schema" + str(i),
             profile="profile" + str(i),
         )
-        input_tag = [entities.InputTag(key=MLFLOW_DATASET_CONTEXT, value=str(i))]
+        input_tag = [entities.InputTag(key=QCFLOW_DATASET_CONTEXT, value=str(i))]
         inputs.append(entities.DatasetInput(dataset, input_tag))
 
     store.log_inputs(run.info.run_id, inputs)
@@ -2600,13 +2600,13 @@ def test_log_batch(store: SqlAlchemyStore):
     tag_entities = [
         RunTag("t1", "t1val"),
         RunTag("t2", "t2val"),
-        RunTag(MLFLOW_RUN_NAME, "my_run"),
+        RunTag(QCFLOW_RUN_NAME, "my_run"),
     ]
     store.log_batch(
         run_id=run_id, metrics=metric_entities, params=param_entities, tags=tag_entities
     )
     run = store.get_run(run_id)
-    assert run.data.tags == {"t1": "t1val", "t2": "t2val", MLFLOW_RUN_NAME: "my_run"}
+    assert run.data.tags == {"t1": "t1val", "t2": "t2val", QCFLOW_RUN_NAME: "my_run"}
     assert run.data.params == {"p1": "p1val", "p2": "p2val"}
     metric_histories = sum([store.get_metric_history(run_id, key) for key in run.data.metrics], [])
     metrics = [(m.key, m.value, m.timestamp, m.step) for m in metric_histories]
@@ -2639,7 +2639,7 @@ def test_log_batch_param_overwrite_disallowed(store: SqlAlchemyStore):
     tag = entities.RunTag("tag-key", "tag-val")
     metric = entities.Metric("metric-key", 3.0, 12345, 0)
     with pytest.raises(
-        MlflowException, match=r"Changing param values is not allowed"
+        QCFlowException, match=r"Changing param values is not allowed"
     ) as exception_context:
         store.log_batch(run.info.run_id, metrics=[metric], params=[overwrite_param], tags=[tag])
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -2650,8 +2650,8 @@ def test_log_batch_with_unchanged_and_new_params(store: SqlAlchemyStore):
     """
     Test case to ensure the following code works:
     ---------------------------------------------
-    mlflow.log_params({"a": 0, "b": 1})
-    mlflow.log_params({"a": 0, "c": 2})
+    qcflow.log_params({"a": 0, "b": 1})
+    qcflow.log_params({"a": 0, "c": 2})
     ---------------------------------------------
     """
     run = _run_factory(store)
@@ -2689,7 +2689,7 @@ def test_log_batch_param_overwrite_disallowed_single_req(store: SqlAlchemyStore)
     tag = entities.RunTag("tag-key", "tag-val")
     metric = entities.Metric("metric-key", 3.0, 12345, 0)
     with pytest.raises(
-        MlflowException, match=r"Duplicate parameter keys have been submitted"
+        QCFlowException, match=r"Duplicate parameter keys have been submitted"
     ) as exception_context:
         store.log_batch(run.info.run_id, metrics=[metric], params=[param0, param1], tags=[tag])
     assert exception_context.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -2704,13 +2704,13 @@ def test_log_batch_accepts_empty_payload(store: SqlAlchemyStore):
 
 def test_log_batch_internal_error(store: SqlAlchemyStore):
     # Verify that internal errors during the DB save step for log_batch result in
-    # MlflowExceptions
+    # QCFlowExceptions
     run = _run_factory(store)
 
     def _raise_exception_fn(*args, **kwargs):
         raise Exception("Some internal error")
 
-    package = "mlflow.store.tracking.sqlalchemy_store.SqlAlchemyStore"
+    package = "qcflow.store.tracking.sqlalchemy_store.SqlAlchemyStore"
     with (
         mock.patch(package + "._log_metrics") as metric_mock,
         mock.patch(package + "._log_params") as param_mock,
@@ -2726,14 +2726,14 @@ def test_log_batch_internal_error(store: SqlAlchemyStore):
         ]:
             log_batch_kwargs = {"metrics": [], "params": [], "tags": []}
             log_batch_kwargs.update(kwargs)
-            with pytest.raises(MlflowException, match=r"Some internal error"):
+            with pytest.raises(QCFlowException, match=r"Some internal error"):
                 store.log_batch(run.info.run_id, **log_batch_kwargs)
 
 
 def test_log_batch_nonexistent_run(store: SqlAlchemyStore):
     nonexistent_run_id = uuid.uuid4().hex
     with pytest.raises(
-        MlflowException, match=rf"Run with id={nonexistent_run_id} not found"
+        QCFlowException, match=rf"Run with id={nonexistent_run_id} not found"
     ) as exception_context:
         store.log_batch(nonexistent_run_id, [], [], [])
     assert exception_context.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
@@ -2797,7 +2797,7 @@ def test_log_batch_metrics(store: SqlAlchemyStore):
 
     # SQL store _get_run method returns full history of recorded metrics.
     # Should return duplicates as well
-    # MLflow RunData contains only the last reported values for metrics.
+    # QCFlow RunData contains only the last reported values for metrics.
     with store.ManagedSessionMaker() as session:
         sql_run_metrics = store._get_run(session, run.info.run_id).metrics
         assert len(sql_run_metrics) == 5
@@ -2849,7 +2849,7 @@ def test_log_batch_null_metrics(store: SqlAlchemyStore):
     metrics = [metric_1, metric_2]
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Missing value for required parameter 'metrics\[0\]\.value'",
     ) as exception_context:
         store.log_batch(run.info.run_id, metrics=metrics, params=[], tags=[])
@@ -2866,21 +2866,21 @@ def test_log_batch_params_max_length_value(store: SqlAlchemyStore, monkeypatch):
     store.log_batch(run.info.run_id, [], param_entities, [])
     _verify_logged(store, run.info.run_id, [], expected_param_entities, [])
     param_entities = [Param("long param", "x" * 6001)]
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "false")
-    with pytest.raises(MlflowException, match="exceeds the maximum length"):
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
+    with pytest.raises(QCFlowException, match="exceeds the maximum length"):
         store.log_batch(run.info.run_id, [], param_entities, [])
 
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "true")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "true")
     store.log_batch(run.info.run_id, [], param_entities, [])
 
 
 def test_upgrade_cli_idempotence(store: SqlAlchemyStore):
-    # Repeatedly run `mlflow db upgrade` against our database, verifying that the command
+    # Repeatedly run `qcflow db upgrade` against our database, verifying that the command
     # succeeds and that the DB has the latest schema
     engine = sqlalchemy.create_engine(store.db_uri)
     assert _get_schema_version(engine) == _get_latest_schema_revision()
     for _ in range(3):
-        invoke_cli_runner(mlflow.db.commands, ["upgrade", store.db_uri])
+        invoke_cli_runner(qcflow.db.commands, ["upgrade", store.db_uri])
         assert _get_schema_version(engine) == _get_latest_schema_revision()
     engine.dispose()
 
@@ -2890,14 +2890,14 @@ def test_metrics_materialization_upgrade_succeeds_and_produces_expected_latest_m
 ):
     """
     Tests the ``89d4b8295536_create_latest_metrics_table`` migration by migrating and querying
-    the MLflow Tracking SQLite database located at
-    /mlflow/tests/resources/db/db_version_7ac759974ad8_with_metrics.sql. This database contains
+    the QCFlow Tracking SQLite database located at
+    /qcflow/tests/resources/db/db_version_7ac759974ad8_with_metrics.sql. This database contains
     metric entries populated by the following metrics generation script:
     https://gist.github.com/dbczumar/343173c6b8982a0cc9735ff19b5571d9.
 
     First, the database is upgraded from its HEAD revision of
     ``7ac755974ad8_update_run_tags_with_larger_limit`` to the latest revision via
-    ``mlflow db upgrade``.
+    ``qcflow db upgrade``.
 
     Then, the test confirms that the metric entries returned by calls
     to ``SqlAlchemyStore.get_run()`` are consistent between the latest revision and the
@@ -2905,20 +2905,20 @@ def test_metrics_materialization_upgrade_succeeds_and_produces_expected_latest_m
     invoking ``SqlAlchemyStore.get_run()`` for each run id that is present in the upgraded
     database and comparing the resulting runs' metric entries to a JSON dump taken from the
     SQLite database prior to the upgrade (located at
-    mlflow/tests/resources/db/db_version_7ac759974ad8_with_metrics_expected_values.json).
-    This JSON dump can be replicated by installing MLflow version 1.2.0 and executing the
+    qcflow/tests/resources/db/db_version_7ac759974ad8_with_metrics_expected_values.json).
+    This JSON dump can be replicated by installing QCFlow version 1.2.0 and executing the
     following code from the directory containing this test suite:
 
     .. code-block:: python
 
         import json
-        import mlflow
-        from mlflow import MlflowClient
+        import qcflow
+        from qcflow import QCFlowClient
 
-        mlflow.set_tracking_uri(
+        qcflow.set_tracking_uri(
             "sqlite:///../../resources/db/db_version_7ac759974ad8_with_metrics.sql"
         )
-        client = MlflowClient()
+        client = QCFlowClient()
         summary_metrics = {
             run.info.run_id: run.data.metrics for run in client.search_runs(experiment_ids="0")
         }
@@ -2940,7 +2940,7 @@ def test_metrics_materialization_upgrade_succeeds_and_produces_expected_latest_m
         dst=db_path,
     )
 
-    invoke_cli_runner(mlflow.db.commands, ["upgrade", db_url])
+    invoke_cli_runner(qcflow.db.commands, ["upgrade", db_url])
     artifact_uri = tmp_path / "artifacts"
     artifact_uri.mkdir(exist_ok=True)
     store = SqlAlchemyStore(db_url, artifact_uri.as_uri())
@@ -2954,7 +2954,7 @@ def test_metrics_materialization_upgrade_succeeds_and_produces_expected_latest_m
 
 def get_ordered_runs(store, order_clauses, experiment_id):
     return [
-        r.data.tags[mlflow_tags.MLFLOW_RUN_NAME]
+        r.data.tags[qcflow_tags.QCFLOW_RUN_NAME]
         for r in store.search_runs(
             experiment_ids=[experiment_id],
             filter_string="",
@@ -3381,7 +3381,7 @@ def test_log_inputs_fails_with_missing_inputs(store: SqlAlchemyStore):
     tags = [entities.InputTag(key="key", value="train")]
 
     # Test input key missing
-    with pytest.raises(MlflowException, match="InputTag key cannot be None"):
+    with pytest.raises(QCFlowException, match="InputTag key cannot be None"):
         store.log_inputs(
             run.info.run_id,
             [
@@ -3392,7 +3392,7 @@ def test_log_inputs_fails_with_missing_inputs(store: SqlAlchemyStore):
         )
 
     # Test input value missing
-    with pytest.raises(MlflowException, match="InputTag value cannot be None"):
+    with pytest.raises(QCFlowException, match="InputTag value cannot be None"):
         store.log_inputs(
             run.info.run_id,
             [
@@ -3403,7 +3403,7 @@ def test_log_inputs_fails_with_missing_inputs(store: SqlAlchemyStore):
         )
 
     # Test dataset name missing
-    with pytest.raises(MlflowException, match="Dataset name cannot be None"):
+    with pytest.raises(QCFlowException, match="Dataset name cannot be None"):
         store.log_inputs(
             run.info.run_id,
             [
@@ -3417,7 +3417,7 @@ def test_log_inputs_fails_with_missing_inputs(store: SqlAlchemyStore):
         )
 
     # Test dataset digest missing
-    with pytest.raises(MlflowException, match="Dataset digest cannot be None"):
+    with pytest.raises(QCFlowException, match="Dataset digest cannot be None"):
         store.log_inputs(
             run.info.run_id,
             [
@@ -3431,7 +3431,7 @@ def test_log_inputs_fails_with_missing_inputs(store: SqlAlchemyStore):
         )
 
     # Test dataset source type missing
-    with pytest.raises(MlflowException, match="Dataset source_type cannot be None"):
+    with pytest.raises(QCFlowException, match="Dataset source_type cannot be None"):
         store.log_inputs(
             run.info.run_id,
             [
@@ -3445,7 +3445,7 @@ def test_log_inputs_fails_with_missing_inputs(store: SqlAlchemyStore):
         )
 
     # Test dataset source missing
-    with pytest.raises(MlflowException, match="Dataset source cannot be None"):
+    with pytest.raises(QCFlowException, match="Dataset source cannot be None"):
         store.log_inputs(
             run.info.run_id,
             [
@@ -3471,7 +3471,7 @@ def _validate_log_inputs(
 
 
 def _validate_invalid_log_inputs(store: SqlAlchemyStore, run_id, dataset_inputs, error_message):
-    with pytest.raises(MlflowException, match=error_message):
+    with pytest.raises(QCFlowException, match=error_message):
         store.log_inputs(run_id, dataset_inputs)
 
 
@@ -3729,7 +3729,7 @@ def test_log_inputs_with_duplicates_in_single_request(store: SqlAlchemyStore):
 
 
 def test_sqlalchemy_store_behaves_as_expected_with_inmemory_sqlite_db(monkeypatch):
-    monkeypatch.setenv("MLFLOW_SQLALCHEMYSTORE_POOLCLASS", "SingletonThreadPool")
+    monkeypatch.setenv("QCFLOW_SQLALCHEMYSTORE_POOLCLASS", "SingletonThreadPool")
     store = SqlAlchemyStore("sqlite:///:memory:", ARTIFACT_URI)
     experiment_id = store.create_experiment(name="exp1")
     run = store.create_run(
@@ -3834,16 +3834,16 @@ def test_get_orderby_clauses(tmp_sqlite_uri):
 
         # test that an exception is raised when 'order_by' contains duplicates
         match = "`order_by` contains duplicate fields"
-        with pytest.raises(MlflowException, match=match):
+        with pytest.raises(QCFlowException, match=match):
             _get_orderby_clauses(["attribute.start_time", "attribute.start_time"], session)
 
-        with pytest.raises(MlflowException, match=match):
+        with pytest.raises(QCFlowException, match=match):
             _get_orderby_clauses(["param.p", "param.p"], session)
 
-        with pytest.raises(MlflowException, match=match):
+        with pytest.raises(QCFlowException, match=match):
             _get_orderby_clauses(["metric.m", "metric.m"], session)
 
-        with pytest.raises(MlflowException, match=match):
+        with pytest.raises(QCFlowException, match=match):
             _get_orderby_clauses(["tag.t", "tag.t"], session)
 
         # test that an exception is NOT raised when key types are different
@@ -3864,7 +3864,7 @@ def _assert_create_experiment_appends_to_artifact_uri_path_correctly(
 ):
     # Patch `is_local_uri` to prevent the SqlAlchemy store from attempting to create local
     # filesystem directories for file URI and POSIX path test cases
-    with mock.patch("mlflow.store.tracking.sqlalchemy_store.is_local_uri", return_value=False):
+    with mock.patch("qcflow.store.tracking.sqlalchemy_store.is_local_uri", return_value=False):
         with TempDir() as tmp:
             dbfile_path = tmp.path("db")
             store = SqlAlchemyStore(
@@ -3972,7 +3972,7 @@ def _assert_create_run_appends_to_artifact_uri_path_correctly(
 ):
     # Patch `is_local_uri` to prevent the SqlAlchemy store from attempting to create local
     # filesystem directories for file URI and POSIX path test cases
-    with mock.patch("mlflow.store.tracking.sqlalchemy_store.is_local_uri", return_value=False):
+    with mock.patch("qcflow.store.tracking.sqlalchemy_store.is_local_uri", return_value=False):
         with TempDir() as tmp:
             dbfile_path = tmp.path("db")
             store = SqlAlchemyStore(
@@ -4115,12 +4115,12 @@ def test_start_and_end_trace(store: SqlAlchemyStore):
     assert trace_info.execution_time_ms is None
     assert trace_info.status == TraceStatus.IN_PROGRESS
     assert trace_info.request_metadata == {"rq1": "foo", "rq2": "bar"}
-    artifact_location = trace_info.tags[MLFLOW_ARTIFACT_LOCATION]
+    artifact_location = trace_info.tags[QCFLOW_ARTIFACT_LOCATION]
     assert artifact_location.endswith(f"/{experiment_id}/traces/{request_id}/artifacts")
     assert trace_info.tags == {
         "tag1": "apple",
         "tag2": "orange",
-        MLFLOW_ARTIFACT_LOCATION: artifact_location,
+        QCFLOW_ARTIFACT_LOCATION: artifact_location,
     }
     assert trace_info == store.get_trace_info(request_id)
 
@@ -4149,13 +4149,13 @@ def test_start_and_end_trace(store: SqlAlchemyStore):
         "tag1": "updated",
         "tag2": "orange",
         "tag3": "grape",
-        MLFLOW_ARTIFACT_LOCATION: artifact_location,
+        QCFLOW_ARTIFACT_LOCATION: artifact_location,
     }
     assert trace_info == store.get_trace_info(request_id)
 
 
 def test_start_trace_with_invalid_experiment_id(store: SqlAlchemyStore):
-    with pytest.raises(MlflowException, match="No Experiment with id=123"):
+    with pytest.raises(QCFlowException, match="No Experiment with id=123"):
         store.start_trace(
             experiment_id="123",
             timestamp_ms=0,
@@ -4179,7 +4179,7 @@ def _create_trace(
         store.create_experiment(store, experiment_id)
 
     with mock.patch(
-        "mlflow.store.tracking.sqlalchemy_store.generate_request_id",
+        "qcflow.store.tracking.sqlalchemy_store.generate_request_id",
         side_effect=lambda: request_id,
     ):
         # In case if under the hood of `store` is a GO implementation it is
@@ -4220,7 +4220,7 @@ def store_with_traces(tmp_path):
         timestamp_ms=0,
         execution_time_ms=6,
         status=TraceStatus.OK,
-        tags={"mlflow.traceName": "ddd"},
+        tags={"qcflow.traceName": "ddd"},
         request_metadata={TraceMetadataKey.SOURCE_RUN: "run0"},
     )
     _create_trace(
@@ -4230,7 +4230,7 @@ def store_with_traces(tmp_path):
         timestamp_ms=1,
         execution_time_ms=2,
         status=TraceStatus.ERROR,
-        tags={"mlflow.traceName": "aaa", "fruit": "apple", "color": "red"},
+        tags={"qcflow.traceName": "aaa", "fruit": "apple", "color": "red"},
         request_metadata={TraceMetadataKey.SOURCE_RUN: "run1"},
     )
     _create_trace(
@@ -4240,7 +4240,7 @@ def store_with_traces(tmp_path):
         timestamp_ms=2,
         execution_time_ms=4,
         status=TraceStatus.UNSPECIFIED,
-        tags={"mlflow.traceName": "bbb", "fruit": "apple", "color": "green"},
+        tags={"qcflow.traceName": "bbb", "fruit": "apple", "color": "green"},
     )
     _create_trace(
         store,
@@ -4249,7 +4249,7 @@ def store_with_traces(tmp_path):
         timestamp_ms=3,
         execution_time_ms=10,
         status=TraceStatus.OK,
-        tags={"mlflow.traceName": "ccc", "fruit": "orange"},
+        tags={"qcflow.traceName": "ccc", "fruit": "orange"},
     )
     _create_trace(
         store,
@@ -4258,7 +4258,7 @@ def store_with_traces(tmp_path):
         timestamp_ms=4,
         execution_time_ms=10,
         status=TraceStatus.OK,
-        tags={"mlflow.traceName": "ddd", "color": "blue"},
+        tags={"qcflow.traceName": "ddd", "color": "blue"},
     )
 
     yield store
@@ -4370,7 +4370,7 @@ def test_search_traces_with_invalid_filter(store_with_traces, filter_string, err
     exp1 = store_with_traces.get_experiment_by_name("exp1").experiment_id
     exp2 = store_with_traces.get_experiment_by_name("exp2").experiment_id
 
-    with pytest.raises(MlflowException, match=error):
+    with pytest.raises(QCFlowException, match=error):
         store_with_traces.search_traces(
             experiment_ids=[exp1, exp2],
             filter_string=filter_string,
@@ -4379,13 +4379,13 @@ def test_search_traces_with_invalid_filter(store_with_traces, filter_string, err
 
 def test_search_traces_raise_if_max_results_arg_is_invalid(store):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Invalid value 50001 for parameter 'max_results' supplied.",
     ):
         store.search_traces(experiment_ids=[], max_results=50001)
 
     with pytest.raises(
-        MlflowException, match="Invalid value -1 for parameter 'max_results' supplied."
+        QCFlowException, match="Invalid value -1 for parameter 'max_results' supplied."
     ):
         store.search_traces(experiment_ids=[], max_results=-1)
 
@@ -4440,7 +4440,7 @@ def test_set_and_delete_tags(store: SqlAlchemyStore):
     _create_trace(store, request_id, experiment_id=exp1)
 
     # Delete system tag for easier testing
-    store.delete_trace_tag(request_id, MLFLOW_ARTIFACT_LOCATION)
+    store.delete_trace_tag(request_id, QCFLOW_ARTIFACT_LOCATION)
 
     assert store.get_trace_info(request_id).tags == {}
 
@@ -4456,7 +4456,7 @@ def test_set_and_delete_tags(store: SqlAlchemyStore):
     store.delete_trace_tag(request_id, "tag1")
     assert store.get_trace_info(request_id).tags == {"tag2": "orange"}
 
-    with pytest.raises(MlflowException, match="No trace tag with key 'tag1'"):
+    with pytest.raises(QCFlowException, match="No trace tag with key 'tag1'"):
         store.delete_trace_tag(request_id, "tag1")
 
 
@@ -4481,7 +4481,7 @@ def test_set_and_delete_tags(store: SqlAlchemyStore):
     ids=["null-key", "bad-key-1", "bad-key-2", "bad-key-3", "too-long-key"],
 )
 def test_set_invalid_tag(key, value, expected_error, store: SqlAlchemyStore):
-    with pytest.raises(MlflowException, match=expected_error):
+    with pytest.raises(QCFlowException, match=expected_error):
         store.set_trace_tag("tr-123", key, value)
 
 
@@ -4589,21 +4589,21 @@ def test_delete_traces_raises_error(store):
     exp_id = store.create_experiment("test")
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Either `max_timestamp_millis` or `request_ids` must be specified.",
     ):
         store.delete_traces(exp_id)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Only one of `max_timestamp_millis` and `request_ids` can be specified.",
     ):
         store.delete_traces(exp_id, max_timestamp_millis=100, request_ids=["request_id"])
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"`max_traces` can't be specified if `request_ids` is specified.",
     ):
         store.delete_traces(exp_id, max_traces=2, request_ids=["request_id"])
     with pytest.raises(
-        MlflowException, match=r"`max_traces` must be a positive integer, received 0"
+        QCFlowException, match=r"`max_traces` must be a positive integer, received 0"
     ):
         store.delete_traces(exp_id, 100, max_traces=0)

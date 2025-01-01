@@ -7,8 +7,8 @@ import time
 import pytest
 from PIL import Image
 
-from mlflow import MlflowException
-from mlflow.utils.async_logging.async_artifacts_logging_queue import AsyncArtifactsLoggingQueue
+from qcflow import QCFlowException
+from qcflow.utils.async_logging.async_artifacts_logging_queue import AsyncArtifactsLoggingQueue
 
 TOTAL_ARTIFACTS = 5
 
@@ -29,7 +29,7 @@ class RunArtifacts:
     def consume_queue_data(self, filename, artifact_path, artifact):
         self.artifact_count += 1
         if self.artifact_count in self.throw_exception_on_artifact_number:
-            raise MlflowException("Failed to log run data")
+            raise QCFlowException("Failed to log run data")
         self.received_artifacts.append(artifact)
         self.received_filenames.append(filename)
         self.received_artifact_paths.append(artifact_path)
@@ -94,7 +94,7 @@ def test_queue_activation():
     assert not async_logging_queue._is_activated
 
     for filename, artifact_path, artifact in _get_run_artifacts(1):
-        with pytest.raises(MlflowException, match="AsyncArtifactsLoggingQueue is not activated."):
+        with pytest.raises(QCFlowException, match="AsyncArtifactsLoggingQueue is not activated."):
             async_logging_queue.log_artifacts_async(
                 filename=filename, artifact_path=artifact_path, artifact=artifact
             )
@@ -117,7 +117,7 @@ def test_partial_logging_failed():
     batch_id = 1
     for filename, artifact_path, artifact in _get_run_artifacts():
         if batch_id in [3, 4]:
-            with pytest.raises(MlflowException, match="Failed to log run data"):
+            with pytest.raises(QCFlowException, match="Failed to log run data"):
                 async_logging_queue.log_artifacts_async(
                     filename=filename, artifact_path=artifact_path, artifact=artifact
                 ).wait()

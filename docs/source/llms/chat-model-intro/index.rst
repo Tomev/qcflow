@@ -1,9 +1,9 @@
 Tutorial: Getting Started with ChatModel
 ========================================
 
-MLflow's :py:class:`~mlflow.pyfunc.ChatModel` class provides a standardized way to create production-ready conversational AI models. The resulting models are fully integrated with MLflow's tracking, evaluation, and lifecycle management capabilities. They can be shared with others in the MLflow Model Registry, deployed as a REST API, or loaded in a notebook for interactive use. Furthermore, they are compatible with the widely-adopted OpenAI chat API spec, making them easy to integrate with other AI systems and tools.
+QCFlow's :py:class:`~qcflow.pyfunc.ChatModel` class provides a standardized way to create production-ready conversational AI models. The resulting models are fully integrated with QCFlow's tracking, evaluation, and lifecycle management capabilities. They can be shared with others in the QCFlow Model Registry, deployed as a REST API, or loaded in a notebook for interactive use. Furthermore, they are compatible with the widely-adopted OpenAI chat API spec, making them easy to integrate with other AI systems and tools.
 
-If you're already familiar with :py:class:`~mlflow.pyfunc.PythonModel`, you might wonder why :py:class:`~mlflow.pyfunc.ChatModel` is needed. As GenAI applications grow more complex, mapping inputs, outputs, and parameters with a custom ``PythonModel`` can be challenging. ``ChatModel`` simplifies this by offering a structured, OpenAI-compatible schema for conversational AI models.
+If you're already familiar with :py:class:`~qcflow.pyfunc.PythonModel`, you might wonder why :py:class:`~qcflow.pyfunc.ChatModel` is needed. As GenAI applications grow more complex, mapping inputs, outputs, and parameters with a custom ``PythonModel`` can be challenging. ``ChatModel`` simplifies this by offering a structured, OpenAI-compatible schema for conversational AI models.
 
 .. include:: chat-model-vs-pyfunc-table.rst
 
@@ -15,20 +15,20 @@ This guide will take you through the basics of using the ChatModel API to define
 #. How to map your application logic to the ``ChatModel``'s input/output schema
 #. How to use the pre-defined inference parameters supported by ChatModels
 #. How to pass custom parameters to a ChatModel using ``custom_inputs``
-#. How :py:class:`~mlflow.pyfunc.ChatModel` compares to :py:class:`~mlflow.pyfunc.PythonModel` for defining custom chat models
+#. How :py:class:`~qcflow.pyfunc.ChatModel` compares to :py:class:`~qcflow.pyfunc.PythonModel` for defining custom chat models
 
-To illustrate these points, this guide will walk you through building a custom ``ChatModel``, using a locally-hosted Ollama model as our example. There is no built-in Ollama model flavor, so creating a custom ``ChatModel`` provides a way to use MLflow's extensive tracking, evaluation, and lifecycle management capabilities with Ollama models.
+To illustrate these points, this guide will walk you through building a custom ``ChatModel``, using a locally-hosted Ollama model as our example. There is no built-in Ollama model flavor, so creating a custom ``ChatModel`` provides a way to use QCFlow's extensive tracking, evaluation, and lifecycle management capabilities with Ollama models.
 
 Prerequisites
 -------------
 
-- Familiarity with MLflow logging APIs and GenAI concepts.
-- MLflow version 2.17.0 or higher installed for use of :py:class:`~mlflow.pyfunc.ChatModel`.
+- Familiarity with QCFlow logging APIs and GenAI concepts.
+- QCFlow version 2.17.0 or higher installed for use of :py:class:`~qcflow.pyfunc.ChatModel`.
 
 Understanding ChatModel: Input/Output Mapping
 ---------------------------------------------
 
-The :py:class:`mlflow.pyfunc.ChatModel` interface sits between your application and MLflow's ecosystem, providing a layer of standardization that makes it easier to integrate your application with MLflow's other features and to deploy your model in an accessible, production-ready format.
+The :py:class:`qcflow.pyfunc.ChatModel` interface sits between your application and QCFlow's ecosystem, providing a layer of standardization that makes it easier to integrate your application with QCFlow's other features and to deploy your model in an accessible, production-ready format.
 
 To that end, when defining a custom ``ChatModel``, the key task is to map your application's logic to the ``ChatModel``'s standardized interface. :emphasis:`This mapping exercise is the fundamental part of creating a custom` ``ChatModel``.
 
@@ -39,11 +39,11 @@ When using a custom ChatModel, the ``predict`` method expects standardized input
 .. code-block:: python
 
     input = {
-        "messages": [{"role": "user", "content": "What is MLflow?"}],
+        "messages": [{"role": "user", "content": "What is QCFlow?"}],
         "max_tokens": 25,
     }
 
-with a ``messages`` key containing a list of messages, and optional inference parameters such as ``max_tokens``, ``temperature``, ``top_p``, and ``stop``. You can find details of the full chat request object `here <https://mlflow.org/docs/latest/python_api/mlflow.types.html#mlflow.types.llm.ChatCompletionRequest>`__.
+with a ``messages`` key containing a list of messages, and optional inference parameters such as ``max_tokens``, ``temperature``, ``top_p``, and ``stop``. You can find details of the full chat request object `here <https://qcflow.org/docs/latest/python_api/qcflow.types.html#qcflow.types.llm.ChatCompletionRequest>`__.
 
 The output is also returned in a standardized format that looks like this:
 
@@ -55,7 +55,7 @@ The output is also returned in a standardized format that looks like this:
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    "content": "MLflow is an open-source platform for machine learning (ML) and artificial intelligence (AI). It's designed to manage,",
+                    "content": "QCFlow is an open-source platform for machine learning (ML) and artificial intelligence (AI). It's designed to manage,",
                 },
                 "finish_reason": "stop",
             }
@@ -65,11 +65,11 @@ The output is also returned in a standardized format that looks like this:
         "created": 1729190863,
     }
 
-You can find details of the full chat response object `here <https://mlflow.org/docs/latest/python_api/mlflow.types.html#mlflow.types.llm.ChatCompletionResponse>`__.
+You can find details of the full chat response object `here <https://qcflow.org/docs/latest/python_api/qcflow.types.html#qcflow.types.llm.ChatCompletionResponse>`__.
 
 These input/output schemas are compatible with the widely-adopted OpenAI spec, making ``ChatModel`` s easy to use in a wide variety of contexts.
 
-To demonstrate this mapping process, we will show how to use the :py:class:`mlflow.pyfunc.ChatModel` class to log Meta's Llama 3.2 1B model via the Ollama llm client, which does not have a native MLflow flavor.
+To demonstrate this mapping process, we will show how to use the :py:class:`qcflow.pyfunc.ChatModel` class to log Meta's Llama 3.2 1B model via the Ollama llm client, which does not have a native QCFlow flavor.
 
 Building Your First ChatModel
 -----------------------------
@@ -91,7 +91,7 @@ You can validate that the model is downloaded and available on your system with 
     Hello! It's great to see you're starting the day with a cheerful greeting. How can I assist you today?
     >>> Send a message (/? for help)
 
-We will use the ``ollama-python`` library to interface with the Ollama model. Install it to your Python environment with ``pip install ollama``. Also, install ``mlflow`` with ``pip install mlflow``.
+We will use the ``ollama-python`` library to interface with the Ollama model. Install it to your Python environment with ``pip install ollama``. Also, install ``qcflow`` with ``pip install qcflow``.
 
 **Using the Ollama Python library**
 
@@ -108,7 +108,7 @@ In order to map the Ollama input/output schema to the ChatModel input/output sch
         messages=[
             {
                 "role": "user",
-                "content": "What is MLflow Tracking?",
+                "content": "What is QCFlow Tracking?",
             }
         ],
         options=Options({"num_predict": 25}),
@@ -125,7 +125,7 @@ Which returns the following output:
         'created_at': '2024-11-04T12:47:53.075714Z',
         'message': {
             'role': 'assistant',
-            'content': 'MLflow Tracking is an open-source platform for managing, monitoring, and deploying machine learning (ML) models. It provides a'
+            'content': 'QCFlow Tracking is an open-source platform for managing, monitoring, and deploying machine learning (ML) models. It provides a'
         },
         'done_reason': 'length',
         'done': True,
@@ -148,7 +148,7 @@ Here are a few things to note about the Ollama inputs and outputs:
 
 Let's start with a simple version of a custom ``ChatModel`` that handles inputs/output messages but does not yet handle inference parameters. To accomplish this, we need to:
 
-#. Define a class that extends :py:class:`mlflow.pyfunc.ChatModel`
+#. Define a class that extends :py:class:`qcflow.pyfunc.ChatModel`
 #. Implement the ``load_context`` method, which will handle the initialization of the Ollama client
 #. Implement the ``predict`` method, which will handle the input/output mapping
 
@@ -166,9 +166,9 @@ These are what we must map to the Ollama inputs and outputs. Here's a simplified
 
     # if you are using a jupyter notebook
     # %%writefile ollama_model.py
-    from mlflow.pyfunc import ChatModel
-    from mlflow.types.llm import ChatMessage, ChatCompletionResponse, ChatChoice
-    from mlflow.models import set_model
+    from qcflow.pyfunc import ChatModel
+    from qcflow.types.llm import ChatMessage, ChatCompletionResponse, ChatChoice
+    from qcflow.models import set_model
     import ollama
 
 
@@ -200,22 +200,22 @@ These are what we must map to the Ollama inputs and outputs. Here's a simplified
 In the above code, we mapped the ``ChatModel`` inputs to the Ollama inputs, and the Ollama output back to the ``ChatModel`` output schema. More specifically:
 
 - The ``messages`` key in the ``ChatModel`` input schema is a list of ``ChatMessage`` objects. We converted this to a list of dictionaries with ``role`` and ``content`` keys, which is the expected input format for Ollama.
-- The ``ChatCompletionResponse`` that the ``predict`` method returns must be created using the ``ChatCompletionResponse`` dataclass, but the nested message and choice data can be provided as dictionaries that match the expected schema. MLflow will automatically convert these dictionaries to the appropriate dataclass objects. In our case, we created a ``ChatCompletionResponse`` but provided the choices and messages as dictionaries.
+- The ``ChatCompletionResponse`` that the ``predict`` method returns must be created using the ``ChatCompletionResponse`` dataclass, but the nested message and choice data can be provided as dictionaries that match the expected schema. QCFlow will automatically convert these dictionaries to the appropriate dataclass objects. In our case, we created a ``ChatCompletionResponse`` but provided the choices and messages as dictionaries.
 
 In a notebook environment, we can save the model to a file called ``ollama_model.py`` with the ``%%writefile`` magic command and call ``set_model(SimpleOllamaModel())``. This is the "models from code" approach to model logging, which you can read more about :doc:`here </model/models-from-code>`.
 
-Now we can log this model to MLflow as follows, passing the path to the file containing the model definition we just created:
+Now we can log this model to QCFlow as follows, passing the path to the file containing the model definition we just created:
 
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
-    mlflow.set_experiment("chatmodel-quickstart")
+    qcflow.set_experiment("chatmodel-quickstart")
     code_path = "ollama_model.py"
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "ollama_model",
             python_model=code_path,
             input_example={
@@ -228,11 +228,11 @@ Again, we used the models-from-code approach to log the model, so we passed the 
 
 .. code-block:: python
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     result = loaded_model.predict(
         data={
-            "messages": [{"role": "user", "content": "What is MLflow?"}],
+            "messages": [{"role": "user", "content": "What is QCFlow?"}],
             "max_tokens": 25,
         }
     )
@@ -246,7 +246,7 @@ Again, we used the models-from-code approach to log the model, so we passed the 
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    "content": "MLflow is an open-source platform for model deployment, monitoring, and tracking. It was created by Databricks, a cloud-based data analytics company, in collaboration with The Data Science Experience (TDEE), a non-profit organization that focuses on providing high-quality, free machine learning resources.\n\nMLflow allows users to build, train, and deploy machine learning models in various frameworks, such as TensorFlow, PyTorch, and scikit-learn. It provides a unified platform for model development, deployment, and tracking across different environments, including local machines, cloud platforms (e.g., AWS), and edge devices.\n\nSome key features of MLflow include:\n\n1. **Model versioning**: Each time a model is trained or deployed, it generates a unique version number. This allows users to track changes, identify conflicts, and manage multiple versions.\n2. **Model deployment**: MLflow provides tools for deploying models in various environments, including Docker containers, Kubernetes, and cloud platforms (e.g., AWS).\n3. **Monitoring and logging**: The platform includes built-in monitoring and logging capabilities to track model performance, errors, and other metrics.\n4. **Integration with popular frameworks**: MLflow integrates with popular machine learning frameworks, making it easy to incorporate the platform into existing workflows.\n5. **Collaboration and sharing**: MLflow allows multiple users to collaborate on models and tracks changes in real-time.\n\nMLflow has several benefits, including:\n\n1. **Improved model management**: The platform provides a centralized view of all models, allowing for better model tracking and management.\n2. **Increased collaboration**: MLflow enables team members to work together on machine learning projects more effectively.\n3. **Better model performance monitoring**: The platform offers real-time insights into model performance, helping users identify issues quickly.\n4. **Simplified model deployment**: MLflow makes it easy to deploy models in various environments, reducing the complexity of model deployment.\n\nOverall, MLflow is a powerful tool for managing and deploying machine learning models, providing a comprehensive platform for model development, tracking, and collaboration.",
+                    "content": "QCFlow is an open-source platform for model deployment, monitoring, and tracking. It was created by Databricks, a cloud-based data analytics company, in collaboration with The Data Science Experience (TDEE), a non-profit organization that focuses on providing high-quality, free machine learning resources.\n\nQCFlow allows users to build, train, and deploy machine learning models in various frameworks, such as TensorFlow, PyTorch, and scikit-learn. It provides a unified platform for model development, deployment, and tracking across different environments, including local machines, cloud platforms (e.g., AWS), and edge devices.\n\nSome key features of QCFlow include:\n\n1. **Model versioning**: Each time a model is trained or deployed, it generates a unique version number. This allows users to track changes, identify conflicts, and manage multiple versions.\n2. **Model deployment**: QCFlow provides tools for deploying models in various environments, including Docker containers, Kubernetes, and cloud platforms (e.g., AWS).\n3. **Monitoring and logging**: The platform includes built-in monitoring and logging capabilities to track model performance, errors, and other metrics.\n4. **Integration with popular frameworks**: QCFlow integrates with popular machine learning frameworks, making it easy to incorporate the platform into existing workflows.\n5. **Collaboration and sharing**: QCFlow allows multiple users to collaborate on models and tracks changes in real-time.\n\nQCFlow has several benefits, including:\n\n1. **Improved model management**: The platform provides a centralized view of all models, allowing for better model tracking and management.\n2. **Increased collaboration**: QCFlow enables team members to work together on machine learning projects more effectively.\n3. **Better model performance monitoring**: The platform offers real-time insights into model performance, helping users identify issues quickly.\n4. **Simplified model deployment**: QCFlow makes it easy to deploy models in various environments, reducing the complexity of model deployment.\n\nOverall, QCFlow is a powerful tool for managing and deploying machine learning models, providing a comprehensive platform for model development, tracking, and collaboration.",
                 },
                 "finish_reason": "stop",
             }
@@ -280,11 +280,11 @@ When using a ChatModel, parameters are passed alongside messages in the input:
         }
     )
 
-You can find the full list of supported parameters `here <https://mlflow.org/docs/latest/python_api/mlflow.types.html#mlflow.types.llm.ChatParams>`__. Furthermore, you can pass arbitrary additional parameters to a ChatModel via the ``custom_inputs`` key in the input, which we will cover in more detail in the next section.
+You can find the full list of supported parameters `here <https://qcflow.org/docs/latest/python_api/qcflow.types.html#qcflow.types.llm.ChatParams>`__. Furthermore, you can pass arbitrary additional parameters to a ChatModel via the ``custom_inputs`` key in the input, which we will cover in more detail in the next section.
 
 **Comparison to Parameter Handling in Custom PyFunc Models**
 
-If you're familiar with configuring inference parameters for `PyFunc models <https://mlflow.org/blog/custom-pyfunc#parameterizing-the-custom-model>`__, you will notice some key differneces in how ChatModel handles parameters:
+If you're familiar with configuring inference parameters for `PyFunc models <https://qcflow.org/blog/custom-pyfunc#parameterizing-the-custom-model>`__, you will notice some key differneces in how ChatModel handles parameters:
 
 +------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------+
 | ChatModel                                                                                                                    | PyFunc                                                              |
@@ -309,10 +309,10 @@ Setting up a ChatModel with inference parameters is straightforward: just like w
     # if you are using a jupyter notebook
     # %%writefile ollama_model.py
 
-    import mlflow
-    from mlflow.pyfunc import ChatModel
-    from mlflow.types.llm import ChatMessage, ChatCompletionResponse, ChatChoice
-    from mlflow.models import set_model
+    import qcflow
+    from qcflow.pyfunc import ChatModel
+    from qcflow.types.llm import ChatMessage, ChatCompletionResponse, ChatChoice
+    from qcflow.models import set_model
     import ollama
     from ollama import Options
 
@@ -370,14 +370,14 @@ Here's what we changed from the previous version:
 - We passed the ``options`` dictionary to the Ollama client's ``chat`` method. Note that we created a new private method, ``_prepare_options``, to handle the mapping from ``params`` to ``options``. Additional methods can be added to a custom ``ChatModel`` to keep code clean and organized while handling custom logic.
 - We checked the ``custom_inputs`` key in the ``params`` dictionary for a ``seed`` value—we'll cover this in more detail in the next section.
 
-Now we can log this model to MLflow, load it, and try it out in the same way as before:
+Now we can log this model to QCFlow, load it, and try it out in the same way as before:
 
 .. code-block:: python
 
     code_path = "ollama_model.py"
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "ollama_model",
             python_model=code_path,
             input_example={
@@ -385,11 +385,11 @@ Now we can log this model to MLflow, load it, and try it out in the same way as 
             },
         )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     result = loaded_model.predict(
         data={
-            "messages": [{"role": "user", "content": "What is MLflow?"}],
+            "messages": [{"role": "user", "content": "What is QCFlow?"}],
             "max_tokens": 25,
         }
     )
@@ -405,7 +405,7 @@ Which returns:
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    "content": "MLflow is an open-source platform that provides a set of tools for managing and tracking machine learning (ML) model deployments,",
+                    "content": "QCFlow is an open-source platform that provides a set of tools for managing and tracking machine learning (ML) model deployments,",
                 },
                 "finish_reason": "stop",
             }
@@ -432,7 +432,7 @@ Because we included this, we can now pass a ``seed`` value via the ``custom_inpu
 
     result = loaded_model.predict(
         data={
-            "messages": [{"role": "user", "content": "What is MLflow?"}],
+            "messages": [{"role": "user", "content": "What is QCFlow?"}],
             "max_tokens": 25,
             "custom_inputs": {"seed": "321"},
         }
@@ -450,7 +450,7 @@ Which returns:
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    "content": "MLflow is an open-source software framework used for machine learning model management, monitoring, and deployment. It's designed to provide",
+                    "content": "QCFlow is an open-source software framework used for machine learning model management, monitoring, and deployment. It's designed to provide",
                 },
                 "finish_reason": "stop",
             }
@@ -484,15 +484,15 @@ To illustrate some of the benefits and trade-offs of setting up a chat model via
     # if you are using a jupyter notebook
     # %%writefile ollama_pyfunc_model.py
 
-    import mlflow
-    from mlflow.pyfunc import PythonModel
-    from mlflow.types.llm import (
+    import qcflow
+    from qcflow.pyfunc import PythonModel
+    from qcflow.types.llm import (
         ChatCompletionRequest,
         ChatCompletionResponse,
         ChatMessage,
         ChatChoice,
     )
-    from mlflow.models import set_model
+    from qcflow.models import set_model
     import ollama
     from ollama import Options
     import pandas as pd
@@ -576,26 +576,26 @@ Some of the biggest differences come up when it's time to log the model:
         "stop": ["\n"],
         "seed": 123,
     }
-    request = {"messages": [{"role": "user", "content": "What is MLflow?"}]}
+    request = {"messages": [{"role": "user", "content": "What is QCFlow?"}]}
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "ollama_pyfunc_model",
             python_model=code_path,
             input_example=(request, params),
         )
 
-With a custom :py:class:`~mlflow.pyfunc.PythonModel`, we need to manually define the input example so that a model signature can be inferred using the example. This is a significant difference from the ChatModel API, which automatically configures a signature that conforms to the standard OpenAI-compatible input/output/parameter schemas.
+With a custom :py:class:`~qcflow.pyfunc.PythonModel`, we need to manually define the input example so that a model signature can be inferred using the example. This is a significant difference from the ChatModel API, which automatically configures a signature that conforms to the standard OpenAI-compatible input/output/parameter schemas.
 To learn more about auto inference of model signature based on an input example, see the :ref:`GenAI model signature example <genai_model_signature_example>` section for details.
 
 There is also one notable difference in how we call the loaded model's ``predict`` method: parameters are passed as a dictionary via the ``params`` keyword argument, rather than in the dictionary containing the messages.
 
 .. code-block:: python
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     result = loaded_model.predict(
-        data={"messages": [{"role": "user", "content": "What is MLflow?"}]},
+        data={"messages": [{"role": "user", "content": "What is QCFlow?"}]},
         params={"max_tokens": 25, "seed": 42},
     )
     print(result)
@@ -610,7 +610,7 @@ Which returns:
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    "content": "MLflow is an open-source platform for machine learning (ML) and deep learning (DL) model management, monitoring, and",
+                    "content": "QCFlow is an open-source platform for machine learning (ML) and deep learning (DL) model management, monitoring, and",
                 },
                 "finish_reason": "stop",
             }
@@ -620,7 +620,7 @@ Which returns:
         "created": 1731000733,
     }
 
-In summary, ``ChatModel`` provides a more structured approach to defining custom chat models, with a focus on standardized, OpenAI-compatible inputs and outputs. While it requires a bit more setup work to map the input/output schemas between the ``ChatModel`` schema and the application it wraps, it can be easier to use than a fully custom :py:class:`~mlflow.pyfunc.PythonModel` as it handles the often-challenging task of defining input/output/parameter schemas. The :py:class:`~mlflow.pyfunc.PythonModel` approach, on the other hand, provides the most flexibility but requires the developer to manually handle all of the input/output/parameter mapping logic.
+In summary, ``ChatModel`` provides a more structured approach to defining custom chat models, with a focus on standardized, OpenAI-compatible inputs and outputs. While it requires a bit more setup work to map the input/output schemas between the ``ChatModel`` schema and the application it wraps, it can be easier to use than a fully custom :py:class:`~qcflow.pyfunc.PythonModel` as it handles the often-challenging task of defining input/output/parameter schemas. The :py:class:`~qcflow.pyfunc.PythonModel` approach, on the other hand, provides the most flexibility but requires the developer to manually handle all of the input/output/parameter mapping logic.
 
 Conclusion
 ----------
@@ -630,13 +630,13 @@ In this guide, you have learned:
 - How to map the input/output schemas between the ChatModel API and your application
 - How to configure commonly-used chat model inference parameters with the ChatModel API
 - How to pass custom parameters to a ``ChatModel`` using the ``custom_inputs`` key
-- How :py:class:`~mlflow.pyfunc.ChatModel` compares to the :py:class:`~mlflow.pyfunc.PythonModel` for defining custom chat models
+- How :py:class:`~qcflow.pyfunc.ChatModel` compares to the :py:class:`~qcflow.pyfunc.PythonModel` for defining custom chat models
 
 You should now have a good sense of what the ChatModel API is and how it can be used to define custom chat models.
 
 ``ChatModel`` includes some additional functionality that was not covered in this introductory guide, including:
 
-- Out of the box support for MLflow Tracing, which is useful for debugging and monitoring your chat models, especially in models with multiple components or calls to LLM APIs.
+- Out of the box support for QCFlow Tracing, which is useful for debugging and monitoring your chat models, especially in models with multiple components or calls to LLM APIs.
 - Support for customizing the model's configuration using an external configuration file.
 
 To learn more about these and other advanced features of the ChatModel API, you can read :doc:`this guide </llms/chat-model-guide/index>`.

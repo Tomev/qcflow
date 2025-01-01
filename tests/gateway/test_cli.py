@@ -1,6 +1,6 @@
 from click.testing import CliRunner
 
-from mlflow.gateway.cli import start
+from qcflow.gateway.cli import start
 
 
 def test_start_help():

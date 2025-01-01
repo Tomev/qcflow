@@ -1,6 +1,6 @@
 import re
 
-from mlflow.metrics.genai import EvaluationExample
+from qcflow.metrics.genai import EvaluationExample
 
 
 def test_evaluation_example_str():

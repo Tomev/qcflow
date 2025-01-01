@@ -1,29 +1,29 @@
 Unity Catalog Integration
 =========================
 
-This example illustrates the use of the `Unity Catalog (UC) <https://docs.databricks.com/en/data-governance/unity-catalog/index.html>`_ integration with the MLflow AI Gateway. This integration enables you to leverage functions registered in Unity Catalog as tools for enhancing your chat application.
+This example illustrates the use of the `Unity Catalog (UC) <https://docs.databricks.com/en/data-governance/unity-catalog/index.html>`_ integration with the QCFlow AI Gateway. This integration enables you to leverage functions registered in Unity Catalog as tools for enhancing your chat application.
 
 Pre-requisites
 --------------
 
-1. Clone the MLflow repository:
+1. Clone the QCFlow repository:
 
-To download the files required for this example, clone the MLflow repository:
+To download the files required for this example, clone the QCFlow repository:
 
 .. code-block:: bash
 
-    git clone --depth=1 https://github.com/mlflow/mlflow.git
-    cd mlflow
+    git clone --depth=1 https://github.com/qcflow/qcflow.git
+    cd qcflow
 
-If you don't have ``git``, you can download the repository as a zip file from https://github.com/mlflow/mlflow/archive/refs/heads/master.zip.
+If you don't have ``git``, you can download the repository as a zip file from https://github.com/qcflow/qcflow/archive/refs/heads/master.zip.
 
 2. Install the required packages:
 
 .. code-block:: bash
 
-    pip install mlflow>=2.14.0 openai databricks-sdk
+    pip install qcflow>=2.14.0 openai databricks-sdk
 
-3. Create the UC function used in `the example script <https://github.com/mlflow/mlflow/blob/master/examples/deployments/uc_functions/run.py>`_ in your Databricks workspace by running the following SQL command:
+3. Create the UC function used in `the example script <https://github.com/qcflow/qcflow/blob/master/examples/deployments/uc_functions/run.py>`_ in your Databricks workspace by running the following SQL command:
 
 .. code-block:: sql
 
@@ -64,10 +64,10 @@ Once you have completed the pre-requisites, you can start the gateway server:
     export OPENAI_API_KEY="..."
 
     # Enable Unity Catalog integration
-    export MLFLOW_ENABLE_UC_FUNCTIONS=true
+    export QCFLOW_ENABLE_UC_FUNCTIONS=true
 
     # Run the server
-    mlflow gateway start --config-path examples/deployments/deployments_server/openai/config.yaml --port 7000
+    qcflow gateway start --config-path examples/deployments/deployments_server/openai/config.yaml --port 7000
 
 Query the Endpoint with UC Function
 -----------------------------------
@@ -88,7 +88,7 @@ Once the server is running, you can run the example script:
 What's happening under the hood?
 --------------------------------
 
-When MLflow AI Gateway receives a request with ``tools`` containing ``uc_function``, it automatically fetches the UC function metadata to construct the function schema, query the chat API to figure out the parameters required to call the function, and then call the function with the provided parameters.
+When QCFlow AI Gateway receives a request with ``tools`` containing ``uc_function``, it automatically fetches the UC function metadata to construct the function schema, query the chat API to figure out the parameters required to call the function, and then call the function with the provided parameters.
 
 .. code-block:: python
 

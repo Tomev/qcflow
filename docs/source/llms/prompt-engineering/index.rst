@@ -4,52 +4,52 @@
 Prompt Engineering UI (Experimental)
 ====================================
 
-Starting in MLflow 2.7, the MLflow Tracking UI provides a best-in-class experience for prompt
+Starting in QCFlow 2.7, the QCFlow Tracking UI provides a best-in-class experience for prompt
 engineering. With no code required, you can try out multiple LLMs from the
-:ref:`MLflow AI Gateway <deployments>`, parameter configurations, and prompts to build a variety of models for
+:ref:`QCFlow AI Gateway <deployments>`, parameter configurations, and prompts to build a variety of models for
 question answering, document summarization, and beyond. Using the embedded Evaluation UI, you can
 also evaluate multiple models on a set of inputs and compare the responses to select the best one.
-Every model created with the prompt engineering UI is stored in the :ref:`MLflow Model <models>`
+Every model created with the prompt engineering UI is stored in the :ref:`QCFlow Model <models>`
 format and can be deployed for batch or real time inference. All configurations (prompt templates,
-choice of LLM, parameters, etc.) are tracked as :ref:`MLflow Runs <tracking>`.
+choice of LLM, parameters, etc.) are tracked as :ref:`QCFlow Runs <tracking>`.
 
 .. _prompt-engineering-quickstart:
 
 Quickstart
 ==========
 
-The following guide will get you started with MLflow's UI for prompt engineering.
+The following guide will get you started with QCFlow's UI for prompt engineering.
 
-Step 1: Create an MLflow AI Gateway Completions or Chat Endpoint
+Step 1: Create an QCFlow AI Gateway Completions or Chat Endpoint
 ------------------------------------------------------------------------
-To use the prompt engineering UI, you need to create one or more :ref:`MLflow AI Gateway <deployments>`
+To use the prompt engineering UI, you need to create one or more :ref:`QCFlow AI Gateway <deployments>`
 completions or chat :ref:`Endpoints <deployments-endpoints>`. Follow the
-:ref:`MLflow AI Gateway Quickstart guide <deployments-quickstart>` to easily create an endpoint in less than five
-minutes. If you already have access to an MLflow AI Gateway endpoint of type ``llm/v1/completions``
+:ref:`QCFlow AI Gateway Quickstart guide <deployments-quickstart>` to easily create an endpoint in less than five
+minutes. If you already have access to an QCFlow AI Gateway endpoint of type ``llm/v1/completions``
 or ``llm/v1/chat``, you can skip this step.
 
 .. code-block:: bash
 
-   mlflow gateway start --config-path config.yaml --port 7000
+   qcflow gateway start --config-path config.yaml --port 7000
 
 
-Step 2: Connect the MLflow AI Gateway to your MLflow Tracking Server
+Step 2: Connect the QCFlow AI Gateway to your QCFlow Tracking Server
 ----------------------------------------------------------------------------
-The prompt engineering UI also requires a connection between the MLflow AI Gateway and the MLflow
-Tracking Server. To connect the MLflow AI Gateway with the MLflow Tracking Server, simply set the
-``MLFLOW_DEPLOYMENTS_TARGET`` environment variable in the environment where the server is running and
-restart the server. For example, if the MLflow AI Gateway is running at ``http://localhost:7000``, you
-can start an MLflow Tracking Server in a shell on your local machine and connect it to the
-MLflow AI Gateway using the :ref:`mlflow server <cli>` command as follows:
+The prompt engineering UI also requires a connection between the QCFlow AI Gateway and the QCFlow
+Tracking Server. To connect the QCFlow AI Gateway with the QCFlow Tracking Server, simply set the
+``QCFLOW_DEPLOYMENTS_TARGET`` environment variable in the environment where the server is running and
+restart the server. For example, if the QCFlow AI Gateway is running at ``http://localhost:7000``, you
+can start an QCFlow Tracking Server in a shell on your local machine and connect it to the
+QCFlow AI Gateway using the :ref:`qcflow server <cli>` command as follows:
 
 .. code-block:: bash
 
-   export MLFLOW_DEPLOYMENTS_TARGET="http://127.0.0.1:7000"
-   mlflow server --port 5000
+   export QCFLOW_DEPLOYMENTS_TARGET="http://127.0.0.1:7000"
+   qcflow server --port 5000
 
-Step 3: Create or find an MLflow Experiment
+Step 3: Create or find an QCFlow Experiment
 -------------------------------------------
-Next, open an existing MLflow Experiment in the MLflow UI, or create a new experiment.
+Next, open an existing QCFlow Experiment in the QCFlow UI, or create a new experiment.
 
 .. figure:: ../../_static/images/experiment_page.png
    :scale: 25%
@@ -71,13 +71,13 @@ out different LLMs, parameters, and prompts.
 
 Step 5: Select your endpoint and evaluate the example prompt
 ------------------------------------------------------------
-Next, click the *Select endpoint* dropdown and select the MLflow AI Gateway completions endpoint you created in
+Next, click the *Select endpoint* dropdown and select the QCFlow AI Gateway completions endpoint you created in
 Step 1. Then, click the **Evaluate** button to test out an example prompt engineering use case
 for generating product advertisements.
 
-MLflow will embed the specified *stock_type* input
+QCFlow will embed the specified *stock_type* input
 variable value - ``"books"`` - into the specified *prompt  template* and send it to the LLM
-associated with the MLflow AI Gateway endpoint with the configured *temperature* (currently ``0.01``)
+associated with the QCFlow AI Gateway endpoint with the configured *temperature* (currently ``0.01``)
 and *max_tokens* (currently 1000). The LLM response will appear in the *Output* section.
 
 .. figure:: ../../_static/images/prompt_modal_2.png
@@ -88,11 +88,11 @@ Step 6: Try a prompt of your choosing
 -------------------------------------
 Replace the prompt template from the previous step with a prompt template of your choosing.
 Prompts can define multiple variables. For example, you can use the following prompt template
-to instruct the LLM to answer questions about the MLflow documentation:
+to instruct the LLM to answer questions about the QCFlow documentation:
 
 .. code-block::
 
-   Read the following article from the MLflow documentation that appears between triple
+   Read the following article from the QCFlow documentation that appears between triple
    backticks. Then, answer the question about the documentation that appears between triple quotes.
    Include relevant links and code examples in your answer.
 
@@ -102,10 +102,10 @@ to instruct the LLM to answer questions about the MLflow documentation:
    {{question}}
    """
 
-Then, fill in the input variables. For example, in the MLflow documentation
+Then, fill in the input variables. For example, in the QCFlow documentation
 use case, the *article* input variable can be set to the contents of
-https://mlflow.org/docs/latest/tracking.html#logging-data-to-runs and the *question* input variable
-can be set to ``"How do I create a new MLflow Run using the Python API?"``.
+https://qcflow.org/docs/latest/tracking.html#logging-data-to-runs and the *question* input variable
+can be set to ``"How do I create a new QCFlow Run using the Python API?"``.
 
 Finally, click the **Evaluate** button to see the new output. You can also try choosing a larger
 value of *temperature* to observe how the LLM's output changes.
@@ -114,12 +114,12 @@ value of *temperature* to observe how the LLM's output changes.
    :scale: 35%
    :align: center
 
-Step 7: Capture your choice of LLM, prompt template, and parameters as an MLflow Run
+Step 7: Capture your choice of LLM, prompt template, and parameters as an QCFlow Run
 ------------------------------------------------------------------------------------
 Once you're satisfied with your chosen prompt template and parameters, click the **Create Run**
-button to store this information, along with your choice of LLM, as an MLflow Run. This will
+button to store this information, along with your choice of LLM, as an QCFlow Run. This will
 create a new Run with the prompt template, parameters, and choice of LLM stored as Run params.
-It will also automatically create an MLflow Model with this information that can be used for batch
+It will also automatically create an QCFlow Model with this information that can be used for batch
 or real-time inference.
 
 1. To view this information, click the Run name to open the **Run** page:
@@ -135,7 +135,7 @@ or real-time inference.
        :scale: 25%
        :align: center
 
-3. After your Run is created, MLflow will open the **Evaluation** tab where you can see your latest
+3. After your Run is created, QCFlow will open the **Evaluation** tab where you can see your latest
    playground input & output and try out additional inputs:
 
     .. figure:: ../../_static/images/eval_view_1.png
@@ -148,8 +148,8 @@ Step 8: Try new inputs
 To test the behavior of your chosen LLM, prompt template, and parameters on a new inputs:
 
 1. Click the *Add Row* button and fill in a value(s) your prompt template's input variable(s).
-   For example, in the MLflow documentation use case, you can try asking a question
-   unrelated to MLflow to see how the LLM responds. This is important to ensure that the application
+   For example, in the QCFlow documentation use case, you can try asking a question
+   unrelated to QCFlow to see how the LLM responds. This is important to ensure that the application
    is robust to irrelevant inputs.
 
     |add_row| |add_row_modal|
@@ -176,12 +176,12 @@ Step 9: Adjust your prompt template and create a new Run
 --------------------------------------------------------
 As you try additional inputs, you might discover scenarios where your choice of LLM, prompt
 template, and parameters doesn't perform as well as you would like. For example, in the
-MLflow documentation use case, the LLM still attempts to answer irrelevant
-questions about :ref:`MLflow Projects <projects>` even if the answer does not appear in the
+QCFlow documentation use case, the LLM still attempts to answer irrelevant
+questions about :ref:`QCFlow Projects <projects>` even if the answer does not appear in the
 specified article.
 
 1. To improve performance, create a new Run by selecting the *Duplicate run* option from the context
-   menu. For example, in the MLflow documentation use case, adding the following text to
+   menu. For example, in the QCFlow documentation use case, adding the following text to
    the prompt template helps improve robustness to irrelevant questions:
 
    .. code-block:: text
@@ -222,19 +222,19 @@ configurations.
 
 Step 11: Load evaluation data programmatically
 ----------------------------------------------
-All of the inputs and outputs produced by the MLflow prompt engineering UI and Evaluation UI are stored
-as artifacts in MLflow Runs. They can be accessed programmatically using the :py:func:`mlflow.load_table()` API
+All of the inputs and outputs produced by the QCFlow prompt engineering UI and Evaluation UI are stored
+as artifacts in QCFlow Runs. They can be accessed programmatically using the :py:func:`qcflow.load_table()` API
 as follows:
 
    .. code-block:: python
 
-       import mlflow
+       import qcflow
 
-       mlflow.set_experiment("/Path/to/your/prompt/engineering/experiment")
+       qcflow.set_experiment("/Path/to/your/prompt/engineering/experiment")
 
        # Load input and output data across all Runs (configurations) as a Pandas DataFrame
-       inputs_outputs_pdf = mlflow.load_table(
-           # All inputs and outputs created from the MLflow UI are stored in an artifact called
+       inputs_outputs_pdf = qcflow.load_table(
+           # All inputs and outputs created from the QCFlow UI are stored in an artifact called
            # "eval_results_table.json"
            artifact_file="eval_results_table.json",
            # Include the run ID as a column in the table to distinguish inputs and outputs
@@ -251,10 +251,10 @@ as follows:
 Step 12: Generate predictions programmatically
 ----------------------------------------------------------------
 Once you have found a configuration of LLM, prompt template, and parameters that performs well, you
-can generate predictions using the corresponding MLflow Model in a Python environment of your choosing,
+can generate predictions using the corresponding QCFlow Model in a Python environment of your choosing,
 or you can :ref:`deploy it for real-time serving <deploy-prompt-serving>`.
 
-1. To load the MLflow Model in a notebook for batch inference, click on the Run's name to open the
+1. To load the QCFlow Model in a notebook for batch inference, click on the Run's name to open the
    **Run Page** and select the *model* directory in the **Artifact Viewer**. Then, copy the first
    few lines of code from the *Predict on a Pandas DataFrame* section and run them in a Python
    environment of your choosing, for example:
@@ -265,57 +265,57 @@ or you can :ref:`deploy it for real-time serving <deploy-prompt-serving>`.
 
    .. code-block:: python
 
-       import mlflow
+       import qcflow
 
        logged_model = "runs:/8451075c46964f82b85fe16c3d2b7ea0/model"
 
        # Load model as a PyFuncModel.
-       loaded_model = mlflow.pyfunc.load_model(logged_model)
+       loaded_model = qcflow.pyfunc.load_model(logged_model)
 
-2. Then, to generate predictions, call the :py:func:`predict() <mlflow.pyfunc.PyFuncModel.predict>` method
+2. Then, to generate predictions, call the :py:func:`predict() <qcflow.pyfunc.PyFuncModel.predict>` method
    and pass in a dictionary of input variables. For example:
 
    .. code-block:: python
 
        article_text = """
-       An MLflow Project is a format for packaging data science code in a reusable and reproducible way.
-       The MLflow Projects component includes an API and command-line tools for running projects, which
+       An QCFlow Project is a format for packaging data science code in a reusable and reproducible way.
+       The QCFlow Projects component includes an API and command-line tools for running projects, which
        also integrate with the Tracking component to automatically record the parameters and git commit
        of your source code for reproducibility.
 
-       This article describes the format of an MLflow Project and how to run an MLflow project remotely
-       using the MLflow CLI, which makes it easy to vertically scale your data science code.
+       This article describes the format of an QCFlow Project and how to run an QCFlow project remotely
+       using the QCFlow CLI, which makes it easy to vertically scale your data science code.
        """
-       question = "What is an MLflow project?"
+       question = "What is an QCFlow project?"
 
        loaded_model.predict({"article": article_text, "question": question})
 
-   For more information about deployment for real-time serving with MLflow,
+   For more information about deployment for real-time serving with QCFlow,
    see the :ref:`instructions below <deploy-prompt-serving>`.
 
 Step 13: Perform metric-based evaluation of your model's outputs
 ----------------------------------------------------------------
-If you'd like to assess your model's performance on specific metrics, MLflow provides the :py:func:`mlflow.evaluate()`
+If you'd like to assess your model's performance on specific metrics, QCFlow provides the :py:func:`qcflow.evaluate()`
 API. Let's evaluate our model on some :ref:`pre-defined metrics <llm-eval-default-metrics>` 
 for text summarization:
 
   .. code-block:: python
 
-   import mlflow
+   import qcflow
    import pandas as pd
 
    logged_model = "runs:/840a5c43f3fb46f2a2059b761557c1d0/model"
 
    article_text = """
-   An MLflow Project is a format for packaging data science code in a reusable and reproducible way.
-   The MLflow Projects component includes an API and command-line tools for running projects, which
+   An QCFlow Project is a format for packaging data science code in a reusable and reproducible way.
+   The QCFlow Projects component includes an API and command-line tools for running projects, which
    also integrate with the Tracking component to automatically record the parameters and git commit
    of your source code for reproducibility.
 
-   This article describes the format of an MLflow Project and how to run an MLflow project remotely
-   using the MLflow CLI, which makes it easy to vertically scale your data science code.
+   This article describes the format of an QCFlow Project and how to run an QCFlow project remotely
+   using the QCFlow CLI, which makes it easy to vertically scale your data science code.
    """
-   question = "What is an MLflow project?"
+   question = "What is an QCFlow project?"
 
    data = pd.DataFrame(
        {
@@ -327,8 +327,8 @@ for text summarization:
        }
    )
 
-   with mlflow.start_run():
-       results = mlflow.evaluate(
+   with qcflow.start_run():
+       results = qcflow.evaluate(
            model=logged_model,
            data=data,
            targets="ground_truth",
@@ -338,13 +338,13 @@ for text summarization:
    eval_table = results.tables["eval_results_table"]
    print(f"See evaluation table below: \n{eval_table}")
 
-The evaluation results can also be viewed in the MLflow Evaluation UI:
+The evaluation results can also be viewed in the QCFlow Evaluation UI:
 
    .. figure:: ../../_static/images/evaluate_metrics.png
       :scale: 40%
       :align: center
 
-The :py:func:`mlflow.evaluate()` API also supports :ref:`custom metrics <llm-eval-custom-metrics>`,
+The :py:func:`qcflow.evaluate()` API also supports :ref:`custom metrics <llm-eval-custom-metrics>`,
 :ref:`static dataset evaluation <llm-eval-static-dataset>`, and much more. For a
 more in-depth guide, see :ref:`llm-eval`.
 
@@ -353,31 +353,31 @@ more in-depth guide, see :ref:`llm-eval`.
 Deployment for real-time serving
 ================================
 Once you have found a configuration of LLM, prompt template, and parameters that performs well, you
-can deploy the corresponding MLflow Model for real-time serving as follows:
+can deploy the corresponding QCFlow Model for real-time serving as follows:
 
-1. Register your model with the MLflow Model Registry. The following example registers
-   an MLflow Model created from the :ref:`Quickstart <quickstart-score>` as Version 1 of the
-   Registered Model named ``"mlflow_docs_qa_model"``.
+1. Register your model with the QCFlow Model Registry. The following example registers
+   an QCFlow Model created from the :ref:`Quickstart <quickstart-score>` as Version 1 of the
+   Registered Model named ``"qcflow_docs_qa_model"``.
 
    .. code-block:: python
 
-       mlflow.register_model(
+       qcflow.register_model(
            model_uri="runs:/8451075c46964f82b85fe16c3d2b7ea0/model",
-           name="mlflow_docs_qa_model",
+           name="qcflow_docs_qa_model",
        )
 
 2. Define the following environment variables in the environment where you will run your
-   MLflow Model Server, such as a shell on your local machine:
+   QCFlow Model Server, such as a shell on your local machine:
 
-   * ``MLFLOW_DEPLOYMENTS_TARGET``: The URL of the MLflow AI Gateway
+   * ``QCFLOW_DEPLOYMENTS_TARGET``: The URL of the QCFlow AI Gateway
 
-3. Use the :ref:`mlflow models serve <cli>` command to start the MLflow Model Server. For example,
+3. Use the :ref:`qcflow models serve <cli>` command to start the QCFlow Model Server. For example,
    running the following command from a shell on your local machine will serve the model
    on port 8000:
 
    .. code-block:: bash
 
-      mlflow models serve --model-uri models:/mlflow_docs_qa_model/1 --port 8000
+      qcflow models serve --model-uri models:/qcflow_docs_qa_model/1 --port 8000
 
 4. Once the server has been started, it can be queried via REST API call. For example:
 
@@ -387,8 +387,8 @@ can deploy the corresponding MLflow Model for real-time serving as follows:
       {
           "dataframe_records": [
               {
-                  "article": "An MLflow Project is a format for packaging data science code...",
-                  "question": "What is an MLflow Project?"
+                  "article": "An QCFlow Project is a format for packaging data science code...",
+                  "question": "What is an QCFlow Project?"
               }
           ]
       }'

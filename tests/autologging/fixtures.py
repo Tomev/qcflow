@@ -3,9 +3,9 @@ import sys
 
 import pytest
 
-from mlflow.environment_variables import _MLFLOW_AUTOLOGGING_TESTING
-from mlflow.utils import logging_utils
-from mlflow.utils.autologging_utils import is_testing
+from qcflow.environment_variables import _QCFLOW_AUTOLOGGING_TESTING
+from qcflow.utils import logging_utils
+from qcflow.utils.autologging_utils import is_testing
 
 PATCH_DESTINATION_FN_DEFAULT_RESULT = "original_result"
 
@@ -36,29 +36,29 @@ def patch_destination():
 
 @pytest.fixture
 def test_mode_off():
-    prev_env_var_value = os.environ.pop(_MLFLOW_AUTOLOGGING_TESTING.name, None)
+    prev_env_var_value = os.environ.pop(_QCFLOW_AUTOLOGGING_TESTING.name, None)
     try:
-        os.environ[_MLFLOW_AUTOLOGGING_TESTING.name] = "false"
+        os.environ[_QCFLOW_AUTOLOGGING_TESTING.name] = "false"
         assert not is_testing()
         yield
     finally:
         if prev_env_var_value:
-            os.environ[_MLFLOW_AUTOLOGGING_TESTING.name] = prev_env_var_value
+            os.environ[_QCFLOW_AUTOLOGGING_TESTING.name] = prev_env_var_value
         else:
-            del os.environ[_MLFLOW_AUTOLOGGING_TESTING.name]
+            del os.environ[_QCFLOW_AUTOLOGGING_TESTING.name]
 
 
 def enable_test_mode():
-    prev_env_var_value = os.environ.pop(_MLFLOW_AUTOLOGGING_TESTING.name, None)
+    prev_env_var_value = os.environ.pop(_QCFLOW_AUTOLOGGING_TESTING.name, None)
     try:
-        os.environ[_MLFLOW_AUTOLOGGING_TESTING.name] = "true"
+        os.environ[_QCFLOW_AUTOLOGGING_TESTING.name] = "true"
         assert is_testing()
         yield
     finally:
         if prev_env_var_value:
-            os.environ[_MLFLOW_AUTOLOGGING_TESTING.name] = prev_env_var_value
+            os.environ[_QCFLOW_AUTOLOGGING_TESTING.name] = prev_env_var_value
         else:
-            del os.environ[_MLFLOW_AUTOLOGGING_TESTING.name]
+            del os.environ[_QCFLOW_AUTOLOGGING_TESTING.name]
 
 
 @pytest.fixture

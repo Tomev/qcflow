@@ -1,13 +1,13 @@
-MLflow Dataset Tracking Tutorial
+QCFlow Dataset Tracking Tutorial
 ================================
 
-The ``mlflow.data`` module is an integral part of the MLflow ecosystem, designed to enhance your machine learning workflow.
-This module enables you to record and retrieve dataset information during model training and evaluation, leveraging MLflow's tracking capabilities.
+The ``qcflow.data`` module is an integral part of the QCFlow ecosystem, designed to enhance your machine learning workflow.
+This module enables you to record and retrieve dataset information during model training and evaluation, leveraging QCFlow's tracking capabilities.
 
 Key Interfaces
 --------------
 
-There are two main abstract components associated with the ``mlflow.data`` module, ``Dataset`` and ``DatasetSource``:
+There are two main abstract components associated with the ``qcflow.data`` module, ``Dataset`` and ``DatasetSource``:
 
 Dataset 
 ^^^^^^^
@@ -15,31 +15,31 @@ Dataset
 The ``Dataset`` abstraction is a metadata tracking object that holds the information about a given logged dataset.
 
 The information stored within a ``Dataset`` object includes features, targets, and predictions, along with 
-metadata like the dataset's name, digest (hash), schema, and profile. You can log this metadata using the :py:func:`mlflow.log_input` API. 
-The module provides functions to construct :py:class:`mlflow.data.dataset.Dataset` objects from various data types.
+metadata like the dataset's name, digest (hash), schema, and profile. You can log this metadata using the :py:func:`qcflow.log_input` API. 
+The module provides functions to construct :py:class:`qcflow.data.dataset.Dataset` objects from various data types.
 
 There are a number of concrete implementations of this abstract class, including:
 
-- :py:class:`mlflow.data.spark_dataset.SparkDataset`
-- :py:class:`mlflow.data.pandas_dataset.PandasDataset`
-- :py:class:`mlflow.data.numpy_dataset.NumpyDataset`
-- :py:class:`mlflow.data.huggingface_dataset.HuggingFaceDataset`
-- :py:class:`mlflow.data.tensorflow_dataset.TensorFlowDataset`
+- :py:class:`qcflow.data.spark_dataset.SparkDataset`
+- :py:class:`qcflow.data.pandas_dataset.PandasDataset`
+- :py:class:`qcflow.data.numpy_dataset.NumpyDataset`
+- :py:class:`qcflow.data.huggingface_dataset.HuggingFaceDataset`
+- :py:class:`qcflow.data.tensorflow_dataset.TensorFlowDataset`
 
-The following example demonstrates how to construct a :py:class:`mlflow.data.pandas_dataset.PandasDataset` object from a Pandas DataFrame:
+The following example demonstrates how to construct a :py:class:`qcflow.data.pandas_dataset.PandasDataset` object from a Pandas DataFrame:
 
 .. code-block:: python
 
-    import mlflow.data
+    import qcflow.data
     import pandas as pd
-    from mlflow.data.pandas_dataset import PandasDataset
+    from qcflow.data.pandas_dataset import PandasDataset
 
 
-    dataset_source_url = "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-white.csv"
+    dataset_source_url = "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-white.csv"
     raw_data = pd.read_csv(dataset_source_url, delimiter=";")
 
     # Create an instance of a PandasDataset
-    dataset = mlflow.data.from_pandas(
+    dataset = qcflow.data.from_pandas(
         raw_data, source=dataset_source_url, name="wine quality - white", targets="quality"
     )
 
@@ -50,10 +50,10 @@ The ``DatasetSource`` is a component of a given Dataset object, providing a link
 
 The ``DatasetSource`` component of a ``Dataset`` represents the source of a dataset, such as a directory in S3, a Delta Table, or a URL. 
 It is referenced in the ``Dataset`` for understanding the origin of the data. The ``DatasetSource`` of a logged 
-dataset can be retrieved either by accessing the ``source`` property of the ``Dataset`` object, or through using the ``mlflow.data.get_source()`` API.
+dataset can be retrieved either by accessing the ``source`` property of the ``Dataset`` object, or through using the ``qcflow.data.get_source()`` API.
 
 .. tip::
-    Many of the supported autologging-enabled flavors within MLflow will automatically log the source of the dataset when logging the dataset itself. 
+    Many of the supported autologging-enabled flavors within QCFlow will automatically log the source of the dataset when logging the dataset itself. 
     
 .. note::
     The example shown below is purely for instructive purposes, as logging a dataset outside of a training run is not a common practice.
@@ -65,25 +65,25 @@ The following example demonstrates how to use the ``log_inputs`` API to log a tr
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import pandas as pd
-    from mlflow.data.pandas_dataset import PandasDataset
+    from qcflow.data.pandas_dataset import PandasDataset
 
 
-    dataset_source_url = "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-white.csv"
+    dataset_source_url = "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-white.csv"
     raw_data = pd.read_csv(dataset_source_url, delimiter=";")
 
     # Create an instance of a PandasDataset
-    dataset = mlflow.data.from_pandas(
+    dataset = qcflow.data.from_pandas(
         raw_data, source=dataset_source_url, name="wine quality - white", targets="quality"
     )
 
-    # Log the Dataset to an MLflow run by using the `log_input` API
-    with mlflow.start_run() as run:
-        mlflow.log_input(dataset, context="training")
+    # Log the Dataset to an QCFlow run by using the `log_input` API
+    with qcflow.start_run() as run:
+        qcflow.log_input(dataset, context="training")
 
     # Retrieve the run information
-    logged_run = mlflow.get_run(run.info.run_id)
+    logged_run = qcflow.get_run(run.info.run_id)
 
     # Retrieve the Dataset object
     logged_dataset = logged_run.inputs.dataset_inputs[0].dataset
@@ -102,7 +102,7 @@ The stdout results of the above code snippet are as follows:
     Dataset name: wine quality - white
     Dataset digest: 2a1e42c4
     Dataset profile: {"num_rows": 4898, "num_elements": 58776}
-    Dataset schema: {"mlflow_colspec": [
+    Dataset schema: {"qcflow_colspec": [
         {"type": "double", "name": "fixed acidity"}, 
         {"type": "double", "name": "volatile acidity"}, 
         {"type": "double", "name": "citric acid"}, 
@@ -117,9 +117,9 @@ The stdout results of the above code snippet are as follows:
         {"type": "long", "name": "quality"}
         ]}
 
-We can navigate to the MLflow UI to see what this looks like for a logged Dataset as well. 
+We can navigate to the QCFlow UI to see what this looks like for a logged Dataset as well. 
 
-.. figure:: ../_static/images/tracking/dataset-mlflow-ui.png
+.. figure:: ../_static/images/tracking/dataset-qcflow-ui.png
     :align: center 
     :figwidth: 100%
 
@@ -129,7 +129,7 @@ access the Dataset's source via the following API:
 .. code-block:: python
 
    # Loading the dataset's source
-   dataset_source = mlflow.data.get_source(logged_dataset)
+   dataset_source = qcflow.data.get_source(logged_dataset)
 
    local_dataset = dataset_source.load()
 
@@ -145,18 +145,18 @@ The print statement from above resolves to the local file that was created when 
     The local file where the data has been downloaded to:
     /var/folders/cd/n8n0rm2x53l_s0xv_j_xklb00000gp/T/tmpuxwtrul1/winequality-white.csv
 
-Using Datasets with other MLflow Features
+Using Datasets with other QCFlow Features
 -----------------------------------------
 
-The ``mlflow.data`` module serves the crucial role of associating datasets with MLflow runs. Aside from the obvious utility of having a record 
-associated with an MLflow run to the dataset that was used during training, there are some integrations within MLflow that allow for direct 
-usage of Datasets that have been logged with the :py:func:`mlflow.log_input` API. 
+The ``qcflow.data`` module serves the crucial role of associating datasets with QCFlow runs. Aside from the obvious utility of having a record 
+associated with an QCFlow run to the dataset that was used during training, there are some integrations within QCFlow that allow for direct 
+usage of Datasets that have been logged with the :py:func:`qcflow.log_input` API. 
 
-How to use a Dataset with MLflow evaluate
+How to use a Dataset with QCFlow evaluate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: 
-    The integration of Datasets with MLflow evaluate was introduced in MLflow 2.8.0. Previous versions do not have this functionality.
+    The integration of Datasets with QCFlow evaluate was introduced in QCFlow 2.8.0. Previous versions do not have this functionality.
 
 To see how this integration functions, let's take a look at a fairly simple and typical classification task. 
 
@@ -168,11 +168,11 @@ To see how this integration functions, let's take a look at a fairly simple and 
     from sklearn.preprocessing import LabelEncoder
     import xgboost
 
-    import mlflow
-    from mlflow.data.pandas_dataset import PandasDataset
+    import qcflow
+    from qcflow.data.pandas_dataset import PandasDataset
 
 
-    dataset_source_url = "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-white.csv"
+    dataset_source_url = "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-white.csv"
     raw_data = pd.read_csv(dataset_source_url, delimiter=";")
 
     # Extract the features and target data separately
@@ -203,28 +203,28 @@ To see how this integration functions, let's take a look at a fairly simple and 
     # Assign the decoded predictions to the Evaluation Dataset
     eval_data["predictions"] = le.inverse_transform(y_test_pred)
 
-    # Create the PandasDataset for use in mlflow evaluate
-    pd_dataset = mlflow.data.from_pandas(
+    # Create the PandasDataset for use in qcflow evaluate
+    pd_dataset = qcflow.data.from_pandas(
         eval_data, predictions="predictions", targets="label"
     )
 
-    mlflow.set_experiment("White Wine Quality")
+    qcflow.set_experiment("White Wine Quality")
 
     # Log the Dataset, model, and execute an evaluation run using the configured Dataset
-    with mlflow.start_run() as run:
-        mlflow.log_input(pd_dataset, context="training")
+    with qcflow.start_run() as run:
+        qcflow.log_input(pd_dataset, context="training")
 
-        mlflow.xgboost.log_model(
+        qcflow.xgboost.log_model(
             artifact_path="white-wine-xgb", xgb_model=model, input_example=X_test
         )
 
-        result = mlflow.evaluate(data=pd_dataset, predictions=None, model_type="classifier")
+        result = qcflow.evaluate(data=pd_dataset, predictions=None, model_type="classifier")
 
 .. note::
-    Using the :py:func:`mlflow.evaluate` API will automatically log the dataset used for the evaluation to the MLflow run. An explicit call to 
+    Using the :py:func:`qcflow.evaluate` API will automatically log the dataset used for the evaluation to the QCFlow run. An explicit call to 
     log the input is not required.
 
-Navigating to the MLflow UI, we can see how the Dataset, model, metrics, and a classification-specific confusion matrix are all logged 
+Navigating to the QCFlow UI, we can see how the Dataset, model, metrics, and a classification-specific confusion matrix are all logged 
 to the run.
 
 .. figure:: ../_static/images/tracking/dataset-evaluate.png

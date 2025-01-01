@@ -1,7 +1,7 @@
 from autogeneration_utils import get_method_name
 from google.protobuf.descriptor import FieldDescriptor
 
-from mlflow.protos import databricks_pb2
+from qcflow.protos import databricks_pb2
 
 
 def get_method_type(method_descriptor):

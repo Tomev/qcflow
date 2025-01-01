@@ -5,14 +5,14 @@ from unittest import mock
 import pytest
 import sqlalchemy.dialects.sqlite.pysqlite
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.environment_variables import MLFLOW_TRACKING_URI
+import qcflow
+from qcflow import QCFlowClient
+from qcflow.environment_variables import QCFLOW_TRACKING_URI
 
 pytestmark = pytest.mark.notrackingurimock
 
 
-class Model(mlflow.pyfunc.PythonModel):
+class Model(qcflow.pyfunc.PythonModel):
     def load_context(self, context):
         pass
 
@@ -21,17 +21,17 @@ class Model(mlflow.pyfunc.PythonModel):
 
 
 def start_run_and_log_data():
-    with mlflow.start_run():
-        mlflow.log_param("p", "param")
-        mlflow.log_metric("m", 1.0)
-        mlflow.set_tag("t", "tag")
-        mlflow.pyfunc.log_model("model", python_model=Model(), registered_model_name="model")
+    with qcflow.start_run():
+        qcflow.log_param("p", "param")
+        qcflow.log_metric("m", 1.0)
+        qcflow.set_tag("t", "tag")
+        qcflow.pyfunc.log_model("model", python_model=Model(), registered_model_name="model")
 
 
 def test_search_runs():
     start_run_and_log_data()
-    runs = mlflow.search_runs(experiment_ids=["0"], order_by=["param.start_time DESC"])
-    mlflow.get_run(runs["run_id"][0])
+    runs = qcflow.search_runs(experiment_ids=["0"], order_by=["param.start_time DESC"])
+    qcflow.get_run(runs["run_id"][0])
 
 
 def test_set_run_status_to_killed():
@@ -40,17 +40,17 @@ def test_set_run_status_to_killed():
     - cfd24bdc0731_update_run_status_constraint_with_killed.py
     - 0a8213491aaa_drop_duplicate_killed_constraint.py
     """
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         pass
-    client = MlflowClient()
+    client = QCFlowClient()
     client.set_terminated(run_id=run.info.run_id, status="KILLED")
 
 
-@mock.patch("mlflow.store.db.utils._logger.exception")
+@mock.patch("qcflow.store.db.utils._logger.exception")
 def test_database_operational_error(exception, monkeypatch):
     # This test is specifically designed to force errors with SQLite. Skip it if
     # using a non-SQLite backend.
-    if not MLFLOW_TRACKING_URI.get().startswith("sqlite"):
+    if not QCFLOW_TRACKING_URI.get().startswith("sqlite"):
         pytest.skip("Only works on SQLite")
 
     # This test patches parts of SQLAlchemy and sqlite3.dbapi to simulate a
@@ -63,11 +63,11 @@ def test_database_operational_error(exception, monkeypatch):
     # > during processing, etc.
     #
     # These errors are typically transient and can be resolved by retrying the
-    # operation, hence MLflow has different handling for them as compared to
+    # operation, hence QCFlow has different handling for them as compared to
     # the more generic exception type, SQLAlchemyError.
     #
     # This is particularly important for REST clients, where
-    # TEMPORARILY_UNAVAILABLE triggers MLflow REST clients to retry the request,
+    # TEMPORARILY_UNAVAILABLE triggers QCFlow REST clients to retry the request,
     # whereas BAD_REQUEST does not.
     api_module = None
     old_connect = None
@@ -139,11 +139,11 @@ def test_database_operational_error(exception, monkeypatch):
     # where an earlier test has already created and cached a SQLAlchemy engine
     # (i.e. database connections), preventing our error-throwing monkeypatches
     # from being called.
-    monkeypatch.setenv(MLFLOW_TRACKING_URI.name, f"{MLFLOW_TRACKING_URI.get()}-{uuid.uuid4().hex}")
-    with pytest.raises(mlflow.MlflowException, match=r"sqlite3\.OperationalError"):
-        with mlflow.start_run():
+    monkeypatch.setenv(QCFLOW_TRACKING_URI.name, f"{QCFLOW_TRACKING_URI.get()}-{uuid.uuid4().hex}")
+    with pytest.raises(qcflow.QCFlowException, match=r"sqlite3\.OperationalError"):
+        with qcflow.start_run():
             # This statement will fail with an OperationalError.
-            mlflow.log_param(
+            qcflow.log_param(
                 "test_database_operational_error_1667938883_param",
                 "test_database_operational_error_1667938883_value",
             )

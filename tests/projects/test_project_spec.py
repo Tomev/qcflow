@@ -3,8 +3,8 @@ import textwrap
 
 import pytest
 
-from mlflow.exceptions import ExecutionException
-from mlflow.projects import _project_spec
+from qcflow.exceptions import ExecutionException
+from qcflow.projects import _project_spec
 
 from tests.projects.utils import load_project
 

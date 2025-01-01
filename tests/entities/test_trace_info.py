@@ -1,10 +1,10 @@
 import pytest
 
-from mlflow.entities import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.protos.service_pb2 import TraceInfo as ProtoTraceInfo
-from mlflow.protos.service_pb2 import TraceRequestMetadata as ProtoTraceRequestMetadata
-from mlflow.protos.service_pb2 import TraceTag as ProtoTraceTag
+from qcflow.entities import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.protos.service_pb2 import TraceInfo as ProtoTraceInfo
+from qcflow.protos.service_pb2 import TraceRequestMetadata as ProtoTraceRequestMetadata
+from qcflow.protos.service_pb2 import TraceTag as ProtoTraceTag
 
 
 @pytest.fixture

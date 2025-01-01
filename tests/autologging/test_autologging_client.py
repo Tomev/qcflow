@@ -3,12 +3,12 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.exceptions import MlflowException
-from mlflow.utils import _truncate_dict
-from mlflow.utils.autologging_utils import MlflowAutologgingQueueingClient
-from mlflow.utils.validation import (
+import qcflow
+from qcflow import QCFlowClient
+from qcflow.exceptions import QCFlowException
+from qcflow.utils import _truncate_dict
+from qcflow.utils.autologging_utils import QCFlowAutologgingQueueingClient
+from qcflow.utils.validation import (
     MAX_ENTITY_KEY_LENGTH,
     MAX_METRICS_PER_BATCH,
     MAX_PARAM_VAL_LENGTH,
@@ -18,21 +18,21 @@ from mlflow.utils.validation import (
 
 
 def get_run_data(run_id):
-    client = MlflowClient()
+    client = QCFlowClient()
     data = client.get_run(run_id).data
-    # Ignore tags mlflow logs by default (e.g. "mlflow.user")
-    tags = {k: v for k, v in data.tags.items() if not k.startswith("mlflow.")}
+    # Ignore tags qcflow logs by default (e.g. "qcflow.user")
+    tags = {k: v for k, v in data.tags.items() if not k.startswith("qcflow.")}
     return data.params, data.metrics, tags
 
 
 def test_client_truncates_param_keys_and_values():
-    client = MlflowAutologgingQueueingClient()
+    client = QCFlowAutologgingQueueingClient()
     params_to_log = {
         "a" * (MAX_ENTITY_KEY_LENGTH + 5): "b" * (MAX_PARAM_VAL_LENGTH + 5),
         "a" * (MAX_ENTITY_KEY_LENGTH + 50): "b" * (MAX_PARAM_VAL_LENGTH + 50),
     }
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         client.log_params(run_id=run.info.run_id, params=params_to_log)
         client.flush()
 
@@ -45,13 +45,13 @@ def test_client_truncates_param_keys_and_values():
 
 
 def test_client_truncates_tag_keys_and_values():
-    client = MlflowAutologgingQueueingClient()
+    client = QCFlowAutologgingQueueingClient()
     tags_to_log = {
         "a" * (MAX_ENTITY_KEY_LENGTH + 5): "b" * (MAX_PARAM_VAL_LENGTH + 5),
         "c" * (MAX_ENTITY_KEY_LENGTH + 50): "d" * (MAX_PARAM_VAL_LENGTH + 50),
     }
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         client.set_tags(run_id=run.info.run_id, tags=tags_to_log)
         client.flush()
 
@@ -64,13 +64,13 @@ def test_client_truncates_tag_keys_and_values():
 
 
 def test_client_truncates_metric_keys():
-    client = MlflowAutologgingQueueingClient()
+    client = QCFlowAutologgingQueueingClient()
     metrics_to_log = {
         "a" * (MAX_ENTITY_KEY_LENGTH + 5): 1,
         "b" * (MAX_ENTITY_KEY_LENGTH + 50): 2,
     }
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         client.log_metrics(run_id=run.info.run_id, metrics=metrics_to_log)
         client.flush()
 
@@ -79,7 +79,7 @@ def test_client_truncates_metric_keys():
 
 
 def test_client_logs_expected_run_data():
-    client = MlflowAutologgingQueueingClient()
+    client = QCFlowAutologgingQueueingClient()
 
     params_to_log = {
         f"param_key_{i}": f"param_val_{i}" for i in range((2 * MAX_PARAMS_TAGS_PER_BATCH) + 1)
@@ -89,7 +89,7 @@ def test_client_logs_expected_run_data():
     }
     metrics_to_log = {f"metric_key_{i}": i for i in range((4 * MAX_METRICS_PER_BATCH) + 1)}
 
-    with mlflow.start_run(run_name="my name") as run:
+    with qcflow.start_run(run_name="my name") as run:
         client.log_params(run_id=run.info.run_id, params=params_to_log)
         client.set_tags(run_id=run.info.run_id, tags=tags_to_log)
         client.log_metrics(run_id=run.info.run_id, metrics=metrics_to_log)
@@ -103,29 +103,29 @@ def test_client_logs_expected_run_data():
 
 
 def test_client_logs_metric_steps_correctly():
-    client = MlflowAutologgingQueueingClient()
+    client = QCFlowAutologgingQueueingClient()
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         for step in range(3):
             client.log_metrics(run_id=run.info.run_id, metrics={"a": 1}, step=step)
         client.flush()
 
-    metric_history = MlflowClient().get_metric_history(run_id=run.info.run_id, key="a")
+    metric_history = QCFlowClient().get_metric_history(run_id=run.info.run_id, key="a")
     assert len(metric_history) == 3
     assert [metric.step for metric in metric_history] == list(range(3))
 
 
 def test_client_run_creation_and_termination_are_successful():
     experiment_name = "test_run_creation_termination"
-    MlflowClient().create_experiment(experiment_name)
-    experiment_id = MlflowClient().get_experiment_by_name(experiment_name).experiment_id
+    QCFlowClient().create_experiment(experiment_name)
+    experiment_id = QCFlowClient().get_experiment_by_name(experiment_name).experiment_id
 
-    client = MlflowAutologgingQueueingClient()
+    client = QCFlowAutologgingQueueingClient()
     pending_run_id = client.create_run(experiment_id=experiment_id, start_time=5, tags={"a": "b"})
     client.set_terminated(run_id=pending_run_id, status="FINISHED", end_time=6)
     client.flush()
 
-    runs = mlflow.search_runs(experiment_ids=[experiment_id], output_format="list")
+    runs = qcflow.search_runs(experiment_ids=[experiment_id], output_format="list")
     assert len(runs) == 1
     run = runs[0]
     assert run.info.start_time == 5
@@ -135,7 +135,7 @@ def test_client_run_creation_and_termination_are_successful():
 
 
 def test_client_asynchronous_flush_operates_correctly():
-    original_log_batch = MlflowClient().log_batch
+    original_log_batch = QCFlowClient().log_batch
 
     def mock_log_batch(run_id, metrics=(), params=(), tags=()):
         # Sleep to simulate a long-running logging operation
@@ -143,12 +143,12 @@ def test_client_asynchronous_flush_operates_correctly():
         return original_log_batch(run_id, metrics, params, tags)
 
     with mock.patch(
-        "mlflow.utils.autologging_utils.client.MlflowClient.log_batch"
+        "qcflow.utils.autologging_utils.client.QCFlowClient.log_batch"
     ) as log_batch_mock:
         log_batch_mock.side_effect = mock_log_batch
 
-        with mlflow.start_run() as run:
-            client = MlflowAutologgingQueueingClient()
+        with qcflow.start_run() as run:
+            client = QCFlowAutologgingQueueingClient()
             client.log_params(run_id=run.info.run_id, params={"a": "b"})
             run_operations = client.flush(synchronous=False)
 
@@ -166,7 +166,7 @@ def test_client_asynchronous_flush_operates_correctly():
 
 
 def test_client_synchronous_flush_operates_correctly():
-    original_log_batch = MlflowClient().log_batch
+    original_log_batch = QCFlowClient().log_batch
 
     def mock_log_batch(run_id, metrics=(), params=(), tags=()):
         # Sleep to simulate a long-running logging operation
@@ -174,12 +174,12 @@ def test_client_synchronous_flush_operates_correctly():
         return original_log_batch(run_id, metrics, params, tags)
 
     with mock.patch(
-        "mlflow.utils.autologging_utils.client.MlflowClient.log_batch"
+        "qcflow.utils.autologging_utils.client.QCFlowClient.log_batch"
     ) as log_batch_mock:
         log_batch_mock.side_effect = mock_log_batch
 
-        with mlflow.start_run() as run:
-            client = MlflowAutologgingQueueingClient()
+        with qcflow.start_run() as run:
+            client = QCFlowAutologgingQueueingClient()
             client.log_params(run_id=run.info.run_id, params={"a": "b"})
             client.flush(synchronous=True)
 
@@ -190,9 +190,9 @@ def test_client_synchronous_flush_operates_correctly():
 
 def test_flush_clears_pending_operations():
     with mock.patch(
-        "mlflow.utils.autologging_utils.client.MlflowClient", autospec=True
-    ) as mlflow_client_mock:
-        client = MlflowAutologgingQueueingClient()
+        "qcflow.utils.autologging_utils.client.QCFlowClient", autospec=True
+    ) as qcflow_client_mock:
+        client = QCFlowAutologgingQueueingClient()
 
         pending_run_id = client.create_run(experiment_id=5)
         client.log_params(run_id=pending_run_id, params={"a": "b"})
@@ -200,14 +200,14 @@ def test_flush_clears_pending_operations():
         client.set_terminated(run_id=pending_run_id, status="FINISHED")
         client.flush()
 
-        logging_call_count_1 = len(mlflow_client_mock.method_calls)
-        # Verify that at least 3 calls have been made to MLflow logging APIs as a result
+        logging_call_count_1 = len(qcflow_client_mock.method_calls)
+        # Verify that at least 3 calls have been made to QCFlow logging APIs as a result
         # of the flush (i.e. log_batch, create_run, and set_terminated)
         assert logging_call_count_1 >= 3
 
         client.flush()
 
-        logging_call_count_2 = len(mlflow_client_mock.method_calls)
+        logging_call_count_2 = len(qcflow_client_mock.method_calls)
         # Verify that performing a second flush did not result in any additional logging API calls,
         # since no new run content was added prior to the flush
         assert logging_call_count_2 == logging_call_count_1
@@ -218,8 +218,8 @@ def test_client_correctly_operates_as_context_manager_for_synchronous_flush():
     metrics_to_log = {"c": 1}
     tags_to_log = {"d": "e"}
 
-    with mlflow.start_run(), MlflowAutologgingQueueingClient() as client:
-        run_id_1 = mlflow.active_run().info.run_id
+    with qcflow.start_run(), QCFlowAutologgingQueueingClient() as client:
+        run_id_1 = qcflow.active_run().info.run_id
         client.log_params(run_id_1, params_to_log)
         client.log_metrics(run_id_1, metrics_to_log)
         client.set_tags(run_id_1, tags_to_log)
@@ -231,8 +231,8 @@ def test_client_correctly_operates_as_context_manager_for_synchronous_flush():
 
     exc_to_raise = Exception("test exception")
     with pytest.raises(Exception, match=str(exc_to_raise)) as raised_exc_info:  # noqa PT012
-        with mlflow.start_run(), MlflowAutologgingQueueingClient() as client:
-            run_id_2 = mlflow.active_run().info.run_id
+        with qcflow.start_run(), QCFlowAutologgingQueueingClient() as client:
+            run_id_2 = qcflow.active_run().info.run_id
             client.log_params(run_id_2, params_to_log)
             client.log_metrics(run_id_2, metrics_to_log)
             client.set_tags(run_id_2, tags_to_log)
@@ -248,23 +248,23 @@ def test_client_correctly_operates_as_context_manager_for_synchronous_flush():
 
 def test_logging_failures_are_handled_as_expected():
     experiment_name = "test_run_creation_termination"
-    MlflowClient().create_experiment(experiment_name)
-    experiment_id = MlflowClient().get_experiment_by_name(experiment_name).experiment_id
+    QCFlowClient().create_experiment(experiment_name)
+    experiment_id = QCFlowClient().get_experiment_by_name(experiment_name).experiment_id
 
     with mock.patch(
-        "mlflow.utils.autologging_utils.client.MlflowClient.log_batch"
+        "qcflow.utils.autologging_utils.client.QCFlowClient.log_batch"
     ) as log_batch_mock:
         log_batch_mock.side_effect = Exception("Batch logging failed!")
 
-        client = MlflowAutologgingQueueingClient()
+        client = QCFlowAutologgingQueueingClient()
         pending_run_id = client.create_run(experiment_id=experiment_id)
         client.log_metrics(run_id=pending_run_id, metrics={"a": 1})
         client.set_terminated(run_id=pending_run_id, status="KILLED")
 
-        with pytest.raises(MlflowException, match="Batch logging failed!") as exc:
+        with pytest.raises(QCFlowException, match="Batch logging failed!") as exc:
             client.flush()
 
-        runs = mlflow.search_runs(experiment_ids=[experiment_id], output_format="list")
+        runs = qcflow.search_runs(experiment_ids=[experiment_id], output_format="list")
         assert len(runs) == 1
         run = runs[0]
         # Verify that metrics are absent due to the failure of batch logging

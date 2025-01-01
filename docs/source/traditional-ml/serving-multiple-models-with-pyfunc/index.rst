@@ -4,11 +4,11 @@ Serving Multiple Models on a Single Endpoint with a Custom PyFunc Model
 This tutorial addresses a common scenario in machine learning: serving multiple models through a 
 single endpoint. Utilizing services like Sagemaker's Multi-Model Endpoints, you can host numerous 
 models under one endpoint, simplifying deployment and cutting costs. We'll replicate this 
-functionality using any MLflow-compatible service combined with a custom PyFunc implementation.
+functionality using any QCFlow-compatible service combined with a custom PyFunc implementation.
 
 .. tip::
 
-    MLflow 2.12.2 introduced the feature "models from code", which greatly simplifies the process of serializing and deploying custom models through the use 
+    QCFlow 2.12.2 introduced the feature "models from code", which greatly simplifies the process of serializing and deploying custom models through the use 
     of script serialization. While the tutorial here is valuable as a point of reference, we strongly recommend migrating custom model implementations to this 
     new paradigm. You can learn more about models from code within the `Models From Code Guide <../../model/models-from-code.html>`_.
 
@@ -32,21 +32,21 @@ single endpoint.
 
 What is PyFunc?
 ---------------
-Custom PyFunc models are a powerful MLflow feature that lets users customize model functionality
+Custom PyFunc models are a powerful QCFlow feature that lets users customize model functionality
 where named flavors may be lacking. Going forward we assume basic working knowledge of PyFunc, so if
 you're unfamiliar, check out the 
-`Creating Custom PyFunc <https://mlflow.org/docs/latest/traditional-ml/creating-custom-pyfunc/index.html>`_
+`Creating Custom PyFunc <https://qcflow.org/docs/latest/traditional-ml/creating-custom-pyfunc/index.html>`_
 tutorial.
 
 What do I need to do?
 ---------------------
 To create an MME, you'll create a child implementation of 
-:py:class:`PythonModel <mlflow.pyfunc.PythonModel>`. More specifically, we'll need to focus on the
+:py:class:`PythonModel <qcflow.pyfunc.PythonModel>`. More specifically, we'll need to focus on the
 below components...
 
-- :func:`PythonModel.load_context() <mlflow.pyfunc.PythonModel.load_context>`: This method defines artifacts from the specified PythonModelContext that can be used by ``predict()`` when evaluating inputs. When loading an MLflow model with load_model(), this method is called as soon as the PythonModel is constructed. In our example, this method will load our models from MLflow model registry.
-- :func:`PythonModel.predict() <mlflow.pyfunc.PythonModel.predict>`: This method evaluates a pyfunc-compatible input and produces a pyfunc-compatible output. In our example, it analyzes the input payload and, based on its parameters, selects and applies the appropriate model to return predictions.
-- :py:class:`ModelSignatures <mlflow.models.ModelSignature>`: This class defines the expected input, output and params format. In our example, the signature object will be passed when registering our custom PyFunc model and inputs to the model will be validated against the signature.
+- :func:`PythonModel.load_context() <qcflow.pyfunc.PythonModel.load_context>`: This method defines artifacts from the specified PythonModelContext that can be used by ``predict()`` when evaluating inputs. When loading an QCFlow model with load_model(), this method is called as soon as the PythonModel is constructed. In our example, this method will load our models from QCFlow model registry.
+- :func:`PythonModel.predict() <qcflow.pyfunc.PythonModel.predict>`: This method evaluates a pyfunc-compatible input and produces a pyfunc-compatible output. In our example, it analyzes the input payload and, based on its parameters, selects and applies the appropriate model to return predictions.
+- :py:class:`ModelSignatures <qcflow.models.ModelSignature>`: This class defines the expected input, output and params format. In our example, the signature object will be passed when registering our custom PyFunc model and inputs to the model will be validated against the signature.
 
 Ready to see this in action? Check out the accompanying notebooks for a hands-on experience. Let's dive in!
 

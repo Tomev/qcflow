@@ -1,4 +1,4 @@
-import mlflow
+import qcflow
 
 _SAMPLE_TRACE = {
     "info": {
@@ -8,9 +8,9 @@ _SAMPLE_TRACE = {
         "execution_time_ms": 162,
         "status": "OK",
         "request_metadata": {
-            "mlflow.trace_schema.version": "2",
-            "mlflow.traceInputs": '{"x": 1}',
-            "mlflow.traceOutputs": '{"prediction": 1}',
+            "qcflow.trace_schema.version": "2",
+            "qcflow.traceInputs": '{"x": 1}',
+            "qcflow.traceOutputs": '{"prediction": 1}',
         },
         "tags": {
             "fruit": "apple",
@@ -31,10 +31,10 @@ _SAMPLE_TRACE = {
                 "status_code": "OK",
                 "status_message": "",
                 "attributes": {
-                    "mlflow.traceRequestId": '"2e72d64369624e6888324462b62dc120"',
-                    "mlflow.spanType": '"UNKNOWN"',
-                    "mlflow.spanInputs": '{"x": 1}',
-                    "mlflow.spanOutputs": '{"prediction": 1}',
+                    "qcflow.traceRequestId": '"2e72d64369624e6888324462b62dc120"',
+                    "qcflow.spanType": '"UNKNOWN"',
+                    "qcflow.spanInputs": '{"x": 1}',
+                    "qcflow.spanOutputs": '{"prediction": 1}',
                 },
                 "events": [
                     {"name": "event", "timestamp": 1726145091022287, "attributes": {"foo": "bar"}}
@@ -47,10 +47,10 @@ _SAMPLE_TRACE = {
 }
 
 
-class Model(mlflow.pyfunc.PythonModel):
+class Model(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input):
-        mlflow.add_trace(_SAMPLE_TRACE)
+        qcflow.add_trace(_SAMPLE_TRACE)
         return 1
 
 
-mlflow.models.set_model(Model())
+qcflow.models.set_model(Model())

@@ -1,4 +1,4 @@
-from mlflow.entities import RunInfo
+from qcflow.entities import RunInfo
 
 
 def _check(

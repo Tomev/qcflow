@@ -4,20 +4,20 @@ import openai
 import pandas as pd
 import pytest
 
-import mlflow
-from mlflow.models.evaluation import evaluate
-from mlflow.tracing.constant import TraceMetadataKey
+import qcflow
+from qcflow.models.evaluation import evaluate
+from qcflow.tracing.constant import TraceMetadataKey
 
 from tests.tracing.helper import get_traces, purge_traces, reset_autolog_state  # noqa: F401
 
 _EVAL_DATA = pd.DataFrame(
     {
         "inputs": [
-            "What is MLflow?",
+            "What is QCFlow?",
             "What is Spark?",
         ],
         "ground_truth": [
-            "MLflow is an open-source platform to manage the ML lifecycle.",
+            "QCFlow is an open-source platform to manage the ML lifecycle.",
             "Spark is a unified analytics engine for big data processing.",
         ],
     }
@@ -47,7 +47,7 @@ def client(monkeypatch, mock_openai):
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_openai_evaluate(client, config):
     if config:
-        mlflow.openai.autolog(**config)
+        qcflow.openai.autolog(**config)
 
     is_trace_disabled = config and not config.get("log_traces", True)
     is_trace_enabled = config and config.get("log_traces", True)
@@ -64,13 +64,13 @@ def test_openai_evaluate(client, config):
             for question in inputs["inputs"]
         ]
 
-    with mock.patch("mlflow.openai.log_model") as log_model_mock:
-        with mlflow.start_run() as run:
+    with mock.patch("qcflow.openai.log_model") as log_model_mock:
+        with qcflow.start_run() as run:
             evaluate(
                 model,
                 data=_EVAL_DATA,
                 targets="ground_truth",
-                extra_metrics=[mlflow.metrics.exact_match()],
+                extra_metrics=[qcflow.metrics.exact_match()],
             )
         log_model_mock.assert_not_called()
 
@@ -84,7 +84,7 @@ def test_openai_evaluate(client, config):
     purge_traces()
 
     # Test original autolog configs is restored
-    with mock.patch("mlflow.openai.log_model") as log_model_mock:
+    with mock.patch("qcflow.openai.log_model") as log_model_mock:
         client.chat.completions.create(
             messages=[{"role": "user", "content": "hi"}], model="gpt-4o-mini"
         )
@@ -97,19 +97,19 @@ def test_openai_evaluate(client, config):
 
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_openai_pyfunc_evaluate(client):
-    with mlflow.start_run() as run:
-        model_info = mlflow.openai.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.openai.log_model(
             "gpt-4o-mini",
             "chat.completions",
             "model",
-            messages=[{"role": "system", "content": "You are an MLflow expert."}],
+            messages=[{"role": "system", "content": "You are an QCFlow expert."}],
         )
 
         evaluate(
             model_info.model_uri,
             data=_EVAL_DATA,
             targets="ground_truth",
-            extra_metrics=[mlflow.metrics.exact_match()],
+            extra_metrics=[qcflow.metrics.exact_match()],
         )
     assert len(get_traces()) == 2
     assert run.info.run_id == get_traces()[0].info.request_metadata[TraceMetadataKey.SOURCE_RUN]
@@ -119,9 +119,9 @@ def test_openai_pyfunc_evaluate(client):
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_openai_evaluate_should_not_log_traces_when_disabled(client, globally_disabled):
     if globally_disabled:
-        mlflow.autolog(disable=True)
+        qcflow.autolog(disable=True)
     else:
-        mlflow.openai.autolog(disable=True)
+        qcflow.openai.autolog(disable=True)
 
     def model(inputs):
         return [
@@ -135,12 +135,12 @@ def test_openai_evaluate_should_not_log_traces_when_disabled(client, globally_di
             for question in inputs["inputs"]
         ]
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         evaluate(
             model,
             data=_EVAL_DATA,
             targets="ground_truth",
-            extra_metrics=[mlflow.metrics.exact_match()],
+            extra_metrics=[qcflow.metrics.exact_match()],
         )
 
     assert len(get_traces()) == 0

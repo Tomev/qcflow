@@ -6,13 +6,13 @@ from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 
-from mlflow import MlflowException
-from mlflow.gateway.config import RouteConfig
-from mlflow.gateway.constants import MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.mosaicml import MosaicMLProvider
-from mlflow.gateway.schemas import chat, completions, embeddings
-from mlflow.gateway.schemas.chat import RequestMessage
+from qcflow import QCFlowException
+from qcflow.gateway.config import RouteConfig
+from qcflow.gateway.constants import QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.mosaicml import MosaicMLProvider
+from qcflow.gateway.schemas import chat, completions, embeddings
+from qcflow.gateway.schemas.chat import RequestMessage
 
 from tests.gateway.tools import MockAsyncResponse
 
@@ -68,7 +68,7 @@ async def test_completions():
                 "inputs": ["This is a test"],
                 "parameters": {"temperature": 0.0, "n": 1, "max_new_tokens": 1000},
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -199,7 +199,7 @@ async def test_chat(payload, expected_llm_input):
         mock_post.assert_called_once_with(
             "https://models.hosted-on.mosaicml.hosting/llama2-70b-chat/v1/predict",
             json=expected_llm_input,
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
@@ -494,7 +494,7 @@ def test_valid_parsing(messages, expected_output):
 def test_invalid_role_submitted_raises(messages):
     route_config = RouteConfig(**chat_config())
     with pytest.raises(
-        MlflowException, match=".*Must be one of 'system', 'user', or 'assistant'.*"
+        QCFlowException, match=".*Must be one of 'system', 'user', or 'assistant'.*"
     ):
         MosaicMLProvider(route_config)._parse_chat_messages_to_prompt(messages)
 
@@ -514,7 +514,7 @@ def unsupported_mosaic_chat_model_config():
 
 
 def test_unsupported_model_name_raises_in_chat_parsing_route_configuration():
-    with pytest.raises(MlflowException, match="An invalid model has been specified"):
+    with pytest.raises(QCFlowException, match="An invalid model has been specified"):
         RouteConfig(**unsupported_mosaic_chat_model_config())
 
 

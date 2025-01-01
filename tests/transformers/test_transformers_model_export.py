@@ -23,16 +23,16 @@ from datasets import load_dataset
 from huggingface_hub import ModelCard
 from packaging.version import Version
 
-import mlflow
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow import pyfunc
-from mlflow.deployments import PredictionsResponse
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model, ModelSignature, infer_signature
-from mlflow.models.model import METADATA_FILES
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.transformers import (
+import qcflow
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow import pyfunc
+from qcflow.deployments import PredictionsResponse
+from qcflow.exceptions import QCFlowException
+from qcflow.models import Model, ModelSignature, infer_signature
+from qcflow.models.model import METADATA_FILES
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.transformers import (
     _CARD_DATA_FILE_NAME,
     _CARD_TEXT_FILE_NAME,
     _build_pipeline_from_model_input,
@@ -48,15 +48,15 @@ from mlflow.transformers import (
     get_default_conda_env,
     get_default_pip_requirements,
 )
-from mlflow.types.schema import Array, ColSpec, DataType, ParamSchema, ParamSpec, Schema
-from mlflow.utils.environment import _mlflow_conda_env
+from qcflow.types.schema import Array, ColSpec, DataType, ParamSchema, ParamSpec, Schema
+from qcflow.utils.environment import _qcflow_conda_env
 
 from tests.helper_functions import (
     _assert_pip_requirements,
     _compare_conda_env_requirements,
     _compare_logged_code_paths,
     _get_deps_from_requirement_file,
-    _mlflow_major_version_string,
+    _qcflow_major_version_string,
     assert_register_model_called_with_local_model_path,
     flaky,
     pyfunc_scoring_endpoint,
@@ -72,7 +72,7 @@ from tests.transformers.test_transformers_peft_model import SKIP_IF_PEFT_NOT_AVA
 # runners#supported-runners-and-hardware-resources for instance specs.
 RUNNING_IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 GITHUB_ACTIONS_SKIP_REASON = "Test consumes too much memory"
-image_url = "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/cat.png"
+image_url = "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/cat.png"
 image_file_path = pathlib.Path(pathlib.Path(__file__).parent.parent, "datasets", "cat.png")
 # Test that can only be run locally:
 # - Summarization pipeline tests
@@ -106,13 +106,13 @@ def model_path(tmp_path):
 @pytest.fixture
 def transformers_custom_env(tmp_path):
     conda_env = tmp_path.joinpath("conda_env.yml")
-    _mlflow_conda_env(conda_env, additional_pip_deps=["transformers"])
+    _qcflow_conda_env(conda_env, additional_pip_deps=["transformers"])
     return conda_env
 
 
 @pytest.fixture
 def mock_pyfunc_wrapper():
-    return mlflow.transformers._TransformersWrapper("mock")
+    return qcflow.transformers._TransformersWrapper("mock")
 
 
 @pytest.fixture
@@ -146,16 +146,16 @@ def test_default_requirements(pipeline, expected_requirements, request):
         return {req.split("==")[0] for req in requirements}
 
     assert _strip_requirements(pip_requirements) == expected_requirements
-    assert _strip_requirements(conda_requirements) == (expected_requirements | {"mlflow"})
+    assert _strip_requirements(conda_requirements) == (expected_requirements | {"qcflow"})
 
 
 def test_inference_task_validation(small_qa_pipeline):
     with pytest.raises(
-        MlflowException, match="The task provided is invalid. 'llm/v1/invalid' is not"
+        QCFlowException, match="The task provided is invalid. 'llm/v1/invalid' is not"
     ):
         _validate_llm_inference_task_type("llm/v1/invalid", "text-generation")
     with pytest.raises(
-        MlflowException, match="The task provided is invalid. 'llm/v1/completions' is not"
+        QCFlowException, match="The task provided is invalid. 'llm/v1/completions' is not"
     ):
         _validate_llm_inference_task_type("llm/v1/completions", small_qa_pipeline)
     _validate_llm_inference_task_type("llm/v1/completions", "text-generation")
@@ -207,14 +207,14 @@ def test_pipeline_construction_from_base_vision_model(small_vision_model):
 
 def test_saving_with_invalid_dict_as_model(model_path):
     with pytest.raises(
-        MlflowException, match="Invalid dictionary submitted for 'transformers_model'. The "
+        QCFlowException, match="Invalid dictionary submitted for 'transformers_model'. The "
     ):
-        mlflow.transformers.save_model(transformers_model={"invalid": "key"}, path=model_path)
+        qcflow.transformers.save_model(transformers_model={"invalid": "key"}, path=model_path)
 
     with pytest.raises(
-        MlflowException, match="The 'transformers_model' dictionary must have an entry"
+        QCFlowException, match="The 'transformers_model' dictionary must have an entry"
     ):
-        mlflow.transformers.save_model(
+        qcflow.transformers.save_model(
             transformers_model={"tokenizer": "some_tokenizer"}, path=model_path
         )
 
@@ -250,7 +250,7 @@ def test_license_fallback(tmp_path):
 
 
 def test_vision_model_save_pipeline_with_defaults(small_vision_model, model_path):
-    mlflow.transformers.save_model(transformers_model=small_vision_model, path=model_path)
+    qcflow.transformers.save_model(transformers_model=small_vision_model, path=model_path)
     # validate inferred pip requirements
     requirements = model_path.joinpath("requirements.txt").read_text()
     reqs = {req.split("==")[0] for req in requirements.split("\n")}
@@ -281,7 +281,7 @@ def test_vision_model_save_pipeline_with_defaults(small_vision_model, model_path
 
 
 def test_vision_model_save_model_for_task_and_card_inference(small_vision_model, model_path):
-    mlflow.transformers.save_model(transformers_model=small_vision_model, path=model_path)
+    qcflow.transformers.save_model(transformers_model=small_vision_model, path=model_path)
     # validate inferred pip requirements
     requirements = model_path.joinpath("requirements.txt").read_text()
     reqs = {req.split("==")[0] for req in requirements.split("\n")}
@@ -306,7 +306,7 @@ def test_vision_model_save_model_for_task_and_card_inference(small_vision_model,
 
 
 def test_qa_model_save_model_for_task_and_card_inference(small_qa_pipeline, model_path):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model={
             "model": small_qa_pipeline.model,
             "tokenizer": small_qa_pipeline.tokenizer,
@@ -351,7 +351,7 @@ def test_qa_model_save_and_override_card(small_qa_pipeline, model_path):
     card_info = textwrap.dedent(supplied_card)
     card = ModelCard(card_info)
     # save the model instance
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=small_qa_pipeline,
         path=model_path,
         model_card=card,
@@ -377,31 +377,31 @@ def test_qa_model_save_and_override_card(small_qa_pipeline, model_path):
 
 
 def test_basic_save_model_and_load_text_pipeline(text_classification_pipeline, model_path):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model={
             "model": text_classification_pipeline.model,
             "tokenizer": text_classification_pipeline.tokenizer,
         },
         path=model_path,
     )
-    loaded = mlflow.transformers.load_model(model_path)
-    result = loaded("MLflow is a really neat tool!")
+    loaded = qcflow.transformers.load_model(model_path)
+    result = loaded("QCFlow is a really neat tool!")
     assert result[0]["label"] == "POSITIVE"
     assert result[0]["score"] > 0.5
 
 
 @pytest.mark.parametrize("dtype", [torch.bfloat16, torch.float64])
 def test_basic_save_model_with_torch_dtype(text2text_generation_pipeline, model_path, dtype):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=text2text_generation_pipeline,
         path=model_path,
         torch_dtype=dtype,
     )
 
-    loaded = mlflow.transformers.load_model(model_path)
+    loaded = qcflow.transformers.load_model(model_path)
     assert loaded.model.dtype == dtype
 
-    loaded = mlflow.transformers.load_model(model_path, torch_dtype=torch.float32)
+    loaded = qcflow.transformers.load_model(model_path, torch_dtype=torch.float32)
     assert loaded.model.dtype == torch.float32
 
 
@@ -418,11 +418,11 @@ def test_basic_save_model_and_load_vision_pipeline(small_vision_model, model_pat
             "feature_extractor": small_vision_model.feature_extractor,
             "tokenizer": small_vision_model.tokenizer,
         }
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=model,
         path=model_path,
     )
-    loaded = mlflow.transformers.load_model(model_path)
+    loaded = qcflow.transformers.load_model(model_path)
     prediction = loaded(image_for_test)
     assert prediction[0]["label"] == "wall clock"
     assert prediction[0]["score"] > 0.5
@@ -430,10 +430,10 @@ def test_basic_save_model_and_load_vision_pipeline(small_vision_model, model_pat
 
 @flaky()
 def test_multi_modal_pipeline_save_and_load(small_multi_modal_pipeline, model_path, image_for_test):
-    mlflow.transformers.save_model(transformers_model=small_multi_modal_pipeline, path=model_path)
+    qcflow.transformers.save_model(transformers_model=small_multi_modal_pipeline, path=model_path)
     question = "How many wall clocks are in the picture?"
     # Load components
-    components = mlflow.transformers.load_model(model_path, return_type="components")
+    components = qcflow.transformers.load_model(model_path, return_type="components")
     if IS_NEW_FEATURE_EXTRACTION_API:
         expected_components = {"model", "task", "tokenizer", "image_processor"}
     else:
@@ -443,12 +443,12 @@ def test_multi_modal_pipeline_save_and_load(small_multi_modal_pipeline, model_pa
     answer = constructed_pipeline(image=image_for_test, question=question)
     assert answer[0]["answer"] == "1"
     # Load pipeline
-    pipeline = mlflow.transformers.load_model(model_path)
+    pipeline = qcflow.transformers.load_model(model_path)
     pipeline_answer = pipeline(image=image_for_test, question=question)
     assert pipeline_answer[0]["answer"] == "1"
     # Test invalid loading mode
-    with pytest.raises(MlflowException, match="The specified return_type mode 'magic' is"):
-        mlflow.transformers.load_model(model_path, return_type="magic")
+    with pytest.raises(QCFlowException, match="The specified return_type mode 'magic' is"):
+        qcflow.transformers.load_model(model_path, return_type="magic")
 
 
 def test_multi_modal_component_save_and_load(component_multi_modal, model_path, image_for_test):
@@ -456,13 +456,13 @@ def test_multi_modal_component_save_and_load(component_multi_modal, model_path, 
         processor = component_multi_modal["image_processor"]
     else:
         processor = component_multi_modal["feature_extractor"]
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=component_multi_modal,
         path=model_path,
         processor=processor,
     )
     # Ensure that the appropriate Processor object was detected and loaded with the pipeline.
-    loaded_components = mlflow.transformers.load_model(
+    loaded_components = qcflow.transformers.load_model(
         model_uri=model_path, return_type="components"
     )
     assert isinstance(loaded_components["model"], transformers.ViltForQuestionAnswering)
@@ -505,15 +505,15 @@ def test_pipeline_saved_model_with_processor_cannot_be_loaded_as_pipeline(
         processor = component_multi_modal["image_processor"]
     else:
         processor = component_multi_modal["feature_extractor"]
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=invalid_pipeline,
         path=model_path,
         processor=processor,  # If this is specified, we cannot guarantee correct inference
     )
     with pytest.raises(
-        MlflowException, match="This model has been saved with a processor. Processor objects"
+        QCFlowException, match="This model has been saved with a processor. Processor objects"
     ):
-        mlflow.transformers.load_model(model_uri=model_path, return_type="pipeline")
+        qcflow.transformers.load_model(model_uri=model_path, return_type="pipeline")
 
 
 def test_component_saved_model_with_processor_cannot_be_loaded_as_pipeline(
@@ -523,35 +523,35 @@ def test_component_saved_model_with_processor_cannot_be_loaded_as_pipeline(
         processor = component_multi_modal["image_processor"]
     else:
         processor = component_multi_modal["feature_extractor"]
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=component_multi_modal,
         path=model_path,
         processor=processor,
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model has been saved with a processor. Processor objects are not compatible "
         "with Pipelines. Please load",
     ):
-        mlflow.transformers.load_model(model_uri=model_path, return_type="pipeline")
+        qcflow.transformers.load_model(model_uri=model_path, return_type="pipeline")
 
 
 @pytest.mark.parametrize("should_start_run", [True, False])
 def test_log_and_load_transformers_pipeline(small_qa_pipeline, tmp_path, should_start_run):
     try:
         if should_start_run:
-            mlflow.start_run()
+            qcflow.start_run()
         artifact_path = "transformers"
         conda_env = tmp_path.joinpath("conda_env.yaml")
-        _mlflow_conda_env(conda_env, additional_pip_deps=["transformers"])
-        model_info = mlflow.transformers.log_model(
+        _qcflow_conda_env(conda_env, additional_pip_deps=["transformers"])
+        model_info = qcflow.transformers.log_model(
             small_qa_pipeline,
             artifact_path,
             conda_env=str(conda_env),
         )
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
         assert model_info.model_uri == model_uri
-        reloaded_model = mlflow.transformers.load_model(model_uri=model_uri, return_type="pipeline")
+        reloaded_model = qcflow.transformers.load_model(model_uri=model_uri, return_type="pipeline")
         assert (
             reloaded_model(
                 {"question": "Who's house?", "context": "The house is owned by a man named Run."}
@@ -565,37 +565,37 @@ def test_log_and_load_transformers_pipeline(small_qa_pipeline, tmp_path, should_
         env_path = model_config.flavors[pyfunc.FLAVOR_NAME][pyfunc.ENV]["conda"]
         assert model_path.joinpath(env_path).exists()
     finally:
-        mlflow.end_run()
+        qcflow.end_run()
 
 
 def test_load_pipeline_from_remote_uri_succeeds(
     text_classification_pipeline, model_path, mock_s3_bucket
 ):
-    mlflow.transformers.save_model(transformers_model=text_classification_pipeline, path=model_path)
+    qcflow.transformers.save_model(transformers_model=text_classification_pipeline, path=model_path)
     artifact_root = f"s3://{mock_s3_bucket}"
     artifact_path = "model"
     artifact_repo = S3ArtifactRepository(artifact_root)
     artifact_repo.log_artifacts(model_path, artifact_path=artifact_path)
     model_uri = os.path.join(artifact_root, artifact_path)
-    loaded = mlflow.transformers.load_model(model_uri=str(model_uri), return_type="pipeline")
+    loaded = qcflow.transformers.load_model(model_uri=str(model_uri), return_type="pipeline")
     assert loaded("I like it when CI checks pass and are never flaky!")[0]["label"] == "POSITIVE"
 
 
 def test_transformers_log_model_calls_register_model(small_qa_pipeline, tmp_path):
     artifact_path = "transformers"
-    register_model_patch = mock.patch("mlflow.tracking._model_registry.fluent._register_model")
-    with mlflow.start_run(), register_model_patch:
+    register_model_patch = mock.patch("qcflow.tracking._model_registry.fluent._register_model")
+    with qcflow.start_run(), register_model_patch:
         conda_env = tmp_path.joinpath("conda_env.yaml")
-        _mlflow_conda_env(conda_env, additional_pip_deps=["transformers", "torch", "torchvision"])
-        mlflow.transformers.log_model(
+        _qcflow_conda_env(conda_env, additional_pip_deps=["transformers", "torch", "torchvision"])
+        qcflow.transformers.log_model(
             small_qa_pipeline,
             artifact_path,
             conda_env=str(conda_env),
             registered_model_name="Question-Answering Model 1",
         )
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
         assert_register_model_called_with_local_model_path(
-            register_model_mock=mlflow.tracking._model_registry.fluent._register_model,
+            register_model_mock=qcflow.tracking._model_registry.fluent._register_model,
             model_uri=model_uri,
             registered_model_name="Question-Answering Model 1",
         )
@@ -616,22 +616,22 @@ def test_transformers_log_model_with_no_registered_model_name(small_vision_model
         }
 
     artifact_path = "transformers"
-    registered_model_patch = mock.patch("mlflow.tracking._model_registry.fluent._register_model")
-    with mlflow.start_run(), registered_model_patch:
+    registered_model_patch = mock.patch("qcflow.tracking._model_registry.fluent._register_model")
+    with qcflow.start_run(), registered_model_patch:
         conda_env = tmp_path.joinpath("conda_env.yaml")
-        _mlflow_conda_env(conda_env, additional_pip_deps=["tensorflow", "transformers"])
-        mlflow.transformers.log_model(
+        _qcflow_conda_env(conda_env, additional_pip_deps=["tensorflow", "transformers"])
+        qcflow.transformers.log_model(
             model,
             artifact_path,
             conda_env=str(conda_env),
         )
-        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()
+        qcflow.tracking._model_registry.fluent._register_model.assert_not_called()
 
 
-def test_transformers_save_persists_requirements_in_mlflow_directory(
+def test_transformers_save_persists_requirements_in_qcflow_directory(
     small_qa_pipeline, model_path, transformers_custom_env
 ):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=small_qa_pipeline,
         path=model_path,
         conda_env=str(transformers_custom_env),
@@ -641,79 +641,79 @@ def test_transformers_save_persists_requirements_in_mlflow_directory(
 
 
 def test_transformers_log_with_pip_requirements(small_multi_modal_pipeline, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
 
     requirements_file = tmp_path.joinpath("requirements.txt")
     requirements_file.write_text("coolpackage")
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             small_multi_modal_pipeline, "model", pip_requirements=str(requirements_file)
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, "coolpackage"], strict=True
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, "coolpackage"], strict=True
         )
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             small_multi_modal_pipeline,
             "model",
             pip_requirements=[f"-r {requirements_file}", "alsocool"],
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "coolpackage", "alsocool"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "coolpackage", "alsocool"],
             strict=True,
         )
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             small_multi_modal_pipeline,
             "model",
             pip_requirements=[f"-c {requirements_file}", "constrainedcool"],
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "constrainedcool", "-c constraints.txt"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "constrainedcool", "-c constraints.txt"],
             ["coolpackage"],
             strict=True,
         )
 
 
 def test_transformers_log_with_extra_pip_requirements(small_multi_modal_pipeline, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
-    default_requirements = mlflow.transformers.get_default_pip_requirements(
+    expected_qcflow_version = _qcflow_major_version_string()
+    default_requirements = qcflow.transformers.get_default_pip_requirements(
         small_multi_modal_pipeline.model
     )
     requirements_file = tmp_path.joinpath("requirements.txt")
     requirements_file.write_text("coolpackage")
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             small_multi_modal_pipeline, "model", extra_pip_requirements=str(requirements_file)
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, *default_requirements, "coolpackage"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, *default_requirements, "coolpackage"],
             strict=True,
         )
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             small_multi_modal_pipeline,
             "model",
             extra_pip_requirements=[f"-r {requirements_file}", "alsocool"],
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, *default_requirements, "coolpackage", "alsocool"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, *default_requirements, "coolpackage", "alsocool"],
             strict=True,
         )
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             small_multi_modal_pipeline,
             "model",
             extra_pip_requirements=[f"-c {requirements_file}", "constrainedcool"],
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
+            qcflow.get_artifact_uri("model"),
             [
-                expected_mlflow_version,
+                expected_qcflow_version,
                 *default_requirements,
                 "constrainedcool",
                 "-c constraints.txt",
@@ -725,10 +725,10 @@ def test_transformers_log_with_extra_pip_requirements(small_multi_modal_pipeline
 
 def test_transformers_log_with_duplicate_extra_pip_requirements(small_multi_modal_pipeline):
     with pytest.raises(
-        MlflowException, match="The specified requirements versions are incompatible"
+        QCFlowException, match="The specified requirements versions are incompatible"
     ):
-        with mlflow.start_run():
-            mlflow.transformers.log_model(
+        with qcflow.start_run():
+            qcflow.transformers.log_model(
                 small_multi_modal_pipeline,
                 "model",
                 extra_pip_requirements=["transformers==1.1.0"],
@@ -741,9 +741,9 @@ def test_transformers_log_with_duplicate_extra_pip_requirements(small_multi_moda
 def test_transformers_tf_model_save_without_conda_env_uses_default_env_with_expected_dependencies(
     small_qa_tf_pipeline, model_path
 ):
-    mlflow.transformers.save_model(small_qa_tf_pipeline, model_path)
+    qcflow.transformers.save_model(small_qa_tf_pipeline, model_path)
     _assert_pip_requirements(
-        model_path, mlflow.transformers.get_default_pip_requirements(small_qa_tf_pipeline.model)
+        model_path, qcflow.transformers.get_default_pip_requirements(small_qa_tf_pipeline.model)
     )
     pip_requirements = _get_deps_from_requirement_file(model_path)
     assert "tensorflow" in pip_requirements
@@ -754,9 +754,9 @@ def test_transformers_tf_model_save_without_conda_env_uses_default_env_with_expe
 def test_transformers_pt_model_save_without_conda_env_uses_default_env_with_expected_dependencies(
     small_qa_pipeline, model_path
 ):
-    mlflow.transformers.save_model(small_qa_pipeline, model_path)
+    qcflow.transformers.save_model(small_qa_pipeline, model_path)
     _assert_pip_requirements(
-        model_path, mlflow.transformers.get_default_pip_requirements(small_qa_pipeline.model)
+        model_path, qcflow.transformers.get_default_pip_requirements(small_qa_pipeline.model)
     )
     pip_requirements = _get_deps_from_requirement_file(model_path)
     assert "tensorflow" not in pip_requirements
@@ -770,9 +770,9 @@ def test_transformers_pt_model_save_without_conda_env_uses_default_env_with_expe
 def test_transformers_pt_model_save_dependencies_without_accelerate(
     text_generation_pipeline, model_path
 ):
-    mlflow.transformers.save_model(text_generation_pipeline, model_path)
+    qcflow.transformers.save_model(text_generation_pipeline, model_path)
     _assert_pip_requirements(
-        model_path, mlflow.transformers.get_default_pip_requirements(text_generation_pipeline.model)
+        model_path, qcflow.transformers.get_default_pip_requirements(text_generation_pipeline.model)
     )
     pip_requirements = _get_deps_from_requirement_file(model_path)
     assert "tensorflow" not in pip_requirements
@@ -787,11 +787,11 @@ def test_transformers_tf_model_log_without_conda_env_uses_default_env_with_expec
     small_qa_tf_pipeline,
 ):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.transformers.log_model(small_qa_tf_pipeline, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.transformers.log_model(small_qa_tf_pipeline, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
     _assert_pip_requirements(
-        model_uri, mlflow.transformers.get_default_pip_requirements(small_qa_tf_pipeline.model)
+        model_uri, qcflow.transformers.get_default_pip_requirements(small_qa_tf_pipeline.model)
     )
     pip_requirements = _get_deps_from_requirement_file(model_uri)
     assert "tensorflow" in pip_requirements
@@ -804,11 +804,11 @@ def test_transformers_pt_model_log_without_conda_env_uses_default_env_with_expec
     small_qa_pipeline,
 ):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.transformers.log_model(small_qa_pipeline, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.transformers.log_model(small_qa_pipeline, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
     _assert_pip_requirements(
-        model_uri, mlflow.transformers.get_default_pip_requirements(small_qa_pipeline.model)
+        model_uri, qcflow.transformers.get_default_pip_requirements(small_qa_pipeline.model)
     )
     pip_requirements = _get_deps_from_requirement_file(model_uri)
     assert "tensorflow" not in pip_requirements
@@ -818,19 +818,19 @@ def test_transformers_pt_model_log_without_conda_env_uses_default_env_with_expec
 def test_log_model_with_code_paths(small_qa_pipeline):
     artifact_path = "model"
     with (
-        mlflow.start_run(),
-        mock.patch("mlflow.transformers._add_code_from_conf_to_system_path") as add_mock,
+        qcflow.start_run(),
+        mock.patch("qcflow.transformers._add_code_from_conf_to_system_path") as add_mock,
     ):
-        mlflow.transformers.log_model(small_qa_pipeline, artifact_path, code_paths=[__file__])
-        model_uri = mlflow.get_artifact_uri(artifact_path)
-        _compare_logged_code_paths(__file__, model_uri, mlflow.transformers.FLAVOR_NAME)
-        mlflow.transformers.load_model(model_uri)
+        qcflow.transformers.log_model(small_qa_pipeline, artifact_path, code_paths=[__file__])
+        model_uri = qcflow.get_artifact_uri(artifact_path)
+        _compare_logged_code_paths(__file__, model_uri, qcflow.transformers.FLAVOR_NAME)
+        qcflow.transformers.load_model(model_uri)
         add_mock.assert_called()
 
 
 def test_non_existent_model_card_entry(small_qa_pipeline, model_path):
-    with mock.patch("mlflow.transformers._fetch_model_card", return_value=None):
-        mlflow.transformers.save_model(transformers_model=small_qa_pipeline, path=model_path)
+    with mock.patch("qcflow.transformers._fetch_model_card", return_value=None):
+        qcflow.transformers.save_model(transformers_model=small_qa_pipeline, path=model_path)
 
         contents = {item.name for item in model_path.iterdir()}
         assert not contents.intersection({"model_card.txt", "model_card_data.yaml"})
@@ -838,11 +838,11 @@ def test_non_existent_model_card_entry(small_qa_pipeline, model_path):
 
 def test_huggingface_hub_not_installed(small_qa_pipeline, model_path):
     with mock.patch.dict("sys.modules", {"huggingface_hub": None}):
-        result = mlflow.transformers._fetch_model_card(small_qa_pipeline.model.name_or_path)
+        result = qcflow.transformers._fetch_model_card(small_qa_pipeline.model.name_or_path)
 
         assert result is None
 
-        mlflow.transformers.save_model(transformers_model=small_qa_pipeline, path=model_path)
+        qcflow.transformers.save_model(transformers_model=small_qa_pipeline, path=model_path)
 
         contents = {item.name for item in model_path.iterdir()}
         assert not contents.intersection({"model_card.txt", "model_card_data.yaml"})
@@ -857,11 +857,11 @@ def test_huggingface_hub_not_installed(small_qa_pipeline, model_path):
 )
 def test_save_pipeline_without_defined_components(small_conversational_model, model_path):
     # This pipeline type explicitly does not have a configuration for an image_processor
-    with mlflow.start_run():
-        mlflow.transformers.save_model(
+    with qcflow.start_run():
+        qcflow.transformers.save_model(
             transformers_model=small_conversational_model, path=model_path
         )
-    pipe = mlflow.transformers.load_model(model_path)
+    pipe = qcflow.transformers.load_model(model_path)
     convo = transformers.Conversation("How are you today?")
     convo = pipe(convo)
     assert convo.generated_responses[-1] == "good"
@@ -872,13 +872,13 @@ def test_invalid_model_type_without_registered_name_does_not_save(model_path):
     invalid_pipeline = transformers.pipeline(task="text-generation", model="gpt2")
     del invalid_pipeline.model.name_or_path
 
-    with pytest.raises(MlflowException, match="The submitted model type"):
-        mlflow.transformers.save_model(transformers_model=invalid_pipeline, path=model_path)
+    with pytest.raises(QCFlowException, match="The submitted model type"):
+        qcflow.transformers.save_model(transformers_model=invalid_pipeline, path=model_path)
 
 
 def test_invalid_input_to_pyfunc_signature_output_wrapper_raises(component_multi_modal):
-    with pytest.raises(MlflowException, match="The pipeline type submitted is not a valid"):
-        mlflow.transformers.generate_signature_output(component_multi_modal["model"], "bogus")
+    with pytest.raises(QCFlowException, match="The pipeline type submitted is not a valid"):
+        qcflow.transformers.generate_signature_output(component_multi_modal["model"], "bogus")
 
 
 @pytest.mark.parametrize(
@@ -914,15 +914,15 @@ def test_invalid_input_to_pyfunc_signature_output_wrapper_raises(component_multi
 def test_qa_pipeline_pyfunc_load_and_infer(small_qa_pipeline, model_path, inference_payload):
     signature = infer_signature(
         inference_payload,
-        mlflow.transformers.generate_signature_output(small_qa_pipeline, inference_payload),
+        qcflow.transformers.generate_signature_output(small_qa_pipeline, inference_payload),
     )
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=small_qa_pipeline,
         path=model_path,
         signature=signature,
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict(inference_payload)
 
@@ -968,17 +968,17 @@ def test_vision_pipeline_pyfunc_load_and_infer(small_vision_model, model_path, i
         inference_payload = base64.encodebytes(image_file_path.read_bytes()).decode("utf-8")
     signature = infer_signature(
         inference_payload,
-        mlflow.transformers.generate_signature_output(small_vision_model, inference_payload),
+        qcflow.transformers.generate_signature_output(small_vision_model, inference_payload),
     )
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=small_vision_model,
         path=model_path,
         signature=signature,
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
     predictions = pyfunc_loaded.predict(inference_payload)
 
-    transformers_loaded_model = mlflow.transformers.load_model(model_path)
+    transformers_loaded_model = qcflow.transformers.load_model(model_path)
     expected_predictions = transformers_loaded_model.predict(inference_payload)
     assert list(predictions.to_dict("records")[0].values()) == expected_predictions
 
@@ -1001,7 +1001,7 @@ def test_text2text_generation_pipeline_with_model_configs(
     text2text_generation_pipeline, tmp_path, data, result
 ):
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(text2text_generation_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(text2text_generation_pipeline, data)
     )
 
     model_config = {
@@ -1013,13 +1013,13 @@ def test_text2text_generation_pipeline_with_model_configs(
         "repetition_penalty": 1.15,
     }
     model_path1 = tmp_path.joinpath("model1")
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         text2text_generation_pipeline,
         path=model_path1,
         model_config=model_config,
         signature=signature,
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path1)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path1)
 
     inference = pyfunc_loaded.predict(data)
 
@@ -1032,15 +1032,15 @@ def test_text2text_generation_pipeline_with_model_configs(
     model_path2 = tmp_path.joinpath("model2")
     signature_with_params = infer_signature(
         data,
-        mlflow.transformers.generate_signature_output(text2text_generation_pipeline, data),
+        qcflow.transformers.generate_signature_output(text2text_generation_pipeline, data),
         model_config,
     )
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         text2text_generation_pipeline,
         path=model_path2,
         signature=signature_with_params,
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path2)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path2)
 
     dict_inference = pyfunc_loaded.predict(
         data,
@@ -1062,7 +1062,7 @@ def test_text2text_generation_pipeline_with_model_config_and_params(
         "do_sample": True,
     }
     parameters = {"top_k": 3, "max_length": 30}
-    generated_output = mlflow.transformers.generate_signature_output(
+    generated_output = qcflow.transformers.generate_signature_output(
         text2text_generation_pipeline, data
     )
     signature = infer_signature(
@@ -1071,13 +1071,13 @@ def test_text2text_generation_pipeline_with_model_config_and_params(
         parameters,
     )
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         text2text_generation_pipeline,
         path=model_path,
         model_config=model_config,
         signature=signature,
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     # model_config and default params are all applied
     res = pyfunc_loaded.predict(data)
@@ -1097,7 +1097,7 @@ def test_text2text_generation_pipeline_with_params_success(
 ):
     data = "muppet keyboard type"
     parameters = {"top_k": 2, "num_beams": 5, "do_sample": True}
-    generated_output = mlflow.transformers.generate_signature_output(
+    generated_output = qcflow.transformers.generate_signature_output(
         text2text_generation_pipeline, data
     )
     signature = infer_signature(
@@ -1106,12 +1106,12 @@ def test_text2text_generation_pipeline_with_params_success(
         parameters,
     )
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         text2text_generation_pipeline,
         path=model_path,
         signature=signature,
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     # parameters saved with ModelSignature is applied by default
     res = pyfunc_loaded.predict(data)
@@ -1124,11 +1124,11 @@ def test_text2text_generation_pipeline_with_params_with_errors(
 ):
     data = "muppet keyboard type"
     parameters = {"top_k": 2, "num_beams": 5, "invalid_param": "invalid_param", "do_sample": True}
-    generated_output = mlflow.transformers.generate_signature_output(
+    generated_output = qcflow.transformers.generate_signature_output(
         text2text_generation_pipeline, data
     )
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         text2text_generation_pipeline,
         path=model_path,
         signature=infer_signature(
@@ -1137,23 +1137,23 @@ def test_text2text_generation_pipeline_with_params_with_errors(
             parameters,
         ),
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"The params provided to the `predict` method are "
         r"not valid for pipeline Text2TextGenerationPipeline.",
     ):
         pyfunc_loaded.predict(data, parameters)
 
     # Type validation of params failure
-    with pytest.raises(MlflowException, match=r"Invalid parameters found"):
+    with pytest.raises(QCFlowException, match=r"Invalid parameters found"):
         pyfunc_loaded.predict(data, {"top_k": "2"})
 
 
 def test_text2text_generation_pipeline_with_inferred_schema(text2text_generation_pipeline):
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(text2text_generation_pipeline, "my_model")
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_info.model_uri)
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(text2text_generation_pipeline, "my_model")
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_info.model_uri)
 
     assert pyfunc_loaded.predict("muppet board nails hammer") == [
         "A hammer with a muppet and nails on a board."
@@ -1174,11 +1174,11 @@ def test_invalid_input_to_text2text_pipeline(text2text_generation_pipeline, inva
     # We generate this string from a dict or generate a list of these strings from a list of
     # dictionaries.
     with pytest.raises(
-        MlflowException, match=r"An invalid type has been supplied: .+\. Please supply"
+        QCFlowException, match=r"An invalid type has been supplied: .+\. Please supply"
     ):
         infer_signature(
             invalid_data,
-            mlflow.transformers.generate_signature_output(
+            qcflow.transformers.generate_signature_output(
                 text2text_generation_pipeline, invalid_data
             ),
         )
@@ -1189,7 +1189,7 @@ def test_invalid_input_to_text2text_pipeline(text2text_generation_pipeline, inva
 )
 def test_text_generation_pipeline(text_generation_pipeline, model_path, data):
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(text_generation_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(text_generation_pipeline, data)
     )
 
     model_config = {
@@ -1201,13 +1201,13 @@ def test_text_generation_pipeline(text_generation_pipeline, model_path, data):
         "top_p": 0.85,
         "repetition_penalty": 1.15,
     }
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         text_generation_pipeline,
         path=model_path,
         model_config=model_config,
         signature=signature,
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict(data)
 
@@ -1240,10 +1240,10 @@ def test_invalid_input_to_text_generation_pipeline(text_generation_pipeline, inv
         match = "If supplying a list, all values must be of string type"
     else:
         match = "The input data is of an incorrect type"
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         infer_signature(
             invalid_data,
-            mlflow.transformers.generate_signature_output(text_generation_pipeline, invalid_data),
+            qcflow.transformers.generate_signature_output(text_generation_pipeline, invalid_data),
         )
 
 
@@ -1261,11 +1261,11 @@ def test_invalid_input_to_text_generation_pipeline(text_generation_pipeline, inv
 def test_fill_mask_pipeline(fill_mask_pipeline, model_path, inference_payload, result):
     signature = infer_signature(
         inference_payload,
-        mlflow.transformers.generate_signature_output(fill_mask_pipeline, inference_payload),
+        qcflow.transformers.generate_signature_output(fill_mask_pipeline, inference_payload),
     )
 
-    mlflow.transformers.save_model(fill_mask_pipeline, path=model_path, signature=signature)
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    qcflow.transformers.save_model(fill_mask_pipeline, path=model_path, signature=signature)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict(inference_payload)
     assert inference == result
@@ -1284,8 +1284,8 @@ def test_fill_mask_pipeline(fill_mask_pipeline, model_path, inference_payload, r
 def test_fill_mask_pipeline_with_multiple_masks(fill_mask_pipeline, model_path):
     data = ["I <mask> the whole <mask> of <mask>", "I <mask> the whole <mask> of <mask>"]
 
-    mlflow.transformers.save_model(fill_mask_pipeline, path=model_path)
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    qcflow.transformers.save_model(fill_mask_pipeline, path=model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict(data)
     assert len(inference) == 2
@@ -1304,10 +1304,10 @@ def test_invalid_input_to_fill_mask_pipeline(fill_mask_pipeline, invalid_data):
         match = "Invalid data submission. Ensure all"
     else:
         match = "The input data is of an incorrect type"
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         infer_signature(
             invalid_data,
-            mlflow.transformers.generate_signature_output(fill_mask_pipeline, invalid_data),
+            qcflow.transformers.generate_signature_output(fill_mask_pipeline, invalid_data),
         )
 
 
@@ -1329,12 +1329,12 @@ def test_zero_shot_classification_pipeline(zero_shot_pipeline, model_path, data)
     # NB: The list submission for this pipeline type can accept json-encoded lists or lists within
     # the values of the dictionary.
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(zero_shot_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(zero_shot_pipeline, data)
     )
 
-    mlflow.transformers.save_model(zero_shot_pipeline, model_path, signature=signature)
+    qcflow.transformers.save_model(zero_shot_pipeline, model_path, signature=signature)
 
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_path)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_path)
     inference = loaded_pyfunc.predict(data)
 
     assert isinstance(inference, pd.DataFrame)
@@ -1363,13 +1363,13 @@ def test_table_question_answering_pipeline(table_question_answering_pipeline, mo
     json_table = json.dumps(table)
     data = {"query": query, "table": json_table}
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(table_question_answering_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(table_question_answering_pipeline, data)
     )
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         table_question_answering_pipeline, model_path, signature=signature
     )
-    loaded = mlflow.pyfunc.load_model(model_path)
+    loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = loaded.predict(data)
     assert len(inference) == 1 if isinstance(query, str) else len(query)
@@ -1386,21 +1386,21 @@ def test_custom_code_pipeline(custom_code_pipeline, model_path):
     data = "hello"
 
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(custom_code_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(custom_code_pipeline, data)
     )
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         custom_code_pipeline,
         path=model_path,
         signature=signature,
     )
 
     # just test that it doesn't blow up when performing inference
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
     pyfunc_pred = pyfunc_loaded.predict(data)
     assert isinstance(pyfunc_pred[0][0], float)
 
-    transformers_loaded = mlflow.transformers.load_model(model_path)
+    transformers_loaded = qcflow.transformers.load_model(model_path)
     transformers_pred = transformers_loaded(data)
     assert pyfunc_pred[0][0] == transformers_pred[0][0][0]
 
@@ -1412,7 +1412,7 @@ def test_custom_components_pipeline(custom_components_pipeline, model_path):
     data = "hello"
 
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(custom_components_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(custom_components_pipeline, data)
     )
 
     components = {
@@ -1421,15 +1421,15 @@ def test_custom_components_pipeline(custom_components_pipeline, model_path):
         "feature_extractor": custom_components_pipeline.feature_extractor,
     }
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=components, path=model_path, signature=signature
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
     pyfunc_pred = pyfunc_loaded.predict(data)
     assert isinstance(pyfunc_pred[0][0], float)
 
-    transformers_loaded = mlflow.transformers.load_model(model_path)
+    transformers_loaded = qcflow.transformers.load_model(model_path)
     transformers_pred = transformers_loaded(data)
     assert pyfunc_pred[0][0] == transformers_pred[0][0][0]
 
@@ -1457,11 +1457,11 @@ def test_custom_components_pipeline(custom_components_pipeline, model_path):
 )
 def test_translation_pipeline(translation_pipeline, model_path, data, result):
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(translation_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(translation_pipeline, data)
     )
 
-    mlflow.transformers.save_model(translation_pipeline, path=model_path, signature=signature)
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    qcflow.transformers.save_model(translation_pipeline, path=model_path, signature=signature)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
     inference = pyfunc_loaded.predict(data)
     assert inference == result
 
@@ -1494,13 +1494,13 @@ def test_summarization_pipeline(summarizer_pipeline, model_path, data):
         "repetition_penalty": 1.15,
     }
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(summarizer_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(summarizer_pipeline, data)
     )
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         summarizer_pipeline, path=model_path, model_config=model_config, signature=signature
     )
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict(data)
     if isinstance(data, list) and len(data) > 1:
@@ -1543,13 +1543,13 @@ def test_summarization_pipeline(summarizer_pipeline, model_path, data):
 )
 def test_classifier_pipeline(text_classification_pipeline, model_path, data):
     signature = infer_signature(
-        data, mlflow.transformers.generate_signature_output(text_classification_pipeline, data)
+        data, qcflow.transformers.generate_signature_output(text_classification_pipeline, data)
     )
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         text_classification_pipeline, path=model_path, signature=signature
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
     inference = pyfunc_loaded.predict(data)
 
     # verify that native transformers outputs match the pyfunc return values
@@ -1593,10 +1593,10 @@ def test_classifier_pipeline(text_classification_pipeline, model_path, data):
 def test_ner_pipeline(pipeline_name, model_path, data, result, request):
     pipeline = request.getfixturevalue(pipeline_name)
 
-    signature = infer_signature(data, mlflow.transformers.generate_signature_output(pipeline, data))
+    signature = infer_signature(data, qcflow.transformers.generate_signature_output(pipeline, data))
 
-    mlflow.transformers.save_model(pipeline, model_path, signature=signature)
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_path)
+    qcflow.transformers.save_model(pipeline, model_path, signature=signature)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_path)
     inference = loaded_pyfunc.predict(data)
 
     assert inference == result
@@ -1616,15 +1616,15 @@ def test_ner_pipeline(pipeline_name, model_path, data, result, request):
     reason="Conversation model is deprecated and removed.",
 )
 def test_conversational_pipeline(conversational_pipeline, model_path):
-    assert mlflow.transformers._is_conversational_pipeline(conversational_pipeline)
+    assert qcflow.transformers._is_conversational_pipeline(conversational_pipeline)
 
     signature = infer_signature(
         "Hi there!",
-        mlflow.transformers.generate_signature_output(conversational_pipeline, "Hi there!"),
+        qcflow.transformers.generate_signature_output(conversational_pipeline, "Hi there!"),
     )
 
-    mlflow.transformers.save_model(conversational_pipeline, model_path, signature=signature)
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_path)
+    qcflow.transformers.save_model(conversational_pipeline, model_path, signature=signature)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_path)
 
     first_response = loaded_pyfunc.predict("What is the best way to get to Antarctica?")
 
@@ -1635,7 +1635,7 @@ def test_conversational_pipeline(conversational_pipeline, model_path):
     assert second_response == "The best way to get to space would be to reach out and touch it."
 
     # Test that a new loaded instance has no context.
-    loaded_again_pyfunc = mlflow.pyfunc.load_model(model_path)
+    loaded_again_pyfunc = qcflow.pyfunc.load_model(model_path)
     third_response = loaded_again_pyfunc.predict("What kind of boat should I use?")
 
     assert third_response == "The one with the guns."
@@ -1647,12 +1647,12 @@ def test_conversational_pipeline(conversational_pipeline, model_path):
 
 def test_qa_pipeline_pyfunc_predict(small_qa_pipeline):
     artifact_path = "qa_model"
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             small_qa_pipeline,
             artifact_path,
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     inference_payload = json.dumps(
         {
@@ -1749,8 +1749,8 @@ def test_vision_pipeline_pyfunc_predict(small_vision_model, inference_payload):
     artifact_path = "image_classification_model"
 
     # Log the image classification model
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             small_vision_model,
             artifact_path,
         )
@@ -1764,7 +1764,7 @@ def test_vision_pipeline_pyfunc_predict(small_vision_model, inference_payload):
 
     predictions = PredictionsResponse.from_json(response.content.decode("utf-8")).get_predictions()
 
-    transformers_loaded_model = mlflow.transformers.load_model(model_info.model_uri)
+    transformers_loaded_model = qcflow.transformers.load_model(model_info.model_uri)
     expected_predictions = transformers_loaded_model.predict(inference_payload)
 
     assert [list(pred.values()) for pred in predictions.to_dict("records")] == expected_predictions
@@ -1780,8 +1780,8 @@ def test_classifier_pipeline_pyfunc_predict(text_classification_pipeline):
         'Quote "in" the string',
     ]
     signature = infer_signature(data)
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             text_classification_pipeline,
             artifact_path,
             signature=signature,
@@ -1820,8 +1820,8 @@ def test_classifier_pipeline_pyfunc_predict(text_classification_pipeline):
         {"text": "test 'quote", "text_pair": "pair 'quote'"},
     ]
     signature = infer_signature(inference_data)
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             text_classification_pipeline,
             artifact_path,
             signature=signature,
@@ -1851,12 +1851,12 @@ def test_classifier_pipeline_pyfunc_predict(text_classification_pipeline):
 
 def test_zero_shot_pipeline_pyfunc_predict(zero_shot_pipeline):
     artifact_path = "zero_shot_classifier_model"
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             zero_shot_pipeline,
             artifact_path,
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     inference_payload = json.dumps(
         {
@@ -1908,12 +1908,12 @@ def test_zero_shot_pipeline_pyfunc_predict(zero_shot_pipeline):
 
 def test_table_question_answering_pyfunc_predict(table_question_answering_pipeline):
     artifact_path = "table_qa_model"
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             table_question_answering_pipeline,
             artifact_path,
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     table = {
         "Fruit": ["Apples", "Bananas", "Oranges", "Watermelon 'small'", "Blueberries"],
@@ -1967,12 +1967,12 @@ def test_feature_extraction_pipeline(feature_extraction_pipeline):
     sentences = ["hi", "hello"]
     signature = infer_signature(
         sentences,
-        mlflow.transformers.generate_signature_output(feature_extraction_pipeline, sentences),
+        qcflow.transformers.generate_signature_output(feature_extraction_pipeline, sentences),
     )
 
     artifact_path = "feature_extraction_pipeline"
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             feature_extraction_pipeline,
             artifact_path,
             signature=signature,
@@ -1980,7 +1980,7 @@ def test_feature_extraction_pipeline(feature_extraction_pipeline):
         )
 
     # Load as native
-    loaded_pipeline = mlflow.transformers.load_model(model_info.model_uri)
+    loaded_pipeline = qcflow.transformers.load_model(model_info.model_uri)
 
     inference_single = "Testing"
     inference_mult = ["Testing something", "Testing something else"]
@@ -1993,7 +1993,7 @@ def test_feature_extraction_pipeline(feature_extraction_pipeline):
     assert len(pred_multiple[0][0]) > 2
     assert isinstance(pred_multiple[0][0][0][0], float)
 
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_info.model_uri)
 
     pyfunc_pred = loaded_pyfunc.predict(inference_single)
 
@@ -2008,8 +2008,8 @@ def test_feature_extraction_pipeline(feature_extraction_pipeline):
 
 def test_feature_extraction_pipeline_pyfunc_predict(feature_extraction_pipeline):
     artifact_path = "feature_extraction"
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             feature_extraction_pipeline,
             artifact_path,
         )
@@ -2042,14 +2042,14 @@ def test_feature_extraction_pipeline_pyfunc_predict(feature_extraction_pipeline)
 
 
 def test_loading_unsupported_pipeline_type_as_pyfunc(small_multi_modal_pipeline, model_path):
-    mlflow.transformers.save_model(small_multi_modal_pipeline, model_path)
-    with pytest.raises(MlflowException, match='Model does not have the "python_function" flavor'):
-        mlflow.pyfunc.load_model(model_path)
+    qcflow.transformers.save_model(small_multi_modal_pipeline, model_path)
+    with pytest.raises(QCFlowException, match='Model does not have the "python_function" flavor'):
+        qcflow.pyfunc.load_model(model_path)
 
 
 def test_pyfunc_input_validations(mock_pyfunc_wrapper):
     def ensure_raises(data, match):
-        with pytest.raises(MlflowException, match=match):
+        with pytest.raises(QCFlowException, match=match):
             mock_pyfunc_wrapper._validate_str_or_list_str(data)
 
     match1 = "The input data is of an incorrect type"
@@ -2104,7 +2104,7 @@ def test_pyfunc_json_encoded_list_parsing(mock_pyfunc_wrapper):
     list_dict_parsed = mock_pyfunc_wrapper._parse_json_encoded_list(list_dict_input, "in")
     assert list_dict_parsed == {"in": list_dict}
 
-    with pytest.raises(MlflowException, match="Invalid key in inference payload. The "):
+    with pytest.raises(QCFlowException, match="Invalid key in inference payload. The "):
         mock_pyfunc_wrapper._parse_json_encoded_list(list_dict_input, "invalid")
 
 
@@ -2126,10 +2126,10 @@ def test_pyfunc_text_to_text_input(mock_pyfunc_wrapper):
     parsed_list_str = mock_pyfunc_wrapper._parse_text2text_input(["a", "b"])
     assert parsed_list_str == ["a", "b"]
 
-    with pytest.raises(MlflowException, match="An invalid type has been supplied"):
+    with pytest.raises(QCFlowException, match="An invalid type has been supplied"):
         mock_pyfunc_wrapper._parse_text2text_input([1, 2, 3])
 
-    with pytest.raises(MlflowException, match="An invalid type has been supplied"):
+    with pytest.raises(QCFlowException, match="An invalid type has been supplied"):
         mock_pyfunc_wrapper._parse_text2text_input([{"a": [{"b": "c"}]}])
 
 
@@ -2142,13 +2142,13 @@ def test_pyfunc_qa_input(mock_pyfunc_wrapper):
     parsed_multi_input = mock_pyfunc_wrapper._parse_question_answer_input(multi_input)
     assert parsed_multi_input == multi_input
 
-    with pytest.raises(MlflowException, match="Invalid keys were submitted. Keys must"):
+    with pytest.raises(QCFlowException, match="Invalid keys were submitted. Keys must"):
         mock_pyfunc_wrapper._parse_question_answer_input({"q": "a", "c": "b"})
 
-    with pytest.raises(MlflowException, match="An invalid type has been supplied"):
+    with pytest.raises(QCFlowException, match="An invalid type has been supplied"):
         mock_pyfunc_wrapper._parse_question_answer_input("a")
 
-    with pytest.raises(MlflowException, match="An invalid type has been supplied"):
+    with pytest.raises(QCFlowException, match="An invalid type has been supplied"):
         mock_pyfunc_wrapper._parse_question_answer_input(["a", "b", "c"])
 
 
@@ -2383,7 +2383,7 @@ def test_invalid_instruction_pipeline_parsing(mock_pyfunc_wrapper, flavor_config
 
     bad_output = {"generated_text": ["Strawberry Milk Cap", "Honeydew with boba"]}
 
-    with pytest.raises(MlflowException, match="Unable to parse the pipeline output. Expected"):
+    with pytest.raises(QCFlowException, match="Unable to parse the pipeline output. Expected"):
         mock_pyfunc_wrapper._strip_input_from_response_in_instruction_pipelines(
             prompt, bad_output, "generated_text", flavor_config, True
         )
@@ -2394,7 +2394,7 @@ def test_instructional_pipeline_no_prompt_in_output(model_path):
     architecture = "databricks/dolly-v2-3b"
     dolly = transformers.pipeline(model=architecture, trust_remote_code=True)
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=dolly,
         path=model_path,
         # Validate removal of prompt but inclusion of newlines by default
@@ -2402,11 +2402,11 @@ def test_instructional_pipeline_no_prompt_in_output(model_path):
         input_example="Hello, Dolly!",
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
-    inference = pyfunc_loaded.predict("What is MLflow?")
+    inference = pyfunc_loaded.predict("What is QCFlow?")
 
-    assert not inference[0].startswith("What is MLflow?")
+    assert not inference[0].startswith("What is QCFlow?")
     assert "\n" in inference[0]
 
 
@@ -2415,7 +2415,7 @@ def test_instructional_pipeline_no_prompt_in_output_and_removal_of_newlines(mode
     architecture = "databricks/dolly-v2-3b"
     dolly = transformers.pipeline(model=architecture, trust_remote_code=True)
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=dolly,
         path=model_path,
         # Validate removal of prompt but inclusion of newlines by default
@@ -2423,11 +2423,11 @@ def test_instructional_pipeline_no_prompt_in_output_and_removal_of_newlines(mode
         input_example="Hello, Dolly!",
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
-    inference = pyfunc_loaded.predict("What is MLflow?")
+    inference = pyfunc_loaded.predict("What is QCFlow?")
 
-    assert not inference[0].startswith("What is MLflow?")
+    assert not inference[0].startswith("What is QCFlow?")
     assert "\n" not in inference[0]
 
 
@@ -2436,7 +2436,7 @@ def test_instructional_pipeline_with_prompt_in_output(model_path):
     architecture = "databricks/dolly-v2-3b"
     dolly = transformers.pipeline(model=architecture, trust_remote_code=True)
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=dolly,
         path=model_path,
         # test default propagation of `include_prompt`=True and `collapse_whitespace`=False
@@ -2444,11 +2444,11 @@ def test_instructional_pipeline_with_prompt_in_output(model_path):
         input_example="Hello, Dolly!",
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
-    inference = pyfunc_loaded.predict("What is MLflow?")
+    inference = pyfunc_loaded.predict("What is QCFlow?")
 
-    assert inference[0].startswith("What is MLflow?")
+    assert inference[0].startswith("What is QCFlow?")
     assert "\n\n" in inference[0]
 
 
@@ -2473,7 +2473,7 @@ def test_whisper_model_predict(model_path, whisper_pipeline, input_format, with_
         pytest.skip("If the input format is float, the default signature must be overridden.")
 
     audio = read_audio_data(input_format)
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=whisper_pipeline,
         path=model_path,
         input_example=audio if with_input_example else None,
@@ -2481,14 +2481,14 @@ def test_whisper_model_predict(model_path, whisper_pipeline, input_format, with_
     )
 
     # 1. Single prediction with native transformer pipeline
-    loaded_pipeline = mlflow.transformers.load_model(model_path)
+    loaded_pipeline = qcflow.transformers.load_model(model_path)
     transcription = loaded_pipeline(audio)
     assert transcription["text"].startswith(" 30")
     # strip the leading space
     expected_text = transcription["text"].lstrip()
 
     # 2. Single prediction with Pyfunc
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_path)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_path)
     pyfunc_transcription = loaded_pyfunc.predict(audio)[0]
     assert pyfunc_transcription == expected_text
 
@@ -2505,8 +2505,8 @@ def test_whisper_model_serve_and_score(whisper_pipeline):
     audio = read_audio_data("bytes")
     encoded_audio = base64.b64encode(audio).decode("ascii")
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             whisper_pipeline,
             "whisper",
             save_pretrained=False,
@@ -2571,8 +2571,8 @@ def test_whisper_model_support_timestamps(whisper_pipeline):
         "stride_length_s": [5, 3],
     }
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             whisper_pipeline,
             "whisper_timestamps",
             model_config=model_config,
@@ -2591,7 +2591,7 @@ def test_whisper_model_support_timestamps(whisper_pipeline):
             assert tuple(pred_chunk["timestamp"]) == gt_chunk["timestamp"]
 
     # Prediction with Pyfunc
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = json.loads(loaded_pyfunc.predict(audio)[0])
     _assert_prediction(prediction)
 
@@ -2622,27 +2622,27 @@ def test_whisper_model_support_timestamps(whisper_pipeline):
 
 
 def test_whisper_model_pyfunc_with_malformed_input(whisper_pipeline, model_path):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=whisper_pipeline,
         path=model_path,
         save_pretrained=False,
     )
 
-    pyfunc_model = mlflow.pyfunc.load_model(model_path)
+    pyfunc_model = qcflow.pyfunc.load_model(model_path)
 
     invalid_audio = b"This isn't a real audio file"
-    with pytest.raises(MlflowException, match="Failed to process the input audio data. Either"):
+    with pytest.raises(QCFlowException, match="Failed to process the input audio data. Either"):
         pyfunc_model.predict([invalid_audio])
 
     bad_uri_msg = "An invalid string input was provided. String"
 
-    with pytest.raises(MlflowException, match=bad_uri_msg):
+    with pytest.raises(QCFlowException, match=bad_uri_msg):
         pyfunc_model.predict("An invalid path")
 
-    with pytest.raises(MlflowException, match=bad_uri_msg):
+    with pytest.raises(QCFlowException, match=bad_uri_msg):
         pyfunc_model.predict("//www.invalid.net/audio.wav")
 
-    with pytest.raises(MlflowException, match=bad_uri_msg):
+    with pytest.raises(QCFlowException, match=bad_uri_msg):
         pyfunc_model.predict("https:///my/audio.mp3")
 
 
@@ -2650,8 +2650,8 @@ def test_whisper_model_pyfunc_with_malformed_input(whisper_pipeline, model_path)
 def test_audio_classification_pipeline(audio_classification_pipeline, with_input_example):
     audio = read_audio_data("bytes")
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             audio_classification_pipeline,
             "audio_classification",
             input_example=audio if with_input_example else None,
@@ -2715,18 +2715,18 @@ def test_vision_pipeline_pyfunc_predict_with_kwargs(small_vision_model):
         }
     )
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             small_vision_model,
             artifact_path,
             signature=infer_signature(
                 image_url,
-                mlflow.transformers.generate_signature_output(small_vision_model, image_url),
+                qcflow.transformers.generate_signature_output(small_vision_model, image_url),
                 params=parameters,
             ),
         )
         model_uri = model_info.model_uri
-    transformers_loaded_model = mlflow.transformers.load_model(model_uri)
+    transformers_loaded_model = qcflow.transformers.load_model(model_uri)
     expected_predictions = transformers_loaded_model.predict(image_url)
 
     response = pyfunc_serve_and_score_model(
@@ -2769,7 +2769,7 @@ def test_qa_pipeline_pyfunc_predict_with_kwargs(small_qa_pipeline):
             "params": parameters,
         }
     )
-    output = mlflow.transformers.generate_signature_output(small_qa_pipeline, data)
+    output = qcflow.transformers.generate_signature_output(small_qa_pipeline, data)
     signature_with_params = infer_signature(
         data,
         output,
@@ -2792,13 +2792,13 @@ def test_qa_pipeline_pyfunc_predict_with_kwargs(small_qa_pipeline):
     )
     assert signature_with_params == expected_signature
 
-    with mlflow.start_run():
-        mlflow.transformers.log_model(
+    with qcflow.start_run():
+        qcflow.transformers.log_model(
             small_qa_pipeline,
             artifact_path,
             signature=signature_with_params,
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     response = pyfunc_serve_and_score_model(
         model_uri,
@@ -2819,8 +2819,8 @@ def test_qa_pipeline_pyfunc_predict_with_kwargs(small_qa_pipeline):
 
 
 def test_uri_directory_renaming_handling_pipeline(model_path, text_classification_pipeline):
-    with mlflow.start_run():
-        mlflow.transformers.save_model(
+    with qcflow.start_run():
+        qcflow.transformers.save_model(
             transformers_model=text_classification_pipeline, path=model_path
         )
 
@@ -2828,7 +2828,7 @@ def test_uri_directory_renaming_handling_pipeline(model_path, text_classificatio
     renamed_to_old_convention = os.path.join(model_path, "pipeline")
     os.rename(absolute_model_directory, renamed_to_old_convention)
 
-    # remove the 'model_binary' entries to emulate older versions of MLflow
+    # remove the 'model_binary' entries to emulate older versions of QCFlow
     mlmodel_file = os.path.join(model_path, "MLmodel")
     with open(mlmodel_file) as yaml_file:
         mlmodel = yaml.safe_load(yaml_file)
@@ -2839,7 +2839,7 @@ def test_uri_directory_renaming_handling_pipeline(model_path, text_classificatio
     with open(mlmodel_file, "w") as yaml_file:
         yaml.safe_dump(mlmodel, yaml_file)
 
-    loaded_model = mlflow.pyfunc.load_model(model_path)
+    loaded_model = qcflow.pyfunc.load_model(model_path)
 
     prediction = loaded_model.predict("test")
     assert isinstance(prediction, pd.DataFrame)
@@ -2852,14 +2852,14 @@ def test_uri_directory_renaming_handling_components(model_path, text_classificat
         "model": text_classification_pipeline.model,
     }
 
-    with mlflow.start_run():
-        mlflow.transformers.save_model(transformers_model=components, path=model_path)
+    with qcflow.start_run():
+        qcflow.transformers.save_model(transformers_model=components, path=model_path)
 
     absolute_model_directory = os.path.join(model_path, "model")
     renamed_to_old_convention = os.path.join(model_path, "pipeline")
     os.rename(absolute_model_directory, renamed_to_old_convention)
 
-    # remove the 'model_binary' entries to emulate older versions of MLflow
+    # remove the 'model_binary' entries to emulate older versions of QCFlow
     mlmodel_file = os.path.join(model_path, "MLmodel")
     with open(mlmodel_file) as yaml_file:
         mlmodel = yaml.safe_load(yaml_file)
@@ -2870,7 +2870,7 @@ def test_uri_directory_renaming_handling_components(model_path, text_classificat
     with open(mlmodel_file, "w") as yaml_file:
         yaml.safe_dump(mlmodel, yaml_file)
 
-    loaded_model = mlflow.pyfunc.load_model(model_path)
+    loaded_model = qcflow.pyfunc.load_model(model_path)
 
     prediction = loaded_model.predict("test")
     assert isinstance(prediction, pd.DataFrame)
@@ -2885,7 +2885,7 @@ def test_pyfunc_model_log_load_with_artifacts_snapshot():
         task="question-answering", model=model, tokenizer=tokenizer
     )
 
-    class QAModel(mlflow.pyfunc.PythonModel):
+    class QAModel(qcflow.pyfunc.PythonModel):
         def load_context(self, context):
             """
             This method initializes the tokenizer and language model
@@ -2910,14 +2910,14 @@ def test_pyfunc_model_log_load_with_artifacts_snapshot():
 
     data = {"question": "Who's house?", "context": "The house is owned by Run."}
     pyfunc_artifact_path = "question_answering_model"
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             pyfunc_artifact_path,
             python_model=QAModel(),
             artifacts={"bert-tiny-model": "hf:/prajjwal1/bert-tiny"},
             input_example=data,
             signature=infer_signature(
-                data, mlflow.transformers.generate_signature_output(bert_tiny_pipeline, data)
+                data, qcflow.transformers.generate_signature_output(bert_tiny_pipeline, data)
             ),
             extra_pip_requirements=["transformers", "torch", "numpy"],
         )
@@ -2930,7 +2930,7 @@ def test_pyfunc_model_log_load_with_artifacts_snapshot():
         assert len(os.listdir(os.path.join(pyfunc_model_path, "artifacts"))) != 0
         model_config = Model.load(os.path.join(pyfunc_model_path, "MLmodel"))
 
-    loaded_pyfunc_model = mlflow.pyfunc.load_model(model_uri=pyfunc_model_uri)
+    loaded_pyfunc_model = qcflow.pyfunc.load_model(model_uri=pyfunc_model_uri)
     assert model_config.to_yaml() == loaded_pyfunc_model.metadata.to_yaml()
     assert loaded_pyfunc_model.predict(data)["answer"] != ""
 
@@ -2948,17 +2948,17 @@ def test_pyfunc_model_log_load_with_artifacts_snapshot():
 
 
 def test_pyfunc_model_log_load_with_artifacts_snapshot_errors():
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Failed to download snapshot from Hugging Face Hub "
             r"with artifact_uri: hf:/invalid-repo-id.",
         ):
-            mlflow.pyfunc.log_model(
+            qcflow.pyfunc.log_model(
                 "pyfunc_artifact_path",
                 python_model=TestModel(),
                 artifacts={"some-model": "hf:/invalid-repo-id"},
@@ -3002,10 +3002,10 @@ def test_basic_model_with_accelerate_device_mapping_fails_save(tmp_path, model_p
     pipeline = transformers.pipeline(task=task, model=model, tokenizer=tokenizer)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The model that is attempting to be saved has been loaded into memory",
     ):
-        mlflow.transformers.save_model(transformers_model=pipeline, path=model_path)
+        qcflow.transformers.save_model(transformers_model=pipeline, path=model_path)
 
 
 @pytest.mark.skipif(
@@ -3027,9 +3027,9 @@ def test_basic_model_with_accelerate_homogeneous_mapping_works(model_path):
     )
     pipeline = transformers.pipeline(task=task, model=model, tokenizer=tokenizer)
 
-    mlflow.transformers.save_model(transformers_model=pipeline, path=model_path)
+    qcflow.transformers.save_model(transformers_model=pipeline, path=model_path)
 
-    loaded = mlflow.transformers.load_model(model_path)
+    loaded = qcflow.transformers.load_model(model_path)
     text = "Apples are delicious"
     assert loaded(text) == pipeline(text)
 
@@ -3047,7 +3047,7 @@ def test_qa_model_model_size_bytes(small_qa_pipeline, tmp_path):
             expected_size = path_or_dir.stat().st_size
         return expected_size
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=small_qa_pipeline,
         path=tmp_path,
     )
@@ -3099,9 +3099,9 @@ def test_text_generation_save_model_with_inference_task(
     monkeypatch, task, input_example, text_generation_pipeline, model_path
 ):
     # Strictly raise error during requirements inference for testing purposes
-    monkeypatch.setenv("MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", "true")
+    monkeypatch.setenv("QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", "true")
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=text_generation_pipeline,
         path=model_path,
         task=task,
@@ -3122,9 +3122,9 @@ def test_text_generation_save_model_with_invalid_inference_task(
     text_generation_pipeline, model_path
 ):
     with pytest.raises(
-        MlflowException, match=r"The task provided is invalid.*Must be.*llm/v1/completions"
+        QCFlowException, match=r"The task provided is invalid.*Must be.*llm/v1/completions"
     ):
-        mlflow.transformers.save_model(
+        qcflow.transformers.save_model(
             transformers_model=text_generation_pipeline,
             path=model_path,
             task="llm/v1/invalid",
@@ -3133,10 +3133,10 @@ def test_text_generation_save_model_with_invalid_inference_task(
 
 def test_text_generation_log_model_with_mismatched_task(text_generation_pipeline):
     with pytest.raises(
-        MlflowException, match=r"LLM v1 task type 'llm/v1/chat' is specified in metadata, but"
+        QCFlowException, match=r"LLM v1 task type 'llm/v1/chat' is specified in metadata, but"
     ):
-        with mlflow.start_run():
-            mlflow.transformers.log_model(
+        with qcflow.start_run():
+            qcflow.transformers.log_model(
                 text_generation_pipeline,
                 "model",
                 # Task argument and metadata task are different
@@ -3148,14 +3148,14 @@ def test_text_generation_log_model_with_mismatched_task(text_generation_pipeline
 def test_text_generation_task_completions_predict_with_max_tokens(
     text_generation_pipeline, model_path
 ):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=text_generation_pipeline,
         path=model_path,
         task="llm/v1/completions",
         model_config={"max_tokens": 10},
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict(
         {"prompt": "How to learn Python in 3 weeks?", "max_tokens": 10},
@@ -3180,7 +3180,7 @@ def test_text_generation_task_completions_predict_with_max_tokens(
 
 
 def test_text_generation_task_completions_predict_with_stop(text_generation_pipeline, model_path):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=text_generation_pipeline,
         path=model_path,
         task="llm/v1/completions",
@@ -3188,7 +3188,7 @@ def test_text_generation_task_completions_predict_with_stop(text_generation_pipe
         model_config={"stop": ["Python"], "max_tokens": 50},
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
     inference = pyfunc_loaded.predict(
         {"prompt": "How to learn Python in 3 weeks?"},
     )
@@ -3227,8 +3227,8 @@ def test_text_generation_task_completions_predict_with_stop(text_generation_pipe
 def test_text_generation_task_completions_serve(text_generation_pipeline):
     data = {"prompt": "How to learn Python in 3 weeks?"}
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             text_generation_pipeline,
             "model",
             task="llm/v1/completions",
@@ -3250,7 +3250,7 @@ def test_text_generation_task_completions_serve(text_generation_pipeline):
 
 
 def test_llm_v1_task_embeddings_predict(feature_extraction_pipeline, model_path):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=feature_extraction_pipeline,
         path=model_path,
         input_examples=["Football", "Soccer"],
@@ -3263,7 +3263,7 @@ def test_llm_v1_task_embeddings_predict(feature_extraction_pipeline, model_path)
     assert flavor_config["inference_task"] == "llm/v1/embeddings"
     assert mlmodel["metadata"]["task"] == "llm/v1/embeddings"
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     # Predict with single string input
     prediction = pyfunc_loaded.predict({"input": "A great day"})
@@ -3301,8 +3301,8 @@ def test_llm_v1_task_embeddings_predict(feature_extraction_pipeline, model_path)
     ],
 )
 def test_llm_v1_task_embeddings_serve(feature_extraction_pipeline, request_payload):
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             feature_extraction_pipeline,
             "model",
             input_examples=["Football", "Soccer"],
@@ -3336,7 +3336,7 @@ def test_get_task_for_model():
             _get_task_for_model("model", default_task="feature-extraction") == "feature-extraction"
         )
 
-        with pytest.raises(MlflowException, match="Cannot construct transformers pipeline"):
+        with pytest.raises(QCFlowException, match="Cannot construct transformers pipeline"):
             _get_task_for_model("model")
 
         # If get_task raises an exception, fall back to the default task if provided.
@@ -3345,7 +3345,7 @@ def test_get_task_for_model():
             _get_task_for_model("model", default_task="feature-extraction") == "feature-extraction"
         )
 
-        with pytest.raises(MlflowException, match="The task could not be inferred"):
+        with pytest.raises(QCFlowException, match="The task could not be inferred"):
             _get_task_for_model("model")
 
 
@@ -3359,18 +3359,18 @@ def test_local_custom_model_save_and_load(text_generation_pipeline, model_path, 
     )
     model_dict = {"model": locally_loaded_model, "tokenizer": tokenizer}
 
-    # 1. Save local custom model without specifying task -> raises MlflowException
-    with pytest.raises(MlflowException, match=r"The task could not be inferred"):
-        mlflow.transformers.save_model(transformers_model=model_dict, path=model_path)
+    # 1. Save local custom model without specifying task -> raises QCFlowException
+    with pytest.raises(QCFlowException, match=r"The task could not be inferred"):
+        qcflow.transformers.save_model(transformers_model=model_dict, path=model_path)
 
     # 2. Save local custom model with task -> saves successfully
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=model_dict,
         path=model_path,
         task="text-generation",
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict("How to save Transformer model?")
     assert isinstance(inference[0], str)
@@ -3384,7 +3384,7 @@ def test_local_custom_model_save_and_load(text_generation_pipeline, model_path, 
     #    with the corresponding Transformers task
     shutil.rmtree(model_path)
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=model_dict,
         path=model_path,
         task="llm/v1/chat",
@@ -3396,7 +3396,7 @@ def test_local_custom_model_save_and_load(text_generation_pipeline, model_path, 
     assert flavor_config["inference_task"] == "llm/v1/chat"
     assert mlmodel["metadata"]["task"] == "llm/v1/chat"
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict(
         {
@@ -3451,13 +3451,13 @@ def test_model_config_is_not_mutated_after_prediction(text2text_generation_pipel
     Version(transformers.__version__) < Version("4.34.0"), reason="Feature does not exist"
 )
 def test_text_generation_task_chat_predict(text_generation_pipeline, model_path):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=text_generation_pipeline,
         path=model_path,
         task="llm/v1/chat",
     )
 
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_path)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_path)
 
     inference = pyfunc_loaded.predict(
         {
@@ -3490,8 +3490,8 @@ def test_text_generation_task_chat_serve(text_generation_pipeline):
         "max_tokens": 10,
     }
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             text_generation_pipeline,
             "model",
             task="llm/v1/chat",
@@ -3524,8 +3524,8 @@ HF_COMMIT_HASH_PATTERN = re.compile(r"^[a-z0-9]{40}$")
 @pytest.mark.parametrize(
     ("model_fixture", "input_example", "components"),
     [
-        ("text2text_generation_pipeline", "What is MLflow?", {"tokenizer"}),
-        ("text_generation_pipeline", "What is MLflow?", {"tokenizer"}),
+        ("text2text_generation_pipeline", "What is QCFlow?", {"tokenizer"}),
+        ("text_generation_pipeline", "What is QCFlow?", {"tokenizer"}),
         (
             "small_vision_model",
             image_url,
@@ -3535,14 +3535,14 @@ HF_COMMIT_HASH_PATTERN = re.compile(r"^[a-z0-9]{40}$")
         ),
         (
             "component_multi_modal",
-            {"text": "What is MLflow?", "image": image_url},
+            {"text": "What is QCFlow?", "image": image_url},
             {"image_processor", "tokenizer"}
             if IS_NEW_FEATURE_EXTRACTION_API
             else {"feature_extractor", "tokenizer"},
         ),
         ("fill_mask_pipeline", "The quick brown <mask> jumps over the lazy dog.", {"tokenizer"}),
         ("whisper_pipeline", lambda: read_audio_data("bytes"), {"feature_extractor", "tokenizer"}),
-        ("feature_extraction_pipeline", "What is MLflow?", {"tokenizer"}),
+        ("feature_extraction_pipeline", "What is QCFlow?", {"tokenizer"}),
     ],
 )
 def test_save_and_load_pipeline_without_save_pretrained_false(
@@ -3551,7 +3551,7 @@ def test_save_and_load_pipeline_without_save_pretrained_false(
     pipeline = request.getfixturevalue(model_fixture)
     model = pipeline["model"] if isinstance(pipeline, dict) else pipeline.model
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=pipeline,
         path=model_path,
         save_pretrained=False,
@@ -3577,21 +3577,21 @@ def test_save_and_load_pipeline_without_save_pretrained_false(
     if "python_function" in mlmodel.flavors:
         if callable(input_example):
             input_example = input_example()
-        mlflow.pyfunc.load_model(model_path).predict(input_example)
+        qcflow.pyfunc.load_model(model_path).predict(input_example)
 
 
 # Patch tempdir just to verify the invocation
-@mock.patch("mlflow.transformers.TempDir", side_effect=mlflow.utils.file_utils.TempDir)
+@mock.patch("qcflow.transformers.TempDir", side_effect=qcflow.utils.file_utils.TempDir)
 def test_persist_pretrained_model(mock_tmpdir, small_qa_tf_pipeline):
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             small_qa_tf_pipeline,
             "model",
             save_pretrained=False,
-            pip_requirements=["mlflow"],  # For speed up logging
+            pip_requirements=["qcflow"],  # For speed up logging
         )
 
-    artifact_path = Path(mlflow.artifacts.download_artifacts(model_info.model_uri))
+    artifact_path = Path(qcflow.artifacts.download_artifacts(model_info.model_uri))
     model_path = artifact_path / "model"
     tokenizer_path = artifact_path / "components" / "tokenizer"
 
@@ -3601,7 +3601,7 @@ def test_persist_pretrained_model(mock_tmpdir, small_qa_tf_pipeline):
     assert not model_path.exists()
     assert not tokenizer_path.exists()
 
-    mlflow.transformers.persist_pretrained_model(model_info.model_uri)
+    qcflow.transformers.persist_pretrained_model(model_info.model_uri)
 
     mock_tmpdir.assert_called_once()
     updated_config = Model.load(model_info.model_uri).flavors["transformers"]
@@ -3614,7 +3614,7 @@ def test_persist_pretrained_model(mock_tmpdir, small_qa_tf_pipeline):
 
     # Repeat persisting the model will no-op
     mock_tmpdir.reset_mock()
-    mlflow.transformers.persist_pretrained_model(model_info.model_uri)
+    qcflow.transformers.persist_pretrained_model(model_info.model_uri)
     mock_tmpdir.assert_not_called()
 
 
@@ -3622,12 +3622,12 @@ def test_small_qa_pipeline_copy_metadata_in_databricks(
     mock_is_in_databricks, small_qa_pipeline, tmp_path
 ):
     artifact_path = "transformers"
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             small_qa_pipeline,
             artifact_path,
         )
-    artifact_path = mlflow.artifacts.download_artifacts(
+    artifact_path = qcflow.artifacts.download_artifacts(
         artifact_uri=model_info.model_uri, dst_path=tmp_path.as_posix()
     )
 
@@ -3642,13 +3642,13 @@ def test_small_qa_pipeline_copy_metadata_in_databricks(
 
 def test_peft_pipeline_copy_metadata_in_databricks(mock_is_in_databricks, peft_pipeline, tmp_path):
     artifact_path = "transformers"
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             peft_pipeline,
             artifact_path,
         )
 
-    artifact_path = mlflow.artifacts.download_artifacts(
+    artifact_path = qcflow.artifacts.download_artifacts(
         artifact_uri=model_info.model_uri, dst_path=tmp_path.as_posix()
     )
 
@@ -3663,21 +3663,21 @@ def test_peft_pipeline_copy_metadata_in_databricks(mock_is_in_databricks, peft_p
 
 @pytest.mark.parametrize("device", ["cpu", "cuda", 0, -1, None])
 def test_device_param_on_load_model(device, small_qa_pipeline, model_path, monkeypatch):
-    mlflow.transformers.save_model(small_qa_pipeline, path=model_path)
-    conf = mlflow.transformers.load_model(model_path, return_type="components", device=device)
+    qcflow.transformers.save_model(small_qa_pipeline, path=model_path)
+    conf = qcflow.transformers.load_model(model_path, return_type="components", device=device)
     assert conf.get("device") == device
 
-    monkeypatch.setenv("MLFLOW_HUGGINGFACE_USE_DEVICE_MAP", "true")
+    monkeypatch.setenv("QCFLOW_HUGGINGFACE_USE_DEVICE_MAP", "true")
     if device is None:
-        conf = mlflow.transformers.load_model(model_path, return_type="components", device=device)
+        conf = qcflow.transformers.load_model(model_path, return_type="components", device=device)
         assert conf.get("device") is None
     else:
         with pytest.raises(
-            MlflowException,
-            match=r"The environment variable MLFLOW_HUGGINGFACE_USE_DEVICE_MAP is set to True, "
+            QCFlowException,
+            match=r"The environment variable QCFLOW_HUGGINGFACE_USE_DEVICE_MAP is set to True, "
             rf"but the `device` argument is provided with value {device}.",
         ):
-            mlflow.transformers.load_model(model_path, return_type="components", device=device)
+            qcflow.transformers.load_model(model_path, return_type="components", device=device)
 
 
 @pytest.fixture
@@ -3717,13 +3717,13 @@ def local_checkpoint_path(tmp_path):
     return str(checkpoint_path)
 
 
-@mock.patch("mlflow.transformers._logger")
+@mock.patch("qcflow.transformers._logger")
 def test_save_model_from_local_checkpoint(mock_logger, model_path, local_checkpoint_path):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=local_checkpoint_path,
         task="text-generation",
         path=model_path,
-        input_example=["What is MLflow?"],
+        input_example=["What is QCFlow?"],
     )
 
     logged_info = Model.load(model_path)
@@ -3743,18 +3743,18 @@ def test_save_model_from_local_checkpoint(mock_logger, model_path, local_checkpo
     assert any("A local checkpoint path or PEFT model" in c[0][0] for c in info_calls)
     with model_path.joinpath("requirements.txt").open() as f:
         reqs = {req.split("==")[0] for req in f.read().split("\n")}
-    assert reqs == {"mlflow", "accelerate", "transformers", "torch", "torchvision"}
+    assert reqs == {"qcflow", "accelerate", "transformers", "torch", "torchvision"}
 
     # Load as native pipeline
-    loaded_pipeline = mlflow.transformers.load_model(model_path)
+    loaded_pipeline = qcflow.transformers.load_model(model_path)
     assert isinstance(loaded_pipeline, transformers.TextGenerationPipeline)
 
-    query = "What is MLflow?"
+    query = "What is QCFlow?"
     pred_native = loaded_pipeline(query)[0]
     assert pred_native["generated_text"].startswith(query)
 
     # Load as pyfunc
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_path)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_path)
     pred_pyfunc = loaded_pyfunc.predict(query)[0]
     assert pred_pyfunc.startswith(query)
 
@@ -3770,20 +3770,20 @@ def test_save_model_from_local_checkpoint(mock_logger, model_path, local_checkpo
 
 
 def test_save_model_from_local_checkpoint_with_custom_tokenizer(model_path, local_checkpoint_path):
-    # When a custom tokenizer is also saved in the checkpoint, MLflow should save and load it.
+    # When a custom tokenizer is also saved in the checkpoint, QCFlow should save and load it.
     tokenizer = transformers.AutoTokenizer.from_pretrained("distilroberta-base")
     tokenizer.add_special_tokens({"additional_special_tokens": ["<sushi>"]})
     tokenizer.save_pretrained(local_checkpoint_path)
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=local_checkpoint_path,
         path=model_path,
         task="text-generation",
-        input_example=["What is MLflow?"],
+        input_example=["What is QCFlow?"],
     )
 
     # The custom tokenizer should be loaded
-    loaded_pipeline = mlflow.transformers.load_model(model_path)
+    loaded_pipeline = qcflow.transformers.load_model(model_path)
     tokenizer = loaded_pipeline.tokenizer
     assert tokenizer.special_tokens_map["additional_special_tokens"] == ["<sushi>"]
 
@@ -3795,11 +3795,11 @@ def test_save_model_from_local_checkpoint_with_custom_tokenizer(model_path, loca
 def test_save_model_from_local_checkpoint_with_llm_inference_task(
     model_path, local_checkpoint_path
 ):
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=local_checkpoint_path,
         path=model_path,
         task="llm/v1/chat",
-        input_example=["What is MLflow?"],
+        input_example=["What is QCFlow?"],
     )
 
     logged_info = Model.load(model_path)
@@ -3809,12 +3809,12 @@ def test_save_model_from_local_checkpoint_with_llm_inference_task(
     assert flavor_conf["inference_task"] == "llm/v1/chat"
 
     # Load as pyfunc
-    loaded_pyfunc = mlflow.pyfunc.load_model(model_path)
+    loaded_pyfunc = qcflow.pyfunc.load_model(model_path)
     response = loaded_pyfunc.predict(
         {
             "messages": [
                 {"role": "system", "content": "Hello, how can I help you today?"},
-                {"role": "user", "content": "What is MLflow?"},
+                {"role": "user", "content": "What is QCFlow?"},
             ],
         }
     )
@@ -3823,16 +3823,16 @@ def test_save_model_from_local_checkpoint_with_llm_inference_task(
 
 
 def test_save_model_from_local_checkpoint_invalid_arguments(model_path, local_checkpoint_path):
-    with pytest.raises(MlflowException, match=r"The `task` argument must be specified"):
-        mlflow.transformers.save_model(
+    with pytest.raises(QCFlowException, match=r"The `task` argument must be specified"):
+        qcflow.transformers.save_model(
             transformers_model=local_checkpoint_path,
             path=model_path,
         )
 
     with pytest.raises(
-        MlflowException, match=r"The `save_pretrained` argument must be set to True"
+        QCFlowException, match=r"The `save_pretrained` argument must be set to True"
     ):
-        mlflow.transformers.save_model(
+        qcflow.transformers.save_model(
             transformers_model=local_checkpoint_path,
             path=model_path,
             task="fill-mask",
@@ -3840,17 +3840,17 @@ def test_save_model_from_local_checkpoint_invalid_arguments(model_path, local_ch
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"The provided directory invalid path does not contain a config.json file.",
     ):
-        mlflow.transformers.save_model(
+        qcflow.transformers.save_model(
             transformers_model="invalid path",
             path=model_path,
             task="fill-mask",
         )
 
 
-@mock.patch("mlflow.models.validate_serving_input")
+@mock.patch("qcflow.models.validate_serving_input")
 @pytest.mark.parametrize(
     ("model_fixture", "should_skip_validation"),
     [
@@ -3865,12 +3865,12 @@ def test_log_model_skip_validating_serving_input_for_local_checkpoint(
     tmp_path,
     request,
 ):
-    # Ensure mlflow skips serving input validation for local checkpoint
+    # Ensure qcflow skips serving input validation for local checkpoint
     # input to avoid expensive computation
     model = request.getfixturevalue(model_fixture)
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(
             model,
             "model",
             task="fill-mask",
@@ -3878,9 +3878,9 @@ def test_log_model_skip_validating_serving_input_for_local_checkpoint(
         )
 
     # Serving input should exist regardless of the skip validation
-    mlflow_model = Model.load(model_info.model_uri)
+    qcflow_model = Model.load(model_info.model_uri)
     local_path = _download_artifact_from_uri(model_info.model_uri, output_path=tmp_path)
-    serving_input = mlflow_model.get_serving_input(local_path)
+    serving_input = qcflow_model.get_serving_input(local_path)
     assert json.loads(serving_input) == {"inputs": ["How are you?"]}
 
     if should_skip_validation:

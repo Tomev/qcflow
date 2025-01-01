@@ -4,12 +4,12 @@ import pytest
 from aiohttp import ClientTimeout
 from fastapi.encoders import jsonable_encoder
 
-from mlflow.exceptions import MlflowException
-from mlflow.gateway.config import RouteConfig
-from mlflow.gateway.constants import MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.ai21labs import AI21LabsProvider
-from mlflow.gateway.schemas import chat, completions, embeddings
+from qcflow.exceptions import QCFlowException
+from qcflow.gateway.config import RouteConfig
+from qcflow.gateway.constants import QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.ai21labs import AI21LabsProvider
+from qcflow.gateway.schemas import chat, completions, embeddings
 
 from tests.gateway.tools import MockAsyncResponse
 
@@ -117,14 +117,14 @@ async def test_completions():
                 "maxTokens": 1000,
                 "prompt": "This is a test",
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 
 @pytest.mark.asyncio
 async def test_param_invalid_model_name_is_not_permitted():
     config = completions_config_invalid_model()
-    with pytest.raises(MlflowException, match=r"An Unsupported AI21Labs model.*"):
+    with pytest.raises(QCFlowException, match=r"An Unsupported AI21Labs model.*"):
         RouteConfig(**config)
 
 

@@ -1,31 +1,31 @@
 import pandas as pd
 
-from mlflow.entities.evaluation import Evaluation as EvaluationEntity
-from mlflow.evaluation.utils import (
+from qcflow.entities.evaluation import Evaluation as EvaluationEntity
+from qcflow.evaluation.utils import (
     _get_assessments_dataframe_schema,
     _get_evaluations_dataframe_schema,
     _get_metrics_dataframe_schema,
     _get_tags_dataframe_schema,
 )
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
-from mlflow.tracking.client import MlflowClient
+from qcflow.exceptions import QCFlowException
+from qcflow.protos.databricks_pb2 import INTERNAL_ERROR, RESOURCE_DOES_NOT_EXIST
+from qcflow.tracking.client import QCFlowClient
 
 
 def get_evaluation(*, run_id: str, evaluation_id: str) -> EvaluationEntity:
     """
-    Retrieves an Evaluation object from an MLflow Run.
+    Retrieves an Evaluation object from an QCFlow Run.
 
     Args:
-        run_id (str): ID of the MLflow Run containing the evaluation.
+        run_id (str): ID of the QCFlow Run containing the evaluation.
         evaluation_id (str): The ID of the evaluation.
 
     Returns:
         Evaluation: The Evaluation object.
     """
-    client = MlflowClient()
+    client = QCFlowClient()
     if not _contains_evaluation_artifacts(client=client, run_id=run_id):
-        raise MlflowException(
+        raise QCFlowException(
             "The specified run does not contain any evaluations. "
             "Please log evaluations to the run before retrieving them.",
             error_code=RESOURCE_DOES_NOT_EXIST,
@@ -53,7 +53,7 @@ def get_evaluation(*, run_id: str, evaluation_id: str) -> EvaluationEntity:
     )
 
 
-def _contains_evaluation_artifacts(*, client: MlflowClient, run_id: str) -> bool:
+def _contains_evaluation_artifacts(*, client: QCFlowClient, run_id: str) -> bool:
     return {"_evaluations.json", "_metrics.json", "_assessments.json", "_tags.json"}.issubset(
         {file.path for file in client.list_artifacts(run_id)}
     )
@@ -137,7 +137,7 @@ def _get_evaluation_from_dataframes(
     """
     evaluation_row = evaluations_df[evaluations_df["evaluation_id"] == evaluation_id]
     if evaluation_row.empty:
-        raise MlflowException(
+        raise QCFlowException(
             f"The specified evaluation ID '{evaluation_id}' does not exist in the run '{run_id}'.",
             error_code=RESOURCE_DOES_NOT_EXIST,
         )
@@ -149,7 +149,7 @@ def _get_evaluation_from_dataframes(
         tags_df=tags_df,
     )
     if len(evaluations) != 1:
-        raise MlflowException(
+        raise QCFlowException(
             f"Expected to find a single evaluation with ID '{evaluation_id}', but found "
             f"{len(evaluations)} evaluations.",
             error_code=INTERNAL_ERROR,
@@ -192,13 +192,13 @@ def _dataframes_to_evaluations(
                 "key": metric["key"],
                 "value": metric["value"],
                 "timestamp": metric["timestamp"],
-                # Evaluation metrics don't have steps, but we're reusing the MLflow Metric
+                # Evaluation metrics don't have steps, but we're reusing the QCFlow Metric
                 # class to represent Evaluation metrics as entities in Python for now. Accordingly,
-                # we set the step to 0 in order to parse the evaluation metric as an MLflow Metric
+                # we set the step to 0 in order to parse the evaluation metric as an QCFlow Metric
                 # Python entity
                 "step": 0,
                 # Also discard the evaluation_id field from the evaluation metric, since this
-                # field is not part of the MLflow Metric Python entity
+                # field is not part of the QCFlow Metric Python entity
             }
             for metric in metrics_by_eval.get(evaluation_id, [])
         ]

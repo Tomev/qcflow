@@ -12,21 +12,21 @@ from click.testing import CliRunner
 from moto.core import DEFAULT_ACCOUNT_ID
 from sklearn.linear_model import LogisticRegression
 
-import mlflow
-import mlflow.pyfunc
-import mlflow.sagemaker as mfs
-import mlflow.sagemaker.cli as mfscli
-import mlflow.sklearn
-from mlflow.exceptions import MlflowException
-from mlflow.models import Model
-from mlflow.protos.databricks_pb2 import (
+import qcflow
+import qcflow.pyfunc
+import qcflow.sagemaker as mfs
+import qcflow.sagemaker.cli as mfscli
+import qcflow.sklearn
+from qcflow.exceptions import QCFlowException
+from qcflow.models import Model
+from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
 
 from tests.helper_functions import set_boto_credentials  # noqa: F401
 from tests.sagemaker.mock import TransformJob, TransformJobOperation, mock_sagemaker
@@ -37,13 +37,13 @@ TrainedModel = namedtuple("TrainedModel", ["model_path", "run_id", "model_uri"])
 @pytest.fixture
 def pretrained_model():
     model_path = "model"
-    with mlflow.start_run():
+    with qcflow.start_run():
         X = np.array([-2, -1, 0, 1, 2, 1]).reshape(-1, 1)
         y = np.array([0, 0, 1, 1, 1, 0])
         lr = LogisticRegression(solver="lbfgs")
         lr.fit(X, y)
-        mlflow.sklearn.log_model(lr, model_path)
-        run_id = mlflow.active_run().info.run_id
+        qcflow.sklearn.log_model(lr, model_path)
+        run_id = qcflow.active_run().info.run_id
         model_uri = "runs:/" + run_id + "/" + model_path
         return TrainedModel(model_path, run_id, model_uri)
 
@@ -67,7 +67,7 @@ def mock_sagemaker_aws_services(fn):
     @mock_sts
     @wraps(fn)
     def mock_wrapper(*args, **kwargs):
-        # Create an ECR repository for the `mlflow-pyfunc` SageMaker docker image
+        # Create an ECR repository for the `qcflow-pyfunc` SageMaker docker image
         ecr_client = boto3.client("ecr", region_name="us-west-2")
         ecr_client.create_repository(repositoryName=mfs.DEFAULT_IMAGE_NAME)
 
@@ -95,7 +95,7 @@ def mock_sagemaker_aws_services(fn):
 def test_batch_deployment_with_unsupported_flavor_raises_exception(pretrained_model):
     unsupported_flavor = "this is not a valid flavor"
     match = "The specified flavor: `this is not a valid flavor` is not supported for deployment"
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         mfs.deploy_transform_job(
             job_name="bad_flavor",
             model_uri=pretrained_model.model_uri,
@@ -112,7 +112,7 @@ def test_batch_deployment_with_unsupported_flavor_raises_exception(pretrained_mo
 def test_batch_deployment_with_missing_flavor_raises_exception(pretrained_model):
     missing_flavor = "mleap"
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The specified model does not contain the specified deployment flavor",
     ) as exc:
         mfs.deploy_transform_job(
@@ -132,11 +132,11 @@ def test_batch_deployment_of_model_with_no_supported_flavors_raises_exception(pr
     logged_model_path = _download_artifact_from_uri(pretrained_model.model_uri)
     model_config_path = os.path.join(logged_model_path, "MLmodel")
     model_config = Model.load(model_config_path)
-    del model_config.flavors[mlflow.pyfunc.FLAVOR_NAME]
+    del model_config.flavors[qcflow.pyfunc.FLAVOR_NAME]
     model_config.save(path=model_config_path)
 
     match = "The specified model does not contain any of the supported flavors for deployment"
-    with pytest.raises(MlflowException, match=match) as exc:
+    with pytest.raises(QCFlowException, match=match) as exc:
         mfs.deploy_transform_job(
             job_name="missing-flavor",
             model_uri=logged_model_path,
@@ -153,7 +153,7 @@ def test_batch_deployment_of_model_with_no_supported_flavors_raises_exception(pr
 def test_deploy_sagemaker_transform_job_in_asynchronous_mode_without_archiving_throws_exception(
     pretrained_model,
 ):
-    with pytest.raises(MlflowException, match="Resources must be archived") as exc:
+    with pytest.raises(QCFlowException, match="Resources must be archived") as exc:
         mfs.deploy_transform_job(
             job_name="test-job",
             model_uri=pretrained_model.model_uri,
@@ -344,7 +344,7 @@ def test_deploying_sagemaker_transform_job_with_preexisting_name_in_create_mode_
     )
 
     with pytest.raises(
-        MlflowException, match="a batch transform job with the same name already exists"
+        QCFlowException, match="a batch transform job with the same name already exists"
     ) as exc:
         mfs.deploy_transform_job(
             job_name=job_name,
@@ -443,7 +443,7 @@ def test_deploy_in_throw_exception_after_transform_job_creation_fails(
 
     with (
         mock.patch("botocore.client.BaseClient._make_api_call", new=fail_transform_job_creations),
-        pytest.raises(MlflowException, match="batch transform job failed") as exc,
+        pytest.raises(QCFlowException, match="batch transform job failed") as exc,
     ):
         mfs.deploy_transform_job(
             job_name="test-job",
@@ -471,7 +471,7 @@ def test_attempting_to_terminate_in_asynchronous_mode_without_archiving_throws_e
         s3_output_path="Some Output Path",
     )
 
-    with pytest.raises(MlflowException, match="Resources must be archived") as exc:
+    with pytest.raises(QCFlowException, match="Resources must be archived") as exc:
         mfs.terminate_transform_job(
             job_name=job_name,
             archive=False,

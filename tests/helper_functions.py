@@ -19,18 +19,18 @@ import pytest
 import requests
 import yaml
 
-import mlflow
-from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.environment import (
+import qcflow
+from qcflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _CONSTRAINTS_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
-    _generate_mlflow_version_pinning,
+    _generate_qcflow_version_pinning,
     _get_pip_deps,
 )
-from mlflow.utils.file_utils import read_yaml, write_yaml
-from mlflow.utils.os import is_windows
+from qcflow.utils.file_utils import read_yaml, write_yaml
+from qcflow.utils.os import is_windows
 
 AWS_METADATA_IP = "169.254.169.254"  # Used to fetch AWS Instance and User metadata.
 LOCALHOST = "127.0.0.1"
@@ -86,7 +86,7 @@ def score_model_in_sagemaker_docker_container(
         data: The data to send to the docker container for testing. This is either a
             Pandas dataframe or string of the format specified by `content_type`.
         content_type: The type of the data to send to the docker container for testing. This is
-            one of `mlflow.pyfunc.scoring_server.CONTENT_TYPES`.
+            one of `qcflow.pyfunc.scoring_server.CONTENT_TYPES`.
         flavor: Model flavor to be deployed.
         activity_polling_timeout_seconds: The amount of time, in seconds, to wait before
             declaring the scoring process to have failed.
@@ -95,8 +95,8 @@ def score_model_in_sagemaker_docker_container(
     env.update(LC_ALL="en_US.UTF-8", LANG="en_US.UTF-8")
     port = get_safe_port()
     scoring_cmd = (
-        f"mlflow deployments run-local -t sagemaker --name test -m {model_uri}"
-        f" -C image=mlflow-pyfunc -C port={port} --flavor {flavor}"
+        f"qcflow deployments run-local -t sagemaker --name test -m {model_uri}"
+        f" -C image=qcflow-pyfunc -C port={port} --flavor {flavor}"
     )
     proc = _start_scoring_proc(
         cmd=scoring_cmd.split(" "),
@@ -115,20 +115,20 @@ def pyfunc_generate_dockerfile(output_directory, model_uri=None, extra_args=None
     Args:
         output_directory: Output directory to generate Dockerfile and model artifacts
         model_uri: URI of model, e.g. runs:/some-run-id/run-relative/path/to/model
-        extra_args: List of extra args to pass to `mlflow models build-docker` command
+        extra_args: List of extra args to pass to `qcflow models build-docker` command
         env: Environment variables to use.
     """
     cmd = [
-        "mlflow",
+        "qcflow",
         "models",
         "generate-dockerfile",
         *(["-m", model_uri] if model_uri else []),
         "-d",
         output_directory,
     ]
-    mlflow_home = os.environ.get("MLFLOW_HOME")
-    if mlflow_home:
-        cmd += ["--mlflow-home", mlflow_home]
+    qcflow_home = os.environ.get("QCFLOW_HOME")
+    if qcflow_home:
+        cmd += ["--qcflow-home", qcflow_home]
     if extra_args:
         cmd += extra_args
     subprocess.run(cmd, check=True, env=env)
@@ -140,22 +140,22 @@ def pyfunc_build_image(model_uri=None, extra_args=None, env=None):
 
     Args:
         model_uri: URI of model, e.g. runs:/some-run-id/run-relative/path/to/model
-        extra_args: List of extra args to pass to `mlflow models build-docker` command
+        extra_args: List of extra args to pass to `qcflow models build-docker` command
         env: Environment variables to pass to the subprocess building the image.
     """
     name = uuid.uuid4().hex
     cmd = [
         sys.executable,
         "-m",
-        "mlflow",
+        "qcflow",
         "models",
         "build-docker",
         *(["-m", model_uri] if model_uri else []),
         "-n",
         name,
     ]
-    if mlflow_home := os.environ.get("MLFLOW_HOME"):
-        cmd += ["--mlflow-home", mlflow_home]
+    if qcflow_home := os.environ.get("QCFLOW_HOME"):
+        cmd += ["--qcflow-home", qcflow_home]
     if extra_args:
         cmd += extra_args
 
@@ -241,20 +241,20 @@ def pyfunc_scoring_endpoint(
     """
     env = dict(os.environ)
     env.update(LC_ALL="en_US.UTF-8", LANG="en_US.UTF-8")
-    env.update(MLFLOW_TRACKING_URI=mlflow.get_tracking_uri())
-    env.update(MLFLOW_HOME=_get_mlflow_home())
+    env.update(QCFLOW_TRACKING_URI=qcflow.get_tracking_uri())
+    env.update(QCFLOW_HOME=_get_qcflow_home())
     port = get_safe_port()
     scoring_cmd = [
         sys.executable,
         "-m",
-        "mlflow",
+        "qcflow",
         "models",
         "serve",
         "-m",
         model_uri,
         "-p",
         str(port),
-        "--install-mlflow",
+        "--install-qcflow",
     ] + (extra_args or [])
 
     with _start_scoring_proc(cmd=scoring_cmd, env=env, stdout=stdout, stderr=stdout) as proc:
@@ -268,14 +268,14 @@ def pyfunc_scoring_endpoint(
             proc.terminate()
 
 
-def _get_mlflow_home():
+def _get_qcflow_home():
     """
     Returns:
-        The path to the MLflow installation root directory.
+        The path to the QCFlow installation root directory.
     """
-    mlflow_module_path = os.path.dirname(os.path.abspath(mlflow.__file__))
-    # The MLflow root directory is one level about the mlflow module location
-    return os.path.join(mlflow_module_path, os.pardir)
+    qcflow_module_path = os.path.dirname(os.path.abspath(qcflow.__file__))
+    # The QCFlow root directory is one level about the qcflow module location
+    return os.path.join(qcflow_module_path, os.pardir)
 
 
 def _start_scoring_proc(cmd, env, stdout=sys.stdout, stderr=sys.stderr):
@@ -330,9 +330,9 @@ class RestEndpoint:
         if self._validate_version:
             resp_status = requests.get(url=f"http://localhost:{self._port}/version")
             version = resp_status.text
-            _logger.info(f"mlflow server version {version}")
-            if version != mlflow.__version__:
-                raise Exception("version path is not returning correct mlflow version")
+            _logger.info(f"qcflow server version {version}")
+            if version != qcflow.__version__:
+                raise Exception("version path is not returning correct qcflow version")
         return self
 
     def __exit__(self, tp, val, traceback):
@@ -350,7 +350,7 @@ class RestEndpoint:
     def invoke(self, data, content_type):
         import pandas as pd
 
-        from mlflow.pyfunc import scoring_server as pyfunc_scoring_server
+        from qcflow.pyfunc import scoring_server as pyfunc_scoring_server
 
         if isinstance(data, pd.DataFrame):
             if content_type == pyfunc_scoring_server.CONTENT_TYPE_CSV:
@@ -418,15 +418,15 @@ def _read_lines(path):
 
 
 def _compare_logged_code_paths(code_path, model_path, flavor_name):
-    import mlflow.pyfunc
-    from mlflow.utils.model_utils import FLAVOR_CONFIG_CODE, _get_flavor_configuration
+    import qcflow.pyfunc
+    from qcflow.utils.model_utils import FLAVOR_CONFIG_CODE, _get_flavor_configuration
 
     pyfunc_conf = _get_flavor_configuration(
-        model_path=model_path, flavor_name=mlflow.pyfunc.FLAVOR_NAME
+        model_path=model_path, flavor_name=qcflow.pyfunc.FLAVOR_NAME
     )
     flavor_conf = _get_flavor_configuration(model_path, flavor_name=flavor_name)
-    assert pyfunc_conf[mlflow.pyfunc.CODE] == flavor_conf[FLAVOR_CONFIG_CODE]
-    saved_code_path = os.path.join(model_path, pyfunc_conf[mlflow.pyfunc.CODE])
+    assert pyfunc_conf[qcflow.pyfunc.CODE] == flavor_conf[FLAVOR_CONFIG_CODE]
+    saved_code_path = os.path.join(model_path, pyfunc_conf[qcflow.pyfunc.CODE])
     assert os.path.exists(saved_code_path)
 
     with open(os.path.join(saved_code_path, os.path.basename(code_path))) as f1:
@@ -496,7 +496,7 @@ def _is_available_on_pypi(package, version=None, module=None):
             if `package` is 'scikit-learn', `module` should be 'sklearn'. If None, defaults
             to `package`.
     """
-    from mlflow.utils.requirements_utils import _get_installed_version
+    from qcflow.utils.requirements_utils import _get_installed_version
 
     url = f"https://pypi.python.org/pypi/{package}/json"
     for sec in range(3):
@@ -599,14 +599,14 @@ def assert_array_almost_equal(actual_array, desired_array, rtol=1e-6):
         np.testing.assert_array_equal(actual_array, desired_array)
 
 
-def _mlflow_major_version_string():
-    return _generate_mlflow_version_pinning()
+def _qcflow_major_version_string():
+    return _generate_qcflow_version_pinning()
 
 
 @contextmanager
 def mock_http_request_200():
     with mock.patch(
-        "mlflow.utils.rest_utils.http_request",
+        "qcflow.utils.rest_utils.http_request",
         return_value=mock.MagicMock(status_code=200, text="{}"),
     ) as m:
         yield m
@@ -615,7 +615,7 @@ def mock_http_request_200():
 def mock_http_200(f):
     @functools.wraps(f)
     @mock.patch(
-        "mlflow.utils.rest_utils.http_request",
+        "qcflow.utils.rest_utils.http_request",
         return_value=mock.MagicMock(status_code=200, text="{}"),
     )
     def wrapper(*args, **kwargs):
@@ -627,7 +627,7 @@ def mock_http_200(f):
 @contextmanager
 def mock_http_request_403_200():
     with mock.patch(
-        "mlflow.utils.rest_utils.http_request",
+        "qcflow.utils.rest_utils.http_request",
         side_effect=[
             mock.MagicMock(status_code=403, text='{"error_code": "ENDPOINT_NOT_FOUND"}'),
             mock.MagicMock(status_code=200, text="{}"),
@@ -658,7 +658,7 @@ def clear_hub_cache():
             delete_strategy.execute()
 
     except ImportError:
-        # Local import check for mlflow-skinny not including huggingface_hub
+        # Local import check for qcflow-skinny not including huggingface_hub
         pass
 
 

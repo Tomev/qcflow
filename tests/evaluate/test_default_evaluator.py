@@ -23,24 +23,24 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.svm import LinearSVC
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.metrics import (
+import qcflow
+from qcflow.exceptions import QCFlowException
+from qcflow.metrics import (
     MetricValue,
     flesch_kincaid_grade_level,
     make_metric,
     toxicity,
 )
-from mlflow.metrics.genai import model_utils
-from mlflow.metrics.genai.base import EvaluationExample
-from mlflow.metrics.genai.genai_metric import (
+from qcflow.metrics.genai import model_utils
+from qcflow.metrics.genai.base import EvaluationExample
+from qcflow.metrics.genai.genai_metric import (
     _GENAI_CUSTOM_METRICS_FILE_NAME,
     make_genai_metric_from_prompt,
     retrieve_custom_metrics,
 )
-from mlflow.metrics.genai.metric_definitions import answer_similarity
-from mlflow.models import Model
-from mlflow.models.evaluation.artifacts import (
+from qcflow.metrics.genai.metric_definitions import answer_similarity
+from qcflow.models import Model
+from qcflow.models.evaluation.artifacts import (
     CsvEvaluationArtifact,
     ImageEvaluationArtifact,
     JsonEvaluationArtifact,
@@ -49,15 +49,15 @@ from mlflow.models.evaluation.artifacts import (
     PickleEvaluationArtifact,
     TextEvaluationArtifact,
 )
-from mlflow.models.evaluation.base import evaluate
-from mlflow.models.evaluation.default_evaluator import (
+from qcflow.models.evaluation.base import evaluate
+from qcflow.models.evaluation.default_evaluator import (
     _CustomArtifact,
     _evaluate_custom_artifacts,
     _extract_predict_fn,
     _extract_raw_model,
     _get_aggregate_metrics_values,
 )
-from mlflow.models.evaluation.evaluators.classifier import (
+from qcflow.models.evaluation.evaluators.classifier import (
     _extract_predict_fn_and_prodict_proba_fn,
     _gen_classifier_curve,
     _get_binary_classifier_metrics,
@@ -65,10 +65,10 @@ from mlflow.models.evaluation.evaluators.classifier import (
     _get_multiclass_classifier_metrics,
     _infer_model_type_by_labels,
 )
-from mlflow.models.evaluation.evaluators.default import _extract_output_and_other_columns
-from mlflow.models.evaluation.evaluators.regressor import _get_regressor_metrics
-from mlflow.models.evaluation.evaluators.shap import _compute_df_mode_or_mean
-from mlflow.models.evaluation.utils.metric import MetricDefinition
+from qcflow.models.evaluation.evaluators.default import _extract_output_and_other_columns
+from qcflow.models.evaluation.evaluators.regressor import _get_regressor_metrics
+from qcflow.models.evaluation.evaluators.shap import _compute_df_mode_or_mean
+from qcflow.models.evaluation.utils.metric import MetricDefinition
 
 from tests.evaluate.test_evaluation import (
     binary_logistic_regressor_model_uri,  # noqa: F401
@@ -96,7 +96,7 @@ def suppress_dummy_evaluator():
 
     This fixture suppress dummy evaluator for the duration of each test.
     """
-    from mlflow.models.evaluation.evaluator_registry import _model_evaluation_registry
+    from qcflow.models.evaluation.evaluator_registry import _model_evaluation_registry
 
     dummy_evaluator = _model_evaluation_registry._registry.pop("dummy_evaluator")
 
@@ -133,7 +133,7 @@ def test_regressor_evaluation(
     if isinstance(evaluators, list):
         evaluator_config = {evaluator: evaluator_config for evaluator in evaluators}
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             linear_regressor_model_uri,
             diabetes_dataset._constructor_args["data"],
@@ -145,7 +145,7 @@ def test_regressor_evaluation(
 
     _, metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(linear_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(linear_regressor_model_uri)
 
     y = diabetes_dataset.labels_data
     y_pred = model.predict(diabetes_dataset.features_data)
@@ -155,7 +155,7 @@ def test_regressor_evaluation(
         diabetes_dataset.features_data, diabetes_dataset.labels_data, sample_weight=sample_weights
     )
 
-    assert json.loads(tags["mlflow.datasets"]) == [
+    assert json.loads(tags["qcflow.datasets"]) == [
         {**diabetes_dataset._metadata, "model": model.metadata.model_uuid}
     ]
 
@@ -167,7 +167,7 @@ def test_regressor_evaluation(
         )
         assert np.isclose(expected_metric_val, result.metrics[metric_key], rtol=1e-3)
 
-    assert json.loads(tags["mlflow.datasets"]) == [
+    assert json.loads(tags["qcflow.datasets"]) == [
         {**diabetes_dataset._metadata, "model": model.metadata.model_uuid}
     ]
 
@@ -189,7 +189,7 @@ def test_regressor_evaluation_disable_logging_metrics_and_artifacts(
     linear_regressor_model_uri,
     diabetes_dataset,
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             linear_regressor_model_uri,
             diabetes_dataset._constructor_args["data"],
@@ -200,7 +200,7 @@ def test_regressor_evaluation_disable_logging_metrics_and_artifacts(
 
     _, logged_metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(linear_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(linear_regressor_model_uri)
 
     y = diabetes_dataset.labels_data
     y_pred = model.predict(diabetes_dataset.features_data)
@@ -211,13 +211,13 @@ def test_regressor_evaluation_disable_logging_metrics_and_artifacts(
     )
 
     assert_metrics_equal(result.metrics, expected_metrics)
-    assert "mlflow.datassets" not in tags
+    assert "qcflow.datassets" not in tags
 
 
 def test_regressor_evaluation_with_int_targets(
     linear_regressor_model_uri, diabetes_dataset, tmp_path
 ):
-    with mlflow.start_run():
+    with qcflow.start_run():
         result = evaluate(
             linear_regressor_model_uri,
             diabetes_dataset._constructor_args["data"],
@@ -239,7 +239,7 @@ def test_multi_classifier_evaluation(
     sample_weights = np.random.rand(len(iris_dataset.labels_data)) if use_sample_weights else None
     evaluator_config = {"sample_weights": sample_weights} if use_sample_weights else {}
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             multiclass_logistic_regressor_model_uri,
             iris_dataset._constructor_args["data"],
@@ -251,7 +251,7 @@ def test_multi_classifier_evaluation(
 
     _, metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
 
     predict_fn, predict_proba_fn = _extract_predict_fn_and_prodict_proba_fn(model)
     y = iris_dataset.labels_data
@@ -269,7 +269,7 @@ def test_multi_classifier_evaluation(
         assert np.isclose(expected_metric_val, metrics[metric_key], rtol=1e-3)
         assert np.isclose(expected_metric_val, result.metrics[metric_key], rtol=1e-3)
 
-    assert json.loads(tags["mlflow.datasets"]) == [
+    assert json.loads(tags["qcflow.datasets"]) == [
         {**iris_dataset._metadata, "model": model.metadata.model_uuid}
     ]
 
@@ -298,7 +298,7 @@ def test_multi_classifier_evaluation_disable_logging_metrics_and_artifacts(
     multiclass_logistic_regressor_model_uri,
     iris_dataset,
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             multiclass_logistic_regressor_model_uri,
             iris_dataset._constructor_args["data"],
@@ -309,7 +309,7 @@ def test_multi_classifier_evaluation_disable_logging_metrics_and_artifacts(
 
     _, logged_metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
 
     predict_fn, predict_proba_fn = _extract_predict_fn_and_prodict_proba_fn(model)
     y = iris_dataset.labels_data
@@ -324,14 +324,14 @@ def test_multi_classifier_evaluation_disable_logging_metrics_and_artifacts(
     )
 
     assert_metrics_equal(result.metrics, expected_metrics)
-    assert "mlflow.datassets" not in tags
+    assert "qcflow.datassets" not in tags
 
 
 def test_bin_classifier_evaluation(
     binary_logistic_regressor_model_uri,
     breast_cancer_dataset,
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             binary_logistic_regressor_model_uri,
             breast_cancer_dataset._constructor_args["data"],
@@ -343,7 +343,7 @@ def test_bin_classifier_evaluation(
 
     _, metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(binary_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(binary_logistic_regressor_model_uri)
 
     predict_fn, predict_proba_fn = _extract_predict_fn_and_prodict_proba_fn(model)
     y = breast_cancer_dataset.labels_data
@@ -364,7 +364,7 @@ def test_bin_classifier_evaluation(
         )
         assert np.isclose(expected_metric_val, result.metrics[metric_key], rtol=1e-3)
 
-    assert json.loads(tags["mlflow.datasets"]) == [
+    assert json.loads(tags["qcflow.datasets"]) == [
         {**breast_cancer_dataset._metadata, "model": model.metadata.model_uuid}
     ]
 
@@ -392,7 +392,7 @@ def test_bin_classifier_evaluation_disable_logging_metrics_and_artifacts(
     binary_logistic_regressor_model_uri,
     breast_cancer_dataset,
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             binary_logistic_regressor_model_uri,
             breast_cancer_dataset._constructor_args["data"],
@@ -403,7 +403,7 @@ def test_bin_classifier_evaluation_disable_logging_metrics_and_artifacts(
 
     _, logged_metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(binary_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(binary_logistic_regressor_model_uri)
 
     _, raw_model = _extract_raw_model(model)
     predict_fn, predict_proba_fn = _extract_predict_fn_and_prodict_proba_fn(model)
@@ -419,14 +419,14 @@ def test_bin_classifier_evaluation_disable_logging_metrics_and_artifacts(
     )
 
     assert_metrics_equal(result.metrics, expected_metrics)
-    assert "mlflow.datassets" not in tags
+    assert "qcflow.datassets" not in tags
 
 
 def test_spark_regressor_model_evaluation(
     spark_linear_regressor_model_uri,
     diabetes_spark_dataset,
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             spark_linear_regressor_model_uri,
             diabetes_spark_dataset._constructor_args["data"],
@@ -437,7 +437,7 @@ def test_spark_regressor_model_evaluation(
 
     _, metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(spark_linear_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(spark_linear_regressor_model_uri)
 
     X = diabetes_spark_dataset.features_data
     y = diabetes_spark_dataset.labels_data
@@ -453,9 +453,9 @@ def test_spark_regressor_model_evaluation(
         )
         assert np.isclose(expected_metric_val, result.metrics[metric_key], rtol=1e-3)
 
-    model = mlflow.pyfunc.load_model(spark_linear_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(spark_linear_regressor_model_uri)
 
-    assert json.loads(tags["mlflow.datasets"]) == [
+    assert json.loads(tags["qcflow.datasets"]) == [
         {**diabetes_spark_dataset._metadata, "model": model.metadata.model_uuid}
     ]
 
@@ -467,7 +467,7 @@ def test_spark_regressor_model_evaluation_disable_logging_metrics_and_artifacts(
     spark_linear_regressor_model_uri,
     diabetes_spark_dataset,
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             spark_linear_regressor_model_uri,
             diabetes_spark_dataset._constructor_args["data"],
@@ -478,7 +478,7 @@ def test_spark_regressor_model_evaluation_disable_logging_metrics_and_artifacts(
 
     _, logged_metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(spark_linear_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(spark_linear_regressor_model_uri)
 
     X = diabetes_spark_dataset.features_data
     y = diabetes_spark_dataset.labels_data
@@ -498,21 +498,21 @@ def test_static_spark_dataset_evaluation():
     spark_dataframe = spark.createDataFrame(
         spark.sparkContext.parallelize(rows, 1), ["features", "label", "model_output"]
     )
-    with mlflow.start_run():
-        mlflow.evaluate(
+    with qcflow.start_run():
+        qcflow.evaluate(
             data=spark_dataframe,
             targets="label",
             predictions="model_output",
             model_type="regressor",
         )
-        run_id = mlflow.active_run().info.run_id
+        run_id = qcflow.active_run().info.run_id
 
-    computed_eval_metrics = mlflow.get_run(run_id).data.metrics
+    computed_eval_metrics = qcflow.get_run(run_id).data.metrics
     assert "mean_squared_error" in computed_eval_metrics
 
 
 def test_svm_classifier_evaluation(svm_model_uri, breast_cancer_dataset):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             svm_model_uri,
             breast_cancer_dataset._constructor_args["data"],
@@ -523,7 +523,7 @@ def test_svm_classifier_evaluation(svm_model_uri, breast_cancer_dataset):
 
     _, metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(svm_model_uri)
+    model = qcflow.pyfunc.load_model(svm_model_uri)
 
     predict_fn, _ = _extract_predict_fn_and_prodict_proba_fn(model)
     y = breast_cancer_dataset.labels_data
@@ -542,7 +542,7 @@ def test_svm_classifier_evaluation(svm_model_uri, breast_cancer_dataset):
         )
         assert np.isclose(expected_metric_val, result.metrics[metric_key], rtol=1e-3)
 
-    assert json.loads(tags["mlflow.datasets"]) == [
+    assert json.loads(tags["qcflow.datasets"]) == [
         {**breast_cancer_dataset._metadata, "model": model.metadata.model_uuid}
     ]
 
@@ -561,7 +561,7 @@ def test_svm_classifier_evaluation(svm_model_uri, breast_cancer_dataset):
 
 
 def _evaluate_explainer_with_exceptions(model_uri, dataset):
-    with mlflow.start_run():
+    with qcflow.start_run():
         evaluate(
             model_uri,
             dataset._constructor_args["data"],
@@ -593,7 +593,7 @@ def test_default_explainer_pandas_df_num_cols(
 def test_svm_classifier_evaluation_disable_logging_metrics_and_artifacts(
     svm_model_uri, breast_cancer_dataset
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             svm_model_uri,
             breast_cancer_dataset._constructor_args["data"],
@@ -604,7 +604,7 @@ def test_svm_classifier_evaluation_disable_logging_metrics_and_artifacts(
 
     _, logged_metrics, tags, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(svm_model_uri)
+    model = qcflow.pyfunc.load_model(svm_model_uri)
 
     _, raw_model = _extract_raw_model(model)
     predict_fn, _ = _extract_predict_fn_and_prodict_proba_fn(model)
@@ -617,14 +617,14 @@ def test_svm_classifier_evaluation_disable_logging_metrics_and_artifacts(
     )
 
     assert_metrics_equal(result.metrics, expected_metrics)
-    assert "mlflow.datassets" not in tags
+    assert "qcflow.datassets" not in tags
 
 
 def test_pipeline_model_kernel_explainer_on_categorical_features(pipeline_model_uri):
-    from mlflow.models.evaluation._shap_patch import _PatchedKernelExplainer
+    from qcflow.models.evaluation._shap_patch import _PatchedKernelExplainer
 
     data, target_col = get_pipeline_model_dataset()
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         evaluate(
             pipeline_model_uri,
             data[0::3],
@@ -642,7 +642,7 @@ def test_pipeline_model_kernel_explainer_on_categorical_features(pipeline_model_
         "explainer",
     }.issubset(run_data.artifacts)
 
-    explainer = mlflow.shap.load_explainer(f"runs:/{run.info.run_id}/explainer")
+    explainer = qcflow.shap.load_explainer(f"runs:/{run.info.run_id}/explainer")
     assert isinstance(explainer, _PatchedKernelExplainer)
 
 
@@ -702,12 +702,12 @@ def test_infer_model_type_by_labels():
 def test_extract_raw_model_and_predict_fn(
     binary_logistic_regressor_model_uri, breast_cancer_dataset
 ):
-    model = mlflow.pyfunc.load_model(binary_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(binary_logistic_regressor_model_uri)
 
     model_loader_module, raw_model = _extract_raw_model(model)
     predict_fn, predict_proba_fn = _extract_predict_fn_and_prodict_proba_fn(model)
 
-    assert model_loader_module == "mlflow.sklearn"
+    assert model_loader_module == "qcflow.sklearn"
     assert isinstance(raw_model, LogisticRegression)
     np.testing.assert_allclose(
         predict_fn(breast_cancer_dataset.features_data),
@@ -1232,7 +1232,7 @@ def test_evaluate_custom_metric_incorrect_return_formats():
     def dummy_fn(*_):
         pass
 
-    with mock.patch("mlflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
         MetricDefinition(dummy_fn, "dummy_fn", 0, None).evaluate(eval_fn_args)
         mock_warning.assert_called_once_with(
             "Did not log metric 'dummy_fn' at index 0 in the `extra_metrics` parameter"
@@ -1242,7 +1242,7 @@ def test_evaluate_custom_metric_incorrect_return_formats():
     def incorrect_return_type(*_):
         return ["stuff"], 3
 
-    with mock.patch("mlflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
         metric = MetricDefinition(incorrect_return_type, incorrect_return_type.__name__, 0)
         metric.evaluate(eval_fn_args)
         mock_warning.assert_called_once_with(
@@ -1253,7 +1253,7 @@ def test_evaluate_custom_metric_incorrect_return_formats():
     def non_list_scores(*_):
         return MetricValue(scores=5)
 
-    with mock.patch("mlflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
         MetricDefinition(non_list_scores, non_list_scores.__name__, 0).evaluate(eval_fn_args)
         mock_warning.assert_called_once_with(
             f"Did not log metric '{non_list_scores.__name__}' at index 0 in the "
@@ -1263,7 +1263,7 @@ def test_evaluate_custom_metric_incorrect_return_formats():
     def non_numeric_scores(*_):
         return MetricValue(scores=[{"val": "string"}])
 
-    with mock.patch("mlflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
         MetricDefinition(non_numeric_scores, non_numeric_scores.__name__, 0).evaluate(eval_fn_args)
         mock_warning.assert_called_once_with(
             f"Did not log metric '{non_numeric_scores.__name__}' at index 0 in the `extra_metrics`"
@@ -1273,7 +1273,7 @@ def test_evaluate_custom_metric_incorrect_return_formats():
     def non_list_justifications(*_):
         return MetricValue(justifications="string")
 
-    with mock.patch("mlflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
         metric = MetricDefinition(non_list_justifications, non_list_justifications.__name__, 0)
         metric.evaluate(eval_fn_args)
         mock_warning.assert_called_once_with(
@@ -1285,7 +1285,7 @@ def test_evaluate_custom_metric_incorrect_return_formats():
     def non_str_justifications(*_):
         return MetricValue(justifications=[3, 4])
 
-    with mock.patch("mlflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
         metric = MetricDefinition(non_str_justifications, non_str_justifications.__name__, 0)
         metric.evaluate(eval_fn_args)
         mock_warning.assert_called_once_with(
@@ -1297,7 +1297,7 @@ def test_evaluate_custom_metric_incorrect_return_formats():
     def non_dict_aggregates(*_):
         return MetricValue(aggregate_results=[5.0, 4.0])
 
-    with mock.patch("mlflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
         metric = MetricDefinition(non_dict_aggregates, non_dict_aggregates.__name__, 0)
         metric.evaluate(eval_fn_args)
         mock_warning.assert_called_once_with(
@@ -1309,7 +1309,7 @@ def test_evaluate_custom_metric_incorrect_return_formats():
     def wrong_type_aggregates(*_):
         return MetricValue(aggregate_results={"toxicity": 0.0, "hi": "hi"})
 
-    with mock.patch("mlflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.utils.metric._logger.warning") as mock_warning:
         metric = MetricDefinition(wrong_type_aggregates, wrong_type_aggregates.__name__, 0)
         metric.evaluate(eval_fn_args)
         mock_warning.assert_called_once_with(
@@ -1343,7 +1343,7 @@ def test_evaluate_custom_metric_lambda(fn):
     )
     metrics = _get_aggregate_metrics_values(builtin_metrics)
     eval_fn_args = [eval_df, metrics]
-    with mock.patch("mlflow.models.evaluation.default_evaluator._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.default_evaluator._logger.warning") as mock_warning:
         MetricDefinition(fn, "<lambda>", 0).evaluate(eval_fn_args)
         mock_warning.assert_not_called()
 
@@ -1403,7 +1403,7 @@ def test_evaluate_custom_artifacts_success():
 def _get_results_for_custom_metrics_tests(
     model_uri, dataset, *, extra_metrics=None, custom_artifacts=None
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             model_uri,
             dataset._constructor_args["data"],
@@ -1427,7 +1427,7 @@ def test_custom_metric_produced_multiple_artifacts_with_same_name_throw_exceptio
         return {"test_json_artifact": {"a": 3, "b": [1, 2]}}
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="cannot be logged because there already exists an artifact with the same name",
     ):
         _get_results_for_custom_metrics_tests(
@@ -1469,7 +1469,7 @@ def test_custom_metric_mixed(binary_logistic_regressor_model_uri, breast_cancer_
         custom_artifacts=[example_custom_artifact],
     )
 
-    model = mlflow.pyfunc.load_model(binary_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(binary_logistic_regressor_model_uri)
 
     predict_fn = _extract_predict_fn(model)
     y = breast_cancer_dataset.labels_data
@@ -1699,7 +1699,7 @@ def test_evaluate_sklearn_model_score_skip_when_not_scorable(
         "sklearn.linear_model.LinearRegression.score",
         side_effect=RuntimeError("LinearRegression.score failed"),
     ) as mock_score:
-        with mlflow.start_run():
+        with qcflow.start_run():
             result = evaluate(
                 linear_regressor_model_uri,
                 diabetes_dataset._constructor_args["data"],
@@ -1716,12 +1716,12 @@ def test_evaluate_sklearn_model_score_skip_when_not_scorable(
     [LogisticRegression(), LinearRegression()],
 )
 def test_autologging_is_disabled_during_evaluate(model):
-    mlflow.sklearn.autolog()
+    qcflow.sklearn.autolog()
     try:
         X, y = load_iris(as_frame=True, return_X_y=True)
-        with mlflow.start_run() as run:
+        with qcflow.start_run() as run:
             model.fit(X, y)
-            model_info = mlflow.sklearn.log_model(model, "model")
+            model_info = qcflow.sklearn.log_model(model, "model")
             result = evaluate(
                 model_info.model_uri,
                 X.assign(target=y),
@@ -1738,7 +1738,7 @@ def test_autologging_is_disabled_during_evaluate(model):
                 duplicate_metrics += matched_keys
         assert duplicate_metrics == []
     finally:
-        mlflow.sklearn.autolog(disable=True)
+        qcflow.sklearn.autolog(disable=True)
 
 
 def test_evaluation_works_with_model_pipelines_that_modify_input_data():
@@ -1757,8 +1757,8 @@ def test_evaluation_works_with_model_pipelines_that_modify_input_data():
     )
     model_pipeline.fit(X, y)
 
-    with mlflow.start_run() as run:
-        pipeline_model_uri = mlflow.sklearn.log_model(model_pipeline, "model").model_uri
+    with qcflow.start_run() as run:
+        pipeline_model_uri = qcflow.sklearn.log_model(model_pipeline, "model").model_uri
 
         evaluation_data = pd.DataFrame(load_iris().data, columns=["0", "1", "2", "3"])
         evaluation_data["labels"] = load_iris().target
@@ -1790,10 +1790,10 @@ def test_evaluation_works_with_model_pipelines_that_modify_input_data():
 @pytest.mark.parametrize("prefix", ["train_", None])
 def test_evaluation_metric_name_configs(prefix):
     X, y = load_iris(as_frame=True, return_X_y=True)
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         model = LogisticRegression()
         model.fit(X, y)
-        model_info = mlflow.sklearn.log_model(model, "model")
+        model_info = qcflow.sklearn.log_model(model, "model")
         result = evaluate(
             model_info.model_uri,
             X.assign(target=y),
@@ -1823,7 +1823,7 @@ def test_evaluation_metric_name_configs(prefix):
 def test_evaluation_with_env_restoration(
     multiclass_logistic_regressor_model_uri, iris_dataset, env_manager
 ):
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         result = evaluate(
             model=multiclass_logistic_regressor_model_uri,
             data=iris_dataset._constructor_args["data"],
@@ -1835,7 +1835,7 @@ def test_evaluation_with_env_restoration(
 
     _, metrics, _, artifacts = get_run_data(run.info.run_id)
 
-    model = mlflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
+    model = qcflow.pyfunc.load_model(multiclass_logistic_regressor_model_uri)
     y = iris_dataset.labels_data
     y_pred = model.predict(iris_dataset.features_data)
 
@@ -1867,10 +1867,10 @@ def test_evaluation_binary_classification_with_pos_label(pos_label):
         # that an unspecified `pos_label` doesn't cause problems
         # for binary classification tasks with nonstandard labels
         y = [10 if trg == 1 else trg for trg in y]
-    with mlflow.start_run():
+    with qcflow.start_run():
         model = LogisticRegression()
         model.fit(X, y)
-        model_info = mlflow.sklearn.log_model(model, "model")
+        model_info = qcflow.sklearn.log_model(model, "model")
         result = evaluate(
             model_info.model_uri,
             X.assign(target=y),
@@ -1892,10 +1892,10 @@ def test_evaluation_binary_classification_with_pos_label(pos_label):
 @pytest.mark.parametrize("average", [None, "weighted", "macro", "micro"])
 def test_evaluation_multiclass_classification_with_average(average):
     X, y = load_iris(as_frame=True, return_X_y=True)
-    with mlflow.start_run():
+    with qcflow.start_run():
         model = LogisticRegression()
         model.fit(X, y)
-        model_info = mlflow.sklearn.log_model(model, "model")
+        model_info = qcflow.sklearn.log_model(model, "model")
         result = evaluate(
             model_info.model_uri,
             X.assign(target=y),
@@ -1916,9 +1916,9 @@ def test_evaluation_multiclass_classification_with_average(average):
 
 def test_custom_metrics():
     X, y = load_iris(as_frame=True, return_X_y=True)
-    with mlflow.start_run():
+    with qcflow.start_run():
         model = LogisticRegression().fit(X, y)
-        model_info = mlflow.sklearn.log_model(model, "model")
+        model_info = qcflow.sklearn.log_model(model, "model")
         result = evaluate(
             model_info.model_uri,
             X.assign(target=y),
@@ -1942,9 +1942,9 @@ def test_custom_metrics():
 
 def test_custom_artifacts():
     X, y = load_iris(as_frame=True, return_X_y=True)
-    with mlflow.start_run():
+    with qcflow.start_run():
         model = LogisticRegression().fit(X, y)
-        model_info = mlflow.sklearn.log_model(model, "model")
+        model_info = qcflow.sklearn.log_model(model, "model")
         result = evaluate(
             model_info.model_uri,
             X.assign(target=y),
@@ -1976,7 +1976,7 @@ def test_make_metric_name_inference():
     assert eval_metric.name == "metric"
 
     with pytest.raises(
-        MlflowException, match="`name` must be specified if `eval_fn` is a lambda function."
+        QCFlowException, match="`name` must be specified if `eval_fn` is a lambda function."
     ):
         make_metric(eval_fn=lambda _df, _metrics: 0, greater_is_better=True)
 
@@ -1985,7 +1985,7 @@ def test_make_metric_name_inference():
             return 1
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="`name` must be specified if `eval_fn` does not have a `__name__` attribute.",
     ):
         make_metric(eval_fn=Callable(), greater_is_better=True)
@@ -2032,8 +2032,8 @@ def test_missing_args_raises_exception():
     def dummy_fn2(param_3, param_4, builtin_metrics):
         pass
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"question": ["a", "b"], "answer": ["a", "b"]})
@@ -2054,11 +2054,11 @@ def test_missing_args_raises_exception():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
-        with mlflow.start_run():
-            mlflow.evaluate(
+        with qcflow.start_run():
+            qcflow.evaluate(
                 model_info.model_uri,
                 data,
                 evaluators="default",
@@ -2076,12 +2076,12 @@ def test_custom_metrics_deprecated(
         pass
 
     with pytest.raises(
-        MlflowException,
-        match="The 'custom_metrics' parameter in mlflow.evaluate is deprecated. Please update "
+        QCFlowException,
+        match="The 'custom_metrics' parameter in qcflow.evaluate is deprecated. Please update "
         "your code to only use the 'extra_metrics' parameter instead.",
     ):
-        with mlflow.start_run():
-            mlflow.evaluate(
+        with qcflow.start_run():
+            qcflow.evaluate(
                 binary_logistic_regressor_model_uri,
                 breast_cancer_dataset._constructor_args["data"],
                 targets=breast_cancer_dataset._constructor_args["targets"],
@@ -2091,11 +2091,11 @@ def test_custom_metrics_deprecated(
                 extra_metrics=[make_metric(eval_fn=dummy_fn, greater_is_better=True)],
             )
 
-    message = "The 'custom_metrics' parameter in mlflow.evaluate is deprecated. Please update your "
+    message = "The 'custom_metrics' parameter in qcflow.evaluate is deprecated. Please update your "
     "code to use the 'extra_metrics' parameter instead."
     with pytest.warns(FutureWarning, match=message):
-        with mlflow.start_run():
-            mlflow.evaluate(
+        with qcflow.start_run():
+            qcflow.evaluate(
                 binary_logistic_regressor_model_uri,
                 breast_cancer_dataset._constructor_args["data"],
                 targets=breast_cancer_dataset._constructor_args["targets"],
@@ -2106,8 +2106,8 @@ def test_custom_metrics_deprecated(
 
 
 def test_evaluate_question_answering_with_targets():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame(
@@ -2116,14 +2116,14 @@ def test_evaluate_question_answering_with_targets():
                 "answer": ["words random", "This is a sentence."],
             }
         )
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             targets="answer",
             model_type="question-answering",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2135,7 +2135,7 @@ def test_evaluate_question_answering_with_targets():
 
 
 def test_evaluate_question_answering_on_static_dataset_with_targets():
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         data = pd.DataFrame(
             {
                 "question": ["words random", "This is a sentence."],
@@ -2143,14 +2143,14 @@ def test_evaluate_question_answering_on_static_dataset_with_targets():
                 "pred": ["words random", "This is a sentence."],
             }
         )
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             data=data,
             targets="answer",
             predictions="pred",
             model_type="question-answering",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2177,21 +2177,21 @@ def question_classifier(inputs):
 
 
 def test_evaluate_question_answering_with_numerical_targets():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=question_classifier,
             input_example=pd.DataFrame({"question": ["a", "b"]}),
         )
         data = pd.DataFrame({"question": ["a", "b"], "answer": [0, 1]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             targets="answer",
             model_type="question-answering",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2203,18 +2203,18 @@ def test_evaluate_question_answering_with_numerical_targets():
 
 
 def test_evaluate_question_answering_without_targets():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"question": ["words random", "This is a sentence."]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             model_type="question-answering",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2296,19 +2296,19 @@ def get_question_answering_metrics_keys(with_targets=False):
 
 
 def test_evaluate_text_summarization_with_targets():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"text": ["a", "b"], "summary": ["a", "b"]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             targets="summary",
             model_type="text-summarization",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2323,8 +2323,8 @@ def test_evaluate_text_summarization_with_targets_no_type_hints():
         x.rename(columns={"text": "outputs"}, inplace=True)
         return x
 
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=another_language_model,
             input_example=pd.DataFrame({"text": ["a", "b"]}),
@@ -2338,7 +2338,7 @@ def test_evaluate_text_summarization_with_targets_no_type_hints():
             evaluators="default",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2349,18 +2349,18 @@ def test_evaluate_text_summarization_with_targets_no_type_hints():
 
 
 def test_evaluate_text_summarization_without_targets():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"text": ["a", "b"]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             model_type="text-summarization",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2372,21 +2372,21 @@ def test_evaluate_text_summarization_without_targets():
 
 
 def test_evaluate_text_summarization_fails_to_load_evaluate_metrics():
-    from mlflow.metrics.metric_definitions import _cached_evaluate_load
+    from qcflow.metrics.metric_definitions import _cached_evaluate_load
 
     _cached_evaluate_load.cache_clear()
 
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
 
         data = pd.DataFrame({"text": ["a", "b"], "summary": ["a", "b"]})
         with mock.patch(
-            "mlflow.metrics.metric_definitions._cached_evaluate_load",
+            "qcflow.metrics.metric_definitions._cached_evaluate_load",
             side_effect=ImportError("mocked error"),
         ) as mock_load:
-            results = mlflow.evaluate(
+            results = qcflow.evaluate(
                 model_info.model_uri,
                 data,
                 targets="summary",
@@ -2395,7 +2395,7 @@ def test_evaluate_text_summarization_fails_to_load_evaluate_metrics():
             mock_load.assert_any_call("rouge")
             mock_load.assert_any_call("toxicity", module_type="measurement")
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2413,18 +2413,18 @@ def test_evaluate_text_summarization_fails_to_load_evaluate_metrics():
 
 
 def test_evaluate_text_and_text_metrics():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"text": ["sentence not", "All women are bad."]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             model_type="text",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2461,12 +2461,12 @@ def per_row_metric(predictions, targets=None, metrics=None):
 
 
 def test_evaluate_text_custom_metrics():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"text": ["a", "b"], "target": ["a", "b"]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             targets="target",
@@ -2477,7 +2477,7 @@ def test_evaluate_text_custom_metrics():
             ],
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -2495,12 +2495,12 @@ def test_evaluate_text_custom_metrics():
 
 @pytest.mark.parametrize("metric_prefix", ["train_", None])
 def test_eval_results_table_json_can_be_prefixed_with_metric_prefix(metric_prefix):
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"text": ["a", "b"]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             model_type="text",
@@ -2510,7 +2510,7 @@ def test_eval_results_table_json_can_be_prefixed_with_metric_prefix(metric_prefi
             },
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
 
     if metric_prefix is None:
@@ -2533,11 +2533,11 @@ def test_default_evaluator_for_pyfunc_model(breast_cancer_dataset):
     raw_model = LinearSVC()
     raw_model.fit(data.data, data.target)
 
-    mlflow_model = Model()
-    mlflow.pyfunc.add_to_model(mlflow_model, loader_module="mlflow.sklearn")
-    pyfunc_model = mlflow.pyfunc.PyFuncModel(model_meta=mlflow_model, model_impl=raw_model)
+    qcflow_model = Model()
+    qcflow.pyfunc.add_to_model(qcflow_model, loader_module="qcflow.sklearn")
+    pyfunc_model = qcflow.pyfunc.PyFuncModel(model_meta=qcflow_model, model_impl=raw_model)
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         evaluate(
             pyfunc_model,
             breast_cancer_dataset._constructor_args["data"],
@@ -2648,8 +2648,8 @@ def test_constructing_eval_df_for_custom_metrics():
         )
         return predictions.eq(targets).mean()
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=language_model_with_context,
             input_example=["a", "b"],
@@ -2661,7 +2661,7 @@ def test_constructing_eval_df_for_custom_metrics():
                 "targets": ["target_a", "target_b"],
             }
         )
-        eval_results = mlflow.evaluate(
+        eval_results = qcflow.evaluate(
             model_info.model_uri,
             data,
             targets="targets",
@@ -2698,13 +2698,13 @@ def test_evaluate_no_model_or_predictions_specified():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=(
             "Either a model or set of predictions must be specified in order to use the"
             " default evaluator"
         ),
     ):
-        mlflow.evaluate(
+        qcflow.evaluate(
             data=data,
             targets="truth",
             model_type="regressor",
@@ -2717,10 +2717,10 @@ def test_evaluate_no_model_and_predictions_specified_with_unsupported_data_type(
     y = np.random.random(5)
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="If predictions is specified, data must be one of the following types",
     ):
-        mlflow.evaluate(
+        qcflow.evaluate(
             data=X,
             targets=y,
             predictions="model_output",
@@ -2730,31 +2730,31 @@ def test_evaluate_no_model_and_predictions_specified_with_unsupported_data_type(
 
 
 def test_evaluate_no_model_type():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="The extra_metrics argument must be specified model_type is None.",
         ):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model_info.model_uri,
                 data,
             )
 
 
 def test_evaluate_no_model_type_with_builtin_metric():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
-        results = mlflow.evaluate(
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
-            extra_metrics=[mlflow.metrics.toxicity()],
+            extra_metrics=[qcflow.metrics.toxicity()],
         )
         assert results.metrics.keys() == {
             "toxicity/v1/mean",
@@ -2771,13 +2771,13 @@ def test_evaluate_no_model_type_with_builtin_metric():
 
 
 def test_evaluate_no_model_type_with_custom_metric():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
-        from mlflow.metrics import make_metric
-        from mlflow.metrics.base import standard_aggregations
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
+        from qcflow.metrics import make_metric
+        from qcflow.metrics.base import standard_aggregations
 
         def word_count_eval(predictions, targets=None, metrics=None):
             scores = []
@@ -2790,7 +2790,7 @@ def test_evaluate_no_model_type_with_custom_metric():
 
         word_count = make_metric(eval_fn=word_count_eval, greater_is_better=True, name="word_count")
 
-        results = mlflow.evaluate(model_info.model_uri, data, extra_metrics=[word_count])
+        results = qcflow.evaluate(model_info.model_uri, data, extra_metrics=[word_count])
         assert results.metrics.keys() == {
             "word_count/mean",
             "word_count/variance",
@@ -2815,8 +2815,8 @@ def multi_output_model(inputs):
 
 
 def test_default_metrics_as_extra_metrics():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=multi_output_model, input_example=["a"]
         )
         data = pd.DataFrame(
@@ -2832,19 +2832,19 @@ def test_default_metrics_as_extra_metrics():
             predictions="answer",
             model_type="question-answering",
             extra_metrics=[
-                mlflow.metrics.exact_match(),
+                qcflow.metrics.exact_match(),
             ],
             evaluators="default",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     assert "exact_match/v1" in results.metrics.keys()
 
 
 def test_default_metrics_as_extra_metrics_static_dataset():
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         data = pd.DataFrame(
             {
                 "question": ["words random", "This is a sentence."],
@@ -2859,15 +2859,15 @@ def test_default_metrics_as_extra_metrics_static_dataset():
             predictions="answer",
             model_type="question-answering",
             extra_metrics=[
-                mlflow.metrics.flesch_kincaid_grade_level(),
-                mlflow.metrics.ari_grade_level(),
-                mlflow.metrics.toxicity(),
-                mlflow.metrics.exact_match(),
+                qcflow.metrics.flesch_kincaid_grade_level(),
+                qcflow.metrics.ari_grade_level(),
+                qcflow.metrics.toxicity(),
+                qcflow.metrics.exact_match(),
             ],
             evaluators="default",
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     for metric in ["toxicity", "ari_grade_level", "flesch_kincaid_grade_level"]:
@@ -2903,7 +2903,7 @@ def test_derived_metrics_basic_dependency_graph():
             aggregate_results=metric_2.aggregate_results,
         )
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         data = pd.DataFrame(
             {
                 "question": ["words random", "This is a sentence."],
@@ -3004,7 +3004,7 @@ def test_derived_metrics_complicated_dependency_graph():
         }
     )
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         results = evaluate(
             data=data,
             predictions="answer",
@@ -3058,11 +3058,11 @@ def test_derived_metrics_complicated_dependency_graph():
     error_message = r"Error: Metric calculation failed for the following metrics:\n"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
-        with mlflow.start_run():
-            mlflow.evaluate(
+        with qcflow.start_run():
+            qcflow.evaluate(
                 data=data,
                 predictions="answer",
                 targets="truth",
@@ -3098,11 +3098,11 @@ def test_derived_metrics_circular_dependencies_raises_exception():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
-        with mlflow.start_run():
-            mlflow.evaluate(
+        with qcflow.start_run():
+            qcflow.evaluate(
                 data=data,
                 predictions="answer",
                 model_type="text",
@@ -3132,11 +3132,11 @@ def test_derived_metrics_missing_dependencies_raises_exception():
     )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
-        with mlflow.start_run():
-            mlflow.evaluate(
+        with qcflow.start_run():
+            qcflow.evaluate(
                 data=data,
                 predictions="answer",
                 model_type="text",
@@ -3157,12 +3157,12 @@ def test_custom_metric_bad_names():
         "forward slashes ('/')."
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=error_message,
     ):
         make_metric(eval_fn=metric_fn, name="metric/with/slash", greater_is_better=True)
 
-    with mock.patch("mlflow.models.evaluation.base._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.base._logger.warning") as mock_warning:
         make_metric(eval_fn=metric_fn, name="bad-metric-name", greater_is_better=True)
         mock_warning.assert_called_once_with(
             "The metric name 'bad-metric-name' provided is not a valid Python identifier, which "
@@ -3170,7 +3170,7 @@ def test_custom_metric_bad_names():
             "identifier to enable creation of derived metrics that use the given metric."
         )
 
-    with mock.patch("mlflow.models.evaluation.base._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.base._logger.warning") as mock_warning:
         make_metric(eval_fn=metric_fn, name="None", greater_is_better=True)
         mock_warning.assert_called_once_with(
             "The metric name 'None' is a reserved Python keyword, which will "
@@ -3178,18 +3178,18 @@ def test_custom_metric_bad_names():
             "to enable creation of derived metrics that use the given metric."
         )
 
-    with mock.patch("mlflow.models.evaluation.base._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.evaluation.base._logger.warning") as mock_warning:
         make_metric(eval_fn=metric_fn, name="predictions", greater_is_better=True)
         mock_warning.assert_called_once_with(
-            "The metric name 'predictions' is used as a special parameter in MLflow metrics, which "
+            "The metric name 'predictions' is used as a special parameter in QCFlow metrics, which "
             "will prevent its use as a base metric for derived metrics. Please use a different "
             "name to enable creation of derived metrics that use the given metric."
         )
 
 
 def test_multi_output_model_error_handling():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=multi_output_model, input_example=["a"]
         )
         data = pd.DataFrame(
@@ -3199,7 +3199,7 @@ def test_multi_output_model_error_handling():
             }
         )
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Output column name is not specified for the multi-output model.",
         ):
             evaluate(
@@ -3208,50 +3208,50 @@ def test_multi_output_model_error_handling():
                 targets="truth",
                 model_type="question-answering",
                 extra_metrics=[
-                    mlflow.metrics.flesch_kincaid_grade_level(),
-                    mlflow.metrics.ari_grade_level(),
-                    mlflow.metrics.toxicity(),
-                    mlflow.metrics.exact_match(),
+                    qcflow.metrics.flesch_kincaid_grade_level(),
+                    qcflow.metrics.ari_grade_level(),
+                    qcflow.metrics.toxicity(),
+                    qcflow.metrics.exact_match(),
                 ],
                 evaluators="default",
             )
 
 
 def test_invalid_extra_metrics():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="Please ensure that all extra metrics are instances of "
-            "mlflow.metrics.EvaluationMetric.",
+            "qcflow.metrics.EvaluationMetric.",
         ):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model_info.model_uri,
                 data,
                 model_type="text",
                 evaluators="default",
-                extra_metrics=[mlflow.metrics.latency],
+                extra_metrics=[qcflow.metrics.latency],
             )
 
 
 def test_evaluate_with_latency():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"text": ["sentence not", "Hello world."]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             model_type="text",
             evaluators="default",
-            extra_metrics=[mlflow.metrics.latency()],
+            extra_metrics=[qcflow.metrics.latency()],
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -3268,24 +3268,24 @@ def test_evaluate_with_latency():
 
 
 def test_evaluate_with_latency_and_pd_series():
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
 
         def pd_series_model(inputs: list[str]) -> pd.Series:
             return pd.Series(inputs)
 
-        model_info = mlflow.pyfunc.log_model(
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=pd_series_model, input_example=["a", "b"]
         )
         data = pd.DataFrame({"text": ["input text", "random text"]})
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             model_type="text",
             evaluators="default",
-            extra_metrics=[mlflow.metrics.latency()],
+            extra_metrics=[qcflow.metrics.latency()],
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -3301,23 +3301,23 @@ def test_evaluate_with_latency_and_pd_series():
 
 
 def test_evaluate_with_latency_static_dataset():
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=language_model, input_example=["a", "b"])
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=language_model, input_example=["a", "b"])
         data = pd.DataFrame(
             {
                 "text": ["foo", "bar"],
                 "model_output": ["FOO", "BAR"],
             }
         )
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             data=data,
             model_type="text",
             evaluators="default",
             predictions="model_output",
-            extra_metrics=[mlflow.metrics.latency()],
+            extra_metrics=[qcflow.metrics.latency()],
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -3342,7 +3342,7 @@ properly_formatted_openai_response1 = """\
 
 
 def test_evaluate_with_correctness():
-    metric = mlflow.metrics.genai.make_genai_metric(
+    metric = qcflow.metrics.genai.make_genai_metric(
         name="correctness",
         definition=(
             "Correctness refers to how well the generated output matches "
@@ -3377,27 +3377,27 @@ def test_evaluate_with_correctness():
         "score_model_on_payload",
         return_value=properly_formatted_openai_response1,
     ):
-        with mlflow.start_run():
+        with qcflow.start_run():
             eval_df = pd.DataFrame(
                 {
                     "inputs": [
-                        "What is MLflow?",
+                        "What is QCFlow?",
                         "What is Spark?",
                         "What is Python?",
                     ],
                     "ground_truth": [
-                        "MLflow is an open-source platform",
+                        "QCFlow is an open-source platform",
                         "Apache Spark is an open-source, distributed computing system",
                         "Python is a high-level programming language",
                     ],
                     "prediction": [
-                        "MLflow is an open-source platform",
+                        "QCFlow is an open-source platform",
                         "Apache Spark is an open-source, distributed computing system",
                         "Python is a high-level programming language",
                     ],
                 }
             )
-            results = mlflow.evaluate(
+            results = qcflow.evaluate(
                 data=eval_df,
                 evaluators="default",
                 targets="ground_truth",
@@ -3413,12 +3413,12 @@ def test_evaluate_with_correctness():
 
 
 def test_evaluate_custom_metrics_string_values():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
-        results = mlflow.evaluate(
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
             extra_metrics=[
@@ -3463,8 +3463,8 @@ def test_evaluate_retriever():
     def fn(X):
         return pd.DataFrame({"retrieved_context": [["doc1", "doc3", "doc2"]] * len(X)})
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             model=fn,
             data=X,
             targets="ground_truth",
@@ -3474,7 +3474,7 @@ def test_evaluate_retriever():
                 "k": 3,
             },
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert run.data.metrics == {
         "precision_at_3/mean": 2 / 3,
         "precision_at_3/variance": 0,
@@ -3486,15 +3486,15 @@ def test_evaluate_retriever():
         "ndcg_at_3/p90": pytest.approx(0.9197207891481877),
         "ndcg_at_3/variance": 0.0,
     }
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
     validate_retriever_logged_data(logged_data)
 
     # test with a big k to ensure we use min(k, len(retrieved_chunks))
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             model=fn,
             data=X,
             targets="ground_truth",
@@ -3504,7 +3504,7 @@ def test_evaluate_retriever():
                 "retriever_k": 6,
             },
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert run.data.metrics == {
         "precision_at_6/mean": 2 / 3,
         "precision_at_6/variance": 0,
@@ -3518,14 +3518,14 @@ def test_evaluate_retriever():
     }
 
     # test with default k
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             model=fn,
             data=X,
             targets="ground_truth",
             model_type="retriever",
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert run.data.metrics == {
         "precision_at_3/mean": 2 / 3,
         "precision_at_3/variance": 0,
@@ -3544,8 +3544,8 @@ def test_evaluate_retriever():
 
     X = pd.DataFrame({"question": ["q1?"] * 3, "ground_truth": [["doc1", "doc3"]] * 3})
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             model=fn2,
             data=X,
             targets="ground_truth",
@@ -3556,7 +3556,7 @@ def test_evaluate_retriever():
                 }
             },
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert run.data.metrics == {
         "precision_at_3/mean": 1,
         "precision_at_3/p90": 1,
@@ -3573,8 +3573,8 @@ def test_evaluate_retriever():
     def fn3(X):
         return pd.DataFrame({"output": [[]] * len(X)})
 
-    with mlflow.start_run() as run:
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        qcflow.evaluate(
             model=fn3,
             data=X,
             targets="ground_truth",
@@ -3585,7 +3585,7 @@ def test_evaluate_retriever():
                 }
             },
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert run.data.metrics == {
         "precision_at_4/mean": 0,
         "precision_at_4/p90": 0,
@@ -3606,15 +3606,15 @@ def test_evaluate_retriever():
             "predictions_param": [["doc1", "doc4", "doc5"]] * 3,
         }
     )
-    with mlflow.start_run() as run:
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        qcflow.evaluate(
             data=X_1,
             predictions="predictions_param",
             targets="targets_param",
             model_type="retriever",
-            extra_metrics=[mlflow.metrics.precision_at_k(4), mlflow.metrics.recall_at_k(4)],
+            extra_metrics=[qcflow.metrics.precision_at_k(4), qcflow.metrics.recall_at_k(4)],
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert run.data.metrics == {
         "precision_at_3/mean": 1 / 3,
         "precision_at_3/p90": 1 / 3,
@@ -3634,15 +3634,15 @@ def test_evaluate_retriever():
     }
 
     # test to make sure it silently fails with invalid k
-    with mlflow.start_run() as run:
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        qcflow.evaluate(
             data=X_1,
             predictions="predictions_param",
             targets="targets_param",
             model_type="retriever",
-            extra_metrics=[mlflow.metrics.precision_at_k(-1)],
+            extra_metrics=[qcflow.metrics.precision_at_k(-1)],
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert run.data.metrics == {
         "precision_at_3/mean": 1 / 3,
         "precision_at_3/p90": 1 / 3,
@@ -3656,8 +3656,8 @@ def test_evaluate_retriever():
     }
 
     # silent failure with evaluator_config method too!
-    with mlflow.start_run() as run:
-        mlflow.evaluate(
+    with qcflow.start_run() as run:
+        qcflow.evaluate(
             data=X_1,
             predictions="predictions_param",
             targets="targets_param",
@@ -3667,7 +3667,7 @@ def test_evaluate_retriever():
                 "retriever_k": -1,
             },
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert run.data.metrics == {}
 
 
@@ -3677,18 +3677,18 @@ def test_evaluate_retriever_builtin_metrics_no_model_type():
     def fn(X):
         return {"retrieved_context": [["doc1", "doc3", "doc2"]] * len(X)}
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             model=fn,
             data=X,
             targets="ground_truth",
             extra_metrics=[
-                mlflow.metrics.precision_at_k(4),
-                mlflow.metrics.recall_at_k(4),
-                mlflow.metrics.ndcg_at_k(4),
+                qcflow.metrics.precision_at_k(4),
+                qcflow.metrics.recall_at_k(4),
+                qcflow.metrics.ndcg_at_k(4),
             ],
         )
-    run = mlflow.get_run(run.info.run_id)
+    run = qcflow.get_run(run.info.run_id)
     assert (
         run.data.metrics
         == results.metrics
@@ -3704,7 +3704,7 @@ def test_evaluate_retriever_builtin_metrics_no_model_type():
             "ndcg_at_4/variance": 0.0,
         }
     )
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert "eval_results_table.json" in artifacts
     logged_data = pd.DataFrame(**results.artifacts["eval_results_table"].content)
@@ -3717,8 +3717,8 @@ def test_evaluate_retriever_with_numpy_array_values():
     def fn(X):
         return pd.DataFrame({"retrieved_context": [np.array(["doc1", "doc3", "doc2"])] * len(X)})
 
-    with mlflow.start_run():
-        results = mlflow.evaluate(
+    with qcflow.start_run():
+        results = qcflow.evaluate(
             model=fn,
             data=X,
             targets="ground_truth",
@@ -3747,8 +3747,8 @@ def test_evaluate_retriever_with_ints():
     def fn(X):
         return pd.DataFrame({"retrieved_context": [np.array([1, 3, 2])] * len(X)})
 
-    with mlflow.start_run():
-        results = mlflow.evaluate(
+    with qcflow.start_run():
+        results = qcflow.evaluate(
             model=fn,
             data=X,
             targets="ground_truth",
@@ -3773,21 +3773,21 @@ def test_evaluate_retriever_with_ints():
 
 def test_evaluate_with_numpy_array():
     data = [
-        ["What is MLflow?"],
+        ["What is QCFlow?"],
     ]
     ground_truth = [
-        "MLflow is an open-source platform for managing the end-to-end machine learning",
+        "QCFlow is an open-source platform for managing the end-to-end machine learning",
     ]
 
-    with mlflow.start_run():
-        logged_model = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        logged_model = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             logged_model.model_uri,
             data,
             targets=ground_truth,
-            extra_metrics=[mlflow.metrics.toxicity()],
+            extra_metrics=[qcflow.metrics.toxicity()],
         )
 
         assert results.metrics.keys() == {
@@ -3806,7 +3806,7 @@ def test_evaluate_with_numpy_array():
 
 
 def test_target_prediction_col_mapping():
-    metric = mlflow.metrics.genai.make_genai_metric(
+    metric = qcflow.metrics.genai.make_genai_metric(
         name="correctness",
         definition=(
             "Correctness refers to how well the generated output matches "
@@ -3841,27 +3841,27 @@ def test_target_prediction_col_mapping():
         "score_model_on_payload",
         return_value=properly_formatted_openai_response1,
     ):
-        with mlflow.start_run():
+        with qcflow.start_run():
             eval_df = pd.DataFrame(
                 {
                     "inputs": [
-                        "What is MLflow?",
+                        "What is QCFlow?",
                         "What is Spark?",
                         "What is Python?",
                     ],
                     "ground_truth": [
-                        "MLflow is an open-source platform",
+                        "QCFlow is an open-source platform",
                         "Apache Spark is an open-source, distributed computing system",
                         "Python is a high-level programming language",
                     ],
                     "prediction": [
-                        "MLflow is an open-source platform",
+                        "QCFlow is an open-source platform",
                         "Apache Spark is an open-source, distributed computing system",
                         "Python is a high-level programming language",
                     ],
                 }
             )
-            results = mlflow.evaluate(
+            results = qcflow.evaluate(
                 data=eval_df,
                 evaluators="default",
                 targets="renamed_ground_truth",
@@ -3878,29 +3878,29 @@ def test_target_prediction_col_mapping():
 
 
 def test_precanned_metrics_work():
-    metric = mlflow.metrics.rouge1()
-    with mlflow.start_run():
+    metric = qcflow.metrics.rouge1()
+    with qcflow.start_run():
         eval_df = pd.DataFrame(
             {
                 "inputs": [
-                    "What is MLflow?",
+                    "What is QCFlow?",
                     "What is Spark?",
                     "What is Python?",
                 ],
                 "ground_truth": [
-                    "MLflow is an open-source platform",
+                    "QCFlow is an open-source platform",
                     "Apache Spark is an open-source, distributed computing system",
                     "Python is a high-level programming language",
                 ],
                 "prediction": [
-                    "MLflow is an open-source platform",
+                    "QCFlow is an open-source platform",
                     "Apache Spark is an open-source, distributed computing system",
                     "Python is a high-level programming language",
                 ],
             }
         )
 
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             data=eval_df,
             evaluators="default",
             predictions="prediction",
@@ -3920,29 +3920,29 @@ def test_precanned_metrics_work():
 
 
 def test_precanned_bleu_metrics_work():
-    metric = mlflow.metrics.bleu()
-    with mlflow.start_run():
+    metric = qcflow.metrics.bleu()
+    with qcflow.start_run():
         eval_df = pd.DataFrame(
             {
                 "inputs": [
-                    "What is MLflow?",
+                    "What is QCFlow?",
                     "What is Spark?",
                     "What is Python?",
                 ],
                 "ground_truth": [
-                    "MLflow is an open-source platform",
+                    "QCFlow is an open-source platform",
                     "Apache Spark is an open-source, distributed computing system",
                     "Python is a high-level programming language",
                 ],
                 "prediction": [
-                    "MLflow is an open-source platform",
+                    "QCFlow is an open-source platform",
                     "Apache Spark is an open-source, distributed computing system",
                     "Python is a high-level programming language",
                 ],
             }
         )
 
-        results = mlflow.evaluate(
+        results = qcflow.evaluate(
             data=eval_df,
             evaluators="default",
             predictions="prediction",
@@ -3962,12 +3962,12 @@ def test_precanned_bleu_metrics_work():
 
 
 def test_evaluate_custom_metric_with_string_type():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
-        from mlflow.metrics import make_metric
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
+        from qcflow.metrics import make_metric
 
         def word_count_eval(predictions):
             scores = []
@@ -3987,7 +3987,7 @@ def test_evaluate_custom_metric_with_string_type():
 
         word_count = make_metric(eval_fn=word_count_eval, greater_is_better=True, name="word_count")
 
-        results = mlflow.evaluate(model_info.model_uri, data, extra_metrics=[word_count])
+        results = qcflow.evaluate(model_info.model_uri, data, extra_metrics=[word_count])
         assert results.metrics["word_count/avg_len"] == 3.0
         assert len(results.tables) == 1
         assert results.tables["eval_results_table"].columns.tolist() == [
@@ -4003,8 +4003,8 @@ def test_evaluate_custom_metric_with_string_type():
 
 
 def test_do_not_log_built_in_metrics_as_artifacts():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a"]
         )
         data = pd.DataFrame(
@@ -4025,7 +4025,7 @@ def test_do_not_log_built_in_metrics_as_artifacts():
                 flesch_kincaid_grade_level(),
             ],
         )
-        client = mlflow.MlflowClient()
+        client = qcflow.QCFlowClient()
         artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
         assert _GENAI_CUSTOM_METRICS_FILE_NAME not in artifacts
 
@@ -4034,8 +4034,8 @@ def test_do_not_log_built_in_metrics_as_artifacts():
 
 
 def test_log_genai_custom_metrics_as_artifacts():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a"]
         )
         data = pd.DataFrame(
@@ -4045,8 +4045,8 @@ def test_log_genai_custom_metrics_as_artifacts():
             }
         )
         example = EvaluationExample(
-            input="What is MLflow?",
-            output="MLflow is an open-source platform for managing machine learning workflows.",
+            input="What is QCFlow?",
+            output="QCFlow is an open-source platform for managing machine learning workflows.",
             score=4,
             justification="test",
             grading_context={"targets": "test"},
@@ -4074,7 +4074,7 @@ def test_log_genai_custom_metrics_as_artifacts():
             ],
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert _GENAI_CUSTOM_METRICS_FILE_NAME in artifacts
 
@@ -4111,8 +4111,8 @@ def test_log_genai_custom_metrics_as_artifacts():
 
 
 def test_all_genai_custom_metrics_are_from_user_prompt():
-    with mlflow.start_run() as run:
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a"]
         )
         data = pd.DataFrame(
@@ -4146,7 +4146,7 @@ def test_all_genai_custom_metrics_are_from_user_prompt():
             ],
         )
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     artifacts = [a.path for a in client.list_artifacts(run.info.run_id)]
     assert _GENAI_CUSTOM_METRICS_FILE_NAME in artifacts
 
@@ -4163,20 +4163,20 @@ def test_xgboost_model_evaluate_work_with_shap_explainer():
     import xgboost
     from sklearn.model_selection import train_test_split
 
-    mlflow.xgboost.autolog(log_input_examples=True)
+    qcflow.xgboost.autolog(log_input_examples=True)
     X, y = shap.datasets.adult()
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
     xgb_model = xgboost.XGBClassifier()
-    with mlflow.start_run():
+    with qcflow.start_run():
         xgb_model.fit(X_train, y_train)
 
         eval_data = X_test
         eval_data["label"] = y_test
 
-        model_uri = mlflow.get_artifact_uri("model")
-        with mock.patch("mlflow.models.evaluation.evaluators.shap._logger.warning") as mock_warning:
-            mlflow.evaluate(
+        model_uri = qcflow.get_artifact_uri("model")
+        with mock.patch("qcflow.models.evaluation.evaluators.shap._logger.warning") as mock_warning:
+            qcflow.evaluate(
                 model_uri,
                 eval_data,
                 targets="label",
@@ -4202,7 +4202,7 @@ def test_xgboost_model_evaluate_work_with_shap_explainer():
 def test_evaluate_binary_classifier_calculate_label_list_correctly(evaluator_config):
     data = pd.DataFrame({"target": [0, 0, 1, 0], "prediction": [0, 1, 0, 0]})
 
-    result = mlflow.evaluate(
+    result = qcflow.evaluate(
         data=data,
         model_type="classifier",
         targets="target",
@@ -4240,8 +4240,8 @@ def test_evaluate_binary_classifier_calculate_label_list_correctly(evaluator_con
 def test_evaluate_multi_classifier_calculate_label_list_correctly(
     evaluator_config, data, monkeypatch
 ):
-    monkeypatch.setenv("_MLFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS", "true")
-    result = mlflow.evaluate(
+    monkeypatch.setenv("_QCFLOW_EVALUATE_SUPPRESS_CLASSIFICATION_ERRORS", "true")
+    result = qcflow.evaluate(
         data=pd.DataFrame(data),
         model_type="classifier",
         targets="target",
@@ -4263,8 +4263,8 @@ def test_evaluate_multi_classifier_calculate_label_list_correctly(
 
 def test_evaluate_errors_invalid_pos_label():
     data = pd.DataFrame({"target": [0, 0, 1, 0], "prediction": [0, 1, 0, 0]})
-    with pytest.raises(MlflowException, match=r"'pos_label' 1 must exist in 'label_list'"):
-        mlflow.evaluate(
+    with pytest.raises(QCFlowException, match=r"'pos_label' 1 must exist in 'label_list'"):
+        qcflow.evaluate(
             data=data,
             model_type="classifier",
             targets="target",

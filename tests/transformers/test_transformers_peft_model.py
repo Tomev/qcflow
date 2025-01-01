@@ -4,9 +4,9 @@ import pytest
 import transformers
 from packaging.version import Version
 
-import mlflow
-from mlflow.models import Model
-from mlflow.transformers.peft import get_peft_base_model, is_peft_model
+import qcflow
+from qcflow.models import Model
+from qcflow.transformers.peft import get_peft_base_model, is_peft_model
 
 SKIP_IF_PEFT_NOT_AVAILABLE = pytest.mark.skipif(
     (
@@ -49,7 +49,7 @@ def test_save_and_load_peft_pipeline(peft_pipeline, tmp_path):
 
     from tests.transformers.test_transformers_model_export import HF_COMMIT_HASH_PATTERN
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model=peft_pipeline,
         path=tmp_path,
     )
@@ -69,7 +69,7 @@ def test_save_and_load_peft_pipeline(peft_pipeline, tmp_path):
     with open(tmp_path.joinpath("requirements.txt")) as f:
         assert f"peft=={peft.__version__}" in f.read()
 
-    loaded_pipeline = mlflow.transformers.load_model(tmp_path)
+    loaded_pipeline = qcflow.transformers.load_model(tmp_path)
     assert isinstance(loaded_pipeline.model, peft.PeftModel)
     loaded_pipeline.predict("Hi")
 
@@ -77,7 +77,7 @@ def test_save_and_load_peft_pipeline(peft_pipeline, tmp_path):
 def test_save_and_load_peft_components(peft_pipeline, tmp_path, capsys):
     from peft import PeftModel
 
-    mlflow.transformers.save_model(
+    qcflow.transformers.save_model(
         transformers_model={
             "model": peft_pipeline.model,
             "tokenizer": peft_pipeline.tokenizer,
@@ -91,7 +91,7 @@ def test_save_and_load_peft_components(peft_pipeline, tmp_path, capsys):
     )
     assert peft_err_msg not in capsys.readouterr().err
 
-    loaded_pipeline = mlflow.transformers.load_model(tmp_path)
+    loaded_pipeline = qcflow.transformers.load_model(tmp_path)
     assert isinstance(loaded_pipeline.model, PeftModel)
     loaded_pipeline.predict("Hi")
 
@@ -99,9 +99,9 @@ def test_save_and_load_peft_components(peft_pipeline, tmp_path, capsys):
 def test_log_peft_pipeline(peft_pipeline):
     from peft import PeftModel
 
-    with mlflow.start_run():
-        model_info = mlflow.transformers.log_model(peft_pipeline, "model", input_example="hi")
+    with qcflow.start_run():
+        model_info = qcflow.transformers.log_model(peft_pipeline, "model", input_example="hi")
 
-    loaded_pipeline = mlflow.transformers.load_model(model_info.model_uri)
+    loaded_pipeline = qcflow.transformers.load_model(model_info.model_uri)
     assert isinstance(loaded_pipeline.model, PeftModel)
     loaded_pipeline.predict("Hi")

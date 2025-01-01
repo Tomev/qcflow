@@ -16,28 +16,28 @@ import requests
 from botocore.stub import Stubber
 from click.testing import CliRunner
 
-import mlflow
-from mlflow import pyfunc
-from mlflow.cli import doctor, gc, server
-from mlflow.data import numpy_dataset
-from mlflow.entities import ViewType
-from mlflow.exceptions import MlflowException
-from mlflow.server import handlers
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.tracking.file_store import FileStore
-from mlflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
-from mlflow.utils.os import is_windows
-from mlflow.utils.rest_utils import augmented_raise_for_status
-from mlflow.utils.time import get_current_time_millis
+import qcflow
+from qcflow import pyfunc
+from qcflow.cli import doctor, gc, server
+from qcflow.data import numpy_dataset
+from qcflow.entities import ViewType
+from qcflow.exceptions import QCFlowException
+from qcflow.server import handlers
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.tracking.file_store import FileStore
+from qcflow.store.tracking.sqlalchemy_store import SqlAlchemyStore
+from qcflow.utils.os import is_windows
+from qcflow.utils.rest_utils import augmented_raise_for_status
+from qcflow.utils.time import get_current_time_millis
 
 from tests.helper_functions import PROTOBUF_REQUIREMENT, get_safe_port, pyfunc_serve_and_score_model
 from tests.tracking.integration_test_utils import _await_server_up_or_die
 
 
 @pytest.mark.parametrize("command", ["server"])
-def test_mlflow_server_command(command):
+def test_qcflow_server_command(command):
     port = get_safe_port()
-    cmd = ["mlflow", command, "--port", str(port)]
+    cmd = ["qcflow", command, "--port", str(port)]
     process = subprocess.Popen(cmd)
     try:
         _await_server_up_or_die(port)
@@ -49,33 +49,33 @@ def test_mlflow_server_command(command):
 
 
 def test_server_static_prefix_validation():
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
         CliRunner().invoke(server)
         run_server_mock.assert_called_once()
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
-        CliRunner().invoke(server, ["--static-prefix", "/mlflow"])
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
+        CliRunner().invoke(server, ["--static-prefix", "/qcflow"])
         run_server_mock.assert_called_once()
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
-        result = CliRunner().invoke(server, ["--static-prefix", "mlflow/"])
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
+        result = CliRunner().invoke(server, ["--static-prefix", "qcflow/"])
         assert "--static-prefix must begin with a '/'." in result.output
         run_server_mock.assert_not_called()
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
-        result = CliRunner().invoke(server, ["--static-prefix", "/mlflow/"])
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
+        result = CliRunner().invoke(server, ["--static-prefix", "/qcflow/"])
         assert "--static-prefix should not end with a '/'." in result.output
         run_server_mock.assert_not_called()
 
 
-def test_server_mlflow_artifacts_options():
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
+def test_server_qcflow_artifacts_options():
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
         CliRunner().invoke(server, ["--artifacts-only"])
         run_server_mock.assert_called_once()
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
         CliRunner().invoke(server, ["--serve-artifacts"])
         run_server_mock.assert_called_once()
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
         CliRunner().invoke(server, ["--no-serve-artifacts"])
         run_server_mock.assert_called_once()
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
         CliRunner().invoke(server, ["--artifacts-only"])
         run_server_mock.assert_called_once()
 
@@ -83,7 +83,7 @@ def test_server_mlflow_artifacts_options():
 @pytest.mark.parametrize("command", [server])
 def test_tracking_uri_validation_failure(command):
     handlers._tracking_store = None
-    with mock.patch("mlflow.server._run_server") as run_server_mock:
+    with mock.patch("qcflow.server._run_server") as run_server_mock:
         # SQLAlchemy expects postgresql:// not postgres://
         CliRunner().invoke(
             command,
@@ -102,9 +102,9 @@ def test_tracking_uri_validation_sql_driver_uris(command):
     handlers._tracking_store = None
     handlers._model_registry_store = None
     with (
-        mock.patch("mlflow.server._run_server") as run_server_mock,
-        mock.patch("mlflow.store.tracking.sqlalchemy_store.SqlAlchemyStore"),
-        mock.patch("mlflow.store.model_registry.sqlalchemy_store.SqlAlchemyStore"),
+        mock.patch("qcflow.server._run_server") as run_server_mock,
+        mock.patch("qcflow.store.tracking.sqlalchemy_store.SqlAlchemyStore"),
+        mock.patch("qcflow.store.model_registry.sqlalchemy_store.SqlAlchemyStore"),
     ):
         result = CliRunner().invoke(
             command,
@@ -118,8 +118,8 @@ def test_tracking_uri_validation_sql_driver_uris(command):
         assert result.exit_code == 0
         run_server_mock.assert_called()
     # Clean up the global variables set by the server
-    mlflow.set_tracking_uri(None)
-    mlflow.set_registry_uri(None)
+    qcflow.set_tracking_uri(None)
+    qcflow.set_registry_uri(None)
 
 
 @pytest.mark.parametrize("command", [server])
@@ -127,7 +127,7 @@ def test_registry_store_uri_different_from_tracking_store(command):
     handlers._tracking_store = None
     handlers._model_registry_store = None
 
-    from mlflow.server.handlers import (
+    from qcflow.server.handlers import (
         ModelRegistryStoreRegistryWrapper,
         TrackingStoreRegistryWrapper,
     )
@@ -136,10 +136,10 @@ def test_registry_store_uri_different_from_tracking_store(command):
     handlers._model_registry_store_registry = ModelRegistryStoreRegistryWrapper()
 
     with (
-        mock.patch("mlflow.server._run_server") as run_server_mock,
-        mock.patch("mlflow.store.tracking.file_store.FileStore") as tracking_store,
+        mock.patch("qcflow.server._run_server") as run_server_mock,
+        mock.patch("qcflow.store.tracking.file_store.FileStore") as tracking_store,
         mock.patch(
-            "mlflow.store.model_registry.sqlalchemy_store.SqlAlchemyStore"
+            "qcflow.store.model_registry.sqlalchemy_store.SqlAlchemyStore"
         ) as registry_store,
     ):
         result = CliRunner().invoke(
@@ -156,8 +156,8 @@ def test_registry_store_uri_different_from_tracking_store(command):
         tracking_store.assert_called()
         registry_store.assert_called()
     # Clean up the global variables set by the server
-    mlflow.set_tracking_uri(None)
-    mlflow.set_registry_uri(None)
+    qcflow.set_tracking_uri(None)
+    qcflow.set_registry_uri(None)
 
 
 @pytest.fixture
@@ -174,7 +174,7 @@ def sqlite_store():
 
 @pytest.fixture
 def file_store():
-    ROOT_LOCATION = os.path.join(tempfile.gettempdir(), "test_mlflow_gc")
+    ROOT_LOCATION = os.path.join(tempfile.gettempdir(), "test_qcflow_gc")
     file_store_uri = f"file:///{ROOT_LOCATION}"
     yield (FileStore(ROOT_LOCATION), file_store_uri)
     shutil.rmtree(ROOT_LOCATION)
@@ -197,7 +197,7 @@ def _create_run_in_store(store, create_artifacts=True):
 
 
 @pytest.mark.parametrize("create_artifacts_in_run", [True, False])
-def test_mlflow_gc_sqlite(sqlite_store, create_artifacts_in_run):
+def test_qcflow_gc_sqlite(sqlite_store, create_artifacts_in_run):
     store = sqlite_store[0]
     run = _create_run_in_store(store, create_artifacts=create_artifacts_in_run)
     store.delete_run(run.info.run_uuid)
@@ -205,7 +205,7 @@ def test_mlflow_gc_sqlite(sqlite_store, create_artifacts_in_run):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "gc",
             "--backend-store-uri",
             sqlite_store[1],
@@ -213,14 +213,14 @@ def test_mlflow_gc_sqlite(sqlite_store, create_artifacts_in_run):
     )
     runs = store.search_runs(experiment_ids=["0"], filter_string="", run_view_type=ViewType.ALL)
     assert len(runs) == 0
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         store.get_run(run.info.run_uuid)
 
     artifact_path = url2pathname(unquote(urlparse(run.info.artifact_uri).path))
     assert not os.path.exists(artifact_path)
 
 
-def test_mlflow_gc_sqlite_older_than(sqlite_store):
+def test_qcflow_gc_sqlite_older_than(sqlite_store):
     store = sqlite_store[0]
     run = _create_run_in_store(store)
     store.delete_run(run.info.run_uuid)
@@ -229,7 +229,7 @@ def test_mlflow_gc_sqlite_older_than(sqlite_store):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "gc",
                 "--backend-store-uri",
                 sqlite_store[1],
@@ -251,7 +251,7 @@ def test_mlflow_gc_sqlite_older_than(sqlite_store):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "gc",
             "--backend-store-uri",
             sqlite_store[1],
@@ -266,23 +266,23 @@ def test_mlflow_gc_sqlite_older_than(sqlite_store):
 
 
 @pytest.mark.parametrize("create_artifacts_in_run", [True, False])
-def test_mlflow_gc_file_store(file_store, create_artifacts_in_run):
+def test_qcflow_gc_file_store(file_store, create_artifacts_in_run):
     store = file_store[0]
     run = _create_run_in_store(store, create_artifacts=create_artifacts_in_run)
     store.delete_run(run.info.run_uuid)
     subprocess.check_output(
-        [sys.executable, "-m", "mlflow", "gc", "--backend-store-uri", file_store[1]]
+        [sys.executable, "-m", "qcflow", "gc", "--backend-store-uri", file_store[1]]
     )
     runs = store.search_runs(experiment_ids=["0"], filter_string="", run_view_type=ViewType.ALL)
     assert len(runs) == 0
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         store.get_run(run.info.run_uuid)
 
     artifact_path = url2pathname(unquote(urlparse(run.info.artifact_uri).path))
     assert not os.path.exists(artifact_path)
 
 
-def test_mlflow_gc_file_store_passing_explicit_run_ids(file_store):
+def test_qcflow_gc_file_store_passing_explicit_run_ids(file_store):
     store = file_store[0]
     run = _create_run_in_store(store)
     store.delete_run(run.info.run_uuid)
@@ -290,7 +290,7 @@ def test_mlflow_gc_file_store_passing_explicit_run_ids(file_store):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "gc",
             "--backend-store-uri",
             file_store[1],
@@ -300,11 +300,11 @@ def test_mlflow_gc_file_store_passing_explicit_run_ids(file_store):
     )
     runs = store.search_runs(experiment_ids=["0"], filter_string="", run_view_type=ViewType.ALL)
     assert len(runs) == 0
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         store.get_run(run.info.run_uuid)
 
 
-def test_mlflow_gc_not_deleted_run(file_store):
+def test_qcflow_gc_not_deleted_run(file_store):
     store = file_store[0]
     run = _create_run_in_store(store)
     with pytest.raises(subprocess.CalledProcessError, match=r".+"):
@@ -312,7 +312,7 @@ def test_mlflow_gc_not_deleted_run(file_store):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "gc",
                 "--backend-store-uri",
                 file_store[1],
@@ -324,7 +324,7 @@ def test_mlflow_gc_not_deleted_run(file_store):
     assert len(runs) == 1
 
 
-def test_mlflow_gc_file_store_older_than(file_store):
+def test_qcflow_gc_file_store_older_than(file_store):
     store = file_store[0]
     run = _create_run_in_store(store)
     store.delete_run(run.info.run_uuid)
@@ -333,7 +333,7 @@ def test_mlflow_gc_file_store_older_than(file_store):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "gc",
                 "--backend-store-uri",
                 file_store[1],
@@ -355,7 +355,7 @@ def test_mlflow_gc_file_store_older_than(file_store):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "gc",
             "--backend-store-uri",
             file_store[1],
@@ -370,7 +370,7 @@ def test_mlflow_gc_file_store_older_than(file_store):
 
 
 @pytest.mark.parametrize("get_store_details", ["file_store", "sqlite_store"])
-def test_mlflow_gc_experiments(get_store_details, request):
+def test_qcflow_gc_experiments(get_store_details, request):
     def invoke_gc(*args):
         return CliRunner().invoke(gc, args, catch_exceptions=False)
 
@@ -418,7 +418,7 @@ def test_mlflow_gc_experiments(get_store_details, request):
 
     exp_id_5 = store.create_experiment("5")
     store.delete_experiment(exp_id_5)
-    with pytest.raises(MlflowException, match=r"Experiments .+ can be deleted."):
+    with pytest.raises(QCFlowException, match=r"Experiments .+ can be deleted."):
         invoke_gc(
             "--backend-store-uri", uri, "--experiment-ids", exp_id_5, "--older-than", "10d10h10m10s"
         )
@@ -434,7 +434,7 @@ def sqlite_store_with_s3_artifact_repository():
     # Close handle immediately so that we can remove the file later on in Windows
     os.close(fd)
     db_uri = f"sqlite:///{temp_dbfile}"
-    s3_uri = "s3://mlflow"
+    s3_uri = "s3://qcflow"
     store = SqlAlchemyStore(db_uri, s3_uri)
 
     yield (store, db_uri, s3_uri)
@@ -442,7 +442,7 @@ def sqlite_store_with_s3_artifact_repository():
     os.remove(temp_dbfile)
 
 
-def test_mlflow_gc_sqlite_with_s3_artifact_repository(
+def test_qcflow_gc_sqlite_with_s3_artifact_repository(
     sqlite_store_with_s3_artifact_repository,
 ):
     store = sqlite_store_with_s3_artifact_repository[0]
@@ -477,7 +477,7 @@ def test_mlflow_gc_sqlite_with_s3_artifact_repository(
 
         runs = store.search_runs(experiment_ids=["0"], filter_string="", run_view_type=ViewType.ALL)
         assert len(runs) == 0
-        with pytest.raises(MlflowException, match=r"Run .+ not found"):
+        with pytest.raises(QCFlowException, match=r"Run .+ not found"):
             store.get_run(run.info.run_uuid)
 
 
@@ -494,29 +494,29 @@ def test_mlflow_gc_sqlite_with_s3_artifact_repository(
         False,
     ],
 )
-def test_mlflow_models_serve(enable_mlserver):
+def test_qcflow_models_serve(enable_mlserver):
     class MyModel(pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return np.array([1, 2, 3])
 
     model = MyModel()
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         if enable_mlserver:
             # We need MLServer to be present on the Conda environment, so we'll
             # add that as an extra requirement.
-            mlflow.pyfunc.log_model(
+            qcflow.pyfunc.log_model(
                 "model",
                 python_model=model,
                 extra_pip_requirements=[
                     "mlserver>=1.2.0,!=1.3.1",
-                    "mlserver-mlflow>=1.2.0,!=1.3.1",
+                    "mlserver-qcflow>=1.2.0,!=1.3.1",
                     PROTOBUF_REQUIREMENT,
                 ],
             )
         else:
-            mlflow.pyfunc.log_model("model", python_model=model)
-        model_uri = mlflow.get_artifact_uri("model")
+            qcflow.pyfunc.log_model("model", python_model=model)
+        model_uri = qcflow.get_artifact_uri("model")
 
     data = pd.DataFrame({"a": [0]})
 
@@ -535,26 +535,26 @@ def test_mlflow_models_serve(enable_mlserver):
     np.testing.assert_array_equal(served_model_preds, model.predict(data, None))
 
 
-def test_mlflow_tracking_disabled_in_artifacts_only_mode():
+def test_qcflow_tracking_disabled_in_artifacts_only_mode():
     port = get_safe_port()
-    cmd = ["mlflow", "server", "--port", str(port), "--artifacts-only"]
+    cmd = ["qcflow", "server", "--port", str(port), "--artifacts-only"]
     process = subprocess.Popen(cmd)
     _await_server_up_or_die(port)
-    resp = requests.get(f"http://localhost:{port}/api/2.0/mlflow/experiments/search")
+    resp = requests.get(f"http://localhost:{port}/api/2.0/qcflow/experiments/search")
     assert (
-        "Endpoint: /api/2.0/mlflow/experiments/search disabled due to the mlflow server running "
+        "Endpoint: /api/2.0/qcflow/experiments/search disabled due to the qcflow server running "
         "in `--artifacts-only` mode." in resp.text
     )
     process.kill()
 
 
-def test_mlflow_artifact_list_in_artifacts_only_mode():
+def test_qcflow_artifact_list_in_artifacts_only_mode():
     port = get_safe_port()
-    cmd = ["mlflow", "server", "--port", str(port), "--artifacts-only"]
+    cmd = ["qcflow", "server", "--port", str(port), "--artifacts-only"]
     process = subprocess.Popen(cmd)
     try:
         _await_server_up_or_die(port)
-        resp = requests.get(f"http://localhost:{port}/api/2.0/mlflow-artifacts/artifacts")
+        resp = requests.get(f"http://localhost:{port}/api/2.0/qcflow-artifacts/artifacts")
         augmented_raise_for_status(resp)
         assert resp.status_code == 200
         assert resp.text == "{}"
@@ -562,27 +562,27 @@ def test_mlflow_artifact_list_in_artifacts_only_mode():
         process.kill()
 
 
-def test_mlflow_artifact_service_unavailable_when_no_server_artifacts_is_specified():
+def test_qcflow_artifact_service_unavailable_when_no_server_artifacts_is_specified():
     port = get_safe_port()
-    cmd = ["mlflow", "server", "--port", str(port), "--no-serve-artifacts"]
+    cmd = ["qcflow", "server", "--port", str(port), "--no-serve-artifacts"]
     process = subprocess.Popen(cmd)
     try:
         _await_server_up_or_die(port)
-        endpoint = "/api/2.0/mlflow-artifacts/artifacts"
+        endpoint = "/api/2.0/qcflow-artifacts/artifacts"
         resp = requests.get(f"http://localhost:{port}{endpoint}")
         assert (
-            f"Endpoint: {endpoint} disabled due to the mlflow server running with "
+            f"Endpoint: {endpoint} disabled due to the qcflow server running with "
             "`--no-serve-artifacts`" in resp.text
         )
     finally:
         process.kill()
 
 
-def test_mlflow_artifact_only_prints_warning_for_configs():
+def test_qcflow_artifact_only_prints_warning_for_configs():
     with (
-        mock.patch("mlflow.server._run_server") as run_server_mock,
-        mock.patch("mlflow.store.tracking.sqlalchemy_store.SqlAlchemyStore"),
-        mock.patch("mlflow.store.model_registry.sqlalchemy_store.SqlAlchemyStore"),
+        mock.patch("qcflow.server._run_server") as run_server_mock,
+        mock.patch("qcflow.store.tracking.sqlalchemy_store.SqlAlchemyStore"),
+        mock.patch("qcflow.store.model_registry.sqlalchemy_store.SqlAlchemyStore"),
     ):
         result = CliRunner(mix_stderr=False).invoke(
             server,
@@ -598,16 +598,16 @@ def test_mlflow_artifact_only_prints_warning_for_configs():
         run_server_mock.assert_not_called()
 
 
-def test_mlflow_ui_is_alias_for_mlflow_server():
-    mlflow_ui_stdout = subprocess.check_output(
-        [sys.executable, "-m", "mlflow", "ui", "--help"], text=True
+def test_qcflow_ui_is_alias_for_qcflow_server():
+    qcflow_ui_stdout = subprocess.check_output(
+        [sys.executable, "-m", "qcflow", "ui", "--help"], text=True
     )
-    mlflow_server_stdout = subprocess.check_output(
-        [sys.executable, "-m", "mlflow", "server", "--help"], text=True
+    qcflow_server_stdout = subprocess.check_output(
+        [sys.executable, "-m", "qcflow", "server", "--help"], text=True
     )
     assert (
-        mlflow_ui_stdout.replace("Usage: python -m mlflow ui", "Usage: python -m mlflow server")
-        == mlflow_server_stdout
+        qcflow_ui_stdout.replace("Usage: python -m qcflow ui", "Usage: python -m qcflow server")
+        == qcflow_server_stdout
     )
 
 
@@ -616,23 +616,23 @@ def test_cli_with_python_mod():
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "--version",
         ],
         text=True,
     )
-    assert stdout.rstrip().endswith(mlflow.__version__)
+    assert stdout.rstrip().endswith(qcflow.__version__)
     stdout = subprocess.check_output(
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "server",
             "--help",
         ],
         text=True,
     )
-    assert "mlflow server" in stdout
+    assert "qcflow server" in stdout
 
 
 def test_doctor():
@@ -640,17 +640,17 @@ def test_doctor():
     assert res.exit_code == 0
 
 
-def test_mlflow_gc_with_datasets(sqlite_store):
+def test_qcflow_gc_with_datasets(sqlite_store):
     store = sqlite_store[0]
 
-    mlflow.set_tracking_uri(sqlite_store[1])
-    mlflow.set_experiment("dataset")
+    qcflow.set_tracking_uri(sqlite_store[1])
+    qcflow.set_experiment("dataset")
 
     dataset = numpy_dataset.from_numpy(np.array([1, 2, 3]))
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         experiment_id = run.info.experiment_id
-        mlflow.log_input(dataset)
+        qcflow.log_input(dataset)
 
     experiments = store.search_experiments(view_type=ViewType.ALL)
 
@@ -664,12 +664,12 @@ def test_mlflow_gc_with_datasets(sqlite_store):
     assert len(experiments) == 2
 
     subprocess.check_call(
-        [sys.executable, "-m", "mlflow", "gc", "--backend-store-uri", sqlite_store[1]]
+        [sys.executable, "-m", "qcflow", "gc", "--backend-store-uri", sqlite_store[1]]
     )
     experiments = store.search_experiments(view_type=ViewType.ALL)
 
     # only default is left after GC
     assert len(experiments) == 1
     assert experiments[0].experiment_id == "0"
-    with pytest.raises(MlflowException, match=f"No Experiment with id={experiment_id} exists"):
+    with pytest.raises(QCFlowException, match=f"No Experiment with id={experiment_id} exists"):
         store.get_experiment(experiment_id)

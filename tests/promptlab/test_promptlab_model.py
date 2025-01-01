@@ -2,9 +2,9 @@ from unittest import mock
 
 import pandas as pd
 
-from mlflow.entities.param import Param
-from mlflow.gateway import set_gateway_uri
-from mlflow.promptlab import _PromptlabModel
+from qcflow.entities.param import Param
+from qcflow.gateway import set_gateway_uri
+from qcflow.promptlab import _PromptlabModel
 
 set_gateway_uri("http://localhost:5000")
 
@@ -29,10 +29,10 @@ def test_promptlab_prompt_replacement():
 
     model = construct_model("completions")
     get_route_patch = mock.patch(
-        "mlflow.gateway.get_route", return_value=mock.Mock(route_type="llm/v1/completions")
+        "qcflow.gateway.get_route", return_value=mock.Mock(route_type="llm/v1/completions")
     )
 
-    with get_route_patch, mock.patch("mlflow.gateway.query") as mock_query:
+    with get_route_patch, mock.patch("qcflow.gateway.query") as mock_query:
         model.predict(data)
 
         calls = [
@@ -58,11 +58,11 @@ def test_promptlab_works_with_chat_route():
     }
     model = construct_model("chat")
     get_route_patch = mock.patch(
-        "mlflow.gateway.get_route",
+        "qcflow.gateway.get_route",
         return_value=mock.Mock(route_type="llm/v1/chat"),
     )
 
-    with get_route_patch, mock.patch("mlflow.gateway.query", return_value=mock_response):
+    with get_route_patch, mock.patch("qcflow.gateway.query", return_value=mock_response):
         response = model.predict(pd.DataFrame(data=[{"thing": "books"}]))
 
         assert response == ["test"]
@@ -79,10 +79,10 @@ def test_promptlab_works_with_completions_route():
     }
     model = construct_model("completions")
     get_route_patch = mock.patch(
-        "mlflow.gateway.get_route", return_value=mock.Mock(route_type="llm/v1/completions")
+        "qcflow.gateway.get_route", return_value=mock.Mock(route_type="llm/v1/completions")
     )
 
-    with get_route_patch, mock.patch("mlflow.gateway.query", return_value=mock_response):
+    with get_route_patch, mock.patch("qcflow.gateway.query", return_value=mock_response):
         response = model.predict(pd.DataFrame(data=[{"thing": "books"}]))
 
         assert response == ["test"]

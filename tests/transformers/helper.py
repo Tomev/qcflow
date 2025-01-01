@@ -5,8 +5,8 @@ import sys
 import transformers
 from packaging.version import Version
 
-from mlflow.transformers import _PEFT_PIPELINE_ERROR_MSG, _try_import_conversational_pipeline
-from mlflow.utils.logging_utils import suppress_logs
+from qcflow.transformers import _PEFT_PIPELINE_ERROR_MSG, _try_import_conversational_pipeline
+from qcflow.utils.logging_utils import suppress_logs
 
 from tests.helper_functions import flaky
 

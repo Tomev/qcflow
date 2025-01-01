@@ -1,15 +1,15 @@
 from unittest import mock
 
-import mlflow
-from mlflow.entities import LiveSpan, Trace
-from mlflow.tracing.export.inference_table import (
+import qcflow
+from qcflow.entities import LiveSpan, Trace
+from qcflow.tracing.export.inference_table import (
     _TRACE_BUFFER,
     InferenceTableSpanExporter,
     _initialize_trace_buffer,
     pop_trace,
 )
-from mlflow.tracing.trace_manager import InMemoryTraceManager
-from mlflow.tracing.utils import encode_span_id, encode_trace_id
+from qcflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracing.utils import encode_span_id, encode_trace_id
 
 from tests.tracing.helper import create_mock_otel_span, create_test_trace_info
 
@@ -81,8 +81,8 @@ def test_export_warn_invalid_attributes():
     trace = Trace.from_dict(trace_dict)
     stored_span = trace.data.spans[0]
     assert stored_span.attributes == {
-        "mlflow.traceRequestId": _REQUEST_ID,
-        "mlflow.spanType": "UNKNOWN",
+        "qcflow.traceRequestId": _REQUEST_ID,
+        "qcflow.spanType": "UNKNOWN",
         "valid": "value",
         "str": "a",
     }
@@ -90,7 +90,7 @@ def test_export_warn_invalid_attributes():
     # Users shouldn't set attribute directly to the OTel span
     otel_span.set_attribute("int", 1)
     exporter.export([otel_span])
-    with mock.patch("mlflow.entities.span._logger.warning") as mock_warning:
+    with mock.patch("qcflow.entities.span._logger.warning") as mock_warning:
         span.attributes
         mock_warning.assert_called_once()
         msg = mock_warning.call_args[0][0]
@@ -98,9 +98,9 @@ def test_export_warn_invalid_attributes():
 
 
 def test_export_trace_buffer_not_exceeds_max_size(monkeypatch):
-    monkeypatch.setenv("MLFLOW_TRACE_BUFFER_MAX_SIZE", "1")
+    monkeypatch.setenv("QCFLOW_TRACE_BUFFER_MAX_SIZE", "1")
     monkeypatch.setattr(
-        mlflow.tracing.export.inference_table, "_TRACE_BUFFER", _initialize_trace_buffer()
+        qcflow.tracing.export.inference_table, "_TRACE_BUFFER", _initialize_trace_buffer()
     )
 
     exporter = InferenceTableSpanExporter()

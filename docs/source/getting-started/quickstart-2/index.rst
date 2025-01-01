@@ -7,26 +7,26 @@ Quickstart: Compare runs, choose a model, and deploy it to a REST API
 In this quickstart, you will:
 
 - Run a hyperparameter sweep on a training script
-- Compare the results of the runs in the MLflow UI
+- Compare the results of the runs in the QCFlow UI
 - Choose the best run and register it as a model
 - Deploy the model to a REST API
 - Build a container image suitable for deployment to a cloud platform
 
-As an ML Engineer or MLOps professional, you can use MLflow to compare, share, and deploy the best models produced 
-by the team. In this quickstart, you will use the MLflow Tracking UI to compare the results of a hyperparameter 
+As an ML Engineer or MLOps professional, you can use QCFlow to compare, share, and deploy the best models produced 
+by the team. In this quickstart, you will use the QCFlow Tracking UI to compare the results of a hyperparameter 
 sweep, choose the best run, and register it as a model. Then, you will deploy the model to a REST API. Finally, 
 you will create a Docker container image suitable for deployment to a cloud platform.
 
 .. image:: ../../_static/images/quickstart/quickstart_tracking_overview.png
     :width: 800px
     :align: center
-    :alt: Diagram showing Data Science and MLOps workflow with MLflow
+    :alt: Diagram showing Data Science and MLOps workflow with QCFlow
 
 
 Set up
 ------
 
-For a comprehensive guide on getting an MLflow environment setup that will give you options on how to configure MLflow tracking 
+For a comprehensive guide on getting an QCFlow environment setup that will give you options on how to configure QCFlow tracking 
 capabilities, you can `read the guide here <../running-notebooks/index.html>`_.
 
 Run a hyperparameter sweep
@@ -35,14 +35,14 @@ Run a hyperparameter sweep
 This example tries to optimize the RMSE metric of a Keras deep learning model on a wine quality dataset. It has 
 two hyperparameters that it tries to optimize: ``learning_rate`` and ``momentum``. We will use the 
 `Hyperopt <https://github.com/hyperopt/hyperopt>`_ library to run a hyperparameter sweep across 
-different values of ``learning_rate`` and ``momentum`` and record the results in MLflow. 
+different values of ``learning_rate`` and ``momentum`` and record the results in QCFlow. 
 
-Before running the hyperparameter sweep, let's set the ``MLFLOW_TRACKING_URI`` environment variable to the URI of 
-our MLflow tracking server:
+Before running the hyperparameter sweep, let's set the ``QCFLOW_TRACKING_URI`` environment variable to the URI of 
+our QCFlow tracking server:
 
 .. code-block:: bash
 
-  export MLFLOW_TRACKING_URI=http://localhost:5000
+  export QCFLOW_TRACKING_URI=http://localhost:5000
 
 .. note:: 
     
@@ -60,8 +60,8 @@ Import the following packages
     from sklearn.metrics import mean_squared_error
     from sklearn.model_selection import train_test_split
 
-    import mlflow
-    from mlflow.models import infer_signature
+    import qcflow
+    from qcflow.models import infer_signature
 
 Now load the dataset and split it into training, validation, and test sets. 
 
@@ -69,7 +69,7 @@ Now load the dataset and split it into training, validation, and test sets.
 
     # Load dataset
     data = pd.read_csv(
-        "https://raw.githubusercontent.com/mlflow/mlflow/master/tests/datasets/winequality-white.csv",
+        "https://raw.githubusercontent.com/qcflow/qcflow/master/tests/datasets/winequality-white.csv",
         sep=";",
     )
 
@@ -84,7 +84,7 @@ Now load the dataset and split it into training, validation, and test sets.
     )
     signature = infer_signature(train_x, train_y)
 
-Then let's define the model architecture and train the model. The ``train_model`` function uses MLflow to track the
+Then let's define the model architecture and train the model. The ``train_model`` function uses QCFlow to track the
 parameters, results, and model itself of each trial as a child run.
 
 .. code-block:: python
@@ -111,8 +111,8 @@ parameters, results, and model itself of each trial as a child run.
             metrics=[keras.metrics.RootMeanSquaredError()],
         )
 
-        # Train model with MLflow tracking
-        with mlflow.start_run(nested=True):
+        # Train model with QCFlow tracking
+        with qcflow.start_run(nested=True):
             model.fit(
                 train_x,
                 train_y,
@@ -125,11 +125,11 @@ parameters, results, and model itself of each trial as a child run.
             eval_rmse = eval_result[1]
 
             # Log parameters and results
-            mlflow.log_params(params)
-            mlflow.log_metric("eval_rmse", eval_rmse)
+            qcflow.log_params(params)
+            qcflow.log_metric("eval_rmse", eval_rmse)
 
             # Log model
-            mlflow.tensorflow.log_model(model, "model", signature=signature)
+            qcflow.tensorflow.log_model(model, "model", signature=signature)
 
             return {"loss": eval_rmse, "status": STATUS_OK, "model": model}
 
@@ -140,7 +140,7 @@ function for that set of hyperparameters.
 .. code-block:: python
 
     def objective(params):
-        # MLflow will track the parameters and results for each run
+        # QCFlow will track the parameters and results for each run
         result = train_model(
             params,
             epochs=3,
@@ -169,12 +169,12 @@ of subsequent hyperparameter sets in a more informed manner, aiming to converge 
 
 Finally, we will run the hyperparameter sweep using Hyperopt, passing in the ``objective`` function and search space. 
 Hyperopt will try different hyperparameter combinations and return the results of the best one. We will 
-store the best parameters, model, and evaluation metrics in MLflow.
+store the best parameters, model, and evaluation metrics in QCFlow.
 
 .. code-block:: python
 
-    mlflow.set_experiment("/wine-quality")
-    with mlflow.start_run():
+    qcflow.set_experiment("/wine-quality")
+    with qcflow.start_run():
         # Conduct the hyperparameter search using Hyperopt
         trials = Trials()
         best = fmin(
@@ -189,9 +189,9 @@ store the best parameters, model, and evaluation metrics in MLflow.
         best_run = sorted(trials.results, key=lambda x: x["loss"])[0]
 
         # Log the best parameters, loss, and model
-        mlflow.log_params(best)
-        mlflow.log_metric("eval_rmse", best_run["loss"])
-        mlflow.tensorflow.log_model(best_run["model"], "model", signature=signature)
+        qcflow.log_params(best)
+        qcflow.log_metric("eval_rmse", best_run["loss"])
+        qcflow.tensorflow.log_model(best_run["model"], "model", signature=signature)
 
         # Print out the best parameters and corresponding loss
         print(f"Best parameters: {best}")
@@ -201,16 +201,16 @@ store the best parameters, model, and evaluation metrics in MLflow.
 Compare the results
 -------------------
 
-Open the MLflow UI in your browser at the `MLFLOW_TRACKING_URI`. You should see a nested list of runs. In the
+Open the QCFlow UI in your browser at the `QCFLOW_TRACKING_URI`. You should see a nested list of runs. In the
 default **Table view**, choose the **Columns** button and add the **Metrics | eval_rmse** column and
 the **Parameters | lr** and **Parameters | momentum** column. To sort by RMSE ascending, click the **eval_rmse**
 column header. The best run typically has an RMSE on the **test** dataset of ~0.70. You can see the parameters
 of the best run in the **Parameters** column.
 
-.. image:: ../../_static/images/quickstart_mlops/mlflow_ui_table_view.png
+.. image:: ../../_static/images/quickstart_mlops/qcflow_ui_table_view.png
     :width: 800px
     :align: center
-    :alt: Screenshot of MLflow tracking UI table view showing runs
+    :alt: Screenshot of QCFlow tracking UI table view showing runs
 
 
 Choose **Chart view**. Choose the **Parallel coordinates** graph and configure it to show the **lr** and
@@ -220,11 +220,11 @@ each hyperparameter evaluation run's parameters to the evaluated error metric fo
 .. raw:: html
 
   <img
-    src="../../_static/images/quickstart_mlops/mlflow_ui_chart_view.png"
+    src="../../_static/images/quickstart_mlops/qcflow_ui_chart_view.png"
     width="800px"
     class="align-center"
     id="chart-view"
-    alt="Screenshot of MLflow tracking UI parallel coordinates graph showing runs"
+    alt="Screenshot of QCFlow tracking UI parallel coordinates graph showing runs"
   />
 
 The red graphs on this graph are runs that fared poorly. The lowest one is a baseline run with both **lr** 
@@ -240,7 +240,7 @@ Choose the best run and register it as a model. In the **Table view**, choose th
 **Run Detail** page, open the **Artifacts** section and select the **Register Model** button. In the
 **Register Model** dialog, enter a name for the model, such as ``wine-quality``, and click **Register**.
 
-Now, your model is available for deployment. You can see it in the **Models** page of the MLflow UI.
+Now, your model is available for deployment. You can see it in the **Models** page of the QCFlow UI.
 Open the page for the model you just registered.
 
 You can add a description for the model, add tags, and easily navigate back to the source run that generated
@@ -253,17 +253,17 @@ Transition the model to **Staging** by choosing the **Stage** dropdown:
 .. image:: ../../_static/images/quickstart_mlops/register_model_button.png
     :width: 800px
     :align: center
-    :alt: Screenshot of MLflow tracking UI models page showing the registered model
+    :alt: Screenshot of QCFlow tracking UI models page showing the registered model
 
 Serve the model locally
 ----------------------------
 
-MLflow allows you to easily serve models produced by any run or model version.
+QCFlow allows you to easily serve models produced by any run or model version.
 You can serve the model you just registered by running:
 
 .. code-block:: bash
 
-  mlflow models serve -m "models:/wine-quality/1" --port 5002
+  qcflow models serve -m "models:/wine-quality/1" --port 5002
 
 (Note that specifying the port as above will be necessary if you are running the tracking server on the
 same machine at the default port of **5000**.)
@@ -292,20 +292,20 @@ predictions, one for each row of data. In this case, the response is:
 
   {"predictions": [{"0": 5.310967445373535}]}
 
-The schema for input and output is available in the MLflow UI in the **Artifacts | Model** description. The schema
-is available because the ``train.py`` script used the ``mlflow.infer_signature`` method and passed the result to
-the ``mlflow.log_model`` method. Passing the signature to the ``log_model`` method is highly recommended, as it
+The schema for input and output is available in the QCFlow UI in the **Artifacts | Model** description. The schema
+is available because the ``train.py`` script used the ``qcflow.infer_signature`` method and passed the result to
+the ``qcflow.log_model`` method. Passing the signature to the ``log_model`` method is highly recommended, as it
 provides clear error messages if the input request is malformed.
 
 Build a container image for your model
 ---------------------------------------
 
 Most routes toward deployment will use a container to package your model, its dependencies, and relevant portions of
-the runtime environment. You can use MLflow to build a Docker image for your model.
+the runtime environment. You can use QCFlow to build a Docker image for your model.
 
 .. code-block:: bash
 
-  mlflow models build-docker --model-uri "models:/wine-quality/1" --name "qs_mlops"
+  qcflow models build-docker --model-uri "models:/wine-quality/1" --name "qs_mlops"
 
 This command builds a Docker image named ``qs_mlops`` that contains your model and its dependencies. The ``model-uri``
 in this case specifies a version number (``/1``) rather than a lifecycle stage (``/staging``), but you can use
@@ -331,13 +331,13 @@ Deploying to a cloud platform
 Virtually all cloud platforms allow you to deploy a Docker image. The process varies considerably, so you will have
 to consult your cloud provider's documentation for details.
 
-In addition, some cloud providers have built-in support for MLflow. For instance:
+In addition, some cloud providers have built-in support for QCFlow. For instance:
 
 - `Azure ML <https://learn.microsoft.com/azure/machine-learning/>`_
-- `Databricks <https://www.databricks.com/product/managed-mlflow>`_
+- `Databricks <https://www.databricks.com/product/managed-qcflow>`_
 - `Amazon SageMaker <https://docs.aws.amazon.com/sagemaker/index.html>`_
 - `Google Cloud <https://cloud.google.com/doc>`_
 
-all support MLflow. Cloud platforms generally support multiple workflows for deployment: command-line,
-SDK-based, and Web-based. You can use MLflow in any of these workflows, although the details will vary between
+all support QCFlow. Cloud platforms generally support multiple workflows for deployment: command-line,
+SDK-based, and Web-based. You can use QCFlow in any of these workflows, although the details will vary between
 platforms and versions. Again, you will need to consult your cloud provider's documentation for details.

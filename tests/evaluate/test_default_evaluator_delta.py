@@ -4,8 +4,8 @@ import pandas as pd
 import pytest
 from pyspark.sql import SparkSession
 
-import mlflow
-from mlflow.exceptions import MlflowException
+import qcflow
+from qcflow.exceptions import QCFlowException
 
 
 def language_model(inputs: list[str]) -> list[str]:
@@ -13,19 +13,19 @@ def language_model(inputs: list[str]) -> list[str]:
 
 
 def test_write_to_delta_fails_without_spark():
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="eval_results_path is only supported in Spark environment",
         ):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model_info.model_uri,
                 data,
-                extra_metrics=[mlflow.metrics.latency()],
+                extra_metrics=[qcflow.metrics.latency()],
                 evaluators="default",
                 evaluator_config={
                     "eval_results_path": "my_path",
@@ -51,19 +51,19 @@ def spark_session_with_delta():
 
 
 def test_write_to_delta_fails_with_invalid_mode(spark_session_with_delta):
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match="eval_results_mode can only be 'overwrite' or 'append'",
         ):
-            mlflow.evaluate(
+            qcflow.evaluate(
                 model_info.model_uri,
                 data,
-                extra_metrics=[mlflow.metrics.latency()],
+                extra_metrics=[qcflow.metrics.latency()],
                 evaluators="default",
                 evaluator_config={
                     "eval_results_path": "my_path",
@@ -74,15 +74,15 @@ def test_write_to_delta_fails_with_invalid_mode(spark_session_with_delta):
 
 def test_write_eval_table_to_delta(spark_session_with_delta):
     spark_session, tmpdir = spark_session_with_delta
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
-        results = mlflow.evaluate(
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
+        results = qcflow.evaluate(
             model_info.model_uri,
             data,
-            extra_metrics=[mlflow.metrics.latency()],
+            extra_metrics=[qcflow.metrics.latency()],
             evaluators="default",
             evaluator_config={
                 "eval_results_path": "my_path",
@@ -105,15 +105,15 @@ def test_write_eval_table_to_delta(spark_session_with_delta):
 
 def test_write_eval_table_to_delta_append(spark_session_with_delta):
     spark_session, tmpdir = spark_session_with_delta
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model", python_model=language_model, input_example=["a", "b"]
         )
-        data = pd.DataFrame({"text": ["Hello world", "My name is MLflow"]})
-        mlflow.evaluate(
+        data = pd.DataFrame({"text": ["Hello world", "My name is QCFlow"]})
+        qcflow.evaluate(
             model_info.model_uri,
             data,
-            extra_metrics=[mlflow.metrics.latency()],
+            extra_metrics=[qcflow.metrics.latency()],
             evaluators="default",
             evaluator_config={
                 "eval_results_path": "my_path",
@@ -121,10 +121,10 @@ def test_write_eval_table_to_delta_append(spark_session_with_delta):
             },
         )
 
-        mlflow.evaluate(
+        qcflow.evaluate(
             model_info.model_uri,
             data,
-            extra_metrics=[mlflow.metrics.latency()],
+            extra_metrics=[qcflow.metrics.latency()],
             evaluators="default",
             evaluator_config={
                 "eval_results_path": "my_path",

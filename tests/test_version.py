@@ -1,4 +1,4 @@
-from mlflow import version
+from qcflow import version
 
 
 def test_is_release_version(monkeypatch):

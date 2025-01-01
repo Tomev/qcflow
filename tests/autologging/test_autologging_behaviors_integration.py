@@ -9,10 +9,10 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.utils import gorilla
-from mlflow.utils.autologging_utils import (
+import qcflow
+from qcflow import QCFlowClient
+from qcflow.utils import gorilla
+from qcflow.utils.autologging_utils import (
     autologging_is_disabled,
     get_autologging_config,
     safe_patch,
@@ -24,15 +24,15 @@ from tests.autologging.fixtures import (
 )
 
 AUTOLOGGING_INTEGRATIONS_TO_TEST = {
-    mlflow.sklearn: "sklearn",
-    mlflow.xgboost: "xgboost",
-    mlflow.lightgbm: "lightgbm",
-    mlflow.pytorch: "torch",
-    mlflow.fastai: "fastai",
-    mlflow.statsmodels: "statsmodels",
-    mlflow.spark: "pyspark",
-    mlflow.pyspark.ml: "pyspark",
-    mlflow.tensorflow: "tensorflow",
+    qcflow.sklearn: "sklearn",
+    qcflow.xgboost: "xgboost",
+    qcflow.lightgbm: "lightgbm",
+    qcflow.pytorch: "torch",
+    qcflow.fastai: "fastai",
+    qcflow.statsmodels: "statsmodels",
+    qcflow.spark: "pyspark",
+    qcflow.pyspark.ml: "pyspark",
+    qcflow.tensorflow: "tensorflow",
 }
 
 
@@ -81,17 +81,17 @@ def test_autologging_integrations_expose_configs_and_support_disablement(integra
 @pytest.mark.parametrize("integration", AUTOLOGGING_INTEGRATIONS_TO_TEST.keys())
 def test_autologging_integrations_use_safe_patch_for_monkey_patching(integration):
     with (
-        mock.patch("mlflow.utils.gorilla.apply", wraps=gorilla.apply) as gorilla_mock,
+        mock.patch("qcflow.utils.gorilla.apply", wraps=gorilla.apply) as gorilla_mock,
         mock.patch(integration.__name__ + ".safe_patch", wraps=safe_patch) as safe_patch_mock,
     ):
-        # In `mlflow.xgboost.autolog()` and `mlflow.lightgbm.autolog()`,
+        # In `qcflow.xgboost.autolog()` and `qcflow.lightgbm.autolog()`,
         # we enable autologging for XGBoost and LightGBM sklearn models
-        # using `mlflow.sklearn._autolog()`. So besides `safe_patch` calls in
+        # using `qcflow.sklearn._autolog()`. So besides `safe_patch` calls in
         # `autolog()`, we need to count additional `safe_patch` calls
         # in sklearn autologging routine as well.
-        if integration.__name__ in ["mlflow.xgboost", "mlflow.lightgbm"]:
+        if integration.__name__ in ["qcflow.xgboost", "qcflow.lightgbm"]:
             with mock.patch(
-                "mlflow.sklearn.safe_patch", wraps=safe_patch
+                "qcflow.sklearn.safe_patch", wraps=safe_patch
             ) as sklearn_safe_patch_mock:
                 integration.autolog(disable=False)
                 safe_patch_call_count = (
@@ -99,7 +99,7 @@ def test_autologging_integrations_use_safe_patch_for_monkey_patching(integration
                 )
 
                 # Assert autolog integrations use the fluent API for run management. This is to
-                # ensure certain fluent API methods like mlflow.last_active_run behaves as expected.
+                # ensure certain fluent API methods like qcflow.last_active_run behaves as expected.
                 assert any(
                     kwargs["manage_run"]
                     for _, kwargs in sklearn_safe_patch_mock.call_args_list
@@ -109,9 +109,9 @@ def test_autologging_integrations_use_safe_patch_for_monkey_patching(integration
             integration.autolog(disable=False)
             safe_patch_call_count = safe_patch_mock.call_count
 
-        if integration.__name__ != "mlflow.spark":
+        if integration.__name__ != "qcflow.spark":
             # Assert autolog integrations use the fluent API for run management. This is to
-            # ensure certain fluent API methods like mlflow.last_active_run behaves as expected.
+            # ensure certain fluent API methods like qcflow.last_active_run behaves as expected.
             assert any(
                 kwargs["manage_run"]
                 for _, kwargs in safe_patch_mock.call_args_list
@@ -129,21 +129,21 @@ def test_autologging_integrations_use_safe_patch_for_monkey_patching(integration
 def test_autolog_respects_exclusive_flag(setup_sklearn_model):
     x, y, model = setup_sklearn_model
 
-    mlflow.sklearn.autolog(exclusive=True)
-    run = mlflow.start_run()
+    qcflow.sklearn.autolog(exclusive=True)
+    run = qcflow.start_run()
     model.fit(x, y)
-    mlflow.end_run()
-    run_data = MlflowClient().get_run(run.info.run_id).data
+    qcflow.end_run()
+    run_data = QCFlowClient().get_run(run.info.run_id).data
     metrics, params, tags = run_data.metrics, run_data.params, run_data.tags
     assert not metrics
     assert not params
-    assert all("mlflow." in key for key in tags)
+    assert all("qcflow." in key for key in tags)
 
-    mlflow.sklearn.autolog(exclusive=False)
-    run = mlflow.start_run()
+    qcflow.sklearn.autolog(exclusive=False)
+    run = qcflow.start_run()
     model.fit(x, y)
-    mlflow.end_run()
-    run_data = MlflowClient().get_run(run.info.run_id).data
+    qcflow.end_run()
+    run_data = QCFlowClient().get_run(run.info.run_id).data
     metrics, params = run_data.metrics, run_data.params
     assert metrics
     assert params
@@ -152,21 +152,21 @@ def test_autolog_respects_exclusive_flag(setup_sklearn_model):
 def test_autolog_respects_disable_flag(setup_sklearn_model):
     x, y, model = setup_sklearn_model
 
-    mlflow.sklearn.autolog(disable=True, exclusive=False)
-    run = mlflow.start_run()
+    qcflow.sklearn.autolog(disable=True, exclusive=False)
+    run = qcflow.start_run()
     model.fit(x, y)
-    mlflow.end_run()
-    run_data = MlflowClient().get_run(run.info.run_id).data
+    qcflow.end_run()
+    run_data = QCFlowClient().get_run(run.info.run_id).data
     metrics, params, tags = run_data.metrics, run_data.params, run_data.tags
     assert not metrics
     assert not params
-    assert all("mlflow." in key for key in tags)
+    assert all("qcflow." in key for key in tags)
 
-    mlflow.sklearn.autolog(disable=False, exclusive=False)
-    run = mlflow.start_run()
+    qcflow.sklearn.autolog(disable=False, exclusive=False)
+    run = qcflow.start_run()
     model.fit(x, y)
-    mlflow.end_run()
-    run_data = MlflowClient().get_run(run.info.run_id).data
+    qcflow.end_run()
+    run_data = QCFlowClient().get_run(run.info.run_id).data
     metrics, params = run_data.metrics, run_data.params
     assert metrics
     assert params
@@ -183,7 +183,7 @@ def test_autolog_reverts_patched_code_when_disabled():
     original_fit_predict = model.fit_predict
 
     # After patching.
-    mlflow.sklearn.autolog(disable=False)
+    qcflow.sklearn.autolog(disable=False)
     patched_fit = model.fit
     patched_fit_transform = model.fit_transform
     patched_fit_predict = model.fit_predict
@@ -192,7 +192,7 @@ def test_autolog_reverts_patched_code_when_disabled():
     assert patched_fit_predict != original_fit_predict
 
     # After revert of patching.
-    mlflow.sklearn.autolog(disable=True)
+    qcflow.sklearn.autolog(disable=True)
     reverted_fit = model.fit
     reverted_fit_transform = model.fit_transform
     reverted_fit_predict = model.fit_predict
@@ -211,25 +211,25 @@ def test_autolog_respects_disable_flag_across_import_orders():
 
         iris = datasets.load_iris()
         svc = svm.SVC(C=2.0, degree=5, kernel="rbf")
-        run = mlflow.start_run()
+        run = qcflow.start_run()
         svc.fit(iris.data, iris.target)
-        mlflow.end_run()
-        run_data = MlflowClient().get_run(run.info.run_id).data
+        qcflow.end_run()
+        run_data = QCFlowClient().get_run(run.info.run_id).data
         metrics, params, tags = run_data.metrics, run_data.params, run_data.tags
         assert not metrics
         assert not params
-        assert all("mlflow." in key for key in tags)
+        assert all("qcflow." in key for key in tags)
 
     def import_sklearn():
         import sklearn  # noqa: F401
 
     def disable_autolog():
-        mlflow.sklearn.autolog(disable=True)
+        qcflow.sklearn.autolog(disable=True)
 
-    def mlflow_autolog():
-        mlflow.autolog()
+    def qcflow_autolog():
+        qcflow.autolog()
 
-    import_list = [import_sklearn, disable_autolog, mlflow_autolog]
+    import_list = [import_sklearn, disable_autolog, qcflow_autolog]
 
     for func_order_list in permutations(import_list):
         for fun in func_order_list:
@@ -240,17 +240,17 @@ def test_autolog_respects_disable_flag_across_import_orders():
 @pytest.mark.usefixtures(test_mode_off.__name__)
 def test_autolog_respects_silent_mode(tmp_path, monkeypatch):
     # disable progress bar as it is not controlled by `silent` flag
-    monkeypatch.setenv("MLFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR", "false")
+    monkeypatch.setenv("QCFLOW_ENABLE_ARTIFACTS_PROGRESS_BAR", "false")
 
     # Use file-based experiment storage for this test. Otherwise, concurrent experiment creation in
     # multithreaded contexts may fail for other storage backends (e.g. SQLAlchemy)
-    mlflow.set_tracking_uri(str(tmp_path))
-    mlflow.set_experiment("test_experiment")
+    qcflow.set_tracking_uri(str(tmp_path))
+    qcflow.set_experiment("test_experiment")
 
     og_showwarning = warnings.showwarning
     stream = StringIO()
     sys.stderr = stream
-    logger = logging.getLogger(mlflow.__name__)
+    logger = logging.getLogger(qcflow.__name__)
 
     from sklearn import datasets
 
@@ -271,8 +271,8 @@ def test_autolog_respects_silent_mode(tmp_path, monkeypatch):
 
     # Call general and framework-specific autologging APIs to cover a
     # larger surface area for testing purposes
-    mlflow.autolog(silent=True)
-    mlflow.sklearn.autolog(silent=True, log_input_examples=True)
+    qcflow.autolog(silent=True)
+    qcflow.sklearn.autolog(silent=True, log_input_examples=True)
 
     executions = []
     with ThreadPoolExecutor(max_workers=50) as executor:
@@ -283,14 +283,14 @@ def test_autolog_respects_silent_mode(tmp_path, monkeypatch):
     assert all(e.result() is True for e in executions)
     assert not stream.getvalue()
     # Verify that `warnings.showwarning` was restored to its original value after training
-    # and that MLflow event logs are enabled
+    # and that QCFlow event logs are enabled
     assert warnings.showwarning == og_showwarning
     logger.info("verify that event logs are enabled")
     assert "verify that event logs are enabled" in stream.getvalue()
 
     stream.truncate(0)
 
-    mlflow.sklearn.autolog(silent=False, log_input_examples=True)
+    qcflow.sklearn.autolog(silent=False, log_input_examples=True)
 
     executions = []
     with ThreadPoolExecutor(max_workers=50) as executor:
@@ -301,19 +301,19 @@ def test_autolog_respects_silent_mode(tmp_path, monkeypatch):
     assert all(e.result() is True for e in executions)
     assert stream.getvalue()
     # Verify that `warnings.showwarning` was restored to its original value after training
-    # and that MLflow event logs are enabled
+    # and that QCFlow event logs are enabled
     assert warnings.showwarning == og_showwarning
     logger.info("verify that event logs are enabled")
     assert "verify that event logs are enabled" in stream.getvalue()
 
     # TODO: Investigate why this test occasionally leaks a run, which causes the
     # `clean_up_leaked_runs` fixture in `tests/conftest.py` to fail.
-    while mlflow.active_run():
-        mlflow.end_run()
+    while qcflow.active_run():
+        qcflow.end_run()
 
 
 def test_autolog_globally_configured_flag_set_correctly():
-    from mlflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS
+    from qcflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS
 
     AUTOLOGGING_INTEGRATIONS.clear()
     import pyspark
@@ -321,13 +321,13 @@ def test_autolog_globally_configured_flag_set_correctly():
     import sklearn  # noqa: F401
 
     integrations_to_test = ["sklearn", "spark", "pyspark.ml"]
-    mlflow.autolog()
+    qcflow.autolog()
     for integration_name in integrations_to_test:
         assert AUTOLOGGING_INTEGRATIONS[integration_name]["globally_configured"]
 
-    mlflow.sklearn.autolog()
-    mlflow.spark.autolog()
-    mlflow.pyspark.ml.autolog()
+    qcflow.sklearn.autolog()
+    qcflow.spark.autolog()
+    qcflow.pyspark.ml.autolog()
 
     for integration_name in integrations_to_test:
         assert "globally_configured" not in AUTOLOGGING_INTEGRATIONS[integration_name]

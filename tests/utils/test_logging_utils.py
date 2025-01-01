@@ -5,11 +5,11 @@ from io import StringIO
 
 import pytest
 
-import mlflow
-from mlflow.utils import logging_utils
-from mlflow.utils.logging_utils import eprint, suppress_logs
+import qcflow
+from qcflow.utils import logging_utils
+from qcflow.utils.logging_utils import eprint, suppress_logs
 
-logger = logging.getLogger(mlflow.__name__)
+logger = logging.getLogger(qcflow.__name__)
 
 LOGGING_FNS_TO_TEST = [logger.info, logger.warning, logger.critical, eprint]
 

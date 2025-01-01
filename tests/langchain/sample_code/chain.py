@@ -8,13 +8,13 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.chat_models import ChatDatabricks, ChatMlflow
+from langchain_community.chat_models import ChatDatabricks, ChatQCFlow
 from langchain_community.document_loaders import TextLoader
 from langchain_community.embeddings.fake import FakeEmbeddings
 from langchain_community.vectorstores import FAISS
 
-import mlflow
-from mlflow.models import ModelConfig, set_model, set_retriever_schema
+import qcflow
+from qcflow.models import ModelConfig, set_model, set_retriever_schema
 
 base_config = ModelConfig(development_config="tests/langchain/config.yml")
 
@@ -48,7 +48,7 @@ def get_fake_chat_model(endpoint="fake-endpoint"):
                     }
                 ],
             }
-            return ChatMlflow._create_chat_result(response)
+            return ChatQCFlow._create_chat_result(response)
 
         @property
         def _llm_type(self) -> str:
@@ -58,7 +58,7 @@ def get_fake_chat_model(endpoint="fake-endpoint"):
 
 
 # No need to define the model, but simulating common practice in dev notebooks
-mlflow.langchain.autolog()
+qcflow.langchain.autolog()
 
 text_path = "tests/langchain/state_of_the_union.txt"
 loader = TextLoader(text_path)

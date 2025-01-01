@@ -1,7 +1,7 @@
 import pytest
 
-from mlflow.utils.mime_type_utils import _guess_mime_type
-from mlflow.utils.os import is_windows
+from qcflow.utils.mime_type_utils import _guess_mime_type
+from qcflow.utils.os import is_windows
 
 
 @pytest.mark.skipif(is_windows(), reason="This test fails on Windows")

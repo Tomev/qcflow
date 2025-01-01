@@ -1,12 +1,12 @@
-MLflow LangChain Flavor
+QCFlow LangChain Flavor
 =======================
 
 .. attention::
     The ``langchain`` flavor is under active development and is marked as Experimental. Public APIs are 
     subject to change, and new features may be added as the flavor evolves.
 
-Welcome to the developer guide for the integration of `LangChain <https://www.langchain.com/>`_ with MLflow. This guide serves as a comprehensive 
-resource for understanding and leveraging the combined capabilities of LangChain and MLflow in developing advanced language model applications.
+Welcome to the developer guide for the integration of `LangChain <https://www.langchain.com/>`_ with QCFlow. This guide serves as a comprehensive 
+resource for understanding and leveraging the combined capabilities of LangChain and QCFlow in developing advanced language model applications.
 
 `LangChain <https://www.langchain.com/>`_ is a versatile framework designed for building applications powered by language models. It excels in creating context-aware applications 
 that utilize language models for reasoning and generating responses, enabling the development of sophisticated NLP applications.
@@ -14,37 +14,37 @@ that utilize language models for reasoning and generating responses, enabling th
 `LangGraph <https://langchain-ai.github.io/langgraph/>`_ is a complementary agent-based framework from the creators of Langchain, supporting the creation of
 stateful agent and multi-agent GenAI applications. LangGraph utilizes LangChain in order to interface with GenAI agent components.
 
-Why use MLflow with LangChain?
+Why use QCFlow with LangChain?
 ------------------------------
-Aside from the benefits of using MLflow for managing and deploying machine learning models, the integration of LangChain with MLflow provides a number of
-benefits that are associated with using LangChain within the broader MLflow ecosystem.
+Aside from the benefits of using QCFlow for managing and deploying machine learning models, the integration of LangChain with QCFlow provides a number of
+benefits that are associated with using LangChain within the broader QCFlow ecosystem.
 
 Experiment Tracking
 ^^^^^^^^^^^^^^^^^^^
-LangChain's flexibility in experimenting with various agents, tools, and retrievers becomes even more powerful when paired with `MLflow Tracking <../../tracking.html>`_. This combination allows for rapid experimentation and iteration. You can effortlessly compare runs, making it easier to refine models and accelerate the journey from development to production deployment.
+LangChain's flexibility in experimenting with various agents, tools, and retrievers becomes even more powerful when paired with `QCFlow Tracking <../../tracking.html>`_. This combination allows for rapid experimentation and iteration. You can effortlessly compare runs, making it easier to refine models and accelerate the journey from development to production deployment.
 
 Dependency Management
 ^^^^^^^^^^^^^^^^^^^^^
-Deploy your LangChain application with confidence, leveraging MLflow's ability to `manage and record code and environment dependencies <../../model/dependencies.html>`_ automatically.
+Deploy your LangChain application with confidence, leveraging QCFlow's ability to `manage and record code and environment dependencies <../../model/dependencies.html>`_ automatically.
 You can also explicitly declare external resource dependencies, like the LLM serving endpoint or vector search index queried by your LangChain application.
-These dependencies are tracked by MLflow as model metadata, so that downstream serving systems can ensure authentication from your
+These dependencies are tracked by QCFlow as model metadata, so that downstream serving systems can ensure authentication from your
 deployed LangChain application to these dependent resources just works.
 
 These features ensure consistency between development and production environments, reducing deployment risks with less manual intervention.
 
-MLflow Evaluate
+QCFlow Evaluate
 ^^^^^^^^^^^^^^^
-`MLflow Evaluate <../llm-evaluate/index.html>`_ provides native capabilities within MLflow to evaluate language models. With this feature you can easily utilize automated evaluation algorithms on the results of your LangChain application's inference results. This capability facilitates the efficient assessment of inference results from your LangChain application, ensuring robust performance analytics.
+`QCFlow Evaluate <../llm-evaluate/index.html>`_ provides native capabilities within QCFlow to evaluate language models. With this feature you can easily utilize automated evaluation algorithms on the results of your LangChain application's inference results. This capability facilitates the efficient assessment of inference results from your LangChain application, ensuring robust performance analytics.
 
 Observability
 ^^^^^^^^^^^^^
-`MLflow Tracing <../tracing/index.html>`_ is a new feature of MLflow that allows you to trace how data flows through your LangChain chain/agents/etc. This feature provides a visual representation of the data flow, making it easier to understand the behavior of your LangChain application and identify potential bottlenecks or issues. With its powerful `Automatic Tracing <../tracing/index.html#automatic-tracing>`_ capability, you can instrument your LangChain application without any code change but just running ``mlflow.langchain.autolog()`` command once.
+`QCFlow Tracing <../tracing/index.html>`_ is a new feature of QCFlow that allows you to trace how data flows through your LangChain chain/agents/etc. This feature provides a visual representation of the data flow, making it easier to understand the behavior of your LangChain application and identify potential bottlenecks or issues. With its powerful `Automatic Tracing <../tracing/index.html#automatic-tracing>`_ capability, you can instrument your LangChain application without any code change but just running ``qcflow.langchain.autolog()`` command once.
 
 
 Automatic Logging
 ------------------
 
-Autologging is a powerful one stop solution to achieve all the above benefits with just one line of code ``mlflow.langchain.autolog()``. By enabling autologging, you can automatically log all the components of your LangChain application, including chains, agents, and retrievers, with minimal effort. This feature simplifies the process of tracking and managing your LangChain application, allowing you to focus on developing and improving your models. For more information on how to use this feature, refer to the `MLflow LangChain Autologging Documentation <autologging.html>`_.
+Autologging is a powerful one stop solution to achieve all the above benefits with just one line of code ``qcflow.langchain.autolog()``. By enabling autologging, you can automatically log all the components of your LangChain application, including chains, agents, and retrievers, with minimal effort. This feature simplifies the process of tracking and managing your LangChain application, allowing you to focus on developing and improving your models. For more information on how to use this feature, refer to the `QCFlow LangChain Autologging Documentation <autologging.html>`_.
 
 .. toctree::
     :maxdepth: 1
@@ -53,7 +53,7 @@ Autologging is a powerful one stop solution to achieve all the above benefits wi
     autologging.rst
 
 
-Supported Elements in MLflow LangChain Integration
+Supported Elements in QCFlow LangChain Integration
 --------------------------------------------------
 - `Agents <https://python.langchain.com/docs/modules/agents/>`_
 - `Retrievers <https://python.langchain.com/docs/modules/data_connection/retrievers/>`_
@@ -71,7 +71,7 @@ Supported Elements in MLflow LangChain Integration
 
 .. attention::
 
-   Logging chains/agents that include `ChatOpenAI <https://python.langchain.com/docs/integrations/chat/openai>`_ and `AzureChatOpenAI <https://python.langchain.com/docs/integrations/chat/azure_chat_openai>`_ requires ``MLflow>=2.12.0`` and ``LangChain>=0.0.307``.
+   Logging chains/agents that include `ChatOpenAI <https://python.langchain.com/docs/integrations/chat/openai>`_ and `AzureChatOpenAI <https://python.langchain.com/docs/integrations/chat/azure_chat_openai>`_ requires ``QCFlow>=2.12.0`` and ``LangChain>=0.0.307``.
 
 
 Overview of Chains, Agents, and Retrievers
@@ -106,11 +106,11 @@ Overview of Chains, Agents, and Retrievers
         Components in RetrievalQA chains responsible for sourcing relevant documents or data. Retrievers are key in applications where LLMs need to reference specific external information for accurate responses.
 
         .. figure:: ../../_static/images/tutorials/llms/langchain-retrievalqa.png
-            :alt: MLflow LangChain RetrievalQA architecture
+            :alt: QCFlow LangChain RetrievalQA architecture
             :width: 70%
             :align: center
 
-Getting Started with the MLflow LangChain Flavor - Tutorials and Guides
+Getting Started with the QCFlow LangChain Flavor - Tutorials and Guides
 -----------------------------------------------------------------------
 
 .. toctree::
@@ -123,7 +123,7 @@ Getting Started with the MLflow LangChain Flavor - Tutorials and Guides
 Introductory Tutorial
 ^^^^^^^^^^^^^^^^^^^^^
 
-In this introductory tutorial, you will learn the most fundamental components of LangChain and how to leverage the integration with MLflow to store, retrieve, and 
+In this introductory tutorial, you will learn the most fundamental components of LangChain and how to leverage the integration with QCFlow to store, retrieve, and 
 use a chain. 
 
 .. raw:: html
@@ -136,7 +136,7 @@ use a chain.
                         LangChain Quickstart
                     </div>
                     <p>
-                        Get started with MLflow and LangChain by exploring the simplest possible chain configuration of a prompt and model chained to create 
+                        Get started with QCFlow and LangChain by exploring the simplest possible chain configuration of a prompt and model chained to create 
                         a single-purpose utility application.
                     </p>
                 </a>
@@ -148,7 +148,7 @@ use a chain.
 Advanced Tutorials
 ^^^^^^^^^^^^^^^^^^
 
-In these tutorials, you can learn about more complex usages of LangChain with MLflow. It is highly advised to read through the introductory tutorial prior to 
+In these tutorials, you can learn about more complex usages of LangChain with QCFlow. It is highly advised to read through the introductory tutorial prior to 
 exploring these more advanced use cases. 
 
 .. raw:: html
@@ -161,7 +161,7 @@ exploring these more advanced use cases.
                         RAG tutorial with LangChain
                     </div>
                     <p>
-                        Learn how to build a LangChain RAG with MLflow integration to answer highly specific questions about the legality of business ventures.
+                        Learn how to build a LangChain RAG with QCFlow integration to answer highly specific questions about the legality of business ventures.
                     </p>
                 </a>
             </div>
@@ -173,7 +173,7 @@ exploring these more advanced use cases.
 Logging models from Code
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Since MLflow 2.12.2, MLflow introduced the ability to log LangChain models directly from a code definition.
+Since QCFlow 2.12.2, QCFlow introduced the ability to log LangChain models directly from a code definition.
 
 The feature provides several benefits to manage LangChain models:
 
@@ -186,7 +186,7 @@ The feature provides several benefits to manage LangChain models:
 
 Refer to the `Models From Code feature documentation <../../models.html#models-from-code>`_ for more information about this feature.
 
-In order to use this feature, you will utilize the :py:func:`mlflow.models.set_model` API to define the chain that you would like to log as an MLflow model.
+In order to use this feature, you will utilize the :py:func:`qcflow.models.set_model` API to define the chain that you would like to log as an QCFlow model.
 After having this set within your code that defines your chain, when logging your model, you will specify the **path** to the file that defines your chain.
 
 The following example demonstrates how to log a simple chain with this method:
@@ -212,11 +212,11 @@ The following example demonstrates how to log a simple chain with this method:
         from langchain_core.runnables import RunnableLambda
         from langchain_openai import OpenAI
 
-        import mlflow
+        import qcflow
 
-        mlflow.set_experiment("Homework Helper")
+        qcflow.set_experiment("Homework Helper")
 
-        mlflow.langchain.autolog()
+        qcflow.langchain.autolog()
 
         prompt = PromptTemplate(
             template="You are a helpful tutor that evaluates my homework assignments and provides suggestions on areas for me to study further."
@@ -251,7 +251,7 @@ The following example demonstrates how to log a simple chain with this method:
             | StrOutputParser()
         )
 
-        mlflow.models.set_model(chain)
+        qcflow.models.set_model(chain)
 
     .. blacken-docs:on
 
@@ -261,19 +261,19 @@ The following example demonstrates how to log a simple chain with this method:
 
         from pprint import pprint
 
-        import mlflow
+        import qcflow
 
         chain_path = "chain.py"
 
-        with mlflow.start_run():
-            info = mlflow.langchain.log_model(lc_model=chain_path, artifact_path="chain")
+        with qcflow.start_run():
+            info = qcflow.langchain.log_model(lc_model=chain_path, artifact_path="chain")
 
-3. The model defined in ``chain.py`` is now logged to MLflow. You can load the model back and run inference:
+3. The model defined in ``chain.py`` is now logged to QCFlow. You can load the model back and run inference:
 
     .. code-block:: python
 
         # Load the model and run inference
-        homework_chain = mlflow.langchain.load_model(model_uri=info.model_uri)
+        homework_chain = qcflow.langchain.load_model(model_uri=info.model_uri)
 
         exam_question = {
             "messages": [
@@ -291,7 +291,7 @@ The following example demonstrates how to log a simple chain with this method:
 
         pprint(response)
 
-    You can see the model is logged as a code on MLflow UI:
+    You can see the model is logged as a code on QCFlow UI:
 
     .. figure:: ../../_static/images/tutorials/llms/langchain-code-model.png
             :alt: Logging a LangChain model from a code script file
@@ -300,13 +300,13 @@ The following example demonstrates how to log a simple chain with this method:
 
 .. warning::
 
-    When logging models from code, make sure that your code does not contain any sensitive information, such as API keys, passwords, or other confidential data. The code will be stored in plain text in the MLflow model artifact, and anyone with access to the artifact will be able to view the code.
+    When logging models from code, make sure that your code does not contain any sensitive information, such as API keys, passwords, or other confidential data. The code will be stored in plain text in the QCFlow model artifact, and anyone with access to the artifact will be able to view the code.
 
 
 `Detailed Documentation <guide/index.html>`_
 --------------------------------------------
 
-To learn more about the details of the MLflow LangChain flavor, read the detailed guide below.
+To learn more about the details of the QCFlow LangChain flavor, read the detailed guide below.
 
 .. raw:: html
 
@@ -324,7 +324,7 @@ FAQ
 I can't load my chain!
 ^^^^^^^^^^^^^^^^^^^^^^
 
-- **Allowing for Dangerous Deserialization**: Pickle opt-in logic in LangChain will prevent components from being loaded via MLflow. You might see an error like this:
+- **Allowing for Dangerous Deserialization**: Pickle opt-in logic in LangChain will prevent components from being loaded via QCFlow. You might see an error like this:
 
     .. code-block:: text
 
@@ -333,21 +333,21 @@ I can't load my chain!
         payload that when deserialized with pickle can execute arbitrary code on your machine. 
 
     A change within LangChain that `forces users to opt-in to pickle deserialization <https://github.com/langchain-ai/langchain/pull/18696>`_ can create 
-    some issues with loading chains, vector stores, retrievers, and agents that have been logged using MLflow. Because the option is not exposed per component
+    some issues with loading chains, vector stores, retrievers, and agents that have been logged using QCFlow. Because the option is not exposed per component
     to set this argument on the loader function, you will need to ensure that you are setting this option directly within the defined loader function when 
     logging the model. LangChain components that do not set this value will be saved without issue, but a ``ValueError`` will be raised when loading if unset. 
 
     To fix this, simply re-log your model, specifying the option ``allow_dangerous_deserialization=True`` in your defined loader function. See the tutorial 
-    `for LangChain retrievers <notebooks/langchain-retriever.html#Establishing-RetrievalQA-Chain-and-Logging-with-MLflow>`_ for an example of specifying this
+    `for LangChain retrievers <notebooks/langchain-retriever.html#Establishing-RetrievalQA-Chain-and-Logging-with-QCFlow>`_ for an example of specifying this
     option when logging a ``FAISS`` vector store instance within a ``loader_fn`` declaration.
 
 
-I can't save my chain, agent, or retriever with MLflow.
+I can't save my chain, agent, or retriever with QCFlow.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tip::
 
-    If you're encountering issues with logging or saving LangChain components with MLflow, see the `models from code <../../models.html#models-from-code>`_
+    If you're encountering issues with logging or saving LangChain components with QCFlow, see the `models from code <../../models.html#models-from-code>`_
     feature documentation to determine if logging your model from a script file provides a simpler and more robust logging solution!
 
 - **Serialization Challenges with Cloudpickle**: Serialization with cloudpickle can encounter limitations depending on the complexity of the objects. 
@@ -356,15 +356,15 @@ I can't save my chain, agent, or retriever with MLflow.
     arises because serialization essentially requires converting an object to a byte stream, which can be complex for objects tightly coupled with system states 
     or those having external I/O operations. Try upgrading PyDantic to 2.x version to resolve this issue.
 
-- **Verifying Native Serialization Support**: Ensure that the langchain object (chain, agent, or retriever) is serializable natively using langchain APIs if saving or logging with MLflow doesn't work. 
+- **Verifying Native Serialization Support**: Ensure that the langchain object (chain, agent, or retriever) is serializable natively using langchain APIs if saving or logging with QCFlow doesn't work. 
 
     Due to their complex structures, not all langchain components are readily serializable. If native serialization 
-    is not supported and MLflow doesn't support saving the model, you can file an issue `in the LangChain repository <https://github.com/langchain-ai/langchain/issues>`_ or 
+    is not supported and QCFlow doesn't support saving the model, you can file an issue `in the LangChain repository <https://github.com/langchain-ai/langchain/issues>`_ or 
     ask for guidance in the `LangChain Discussions board <https://github.com/langchain-ai/langchain/discussions>`_.
 
-- **Keeping Up with New Features in MLflow**: MLflow might not immediately support the latest LangChain features immediately. 
+- **Keeping Up with New Features in QCFlow**: QCFlow might not immediately support the latest LangChain features immediately. 
 
-    If a new feature is not supported in MLflow, consider `filing a feature request on the MLflow GitHub issues page <https://github.com/mlflow/mlflow/issues>`_. 
+    If a new feature is not supported in QCFlow, consider `filing a feature request on the QCFlow GitHub issues page <https://github.com/qcflow/qcflow/issues>`_. 
     With the rapid pace of changes in libraries that are in heavy active development (such as `LangChain's release velocity <https://pypi.org/project/langchain/#history>`_),
     breaking changes, API refactoring, and fundamental functionality support for even existing features can cause integration issues. If there is a chain, agent,
     retriever, or any future structure within LangChain that you'd like to see supported, please let us know!
@@ -372,7 +372,7 @@ I can't save my chain, agent, or retriever with MLflow.
 I'm getting an AttributeError when saving my model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- **Handling Dependency Installation in LangChain and MLflow**: LangChain and MLflow do not automatically install all dependencies. 
+- **Handling Dependency Installation in LangChain and QCFlow**: LangChain and QCFlow do not automatically install all dependencies. 
 
     Other packages that might be required for specific agents, retrievers, or tools may need to be explicitly defined when saving or logging your model. 
     If your model relies on these external component libraries (particularly for tools) that not included in the standard LangChain package, these dependencies 
@@ -389,18 +389,18 @@ I'm getting an AttributeError when saving my model
 How can I use a streaming API with LangChain?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- **Streaming with LangChain Models**: Ensure that the LangChain model supports a streaming response and use an MLflow version >= 2.12.2.
+- **Streaming with LangChain Models**: Ensure that the LangChain model supports a streaming response and use an QCFlow version >= 2.12.2.
 
-    As of the MLflow 2.12.2 release, LangChain models that support streaming responses that have been saved using MLflow 2.12.2 (or higher) can be loaded and used for 
+    As of the QCFlow 2.12.2 release, LangChain models that support streaming responses that have been saved using QCFlow 2.12.2 (or higher) can be loaded and used for 
     streamable inference using the ``predict_stream`` API. Ensure that you are consuming the return type correctly, as the return from these models is a ``Generator`` object.
-    To learn more, refer to the `predict_stream guide <https://mlflow.org/docs/latest/models.html#how-to-load-and-score-python-function-models>`_.
+    To learn more, refer to the `predict_stream guide <https://qcflow.org/docs/latest/models.html#how-to-load-and-score-python-function-models>`_.
 
 
-How can I log an agent built with LangGraph to MLflow?
+How can I log an agent built with LangGraph to QCFlow?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The LangGraph integration with MLflow is designed to utilize the `Models From Code feature <../../model/models-from-code.html>`_
-in MLflow to broaden and simplify the support of agent serialization.
+The LangGraph integration with QCFlow is designed to utilize the `Models From Code feature <../../model/models-from-code.html>`_
+in QCFlow to broaden and simplify the support of agent serialization.
 
 To log a LangGraph agent, you can define your agent code within a script, as shown below, saved to a file ``langgraph.py``:
 
@@ -412,7 +412,7 @@ To log a LangGraph agent, you can define your agent code within a script, as sho
     from langchain_openai import ChatOpenAI
     from langgraph.prebuilt import create_react_agent
 
-    import mlflow
+    import qcflow
 
 
     @tool
@@ -429,34 +429,34 @@ To log a LangGraph agent, you can define your agent code within a script, as sho
     graph = create_react_agent(llm, tools)
 
     # specify the Agent as the model interface to be loaded when executing the script
-    mlflow.models.set_model(graph)
+    qcflow.models.set_model(graph)
 
-When you're ready to log this agent script definition to MLflow, you can refer to 
+When you're ready to log this agent script definition to QCFlow, you can refer to 
 this saved script directly when defining the model:
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
 
     input_example = {
         "messages": [{"role": "user", "content": "what is the weather in seattle today?"}]
     }
 
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(
             lc_model="./langgraph.py",  # specify the path to the LangGraph agent script definition
             artifact_path="langgraph",
             input_example=input_example,
         )
 
-When the agent is loaded from MLflow, the script will be executed and the defined agent will be
+When the agent is loaded from QCFlow, the script will be executed and the defined agent will be
 made available for use for invocation.
 
 The agent can be loaded and used for inference as follows:
 
 .. code-block:: python
 
-    agent = mlflow.langchain.load_model(model_info.model_uri)
+    agent = qcflow.langchain.load_model(model_info.model_uri)
     query = {
         "messages": [
             {
@@ -470,38 +470,38 @@ The agent can be loaded and used for inference as follows:
 How can I evaluate a LangGraph Agent?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `mlflow.evaluate <https://mlflow.org/docs/latest/model-evaluation/index.html>`_ function provides 
+The `qcflow.evaluate <https://qcflow.org/docs/latest/model-evaluation/index.html>`_ function provides 
 a robust way to evaluate model performance. 
 
 LangGraph agents, especially those with chat functionality, can return multiple messages in one 
-inference call. Given ``mlflow.evaluate`` performs naive comparisons between raw predictions and a specified
+inference call. Given ``qcflow.evaluate`` performs naive comparisons between raw predictions and a specified
 ground truth value, it is the user's responsibility to reconcile potential differences prediction output
 and ground truth.
 
-Often, the best approach is to use a `custom function <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html#evaluating-with-a-custom-function>`_ 
+Often, the best approach is to use a `custom function <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html#evaluating-with-a-custom-function>`_ 
 to process the response. Below we provide an example of a custom function that extracts the last chat 
-message from a LangGraph model. This function is then used in mlflow.evaluate to return a single 
+message from a LangGraph model. This function is then used in qcflow.evaluate to return a single 
 string response, which can be compared to the `"ground_truth"` column.
 
 .. code-block:: python
 
-    import mlflow
+    import qcflow
     import pandas as pd
     from typing import List
 
     # Note that we assume the `model_uri` variable is present
     # Also note that registering and loading the model is optional and you
     # can simply leverage your langgraph object in the custom function.
-    loaded_model = mlflow.langchain.load_model(model_uri)
+    loaded_model = qcflow.langchain.load_model(model_uri)
 
     eval_data = pd.DataFrame(
         {
             "inputs": [
-                "What is MLflow?",
+                "What is QCFlow?",
                 "What is Spark?",
             ],
             "ground_truth": [
-                "MLflow is an open-source platform for managing the end-to-end machine learning (ML) lifecycle. It was developed by Databricks, a company that specializes in big data and machine learning solutions. MLflow is designed to address the challenges that data scientists and machine learning engineers face when developing, training, and deploying machine learning models.",
+                "QCFlow is an open-source platform for managing the end-to-end machine learning (ML) lifecycle. It was developed by Databricks, a company that specializes in big data and machine learning solutions. QCFlow is designed to address the challenges that data scientists and machine learning engineers face when developing, training, and deploying machine learning models.",
                 "Apache Spark is an open-source, distributed computing system designed for big data processing and analytics. It was developed in response to limitations of the Hadoop MapReduce computing model, offering improvements in speed and ease of use. Spark provides libraries for various tasks such as data ingestion, processing, and analysis through its components like Spark SQL for structured data, Spark Streaming for real-time data processing, and MLlib for machine learning tasks",
             ],
         }
@@ -521,15 +521,15 @@ string response, which can be compared to the `"ground_truth"` column.
         return answers
 
 
-    with mlflow.start_run() as run:
-        results = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        results = qcflow.evaluate(
             custom_langgraph_wrapper,  # Pass our function defined above
             data=eval_data,
             targets="ground_truth",
             model_type="question-answering",
             extra_metrics=[
-                mlflow.metrics.latency(),
-                mlflow.metrics.genai.answer_correctness("openai:/gpt-4o"),
+                qcflow.metrics.latency(),
+                qcflow.metrics.genai.answer_correctness("openai:/gpt-4o"),
             ],
         )
     print(results.metrics)
@@ -554,20 +554,20 @@ string response, which can be compared to the `"ground_truth"` column.
     }
 
 For a complete example of a LangGraph model that works with this evaluation example, see the 
-`MLflow LangGraph blog <https://mlflow.org/blog/langgraph-model-from-code>`_.
+`QCFlow LangGraph blog <https://qcflow.org/blog/langgraph-model-from-code>`_.
 
 How to control whether my input is converted to List[langchain.schema.BaseMessage] in PyFunc predict?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-By default, MLflow converts chat request format input ``{"messages": [{"role": "user", "content": "some_question"}]}`` to
+By default, QCFlow converts chat request format input ``{"messages": [{"role": "user", "content": "some_question"}]}`` to
 List[langchain.schema.BaseMessage] like ``[HumanMessage(content="some_question")]`` for certain model types.
-To force the conversion, set the environment variable ``MLFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN`` to ``True``.
-To disable this behavior, set the environment variable ``MLFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN`` to ``False`` as demonstrated below:
+To force the conversion, set the environment variable ``QCFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN`` to ``True``.
+To disable this behavior, set the environment variable ``QCFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN`` to ``False`` as demonstrated below:
 
 .. code-block:: python
 
     import json
-    import mlflow
+    import qcflow
     import os
     from operator import itemgetter
     from langchain.schema.runnable import RunnablePassthrough
@@ -588,9 +588,9 @@ To disable this behavior, set the environment variable ``MLFLOW_CONVERT_MESSAGES
     assert model.invoke(input_example) == "Hello"
 
     # set this environment variable to avoid input conversion
-    os.environ["MLFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN"] = "false"
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(model, "model", input_example=input_example)
+    os.environ["QCFLOW_CONVERT_MESSAGES_DICT_FOR_LANGCHAIN"] = "false"
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(model, "model", input_example=input_example)
 
-    pyfunc_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    pyfunc_model = qcflow.pyfunc.load_model(model_info.model_uri)
     assert pyfunc_model.predict(input_example) == ["Hello"]

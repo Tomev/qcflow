@@ -1,4 +1,4 @@
-MLflow Transformers Flavor
+QCFlow Transformers Flavor
 ==========================
 
 .. attention::
@@ -27,7 +27,7 @@ having to worry about the underlying model or the preprocessing steps.
 
    Transformers Pipeline Architecture for the Whisper Model
 
-The integration of the Transformers library with MLflow enhances the management of machine learning workflows, from experiment 
+The integration of the Transformers library with QCFlow enhances the management of machine learning workflows, from experiment 
 tracking to model deployment. This combination offers a robust and efficient pathway for incorporating advanced NLP and AI capabilities 
 into your applications.
 
@@ -38,9 +38,9 @@ into your applications.
 - **Framework Interoperability**: Compatibility with PyTorch, TensorFlow, JAX, ONNX, and TorchScript.
 - **Community Support**: An active community for collaboration and support, accessible via forums and the Hugging Face Hub.
 
-**MLflow's Transformers Flavor**: 
+**QCFlow's Transformers Flavor**: 
 
-MLflow supports the use of the Transformers package by providing:
+QCFlow supports the use of the Transformers package by providing:
 
 - **Simplified Experiment Tracking**: Efficient logging of parameters, metrics, and models during the `fine-tuning process <https://huggingface.co/docs/transformers/main_classes/trainer>`_.
 - **Effortless Model Deployment**: Streamlined deployment to various production environments.
@@ -49,29 +49,29 @@ MLflow supports the use of the Transformers package by providing:
 
 **Example Use Case:**
 
-For an illustration of fine-tuning a model and logging the results with MLflow, refer to the :ref:`fine-tuning tutorials <transformers-finetuning-tutorials>`. These tutorial demonstrate the process of fine-tuning a pretrained foundational model into the application-specific model such as a spam classifier, SQL generator. MLflow plays a pivotal role in tracking the fine-tuning process, including datasets, hyperparameters, performance metrics, and the final model artifacts. The image below shows the result of the tutorial within the MLflow UI.
+For an illustration of fine-tuning a model and logging the results with QCFlow, refer to the :ref:`fine-tuning tutorials <transformers-finetuning-tutorials>`. These tutorial demonstrate the process of fine-tuning a pretrained foundational model into the application-specific model such as a spam classifier, SQL generator. QCFlow plays a pivotal role in tracking the fine-tuning process, including datasets, hyperparameters, performance metrics, and the final model artifacts. The image below shows the result of the tutorial within the QCFlow UI.
 
 .. figure:: ../../_static/images/tutorials/llms/transformers-fine-tuning.png
-   :alt: Fine-tuning a Transformers Model with MLflow
+   :alt: Fine-tuning a Transformers Model with QCFlow
    :width: 70%
    :align: center
 
-   Fine-tuning a Transformers Model with MLflow
+   Fine-tuning a Transformers Model with QCFlow
 
 Deployment Made Easy
 ^^^^^^^^^^^^^^^^^^^^
 
 Once a model is trained, it needs to be `deployed for inference <guide/index.html#example-of-loading-a-transformers-model-as-a-python-function>`_. 
-MLflow's integration with Transformers simplifies this by providing functions such as :py:func:`mlflow.transformers.load_model` and 
-:py:func:`mlflow.pyfunc.load_model`, which allow for easy model serving.
-As part of the feature support for enhanced inference with transformers, MLflow provides mechanisms to enable the use of `inference 
+QCFlow's integration with Transformers simplifies this by providing functions such as :py:func:`qcflow.transformers.load_model` and 
+:py:func:`qcflow.pyfunc.load_model`, which allow for easy model serving.
+As part of the feature support for enhanced inference with transformers, QCFlow provides mechanisms to enable the use of `inference 
 arguments <guide/index.html#scalability-for-inference>`_ that can reduce the computational overhead and lower the memory requirements 
 for deployment. 
 
-Getting Started with the MLflow Transformers Flavor - Tutorials and Guides
+Getting Started with the QCFlow Transformers Flavor - Tutorials and Guides
 --------------------------------------------------------------------------
 
-Below, you will find a number of guides that focus on different use cases using `transformers`  that leverage MLflow's 
+Below, you will find a number of guides that focus on different use cases using `transformers`  that leverage QCFlow's 
 APIs for tracking and inference capabilities. 
 
 .. toctree::
@@ -88,10 +88,10 @@ APIs for tracking and inference capabilities.
     tutorials/prompt-templating/prompt-templating.ipynb
 
 
-Introductory Quickstart to using Transformers with MLflow
+Introductory Quickstart to using Transformers with QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If this is your first exposure to transformers or use transformers extensively but are new to MLflow, this is a great place to start.
+If this is your first exposure to transformers or use transformers extensively but are new to QCFlow, this is a great place to start.
 
 .. raw:: html
 
@@ -103,7 +103,7 @@ If this is your first exposure to transformers or use transformers extensively b
                         Quickstart: Text Generation with Transformers
                     </div>
                     <p>
-                        Learn how to leverage the transformers integration with MLflow in this <strong>introductory quickstart</strong>.
+                        Learn how to leverage the transformers integration with QCFlow in this <strong>introductory quickstart</strong>.
                     </p>
                 </a>
             </div>
@@ -112,10 +112,10 @@ If this is your first exposure to transformers or use transformers extensively b
 
 .. _transformers-finetuning-tutorials:
 
-Transformers Fine-Tuning Tutorials with MLflow
+Transformers Fine-Tuning Tutorials with QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Fine-tuning a model is a common task in machine learning workflows. These tutorials are designed to showcase how to fine-tune a model using the transformers library with harnessing MLflow's APIs for tracking experiment configurations and results.
+Fine-tuning a model is a common task in machine learning workflows. These tutorials are designed to showcase how to fine-tune a model using the transformers library with harnessing QCFlow's APIs for tracking experiment configurations and results.
 
 .. raw:: html
 
@@ -127,7 +127,7 @@ Fine-tuning a model is a common task in machine learning workflows. These tutori
                         Fine tuning a transformers Foundation Model
                     </div>
                     <p>
-                        Learn how to fine-tune a transformers model using MLflow to keep track of the training process and to log a use-case-specific tuned pipeline.
+                        Learn how to fine-tune a transformers model using QCFlow to keep track of the training process and to log a use-case-specific tuned pipeline.
                     </p>
                 </a>
             </div>
@@ -135,21 +135,21 @@ Fine-tuning a model is a common task in machine learning workflows. These tutori
             <div class="simple-card">
                 <a href="tutorials/fine-tuning/transformers-peft.html">
                     <div class="header">
-                        Fine tuning LLMs efficiently using PEFT and MLflow
+                        Fine tuning LLMs efficiently using PEFT and QCFlow
                     </div>
                     <p>
-                        Learn how to fine-tune a large foundational models with significantly reduced memory usage using PEFT (QLoRA) and MLflow.
+                        Learn how to fine-tune a large foundational models with significantly reduced memory usage using PEFT (QLoRA) and QCFlow.
                     </p>
                 </a>
             </div>
     </section>
 
-Use Case Tutorials for Transformers with MLflow
+Use Case Tutorials for Transformers with QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Interested in learning about how to leverage transformers for tasks other than basic text generation? Want to learn more about the breadth of problems that you can solve with transformers and MLflow? 
+Interested in learning about how to leverage transformers for tasks other than basic text generation? Want to learn more about the breadth of problems that you can solve with transformers and QCFlow? 
 
-These more advanced tutorials are designed to showcase different applications of the transformers model architecture and how to leverage MLflow to track and deploy these models.
+These more advanced tutorials are designed to showcase different applications of the transformers model architecture and how to leverage QCFlow to track and deploy these models.
 
 .. raw:: html
 
@@ -161,7 +161,7 @@ These more advanced tutorials are designed to showcase different applications of
                         Audio Transcription with Transformers
                     </div>
                     <p>
-                        Learn how to leverage the Whisper Model with MLflow to generate accurate audio transcriptions.
+                        Learn how to leverage the Whisper Model with QCFlow to generate accurate audio transcriptions.
                     </p>
                 </a>
             </div>
@@ -171,7 +171,7 @@ These more advanced tutorials are designed to showcase different applications of
                         Translation with Transformers
                     </div>
                     <p>
-                        Learn about the options for saving and loading transformers models in MLflow for customization of your workflows with a fun translation example!
+                        Learn about the options for saving and loading transformers models in QCFlow for customization of your workflows with a fun translation example!
                     </p>
                 </a>
             </div>
@@ -181,7 +181,7 @@ These more advanced tutorials are designed to showcase different applications of
                         Chat with Transformers
                     </div>
                     <p>
-                        Learn the basics of stateful chat Conversational Pipelines with Transformers and MLflow.
+                        Learn the basics of stateful chat Conversational Pipelines with Transformers and QCFlow.
                     </p>
                 </a>
             </div>
@@ -192,7 +192,7 @@ These more advanced tutorials are designed to showcase different applications of
                     </div>
                     <p>
                         Learn how to build an OpenAI-compatible chatbot using a local Transformers 
-                        model and MLflow, and serve it with minimal configuration.
+                        model and QCFlow, and serve it with minimal configuration.
                     </p>
                 </a>
             </div>
@@ -222,9 +222,9 @@ These more advanced tutorials are designed to showcase different applications of
 Important Details to be aware of with the transformers flavor
 -------------------------------------------------------------
 
-When working with the transformers flavor in MLflow, there are several important considerations to keep in mind:
+When working with the transformers flavor in QCFlow, there are several important considerations to keep in mind:
 
-- **Experimental Status**: The Transformers flavor in MLflow is marked as experimental, which means that APIs are subject to change, and new features may be added over time with potentially breaking changes.
+- **Experimental Status**: The Transformers flavor in QCFlow is marked as experimental, which means that APIs are subject to change, and new features may be added over time with potentially breaking changes.
 - **PyFunc Limitations**: Not all output from a Transformers pipeline may be captured when using the python_function flavor. For example, if additional references or scores are required from the output, the native implementation should be used instead. Also not all the pipeline types are supported for pyfunc. Please refer to `Loading a Transformers Model as a Python Function <guide/index.html#loading-a-transformers-model-as-a-python-function>`_ for the supported pipeline types and their input and output format.
 - **Supported Pipeline Types**: Not all Transformers pipeline types are currently supported for use with the python_function flavor. In particular, new model architectures may not be supported until the transformers library has a designated pipeline type in its supported pipeline implementations.
 - **Input and Output Types**: The input and output types for the python_function implementation may differ from those expected from the native pipeline. Users need to ensure compatibility with their data processing workflows.
@@ -235,7 +235,7 @@ When working with the transformers flavor in MLflow, there are several important
 Logging Large Models
 --------------------
 
-By default, MLflow consumes certain memory footprint and storage space for logging models. This can be a concern when working with large foundational models with billions of parameters. To address this, MLflow provides a few optimization techniques to reduce resource consumption during logging and speed up the logging process. Please refer to the `Working with Large Models in MLflow Transformers flavor <./large-models.html>`_ guide to learn more about these tips.
+By default, QCFlow consumes certain memory footprint and storage space for logging models. This can be a concern when working with large foundational models with billions of parameters. To address this, QCFlow provides a few optimization techniques to reduce resource consumption during logging and speed up the logging process. Please refer to the `Working with Large Models in QCFlow Transformers flavor <./large-models.html>`_ guide to learn more about these tips.
 
 .. toctree::
     :maxdepth: 1
@@ -246,7 +246,7 @@ By default, MLflow consumes certain memory footprint and storage space for loggi
 Working with ``tasks`` for Transformer Pipelines
 ------------------------------------------------
 
-In MLflow Transformers flavor, ``task`` plays a crucial role in determining the input and output format of the model. Please refer to the `Tasks in MLflow Transformers <task.html>`_ guide on how to use the native Transformers task types, and leverage the advanced tasks such as ``llm/v1/chat`` and ``llm/v1/completions`` for OpenAI-compatible inference.
+In QCFlow Transformers flavor, ``task`` plays a crucial role in determining the input and output format of the model. Please refer to the `Tasks in QCFlow Transformers <task.html>`_ guide on how to use the native Transformers task types, and leverage the advanced tasks such as ``llm/v1/chat`` and ``llm/v1/completions`` for OpenAI-compatible inference.
 
 
 .. toctree::
@@ -258,7 +258,7 @@ In MLflow Transformers flavor, ``task`` plays a crucial role in determining the 
 `Detailed Documentation <guide/index.html>`_
 --------------------------------------------
 
-To learn more about the nuances of the `transformers` flavor in MLflow, delve into `the comprehensive guide <guide/index.html>`_, which covers:
+To learn more about the nuances of the `transformers` flavor in QCFlow, delve into `the comprehensive guide <guide/index.html>`_, which covers:
 
 - `Pipelines vs. Component Logging <guide/index.html#pipelines-vs-component-logging>`_: Explore the different approaches for saving model components or complete pipelines and understand the nuances of loading these models for various use cases.
 
@@ -270,13 +270,13 @@ To learn more about the nuances of the `transformers` flavor in MLflow, delve in
 
 - `Automatic Metadata and ModelCard Logging <guide/index.html#automatic-metadata-and-modelcard-logging>`_: Discover the automatic logging features for model cards and other metadata, enhancing model documentation and transparency.
 
-- `Model Signature Inference <guide/index.html#automatic-signature-inference>`_ : Learn about MLflow's capability within the ``transformers`` flavor to automatically infer and attach model signatures, facilitating easier model deployment.
+- `Model Signature Inference <guide/index.html#automatic-signature-inference>`_ : Learn about QCFlow's capability within the ``transformers`` flavor to automatically infer and attach model signatures, facilitating easier model deployment.
 
 - `Overriding Pytorch dtype <guide/index.html#scale-inference-with-overriding-pytorch-dtype>`_ : Gain insights into optimizing ``transformers`` models for inference, focusing on memory optimization and data type configurations.
 
 - `Input Data Types for Audio Pipelines <guide/index.html#input-data-types-for-audio-pipelines>`_: Understand the specific requirements for handling audio data in transformers pipelines, including the handling of different input types like str, bytes, and np.ndarray.
 
-- `PEFT Models in MLflow Transformers flavor <guide/index.html#peft-models-in-mlflow-transformers-flavor>`_: PEFT (Parameter-Efficient Fine-Tuning) is natively supported in MLflow, enabling various optimization techniques like LoRA, QLoRA, and more for reducing fine-tuning cost significantly. Check out the guide and tutorials to learn more about how to leverage PEFT with MLflow.
+- `PEFT Models in QCFlow Transformers flavor <guide/index.html#peft-models-in-qcflow-transformers-flavor>`_: PEFT (Parameter-Efficient Fine-Tuning) is natively supported in QCFlow, enabling various optimization techniques like LoRA, QLoRA, and more for reducing fine-tuning cost significantly. Check out the guide and tutorials to learn more about how to leverage PEFT with QCFlow.
 
 .. toctree::
     :maxdepth: 1

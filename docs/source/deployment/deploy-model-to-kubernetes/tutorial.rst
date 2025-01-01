@@ -1,4 +1,4 @@
-Develop ML model with MLflow and deploy to Kubernetes
+Develop ML model with QCFlow and deploy to Kubernetes
 =====================================================
 
 .. note::
@@ -7,13 +7,13 @@ Develop ML model with MLflow and deploy to Kubernetes
   by using local cluster emulation tools such as `Kind <https://kind.sigs.k8s.io/docs/user/quick-start>`_ or `Minikube <https://minikube.sigs.k8s.io/docs/start/>`_.
 
 
-This guide demonstrates how to use MLflow end-to-end for:
+This guide demonstrates how to use QCFlow end-to-end for:
 
-- Training a linear regression model with `MLflow Tracking <../../../tracking.html>`_.
+- Training a linear regression model with `QCFlow Tracking <../../../tracking.html>`_.
 - Conducting hyper-parameter tuning to find the best model.
-- Packaging the model weights and dependencies as an `MLflow Model <../../../models.html>`_.
-- Testing model serving locally with `mlserver <https://mlserver.readthedocs.io/en/latest/>`_ using the `mlflow models serve <../../../cli.html#mlflow-models-serve>`_ command.
-- Deploying the model to a Kubernetes cluster using `KServe <https://kserve.github.io/website/>`_ with MLflow.
+- Packaging the model weights and dependencies as an `QCFlow Model <../../../models.html>`_.
+- Testing model serving locally with `mlserver <https://mlserver.readthedocs.io/en/latest/>`_ using the `qcflow models serve <../../../cli.html#qcflow-models-serve>`_ command.
+- Deploying the model to a Kubernetes cluster using `KServe <https://kserve.github.io/website/>`_ with QCFlow.
 
 We will cover an end-to-end model development process including model training and testing within this tutorial.
 If you already have a model and simply want to learn how to deploy it to Kubernetes, you can skip to :ref:`Step 6 - Test Model Serving Locally <step-6-test-model-serving-locally>`
@@ -22,12 +22,12 @@ If you already have a model and simply want to learn how to deploy it to Kuberne
 Introduction: Scalable Model Serving with KServe and MLServer
 -------------------------------------------------------------
 
-MLflow provides an easy-to-use interface for deploying models within a Flask-based inference server. You can deploy the same inference
-server to a Kubernetes cluster by containerizing it using the ``mlflow models build-docker`` command. However, this approach may not be scalable
+QCFlow provides an easy-to-use interface for deploying models within a Flask-based inference server. You can deploy the same inference
+server to a Kubernetes cluster by containerizing it using the ``qcflow models build-docker`` command. However, this approach may not be scalable
 and could be unsuitable for production use cases. Flask is not designed for high performance and scale (:ref:`why? <serving_frameworks>`), and also 
 manually managing multiple instances of inference servers is backbreaking.
 
-Fortunately, MLflow offers a solution for this. MLflow provides an alternative inference engine that is better suited for larger-scale inference deployments with its support for `MLServer <https://mlserver.readthedocs.io/en/latest/>`_,
+Fortunately, QCFlow offers a solution for this. QCFlow provides an alternative inference engine that is better suited for larger-scale inference deployments with its support for `MLServer <https://mlserver.readthedocs.io/en/latest/>`_,
 which enables one-step deployment to popular serverless model serving frameworks on Kubernetes, such as `KServe <https://kserve.github.io/website/>`_, and 
 `Seldon Core <https://docs.seldon.io/projects/seldon-core/en/latest/>`_.
 
@@ -39,31 +39,31 @@ What is KServe?
 It offers advanced features that aid in operating large-scale machine learning systems, such as **autoscaling**, **canary rollout**, **A/B testing**, **monitoring**,
 **explainability**, and more, leveraging the Kubernetes ecosystem, including `KNative <https://knative.dev/>`_ and `Istio <https://istio.io/>`_.
 
-Benefits of using MLflow with KServe
+Benefits of using QCFlow with KServe
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 While KServe enables highly scalable and production-ready model serving, deplying your model there might require some effort.
-MLflow simplifies the process of deploying models to a Kubernetes cluster with KServe and MLServer. Additionally, it offers seamless **end-to-end model management** 
+QCFlow simplifies the process of deploying models to a Kubernetes cluster with KServe and MLServer. Additionally, it offers seamless **end-to-end model management** 
 as a single place to manage the entire ML lifecycle. This includes `experiment tracking <../../../tracking.html>`_, `model packaging <../../../models.html>`_,
 `versioning <../../../model-registry.html>`_, `evaluation <../../../model-evaluation/index.html>`_, and `deployment <../../index.html>`_, which we will cover in this tutorial.
 
 
-Step 1: Installing MLflow and Additional Dependencies
+Step 1: Installing QCFlow and Additional Dependencies
 -----------------------------------------------------
-First, please install mlflow to your local machine using the following command:
+First, please install qcflow to your local machine using the following command:
 
 .. code-block:: bash
 
-  pip install mlflow[mlserver]
+  pip install qcflow[mlserver]
 
 ``[extras]`` will install additional dependencies required for this tutorial including `mlserver <https://mlserver.readthedocs.io/en/latest/>`_ and
 `scikit-learn <https://scikit-learn.org/stable/>`_. Note that scikit-learn is not required for deployment, just for training the example model used in this tutorial.
 
-You can check if MLflow is installed correctly by running:
+You can check if QCFlow is installed correctly by running:
 
 .. code-block:: bash
 
-  mlflow --version
+  qcflow --version
 
 Step 2: Setting Up a Kubernetes Cluster
 ---------------------------------------
@@ -79,7 +79,7 @@ Step 2: Setting Up a Kubernetes Cluster
         You can follow `KServe QuickStart <https://kserve.github.io/website/latest/get_started/>`_ to set up a local cluster with `Kind <https://kind.sigs.k8s.io/docs/user/quick-start>`_
         and install KServe on it.
 
-Now that you have a Kubernetes cluster running as a deployment target, let's move on to creating the MLflow Model to deploy.
+Now that you have a Kubernetes cluster running as a deployment target, let's move on to creating the QCFlow Model to deploy.
 
 Step 3: Training the Model
 --------------------------
@@ -90,13 +90,13 @@ Let's start from training a model with the default hyperparameters. Execute the 
 
 .. note::
 
-  For the sake of convenience, we use the `mlflow.sklearn.autolog() <../../../python_api/mlflow.sklearn.html#mlflow.sklearn.autolog>`_ function.
-  This function allows MLflow to automatically log the appropriate set of model parameters and metrics during training. To learn more about the auto-logging feature
-  or how to log manually instead, see the `MLflow Tracking documentation <../../../tracking.html>`_.
+  For the sake of convenience, we use the `qcflow.sklearn.autolog() <../../../python_api/qcflow.sklearn.html#qcflow.sklearn.autolog>`_ function.
+  This function allows QCFlow to automatically log the appropriate set of model parameters and metrics during training. To learn more about the auto-logging feature
+  or how to log manually instead, see the `QCFlow Tracking documentation <../../../tracking.html>`_.
 
 .. code-block:: python
 
-  import mlflow
+  import qcflow
 
   import numpy as np
   from sklearn import datasets, metrics
@@ -112,17 +112,17 @@ Let's start from training a model with the default hyperparameters. Execute the 
 
 
   # Set th experiment name
-  mlflow.set_experiment("wine-quality")
+  qcflow.set_experiment("wine-quality")
 
-  # Enable auto-logging to MLflow
-  mlflow.sklearn.autolog()
+  # Enable auto-logging to QCFlow
+  qcflow.sklearn.autolog()
 
   # Load wine quality dataset
   X, y = datasets.load_wine(return_X_y=True)
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
 
   # Start a run and train a model
-  with mlflow.start_run(run_name="default-params"):
+  with qcflow.start_run(run_name="default-params"):
       lr = ElasticNet()
       lr.fit(X_train, y_train)
 
@@ -130,12 +130,12 @@ Let's start from training a model with the default hyperparameters. Execute the 
       metrics = eval_metrics(y_pred, y_test)
 
 
-Now you have trained a model, let's check if the parameters and metrics are logged correctly, via the MLflow UI.
-You can start the MLflow UI by running the following command in your terminal:
+Now you have trained a model, let's check if the parameters and metrics are logged correctly, via the QCFlow UI.
+You can start the QCFlow UI by running the following command in your terminal:
 
 .. code-block:: bash
 
-  mlflow ui --port 5000
+  qcflow ui --port 5000
 
 Then visit http://localhost:5000 to open the UI.
 
@@ -174,18 +174,18 @@ We will conduct a random search to identify the optimal combination of ``alpha``
       scoring="neg_mean_absolute_error",
       # Use 5-fold cross validation
       cv=5,
-      # Try 100 samples. Note that MLflow only logs the top 5 runs.
+      # Try 100 samples. Note that QCFlow only logs the top 5 runs.
       n_iter=100,
   )
 
   # Start a parent run
-  with mlflow.start_run(run_name="hyperparameter-tuning"):
+  with qcflow.start_run(run_name="hyperparameter-tuning"):
       search = clf.fit(X_train, y_train)
 
       # Evaluate the best model on test dataset
       y_pred = clf.best_estimator_.predict(X_test)
       rmse, mae, r2 = eval_metrics(clf.best_estimator_, y_pred, y_test)
-      mlflow.log_metrics(
+      qcflow.log_metrics(
           {
               "mean_squared_error_X_test": rmse,
               "mean_absolute_error_X_test": mae,
@@ -193,8 +193,8 @@ We will conduct a random search to identify the optimal combination of ``alpha``
           }
       )
 
-When you reopen the MLflow UI, you should notice that the run "hyperparameter-tuning" contains 5 child runs. MLflow utilizes parent-child relationship, which is particularly
-useful for grouping a set of runs, such as those in hyper parameter tuning. Here the auto-logging is enabled and MLflow automatically create child runs for the top 5 runs
+When you reopen the QCFlow UI, you should notice that the run "hyperparameter-tuning" contains 5 child runs. QCFlow utilizes parent-child relationship, which is particularly
+useful for grouping a set of runs, such as those in hyper parameter tuning. Here the auto-logging is enabled and QCFlow automatically create child runs for the top 5 runs
 based on the ``scoring`` metric, which is negative mean absolute error in this example. You can also create parent and child runs manually, please refer to :ref:`Create Child Runs <child_runs>`
 for more details.
 
@@ -202,7 +202,7 @@ for more details.
     :align: center
     :figwidth: 80%
 
-To compare the results and identify the best model, you can utilize the visualization feature in the MLflow UI.
+To compare the results and identify the best model, you can utilize the visualization feature in the QCFlow UI.
 
 1. Select the first job ("default-params") and the parent job for hyperparameter tuning ("hyperparameter-turning").
 2. Click on the "Chart" tab to visualize the metrics in a chart.
@@ -214,16 +214,16 @@ In this example, the best model was ``alpha=0.11714084185001972`` and ``l1_ratio
 
 .. note::
 
-  To learn more about hyperparameter tuning with MLflow, please refer to `Hyperparameter Tuning with MLflow and Optuna <../../../traditional-ml/hyperparameter-tuning-with-child-runs/index.html>`_.
+  To learn more about hyperparameter tuning with QCFlow, please refer to `Hyperparameter Tuning with QCFlow and Optuna <../../../traditional-ml/hyperparameter-tuning-with-child-runs/index.html>`_.
 
 Step 5: Packaging the Model and Dependencies
 --------------------------------------------
-Since we are using autologging, MLflow automatically logs the `Model <../../../models.html>`_ for each run. This process conveniently packages the model weight
+Since we are using autologging, QCFlow automatically logs the `Model <../../../models.html>`_ for each run. This process conveniently packages the model weight
 and dependencies in a ready-to-deploy format.
 
 .. note::
 
-  In practice, it is also recommended to use `MLflow Model Registry <../../../model-registry.html>`_ for registering and managing your models.
+  In practice, it is also recommended to use `QCFlow Model Registry <../../../model-registry.html>`_ for registering and managing your models.
 
 
 Let's take a brief look at how this format appears. You can view the logged model through the ``Artifacts`` tab on the Run detail page.
@@ -237,17 +237,17 @@ Let's take a brief look at how this format appears. You can view the logged mode
   ├── python_env.yaml
   └── requirements.txt
 
-``model.pkl`` is the file containing the serialized model weight. ``MLmodel`` includes general metadata that instructs MLflow on how to load the model.
+``model.pkl`` is the file containing the serialized model weight. ``MLmodel`` includes general metadata that instructs QCFlow on how to load the model.
 The other files specify the dependencies required to run the model.
 
 .. note::
 
-  If you opt for manual logging, you will need to log the model explicitly using the :py:func:`mlflow.sklearn.log_model <mlflow.sklearn.log_model>`
+  If you opt for manual logging, you will need to log the model explicitly using the :py:func:`qcflow.sklearn.log_model <qcflow.sklearn.log_model>`
   function, as shown below:
 
   .. code-block:: python
 
-    mlflow.sklearn.log_model(lr, "model")
+    qcflow.sklearn.log_model(lr, "model")
 
 .. _step-6-test-model-serving-locally:
 
@@ -255,13 +255,13 @@ Step 6: Testing Model Serving Locally
 -------------------------------------
 
 Before deploying the model, let's first test that the model can be served locally. As outlined in the
-`Deploy MLflow Model Locally <../deploy-model-locally.html>`_, you can run a local inference server with just a single command.
-Remember to use the ``enable-mlserver`` flag, which instructs MLflow to use MLServer as the inference server. This ensures the model runs in the
+`Deploy QCFlow Model Locally <../deploy-model-locally.html>`_, you can run a local inference server with just a single command.
+Remember to use the ``enable-mlserver`` flag, which instructs QCFlow to use MLServer as the inference server. This ensures the model runs in the
 same manner as it would in Kubernetes.
 
 .. code-block:: bash
 
-  mlflow models serve -m runs:/<run_id_for_your_best_run>/model -p 1234 --enable-mlserver
+  qcflow models serve -m runs:/<run_id_for_your_best_run>/model -p 1234 --enable-mlserver
 
 This command starts a local server listening on port 1234. You can send a request to the server using ``curl`` command:
 
@@ -286,7 +286,7 @@ First, create a test namespace for deploying KServe resources and your model:
 
 .. code-block:: bash
 
-  kubectl create namespace mlflow-kserve-test
+  kubectl create namespace qcflow-kserve-test
 
 
 Create Deployment Configuration
@@ -319,13 +319,13 @@ Please open the tabs below for details on each approach.
 
       <h4>Build a Docker Image</h4>
 
-    Build a ready-to-deploy Docker image with the ``mlflow models build-docker`` command:
+    Build a ready-to-deploy Docker image with the ``qcflow models build-docker`` command:
 
     .. code-block:: bash
 
-      mlflow models build-docker -m runs:/<run_id_for_your_best_run>/model -n <your_dockerhub_user_name>/mlflow-wine-classifier --enable-mlserver
+      qcflow models build-docker -m runs:/<run_id_for_your_best_run>/model -n <your_dockerhub_user_name>/qcflow-wine-classifier --enable-mlserver
 
-    This command builds a Docker image with the model and dependencies, tagging it as ``mlflow-wine-classifier:latest``.
+    This command builds a Docker image with the model and dependencies, tagging it as ``qcflow-wine-classifier:latest``.
 
     .. raw:: html
 
@@ -335,7 +335,7 @@ Please open the tabs below for details on each approach.
 
     .. code-block:: bash
 
-      docker push <your_dockerhub_user_name>/mlflow-wine-classifier
+      docker push <your_dockerhub_user_name>/qcflow-wine-classifier
 
     .. raw:: html
 
@@ -348,13 +348,13 @@ Please open the tabs below for details on each approach.
       apiVersion: "serving.kserve.io/v1beta1"
       kind: "InferenceService"
       metadata:
-        name: "mlflow-wine-classifier"
-        namespace: "mlflow-kserve-test"
+        name: "qcflow-wine-classifier"
+        namespace: "qcflow-kserve-test"
       spec:
         predictor:
           containers:
-            - name: "mlflow-wine-classifier"
-              image: "<your_docker_user_name>/mlflow-wine-classifier"
+            - name: "qcflow-wine-classifier"
+              image: "<your_docker_user_name>/qcflow-wine-classifier"
               ports:
                 - containerPort: 8080
                   protocol: TCP
@@ -369,9 +369,9 @@ Please open the tabs below for details on each approach.
 
       <h4>Get Remote Model URI</h4>
 
-    KServe configuration allows direct specification of the model URI. However, it doesn't resolve MLflow-specific URI schemas like ``runs:/`` and ``model:/``,
+    KServe configuration allows direct specification of the model URI. However, it doesn't resolve QCFlow-specific URI schemas like ``runs:/`` and ``model:/``,
     nor local file URIs like ``file:///``. We need to specify the model URI in a remote storage URI format e.g. ``s3://xxx`` or ``gs://xxx``.
-    By default, MLflow stores the model in the local file system, so you need to configure MLflow to store the model in remote storage.
+    By default, QCFlow stores the model in the local file system, so you need to configure QCFlow to store the model in remote storage.
     Please refer to `Artifact Store <../../../tracking.html#artifact-stores>`_ for setup instructions.
 
     After configuring the artifact store, load and re-log the best model to the new artifact store, or repeat the model training steps.
@@ -387,13 +387,13 @@ Please open the tabs below for details on each approach.
       apiVersion: "serving.kserve.io/v1beta1"
       kind: "InferenceService"
       metadata:
-        name: "mlflow-wine-classifier"
-        namespace: "mlflow-kserve-test"
+        name: "qcflow-wine-classifier"
+        namespace: "qcflow-kserve-test"
       spec:
         predictor:
           model:
             modelFormat:
-              name: mlflow
+              name: qcflow
             protocolVersion: v2
             storageUri: "<your_model_uri>"
 
@@ -406,21 +406,21 @@ Run the following ``kubectl`` command to deploy a new ``InferenceService`` to yo
 
   $ kubectl apply -f YOUR_CONFIG_FILE.yaml
 
-  inferenceservice.serving.kserve.io/mlflow-wine-classifier created
+  inferenceservice.serving.kserve.io/qcflow-wine-classifier created
 
 You can check the status of the deployment by running:
 
 .. code-block:: bash
 
-  $ kubectl get inferenceservice mlflow-wine-classifier
+  $ kubectl get inferenceservice qcflow-wine-classifier
 
   NAME                     URL                                                     READY   PREV   LATEST   PREVROLLEDOUTREVISION   LATESTREADYREVISION
-  mlflow-wine-classifier   http://mlflow-wine-classifier.mlflow-kserve-test.local   True             100                    mlflow-wine-classifier-100
+  qcflow-wine-classifier   http://qcflow-wine-classifier.qcflow-kserve-test.local   True             100                    qcflow-wine-classifier-100
 
 .. note::
 
   It may take a few minutes for the deployment status to be ready. For detailed deployment status and logs,
-  run ``kubectl get inferenceservice mlflow-wine-classifier -oyaml``.
+  run ``kubectl get inferenceservice qcflow-wine-classifier -oyaml``.
 
 
 Test the Deployment
@@ -455,12 +455,12 @@ Then send the request to your inference service:
 
       .. code-block:: bash
 
-        $ SERVICE_HOSTNAME=$(kubectl get inferenceservice mlflow-wine-classifier -n mlflow-kserve-test -o jsonpath='{.status.url}' | cut -d "/" -f 3)
+        $ SERVICE_HOSTNAME=$(kubectl get inferenceservice qcflow-wine-classifier -n qcflow-kserve-test -o jsonpath='{.status.url}' | cut -d "/" -f 3)
         $ curl -v \
           -H "Host: ${SERVICE_HOSTNAME}" \
           -H "Content-Type: application/json" \
           -d @./test-input.json \
-          http://${INGRESS_HOST}:${INGRESS_PORT}/v2/models/mlflow-wine-classifier/infer
+          http://${INGRESS_HOST}:${INGRESS_PORT}/v2/models/qcflow-wine-classifier/infer
 
 
   .. tab:: Local Machine Emulation
@@ -482,29 +482,29 @@ Then send the request to your inference service:
 
       .. code-block:: bash
 
-        $ SERVICE_HOSTNAME=$(kubectl get inferenceservice mlflow-wine-classifier -n mlflow-kserve-test -o jsonpath='{.status.url}' | cut -d "/" -f 3)
+        $ SERVICE_HOSTNAME=$(kubectl get inferenceservice qcflow-wine-classifier -n qcflow-kserve-test -o jsonpath='{.status.url}' | cut -d "/" -f 3)
         $ curl -v \
           -H "Host: ${SERVICE_HOSTNAME}" \
           -H "Content-Type: application/json" \
           -d @./test-input.json \
-          http://localhost:8080/v2/models/mlflow-wine-classifier/infer
+          http://localhost:8080/v2/models/qcflow-wine-classifier/infer
 
 
 Troubleshooting
 ---------------
 
 If you have any trouble during deployment, please consult with the `KServe official documentation <https://kserve.github.io/website/>`_
-and their `MLflow Deployment Guide <https://kserve.github.io/website/0.10/modelserving/v1beta1/mlflow/v2/>`_.
+and their `QCFlow Deployment Guide <https://kserve.github.io/website/0.10/modelserving/v1beta1/qcflow/v2/>`_.
 
 Conclusion
 ----------
-Congratulations on completing the guide! In this tutorial, you have learned how to use MLflow for training a model, running hyperparameter tuning,
+Congratulations on completing the guide! In this tutorial, you have learned how to use QCFlow for training a model, running hyperparameter tuning,
 and deploying the model to Kubernetes cluster.
 
 **Further readings**:
 
-* `MLflow Tracking <../../../tracking.html>`_ - Explore more about MLflow Tracking and various ways to manage experiments and models, such as team collaboration.
-* `MLflow Model Registry <../../../model-registry.html>`_ - Discover more about MLflow Model Registry for managing model versions and stages in a centralized model store.
-* `MLflow Deployment <../../index.html>`_ - Learn more about MLflow deployment and different deployment targets.
+* `QCFlow Tracking <../../../tracking.html>`_ - Explore more about QCFlow Tracking and various ways to manage experiments and models, such as team collaboration.
+* `QCFlow Model Registry <../../../model-registry.html>`_ - Discover more about QCFlow Model Registry for managing model versions and stages in a centralized model store.
+* `QCFlow Deployment <../../index.html>`_ - Learn more about QCFlow deployment and different deployment targets.
 * `KServe official documentation <https://kserve.github.io/website/>`_ - Dive deeper into KServe and its advanced features, including autoscaling, canary rollout, A/B testing, monitoring, explainability, etc.
 * `Seldon Core official documentation <https://docs.seldon.io/projects/seldon-core/en/latest/>`_ - Learn about Seldon Core, an alternative serverless model serving framework we support for Kubernetes.

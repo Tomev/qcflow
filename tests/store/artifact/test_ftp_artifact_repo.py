@@ -5,8 +5,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.ftp_artifact_repo import FTPArtifactRepository
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.ftp_artifact_repo import FTPArtifactRepository
 
 
 @pytest.fixture

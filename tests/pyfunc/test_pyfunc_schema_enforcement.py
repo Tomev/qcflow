@@ -13,25 +13,25 @@ import pytest
 import sklearn.linear_model
 from packaging.version import Version
 
-import mlflow
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow.exceptions import MlflowException
-from mlflow.models import (
+import qcflow
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow.exceptions import QCFlowException
+from qcflow.models import (
     Model,
     ModelSignature,
     convert_input_example_to_serving_input,
     infer_signature,
 )
-from mlflow.models.utils import (
+from qcflow.models.utils import (
     _enforce_params_schema,
     _enforce_schema,
 )
-from mlflow.pyfunc import PyFuncModel
-from mlflow.pyfunc.scoring_server import is_unified_llm_input
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types import ColSpec, DataType, ParamSchema, ParamSpec, Schema, TensorSpec
-from mlflow.types.schema import AnyType, Array, Map, Object, Property
-from mlflow.utils.proto_json_utils import dump_input_data
+from qcflow.pyfunc import PyFuncModel
+from qcflow.pyfunc.scoring_server import is_unified_llm_input
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types import ColSpec, DataType, ParamSchema, ParamSpec, Schema, TensorSpec
+from qcflow.types.schema import AnyType, Array, Map, Object, Property
+from qcflow.utils.proto_json_utils import dump_input_data
 
 from tests.helper_functions import pyfunc_scoring_endpoint, pyfunc_serve_and_score_model
 from tests.tracing.helper import get_traces
@@ -79,7 +79,7 @@ def param_schema_basic():
     )
 
 
-class PythonModelWithBasicParams(mlflow.pyfunc.PythonModel):
+class PythonModelWithBasicParams(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input, params=None):
         assert isinstance(params, dict)
         assert isinstance(params["str_param"], str)
@@ -111,7 +111,7 @@ def sample_params_with_arrays():
     }
 
 
-class PythonModelWithArrayParams(mlflow.pyfunc.PythonModel):
+class PythonModelWithArrayParams(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input, params=None):
         assert isinstance(params, dict)
         assert all(isinstance(x, int) for x in params["int_array"])
@@ -131,10 +131,10 @@ def test_schema_enforcement_single_column_2d_array():
     assert signature.inputs.inputs[0].shape == (-1, 1)
     assert signature.outputs.inputs[0].shape == (-1,)
 
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(model, "model", signature=signature)
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(model, "model", signature=signature)
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     pdf = pd.DataFrame(X)
     np.testing.assert_almost_equal(loaded_model.predict(pdf), model.predict(pdf))
 
@@ -167,7 +167,7 @@ def test_column_schema_enforcement():
     pdf["h"] = pdf["h"].astype(np.dtype("datetime64[ns]"))
     # test that missing column raises
     match_missing_inputs = "Model is missing inputs"
-    with pytest.raises(MlflowException, match=match_missing_inputs):
+    with pytest.raises(QCFlowException, match=match_missing_inputs):
         res = pyfunc_model.predict(pdf[["b", "d", "a", "e", "g", "f", "h"]])
 
     # test that extra column is ignored
@@ -178,7 +178,7 @@ def test_column_schema_enforcement():
     assert all((res == pdf[input_schema.input_names()]).all())
 
     expected_types = dict(zip(input_schema.input_names(), input_schema.pandas_types()))
-    # MLflow datetime type in input_schema does not encode precision, so add it for assertions
+    # QCFlow datetime type in input_schema does not encode precision, so add it for assertions
     expected_types["h"] = np.dtype("datetime64[ns]")
     # object cannot be converted to pandas Strings at the moment
     expected_types["f"] = object
@@ -190,7 +190,7 @@ def test_column_schema_enforcement():
     # 1. long -> integer raises
     pdf["a"] = pdf["a"].astype(np.int64)
     match_incompatible_inputs = "Incompatible input types"
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["a"] = pdf["a"].astype(np.int32)
     # 2. integer -> long works
@@ -209,13 +209,13 @@ def test_column_schema_enforcement():
 
     # 4. unsigned int -> int raises
     pdf["a"] = pdf["a"].astype(np.uint32)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["a"] = pdf["a"].astype(np.int32)
 
     # 5. double -> float raises
     pdf["c"] = pdf["c"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["c"] = pdf["c"].astype(np.float32)
 
@@ -225,13 +225,13 @@ def test_column_schema_enforcement():
     assert res.dtypes.to_dict() == expected_types
     pdf["d"] = pdf["d"].astype(np.float64)
     pdf["c"] = pdf["c"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["c"] = pdf["c"].astype(np.float32)
 
     # 7. int -> float raises
     pdf["c"] = pdf["c"].astype(np.int32)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["c"] = pdf["c"].astype(np.float32)
 
@@ -243,26 +243,26 @@ def test_column_schema_enforcement():
 
     # 9. long -> double raises
     pdf["d"] = pdf["d"].astype(np.int64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["d"] = pdf["d"].astype(np.float64)
 
     # 10. any float -> any int raises
     pdf["a"] = pdf["a"].astype(np.float32)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     # 10. any float -> any int raises
     pdf["a"] = pdf["a"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["a"] = pdf["a"].astype(np.int32)
     pdf["b"] = pdf["b"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["b"] = pdf["b"].astype(np.int64)
 
     pdf["b"] = pdf["b"].astype(np.float64)
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(pdf)
     pdf["b"] = pdf["b"].astype(np.int64)
 
@@ -282,7 +282,7 @@ def test_column_schema_enforcement():
     pdf["h"] = pdf["h"].astype("datetime64[s]")
 
     # 13. np.ndarrays can be converted to dataframe but have no columns
-    with pytest.raises(MlflowException, match=match_missing_inputs):
+    with pytest.raises(QCFlowException, match=match_missing_inputs):
         pyfunc_model.predict(pdf.values)
 
     # 14. dictionaries of str -> list/nparray work,
@@ -316,7 +316,7 @@ def test_column_schema_enforcement():
         "f": [[bytes(0), bytes(1), bytes(1)]],
         "h": [np.array(["2020-01-01", "2020-02-02", "2020-03-03"], dtype=np.datetime64)],
     }
-    with pytest.raises(MlflowException, match=match_incompatible_inputs):
+    with pytest.raises(QCFlowException, match=match_incompatible_inputs):
         pyfunc_model.predict(d)
 
     # 16. conversion to dataframe fails
@@ -326,7 +326,7 @@ def test_column_schema_enforcement():
         "c": [1, 2, 3],
     }
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model contains a column-based signature, which suggests a DataFrame input.",
     ):
         pyfunc_model.predict(d)
@@ -364,7 +364,7 @@ def test_tensor_multi_named_schema_enforcement():
 
     # test that missing column raises
     inp1 = inp.copy()
-    with pytest.raises(MlflowException, match="Model is missing inputs"):
+    with pytest.raises(QCFlowException, match="Model is missing inputs"):
         pyfunc_model.predict(inp1.pop("b"))
 
     # test that extra column is ignored
@@ -394,7 +394,7 @@ def test_tensor_multi_named_schema_enforcement():
     inp4 = inp.copy()
     inp4["a"] = inp4["a"].astype(np.int32)
     with pytest.raises(
-        MlflowException, match="dtype of input int32 does not match expected dtype uint64"
+        QCFlowException, match="dtype of input int32 does not match expected dtype uint64"
     ):
         pyfunc_model.predict(inp4)
 
@@ -405,7 +405,7 @@ def test_tensor_multi_named_schema_enforcement():
         "c": np.array([[[0, 0]]], dtype=np.float32),
     }
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Shape of input (1, 4) does not match expected shape (-1, 5)"),
     ):
         pyfunc_model.predict(inp5)
@@ -417,7 +417,7 @@ def test_tensor_multi_named_schema_enforcement():
         np.array([[[0, 0]]], dtype=np.float32),
     ]
     with pytest.raises(
-        MlflowException, match=re.escape("Model is missing inputs ['a', 'b', 'c'].")
+        QCFlowException, match=re.escape("Model is missing inputs ['a', 'b', 'c'].")
     ):
         pyfunc_model.predict(inp6)
 
@@ -425,7 +425,7 @@ def test_tensor_multi_named_schema_enforcement():
     inp7 = inp.copy()
     inp7["a"] = np.array([])
     with pytest.raises(
-        MlflowException, match=re.escape("Shape of input (0,) does not match expected shape")
+        QCFlowException, match=re.escape("Shape of input (0,) does not match expected shape")
     ):
         pyfunc_model.predict(inp7)
 
@@ -436,7 +436,7 @@ def test_tensor_multi_named_schema_enforcement():
         r"suggests a dictionary input mapping input name to a numpy array, but a dict"
         r" with value type <class 'list'> was found"
     )
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         pyfunc_model.predict(inp8)
 
     # test dataframe input fails at shape enforcement
@@ -445,7 +445,7 @@ def test_tensor_multi_named_schema_enforcement():
     pdf["b"] = pdf["b"].astype(np.short)
     pdf["c"] = pdf["c"].astype(np.float32)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "The input pandas dataframe column 'a' contains scalar values, which requires the "
             "shape to be (-1,) or (-1, 1), but got tensor spec shape of (-1, 5)"
@@ -479,7 +479,7 @@ def test_schema_enforcement_single_named_tensor_schema():
     assert expected_types == actual_types
 
     # test list does not work
-    with pytest.raises(MlflowException, match="Model is missing inputs"):
+    with pytest.raises(QCFlowException, match="Model is missing inputs"):
         pyfunc_model.predict(input_array.tolist())
 
 
@@ -504,7 +504,7 @@ def test_schema_enforcement_single_unnamed_tensor_schema():
 
     input_df = input_df.drop("c3", axis=1)
     with pytest.raises(
-        expected_exception=MlflowException,
+        expected_exception=QCFlowException,
         match=re.escape(
             "This model contains a model signature with an unnamed input. Since the "
             "input data is a pandas DataFrame containing multiple columns, "
@@ -552,7 +552,7 @@ def test_schema_enforcement_named_tensor_schema_1d():
     )
     wrong_pyfunc_model = PyFuncModel(model_meta=wrong_m, model_impl=TestModel())
     with pytest.raises(
-        expected_exception=MlflowException,
+        expected_exception=QCFlowException,
         match=re.escape(
             "The input pandas dataframe column 'a' contains scalar "
             "values, which requires the shape to be (-1,) or (-1, 1), but got tensor spec "
@@ -568,7 +568,7 @@ def test_schema_enforcement_named_tensor_schema_1d():
         ]
     )
     with pytest.raises(
-        expected_exception=MlflowException,
+        expected_exception=QCFlowException,
         match=re.escape(
             "For pandas dataframe input, the first dimension of shape must be a variable "
             "dimension and other dimensions must be fixed, but in model signature the shape "
@@ -621,7 +621,7 @@ def test_schema_enforcement_named_tensor_schema_multidimensional():
     assert expected_types == actual_types
 
     with pytest.raises(
-        expected_exception=MlflowException,
+        expected_exception=QCFlowException,
         match=re.escape(
             "The value in the Input DataFrame column 'a' could not be converted to the expected "
             "shape of: '(-1, 2, 3)'. Ensure that each of the input list elements are of uniform "
@@ -647,16 +647,16 @@ def test_missing_value_hint_is_displayed_when_it_should():
     pyfunc_model = PyFuncModel(model_meta=m, model_impl=TestModel())
     pdf = pd.DataFrame(data=[[1], [None]], columns=["a"])
     match = "Incompatible input types"
-    with pytest.raises(MlflowException, match=match) as ex:
+    with pytest.raises(QCFlowException, match=match) as ex:
         pyfunc_model.predict(pdf)
     hint = "Hint: the type mismatch is likely caused by missing values."
     assert hint in str(ex.value.message)
     pdf = pd.DataFrame(data=[[1.5], [None]], columns=["a"])
-    with pytest.raises(MlflowException, match=match) as ex:
+    with pytest.raises(QCFlowException, match=match) as ex:
         pyfunc_model.predict(pdf)
     assert hint not in str(ex.value.message)
     pdf = pd.DataFrame(data=[[1], [2]], columns=["a"], dtype=np.float64)
-    with pytest.raises(MlflowException, match=match) as ex:
+    with pytest.raises(QCFlowException, match=match) as ex:
         pyfunc_model.predict(pdf)
     assert hint not in str(ex.value.message)
 
@@ -686,15 +686,15 @@ def test_column_schema_enforcement_no_col_names():
     pd.testing.assert_frame_equal(pyfunc_model.predict(pdf), pdf)
 
     # Must provide the right number of arguments
-    with pytest.raises(MlflowException, match="the provided value only has 2 inputs."):
+    with pytest.raises(QCFlowException, match="the provided value only has 2 inputs."):
         pyfunc_model.predict([[1.0, 2.0]])
 
     # Must provide the right types
-    with pytest.raises(MlflowException, match="Can not safely convert int64 to float64"):
+    with pytest.raises(QCFlowException, match="Can not safely convert int64 to float64"):
         pyfunc_model.predict([[1, 2, 3]])
 
     # Can only provide data type that can be converted to dataframe...
-    with pytest.raises(MlflowException, match="Expected input to be DataFrame. Found: set"):
+    with pytest.raises(QCFlowException, match="Expected input to be DataFrame. Found: set"):
         pyfunc_model.predict({1, 2, 3})
 
     # 9. dictionaries of str -> list/nparray work
@@ -717,28 +717,28 @@ def test_tensor_schema_enforcement_no_col_names():
 
     # Can not call with a list
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model contains a tensor-based model signature with no input names",
     ):
         pyfunc_model.predict([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
 
     # Can not call with a dict
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="This model contains a tensor-based model signature with no input names",
     ):
         pyfunc_model.predict({"blah": test_data})
 
     # Can not call with a np.ndarray of a wrong shape
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Shape of input (2, 2) does not match expected shape (-1, 3)"),
     ):
         pyfunc_model.predict(np.array([[1.0, 2.0], [4.0, 5.0]]))
 
     # Can not call with a np.ndarray of a wrong type
     with pytest.raises(
-        MlflowException, match="dtype of input uint32 does not match expected dtype float32"
+        QCFlowException, match="dtype of input uint32 does not match expected dtype float32"
     ):
         pyfunc_model.predict(test_data.astype(np.uint32))
 
@@ -748,7 +748,7 @@ def test_tensor_schema_enforcement_no_col_names():
 
     # Can not call with an empty ndarray
     with pytest.raises(
-        MlflowException, match=re.escape("Shape of input () does not match expected shape (-1, 3)")
+        QCFlowException, match=re.escape("Shape of input () does not match expected shape (-1, 3)")
     ):
         pyfunc_model.predict(np.ndarray([]))
 
@@ -819,7 +819,7 @@ def test_schema_enforcement_for_inputs_style_orientation_of_dataframe(orient):
     pd_check = _enforce_schema(pd_data.to_dict(orient=orient), signature.inputs)
     pd.testing.assert_frame_equal(pd_check, pd_data)
 
-    # Test Dict[str, <scalar>] (support added in MLflow 2.3.0)
+    # Test Dict[str, <scalar>] (support added in QCFlow 2.3.0)
     test_signature = {
         "inputs": '[{"name": "a", "type": "long"}, {"name": "b", "type": "string"}]',
         "outputs": '[{"name": "response", "type": "string"}]',
@@ -871,9 +871,9 @@ def test_schema_enforcement_for_inputs_style_orientation_of_dataframe(orient):
     pd_data = pd.DataFrame([data])
     # Schema enforcement explicitly only provides support for strings that meet primitives in
     # np.arrays criteria. All other data types should fail.
-    with pytest.raises(MlflowException, match="This model contains a column-based"):
+    with pytest.raises(QCFlowException, match="This model contains a column-based"):
         _enforce_schema(data, signature.inputs)
-    with pytest.raises(MlflowException, match="Incompatible input types for column a. Can not"):
+    with pytest.raises(QCFlowException, match="Incompatible input types for column a. Can not"):
         _enforce_schema(pd_data.to_dict(orient=orient), signature.inputs)
 
     # Test bytes
@@ -929,13 +929,13 @@ def test_schema_enforcement_for_optional_columns():
     # Ensure wrong data type for optional column throws
     test_bad_data = {"a": [1.0], "b": [1.0], "d": ["not the right type"]}
     pd_data = pd.DataFrame(test_bad_data)
-    with pytest.raises(MlflowException, match="Incompatible input types for column d."):
+    with pytest.raises(QCFlowException, match="Incompatible input types for column d."):
         _enforce_schema(pd_data, signature.inputs)
 
     # Ensure it still validates for required columns
     test_missing_required = {"b": [2.0], "c": ["something"]}
     pd_data = pd.DataFrame(test_missing_required)
-    with pytest.raises(MlflowException, match="Model is missing inputs"):
+    with pytest.raises(QCFlowException, match="Model is missing inputs"):
         _enforce_schema(pd_data, signature.inputs)
 
 
@@ -1132,7 +1132,7 @@ def test_schema_enforcement_for_list_inputs():
 
 def test_enforce_schema_warns_with_extra_fields():
     schema = Schema([ColSpec("string", "a")])
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         _enforce_schema({"a": "hi", "b": "bye"}, schema)
         mock_warning.assert_called_once_with(
             "Found extra inputs in the model input that are not defined in the model "
@@ -1292,7 +1292,7 @@ def test_enforce_params_schema_with_success():
     # Ignore values not specified in ParamSchema and log warning
     test_parameters = {"a": "str_a", "invalid_param": "value"}
     test_schema = ParamSchema([ParamSpec("a", DataType.string, "")])
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         assert _enforce_params_schema(test_parameters, test_schema) == {"a": "str_a"}
         mock_warning.assert_called_once_with(
             "Unrecognized params ['invalid_param'] are ignored for inference. "
@@ -1307,19 +1307,19 @@ def test_enforce_params_schema_with_success():
 
 
 def test_enforce_params_schema_add_default_values():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params):
             return list(params.values())
 
     params = {"str_param": "string", "int_array": [1, 2, 3]}
     signature = infer_signature(["input"], params=params)
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "my_model", python_model=MyModel(), signature=signature
         )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     # Not passing params -- predict with default values
     loaded_predict = loaded_model.predict(["input"])
@@ -1336,7 +1336,7 @@ def test_enforce_params_schema_add_default_values():
     assert loaded_predict == ["new_string", [4, 5, 6]]
 
     # Raise warning for unrecognized params
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         loaded_predict = loaded_model.predict(["input"], params={"new_param": "new_string"})
     mock_warning.assert_called_once()
     assert (
@@ -1352,7 +1352,7 @@ def test_enforce_params_schema_errors():
         [ParamSpec("datetime_param", DataType.datetime, np.datetime64("2023-06-06"))]
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to convert value `1.0` from type `<class 'float'>` to `DataType.datetime`",
     ):
         _enforce_params_schema({"datetime_param": 1.0}, test_schema)
@@ -1368,7 +1368,7 @@ def test_enforce_params_schema_errors():
         ]
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to convert value `1.0` from type `<class 'float'>` to `DataType.datetime`",
     ):
         _enforce_params_schema({"datetime_array": [1.0, 2.0]}, test_schema)
@@ -1376,7 +1376,7 @@ def test_enforce_params_schema_errors():
     # Raise error when failing to convert value to DataType.float
     test_schema = ParamSchema([ParamSpec("float_param", DataType.float, np.float32(1))])
     with pytest.raises(
-        MlflowException, match=r"Failed to validate type and shape for 'float_param'"
+        QCFlowException, match=r"Failed to validate type and shape for 'float_param'"
     ):
         _enforce_params_schema({"float_param": "a"}, test_schema)
     # With array
@@ -1384,7 +1384,7 @@ def test_enforce_params_schema_errors():
         [ParamSpec("float_array", DataType.float, np.array([np.float32(1), np.float32(2)]), (-1,))]
     )
     with pytest.raises(
-        MlflowException, match=r"Failed to validate type and shape for 'float_array'"
+        QCFlowException, match=r"Failed to validate type and shape for 'float_array'"
     ):
         _enforce_params_schema(
             {"float_array": [np.float32(1), np.float32(2), np.float64(3)]}, test_schema
@@ -1393,24 +1393,24 @@ def test_enforce_params_schema_errors():
     # Raise error for any other conversions
     error_msg = r"Failed to validate type and shape for 'int_param'"
     test_schema = ParamSchema([ParamSpec("int_param", DataType.long, np.int32(1))])
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"int_param": np.float32(1)}, test_schema)
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"int_param": "1"}, test_schema)
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"int_param": np.datetime64("2023-06-06")}, test_schema)
 
     error_msg = r"Failed to validate type and shape for 'str_param'"
     test_schema = ParamSchema([ParamSpec("str_param", DataType.string, "1")])
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"str_param": np.float32(1)}, test_schema)
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"str_param": b"string"}, test_schema)
-    with pytest.raises(MlflowException, match=error_msg):
+    with pytest.raises(QCFlowException, match=error_msg):
         _enforce_params_schema({"str_param": np.datetime64("2023-06-06")}, test_schema)
 
     # Raise error if parameters is not dictionary
-    with pytest.raises(MlflowException, match=r"Parameters must be a dictionary. Got type 'int'."):
+    with pytest.raises(QCFlowException, match=r"Parameters must be a dictionary. Got type 'int'."):
         _enforce_params_schema(100, test_schema)
 
     # Raise error if invalid parameters are passed
@@ -1423,7 +1423,7 @@ def test_enforce_params_schema_errors():
         ]
     )
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "Value must be a 1D array with shape (-1,) for param 'b': string "
             "(default: []) (shape: (-1,)), received tuple"
@@ -1431,26 +1431,26 @@ def test_enforce_params_schema_errors():
     ):
         _enforce_params_schema(test_parameters, test_schema)
     # Raise error for non-1D array
-    with pytest.raises(MlflowException, match=r"received list with ndim 2"):
+    with pytest.raises(QCFlowException, match=r"received list with ndim 2"):
         _enforce_params_schema(
             {"a": [[1, 2], [3, 4]]}, ParamSchema([ParamSpec("a", DataType.long, [], (-1,))])
         )
 
 
 def test_enforce_params_schema_warns_with_model_without_params():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return list(params.values()) if isinstance(params, dict) else None
 
     params = {"str_param": "string", "int_array": [1, 2, 3], "123": 123}
     signature = infer_signature(["input"])
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model("model1", python_model=MyModel(), signature=signature)
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model("model1", python_model=MyModel(), signature=signature)
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         loaded_model.predict(["input"], params=params)
     mock_warning.assert_called_with(
         "`params` can only be specified at inference time if the model signature defines a params "
@@ -1460,23 +1460,23 @@ def test_enforce_params_schema_warns_with_model_without_params():
 
 
 def test_enforce_params_schema_errors_with_model_with_params():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return list(params.values()) if isinstance(params, dict) else None
 
     params = {"str_param": "string", "int_array": [1, 2, 3], "123": 123}
     signature = infer_signature(["input"], params=params)
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model", python_model=MyModel(), signature=signature
         )
 
-    loaded_model_with_params = mlflow.pyfunc.load_model(model_info.model_uri)
-    with pytest.raises(MlflowException, match=r"Parameters must be a dictionary. Got type 'list'"):
+    loaded_model_with_params = qcflow.pyfunc.load_model(model_info.model_uri)
+    with pytest.raises(QCFlowException, match=r"Parameters must be a dictionary. Got type 'list'"):
         loaded_model_with_params.predict(["input"], params=[1, 2, 3])
 
-    with mock.patch("mlflow.models.utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.models.utils._logger.warning") as mock_warning:
         loaded_model_with_params.predict(["input"], params={123: 456})
     mock_warning.assert_called_with(
         "Keys in parameters should be of type `str`, but received non-string keys."
@@ -1517,38 +1517,38 @@ def test_param_spec_with_success():
 
 def test_param_spec_errors():
     # Raise error if default value can not be converted to specified type
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'a'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'a'"):
         ParamSpec("a", DataType.integer, "1.0")
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'a'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'a'"):
         ParamSpec("a", DataType.integer, [1.0, 2.0], (-1,))
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'a'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'a'"):
         ParamSpec("a", DataType.string, True)
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'a'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'a'"):
         ParamSpec("a", DataType.string, [1.0, 2.0], (-1,))
-    with pytest.raises(MlflowException, match=r"Binary type is not supported for parameters"):
+    with pytest.raises(QCFlowException, match=r"Binary type is not supported for parameters"):
         ParamSpec("a", DataType.binary, 1.0)
-    with pytest.raises(MlflowException, match=r"Failed to convert value"):
+    with pytest.raises(QCFlowException, match=r"Failed to convert value"):
         ParamSpec("a", DataType.datetime, 1.0)
-    with pytest.raises(MlflowException, match=r"Failed to convert value"):
+    with pytest.raises(QCFlowException, match=r"Failed to convert value"):
         ParamSpec("a", DataType.datetime, [1.0, 2.0], (-1,))
-    with pytest.raises(MlflowException, match=r"Failed to convert value to `DataType.datetime`"):
+    with pytest.raises(QCFlowException, match=r"Failed to convert value to `DataType.datetime`"):
         ParamSpec("a", DataType.datetime, np.datetime64("20230606"))
 
     # Raise error if shape is not specified for list value
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Value must be a scalar for type `DataType.long`"),
     ):
         ParamSpec("a", DataType.long, [1, 2, 3], shape=None)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Value must be a scalar for type `DataType.integer`"),
     ):
         ParamSpec("a", DataType.integer, np.array([1, 2, 3]), shape=None)
 
     # Raise error if shape is specified for scalar value
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "Value must be a 1D array with shape (-1,) for param 'a': boolean (default: True) "
             "(shape: (-1,)), received bool"
@@ -1558,7 +1558,7 @@ def test_param_spec_errors():
 
     # Raise error if shape specified is not allowed
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Shape must be None for scalar or dictionary value, "
         r"or \(-1,\) for 1D array value",
     ):
@@ -1566,7 +1566,7 @@ def test_param_spec_errors():
 
     # Raise error if default value is not scalar or 1D array
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
             "Value must be a 1D array with shape (-1,) for param 'a': boolean (default: {'a': 1}) "
             "(shape: (-1,)), received dict"
@@ -1579,15 +1579,15 @@ def test_enforce_schema_in_python_model_predict(sample_params_basic, param_schem
     test_params = sample_params_basic
     test_schema = param_schema_basic
     signature = infer_signature(["input1"], params=test_params)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=PythonModelWithBasicParams(),
             signature=signature,
         )
     assert signature.params == test_schema
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     loaded_predict = loaded_model.predict(["a", "b"], params=test_params)
     for param, value in test_params.items():
         if param == "double_array":
@@ -1671,8 +1671,8 @@ def test_schema_enforcement_all_feature_types_pandas():
 
 def test_enforce_schema_in_python_model_serving(sample_params_basic):
     signature = infer_signature(["input1"], params=sample_params_basic)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=PythonModelWithBasicParams(),
             signature=signature,
@@ -1735,16 +1735,16 @@ def test_enforce_schema_in_python_model_serving(sample_params_basic):
 
 def test_python_model_serving_compatible(tmp_path):
     """
-    # Code for logging the model in mlflow 2.4.0
-    import mlflow
-    from mlflow.models import infer_signature
+    # Code for logging the model in qcflow 2.4.0
+    import qcflow
+    from qcflow.models import infer_signature
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
                     python_model = MyModel(),
                     artifact_path = "test_model",
                     signature = infer_signature(["input"]),
@@ -1759,10 +1759,10 @@ flavors:
     env:
       conda: conda.yaml
       virtualenv: python_env.yaml
-    loader_module: mlflow.pyfunc.model
+    loader_module: qcflow.pyfunc.model
     python_model: python_model.pkl
     python_version: 3.8.16
-mlflow_version: 2.4.0
+qcflow_version: 2.4.0
 model_uuid: 3cbde93be0114644a6ec900c64cab39d
 run_id: 3f87fdff03524c19908c3a47fb99f9cd
 signature:
@@ -1784,12 +1784,12 @@ dependencies:
     )
     tmp_path.joinpath("requirements.txt").write_text(
         """
-mlflow==2.4.0
+qcflow==2.4.0
 cloudpickle==2.2.1
         """
     )
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return model_input
 
@@ -1798,9 +1798,9 @@ cloudpickle==2.2.1
     with open(tmp_path / "python_model.pkl", "wb") as out:
         cloudpickle.dump(python_model, out)
 
-    assert Version(mlflow.__version__) > Version("2.4.0")
+    assert Version(qcflow.__version__) > Version("2.4.0")
     model_uri = str(tmp_path)
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_uri)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_uri)
 
     assert pyfunc_loaded.metadata.signature == ModelSignature(Schema([ColSpec("string")]))
 
@@ -1822,15 +1822,15 @@ cloudpickle==2.2.1
 
 def test_function_python_model_serving_compatible(tmp_path):
     """
-    # Code for logging the model in mlflow 2.4.0
-    import mlflow
-    from mlflow.models import infer_signature
+    # Code for logging the model in qcflow 2.4.0
+    import qcflow
+    from qcflow.models import infer_signature
 
     def my_model(model_input):
         return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
                     python_model = my_model,
                     artifact_path = "test_model",
                     signature = infer_signature(["input"]),
@@ -1846,10 +1846,10 @@ flavors:
     env:
       conda: conda.yaml
       virtualenv: python_env.yaml
-    loader_module: mlflow.pyfunc.model
+    loader_module: qcflow.pyfunc.model
     python_model: python_model.pkl
     python_version: 3.8.16
-mlflow_version: 2.4.0
+qcflow_version: 2.4.0
 model_uuid: f19b9a51a34a453282e53ca41d384964
 run_id: 9fd7b6e125a547fdbb4505f15e8259ed
 saved_input_example_info:
@@ -1875,7 +1875,7 @@ dependencies:
     )
     tmp_path.joinpath("requirements.txt").write_text(
         """
-mlflow==2.4.0
+qcflow==2.4.0
 cloudpickle==2.2.1
 pandas==2.0.3
         """
@@ -1889,16 +1889,16 @@ pandas==2.0.3
     def my_model(model_input):
         return model_input
 
-    from mlflow.pyfunc.model import _FunctionPythonModel
+    from qcflow.pyfunc.model import _FunctionPythonModel
 
     python_model = _FunctionPythonModel(my_model, signature=infer_signature(["input"]))
 
     with open(tmp_path / "python_model.pkl", "wb") as out:
         cloudpickle.dump(python_model, out)
 
-    assert Version(mlflow.__version__) > Version("2.4.0")
+    assert Version(qcflow.__version__) > Version("2.4.0")
     model_uri = str(tmp_path)
-    pyfunc_loaded = mlflow.pyfunc.load_model(model_uri)
+    pyfunc_loaded = qcflow.pyfunc.load_model(model_uri)
 
     assert pyfunc_loaded.metadata.signature == ModelSignature(Schema([ColSpec("string")]))
 
@@ -1921,14 +1921,14 @@ pandas==2.0.3
 def test_enforce_schema_with_arrays_in_python_model_predict(sample_params_with_arrays):
     params = sample_params_with_arrays
     signature = infer_signature(["input1"], params=params)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=PythonModelWithArrayParams(),
             signature=signature,
         )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     loaded_predict = loaded_model.predict(["a", "b"], params=params)
     for param, value in params.items():
         assert (loaded_predict[param] == value).all()
@@ -1958,18 +1958,18 @@ def test_enforce_schema_with_arrays_in_python_model_predict(sample_params_with_a
 
     # Raise error if failing to convert the type
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Failed to convert value `1.0` from type `<class 'float'>` to `DataType.datetime`",
     ):
         loaded_model.predict(["a", "b"], params={"datetime_array": [1.0, 2.0]})
-    with pytest.raises(MlflowException, match=r"Failed to validate type and shape for 'int_array'"):
+    with pytest.raises(QCFlowException, match=r"Failed to validate type and shape for 'int_array'"):
         loaded_model.predict(["a", "b"], params={"int_array": np.array([1.0, 2.0])})
     with pytest.raises(
-        MlflowException, match=r"Failed to validate type and shape for 'float_array'"
+        QCFlowException, match=r"Failed to validate type and shape for 'float_array'"
     ):
         loaded_model.predict(["a", "b"], params={"float_array": [True, False]})
     with pytest.raises(
-        MlflowException, match=r"Failed to validate type and shape for 'double_array'"
+        QCFlowException, match=r"Failed to validate type and shape for 'double_array'"
     ):
         loaded_model.predict(["a", "b"], params={"double_array": [1.0, "2.0"]})
 
@@ -1977,8 +1977,8 @@ def test_enforce_schema_with_arrays_in_python_model_predict(sample_params_with_a
 def test_enforce_schema_with_arrays_in_python_model_serving(sample_params_with_arrays):
     params = sample_params_with_arrays
     signature = infer_signature(["input1"], params=params)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=PythonModelWithArrayParams(),
             signature=signature,
@@ -2069,12 +2069,12 @@ def test_enforce_schema_with_arrays_in_python_model_serving(sample_params_with_a
 def test_pyfunc_model_input_example_with_params(
     sample_params_basic, param_schema_basic, tmp_path, example, input_schema, output_schema
 ):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=(example, sample_params_basic),
@@ -2086,15 +2086,15 @@ def test_pyfunc_model_input_example_with_params(
     assert model_info.signature.params == param_schema_basic
 
     # Test predict
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(example)
     expected_df = pd.DataFrame([example] if isinstance(example, dict) else example)
     pd.testing.assert_frame_equal(prediction, expected_df)
 
     # Test saved example
     local_path = _download_artifact_from_uri(model_info.model_uri, output_path=tmp_path)
-    mlflow_model = Model.load(os.path.join(local_path, "MLmodel"))
-    loaded_example = mlflow_model.load_input_example(local_path)
+    qcflow_model = Model.load(os.path.join(local_path, "MLmodel"))
+    loaded_example = qcflow_model.load_input_example(local_path)
     if isinstance(example, list) and all(np.isscalar(x) for x in example):
         np.testing.assert_equal(loaded_example, example)
     else:
@@ -2105,7 +2105,7 @@ def test_pyfunc_model_input_example_with_params(
 
     for test_example in ["saved_example", "manual_example"]:
         if test_example == "saved_example":
-            payload = mlflow_model.get_serving_input(local_path)
+            payload = qcflow_model.get_serving_input(local_path)
         else:
             if isinstance(example, pd.DataFrame):
                 payload = json.dumps({"dataframe_split": example.to_dict(orient="split")})
@@ -2125,16 +2125,16 @@ def test_pyfunc_model_input_example_with_params(
 
 
 def test_invalid_input_example_warn_when_model_logging():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             # List[str] is converted to pandas DataFrame
             # after schema enforcement, so this is invalid
             assert isinstance(model_input, list)
             return "string"
 
-    with mock.patch("mlflow.models.model._logger.warning") as mock_warning:
-        with mlflow.start_run():
-            mlflow.pyfunc.log_model(
+    with mock.patch("qcflow.models.model._logger.warning") as mock_warning:
+        with qcflow.start_run():
+            qcflow.pyfunc.log_model(
                 "test_model",
                 python_model=MyModel(),
                 input_example=["some string"],
@@ -2241,24 +2241,24 @@ def assert_equal(a, b):
 def test_input_example_validation_during_logging(
     tmp_path, example, signature, expected_input, expected_output
 ):
-    from mlflow.models import validate_serving_input
+    from qcflow.models import validate_serving_input
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             assert_equal(model_input, expected_input)
             return expected_output
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=example,
         )
         assert model_info.signature == signature
 
-    mlflow_model = Model.load(model_info.model_uri)
+    qcflow_model = Model.load(model_info.model_uri)
     local_path = _download_artifact_from_uri(model_info.model_uri, output_path=tmp_path)
-    serving_input_example = mlflow_model.get_serving_input(local_path)
+    serving_input_example = qcflow_model.get_serving_input(local_path)
     response = pyfunc_serve_and_score_model(
         model_info.model_uri,
         data=serving_input_example,
@@ -2282,13 +2282,13 @@ def test_pyfunc_schema_inference_not_generate_trace():
     # Test that the model logging call does not generate a trace.
     # When input example is provided, we run prediction to infer
     # the model signature, but it should not generate a trace.
-    class MyModel(mlflow.pyfunc.PythonModel):
-        @mlflow.trace()
+    class MyModel(qcflow.pyfunc.PythonModel):
+        @qcflow.trace()
         def predict(self, context, model_input):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=["input"],
@@ -2299,7 +2299,7 @@ def test_pyfunc_schema_inference_not_generate_trace():
     assert len(traces) == 0
 
     # Normal prediction should emit a trace
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     loaded_model.predict("input")
     traces = get_traces()
     assert len(traces) == 1
@@ -2342,18 +2342,18 @@ def test_pyfunc_schema_inference_not_generate_trace():
     ],
 )
 def test_pyfunc_model_schema_enforcement_with_dicts_and_lists(data, schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
     signature = ModelSignature(schema)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(data)
     if isinstance(data, dict) and all(
         isinstance(x, str) or (isinstance(x, list) and all(isinstance(y, str) for y in x))
@@ -2388,16 +2388,16 @@ def test_pyfunc_model_schema_enforcement_with_dicts_and_lists(data, schema):
         ),
     ],
 )
-# `instances` is an invalid key for schema with MLflow < 2.9.0
+# `instances` is an invalid key for schema with QCFlow < 2.9.0
 @pytest.mark.parametrize("format_key", ["inputs", "dataframe_split", "dataframe_records"])
 def test_pyfunc_model_serving_with_dicts(data, schema, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
     signature = ModelSignature(schema)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
@@ -2446,16 +2446,16 @@ def test_pyfunc_model_serving_with_dicts(data, schema, format_key):
         ),
     ],
 )
-# `inputs`` is an invalid key for schema with MLflow < 2.9.0
+# `inputs`` is an invalid key for schema with QCFlow < 2.9.0
 @pytest.mark.parametrize("format_key", ["instances", "dataframe_split", "dataframe_records"])
 def test_pyfunc_model_serving_with_lists_of_dicts(data, schema, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
     signature = ModelSignature(schema)
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
@@ -2544,7 +2544,7 @@ def test_pyfunc_model_serving_with_lists_of_dicts(data, schema, format_key):
     ],
 )
 def test_pyfunc_model_schema_enforcement_with_objects_and_arrays(data, schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def load_context(self, context):
             self.pipeline = "pipeline"
 
@@ -2557,13 +2557,13 @@ def test_pyfunc_model_schema_enforcement_with_objects_and_arrays(data, schema):
     pdf = pd.DataFrame(data if isinstance(data, list) else [data])
     assert infer_signature(pdf).inputs == schema
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(data)
     df = pd.DataFrame(data) if isinstance(data, list) else pd.DataFrame([data])
     pd.testing.assert_frame_equal(prediction, df)
@@ -2593,12 +2593,12 @@ def test_pyfunc_model_schema_enforcement_with_objects_and_arrays(data, schema):
 )
 @pytest.mark.parametrize("format_key", ["inputs", "dataframe_split", "dataframe_records"])
 def test_pyfunc_model_scoring_with_objects_and_arrays(data, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=infer_signature(data),
@@ -2636,12 +2636,12 @@ def test_pyfunc_model_scoring_with_objects_and_arrays(data, format_key):
     ],
 )
 def test_pyfunc_model_scoring_with_objects_and_arrays_instances(data):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=infer_signature(data),
@@ -2675,12 +2675,12 @@ def test_pyfunc_model_scoring_with_objects_and_arrays_instances(data):
     ],
 )
 def test_pyfunc_model_scoring_with_objects_and_arrays_instances_errors(data):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=infer_signature(data),
@@ -2717,12 +2717,12 @@ def test_pyfunc_model_scoring_with_objects_and_arrays_instances_errors(data):
     ],
 )
 def test_pyfunc_model_scoring_instances_backwards_compatibility(data, schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=ModelSignature(schema),
@@ -2766,7 +2766,7 @@ def test_pyfunc_model_scoring_instances_backwards_compatibility(data, schema):
     ],
 )
 def test_pyfunc_model_schema_enforcement_nested_array(data, schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
@@ -2774,13 +2774,13 @@ def test_pyfunc_model_schema_enforcement_nested_array(data, schema):
     signature = infer_signature(df)
     assert signature.inputs == schema
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(df)
     pd.testing.assert_frame_equal(prediction, df)
 
@@ -2887,19 +2887,19 @@ def test_pyfunc_model_schema_enforcement_nested_array(data, schema):
 )
 @pytest.mark.parametrize("format_key", ["dataframe_split", "dataframe_records"])
 def test_pyfunc_model_schema_enforcement_map_type(data, schema, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
     df = pd.DataFrame.from_records(data)
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=ModelSignature(inputs=schema, outputs=schema),
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(df)
     pd.testing.assert_frame_equal(prediction, df)
 
@@ -2968,7 +2968,7 @@ def test_pyfunc_model_schema_enforcement_map_type(data, schema, format_key):
 )
 @pytest.mark.parametrize("format_key", ["inputs", "dataframe_split", "dataframe_records"])
 def test_pyfunc_model_schema_enforcement_complex(data, schema, format_key):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
@@ -2976,13 +2976,13 @@ def test_pyfunc_model_schema_enforcement_complex(data, schema, format_key):
     signature = infer_signature(df)
     assert signature.inputs == schema
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             signature=signature,
         )
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(df)
     pd.testing.assert_frame_equal(prediction, df)
 
@@ -3063,7 +3063,7 @@ def test_zero_or_one_longs_convert_to_floats():
                             "usage_metadata": None,
                         },
                         {
-                            "content": "Who owns MLflow?",
+                            "content": "Who owns QCFlow?",
                             "additional_kwargs": {},
                             "response_metadata": {},
                             "type": "human",
@@ -3120,18 +3120,18 @@ def test_zero_or_one_longs_convert_to_floats():
     ],
 )
 def test_schema_enforcement_for_anytype(input_example, expected_schema, payload_example):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=input_example,
         )
     assert model_info.signature.inputs == expected_schema
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
     prediction = loaded_model.predict(payload_example)
     df = (
         pd.DataFrame(payload_example)

@@ -6,13 +6,13 @@ from unittest import mock
 import pytest
 from sklearn.datasets import load_diabetes, load_iris
 
-import mlflow
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.steps.evaluate import EvaluateStep
-from mlflow.recipes.steps.split import _OUTPUT_TEST_FILE_NAME, _OUTPUT_VALIDATION_FILE_NAME
-from mlflow.recipes.steps.train import TrainStep
-from mlflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
-from mlflow.utils.file_utils import read_yaml
+import qcflow
+from qcflow.exceptions import QCFlowException
+from qcflow.recipes.steps.evaluate import EvaluateStep
+from qcflow.recipes.steps.split import _OUTPUT_TEST_FILE_NAME, _OUTPUT_VALIDATION_FILE_NAME
+from qcflow.recipes.steps.train import TrainStep
+from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
+from qcflow.utils.file_utils import read_yaml
 
 from tests.recipes.helper_functions import train_and_log_classification_model, train_and_log_model
 
@@ -42,7 +42,7 @@ def evaluation_inputs(request, tmp_recipe_exec_path):
     )
     if os.path.exists(output_model_path) and os.path.isdir(output_model_path):
         shutil.rmtree(output_model_path)
-    mlflow.sklearn.save_model(model, output_model_path)
+    qcflow.sklearn.save_model(model, output_model_path)
 
 
 @pytest.mark.usefixtures("clear_custom_metrics_module_cache")
@@ -59,7 +59,7 @@ def test_evaluate_step_run(
 recipe: "regression/v1"
 target_col: "y"
 experiment:
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 steps:
   evaluate:
     validation_criteria:
@@ -94,7 +94,7 @@ def weighted_mean_squared_error_func(eval_df, builtin_metrics):
     evaluate_step.run(str(evaluate_step_output_dir))
 
     logged_metrics = (
-        mlflow.tracking.MlflowClient().get_run(mlflow.last_active_run().info.run_id).data.metrics
+        qcflow.tracking.QCFlowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
     )
     assert "test_weighted_mean_squared_error" in logged_metrics
     model_validation_status_path = evaluate_step_output_dir.joinpath("model_validation_status")
@@ -119,7 +119,7 @@ positive_class: "Iris-setosa"
 target_col: "y"
 primary_metric: "f1_score"
 experiment:
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 steps:
   evaluate:
     validation_criteria:
@@ -153,7 +153,7 @@ def test_no_validation_criteria(tmp_recipe_root_path: Path, tmp_recipe_exec_path
 recipe: "regression/v1"
 target_col: "y"
 experiment:
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 steps:
   evaluate:
 """
@@ -165,7 +165,7 @@ steps:
     evaluate_step.run(str(evaluate_step_output_dir))
 
     logged_metrics = (
-        mlflow.tracking.MlflowClient().get_run(mlflow.last_active_run().info.run_id).data.metrics
+        qcflow.tracking.QCFlowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
     )
     assert "test_mean_squared_error" in logged_metrics
     assert "test_root_mean_squared_error" in logged_metrics
@@ -182,7 +182,7 @@ def test_validation_criteria_contain_undefined_metrics(tmp_recipe_root_path: Pat
 recipe: "regression/v1"
 target_col: "y"
 experiment:
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 steps:
   evaluate:
     validation_criteria:
@@ -199,7 +199,7 @@ steps:
     evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     evaluate_step._validate_and_apply_step_config()
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Validation criteria contain undefined metrics: \['undefined_metric'\]",
     ):
         evaluate_step._validate_validation_criteria()
@@ -215,7 +215,7 @@ def test_custom_metric_function_does_not_exist(
 recipe: "regression/v1"
 target_col: "y"
 experiment:
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 steps:
   evaluate:
     validation_criteria:
@@ -239,7 +239,7 @@ def one(eval_df, builtin_metrics):
     evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     evaluate_step_output_dir = tmp_recipe_exec_path.joinpath("steps", "evaluate", "outputs")
     evaluate_step_output_dir.mkdir(parents=True)
-    with pytest.raises(MlflowException, match="Failed to load custom metric functions") as exc:
+    with pytest.raises(QCFlowException, match="Failed to load custom metric functions") as exc:
         evaluate_step.run(str(evaluate_step_output_dir))
     assert isinstance(exc.value.__cause__, AttributeError)
     assert "weighted_mean_squared_error" in str(exc.value.__cause__)
@@ -255,7 +255,7 @@ def test_custom_metrics_module_does_not_exist(
 recipe: "regression/v1"
 target_col: "y"
 experiment:
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 steps:
   evaluate:
     validation_criteria:
@@ -274,7 +274,7 @@ custom_metrics:
     evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
     evaluate_step_output_dir = tmp_recipe_exec_path.joinpath("steps", "evaluate", "outputs")
     evaluate_step_output_dir.mkdir(parents=True)
-    with pytest.raises(MlflowException, match="Failed to load custom metric functions") as exc:
+    with pytest.raises(QCFlowException, match="Failed to load custom metric functions") as exc:
         evaluate_step.run(str(evaluate_step_output_dir))
     assert isinstance(exc.value.__cause__, ModuleNotFoundError)
     assert "No module named 'steps.custom_metrics'" in str(exc.value.__cause__)
@@ -293,7 +293,7 @@ def test_custom_metrics_override_builtin_metrics(
 recipe: "regression/v1"
 target_col: "y"
 experiment:
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 steps:
   evaluate:
     validation_criteria:
@@ -323,7 +323,7 @@ def root_mean_squared_error(eval_df, builtin_metrics):
     )
     recipe_config = read_yaml(tmp_recipe_root_path, _RECIPE_CONFIG_FILE_NAME)
 
-    with mock.patch("mlflow.recipes.utils.metrics._logger.warning") as mock_warning:
+    with mock.patch("qcflow.recipes.utils.metrics._logger.warning") as mock_warning:
         evaluate_step = EvaluateStep.from_recipe_config(recipe_config, str(tmp_recipe_root_path))
         evaluate_step.run(str(evaluate_step_output_dir))
         mock_warning.assert_called_once_with(
@@ -331,7 +331,7 @@ def root_mean_squared_error(eval_df, builtin_metrics):
             ["mean_absolute_error", "root_mean_squared_error"],
         )
     logged_metrics = (
-        mlflow.tracking.MlflowClient().get_run(mlflow.last_active_run().info.run_id).data.metrics
+        qcflow.tracking.QCFlowClient().get_run(qcflow.last_active_run().info.run_id).data.metrics
     )
     assert "test_root_mean_squared_error" in logged_metrics
     assert logged_metrics["test_root_mean_squared_error"] == 1
@@ -358,7 +358,7 @@ def test_evaluate_step_writes_card_with_model_and_run_links_on_databricks(
 recipe: "regression/v1"
 target_col: "y"
 experiment:
-  tracking_uri: {mlflow.get_tracking_uri()}
+  tracking_uri: {qcflow.get_tracking_uri()}
 steps:
   evaluate:
     validation_criteria:
@@ -382,8 +382,8 @@ steps:
     with open(evaluate_step_output_dir / "card.html") as f:
         step_card_content = f.read()
 
-    assert f"<a href={workspace_url}#mlflow/experiments/1/runs/{run_id}>" in step_card_content
+    assert f"<a href={workspace_url}#qcflow/experiments/1/runs/{run_id}>" in step_card_content
     assert (
-        f"<a href={workspace_url}#mlflow/experiments/1/runs/{run_id}/artifactPath/train/model>"
+        f"<a href={workspace_url}#qcflow/experiments/1/runs/{run_id}/artifactPath/train/model>"
         in step_card_content
     )

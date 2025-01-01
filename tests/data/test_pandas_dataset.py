@@ -3,17 +3,17 @@ import json
 import pandas as pd
 import pytest
 
-import mlflow.data
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.delta_dataset_source import DeltaDatasetSource
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.filesystem_dataset_source import FileSystemDatasetSource
-from mlflow.data.pandas_dataset import PandasDataset
-from mlflow.data.pyfunc_dataset_mixin import PyFuncInputsOutputs
-from mlflow.data.spark_dataset_source import SparkDatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.types.schema import Schema
-from mlflow.types.utils import _infer_schema
+import qcflow.data
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.delta_dataset_source import DeltaDatasetSource
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.filesystem_dataset_source import FileSystemDatasetSource
+from qcflow.data.pandas_dataset import PandasDataset
+from qcflow.data.pyfunc_dataset_mixin import PyFuncInputsOutputs
+from qcflow.data.spark_dataset_source import SparkDatasetSource
+from qcflow.exceptions import QCFlowException
+from qcflow.types.schema import Schema
+from qcflow.types.utils import _infer_schema
 
 from tests.resources.data.dataset_source import SampleDatasetSource
 
@@ -53,7 +53,7 @@ def test_conversion_to_json():
     assert parsed_json["source_type"] == dataset.source._get_source_type()
     assert parsed_json["profile"] == json.dumps(dataset.profile)
 
-    schema_json = json.dumps(json.loads(parsed_json["schema"])["mlflow_colspec"])
+    schema_json = json.dumps(json.loads(parsed_json["schema"])["qcflow_colspec"])
     assert Schema.from_json(schema_json) == dataset.schema
 
 
@@ -106,7 +106,7 @@ def test_with_invalid_targets():
     source = SampleDatasetSource._resolve(source_uri)
     df = pd.DataFrame([[1, 2, 3], [1, 2, 3]], columns=["a", "b", "c"])
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The specified pandas DataFrame does not contain the specified targets column 'd'.",
     ):
         PandasDataset(
@@ -149,7 +149,7 @@ def test_from_pandas_with_targets(tmp_path):
     df = pd.DataFrame([[1, 2, 3], [1, 2, 3]], columns=["a", "b", "c"])
     path = tmp_path / "temp.csv"
     df.to_csv(path)
-    dataset = mlflow.data.from_pandas(df, targets="c", source=path)
+    dataset = qcflow.data.from_pandas(df, targets="c", source=path)
     input_outputs = dataset.to_pyfunc()
     assert isinstance(input_outputs, PyFuncInputsOutputs)
     assert input_outputs.inputs.equals(pd.DataFrame([[1, 2], [1, 2]], columns=["a", "b"]))
@@ -160,17 +160,17 @@ def test_from_pandas_file_system_datasource(tmp_path):
     df = pd.DataFrame([[1, 2, 3], [1, 2, 3]], columns=["a", "b", "c"])
     path = tmp_path / "temp.csv"
     df.to_csv(path)
-    mlflow_df = mlflow.data.from_pandas(df, source=path)
+    qcflow_df = qcflow.data.from_pandas(df, source=path)
 
-    assert isinstance(mlflow_df, PandasDataset)
-    assert mlflow_df.df.equals(df)
-    assert mlflow_df.schema == _infer_schema(df)
-    assert mlflow_df.profile == {
+    assert isinstance(qcflow_df, PandasDataset)
+    assert qcflow_df.df.equals(df)
+    assert qcflow_df.schema == _infer_schema(df)
+    assert qcflow_df.profile == {
         "num_rows": len(df),
         "num_elements": df.size,
     }
 
-    assert isinstance(mlflow_df.source, FileSystemDatasetSource)
+    assert isinstance(qcflow_df.source, FileSystemDatasetSource)
 
 
 def test_from_pandas_spark_datasource(spark_session, tmp_path):
@@ -180,17 +180,17 @@ def test_from_pandas_spark_datasource(spark_session, tmp_path):
     df_spark.write.parquet(path)
 
     spark_datasource = SparkDatasetSource(path=path)
-    mlflow_df = mlflow.data.from_pandas(df, source=spark_datasource)
+    qcflow_df = qcflow.data.from_pandas(df, source=spark_datasource)
 
-    assert isinstance(mlflow_df, PandasDataset)
-    assert mlflow_df.df.equals(df)
-    assert mlflow_df.schema == _infer_schema(df)
-    assert mlflow_df.profile == {
+    assert isinstance(qcflow_df, PandasDataset)
+    assert qcflow_df.df.equals(df)
+    assert qcflow_df.schema == _infer_schema(df)
+    assert qcflow_df.profile == {
         "num_rows": len(df),
         "num_elements": df.size,
     }
 
-    assert isinstance(mlflow_df.source, SparkDatasetSource)
+    assert isinstance(qcflow_df.source, SparkDatasetSource)
 
 
 def test_from_pandas_delta_datasource(spark_session, tmp_path):
@@ -200,27 +200,27 @@ def test_from_pandas_delta_datasource(spark_session, tmp_path):
     df_spark.write.format("delta").mode("overwrite").save(path)
 
     delta_datasource = DeltaDatasetSource(path=path)
-    mlflow_df = mlflow.data.from_pandas(df, source=delta_datasource)
+    qcflow_df = qcflow.data.from_pandas(df, source=delta_datasource)
 
-    assert isinstance(mlflow_df, PandasDataset)
-    assert mlflow_df.df.equals(df)
-    assert mlflow_df.schema == _infer_schema(df)
-    assert mlflow_df.profile == {
+    assert isinstance(qcflow_df, PandasDataset)
+    assert qcflow_df.df.equals(df)
+    assert qcflow_df.schema == _infer_schema(df)
+    assert qcflow_df.profile == {
         "num_rows": len(df),
         "num_elements": df.size,
     }
 
-    assert isinstance(mlflow_df.source, DeltaDatasetSource)
+    assert isinstance(qcflow_df.source, DeltaDatasetSource)
 
 
 def test_from_pandas_no_source_specified():
     df = pd.DataFrame([[1, 2, 3], [1, 2, 3]], columns=["a", "b", "c"])
-    mlflow_df = mlflow.data.from_pandas(df)
+    qcflow_df = qcflow.data.from_pandas(df)
 
-    assert isinstance(mlflow_df, PandasDataset)
+    assert isinstance(qcflow_df, PandasDataset)
 
-    assert isinstance(mlflow_df.source, CodeDatasetSource)
-    assert "mlflow.source.name" in mlflow_df.source.to_json()
+    assert isinstance(qcflow_df.source, CodeDatasetSource)
+    assert "qcflow.source.name" in qcflow_df.source.to_json()
 
 
 def test_to_evaluation_dataset():

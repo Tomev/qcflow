@@ -13,20 +13,20 @@ import pandas as pd
 import pytest
 import sklearn.compose
 
-import mlflow
-from mlflow.environment_variables import MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME
-from mlflow.recipes.steps.train import TrainStep
-from mlflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
-from mlflow.recipes.utils.execution import get_step_output_path
-from mlflow.tracking import MlflowClient
-from mlflow.utils.file_utils import read_yaml
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_RECIPE_PROFILE_NAME,
-    MLFLOW_RECIPE_STEP_NAME,
-    MLFLOW_RECIPE_TEMPLATE_NAME,
-    MLFLOW_SOURCE_TYPE,
+import qcflow
+from qcflow.environment_variables import QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME
+from qcflow.recipes.steps.train import TrainStep
+from qcflow.recipes.utils import _RECIPE_CONFIG_FILE_NAME
+from qcflow.recipes.utils.execution import get_step_output_path
+from qcflow.tracking import QCFlowClient
+from qcflow.utils.file_utils import read_yaml
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_RECIPE_PROFILE_NAME,
+    QCFLOW_RECIPE_STEP_NAME,
+    QCFLOW_RECIPE_TEMPLATE_NAME,
+    QCFLOW_SOURCE_TYPE,
 )
-from mlflow.utils.os import is_windows
+from qcflow.utils.os import is_windows
 
 
 # Sets up the train step output dir
@@ -122,7 +122,7 @@ def setup_train_step_with_tuning(
                 step: "train"
             experiment:
                 name: "demo"
-                tracking_uri: {mlflow.get_tracking_uri()}
+                tracking_uri: {qcflow.get_tracking_uri()}
             steps:
                 train:
                     using: custom
@@ -156,7 +156,7 @@ def setup_train_step_with_tuning(
                 step: "train"
             experiment:
                 name: "demo"
-                tracking_uri: {mlflow.get_tracking_uri()}
+                tracking_uri: {qcflow.get_tracking_uri()}
             steps:
                 train:
                     using: custom
@@ -181,7 +181,7 @@ def test_train_step(tmp_recipe_root_path: Path, tmp_recipe_exec_path: Path):
             step: "train"
         experiment:
             name: "demo"
-            tracking_uri: {mlflow.get_tracking_uri()}
+            tracking_uri: {qcflow.get_tracking_uri()}
         steps:
             train:
                 using: custom
@@ -199,7 +199,7 @@ def test_train_step(tmp_recipe_root_path: Path, tmp_recipe_exec_path: Path):
         train_step.run(str(train_step_output_dir))
 
     run_id = train_step_output_dir.joinpath("run_id").read_text()
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert "val_mean_squared_error" in metrics
     assert "training_mean_squared_error" in metrics
 
@@ -218,7 +218,7 @@ def estimator_fn(estimator_params=None):
     monkeypatch.syspath_prepend(str(tmp_recipe_root_path))
 
 
-@mock.patch("mlflow.recipes.steps.train._REBALANCING_CUTOFF", 50)
+@mock.patch("qcflow.recipes.steps.train._REBALANCING_CUTOFF", 50)
 def test_train_step_imbalanced_data(tmp_recipe_root_path: Path, tmp_recipe_exec_path: Path):
     train_step_output_dir = setup_train_dataset(
         tmp_recipe_exec_path, recipe="classification/multiclass"
@@ -235,7 +235,7 @@ def test_train_step_imbalanced_data(tmp_recipe_root_path: Path, tmp_recipe_exec_
             step: "train"
         experiment:
             name: "demo"
-            tracking_uri: {mlflow.get_tracking_uri()}
+            tracking_uri: {qcflow.get_tracking_uri()}
         steps:
             train:
                 using: custom
@@ -254,7 +254,7 @@ def test_train_step_imbalanced_data(tmp_recipe_root_path: Path, tmp_recipe_exec_
     # assert "After downsampling: minority class percentage is 0.30" in captured.err
 
     run_id = train_step_output_dir.joinpath("run_id").read_text()
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert "val_f1_score" in metrics
 
 
@@ -285,7 +285,7 @@ def test_train_step_classifier_automl(
                     - rf
                     - lgbm
         """.format(
-            tracking_uri=mlflow.get_tracking_uri(),
+            tracking_uri=qcflow.get_tracking_uri(),
             positive_class='positive_class: "a"' if recipe == "classification/binary" else "",
         )
     )
@@ -294,7 +294,7 @@ def test_train_step_classifier_automl(
     train_step.run(str(train_step_output_dir))
 
     run_id = train_step_output_dir.joinpath("run_id").read_text()
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert "val_f1_score" in metrics
 
 
@@ -320,7 +320,7 @@ def setup_train_step_with_automl(
     step: train
   experiment:
     name: demo
-    tracking_uri: {mlflow.get_tracking_uri()}
+    tracking_uri: {qcflow.get_tracking_uri()}
   steps:
     train:
       using: automl/flaml
@@ -403,9 +403,9 @@ def test_train_steps_writes_card_with_model_and_run_links_on_databricks(
     with open(train_step_output_dir / "card.html") as f:
         step_card_content = f.read()
 
-    assert f"<a href={workspace_url}#mlflow/experiments/1/runs/{run_id}>" in step_card_content
+    assert f"<a href={workspace_url}#qcflow/experiments/1/runs/{run_id}>" in step_card_content
     assert (
-        f"<a href={workspace_url}#mlflow/experiments/1/runs/{run_id}/artifactPath/train/model>"
+        f"<a href={workspace_url}#qcflow/experiments/1/runs/{run_id}/artifactPath/train/model>"
         in step_card_content
     )
 
@@ -425,8 +425,8 @@ def test_train_steps_autologs(tmp_recipe_root_path: Path, tmp_recipe_exec_path: 
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    metrics = MlflowClient().get_run(run_id).data.metrics
-    params = MlflowClient().get_run(run_id).data.params
+    metrics = QCFlowClient().get_run(run_id).data.metrics
+    params = QCFlowClient().get_run(run_id).data.params
     assert "training_score" in metrics
     assert "epsilon" in params
 
@@ -435,7 +435,7 @@ def test_train_steps_autologs(tmp_recipe_root_path: Path, tmp_recipe_exec_path: 
 def test_train_steps_with_correct_tags(
     tmp_recipe_root_path: Path, tmp_recipe_exec_path: Path, use_tuning, monkeypatch
 ):
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name, "train")
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name, "train")
     train_step_output_dir = setup_train_dataset(tmp_recipe_exec_path)
     train_step = setup_train_step_with_tuning(tmp_recipe_root_path, use_tuning)
     m_train = Mock()
@@ -449,11 +449,11 @@ def test_train_steps_with_correct_tags(
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    tags = MlflowClient().get_run(run_id).data.tags
-    assert tags[MLFLOW_SOURCE_TYPE] == "RECIPE"
-    assert tags[MLFLOW_RECIPE_TEMPLATE_NAME] == "regression/v1"
-    assert tags[MLFLOW_RECIPE_STEP_NAME] == "train"
-    assert tags[MLFLOW_RECIPE_PROFILE_NAME] == "test_profile"
+    tags = QCFlowClient().get_run(run_id).data.tags
+    assert tags[QCFLOW_SOURCE_TYPE] == "RECIPE"
+    assert tags[QCFLOW_RECIPE_TEMPLATE_NAME] == "regression/v1"
+    assert tags[QCFLOW_RECIPE_STEP_NAME] == "train"
+    assert tags[QCFLOW_RECIPE_PROFILE_NAME] == "test_profile"
 
 
 def test_train_step_with_tuning_best_parameters(
@@ -472,7 +472,7 @@ def test_train_step_with_tuning_best_parameters(
     assert "eta0" in best_params_yaml
 
     run_id = train_step_output_dir.joinpath("run_id").read_text()
-    parent_run_params = MlflowClient().get_run(run_id).data.params
+    parent_run_params = QCFlowClient().get_run(run_id).data.params
     assert "alpha" in parent_run_params
     assert "penalty" in parent_run_params
     assert "eta0" in parent_run_params
@@ -543,7 +543,7 @@ def test_train_step_with_tuning_child_runs_and_early_stop(
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    run = MlflowClient().get_run(run_id)
+    run = QCFlowClient().get_run(run_id)
     child_runs = train_step._get_tuning_df(run, params=["alpha", "penalty", "eta0"])
     assert len(child_runs) == 2
     assert "params.alpha" in child_runs.columns
@@ -592,7 +592,7 @@ def test_automl(
     generate_custom_metrics,
     monkeypatch,
 ):
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name, "train")
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name, "train")
     train_step_output_dir = setup_train_dataset(tmp_recipe_exec_path)
     recipe_steps_dir = tmp_recipe_root_path.joinpath("steps")
     recipe_steps_dir.mkdir(exist_ok=True)
@@ -630,12 +630,12 @@ def weighted_mean_squared_error(eval_df, builtin_metrics):
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert f"training_{primary_metric}" in metrics
 
 
 def test_tuning_multiclass(tmp_recipe_root_path: Path, tmp_recipe_exec_path: Path, monkeypatch):
-    monkeypatch.setenv(MLFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name, "train")
+    monkeypatch.setenv(QCFLOW_RECIPES_EXECUTION_TARGET_STEP_NAME.name, "train")
     train_step_output_dir = setup_train_dataset(
         tmp_recipe_exec_path, recipe="classification/multiclass"
     )
@@ -664,7 +664,7 @@ def test_tuning_multiclass(tmp_recipe_root_path: Path, tmp_recipe_exec_path: Pat
     with open(train_step_output_dir / "run_id") as f:
         run_id = f.read()
 
-    metrics = MlflowClient().get_run(run_id).data.metrics
+    metrics = QCFlowClient().get_run(run_id).data.metrics
     assert "training_f1_score" in metrics
 
 
@@ -686,7 +686,7 @@ def test_train_step_with_predict_probability(
             step: "train"
         experiment:
             name: "demo"
-            tracking_uri: {mlflow.get_tracking_uri()}
+            tracking_uri: {qcflow.get_tracking_uri()}
         steps:
             train:
                 using: custom
@@ -710,8 +710,8 @@ def test_train_step_with_predict_probability(
         step_name="train",
         relative_path=TrainStep.SKLEARN_MODEL_ARTIFACT_RELATIVE_PATH,
     )
-    mlflow.sklearn.load_model(sk_model_uri)
-    model = mlflow.pyfunc.load_model(model_uri)
+    qcflow.sklearn.load_model(sk_model_uri)
+    model = qcflow.pyfunc.load_model(model_uri)
     transform_step_output_dir = tmp_recipe_exec_path.joinpath("steps", "transform", "outputs")
 
     validation_dataset = pd.read_parquet(
@@ -753,7 +753,7 @@ def test_train_step_with_predict_probability_with_custom_prefix(
             step: "train"
         experiment:
             name: "demo"
-            tracking_uri: {mlflow.get_tracking_uri()}
+            tracking_uri: {qcflow.get_tracking_uri()}
         steps:
             train:
                 using: custom
@@ -773,7 +773,7 @@ def test_train_step_with_predict_probability_with_custom_prefix(
         step_name="train",
         relative_path=TrainStep.MODEL_ARTIFACT_RELATIVE_PATH,
     )
-    model = mlflow.pyfunc.load_model(model_uri)
+    model = qcflow.pyfunc.load_model(model_uri)
     transform_step_output_dir = tmp_recipe_exec_path.joinpath("steps", "transform", "outputs")
 
     validation_dataset = pd.read_parquet(
@@ -804,7 +804,7 @@ def test_train_step_with_label_encoding(tmp_recipe_root_path: Path, tmp_recipe_e
             step: "train"
         experiment:
             name: "demo"
-            tracking_uri: {mlflow.get_tracking_uri()}
+            tracking_uri: {qcflow.get_tracking_uri()}
         steps:
             train:
                 using: custom
@@ -823,7 +823,7 @@ def test_train_step_with_label_encoding(tmp_recipe_root_path: Path, tmp_recipe_e
         step_name="train",
         relative_path=TrainStep.MODEL_ARTIFACT_RELATIVE_PATH,
     )
-    model = mlflow.pyfunc.load_model(model_uri)
+    model = qcflow.pyfunc.load_model(model_uri)
     transform_step_output_dir = tmp_recipe_exec_path.joinpath("steps", "transform", "outputs")
 
     validation_dataset = pd.read_parquet(
@@ -860,7 +860,7 @@ def test_train_step_with_probability_calibration(
             step: "train"
         experiment:
             name: "demo"
-            tracking_uri: {mlflow.get_tracking_uri()}
+            tracking_uri: {qcflow.get_tracking_uri()}
         steps:
             train:
                 using: custom
@@ -880,7 +880,7 @@ def test_train_step_with_probability_calibration(
         step_name="train",
         relative_path=TrainStep.MODEL_ARTIFACT_RELATIVE_PATH,
     )
-    model = mlflow.pyfunc.load_model(model_uri)
+    model = qcflow.pyfunc.load_model(model_uri)
 
     from sklearn.calibration import CalibratedClassifierCV
 

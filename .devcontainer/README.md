@@ -1,10 +1,10 @@
-# MLflow development container (experimental)
+# QCFlow development container (experimental)
 
-This directory contains a set of files to set up a reproducible and disposable development environment for MLflow in Visual Studio Code using the [Remote - Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+This directory contains a set of files to set up a reproducible and disposable development environment for QCFlow in Visual Studio Code using the [Remote - Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
 
 ## Supported features
 
-- Pre-installed tools/packages required for MLflow development.
+- Pre-installed tools/packages required for QCFlow development.
 - Pre-configured VSCode settings and extensions for automatic code formatting and lint check.
 - Pre-commit hooks to avoid pushing commits that won't pass the CI checks.
 
@@ -20,18 +20,18 @@ This directory contains a set of files to set up a reproducible and disposable d
 
    ```bash
    # This command may take a while to finish
-   DOCKER_BUILDKIT=1 docker build -f .devcontainer/Dockerfile.devcontainer -t ghcr.io/mlflow/mlflow-devcontainer .
+   DOCKER_BUILDKIT=1 docker build -f .devcontainer/Dockerfile.devcontainer -t ghcr.io/qcflow/qcflow-devcontainer .
 
    # Test the image
-   docker run --rm -it ghcr.io/mlflow/mlflow-devcontainer zsh
+   docker run --rm -it ghcr.io/qcflow/qcflow-devcontainer zsh
 
    # Alternatively, you can pull the pre-built image from GitHub Container Registry,
    # but a GitHub personal access token is required to authenticate to ghcr.io:
    echo <GITHUB_TOKEN> | docker login ghcr.io -u <GITHUB_USERNAME> --password-stdin
-   docker pull ghcr.io/mlflow/mlflow-devcontainer
+   docker pull ghcr.io/qcflow/qcflow-devcontainer
    ```
 
-2. Open the MLflow repository on VSCode.
+2. Open the QCFlow repository on VSCode.
 3. Press `Ctrl/Cmd+Shift+P` to launch [the command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette).
 4. Select `Remote-Containers: Reopen in Container`.
 5. Once the devcontainer is up and running, launch the command palette again.
@@ -60,12 +60,12 @@ The following tools/packages are NOT pre-installed to avoid increasing the image
 ## How to update `requirements.txt`
 
 ```bash
-NAME="mlflow-$(uuidgen)"
+NAME="qcflow-$(uuidgen)"
 docker run \
    --name $NAME \
-   -w /mlflow \
-   -v $(pwd)/requirements:/mlflow/requirements:ro \
-   -v $(pwd)/.devcontainer/pip-compile.sh:/mlflow/pip-compile.sh \
+   -w /qcflow \
+   -v $(pwd)/requirements:/qcflow/requirements:ro \
+   -v $(pwd)/.devcontainer/pip-compile.sh:/qcflow/pip-compile.sh \
    python:3.9.18 ./pip-compile.sh
 docker cp $NAME:/tmp/requirements.txt .devcontainer/requirements.txt
 docker rm -f -v $NAME

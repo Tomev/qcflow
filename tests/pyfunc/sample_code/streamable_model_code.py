@@ -1,5 +1,5 @@
-from mlflow.models import set_model
-from mlflow.pyfunc import PythonModel
+from qcflow.models import set_model
+from qcflow.pyfunc import PythonModel
 
 
 class StreamableModel(PythonModel):

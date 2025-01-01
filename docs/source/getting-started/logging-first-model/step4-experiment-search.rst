@@ -1,16 +1,16 @@
 Searching Experiments
 =====================
 
-In the last section, we created our first MLflow Experiment, providing custom tags so that we can find
+In the last section, we created our first QCFlow Experiment, providing custom tags so that we can find
 co-related Experiments that are part of a larger project.
 
-In this brief section, we're going to see how to perform those searches with the MLflow Client API.
+In this brief section, we're going to see how to perform those searches with the QCFlow Client API.
 
 Before we perform the search, let's take a look at our ``Apple_Models`` experiment in the UI.
 
 Seeing our new Experiment in the UI
 -----------------------------------
-As before, we're going to connect to our running MLflow Tracking server to view the MLflow UI. If you've closed the browser
+As before, we're going to connect to our running QCFlow Tracking server to view the QCFlow UI. If you've closed the browser
 window that was running it, simply navigate to ``http://127.0.0.1:8080`` in a new browser window.
 
 .. figure:: ../../_static/images/tutorials/introductory/logging-first-model/first-experiment-ui.gif
@@ -18,7 +18,7 @@ window that was running it, simply navigate to ``http://127.0.0.1:8080`` in a ne
    :align: center
    :alt: View our new experiment in the UI
 
-   The "Apple_Models" Experiment in the MLflow UI
+   The "Apple_Models" Experiment in the QCFlow UI
 
 Important components to be aware of in the UI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -65,14 +65,14 @@ condition is wrapped in single quotes.
 .. code-block:: bash
     :caption: The metadata associated with a created Experiment
 
-    <Experiment: artifact_location='mlflow-artifacts:/926031323154788454',
+    <Experiment: artifact_location='qcflow-artifacts:/926031323154788454',
                  creation_time=1694018173427,
                  experiment_id='926031323154788454',
                  last_update_time=1694018173427,
                  lifecycle_stage='active',
                  name='Apple_Models',
                  tags={
-                    'mlflow.note.content': 'This is the grocery forecasting project. This '
+                    'qcflow.note.content': 'This is the grocery forecasting project. This '
                             'experiment contains the produce models for apples.',
                     'project_name': 'grocery-forecasting',
                     'project_quarter': 'Q3-2023',
@@ -93,4 +93,4 @@ Executing the Search
    Creating a new Experiment and searching based on an Experiment tag
 
 In the next section, we'll begin to use this experiment to log training data to runs that are associated with this experiment, introducing
-another aspect of both the MLflow APIs (the fluent API) and another part of the MLflow UI (the run information page).
+another aspect of both the QCFlow APIs (the fluent API) and another part of the QCFlow UI (the run information page).

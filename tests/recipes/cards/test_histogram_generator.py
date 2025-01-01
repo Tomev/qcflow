@@ -5,8 +5,8 @@ Unit tests for histogram_generator.py
 import pytest
 from google.protobuf import text_format
 
-from mlflow.protos import facet_feature_statistics_pb2
-from mlflow.recipes.cards import histogram_generator
+from qcflow.protos import facet_feature_statistics_pb2
+from qcflow.recipes.cards import histogram_generator
 
 
 def assert_histogram(

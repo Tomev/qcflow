@@ -3,11 +3,11 @@ from unittest import mock
 
 import pytest
 
-import mlflow.data
-from mlflow.data.dataset import Dataset
-from mlflow.data.dataset_registry import DatasetRegistry, register_constructor
-from mlflow.data.dataset_source_registry import DatasetSourceRegistry, resolve_dataset_source
-from mlflow.exceptions import MlflowException
+import qcflow.data
+from qcflow.data.dataset import Dataset
+from qcflow.data.dataset_registry import DatasetRegistry, register_constructor
+from qcflow.data.dataset_source_registry import DatasetSourceRegistry, resolve_dataset_source
+from qcflow.exceptions import QCFlowException
 
 from tests.resources.data.dataset import SampleDataset
 from tests.resources.data.dataset_source import SampleDatasetSource
@@ -16,14 +16,14 @@ from tests.resources.data.dataset_source import SampleDatasetSource
 @pytest.fixture
 def dataset_source_registry():
     registry = DatasetSourceRegistry()
-    with mock.patch("mlflow.data.dataset_source_registry._dataset_source_registry", wraps=registry):
+    with mock.patch("qcflow.data.dataset_source_registry._dataset_source_registry", wraps=registry):
         yield registry
 
 
 @pytest.fixture
 def dataset_registry():
     registry = DatasetRegistry()
-    with mock.patch("mlflow.data.dataset_registry._dataset_registry", wraps=registry):
+    with mock.patch("qcflow.data.dataset_registry._dataset_registry", wraps=registry):
         yield registry
 
 
@@ -45,10 +45,10 @@ def test_register_constructor_function_performs_validation():
     ) -> Dataset:
         pass
 
-    with pytest.raises(MlflowException, match="Constructor name must start with"):
+    with pytest.raises(QCFlowException, match="Constructor name must start with"):
         registry.register_constructor(bad_name_fn)
 
-    with pytest.raises(MlflowException, match="Constructor name must start with"):
+    with pytest.raises(QCFlowException, match="Constructor name must start with"):
         registry.register_constructor(
             constructor_fn=from_good_function, constructor_name="bad_name"
         )
@@ -58,7 +58,7 @@ def test_register_constructor_function_performs_validation():
     ) -> Dataset:
         pass
 
-    with pytest.raises(MlflowException, match="must define an optional parameter named 'name'"):
+    with pytest.raises(QCFlowException, match="must define an optional parameter named 'name'"):
         registry.register_constructor(from_no_name_fn)
 
     def from_no_digest_fn(
@@ -66,7 +66,7 @@ def test_register_constructor_function_performs_validation():
     ) -> Dataset:
         pass
 
-    with pytest.raises(MlflowException, match="must define an optional parameter named 'digest'"):
+    with pytest.raises(QCFlowException, match="must define an optional parameter named 'digest'"):
         registry.register_constructor(from_no_digest_fn)
 
     def from_bad_return_type_fn(
@@ -76,7 +76,7 @@ def test_register_constructor_function_performs_validation():
     ) -> str:
         pass
 
-    with pytest.raises(MlflowException, match="must have a return type annotation.*Dataset"):
+    with pytest.raises(QCFlowException, match="must have a return type annotation.*Dataset"):
         registry.register_constructor(from_bad_return_type_fn)
 
     def from_no_return_type_fn(
@@ -86,21 +86,21 @@ def test_register_constructor_function_performs_validation():
     ):
         pass
 
-    with pytest.raises(MlflowException, match="must have a return type annotation.*Dataset"):
+    with pytest.raises(QCFlowException, match="must have a return type annotation.*Dataset"):
         registry.register_constructor(from_no_return_type_fn)
 
 
 def test_register_constructor_from_entrypoints_and_call(dataset_registry, tmp_path):
-    """This test requires the package in tests/resources/mlflow-test-plugin to be installed"""
+    """This test requires the package in tests/resources/qcflow-test-plugin to be installed"""
 
-    from mlflow_test_plugin.dummy_dataset import DummyDataset
+    from qcflow_test_plugin.dummy_dataset import DummyDataset
 
     dataset_registry.register_entrypoints()
 
-    dataset = mlflow.data.from_dummy(
+    dataset = qcflow.data.from_dummy(
         data_list=[1, 2, 3],
-        # Use a DummyDatasetSource URI from mlflow_test_plugin.dummy_dataset_source, which
-        # is registered as an entrypoint whenever mlflow-test-plugin is installed
+        # Use a DummyDatasetSource URI from qcflow_test_plugin.dummy_dataset_source, which
+        # is registered as an entrypoint whenever qcflow-test-plugin is installed
         source="dummy:" + str(tmp_path),
         name="dataset_name",
         digest="foo",
@@ -123,7 +123,7 @@ def test_register_constructor_and_call(dataset_registry, dataset_source_registry
     register_constructor(constructor_fn=from_test)
     register_constructor(constructor_name="from_test_2", constructor_fn=from_test)
 
-    dataset1 = mlflow.data.from_test(
+    dataset1 = qcflow.data.from_test(
         data_list=[1, 2, 3],
         # Use a SampleDatasetSourceURI
         source="test:" + str(tmp_path),
@@ -135,7 +135,7 @@ def test_register_constructor_and_call(dataset_registry, dataset_source_registry
     assert dataset1.name == "name1"
     assert dataset1.digest == "digest1"
 
-    dataset2 = mlflow.data.from_test_2(
+    dataset2 = qcflow.data.from_test_2(
         data_list=[4, 5, 6],
         # Use a SampleDatasetSourceURI
         source="test:" + str(tmp_path),

@@ -3,12 +3,12 @@ import math
 import keras
 import numpy as np
 
-import mlflow
-from mlflow.keras.callback import MlflowCallback
-from mlflow.tracking.fluent import flush_async_logging
+import qcflow
+from qcflow.keras.callback import QCFlowCallback
+from qcflow.tracking.fluent import flush_async_logging
 
 
-def test_keras_mlflow_callback_log_every_epoch():
+def test_keras_qcflow_callback_log_every_epoch():
     # Prepare data for a 2-class classification.
     data = np.random.uniform(size=(20, 28, 28, 3))
     label = np.random.randint(2, size=20)
@@ -28,21 +28,21 @@ def test_keras_mlflow_callback_log_every_epoch():
     )
 
     num_epochs = 2
-    with mlflow.start_run() as run:
-        mlflow_callback = MlflowCallback(log_every_epoch=True)
+    with qcflow.start_run() as run:
+        qcflow_callback = QCFlowCallback(log_every_epoch=True)
         model.fit(
             data,
             label,
             validation_data=(data, label),
             batch_size=4,
             epochs=num_epochs,
-            callbacks=[mlflow_callback],
+            callbacks=[qcflow_callback],
         )
     flush_async_logging()
-    client = mlflow.MlflowClient()
-    mlflow_run = client.get_run(run.info.run_id)
-    run_metrics = mlflow_run.data.metrics
-    model_info = mlflow_run.data.params
+    client = qcflow.QCFlowClient()
+    qcflow_run = client.get_run(run.info.run_id)
+    run_metrics = qcflow_run.data.metrics
+    model_info = qcflow_run.data.params
 
     assert "sparse_categorical_accuracy" in run_metrics
     assert model_info["optimizer_name"] == "adam"
@@ -60,7 +60,7 @@ def test_keras_mlflow_callback_log_every_epoch():
     assert len(validation_loss_history) == num_epochs
 
 
-def test_keras_mlflow_callback_log_every_n_steps():
+def test_keras_qcflow_callback_log_every_n_steps():
     # Prepare data for a 2-class classification.
     data = np.random.uniform(size=(20, 28, 28, 3))
     label = np.random.randint(2, size=20)
@@ -81,21 +81,21 @@ def test_keras_mlflow_callback_log_every_n_steps():
 
     log_every_n_steps = 1
     num_epochs = 2
-    with mlflow.start_run() as run:
-        mlflow_callback = MlflowCallback(log_every_epoch=False, log_every_n_steps=log_every_n_steps)
+    with qcflow.start_run() as run:
+        qcflow_callback = QCFlowCallback(log_every_epoch=False, log_every_n_steps=log_every_n_steps)
         model.fit(
             data,
             label,
             validation_data=(data, label),
             batch_size=4,
             epochs=num_epochs,
-            callbacks=[mlflow_callback],
+            callbacks=[qcflow_callback],
         )
     flush_async_logging()
-    client = mlflow.MlflowClient()
-    mlflow_run = client.get_run(run.info.run_id)
-    run_metrics = mlflow_run.data.metrics
-    model_info = mlflow_run.data.params
+    client = qcflow.QCFlowClient()
+    qcflow_run = client.get_run(run.info.run_id)
+    run_metrics = qcflow_run.data.metrics
+    model_info = qcflow_run.data.params
 
     assert "sparse_categorical_accuracy" in run_metrics
     assert model_info["optimizer_name"] == "adam"
@@ -114,4 +114,4 @@ def test_keras_mlflow_callback_log_every_n_steps():
 
 
 def test_old_callback_still_exists():
-    assert mlflow.keras.MLflowCallback is mlflow.keras.MlflowCallback
+    assert qcflow.keras.QCFlowCallback is qcflow.keras.QCFlowCallback

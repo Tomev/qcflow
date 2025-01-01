@@ -3,9 +3,9 @@ import json
 import pandas as pd
 import pytest
 
-from mlflow.data.dataset_source_registry import get_dataset_source_from_json
-from mlflow.data.spark_dataset_source import SparkDatasetSource
-from mlflow.exceptions import MlflowException
+from qcflow.data.dataset_source_registry import get_dataset_source_from_json
+from qcflow.data.spark_dataset_source import SparkDatasetSource
+from qcflow.exceptions import QCFlowException
 
 
 @pytest.fixture(scope="module")
@@ -85,6 +85,6 @@ def test_spark_dataset_source_too_many_inputs(spark_session, tmp_path):
     df_spark.write.mode("overwrite").saveAsTable("temp", path=tmp_path)
 
     with pytest.raises(
-        MlflowException, match='Must specify exactly one of "path", "table_name", or "sql"'
+        QCFlowException, match='Must specify exactly one of "path", "table_name", or "sql"'
     ):
         SparkDatasetSource(path=tmp_path, table_name="temp")

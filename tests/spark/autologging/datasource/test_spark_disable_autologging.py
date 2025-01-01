@@ -1,7 +1,7 @@
 import time
 
-import mlflow
-import mlflow.spark
+import qcflow
+import qcflow.spark
 
 from tests.spark.autologging.utils import (
     _assert_spark_data_logged,
@@ -15,7 +15,7 @@ from tests.spark.autologging.utils import (
 def test_autologging_disabled_logging_datasource_with_different_formats(
     spark_session, format_to_file_path
 ):
-    mlflow.spark.autolog(disable=True)
+    qcflow.spark.autolog(disable=True)
     for data_format, file_path in format_to_file_path.items():
         df = (
             spark_session.read.format(data_format)
@@ -24,18 +24,18 @@ def test_autologging_disabled_logging_datasource_with_different_formats(
             .load(file_path)
         )
 
-        with mlflow.start_run():
-            run_id = mlflow.active_run().info.run_id
+        with qcflow.start_run():
+            run_id = qcflow.active_run().info.run_id
             df.collect()
             time.sleep(1)
-        run = mlflow.get_run(run_id)
+        run = qcflow.get_run(run_id)
         _assert_spark_data_not_logged(run=run)
 
 
 def test_autologging_disabled_logging_with_or_without_active_run(
     spark_session, format_to_file_path
 ):
-    mlflow.spark.autolog(disable=True)
+    qcflow.spark.autolog(disable=True)
     data_format = list(format_to_file_path.keys())[0]
     file_path = format_to_file_path[data_format]
     df = (
@@ -51,25 +51,25 @@ def test_autologging_disabled_logging_with_or_without_active_run(
     df.collect()
 
     # If there was any tag info collected it will be logged here
-    with mlflow.start_run():
-        run_id = mlflow.active_run().info.run_id
+    with qcflow.start_run():
+        run_id = qcflow.active_run().info.run_id
     time.sleep(1)
 
     # Confirm nothing was logged.
-    run = mlflow.get_run(run_id)
+    run = qcflow.get_run(run_id)
     _assert_spark_data_not_logged(run=run)
 
     # Reading data source during an active run
-    with mlflow.start_run():
-        run_id = mlflow.active_run().info.run_id
+    with qcflow.start_run():
+        run_id = qcflow.active_run().info.run_id
         df.collect()
         time.sleep(1)
-    run = mlflow.get_run(run_id)
+    run = qcflow.get_run(run_id)
     _assert_spark_data_not_logged(run=run)
 
 
 def test_autologging_disabled_then_enabled(spark_session, format_to_file_path):
-    mlflow.spark.autolog(disable=True)
+    qcflow.spark.autolog(disable=True)
     data_format = list(format_to_file_path.keys())[0]
     file_path = format_to_file_path[data_format]
     df = (
@@ -79,18 +79,18 @@ def test_autologging_disabled_then_enabled(spark_session, format_to_file_path):
         .load(file_path)
     )
     # Logging is disabled here.
-    with mlflow.start_run():
-        run_id = mlflow.active_run().info.run_id
+    with qcflow.start_run():
+        run_id = qcflow.active_run().info.run_id
         df.collect()
         time.sleep(1)
-    run = mlflow.get_run(run_id)
+    run = qcflow.get_run(run_id)
     _assert_spark_data_not_logged(run=run)
 
     # Logging is enabled here.
-    mlflow.spark.autolog(disable=False)
-    with mlflow.start_run():
-        run_id = mlflow.active_run().info.run_id
+    qcflow.spark.autolog(disable=False)
+    with qcflow.start_run():
+        run_id = qcflow.active_run().info.run_id
         df.filter("number1 > 0").collect()
         time.sleep(1)
-    run = mlflow.get_run(run_id)
+    run = qcflow.get_run(run_id)
     _assert_spark_data_logged(run=run, path=file_path, data_format=data_format)

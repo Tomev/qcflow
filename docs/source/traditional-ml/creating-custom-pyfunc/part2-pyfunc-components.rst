@@ -1,28 +1,28 @@
-Understanding PyFunc in MLflow
+Understanding PyFunc in QCFlow
 ==============================
 
-In the realm of MLflow, while named flavors offer specific functionalities tailored to popular frameworks, there are situations and 
-requirements that fall outside these predefined paths. Enter the custom :py:mod:`pyfunc <mlflow.pyfunc>` (Python function), a universal interface, empowering you to 
-encapsulate models from any framework into an MLflow Model by defining a custom Python function.
+In the realm of QCFlow, while named flavors offer specific functionalities tailored to popular frameworks, there are situations and 
+requirements that fall outside these predefined paths. Enter the custom :py:mod:`pyfunc <qcflow.pyfunc>` (Python function), a universal interface, empowering you to 
+encapsulate models from any framework into an QCFlow Model by defining a custom Python function.
 
-PyFunc versions of models are interacted with in the same way as any other MLflow model type, providing both :py:func:`save_model() <mlflow.pyfunc.save_model>` and
-:py:func:`log_model() <mlflow.pyfunc.log_model>` interfaces in order to create (save) and access (load) the models respectively.
+PyFunc versions of models are interacted with in the same way as any other QCFlow model type, providing both :py:func:`save_model() <qcflow.pyfunc.save_model>` and
+:py:func:`log_model() <qcflow.pyfunc.log_model>` interfaces in order to create (save) and access (load) the models respectively.
 
 Because these custom models contain the ``python_function`` flavor, they can be deployed
-to any of MLflow's supported production environments, such as SageMaker, AzureML, Databricks, Kubernetes, or local REST endpoints.
+to any of QCFlow's supported production environments, such as SageMaker, AzureML, Databricks, Kubernetes, or local REST endpoints.
 
 Why PyFunc?
 -----------
 
-1. **Flexibility**: It offers the freedom to work with any machine learning library or framework, ensuring MLflow's adaptability to a wide range of use cases.
-2. **Unified Interface**: With `pyfunc`, you get a consistent API. Once your model conforms to this interface, you can leverage all of MLflow's deployment tools without worrying about the underlying framework.
+1. **Flexibility**: It offers the freedom to work with any machine learning library or framework, ensuring QCFlow's adaptability to a wide range of use cases.
+2. **Unified Interface**: With `pyfunc`, you get a consistent API. Once your model conforms to this interface, you can leverage all of QCFlow's deployment tools without worrying about the underlying framework.
 3. **Custom Logic**: Beyond just the model, `pyfunc` allows for preprocessing and postprocessing, enhancing the model's deployment capabilities.
 
 Components of PyFunc
 --------------------
 
 1. **Python Function Flavor**: 
-   This is the default model interface for MLflow Python models. It ensures every MLflow Python model can be loaded and interacted with using a consistent API.
+   This is the default model interface for QCFlow Python models. It ensures every QCFlow Python model can be loaded and interacted with using a consistent API.
 
 2. **Filesystem Format**:
    A structured directory that contains all required data, code, and configurations, ensuring the encapsulated model and its dependencies are self-contained and reproducible.
@@ -36,7 +36,7 @@ Components of PyFunc
 The Power of Custom Pyfunc Models
 ---------------------------------
 
-While MLflow's named flavors offer out-of-the-box solutions for many frameworks, they might not cater to every requirement. 
+While QCFlow's named flavors offer out-of-the-box solutions for many frameworks, they might not cater to every requirement. 
 This is where custom `pyfunc` models shine. Whether you're working with a niche framework, need to implement specialized preprocessing, 
 or want to integrate post-inference logic, custom `pyfunc` models provide the tools to do so.
 
@@ -55,7 +55,7 @@ There are numerous scenarios where a custom Pyfunc becomes invaluable:
 
 2. **Unsupported Models**:
 
-   - While MLflow offers a wide range of named flavors for popular frameworks, the machine learning ecosystem is vast. There might be niche or emerging frameworks that aren't yet supported.
+   - While QCFlow offers a wide range of named flavors for popular frameworks, the machine learning ecosystem is vast. There might be niche or emerging frameworks that aren't yet supported.
    - Custom Pyfunc provides a way to encapsulate and manage models from any such unsupported frameworks seamlessly.
 
 3. **Custom Inference Methods**:
@@ -71,7 +71,7 @@ There are numerous scenarios where a custom Pyfunc becomes invaluable:
 Inner workings of Custom Pyfunc
 -------------------------------
 
-Understanding the sequence of events during the `mlflow.pyfunc.load_model()` call is crucial to harnessing the full power of custom Pyfuncs. 
+Understanding the sequence of events during the `qcflow.pyfunc.load_model()` call is crucial to harnessing the full power of custom Pyfuncs. 
 Here's a step-by-step breakdown of the sequence of events that happens when loading a custom pyfunc and how declaring overrides during saving the model 
 are accessed and referenced to control the behavior of the loaded model object.
 
@@ -84,7 +84,7 @@ are accessed and referenced to control the behavior of the loaded model object.
 
 1. **Initiation**:
    
-   - The process starts when `mlflow.pyfunc.load_model()` is called, indicating the intention to load a custom Pyfunc model for use.
+   - The process starts when `qcflow.pyfunc.load_model()` is called, indicating the intention to load a custom Pyfunc model for use.
 
 2. **Model Configuration Retrieval**:
 

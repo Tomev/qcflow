@@ -1,17 +1,17 @@
 Searching and Retrieving Traces
 ===============================
 
-This page describes various ways to search and retrieve traces in MLflow. MLflow provides two methods for this purpose: 
-:py:meth:`MlflowClient.search_traces() <mlflow.client.MlflowClient.search_traces>` and :py:func:`mlflow.search_traces`.
+This page describes various ways to search and retrieve traces in QCFlow. QCFlow provides two methods for this purpose: 
+:py:meth:`QCFlowClient.search_traces() <qcflow.client.QCFlowClient.search_traces>` and :py:func:`qcflow.search_traces`.
 
-- :py:meth:`MlflowClient.search_traces() <mlflow.client.MlflowClient.search_traces>`: This method allows you to filter traces using experiment IDs, 
+- :py:meth:`QCFlowClient.search_traces() <qcflow.client.QCFlowClient.search_traces>`: This method allows you to filter traces using experiment IDs, 
   filter strings, and other parameters.
 
-- :py:func:`mlflow.search_traces`: A higher-level fluent API that returns a pandas DataFrame, with each row representing 
-  a trace. It supports the same filtering capabilities as `MlflowClient.search_traces` and additionally allows you to specify 
+- :py:func:`qcflow.search_traces`: A higher-level fluent API that returns a pandas DataFrame, with each row representing 
+  a trace. It supports the same filtering capabilities as `QCFlowClient.search_traces` and additionally allows you to specify 
   fields to extract from traces. See :ref:`extract_fields` for details. 
 
-The pandas Dataframe returned by the :py:func:`mlflow.search_traces` API consists of the following columns by default:
+The pandas Dataframe returned by the :py:func:`qcflow.search_traces` API consists of the following columns by default:
 
 - request_id: A primary identifier of a trace
 - trace: A trace object.
@@ -37,38 +37,38 @@ First, create several traces using the following code:
 .. code-block:: python
 
     import time
-    import mlflow
-    from mlflow.entities import SpanType
+    import qcflow
+    from qcflow.entities import SpanType
 
 
     # Define methods to be traced
-    @mlflow.trace(span_type=SpanType.TOOL, attributes={"time": "morning"})
+    @qcflow.trace(span_type=SpanType.TOOL, attributes={"time": "morning"})
     def morning_greeting(name: str):
         time.sleep(1)
-        mlflow.update_current_trace(tags={"person": name})
+        qcflow.update_current_trace(tags={"person": name})
         return f"Good morning {name}."
 
 
-    @mlflow.trace(span_type=SpanType.TOOL, attributes={"time": "evening"})
+    @qcflow.trace(span_type=SpanType.TOOL, attributes={"time": "evening"})
     def evening_greeting(name: str):
         time.sleep(1)
-        mlflow.update_current_trace(tags={"person": name})
+        qcflow.update_current_trace(tags={"person": name})
         return f"Good evening {name}."
 
 
-    @mlflow.trace(span_type=SpanType.TOOL)
+    @qcflow.trace(span_type=SpanType.TOOL)
     def goodbye():
         raise Exception("Cannot say goodbye")
 
 
     # Execute the methods within different experiments
-    morning_experiment = mlflow.set_experiment("Morning Experiment")
+    morning_experiment = qcflow.set_experiment("Morning Experiment")
     morning_greeting("Tom")
 
     # Get the timestamp in milliseconds
     morning_time = int(time.time() * 1000)
 
-    evening_experiment = mlflow.set_experiment("Evening Experiment")
+    evening_experiment = qcflow.set_experiment("Evening Experiment")
     experiment_ids = [morning_experiment.experiment_id, evening_experiment.experiment_id]
     evening_greeting("Mary")
     goodbye()
@@ -95,24 +95,24 @@ The code above creates the following traces:
      - ``N/A``
      - ``ERROR``
 
-Then, you can search traces by ``experiment_ids`` using either :py:func:`mlflow.search_traces` or 
-:py:meth:`MlflowClient.search_traces() <mlflow.client.MlflowClient.search_traces>`.
+Then, you can search traces by ``experiment_ids`` using either :py:func:`qcflow.search_traces` or 
+:py:meth:`QCFlowClient.search_traces() <qcflow.client.QCFlowClient.search_traces>`.
 
 .. note::
 
-    The ``experiment_ids`` parameter is **required** for :py:meth:`MlflowClient.search_traces() <mlflow.client.MlflowClient.search_traces>`, 
-    while it is **optional** for :py:func:`mlflow.search_traces` and it defaults to the currently active experiment.
+    The ``experiment_ids`` parameter is **required** for :py:meth:`QCFlowClient.search_traces() <qcflow.client.QCFlowClient.search_traces>`, 
+    while it is **optional** for :py:func:`qcflow.search_traces` and it defaults to the currently active experiment.
 
 .. code-block:: python
 
-    from mlflow import MlflowClient
+    from qcflow import QCFlowClient
 
-    client = MlflowClient()
+    client = QCFlowClient()
 
     client.search_traces(experiment_ids=[morning_experiment.experiment_id])
     # [Trace #1]
 
-    mlflow.search_traces(experiment_ids=[morning_experiment.experiment_id])
+    qcflow.search_traces(experiment_ids=[morning_experiment.experiment_id])
     #     request_id     status          ...    response
     # 0   [trace #1 ID]  TraceStatus.OK  ...    Good morning Tom.
 
@@ -206,14 +206,14 @@ the format ``[attribute name] [ASC or DESC]``.
 Extract Specific Fields
 -----------------------
 
-In addition to the search functionalities mentioned above, the fluent API :py:func:`mlflow.search_traces` enables you 
+In addition to the search functionalities mentioned above, the fluent API :py:func:`qcflow.search_traces` enables you 
 to extract specific fields from traces using the format ``"span_name.[inputs|outputs]"`` or 
 ``"span_name.[inputs|outputs].field_name"``. This feature is useful for generating evaluation datasets or analyzing 
-model performance. Refer to `MLFlow LLM Evaluation <https://mlflow.org/docs/latest/llms/llm-evaluate/index.html>`_ for more details.
+model performance. Refer to `QCFlow LLM Evaluation <https://qcflow.org/docs/latest/llms/llm-evaluate/index.html>`_ for more details.
 
 .. code-block:: python
 
-    traces = mlflow.search_traces(
+    traces = qcflow.search_traces(
         extract_fields=["morning_greeting.inputs", "morning_greeting.outputs"],
         experiment_ids=[morning_experiment.experiment_id],
     )
@@ -227,7 +227,7 @@ The output Pandas DataFrame contains the additional columns for the extracted sp
         request_id                              ...     morning_greeting.inputs        morning_greeting.outputs
     0   053adf2f5f5e4ad68d432e06e254c8a4        ...     {'name': 'Tom'}                'Good morning Tom.'
 
-Lastly, you can convert the pandas DataFrame to the MLflow LLM evaluation dataset format and evaluate your language model.
+Lastly, you can convert the pandas DataFrame to the QCFlow LLM evaluation dataset format and evaluate your language model.
 
 .. code-block:: python
 
@@ -237,7 +237,7 @@ Lastly, you can convert the pandas DataFrame to the MLflow LLM evaluation datase
             "morning_greeting.outputs": "ground_truth",
         }
     )
-    results = mlflow.evaluate(
+    results = qcflow.evaluate(
         model,
         eval_data,
         targets="ground_truth",

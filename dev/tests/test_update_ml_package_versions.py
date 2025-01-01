@@ -52,7 +52,7 @@ def run_test(src, src_expected, mock_responses):
         package_name = re.search(r"https://pypi.python.org/pypi/(.+)/json", url).group(1)
         return mock_responses[package_name]
 
-    versions_yaml = Path("mlflow/ml-package-versions.yml")
+    versions_yaml = Path("qcflow/ml-package-versions.yml")
     versions_yaml.parent.mkdir()
     versions_yaml.write_text(src)
 

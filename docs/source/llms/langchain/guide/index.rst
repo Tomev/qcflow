@@ -1,4 +1,4 @@
-LangChain within MLflow (Experimental)
+LangChain within QCFlow (Experimental)
 ======================================
 
 .. attention::
@@ -7,7 +7,7 @@ LangChain within MLflow (Experimental)
 Overview
 --------
 `LangChain <https://www.langchain.com/>`_ is a Python framework for creating applications powered by language models. It offers unique features for developing context-aware 
-applications that utilize language models for reasoning and generating responses. This integration with MLflow streamlines the development and 
+applications that utilize language models for reasoning and generating responses. This integration with QCFlow streamlines the development and 
 deployment of complex NLP applications.
 
 LangChain's Technical Essence
@@ -27,23 +27,23 @@ Building Chains with LangChain
 - **Advanced Use Cases**:
   - LangChain also supports more complex setups, like Retrieval-Augmented Generation (RAG) chains, which can add context when responding to questions.
 
-Integration with MLflow
+Integration with QCFlow
 -----------------------
 
-- **Simplified Logging and Loading**: MLflow's `langchain` flavor provides functions like `log_model()` and `load_model()`, enabling easy logging and retrieval of LangChain models within the MLflow ecosystem.
-- **Simplified Deployment**: LangChain models logged in MLflow can be interpreted as generic Python functions, simplifying their deployment and use in diverse applications. With dependency management incorporated directly into your logged model, you can deploy your application knowing that the environment that you used to train the model is what will be used to serve it.
-- **Versatile Model Interaction**: The integration allows developers to leverage LangChain's unique features in conjunction with MLflow's robust model tracking and management capabilities.
-- **Autologging**: MLflow's `langchain` flavor provides autologging of LangChain models, which automatically logs artifacts, metrics and models for inference.
+- **Simplified Logging and Loading**: QCFlow's `langchain` flavor provides functions like `log_model()` and `load_model()`, enabling easy logging and retrieval of LangChain models within the QCFlow ecosystem.
+- **Simplified Deployment**: LangChain models logged in QCFlow can be interpreted as generic Python functions, simplifying their deployment and use in diverse applications. With dependency management incorporated directly into your logged model, you can deploy your application knowing that the environment that you used to train the model is what will be used to serve it.
+- **Versatile Model Interaction**: The integration allows developers to leverage LangChain's unique features in conjunction with QCFlow's robust model tracking and management capabilities.
+- **Autologging**: QCFlow's `langchain` flavor provides autologging of LangChain models, which automatically logs artifacts, metrics and models for inference.
 
-The ``langchain`` model flavor enables logging of `LangChain models <https://github.com/hwchase17/langchain>`_ in MLflow format via
-the :py:func:`mlflow.langchain.save_model()` and :py:func:`mlflow.langchain.log_model()` functions. Use of these
-functions also adds the ``python_function`` flavor to the MLflow Models that they produce, allowing the model to be
-interpreted as a generic Python function for inference via :py:func:`mlflow.pyfunc.load_model()`.
+The ``langchain`` model flavor enables logging of `LangChain models <https://github.com/hwchase17/langchain>`_ in QCFlow format via
+the :py:func:`qcflow.langchain.save_model()` and :py:func:`qcflow.langchain.log_model()` functions. Use of these
+functions also adds the ``python_function`` flavor to the QCFlow Models that they produce, allowing the model to be
+interpreted as a generic Python function for inference via :py:func:`qcflow.pyfunc.load_model()`.
 
-You can also use the :py:func:`mlflow.langchain.load_model()` function to load a saved or logged MLflow
+You can also use the :py:func:`qcflow.langchain.load_model()` function to load a saved or logged QCFlow
 Model with the ``langchain`` flavor as a dictionary of the model's attributes.
 
-Basic Example: Logging a LangChain ``LLMChain`` in MLflow
+Basic Example: Logging a LangChain ``LLMChain`` in QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. literalinclude:: ../../../../../examples/langchain/simple_chain.py
@@ -59,13 +59,13 @@ The output of the example is shown below:
 What the Simple LLMChain Example Showcases
 """"""""""""""""""""""""""""""""""""""""""
 
-- **Integration Flexibility**: The example highlights how LangChain's LLMChain, consisting of an OpenAI model and a custom prompt template, can be easily logged in MLflow.
-- **Simplified Model Management**: Through MLflow's `langchain` flavor, the chain is logged, enabling version control, tracking, and easy retrieval.
-- **Ease of Deployment**: The logged LangChain model is loaded using MLflow's `pyfunc` module, illustrating the straightforward deployment process for LangChain models within MLflow.
+- **Integration Flexibility**: The example highlights how LangChain's LLMChain, consisting of an OpenAI model and a custom prompt template, can be easily logged in QCFlow.
+- **Simplified Model Management**: Through QCFlow's `langchain` flavor, the chain is logged, enabling version control, tracking, and easy retrieval.
+- **Ease of Deployment**: The logged LangChain model is loaded using QCFlow's `pyfunc` module, illustrating the straightforward deployment process for LangChain models within QCFlow.
 - **Practical Application**: The final prediction step demonstrates the model's functionality in a real-world scenario, generating a company name based on a given product.
 
 
-Logging a LangChain Agent with MLflow
+Logging a LangChain Agent with QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 What is an Agent?
@@ -108,7 +108,7 @@ Additional Agent Runtimes
 An Example of Logging an LangChain Agent
 """"""""""""""""""""""""""""""""""""""""
 
-This example illustrates the process of logging a LangChain Agent in MLflow, highlighting the integration of LangChain's complex agent functionalities with MLflow's robust model management.
+This example illustrates the process of logging a LangChain Agent in QCFlow, highlighting the integration of LangChain's complex agent functionalities with QCFlow's robust model management.
 
 
 .. literalinclude:: ../../../../../examples/langchain/simple_agent.py
@@ -124,20 +124,20 @@ The output of the example above is shown below:
 What the Simple Agent Example Showcases
 """""""""""""""""""""""""""""""""""""""
 
-- **Complex Agent Logging**: Demonstrates how LangChain's sophisticated agent, which utilizes multiple tools and a language model, can be logged in MLflow.
+- **Complex Agent Logging**: Demonstrates how LangChain's sophisticated agent, which utilizes multiple tools and a language model, can be logged in QCFlow.
 - **Integration of Advanced Tools**: Showcases the use of additional tools like 'serpapi' and 'llm-math' with a LangChain agent, emphasizing the framework's capability to integrate complex functionalities.
 - **Agent Initialization and Usage**: Details the initialization process of a LangChain agent with specific tools and model settings, and how it can be used to perform complex queries.
-- **Efficient Model Management and Deployment**: Illustrates the ease with which complex LangChain agents can be managed and deployed using MLflow, from logging to prediction.
+- **Efficient Model Management and Deployment**: Illustrates the ease with which complex LangChain agents can be managed and deployed using QCFlow, from logging to prediction.
 
 Real-Time Streaming Outputs with LangChain and GenAI LLMs
 ---------------------------------------------------------
 
 .. note::
-  Stream responses via the ``predict_stream`` API are only available in MLflow versions >= 2.12.2. Previous versions of MLflow do not support streaming responses.
+  Stream responses via the ``predict_stream`` API are only available in QCFlow versions >= 2.12.2. Previous versions of QCFlow do not support streaming responses.
 
 Overview of Streaming Output Capabilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-LangChain integration within MLflow enables real-time streaming outputs from various GenAI language models (LLMs) that support such functionality. 
+LangChain integration within QCFlow enables real-time streaming outputs from various GenAI language models (LLMs) that support such functionality. 
 This feature is essential for applications that require immediate, incremental responses, facilitating dynamic interactions such as conversational 
 agents or live content generation.
 
@@ -148,13 +148,13 @@ like OpenAI (e.g., specific versions of ChatGPT), as well as other LLMs from dif
 
 Using ``predict_stream`` for Streaming Outputs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The ``predict_stream`` method within the MLflow pyfunc LangChain flavor is designed to handle synchronous inputs and provide outputs in a streaming manner. This method is particularly 
+The ``predict_stream`` method within the QCFlow pyfunc LangChain flavor is designed to handle synchronous inputs and provide outputs in a streaming manner. This method is particularly 
 useful for maintaining an engaging user experience by delivering parts of the model's response as they become available, rather than waiting for the 
 entire completion of the response generation.
 
 Example Usage
 ^^^^^^^^^^^^^
-The following example demonstrates setting up and using the ``predict_stream`` function with a LangChain model managed in MLflow, highlighting 
+The following example demonstrates setting up and using the ``predict_stream`` function with a LangChain model managed in QCFlow, highlighting 
 the real-time response generation:
 
 .. code-block:: python
@@ -162,7 +162,7 @@ the real-time response generation:
     from langchain.chains import LLMChain
     from langchain.prompts import PromptTemplate
     from langchain_openai import OpenAI
-    import mlflow
+    import qcflow
 
 
     template_instructions = "Provide brief answers to technical questions about {topic} and do not answer non-technical questions."
@@ -172,11 +172,11 @@ the real-time response generation:
     )
     chain = LLMChain(llm=OpenAI(temperature=0.05), prompt=prompt)
 
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(chain, "tech_chain")
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(chain, "tech_chain")
 
-    # Assuming the model is already logged in MLflow and loaded
-    loaded_model = mlflow.pyfunc.load_model(model_uri=model_info.model_uri)
+    # Assuming the model is already logged in QCFlow and loaded
+    loaded_model = qcflow.pyfunc.load_model(model_uri=model_info.model_uri)
 
     # Simulate a single synchronous input
     input_data = "Hello, can you explain streaming outputs?"
@@ -209,14 +209,14 @@ functionality by allowing actions to be triggered during the streaming process, 
     for enhanced_response in response_stream:
         print("Enhanced Streaming Response:", enhanced_response)
 
-These examples and explanations show how developers can utilize the real-time streaming output capabilities of LangChain models within MLflow, 
+These examples and explanations show how developers can utilize the real-time streaming output capabilities of LangChain models within QCFlow, 
 enabling the creation of highly responsive and interactive applications.
 
 
-Enhanced Management of RetrievalQA Chains with MLflow
+Enhanced Management of RetrievalQA Chains with QCFlow
 -----------------------------------------------------
 
-LangChain's integration with MLflow introduces a more efficient way to manage and utilize the ``RetrievalQA`` chains, a key aspect of LangChain's capabilities.
+LangChain's integration with QCFlow introduces a more efficient way to manage and utilize the ``RetrievalQA`` chains, a key aspect of LangChain's capabilities.
 These chains adeptly combine data retrieval with question-answering processes, leveraging the strength of language models.
 
 Key Insights into RetrievalQA Chains
@@ -243,15 +243,15 @@ Detailed Overview of the RAG Process
 - **Retrievers**: Employ various retrieval techniques, ranging from simple semantic searches to more sophisticated methods like the Parent Document Retriever and
   Ensemble Retriever.
 
-Clarifying Vector Database Management with MLflow
+Clarifying Vector Database Management with QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - **Traditional LangChain Serialization**: LangChain typically requires manual management for the serialization of retriever objects, including handling of the vector database.
 
-- **MLflow's Simplification**: The ``langchain`` flavor in MLflow substantially simplifies this process. It automates serialization, managing the contents of 
+- **QCFlow's Simplification**: The ``langchain`` flavor in QCFlow substantially simplifies this process. It automates serialization, managing the contents of 
   the ``persist_dir`` and the pickling of the ``loader_fn`` function.
 
-Key MLflow Components and VectorDB Logging
+Key QCFlow Components and VectorDB Logging
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. **persist_dir**: The directory where the retriever object, including the vector database, is stored.
@@ -261,11 +261,11 @@ Key MLflow Components and VectorDB Logging
 Important Considerations
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-- **VectorDB Logging**: MLflow, through its ``langchain`` flavor, does manage the vector database as part of the retriever object. However, the vector 
-  database itself is not explicitly logged as a separate entity in MLflow.
+- **VectorDB Logging**: QCFlow, through its ``langchain`` flavor, does manage the vector database as part of the retriever object. However, the vector 
+  database itself is not explicitly logged as a separate entity in QCFlow.
 
 - **Runtime VectorDB Maintenance**: It's essential to maintain consistency in the vector database between the training and runtime environments. 
-  While MLflow manages the serialization of the retriever object, ensuring that the same vector database is accessible during runtime remains crucial 
+  While QCFlow manages the serialization of the retriever object, ensuring that the same vector database is accessible during runtime remains crucial 
   for consistent performance.
 
 
@@ -285,17 +285,17 @@ The output of the example above is shown below:
 
 .. _log-retriever-chain:
 
-Logging and Evaluating a LangChain Retriever in MLflow
+Logging and Evaluating a LangChain Retriever in QCFlow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `langchain` flavor in MLflow extends its functionalities to include the logging and individual evaluation of retriever objects. This capability is particularly valuable for assessing the quality of documents retrieved by a retriever without needing to process them through a large language model (LLM).
+The `langchain` flavor in QCFlow extends its functionalities to include the logging and individual evaluation of retriever objects. This capability is particularly valuable for assessing the quality of documents retrieved by a retriever without needing to process them through a large language model (LLM).
 
 Purpose of Logging Individual Retrievers
 """"""""""""""""""""""""""""""""""""""""
 - **Independent Evaluation**: Allows for the assessment of a retriever's performance in fetching relevant documents, independent of their subsequent use in LLMs.
 - **Quality Assurance**: Facilitates the evaluation of the retriever's effectiveness in sourcing accurate and contextually appropriate documents.
 
-Requirements for Logging Retrievers in MLflow
+Requirements for Logging Retrievers in QCFlow
 """""""""""""""""""""""""""""""""""""""""""""
 - **persist_dir**: Specifies where the retriever object is stored.
 - **loader_fn**: Details the function used to load the retriever object from its storage location.
@@ -326,7 +326,7 @@ The output of the example above is shown below:
         ]
     ]
 
-MLflow Langchain Autologging
+QCFlow Langchain Autologging
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Please refer to the `MLflow Langchain Autologging <../autologging.html>`_ documentation for more details on how to enable autologging for Langchain models.
+Please refer to the `QCFlow Langchain Autologging <../autologging.html>`_ documentation for more details on how to enable autologging for Langchain models.

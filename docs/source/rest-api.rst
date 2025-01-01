@@ -6,13 +6,13 @@ REST API
 ========
 
 
-The MLflow REST API allows you to create, list, and get experiments and runs, and log parameters, metrics, and artifacts.
-The API is hosted under the ``/api`` route on the MLflow tracking server. For example, to search for
+The QCFlow REST API allows you to create, list, and get experiments and runs, and log parameters, metrics, and artifacts.
+The API is hosted under the ``/api`` route on the QCFlow tracking server. For example, to search for
 experiments on a tracking server hosted at ``http://localhost:5000``, make a POST request to
-``http://localhost:5000/api/2.0/mlflow/experiments/search``.
+``http://localhost:5000/api/2.0/qcflow/experiments/search``.
 
 .. important::
-    The MLflow REST API requires content type ``application/json`` for all POST requests.
+    The QCFlow REST API requires content type ``application/json`` for all POST requests.
 
 .. contents:: Table of Contents
     :local:
@@ -21,7 +21,7 @@ experiments on a tracking server hosted at ``http://localhost:5000``, make a POS
 ===========================
 
 
-.. _mlflowMlflowServicecreateExperiment:
+.. _qcflowQCFlowServicecreateExperiment:
 
 Create Experiment
 =================
@@ -30,7 +30,7 @@ Create Experiment
 +-----------------------------------+-------------+
 |             Endpoint              | HTTP Method |
 +===================================+=============+
-| ``2.0/mlflow/experiments/create`` | ``POST``    |
+| ``2.0/qcflow/experiments/create`` | ``POST``    |
 +-----------------------------------+-------------+
 
 Create an experiment with a name. Returns the ID of the newly created experiment.
@@ -43,7 +43,7 @@ Throws ``RESOURCE_ALREADY_EXISTS`` if a experiment with the given name exists.
 
 
 
-.. _mlflowCreateExperiment:
+.. _qcflowCreateExperiment:
 
 Request Structure
 -----------------
@@ -63,13 +63,13 @@ Request Structure
 | artifact_location | ``STRING``                             | Location where all artifacts for the experiment are stored.                                    |
 |                   |                                        | If not provided, the remote server will select an appropriate default.                         |
 +-------------------+----------------------------------------+------------------------------------------------------------------------------------------------+
-| tags              | An array of :ref:`mlflowexperimenttag` | A collection of tags to set on the experiment. Maximum tag size and number of tags per request |
+| tags              | An array of :ref:`qcflowexperimenttag` | A collection of tags to set on the experiment. Maximum tag size and number of tags per request |
 |                   |                                        | depends on the storage backend. All storage backends are guaranteed to support tag keys up     |
 |                   |                                        | to 250 bytes in size and tag values up to 5000 bytes in size. All storage backends are also    |
 |                   |                                        | guaranteed to support up to 20 tags per request.                                               |
 +-------------------+----------------------------------------+------------------------------------------------------------------------------------------------+
 
-.. _mlflowCreateExperimentResponse:
+.. _qcflowCreateExperimentResponse:
 
 Response Structure
 ------------------
@@ -89,7 +89,7 @@ Response Structure
 
 
 
-.. _mlflowMlflowServicesearchExperiments:
+.. _qcflowQCFlowServicesearchExperiments:
 
 Search Experiments
 ==================
@@ -98,7 +98,7 @@ Search Experiments
 +-----------------------------------+-------------+
 |             Endpoint              | HTTP Method |
 +===================================+=============+
-| ``2.0/mlflow/experiments/search`` | ``POST``    |
+| ``2.0/qcflow/experiments/search`` | ``POST``    |
 +-----------------------------------+-------------+
 
 
@@ -106,7 +106,7 @@ Search Experiments
 
 
 
-.. _mlflowSearchExperiments:
+.. _qcflowSearchExperiments:
 
 Request Structure
 -----------------
@@ -144,11 +144,11 @@ Request Structure
 |             |                        | with an optional "DESC" or "ASC" annotation, where "ASC" is the default.                   |
 |             |                        | Tiebreaks are done by experiment id DESC.                                                  |
 +-------------+------------------------+--------------------------------------------------------------------------------------------+
-| view_type   | :ref:`mlflowviewtype`  | Qualifier for type of experiments to be returned.                                          |
+| view_type   | :ref:`qcflowviewtype`  | Qualifier for type of experiments to be returned.                                          |
 |             |                        | If unspecified, return only active experiments.                                            |
 +-------------+------------------------+--------------------------------------------------------------------------------------------+
 
-.. _mlflowSearchExperimentsResponse:
+.. _qcflowSearchExperimentsResponse:
 
 Response Structure
 ------------------
@@ -161,7 +161,7 @@ Response Structure
 +-----------------+-------------------------------------+----------------------------------------------------------------------------+
 |   Field Name    |                Type                 |                                Description                                 |
 +=================+=====================================+============================================================================+
-| experiments     | An array of :ref:`mlflowexperiment` | Experiments that match the search criteria                                 |
+| experiments     | An array of :ref:`qcflowexperiment` | Experiments that match the search criteria                                 |
 +-----------------+-------------------------------------+----------------------------------------------------------------------------+
 | next_page_token | ``STRING``                          | Token that can be used to retrieve the next page of experiments.           |
 |                 |                                     | An empty token means that no more experiments are available for retrieval. |
@@ -171,7 +171,7 @@ Response Structure
 
 
 
-.. _mlflowMlflowServicegetExperiment:
+.. _qcflowQCFlowServicegetExperiment:
 
 Get Experiment
 ==============
@@ -180,7 +180,7 @@ Get Experiment
 +--------------------------------+-------------+
 |            Endpoint            | HTTP Method |
 +================================+=============+
-| ``2.0/mlflow/experiments/get`` | ``GET``     |
+| ``2.0/qcflow/experiments/get`` | ``GET``     |
 +--------------------------------+-------------+
 
 Get metadata for an experiment. This method works on deleted experiments.
@@ -188,7 +188,7 @@ Get metadata for an experiment. This method works on deleted experiments.
 
 
 
-.. _mlflowGetExperiment:
+.. _qcflowGetExperiment:
 
 Request Structure
 -----------------
@@ -206,7 +206,7 @@ Request Structure
 |               |            |                                  |
 +---------------+------------+----------------------------------+
 
-.. _mlflowGetExperimentResponse:
+.. _qcflowGetExperimentResponse:
 
 Response Structure
 ------------------
@@ -219,14 +219,14 @@ Response Structure
 +------------+-------------------------+---------------------+
 | Field Name |          Type           |     Description     |
 +============+=========================+=====================+
-| experiment | :ref:`mlflowexperiment` | Experiment details. |
+| experiment | :ref:`qcflowexperiment` | Experiment details. |
 +------------+-------------------------+---------------------+
 
 ===========================
 
 
 
-.. _mlflowMlflowServicegetExperimentByName:
+.. _qcflowQCFlowServicegetExperimentByName:
 
 Get Experiment By Name
 ======================
@@ -235,7 +235,7 @@ Get Experiment By Name
 +----------------------------------------+-------------+
 |                Endpoint                | HTTP Method |
 +========================================+=============+
-| ``2.0/mlflow/experiments/get-by-name`` | ``GET``     |
+| ``2.0/qcflow/experiments/get-by-name`` | ``GET``     |
 +----------------------------------------+-------------+
 
 Get metadata for an experiment.
@@ -249,7 +249,7 @@ Throws ``RESOURCE_DOES_NOT_EXIST`` if no experiment with the specified name exis
 
 
 
-.. _mlflowGetExperimentByName:
+.. _qcflowGetExperimentByName:
 
 Request Structure
 -----------------
@@ -267,7 +267,7 @@ Request Structure
 |                 |            |                                    |
 +-----------------+------------+------------------------------------+
 
-.. _mlflowGetExperimentByNameResponse:
+.. _qcflowGetExperimentByNameResponse:
 
 Response Structure
 ------------------
@@ -280,14 +280,14 @@ Response Structure
 +------------+-------------------------+---------------------+
 | Field Name |          Type           |     Description     |
 +============+=========================+=====================+
-| experiment | :ref:`mlflowexperiment` | Experiment details. |
+| experiment | :ref:`qcflowexperiment` | Experiment details. |
 +------------+-------------------------+---------------------+
 
 ===========================
 
 
 
-.. _mlflowMlflowServicedeleteExperiment:
+.. _qcflowQCFlowServicedeleteExperiment:
 
 Delete Experiment
 =================
@@ -296,7 +296,7 @@ Delete Experiment
 +-----------------------------------+-------------+
 |             Endpoint              | HTTP Method |
 +===================================+=============+
-| ``2.0/mlflow/experiments/delete`` | ``POST``    |
+| ``2.0/qcflow/experiments/delete`` | ``POST``    |
 +-----------------------------------+-------------+
 
 Mark an experiment and associated metadata, runs, metrics, params, and tags for deletion.
@@ -305,7 +305,7 @@ If the experiment uses FileStore, artifacts associated with experiment are also 
 
 
 
-.. _mlflowDeleteExperiment:
+.. _qcflowDeleteExperiment:
 
 Request Structure
 -----------------
@@ -327,7 +327,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicerestoreExperiment:
+.. _qcflowQCFlowServicerestoreExperiment:
 
 Restore Experiment
 ==================
@@ -336,7 +336,7 @@ Restore Experiment
 +------------------------------------+-------------+
 |              Endpoint              | HTTP Method |
 +====================================+=============+
-| ``2.0/mlflow/experiments/restore`` | ``POST``    |
+| ``2.0/qcflow/experiments/restore`` | ``POST``    |
 +------------------------------------+-------------+
 
 Restore an experiment marked for deletion. This also restores
@@ -348,7 +348,7 @@ Throws ``RESOURCE_DOES_NOT_EXIST`` if experiment was never created or was perman
 
 
 
-.. _mlflowRestoreExperiment:
+.. _qcflowRestoreExperiment:
 
 Request Structure
 -----------------
@@ -370,7 +370,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServiceupdateExperiment:
+.. _qcflowQCFlowServiceupdateExperiment:
 
 Update Experiment
 =================
@@ -379,7 +379,7 @@ Update Experiment
 +-----------------------------------+-------------+
 |             Endpoint              | HTTP Method |
 +===================================+=============+
-| ``2.0/mlflow/experiments/update`` | ``POST``    |
+| ``2.0/qcflow/experiments/update`` | ``POST``    |
 +-----------------------------------+-------------+
 
 Update experiment metadata.
@@ -387,7 +387,7 @@ Update experiment metadata.
 
 
 
-.. _mlflowUpdateExperiment:
+.. _qcflowUpdateExperiment:
 
 Request Structure
 -----------------
@@ -411,7 +411,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicecreateRun:
+.. _qcflowQCFlowServicecreateRun:
 
 Create Run
 ==========
@@ -420,17 +420,17 @@ Create Run
 +----------------------------+-------------+
 |          Endpoint          | HTTP Method |
 +============================+=============+
-| ``2.0/mlflow/runs/create`` | ``POST``    |
+| ``2.0/qcflow/runs/create`` | ``POST``    |
 +----------------------------+-------------+
 
 Create a new run within an experiment. A run is usually a single execution of a
-machine learning or data ETL pipeline. MLflow uses runs to track :ref:`mlflowParam`,
-:ref:`mlflowMetric`, and :ref:`mlflowRunTag` associated with a single execution.
+machine learning or data ETL pipeline. QCFlow uses runs to track :ref:`qcflowParam`,
+:ref:`qcflowMetric`, and :ref:`qcflowRunTag` associated with a single execution.
 
 
 
 
-.. _mlflowCreateRun:
+.. _qcflowCreateRun:
 
 Request Structure
 -----------------
@@ -446,17 +446,17 @@ Request Structure
 | experiment_id | ``STRING``                      | ID of the associated experiment.                                           |
 +---------------+---------------------------------+----------------------------------------------------------------------------+
 | user_id       | ``STRING``                      | ID of the user executing the run.                                          |
-|               |                                 | This field is deprecated as of MLflow 1.0, and will be removed in a future |
-|               |                                 | MLflow release. Use 'mlflow.user' tag instead.                             |
+|               |                                 | This field is deprecated as of QCFlow 1.0, and will be removed in a future |
+|               |                                 | QCFlow release. Use 'qcflow.user' tag instead.                             |
 +---------------+---------------------------------+----------------------------------------------------------------------------+
 | run_name      | ``STRING``                      | Name of the run.                                                           |
 +---------------+---------------------------------+----------------------------------------------------------------------------+
 | start_time    | ``INT64``                       | Unix timestamp in milliseconds of when the run started.                    |
 +---------------+---------------------------------+----------------------------------------------------------------------------+
-| tags          | An array of :ref:`mlflowruntag` | Additional metadata for run.                                               |
+| tags          | An array of :ref:`qcflowruntag` | Additional metadata for run.                                               |
 +---------------+---------------------------------+----------------------------------------------------------------------------+
 
-.. _mlflowCreateRunResponse:
+.. _qcflowCreateRunResponse:
 
 Response Structure
 ------------------
@@ -469,14 +469,14 @@ Response Structure
 +------------+------------------+------------------------+
 | Field Name |       Type       |      Description       |
 +============+==================+========================+
-| run        | :ref:`mlflowrun` | The newly created run. |
+| run        | :ref:`qcflowrun` | The newly created run. |
 +------------+------------------+------------------------+
 
 ===========================
 
 
 
-.. _mlflowMlflowServicedeleteRun:
+.. _qcflowQCFlowServicedeleteRun:
 
 Delete Run
 ==========
@@ -485,7 +485,7 @@ Delete Run
 +----------------------------+-------------+
 |          Endpoint          | HTTP Method |
 +============================+=============+
-| ``2.0/mlflow/runs/delete`` | ``POST``    |
+| ``2.0/qcflow/runs/delete`` | ``POST``    |
 +----------------------------+-------------+
 
 Mark a run for deletion.
@@ -493,7 +493,7 @@ Mark a run for deletion.
 
 
 
-.. _mlflowDeleteRun:
+.. _qcflowDeleteRun:
 
 Request Structure
 -----------------
@@ -515,7 +515,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicerestoreRun:
+.. _qcflowQCFlowServicerestoreRun:
 
 Restore Run
 ===========
@@ -524,7 +524,7 @@ Restore Run
 +-----------------------------+-------------+
 |          Endpoint           | HTTP Method |
 +=============================+=============+
-| ``2.0/mlflow/runs/restore`` | ``POST``    |
+| ``2.0/qcflow/runs/restore`` | ``POST``    |
 +-----------------------------+-------------+
 
 Restore a deleted run.
@@ -532,7 +532,7 @@ Restore a deleted run.
 
 
 
-.. _mlflowRestoreRun:
+.. _qcflowRestoreRun:
 
 Request Structure
 -----------------
@@ -554,7 +554,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicegetRun:
+.. _qcflowQCFlowServicegetRun:
 
 Get Run
 =======
@@ -563,7 +563,7 @@ Get Run
 +-------------------------+-------------+
 |        Endpoint         | HTTP Method |
 +=========================+=============+
-| ``2.0/mlflow/runs/get`` | ``GET``     |
+| ``2.0/qcflow/runs/get`` | ``GET``     |
 +-------------------------+-------------+
 
 Get metadata, metrics, params, and tags for a run. In the case where multiple metrics
@@ -573,7 +573,7 @@ If there are multiple values with the latest timestamp, return the maximum of th
 
 
 
-.. _mlflowGetRun:
+.. _qcflowGetRun:
 
 Request Structure
 -----------------
@@ -589,10 +589,10 @@ Request Structure
 | run_id     | ``STRING`` | ID of the run to fetch. Must be provided.                                |
 +------------+------------+--------------------------------------------------------------------------+
 | run_uuid   | ``STRING`` | [Deprecated, use run_id instead] ID of the run to fetch. This field will |
-|            |            | be removed in a future MLflow version.                                   |
+|            |            | be removed in a future QCFlow version.                                   |
 +------------+------------+--------------------------------------------------------------------------+
 
-.. _mlflowGetRunResponse:
+.. _qcflowGetRunResponse:
 
 Response Structure
 ------------------
@@ -605,14 +605,14 @@ Response Structure
 +------------+------------------+----------------------------------------------------------------------------+
 | Field Name |       Type       |                                Description                                 |
 +============+==================+============================================================================+
-| run        | :ref:`mlflowrun` | Run metadata (name, start time, etc) and data (metrics, params, and tags). |
+| run        | :ref:`qcflowrun` | Run metadata (name, start time, etc) and data (metrics, params, and tags). |
 +------------+------------------+----------------------------------------------------------------------------+
 
 ===========================
 
 
 
-.. _mlflowMlflowServicelogMetric:
+.. _qcflowQCFlowServicelogMetric:
 
 Log Metric
 ==========
@@ -621,7 +621,7 @@ Log Metric
 +--------------------------------+-------------+
 |            Endpoint            | HTTP Method |
 +================================+=============+
-| ``2.0/mlflow/runs/log-metric`` | ``POST``    |
+| ``2.0/qcflow/runs/log-metric`` | ``POST``    |
 +--------------------------------+-------------+
 
 Log a metric for a run. A metric is a key-value pair (string key, float value) with an
@@ -631,7 +631,7 @@ A metric can be logged multiple times.
 
 
 
-.. _mlflowLogMetric:
+.. _qcflowLogMetric:
 
 Request Structure
 -----------------
@@ -647,7 +647,7 @@ Request Structure
 | run_id     | ``STRING`` | ID of the run under which to log the metric. Must be provided.                                |
 +------------+------------+-----------------------------------------------------------------------------------------------+
 | run_uuid   | ``STRING`` | [Deprecated, use run_id instead] ID of the run under which to log the metric. This field will |
-|            |            | be removed in a future MLflow version.                                                        |
+|            |            | be removed in a future QCFlow version.                                                        |
 +------------+------------+-----------------------------------------------------------------------------------------------+
 | key        | ``STRING`` | Name of the metric.                                                                           |
 |            |            | This field is required.                                                                       |
@@ -668,7 +668,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicelogBatch:
+.. _qcflowQCFlowServicelogBatch:
 
 Log Batch
 =========
@@ -677,7 +677,7 @@ Log Batch
 +-------------------------------+-------------+
 |           Endpoint            | HTTP Method |
 +===============================+=============+
-| ``2.0/mlflow/runs/log-batch`` | ``POST``    |
+| ``2.0/qcflow/runs/log-batch`` | ``POST``    |
 +-------------------------------+-------------+
 
 Log a batch of metrics, params, and tags for a run.
@@ -732,7 +732,7 @@ to metric, param, and tag keys and values:
 
 
 
-.. _mlflowLogBatch:
+.. _qcflowLogBatch:
 
 Request Structure
 -----------------
@@ -747,13 +747,13 @@ Request Structure
 +============+=================================+=================================================================================+
 | run_id     | ``STRING``                      | ID of the run to log under                                                      |
 +------------+---------------------------------+---------------------------------------------------------------------------------+
-| metrics    | An array of :ref:`mlflowmetric` | Metrics to log. A single request can contain up to 1000 metrics, and up to 1000 |
+| metrics    | An array of :ref:`qcflowmetric` | Metrics to log. A single request can contain up to 1000 metrics, and up to 1000 |
 |            |                                 | metrics, params, and tags in total.                                             |
 +------------+---------------------------------+---------------------------------------------------------------------------------+
-| params     | An array of :ref:`mlflowparam`  | Params to log. A single request can contain up to 100 params, and up to 1000    |
+| params     | An array of :ref:`qcflowparam`  | Params to log. A single request can contain up to 100 params, and up to 1000    |
 |            |                                 | metrics, params, and tags in total.                                             |
 +------------+---------------------------------+---------------------------------------------------------------------------------+
-| tags       | An array of :ref:`mlflowruntag` | Tags to log. A single request can contain up to 100 tags, and up to 1000        |
+| tags       | An array of :ref:`qcflowruntag` | Tags to log. A single request can contain up to 100 tags, and up to 1000        |
 |            |                                 | metrics, params, and tags in total.                                             |
 +------------+---------------------------------+---------------------------------------------------------------------------------+
 
@@ -761,7 +761,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicelogModel:
+.. _qcflowQCFlowServicelogModel:
 
 Log Model
 =========
@@ -770,7 +770,7 @@ Log Model
 +-------------------------------+-------------+
 |           Endpoint            | HTTP Method |
 +===============================+=============+
-| ``2.0/mlflow/runs/log-model`` | ``POST``    |
+| ``2.0/qcflow/runs/log-model`` | ``POST``    |
 +-------------------------------+-------------+
 
 .. note::
@@ -779,7 +779,7 @@ Log Model
 
 
 
-.. _mlflowLogModel:
+.. _qcflowLogModel:
 
 Request Structure
 -----------------
@@ -801,7 +801,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicelogInputs:
+.. _qcflowQCFlowServicelogInputs:
 
 Log Inputs
 ==========
@@ -810,7 +810,7 @@ Log Inputs
 +--------------------------------+-------------+
 |            Endpoint            | HTTP Method |
 +================================+=============+
-| ``2.0/mlflow/runs/log-inputs`` | ``POST``    |
+| ``2.0/qcflow/runs/log-inputs`` | ``POST``    |
 +--------------------------------+-------------+
 
 .. note::
@@ -819,7 +819,7 @@ Log Inputs
 
 
 
-.. _mlflowLogInputs:
+.. _qcflowLogInputs:
 
 Request Structure
 -----------------
@@ -837,14 +837,14 @@ Request Structure
 |            |                                       | This field is required.    |
 |            |                                       |                            |
 +------------+---------------------------------------+----------------------------+
-| datasets   | An array of :ref:`mlflowdatasetinput` | Dataset inputs             |
+| datasets   | An array of :ref:`qcflowdatasetinput` | Dataset inputs             |
 +------------+---------------------------------------+----------------------------+
 
 ===========================
 
 
 
-.. _mlflowMlflowServicesetExperimentTag:
+.. _qcflowQCFlowServicesetExperimentTag:
 
 Set Experiment Tag
 ==================
@@ -853,7 +853,7 @@ Set Experiment Tag
 +-----------------------------------------------+-------------+
 |                   Endpoint                    | HTTP Method |
 +===============================================+=============+
-| ``2.0/mlflow/experiments/set-experiment-tag`` | ``POST``    |
+| ``2.0/qcflow/experiments/set-experiment-tag`` | ``POST``    |
 +-----------------------------------------------+-------------+
 
 Set a tag on an experiment. Experiment tags are metadata that can be updated.
@@ -861,7 +861,7 @@ Set a tag on an experiment. Experiment tags are metadata that can be updated.
 
 
 
-.. _mlflowSetExperimentTag:
+.. _qcflowSetExperimentTag:
 
 Request Structure
 -----------------
@@ -893,7 +893,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicesetTag:
+.. _qcflowQCFlowServicesetTag:
 
 Set Tag
 =======
@@ -902,7 +902,7 @@ Set Tag
 +-----------------------------+-------------+
 |          Endpoint           | HTTP Method |
 +=============================+=============+
-| ``2.0/mlflow/runs/set-tag`` | ``POST``    |
+| ``2.0/qcflow/runs/set-tag`` | ``POST``    |
 +-----------------------------+-------------+
 
 Set a tag on a run. Tags are run metadata that can be updated during a run and after
@@ -911,7 +911,7 @@ a run completes.
 
 
 
-.. _mlflowSetTag:
+.. _qcflowSetTag:
 
 Request Structure
 -----------------
@@ -927,7 +927,7 @@ Request Structure
 | run_id     | ``STRING`` | ID of the run under which to log the tag. Must be provided.                                |
 +------------+------------+--------------------------------------------------------------------------------------------+
 | run_uuid   | ``STRING`` | [Deprecated, use run_id instead] ID of the run under which to log the tag. This field will |
-|            |            | be removed in a future MLflow version.                                                     |
+|            |            | be removed in a future QCFlow version.                                                     |
 +------------+------------+--------------------------------------------------------------------------------------------+
 | key        | ``STRING`` | Name of the tag. Maximum size depends on storage backend.                                  |
 |            |            | All storage backends are guaranteed to support key values up to 250 bytes in size.         |
@@ -944,7 +944,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicedeleteTag:
+.. _qcflowQCFlowServicedeleteTag:
 
 Delete Tag
 ==========
@@ -953,7 +953,7 @@ Delete Tag
 +--------------------------------+-------------+
 |            Endpoint            | HTTP Method |
 +================================+=============+
-| ``2.0/mlflow/runs/delete-tag`` | ``POST``    |
+| ``2.0/qcflow/runs/delete-tag`` | ``POST``    |
 +--------------------------------+-------------+
 
 Delete a tag on a run. Tags are run metadata that can be updated during a run and after
@@ -962,7 +962,7 @@ a run completes.
 
 
 
-.. _mlflowDeleteTag:
+.. _qcflowDeleteTag:
 
 Request Structure
 -----------------
@@ -988,7 +988,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicelogParam:
+.. _qcflowQCFlowServicelogParam:
 
 Log Param
 =========
@@ -997,7 +997,7 @@ Log Param
 +-----------------------------------+-------------+
 |             Endpoint              | HTTP Method |
 +===================================+=============+
-| ``2.0/mlflow/runs/log-parameter`` | ``POST``    |
+| ``2.0/qcflow/runs/log-parameter`` | ``POST``    |
 +-----------------------------------+-------------+
 
 Log a param used for a run. A param is a key-value pair (string key,
@@ -1007,7 +1007,7 @@ constant dates and values used in an ETL pipeline. A param can be logged only on
 
 
 
-.. _mlflowLogParam:
+.. _qcflowLogParam:
 
 Request Structure
 -----------------
@@ -1023,7 +1023,7 @@ Request Structure
 | run_id     | ``STRING`` | ID of the run under which to log the param. Must be provided.                                |
 +------------+------------+----------------------------------------------------------------------------------------------+
 | run_uuid   | ``STRING`` | [Deprecated, use run_id instead] ID of the run under which to log the param. This field will |
-|            |            | be removed in a future MLflow version.                                                       |
+|            |            | be removed in a future QCFlow version.                                                       |
 +------------+------------+----------------------------------------------------------------------------------------------+
 | key        | ``STRING`` | Name of the param. Maximum size is 255 bytes.                                                |
 |            |            | This field is required.                                                                      |
@@ -1038,7 +1038,7 @@ Request Structure
 
 
 
-.. _mlflowMlflowServicegetMetricHistory:
+.. _qcflowQCFlowServicegetMetricHistory:
 
 Get Metric History
 ==================
@@ -1047,7 +1047,7 @@ Get Metric History
 +------------------------------------+-------------+
 |              Endpoint              | HTTP Method |
 +====================================+=============+
-| ``2.0/mlflow/metrics/get-history`` | ``GET``     |
+| ``2.0/qcflow/metrics/get-history`` | ``GET``     |
 +------------------------------------+-------------+
 
 Get a list of all values for the specified metric for a given run.
@@ -1055,7 +1055,7 @@ Get a list of all values for the specified metric for a given run.
 
 
 
-.. _mlflowGetMetricHistory:
+.. _qcflowGetMetricHistory:
 
 Request Structure
 -----------------
@@ -1071,7 +1071,7 @@ Request Structure
 | run_id      | ``STRING`` | ID of the run from which to fetch metric values. Must be provided.                             |
 +-------------+------------+------------------------------------------------------------------------------------------------+
 | run_uuid    | ``STRING`` | [Deprecated, use run_id instead] ID of the run from which to fetch metric values. This field   |
-|             |            | will be removed in a future MLflow version.                                                    |
+|             |            | will be removed in a future QCFlow version.                                                    |
 +-------------+------------+------------------------------------------------------------------------------------------------+
 | metric_key  | ``STRING`` | Name of the metric.                                                                            |
 |             |            | This field is required.                                                                        |
@@ -1085,7 +1085,7 @@ Request Structure
 |             |            | metric history values for a given metric within a run are returned in a single response.       |
 +-------------+------------+------------------------------------------------------------------------------------------------+
 
-.. _mlflowGetMetricHistoryResponse:
+.. _qcflowGetMetricHistoryResponse:
 
 Response Structure
 ------------------
@@ -1098,7 +1098,7 @@ Response Structure
 +-----------------+---------------------------------+-------------------------------------------------------------------------------------+
 |   Field Name    |              Type               |                                     Description                                     |
 +=================+=================================+=====================================================================================+
-| metrics         | An array of :ref:`mlflowmetric` | All logged values for this metric.                                                  |
+| metrics         | An array of :ref:`qcflowmetric` | All logged values for this metric.                                                  |
 +-----------------+---------------------------------+-------------------------------------------------------------------------------------+
 | next_page_token | ``STRING``                      | Token that can be used to issue a query for the next page of metric history values. |
 |                 |                                 | A missing token indicates that no additional metrics are available to fetch.        |
@@ -1108,7 +1108,7 @@ Response Structure
 
 
 
-.. _mlflowMlflowServicesearchRuns:
+.. _qcflowQCFlowServicesearchRuns:
 
 Search Runs
 ===========
@@ -1117,16 +1117,16 @@ Search Runs
 +----------------------------+-------------+
 |          Endpoint          | HTTP Method |
 +============================+=============+
-| ``2.0/mlflow/runs/search`` | ``POST``    |
+| ``2.0/qcflow/runs/search`` | ``POST``    |
 +----------------------------+-------------+
 
-Search for runs that satisfy expressions. Search expressions can use :ref:`mlflowMetric` and
-:ref:`mlflowParam` keys.
+Search for runs that satisfy expressions. Search expressions can use :ref:`qcflowMetric` and
+:ref:`qcflowParam` keys.
 
 
 
 
-.. _mlflowSearchRuns:
+.. _qcflowSearchRuns:
 
 Request Structure
 -----------------
@@ -1152,7 +1152,7 @@ Request Structure
 |                |                        |                                                                                                      |
 |                |                        | Supported operators are ``=``, ``!=``, ``>``, ``>=``, ``<``, and ``<=``.                             |
 +----------------+------------------------+------------------------------------------------------------------------------------------------------+
-| run_view_type  | :ref:`mlflowviewtype`  | Whether to display only active, only deleted, or all runs.                                           |
+| run_view_type  | :ref:`qcflowviewtype`  | Whether to display only active, only deleted, or all runs.                                           |
 |                |                        | Defaults to only active runs.                                                                        |
 +----------------+------------------------+------------------------------------------------------------------------------------------------------+
 | max_results    | ``INT32``              | Maximum number of runs desired. If unspecified, defaults to 1000.                                    |
@@ -1169,7 +1169,7 @@ Request Structure
 | page_token     | ``STRING``             |                                                                                                      |
 +----------------+------------------------+------------------------------------------------------------------------------------------------------+
 
-.. _mlflowSearchRunsResponse:
+.. _qcflowSearchRunsResponse:
 
 Response Structure
 ------------------
@@ -1182,7 +1182,7 @@ Response Structure
 +-----------------+------------------------------+--------------------------------------+
 |   Field Name    |             Type             |             Description              |
 +=================+==============================+======================================+
-| runs            | An array of :ref:`mlflowrun` | Runs that match the search criteria. |
+| runs            | An array of :ref:`qcflowrun` | Runs that match the search criteria. |
 +-----------------+------------------------------+--------------------------------------+
 | next_page_token | ``STRING``                   |                                      |
 +-----------------+------------------------------+--------------------------------------+
@@ -1191,7 +1191,7 @@ Response Structure
 
 
 
-.. _mlflowMlflowServicelistArtifacts:
+.. _qcflowQCFlowServicelistArtifacts:
 
 List Artifacts
 ==============
@@ -1200,7 +1200,7 @@ List Artifacts
 +-------------------------------+-------------+
 |           Endpoint            | HTTP Method |
 +===============================+=============+
-| ``2.0/mlflow/artifacts/list`` | ``GET``     |
+| ``2.0/qcflow/artifacts/list`` | ``GET``     |
 +-------------------------------+-------------+
 
 List artifacts for a run. Takes an optional ``artifact_path`` prefix which if specified,
@@ -1209,7 +1209,7 @@ the response contains only artifacts with the specified prefix.
 
 
 
-.. _mlflowListArtifacts:
+.. _qcflowListArtifacts:
 
 Request Structure
 -----------------
@@ -1225,14 +1225,14 @@ Request Structure
 | run_id     | ``STRING`` | ID of the run whose artifacts to list. Must be provided.                                |
 +------------+------------+-----------------------------------------------------------------------------------------+
 | run_uuid   | ``STRING`` | [Deprecated, use run_id instead] ID of the run whose artifacts to list. This field will |
-|            |            | be removed in a future MLflow version.                                                  |
+|            |            | be removed in a future QCFlow version.                                                  |
 +------------+------------+-----------------------------------------------------------------------------------------+
 | path       | ``STRING`` | Filter artifacts matching this path (a relative path from the root artifact directory). |
 +------------+------------+-----------------------------------------------------------------------------------------+
 | page_token | ``STRING`` | Token indicating the page of artifact results to fetch                                  |
 +------------+------------+-----------------------------------------------------------------------------------------+
 
-.. _mlflowListArtifactsResponse:
+.. _qcflowListArtifactsResponse:
 
 Response Structure
 ------------------
@@ -1247,7 +1247,7 @@ Response Structure
 +=================+===================================+======================================================================+
 | root_uri        | ``STRING``                        | Root artifact directory for the run.                                 |
 +-----------------+-----------------------------------+----------------------------------------------------------------------+
-| files           | An array of :ref:`mlflowfileinfo` | File location and metadata for artifacts.                            |
+| files           | An array of :ref:`qcflowfileinfo` | File location and metadata for artifacts.                            |
 +-----------------+-----------------------------------+----------------------------------------------------------------------+
 | next_page_token | ``STRING``                        | Token that can be used to retrieve the next page of artifact results |
 +-----------------+-----------------------------------+----------------------------------------------------------------------+
@@ -1256,7 +1256,7 @@ Response Structure
 
 
 
-.. _mlflowMlflowServiceupdateRun:
+.. _qcflowQCFlowServiceupdateRun:
 
 Update Run
 ==========
@@ -1265,7 +1265,7 @@ Update Run
 +----------------------------+-------------+
 |          Endpoint          | HTTP Method |
 +============================+=============+
-| ``2.0/mlflow/runs/update`` | ``POST``    |
+| ``2.0/qcflow/runs/update`` | ``POST``    |
 +----------------------------+-------------+
 
 Update run metadata.
@@ -1273,7 +1273,7 @@ Update run metadata.
 
 
 
-.. _mlflowUpdateRun:
+.. _qcflowUpdateRun:
 
 Request Structure
 -----------------
@@ -1289,16 +1289,16 @@ Request Structure
 | run_id     | ``STRING``             | ID of the run to update. Must be provided.                                 |
 +------------+------------------------+----------------------------------------------------------------------------+
 | run_uuid   | ``STRING``             | [Deprecated, use run_id instead] ID of the run to update.. This field will |
-|            |                        | be removed in a future MLflow version.                                     |
+|            |                        | be removed in a future QCFlow version.                                     |
 +------------+------------------------+----------------------------------------------------------------------------+
-| status     | :ref:`mlflowrunstatus` | Updated status of the run.                                                 |
+| status     | :ref:`qcflowrunstatus` | Updated status of the run.                                                 |
 +------------+------------------------+----------------------------------------------------------------------------+
 | end_time   | ``INT64``              | Unix timestamp in milliseconds of when the run ended.                      |
 +------------+------------------------+----------------------------------------------------------------------------+
 | run_name   | ``STRING``             | Updated name of the run.                                                   |
 +------------+------------------------+----------------------------------------------------------------------------+
 
-.. _mlflowUpdateRunResponse:
+.. _qcflowUpdateRunResponse:
 
 Response Structure
 ------------------
@@ -1311,14 +1311,14 @@ Response Structure
 +------------+----------------------+------------------------------+
 | Field Name |         Type         |         Description          |
 +============+======================+==============================+
-| run_info   | :ref:`mlflowruninfo` | Updated metadata of the run. |
+| run_info   | :ref:`qcflowruninfo` | Updated metadata of the run. |
 +------------+----------------------+------------------------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServicecreateRegisteredModel:
+.. _qcflowModelRegistryServicecreateRegisteredModel:
 
 Create RegisteredModel
 ======================
@@ -1327,7 +1327,7 @@ Create RegisteredModel
 +-----------------------------------------+-------------+
 |                Endpoint                 | HTTP Method |
 +=========================================+=============+
-| ``2.0/mlflow/registered-models/create`` | ``POST``    |
+| ``2.0/qcflow/registered-models/create`` | ``POST``    |
 +-----------------------------------------+-------------+
 
 Throws ``RESOURCE_ALREADY_EXISTS`` if a registered model with the given name exists.
@@ -1335,7 +1335,7 @@ Throws ``RESOURCE_ALREADY_EXISTS`` if a registered model with the given name exi
 
 
 
-.. _mlflowCreateRegisteredModel:
+.. _qcflowCreateRegisteredModel:
 
 Request Structure
 -----------------
@@ -1352,12 +1352,12 @@ Request Structure
 |             |                                             | This field is required.                    |
 |             |                                             |                                            |
 +-------------+---------------------------------------------+--------------------------------------------+
-| tags        | An array of :ref:`mlflowregisteredmodeltag` | Additional metadata for registered model.  |
+| tags        | An array of :ref:`qcflowregisteredmodeltag` | Additional metadata for registered model.  |
 +-------------+---------------------------------------------+--------------------------------------------+
 | description | ``STRING``                                  | Optional description for registered model. |
 +-------------+---------------------------------------------+--------------------------------------------+
 
-.. _mlflowCreateRegisteredModelResponse:
+.. _qcflowCreateRegisteredModelResponse:
 
 Response Structure
 ------------------
@@ -1370,14 +1370,14 @@ Response Structure
 +------------------+------------------------------+-------------+
 |    Field Name    |             Type             | Description |
 +==================+==============================+=============+
-| registered_model | :ref:`mlflowregisteredmodel` |             |
+| registered_model | :ref:`qcflowregisteredmodel` |             |
 +------------------+------------------------------+-------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServicegetRegisteredModel:
+.. _qcflowModelRegistryServicegetRegisteredModel:
 
 Get RegisteredModel
 ===================
@@ -1386,7 +1386,7 @@ Get RegisteredModel
 +--------------------------------------+-------------+
 |               Endpoint               | HTTP Method |
 +======================================+=============+
-| ``2.0/mlflow/registered-models/get`` | ``GET``     |
+| ``2.0/qcflow/registered-models/get`` | ``GET``     |
 +--------------------------------------+-------------+
 
 
@@ -1394,7 +1394,7 @@ Get RegisteredModel
 
 
 
-.. _mlflowGetRegisteredModel:
+.. _qcflowGetRegisteredModel:
 
 Request Structure
 -----------------
@@ -1412,7 +1412,7 @@ Request Structure
 |            |            |                                          |
 +------------+------------+------------------------------------------+
 
-.. _mlflowGetRegisteredModelResponse:
+.. _qcflowGetRegisteredModelResponse:
 
 Response Structure
 ------------------
@@ -1425,14 +1425,14 @@ Response Structure
 +------------------+------------------------------+-------------+
 |    Field Name    |             Type             | Description |
 +==================+==============================+=============+
-| registered_model | :ref:`mlflowregisteredmodel` |             |
+| registered_model | :ref:`qcflowregisteredmodel` |             |
 +------------------+------------------------------+-------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServicerenameRegisteredModel:
+.. _qcflowModelRegistryServicerenameRegisteredModel:
 
 Rename RegisteredModel
 ======================
@@ -1441,7 +1441,7 @@ Rename RegisteredModel
 +-----------------------------------------+-------------+
 |                Endpoint                 | HTTP Method |
 +=========================================+=============+
-| ``2.0/mlflow/registered-models/rename`` | ``POST``    |
+| ``2.0/qcflow/registered-models/rename`` | ``POST``    |
 +-----------------------------------------+-------------+
 
 
@@ -1449,7 +1449,7 @@ Rename RegisteredModel
 
 
 
-.. _mlflowRenameRegisteredModel:
+.. _qcflowRenameRegisteredModel:
 
 Request Structure
 -----------------
@@ -1469,7 +1469,7 @@ Request Structure
 | new_name   | ``STRING`` | If provided, updates the name for this ``registered_model``. |
 +------------+------------+--------------------------------------------------------------+
 
-.. _mlflowRenameRegisteredModelResponse:
+.. _qcflowRenameRegisteredModelResponse:
 
 Response Structure
 ------------------
@@ -1482,14 +1482,14 @@ Response Structure
 +------------------+------------------------------+-------------+
 |    Field Name    |             Type             | Description |
 +==================+==============================+=============+
-| registered_model | :ref:`mlflowregisteredmodel` |             |
+| registered_model | :ref:`qcflowregisteredmodel` |             |
 +------------------+------------------------------+-------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServiceupdateRegisteredModel:
+.. _qcflowModelRegistryServiceupdateRegisteredModel:
 
 Update RegisteredModel
 ======================
@@ -1498,7 +1498,7 @@ Update RegisteredModel
 +-----------------------------------------+-------------+
 |                Endpoint                 | HTTP Method |
 +=========================================+=============+
-| ``2.0/mlflow/registered-models/update`` | ``PATCH``   |
+| ``2.0/qcflow/registered-models/update`` | ``PATCH``   |
 +-----------------------------------------+-------------+
 
 
@@ -1506,7 +1506,7 @@ Update RegisteredModel
 
 
 
-.. _mlflowUpdateRegisteredModel:
+.. _qcflowUpdateRegisteredModel:
 
 Request Structure
 -----------------
@@ -1526,7 +1526,7 @@ Request Structure
 | description | ``STRING`` | If provided, updates the description for this ``registered_model``. |
 +-------------+------------+---------------------------------------------------------------------+
 
-.. _mlflowUpdateRegisteredModelResponse:
+.. _qcflowUpdateRegisteredModelResponse:
 
 Response Structure
 ------------------
@@ -1539,14 +1539,14 @@ Response Structure
 +------------------+------------------------------+-------------+
 |    Field Name    |             Type             | Description |
 +==================+==============================+=============+
-| registered_model | :ref:`mlflowregisteredmodel` |             |
+| registered_model | :ref:`qcflowregisteredmodel` |             |
 +------------------+------------------------------+-------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServicedeleteRegisteredModel:
+.. _qcflowModelRegistryServicedeleteRegisteredModel:
 
 Delete RegisteredModel
 ======================
@@ -1555,7 +1555,7 @@ Delete RegisteredModel
 +-----------------------------------------+-------------+
 |                Endpoint                 | HTTP Method |
 +=========================================+=============+
-| ``2.0/mlflow/registered-models/delete`` | ``DELETE``  |
+| ``2.0/qcflow/registered-models/delete`` | ``DELETE``  |
 +-----------------------------------------+-------------+
 
 
@@ -1563,7 +1563,7 @@ Delete RegisteredModel
 
 
 
-.. _mlflowDeleteRegisteredModel:
+.. _qcflowDeleteRegisteredModel:
 
 Request Structure
 -----------------
@@ -1585,7 +1585,7 @@ Request Structure
 
 
 
-.. _mlflowModelRegistryServicegetLatestVersions:
+.. _qcflowModelRegistryServicegetLatestVersions:
 
 Get Latest ModelVersions
 ========================
@@ -1595,7 +1595,7 @@ Get Latest ModelVersions
 +------------------------------------------------------+-------------+
 |                       Endpoint                       | HTTP Method |
 +======================================================+=============+
-| ``2.0/mlflow/registered-models/get-latest-versions`` | ``GET``     |
+| ``2.0/qcflow/registered-models/get-latest-versions`` | ``GET``     |
 +------------------------------------------------------+-------------+
 
 
@@ -1603,7 +1603,7 @@ Get Latest ModelVersions
 
 
 
-.. _mlflowGetLatestVersions:
+.. _qcflowGetLatestVersions:
 
 Request Structure
 -----------------
@@ -1623,7 +1623,7 @@ Request Structure
 | stages     | An array of ``STRING`` | List of stages.                          |
 +------------+------------------------+------------------------------------------+
 
-.. _mlflowGetLatestVersionsResponse:
+.. _qcflowGetLatestVersionsResponse:
 
 Response Structure
 ------------------
@@ -1636,7 +1636,7 @@ Response Structure
 +----------------+---------------------------------------+--------------------------------------------------------------------------------------------------+
 |   Field Name   |                 Type                  |                                           Description                                            |
 +================+=======================================+==================================================================================================+
-| model_versions | An array of :ref:`mlflowmodelversion` | Latest version models for each requests stage. Only return models with current ``READY`` status. |
+| model_versions | An array of :ref:`qcflowmodelversion` | Latest version models for each requests stage. Only return models with current ``READY`` status. |
 |                |                                       | If no ``stages`` provided, returns the latest version for each stage, including ``"None"``.      |
 +----------------+---------------------------------------+--------------------------------------------------------------------------------------------------+
 
@@ -1644,7 +1644,7 @@ Response Structure
 
 
 
-.. _mlflowModelRegistryServicecreateModelVersion:
+.. _qcflowModelRegistryServicecreateModelVersion:
 
 Create ModelVersion
 ===================
@@ -1653,7 +1653,7 @@ Create ModelVersion
 +--------------------------------------+-------------+
 |               Endpoint               | HTTP Method |
 +======================================+=============+
-| ``2.0/mlflow/model-versions/create`` | ``POST``    |
+| ``2.0/qcflow/model-versions/create`` | ``POST``    |
 +--------------------------------------+-------------+
 
 
@@ -1661,7 +1661,7 @@ Create ModelVersion
 
 
 
-.. _mlflowCreateModelVersion:
+.. _qcflowCreateModelVersion:
 
 Request Structure
 -----------------
@@ -1682,18 +1682,18 @@ Request Structure
 |             |                                          | This field is required.                                                                |
 |             |                                          |                                                                                        |
 +-------------+------------------------------------------+----------------------------------------------------------------------------------------+
-| run_id      | ``STRING``                               | MLflow run ID for correlation, if ``source`` was generated by an experiment run in     |
-|             |                                          | MLflow tracking server                                                                 |
+| run_id      | ``STRING``                               | QCFlow run ID for correlation, if ``source`` was generated by an experiment run in     |
+|             |                                          | QCFlow tracking server                                                                 |
 +-------------+------------------------------------------+----------------------------------------------------------------------------------------+
-| tags        | An array of :ref:`mlflowmodelversiontag` | Additional metadata for model version.                                                 |
+| tags        | An array of :ref:`qcflowmodelversiontag` | Additional metadata for model version.                                                 |
 +-------------+------------------------------------------+----------------------------------------------------------------------------------------+
-| run_link    | ``STRING``                               | MLflow run link - this is the exact link of the run that generated this model version, |
-|             |                                          | potentially hosted at another instance of MLflow.                                      |
+| run_link    | ``STRING``                               | QCFlow run link - this is the exact link of the run that generated this model version, |
+|             |                                          | potentially hosted at another instance of QCFlow.                                      |
 +-------------+------------------------------------------+----------------------------------------------------------------------------------------+
 | description | ``STRING``                               | Optional description for model version.                                                |
 +-------------+------------------------------------------+----------------------------------------------------------------------------------------+
 
-.. _mlflowCreateModelVersionResponse:
+.. _qcflowCreateModelVersionResponse:
 
 Response Structure
 ------------------
@@ -1706,14 +1706,14 @@ Response Structure
 +---------------+---------------------------+-----------------------------------------------------------------+
 |  Field Name   |           Type            |                           Description                           |
 +===============+===========================+=================================================================+
-| model_version | :ref:`mlflowmodelversion` | Return new version number generated for this model in registry. |
+| model_version | :ref:`qcflowmodelversion` | Return new version number generated for this model in registry. |
 +---------------+---------------------------+-----------------------------------------------------------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServicegetModelVersion:
+.. _qcflowModelRegistryServicegetModelVersion:
 
 Get ModelVersion
 ================
@@ -1722,7 +1722,7 @@ Get ModelVersion
 +-----------------------------------+-------------+
 |             Endpoint              | HTTP Method |
 +===================================+=============+
-| ``2.0/mlflow/model-versions/get`` | ``GET``     |
+| ``2.0/qcflow/model-versions/get`` | ``GET``     |
 +-----------------------------------+-------------+
 
 
@@ -1730,7 +1730,7 @@ Get ModelVersion
 
 
 
-.. _mlflowGetModelVersion:
+.. _qcflowGetModelVersion:
 
 Request Structure
 -----------------
@@ -1752,7 +1752,7 @@ Request Structure
 |            |            |                              |
 +------------+------------+------------------------------+
 
-.. _mlflowGetModelVersionResponse:
+.. _qcflowGetModelVersionResponse:
 
 Response Structure
 ------------------
@@ -1765,14 +1765,14 @@ Response Structure
 +---------------+---------------------------+-------------+
 |  Field Name   |           Type            | Description |
 +===============+===========================+=============+
-| model_version | :ref:`mlflowmodelversion` |             |
+| model_version | :ref:`qcflowmodelversion` |             |
 +---------------+---------------------------+-------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServiceupdateModelVersion:
+.. _qcflowModelRegistryServiceupdateModelVersion:
 
 Update ModelVersion
 ===================
@@ -1781,7 +1781,7 @@ Update ModelVersion
 +--------------------------------------+-------------+
 |               Endpoint               | HTTP Method |
 +======================================+=============+
-| ``2.0/mlflow/model-versions/update`` | ``PATCH``   |
+| ``2.0/qcflow/model-versions/update`` | ``PATCH``   |
 +--------------------------------------+-------------+
 
 
@@ -1789,7 +1789,7 @@ Update ModelVersion
 
 
 
-.. _mlflowUpdateModelVersion:
+.. _qcflowUpdateModelVersion:
 
 Request Structure
 -----------------
@@ -1813,7 +1813,7 @@ Request Structure
 | description | ``STRING`` | If provided, updates the description for this ``registered_model``. |
 +-------------+------------+---------------------------------------------------------------------+
 
-.. _mlflowUpdateModelVersionResponse:
+.. _qcflowUpdateModelVersionResponse:
 
 Response Structure
 ------------------
@@ -1826,14 +1826,14 @@ Response Structure
 +---------------+---------------------------+-----------------------------------------------------------------+
 |  Field Name   |           Type            |                           Description                           |
 +===============+===========================+=================================================================+
-| model_version | :ref:`mlflowmodelversion` | Return new version number generated for this model in registry. |
+| model_version | :ref:`qcflowmodelversion` | Return new version number generated for this model in registry. |
 +---------------+---------------------------+-----------------------------------------------------------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServicedeleteModelVersion:
+.. _qcflowModelRegistryServicedeleteModelVersion:
 
 Delete ModelVersion
 ===================
@@ -1842,7 +1842,7 @@ Delete ModelVersion
 +--------------------------------------+-------------+
 |               Endpoint               | HTTP Method |
 +======================================+=============+
-| ``2.0/mlflow/model-versions/delete`` | ``DELETE``  |
+| ``2.0/qcflow/model-versions/delete`` | ``DELETE``  |
 +--------------------------------------+-------------+
 
 
@@ -1850,7 +1850,7 @@ Delete ModelVersion
 
 
 
-.. _mlflowDeleteModelVersion:
+.. _qcflowDeleteModelVersion:
 
 Request Structure
 -----------------
@@ -1876,7 +1876,7 @@ Request Structure
 
 
 
-.. _mlflowModelRegistryServicesearchModelVersions:
+.. _qcflowModelRegistryServicesearchModelVersions:
 
 Search ModelVersions
 ====================
@@ -1885,7 +1885,7 @@ Search ModelVersions
 +--------------------------------------+-------------+
 |               Endpoint               | HTTP Method |
 +======================================+=============+
-| ``2.0/mlflow/model-versions/search`` | ``GET``     |
+| ``2.0/qcflow/model-versions/search`` | ``GET``     |
 +--------------------------------------+-------------+
 
 
@@ -1893,7 +1893,7 @@ Search ModelVersions
 
 
 
-.. _mlflowSearchModelVersions:
+.. _qcflowSearchModelVersions:
 
 Request Structure
 -----------------
@@ -1920,7 +1920,7 @@ Request Structure
 | page_token  | ``STRING``             | Pagination token to go to next page based on previous search query.                          |
 +-------------+------------------------+----------------------------------------------------------------------------------------------+
 
-.. _mlflowSearchModelVersionsResponse:
+.. _qcflowSearchModelVersionsResponse:
 
 Response Structure
 ------------------
@@ -1933,7 +1933,7 @@ Response Structure
 +-----------------+---------------------------------------+----------------------------------------------------------------------------+
 |   Field Name    |                 Type                  |                                Description                                 |
 +=================+=======================================+============================================================================+
-| model_versions  | An array of :ref:`mlflowmodelversion` | Models that match the search criteria                                      |
+| model_versions  | An array of :ref:`qcflowmodelversion` | Models that match the search criteria                                      |
 +-----------------+---------------------------------------+----------------------------------------------------------------------------+
 | next_page_token | ``STRING``                            | Pagination token to request next page of models for the same search query. |
 +-----------------+---------------------------------------+----------------------------------------------------------------------------+
@@ -1942,7 +1942,7 @@ Response Structure
 
 
 
-.. _mlflowModelRegistryServicegetModelVersionDownloadUri:
+.. _qcflowModelRegistryServicegetModelVersionDownloadUri:
 
 Get Download URI For ModelVersion Artifacts
 ===========================================
@@ -1951,7 +1951,7 @@ Get Download URI For ModelVersion Artifacts
 +------------------------------------------------+-------------+
 |                    Endpoint                    | HTTP Method |
 +================================================+=============+
-| ``2.0/mlflow/model-versions/get-download-uri`` | ``GET``     |
+| ``2.0/qcflow/model-versions/get-download-uri`` | ``GET``     |
 +------------------------------------------------+-------------+
 
 
@@ -1959,7 +1959,7 @@ Get Download URI For ModelVersion Artifacts
 
 
 
-.. _mlflowGetModelVersionDownloadUri:
+.. _qcflowGetModelVersionDownloadUri:
 
 Request Structure
 -----------------
@@ -1981,7 +1981,7 @@ Request Structure
 |            |            |                              |
 +------------+------------+------------------------------+
 
-.. _mlflowGetModelVersionDownloadUriResponse:
+.. _qcflowGetModelVersionDownloadUriResponse:
 
 Response Structure
 ------------------
@@ -2001,7 +2001,7 @@ Response Structure
 
 
 
-.. _mlflowModelRegistryServicetransitionModelVersionStage:
+.. _qcflowModelRegistryServicetransitionModelVersionStage:
 
 Transition ModelVersion Stage
 =============================
@@ -2011,7 +2011,7 @@ Transition ModelVersion Stage
 +------------------------------------------------+-------------+
 |                    Endpoint                    | HTTP Method |
 +================================================+=============+
-| ``2.0/mlflow/model-versions/transition-stage`` | ``POST``    |
+| ``2.0/qcflow/model-versions/transition-stage`` | ``POST``    |
 +------------------------------------------------+-------------+
 
 
@@ -2019,7 +2019,7 @@ Transition ModelVersion Stage
 
 
 
-.. _mlflowTransitionModelVersionStage:
+.. _qcflowTransitionModelVersionStage:
 
 Request Structure
 -----------------
@@ -2052,7 +2052,7 @@ Request Structure
 |                           |            |                                                                                           |
 +---------------------------+------------+-------------------------------------------------------------------------------------------+
 
-.. _mlflowTransitionModelVersionStageResponse:
+.. _qcflowTransitionModelVersionStageResponse:
 
 Response Structure
 ------------------
@@ -2065,14 +2065,14 @@ Response Structure
 +---------------+---------------------------+-----------------------+
 |  Field Name   |           Type            |      Description      |
 +===============+===========================+=======================+
-| model_version | :ref:`mlflowmodelversion` | Updated model version |
+| model_version | :ref:`qcflowmodelversion` | Updated model version |
 +---------------+---------------------------+-----------------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServicesearchRegisteredModels:
+.. _qcflowModelRegistryServicesearchRegisteredModels:
 
 Search RegisteredModels
 =======================
@@ -2081,7 +2081,7 @@ Search RegisteredModels
 +-----------------------------------------+-------------+
 |                Endpoint                 | HTTP Method |
 +=========================================+=============+
-| ``2.0/mlflow/registered-models/search`` | ``GET``     |
+| ``2.0/qcflow/registered-models/search`` | ``GET``     |
 +-----------------------------------------+-------------+
 
 
@@ -2089,7 +2089,7 @@ Search RegisteredModels
 
 
 
-.. _mlflowSearchRegisteredModels:
+.. _qcflowSearchRegisteredModels:
 
 Request Structure
 -----------------
@@ -2115,7 +2115,7 @@ Request Structure
 | page_token  | ``STRING``             | Pagination token to go to the next page based on a previous search query.                  |
 +-------------+------------------------+--------------------------------------------------------------------------------------------+
 
-.. _mlflowSearchRegisteredModelsResponse:
+.. _qcflowSearchRegisteredModelsResponse:
 
 Response Structure
 ------------------
@@ -2128,7 +2128,7 @@ Response Structure
 +-------------------+------------------------------------------+------------------------------------------------------+
 |    Field Name     |                   Type                   |                     Description                      |
 +===================+==========================================+======================================================+
-| registered_models | An array of :ref:`mlflowregisteredmodel` | Registered Models that match the search criteria.    |
+| registered_models | An array of :ref:`qcflowregisteredmodel` | Registered Models that match the search criteria.    |
 +-------------------+------------------------------------------+------------------------------------------------------+
 | next_page_token   | ``STRING``                               | Pagination token to request the next page of models. |
 +-------------------+------------------------------------------+------------------------------------------------------+
@@ -2137,7 +2137,7 @@ Response Structure
 
 
 
-.. _mlflowModelRegistryServicesetRegisteredModelTag:
+.. _qcflowModelRegistryServicesetRegisteredModelTag:
 
 Set Registered Model Tag
 ========================
@@ -2146,7 +2146,7 @@ Set Registered Model Tag
 +------------------------------------------+-------------+
 |                 Endpoint                 | HTTP Method |
 +==========================================+=============+
-| ``2.0/mlflow/registered-models/set-tag`` | ``POST``    |
+| ``2.0/qcflow/registered-models/set-tag`` | ``POST``    |
 +------------------------------------------+-------------+
 
 
@@ -2154,7 +2154,7 @@ Set Registered Model Tag
 
 
 
-.. _mlflowSetRegisteredModelTag:
+.. _qcflowSetRegisteredModelTag:
 
 Request Structure
 -----------------
@@ -2186,7 +2186,7 @@ Request Structure
 
 
 
-.. _mlflowModelRegistryServicesetModelVersionTag:
+.. _qcflowModelRegistryServicesetModelVersionTag:
 
 Set Model Version Tag
 =====================
@@ -2195,7 +2195,7 @@ Set Model Version Tag
 +---------------------------------------+-------------+
 |               Endpoint                | HTTP Method |
 +=======================================+=============+
-| ``2.0/mlflow/model-versions/set-tag`` | ``POST``    |
+| ``2.0/qcflow/model-versions/set-tag`` | ``POST``    |
 +---------------------------------------+-------------+
 
 
@@ -2203,7 +2203,7 @@ Set Model Version Tag
 
 
 
-.. _mlflowSetModelVersionTag:
+.. _qcflowSetModelVersionTag:
 
 Request Structure
 -----------------
@@ -2239,7 +2239,7 @@ Request Structure
 
 
 
-.. _mlflowModelRegistryServicedeleteRegisteredModelTag:
+.. _qcflowModelRegistryServicedeleteRegisteredModelTag:
 
 Delete Registered Model Tag
 ===========================
@@ -2248,7 +2248,7 @@ Delete Registered Model Tag
 +---------------------------------------------+-------------+
 |                  Endpoint                   | HTTP Method |
 +=============================================+=============+
-| ``2.0/mlflow/registered-models/delete-tag`` | ``DELETE``  |
+| ``2.0/qcflow/registered-models/delete-tag`` | ``DELETE``  |
 +---------------------------------------------+-------------+
 
 
@@ -2256,7 +2256,7 @@ Delete Registered Model Tag
 
 
 
-.. _mlflowDeleteRegisteredModelTag:
+.. _qcflowDeleteRegisteredModelTag:
 
 Request Structure
 -----------------
@@ -2282,7 +2282,7 @@ Request Structure
 
 
 
-.. _mlflowModelRegistryServicedeleteModelVersionTag:
+.. _qcflowModelRegistryServicedeleteModelVersionTag:
 
 Delete Model Version Tag
 ========================
@@ -2291,7 +2291,7 @@ Delete Model Version Tag
 +------------------------------------------+-------------+
 |                 Endpoint                 | HTTP Method |
 +==========================================+=============+
-| ``2.0/mlflow/model-versions/delete-tag`` | ``DELETE``  |
+| ``2.0/qcflow/model-versions/delete-tag`` | ``DELETE``  |
 +------------------------------------------+-------------+
 
 
@@ -2299,7 +2299,7 @@ Delete Model Version Tag
 
 
 
-.. _mlflowDeleteModelVersionTag:
+.. _qcflowDeleteModelVersionTag:
 
 Request Structure
 -----------------
@@ -2329,7 +2329,7 @@ Request Structure
 
 
 
-.. _mlflowModelRegistryServicedeleteRegisteredModelAlias:
+.. _qcflowModelRegistryServicedeleteRegisteredModelAlias:
 
 Delete Registered Model Alias
 =============================
@@ -2338,7 +2338,7 @@ Delete Registered Model Alias
 +----------------------------------------+-------------+
 |                Endpoint                | HTTP Method |
 +========================================+=============+
-| ``2.0/mlflow/registered-models/alias`` | ``DELETE``  |
+| ``2.0/qcflow/registered-models/alias`` | ``DELETE``  |
 +----------------------------------------+-------------+
 
 
@@ -2346,7 +2346,7 @@ Delete Registered Model Alias
 
 
 
-.. _mlflowDeleteRegisteredModelAlias:
+.. _qcflowDeleteRegisteredModelAlias:
 
 Request Structure
 -----------------
@@ -2372,7 +2372,7 @@ Request Structure
 
 
 
-.. _mlflowModelRegistryServicegetModelVersionByAlias:
+.. _qcflowModelRegistryServicegetModelVersionByAlias:
 
 Get Model Version by Alias
 ==========================
@@ -2381,7 +2381,7 @@ Get Model Version by Alias
 +----------------------------------------+-------------+
 |                Endpoint                | HTTP Method |
 +========================================+=============+
-| ``2.0/mlflow/registered-models/alias`` | ``GET``     |
+| ``2.0/qcflow/registered-models/alias`` | ``GET``     |
 +----------------------------------------+-------------+
 
 
@@ -2389,7 +2389,7 @@ Get Model Version by Alias
 
 
 
-.. _mlflowGetModelVersionByAlias:
+.. _qcflowGetModelVersionByAlias:
 
 Request Structure
 -----------------
@@ -2411,7 +2411,7 @@ Request Structure
 |            |            |                                               |
 +------------+------------+-----------------------------------------------+
 
-.. _mlflowGetModelVersionByAliasResponse:
+.. _qcflowGetModelVersionByAliasResponse:
 
 Response Structure
 ------------------
@@ -2424,14 +2424,14 @@ Response Structure
 +---------------+---------------------------+-------------+
 |  Field Name   |           Type            | Description |
 +===============+===========================+=============+
-| model_version | :ref:`mlflowmodelversion` |             |
+| model_version | :ref:`qcflowmodelversion` |             |
 +---------------+---------------------------+-------------+
 
 ===========================
 
 
 
-.. _mlflowModelRegistryServicesetRegisteredModelAlias:
+.. _qcflowModelRegistryServicesetRegisteredModelAlias:
 
 Set Registered Model Alias
 ==========================
@@ -2440,7 +2440,7 @@ Set Registered Model Alias
 +----------------------------------------+-------------+
 |                Endpoint                | HTTP Method |
 +========================================+=============+
-| ``2.0/mlflow/registered-models/alias`` | ``POST``    |
+| ``2.0/qcflow/registered-models/alias`` | ``POST``    |
 +----------------------------------------+-------------+
 
 
@@ -2448,7 +2448,7 @@ Set Registered Model Alias
 
 
 
-.. _mlflowSetRegisteredModelAlias:
+.. _qcflowSetRegisteredModelAlias:
 
 Request Structure
 -----------------
@@ -2483,7 +2483,7 @@ Data Structures
 
 
 
-.. _mlflowDataset:
+.. _qcflowDataset:
 
 Dataset
 -------
@@ -2510,7 +2510,7 @@ the model development process.
 |             |            |                                                                                              |
 +-------------+------------+----------------------------------------------------------------------------------------------+
 | source_type | ``STRING`` | Source information for the dataset. Note that the source may not exactly reproduce the       |
-|             |            | dataset if it was transformed / modified before use with MLflow.                             |
+|             |            | dataset if it was transformed / modified before use with QCFlow.                             |
 |             |            | This field is required.                                                                      |
 |             |            |                                                                                              |
 +-------------+------------+----------------------------------------------------------------------------------------------+
@@ -2518,7 +2518,7 @@ the model development process.
 |             |            | This field is required.                                                                      |
 |             |            |                                                                                              |
 +-------------+------------+----------------------------------------------------------------------------------------------+
-| schema      | ``STRING`` | The schema of the dataset. E.g., MLflow ColSpec JSON for a dataframe, MLflow TensorSpec JSON |
+| schema      | ``STRING`` | The schema of the dataset. E.g., QCFlow ColSpec JSON for a dataframe, QCFlow TensorSpec JSON |
 |             |            | for an ndarray, or another schema format.                                                    |
 +-------------+------------+----------------------------------------------------------------------------------------------+
 | profile     | ``STRING`` | The profile of the dataset. Summary statistics for the dataset, such as the number of rows   |
@@ -2526,7 +2526,7 @@ the model development process.
 |             |            | in an array.                                                                                 |
 +-------------+------------+----------------------------------------------------------------------------------------------+
 
-.. _mlflowDatasetInput:
+.. _qcflowDatasetInput:
 
 DatasetInput
 ------------
@@ -2542,14 +2542,14 @@ DatasetInput. Represents a dataset and input tags.
 +------------+-----------------------------------+----------------------------------------------------------------------------------+
 | Field Name |               Type                |                                   Description                                    |
 +============+===================================+==================================================================================+
-| tags       | An array of :ref:`mlflowinputtag` | A list of tags for the dataset input, e.g. a ?context? tag with value ?training? |
+| tags       | An array of :ref:`qcflowinputtag` | A list of tags for the dataset input, e.g. a ?context? tag with value ?training? |
 +------------+-----------------------------------+----------------------------------------------------------------------------------+
-| dataset    | :ref:`mlflowdataset`              | The dataset being used as a Run input.                                           |
+| dataset    | :ref:`qcflowdataset`              | The dataset being used as a Run input.                                           |
 |            |                                   | This field is required.                                                          |
 |            |                                   |                                                                                  |
 +------------+-----------------------------------+----------------------------------------------------------------------------------+
 
-.. _mlflowExperiment:
+.. _qcflowExperiment:
 
 Experiment
 ----------
@@ -2575,10 +2575,10 @@ Experiment
 +-------------------+----------------------------------------+--------------------------------------------------------------------+
 | creation_time     | ``INT64``                              | Creation time                                                      |
 +-------------------+----------------------------------------+--------------------------------------------------------------------+
-| tags              | An array of :ref:`mlflowexperimenttag` | Tags: Additional metadata key-value pairs.                         |
+| tags              | An array of :ref:`qcflowexperimenttag` | Tags: Additional metadata key-value pairs.                         |
 +-------------------+----------------------------------------+--------------------------------------------------------------------+
 
-.. _mlflowExperimentTag:
+.. _qcflowExperimentTag:
 
 ExperimentTag
 -------------
@@ -2596,7 +2596,7 @@ Tag for an experiment.
 | value      | ``STRING`` | The tag value. |
 +------------+------------+----------------+
 
-.. _mlflowFileInfo:
+.. _qcflowFileInfo:
 
 FileInfo
 --------
@@ -2616,7 +2616,7 @@ FileInfo
 | file_size  | ``INT64``  | Size in bytes. Unset for directories.             |
 +------------+------------+---------------------------------------------------+
 
-.. _mlflowInputTag:
+.. _qcflowInputTag:
 
 InputTag
 --------
@@ -2641,7 +2641,7 @@ Tag for an input.
 |            |            |                         |
 +------------+------------+-------------------------+
 
-.. _mlflowMetric:
+.. _qcflowMetric:
 
 Metric
 ------
@@ -2663,7 +2663,7 @@ Metric associated with a run, represented as a key-value pair.
 | step       | ``INT64``  | Step at which to log the metric.                 |
 +------------+------------+--------------------------------------------------+
 
-.. _mlflowModelVersion:
+.. _qcflowModelVersion:
 
 ModelVersion
 ------------
@@ -2692,14 +2692,14 @@ ModelVersion
 +------------------------+------------------------------------------+----------------------------------------------------------------------------------------------------------------+
 | source                 | ``STRING``                               | URI indicating the location of the source model artifacts, used when creating ``model_version``                |
 +------------------------+------------------------------------------+----------------------------------------------------------------------------------------------------------------+
-| run_id                 | ``STRING``                               | MLflow run ID used when creating ``model_version``, if ``source`` was generated by an                          |
-|                        |                                          | experiment run stored in MLflow tracking server.                                                               |
+| run_id                 | ``STRING``                               | QCFlow run ID used when creating ``model_version``, if ``source`` was generated by an                          |
+|                        |                                          | experiment run stored in QCFlow tracking server.                                                               |
 +------------------------+------------------------------------------+----------------------------------------------------------------------------------------------------------------+
-| status                 | :ref:`mlflowmodelversionstatus`          | Current status of ``model_version``                                                                            |
+| status                 | :ref:`qcflowmodelversionstatus`          | Current status of ``model_version``                                                                            |
 +------------------------+------------------------------------------+----------------------------------------------------------------------------------------------------------------+
 | status_message         | ``STRING``                               | Details on current ``status``, if it is pending or failed.                                                     |
 +------------------------+------------------------------------------+----------------------------------------------------------------------------------------------------------------+
-| tags                   | An array of :ref:`mlflowmodelversiontag` | Tags: Additional metadata key-value pairs for this ``model_version``.                                          |
+| tags                   | An array of :ref:`qcflowmodelversiontag` | Tags: Additional metadata key-value pairs for this ``model_version``.                                          |
 +------------------------+------------------------------------------+----------------------------------------------------------------------------------------------------------------+
 | run_link               | ``STRING``                               | Run Link: Direct link to the run that generated this version. This field is set at model version creation time |
 |                        |                                          | only for model versions whose source run is from a tracking server that is different from the registry server. |
@@ -2707,7 +2707,7 @@ ModelVersion
 | aliases                | An array of ``STRING``                   | Aliases pointing to this ``model_version``.                                                                    |
 +------------------------+------------------------------------------+----------------------------------------------------------------------------------------------------------------+
 
-.. _mlflowModelVersionTag:
+.. _qcflowModelVersionTag:
 
 ModelVersionTag
 ---------------
@@ -2725,7 +2725,7 @@ Tag for a model version.
 | value      | ``STRING`` | The tag value. |
 +------------+------------+----------------+
 
-.. _mlflowParam:
+.. _qcflowParam:
 
 Param
 -----
@@ -2743,7 +2743,7 @@ Param associated with a run.
 | value      | ``STRING`` | Value associated with this param. |
 +------------+------------+-----------------------------------+
 
-.. _mlflowRegisteredModel:
+.. _qcflowRegisteredModel:
 
 RegisteredModel
 ---------------
@@ -2767,15 +2767,15 @@ RegisteredModel
 +------------------------+-----------------------------------------------+----------------------------------------------------------------------------------+
 | description            | ``STRING``                                    | Description of this ``registered_model``.                                        |
 +------------------------+-----------------------------------------------+----------------------------------------------------------------------------------+
-| latest_versions        | An array of :ref:`mlflowmodelversion`         | Collection of latest model versions for each stage.                              |
+| latest_versions        | An array of :ref:`qcflowmodelversion`         | Collection of latest model versions for each stage.                              |
 |                        |                                               | Only contains models with current ``READY`` status.                              |
 +------------------------+-----------------------------------------------+----------------------------------------------------------------------------------+
-| tags                   | An array of :ref:`mlflowregisteredmodeltag`   | Tags: Additional metadata key-value pairs for this ``registered_model``.         |
+| tags                   | An array of :ref:`qcflowregisteredmodeltag`   | Tags: Additional metadata key-value pairs for this ``registered_model``.         |
 +------------------------+-----------------------------------------------+----------------------------------------------------------------------------------+
-| aliases                | An array of :ref:`mlflowregisteredmodelalias` | Aliases pointing to model versions associated with this ``registered_model``.    |
+| aliases                | An array of :ref:`qcflowregisteredmodelalias` | Aliases pointing to model versions associated with this ``registered_model``.    |
 +------------------------+-----------------------------------------------+----------------------------------------------------------------------------------+
 
-.. _mlflowRegisteredModelAlias:
+.. _qcflowRegisteredModelAlias:
 
 RegisteredModelAlias
 --------------------
@@ -2793,7 +2793,7 @@ Alias for a registered model
 | version    | ``STRING`` | The model version number that the alias points to. |
 +------------+------------+----------------------------------------------------+
 
-.. _mlflowRegisteredModelTag:
+.. _qcflowRegisteredModelTag:
 
 RegisteredModelTag
 ------------------
@@ -2811,7 +2811,7 @@ Tag for a registered model
 | value      | ``STRING`` | The tag value. |
 +------------+------------+----------------+
 
-.. _mlflowRun:
+.. _qcflowRun:
 
 Run
 ---
@@ -2824,14 +2824,14 @@ A single run.
 +------------+------------------------+---------------+
 | Field Name |          Type          |  Description  |
 +============+========================+===============+
-| info       | :ref:`mlflowruninfo`   | Run metadata. |
+| info       | :ref:`qcflowruninfo`   | Run metadata. |
 +------------+------------------------+---------------+
-| data       | :ref:`mlflowrundata`   | Run data.     |
+| data       | :ref:`qcflowrundata`   | Run data.     |
 +------------+------------------------+---------------+
-| inputs     | :ref:`mlflowruninputs` | Run inputs.   |
+| inputs     | :ref:`qcflowruninputs` | Run inputs.   |
 +------------+------------------------+---------------+
 
-.. _mlflowRunData:
+.. _qcflowRunData:
 
 RunData
 -------
@@ -2844,14 +2844,14 @@ Run data (metrics, params, and tags).
 +------------+---------------------------------+--------------------------------------+
 | Field Name |              Type               |             Description              |
 +============+=================================+======================================+
-| metrics    | An array of :ref:`mlflowmetric` | Run metrics.                         |
+| metrics    | An array of :ref:`qcflowmetric` | Run metrics.                         |
 +------------+---------------------------------+--------------------------------------+
-| params     | An array of :ref:`mlflowparam`  | Run parameters.                      |
+| params     | An array of :ref:`qcflowparam`  | Run parameters.                      |
 +------------+---------------------------------+--------------------------------------+
-| tags       | An array of :ref:`mlflowruntag` | Additional metadata key-value pairs. |
+| tags       | An array of :ref:`qcflowruntag` | Additional metadata key-value pairs. |
 +------------+---------------------------------+--------------------------------------+
 
-.. _mlflowRunInfo:
+.. _qcflowRunInfo:
 
 RunInfo
 -------
@@ -2867,17 +2867,17 @@ Metadata of a single run.
 | run_id          | ``STRING``             | Unique identifier for the run.                                                   |
 +-----------------+------------------------+----------------------------------------------------------------------------------+
 | run_uuid        | ``STRING``             | [Deprecated, use run_id instead] Unique identifier for the run. This field will  |
-|                 |                        | be removed in a future MLflow version.                                           |
+|                 |                        | be removed in a future QCFlow version.                                           |
 +-----------------+------------------------+----------------------------------------------------------------------------------+
 | run_name        | ``STRING``             | The name of the run.                                                             |
 +-----------------+------------------------+----------------------------------------------------------------------------------+
 | experiment_id   | ``STRING``             | The experiment ID.                                                               |
 +-----------------+------------------------+----------------------------------------------------------------------------------+
 | user_id         | ``STRING``             | User who initiated the run.                                                      |
-|                 |                        | This field is deprecated as of MLflow 1.0, and will be removed in a future       |
-|                 |                        | MLflow release. Use 'mlflow.user' tag instead.                                   |
+|                 |                        | This field is deprecated as of QCFlow 1.0, and will be removed in a future       |
+|                 |                        | QCFlow release. Use 'qcflow.user' tag instead.                                   |
 +-----------------+------------------------+----------------------------------------------------------------------------------+
-| status          | :ref:`mlflowrunstatus` | Current status of the run.                                                       |
+| status          | :ref:`qcflowrunstatus` | Current status of the run.                                                       |
 +-----------------+------------------------+----------------------------------------------------------------------------------+
 | start_time      | ``INT64``              | Unix timestamp of when the run started in milliseconds.                          |
 +-----------------+------------------------+----------------------------------------------------------------------------------+
@@ -2891,7 +2891,7 @@ Metadata of a single run.
 | lifecycle_stage | ``STRING``             | Current life cycle stage of the experiment : OneOf("active", "deleted")          |
 +-----------------+------------------------+----------------------------------------------------------------------------------+
 
-.. _mlflowRunInputs:
+.. _qcflowRunInputs:
 
 RunInputs
 ---------
@@ -2907,10 +2907,10 @@ Run inputs.
 +----------------+---------------------------------------+----------------------------+
 |   Field Name   |                 Type                  |        Description         |
 +================+=======================================+============================+
-| dataset_inputs | An array of :ref:`mlflowdatasetinput` | Dataset inputs to the Run. |
+| dataset_inputs | An array of :ref:`qcflowdatasetinput` | Dataset inputs to the Run. |
 +----------------+---------------------------------------+----------------------------+
 
-.. _mlflowRunTag:
+.. _qcflowRunTag:
 
 RunTag
 ------
@@ -2928,7 +2928,7 @@ Tag for a run.
 | value      | ``STRING`` | The tag value. |
 +------------+------------+----------------+
 
-.. _mlflowModelVersionStatus:
+.. _qcflowModelVersionStatus:
 
 ModelVersionStatus
 ------------------
@@ -2946,7 +2946,7 @@ ModelVersionStatus
 | READY                | Model version is ready for use.                                                         |
 +----------------------+-----------------------------------------------------------------------------------------+
 
-.. _mlflowRunStatus:
+.. _qcflowRunStatus:
 
 RunStatus
 ---------
@@ -2968,7 +2968,7 @@ Status of a run.
 | KILLED    | Run killed by user.                      |
 +-----------+------------------------------------------+
 
-.. _mlflowViewType:
+.. _qcflowViewType:
 
 ViewType
 --------

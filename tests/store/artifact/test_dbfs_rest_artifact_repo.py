@@ -5,22 +5,22 @@ from unittest.mock import Mock
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.dbfs_artifact_repo import (
+from qcflow.exceptions import QCFlowException
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.dbfs_artifact_repo import (
     DbfsRestArtifactRepository,
     _get_host_creds_from_default_store,
 )
-from mlflow.store.tracking.file_store import FileStore
-from mlflow.store.tracking.rest_store import RestStore
-from mlflow.utils.rest_utils import MlflowHostCreds, http_request
+from qcflow.store.tracking.file_store import FileStore
+from qcflow.store.tracking.rest_store import RestStore
+from qcflow.utils.rest_utils import QCFlowHostCreds, http_request
 
 
 @pytest.fixture
 def dbfs_artifact_repo():
     with mock.patch(
-        "mlflow.store.artifact.dbfs_artifact_repo._get_host_creds_from_default_store",
-        return_value=lambda: MlflowHostCreds("http://host"),
+        "qcflow.store.artifact.dbfs_artifact_repo._get_host_creds_from_default_store",
+        return_value=lambda: QCFlowHostCreds("http://host"),
     ):
         return get_artifact_repository("dbfs:/test/")
 
@@ -29,7 +29,7 @@ TEST_FILE_1_CONTENT = "Hello 🍆🍔".encode()
 TEST_FILE_2_CONTENT = "World 🍆🍔🍆".encode()
 TEST_FILE_3_CONTENT = "¡🍆🍆🍔🍆🍆!".encode()
 
-DBFS_ARTIFACT_REPOSITORY_PACKAGE = "mlflow.store.artifact.dbfs_artifact_repo"
+DBFS_ARTIFACT_REPOSITORY_PACKAGE = "qcflow.store.artifact.dbfs_artifact_repo"
 DBFS_ARTIFACT_REPOSITORY = DBFS_ARTIFACT_REPOSITORY_PACKAGE + ".DbfsRestArtifactRepository"
 
 
@@ -74,14 +74,14 @@ MOCK_REQUEST_KWARGS = {
 def test_init_validation_and_cleaning():
     with mock.patch(
         DBFS_ARTIFACT_REPOSITORY_PACKAGE + "._get_host_creds_from_default_store",
-        return_value=lambda: MlflowHostCreds("http://host"),
+        return_value=lambda: QCFlowHostCreds("http://host"),
     ):
         repo = get_artifact_repository("dbfs:/test/")
         assert repo.artifact_uri == "dbfs:/test"
         match = "DBFS URI must be of the form dbfs:/<path>"
-        with pytest.raises(MlflowException, match=match):
+        with pytest.raises(QCFlowException, match=match):
             DbfsRestArtifactRepository("s3://test")
-        with pytest.raises(MlflowException, match=match):
+        with pytest.raises(QCFlowException, match=match):
             DbfsRestArtifactRepository("dbfs://profile@notdatabricks/test/")
 
 
@@ -91,11 +91,11 @@ def test_init_get_host_creds_with_databricks_profile_uri():
     with (
         mock.patch(
             DBFS_ARTIFACT_REPOSITORY_PACKAGE + "._get_host_creds_from_default_store",
-            return_value=lambda: MlflowHostCreds(default_host),
+            return_value=lambda: QCFlowHostCreds(default_host),
         ),
         mock.patch(
             DBFS_ARTIFACT_REPOSITORY_PACKAGE + ".get_databricks_host_creds",
-            return_value=MlflowHostCreds(databricks_host),
+            return_value=QCFlowHostCreds(databricks_host),
         ),
     ):
         repo = DbfsRestArtifactRepository("dbfs://profile@databricks/test/")
@@ -114,7 +114,7 @@ def test_init_get_host_creds_with_databricks_profile_uri():
 )
 def test_log_artifact(dbfs_artifact_repo, test_file, artifact_path, expected_endpoint):
     with (
-        mock.patch("mlflow.utils.rest_utils.http_request") as http_request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as http_request_mock,
         mock.patch(
             "requests.Session.request", return_value=MOCK_SUCCESS_RESPONSE
         ) as mock_base_request,
@@ -138,7 +138,7 @@ def test_log_artifact(dbfs_artifact_repo, test_file, artifact_path, expected_end
 
 def test_log_artifact_empty_file(dbfs_artifact_repo, test_dir):
     with (
-        mock.patch("mlflow.utils.rest_utils.http_request") as http_request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as http_request_mock,
         mock.patch(
             "requests.Session.request", return_value=MOCK_SUCCESS_RESPONSE
         ) as mock_base_request,
@@ -158,7 +158,7 @@ def test_log_artifact_empty_file(dbfs_artifact_repo, test_dir):
 
 def test_log_artifact_empty_artifact_path(dbfs_artifact_repo, test_file):
     with (
-        mock.patch("mlflow.utils.rest_utils.http_request") as http_request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as http_request_mock,
         mock.patch(
             "requests.Session.request", return_value=MOCK_SUCCESS_RESPONSE
         ) as mock_base_request,
@@ -178,9 +178,9 @@ def test_log_artifact_empty_artifact_path(dbfs_artifact_repo, test_file):
 
 def test_log_artifact_error(dbfs_artifact_repo, test_file):
     with mock.patch(
-        "mlflow.utils.rest_utils.http_request", return_value=Mock(status_code=409, text="")
+        "qcflow.utils.rest_utils.http_request", return_value=Mock(status_code=409, text="")
     ):
-        with pytest.raises(MlflowException, match=r"API request to endpoint .+ failed"):
+        with pytest.raises(QCFlowException, match=r"API request to endpoint .+ failed"):
             dbfs_artifact_repo.log_artifact(test_file)
 
 
@@ -194,7 +194,7 @@ def test_log_artifact_error(dbfs_artifact_repo, test_file):
 )
 def test_log_artifacts(dbfs_artifact_repo, test_dir, artifact_path):
     with (
-        mock.patch("mlflow.utils.rest_utils.http_request") as http_request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as http_request_mock,
         mock.patch(
             "requests.Session.request", return_value=MOCK_SUCCESS_RESPONSE
         ) as mock_base_request,
@@ -233,9 +233,9 @@ def test_log_artifacts(dbfs_artifact_repo, test_dir, artifact_path):
 
 def test_log_artifacts_error(dbfs_artifact_repo, test_dir):
     with mock.patch(
-        "mlflow.utils.rest_utils.http_request", return_value=Mock(status_code=409, text="")
+        "qcflow.utils.rest_utils.http_request", return_value=Mock(status_code=409, text="")
     ):
-        with pytest.raises(MlflowException, match=r"API request to endpoint .+ failed"):
+        with pytest.raises(QCFlowException, match=r"API request to endpoint .+ failed"):
             dbfs_artifact_repo.log_artifacts(test_dir)
 
 
@@ -265,7 +265,7 @@ def test_log_artifacts_with_artifact_path(
     dbfs_artifact_repo, test_dir, artifact_path, expected_endpoints
 ):
     with (
-        mock.patch("mlflow.utils.rest_utils.http_request") as http_request_mock,
+        mock.patch("qcflow.utils.rest_utils.http_request") as http_request_mock,
         mock.patch(
             "requests.Session.request", return_value=MOCK_SUCCESS_RESPONSE
         ) as mock_base_request,
@@ -348,14 +348,14 @@ def test_download_artifacts(dbfs_artifact_repo):
 
 
 def test_get_host_creds_from_default_store_file_store():
-    with mock.patch("mlflow.tracking._tracking_service.utils._get_store", return_value=FileStore()):
-        with pytest.raises(MlflowException, match="Failed to get credentials for DBFS"):
+    with mock.patch("qcflow.tracking._tracking_service.utils._get_store", return_value=FileStore()):
+        with pytest.raises(QCFlowException, match="Failed to get credentials for DBFS"):
             _get_host_creds_from_default_store()
 
 
 def test_get_host_creds_from_default_store_rest_store():
     with mock.patch(
-        "mlflow.tracking._tracking_service.utils._get_store",
-        return_value=RestStore(lambda: MlflowHostCreds("http://host")),
+        "qcflow.tracking._tracking_service.utils._get_store",
+        return_value=RestStore(lambda: QCFlowHostCreds("http://host")),
     ):
-        assert isinstance(_get_host_creds_from_default_store()(), MlflowHostCreds)
+        assert isinstance(_get_host_creds_from_default_store()(), QCFlowHostCreds)

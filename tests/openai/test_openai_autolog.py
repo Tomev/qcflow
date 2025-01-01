@@ -3,9 +3,9 @@ import json
 import openai
 import pytest
 
-import mlflow
-from mlflow import MlflowClient
-from mlflow.tracing.constant import SpanAttributeKey, TraceMetadataKey
+import qcflow
+from qcflow import QCFlowClient
+from qcflow.tracing.constant import SpanAttributeKey, TraceMetadataKey
 
 from tests.openai.conftest import is_v1
 from tests.openai.mock_openai import EMPTY_CHOICES
@@ -44,7 +44,7 @@ def client(monkeypatch, mock_openai):
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 @pytest.mark.parametrize("log_models", [True, False])
 def test_chat_completions_autolog(client, log_models):
-    mlflow.openai.autolog(log_models=log_models)
+    qcflow.openai.autolog(log_models=log_models)
 
     messages = [{"role": "user", "content": "test"}]
     client.chat.completions.create(
@@ -66,15 +66,15 @@ def test_chat_completions_autolog(client, log_models):
     assert span.attributes["temperature"] == 0
 
     if log_models:
-        run_id = client.chat.completions._mlflow_run_id
+        run_id = client.chat.completions._qcflow_run_id
         assert run_id is not None
         assert trace.info.request_metadata[TraceMetadataKey.SOURCE_RUN] == run_id
-        loaded_model = mlflow.openai.load_model(f"runs:/{run_id}/model")
+        loaded_model = qcflow.openai.load_model(f"runs:/{run_id}/model")
         assert loaded_model == {
             "model": "gpt-4o-mini",
             "task": "chat.completions",
         }
-        pyfunc_model = mlflow.pyfunc.load_model(f"runs:/{run_id}/model")
+        pyfunc_model = qcflow.pyfunc.load_model(f"runs:/{run_id}/model")
         assert pyfunc_model.predict("test") == [json.dumps(messages)]
 
     else:
@@ -84,10 +84,10 @@ def test_chat_completions_autolog(client, log_models):
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 def test_chat_completions_autolog_under_current_active_span(client):
     # If a user have an active span, the autologging should create a child span under it.
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     messages = [{"role": "user", "content": "test"}]
-    with mlflow.start_span(name="parent"):
+    with qcflow.start_span(name="parent"):
         client.chat.completions.create(
             messages=messages,
             model="gpt-4o-mini",
@@ -111,7 +111,7 @@ def test_chat_completions_autolog_under_current_active_span(client):
 
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 def test_chat_completions_autolog_streaming(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     messages = [{"role": "user", "content": "test"}]
     stream = client.chat.completions.create(
@@ -123,7 +123,7 @@ def test_chat_completions_autolog_streaming(client):
     for _ in stream:
         pass
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "OK"
     assert len(trace.data.spans) == 1
@@ -146,7 +146,7 @@ def test_chat_completions_autolog_streaming(client):
 
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 def test_chat_completions_autolog_tracing_error(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
     messages = [{"role": "user", "content": "test"}]
     with pytest.raises(openai.BadRequestError, match="Temperature must be between 0.0 and 2.0"):
         client.chat.completions.create(
@@ -155,7 +155,7 @@ def test_chat_completions_autolog_tracing_error(client):
             temperature=5.0,
         )
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.status == "ERROR"
 
     assert len(trace.data.spans) == 1
@@ -170,7 +170,7 @@ def test_chat_completions_autolog_tracing_error(client):
 
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 def test_chat_completions_autolog_tracing_error(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
     messages = [{"role": "user", "content": "test"}]
     with pytest.raises(openai.BadRequestError, match="Temperature must be between 0.0 and 2.0"):
         client.chat.completions.create(
@@ -179,7 +179,7 @@ def test_chat_completions_autolog_tracing_error(client):
             temperature=5.0,
         )
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.status == "ERROR"
 
     assert len(trace.data.spans) == 1
@@ -193,7 +193,7 @@ def test_chat_completions_autolog_tracing_error(client):
 
 
 def test_chat_completions_streaming_empty_choices(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
     stream = client.chat.completions.create(
         messages=[{"role": "user", "content": EMPTY_CHOICES}],
         model="gpt-4o-mini",
@@ -208,14 +208,14 @@ def test_chat_completions_streaming_empty_choices(client):
     for _ in stream:
         pass
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.status == "OK"
 
 
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 @pytest.mark.parametrize("log_models", [True, False])
 def test_completions_autolog(client, log_models):
-    mlflow.openai.autolog(log_models=log_models)
+    qcflow.openai.autolog(log_models=log_models)
 
     client.completions.create(
         prompt="test",
@@ -223,7 +223,7 @@ def test_completions_autolog(client, log_models):
         temperature=0,
     )
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "OK"
     assert len(trace.data.spans) == 1
@@ -232,22 +232,22 @@ def test_completions_autolog(client, log_models):
     assert span.outputs["id"] == "cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7"
 
     if log_models:
-        run_id = client.completions._mlflow_run_id
+        run_id = client.completions._qcflow_run_id
         assert run_id is not None
         assert trace.info.request_metadata[TraceMetadataKey.SOURCE_RUN] == run_id
-        loaded_model = mlflow.openai.load_model(f"runs:/{run_id}/model")
+        loaded_model = qcflow.openai.load_model(f"runs:/{run_id}/model")
         assert loaded_model == {
             "model": "gpt-4o-mini",
             "task": "completions",
         }
-        pyfunc_model = mlflow.pyfunc.load_model(f"runs:/{run_id}/model")
+        pyfunc_model = qcflow.pyfunc.load_model(f"runs:/{run_id}/model")
         assert pyfunc_model.predict("test") == ["test"]
     else:
         assert TraceMetadataKey.SOURCE_RUN not in trace.info.request_metadata
 
 
 def test_completions_autolog_streaming_empty_choices(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
     stream = client.completions.create(
         prompt=EMPTY_CHOICES,
         model="gpt-4o-mini",
@@ -262,13 +262,13 @@ def test_completions_autolog_streaming_empty_choices(client):
     for _ in stream:
         pass
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace.info.status == "OK"
 
 
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 def test_completions_autolog_streaming(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     stream = client.completions.create(
         prompt="test",
@@ -279,7 +279,7 @@ def test_completions_autolog_streaming(client):
     for _ in stream:
         pass
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "OK"
     assert len(trace.data.spans) == 1
@@ -303,14 +303,14 @@ def test_completions_autolog_streaming(client):
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 @pytest.mark.parametrize("log_models", [True, False])
 def test_embeddings_autolog(client, log_models):
-    mlflow.openai.autolog(log_models=log_models)
+    qcflow.openai.autolog(log_models=log_models)
 
     client.embeddings.create(
         input="test",
         model="text-embedding-ada-002",
     )
 
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert trace is not None
     assert trace.info.status == "OK"
     assert len(trace.data.spans) == 1
@@ -319,15 +319,15 @@ def test_embeddings_autolog(client, log_models):
     assert span.outputs["data"][0]["embedding"] == list(range(1536))
 
     if log_models:
-        run_id = client.embeddings._mlflow_run_id
+        run_id = client.embeddings._qcflow_run_id
         assert run_id is not None
         assert trace.info.request_metadata[TraceMetadataKey.SOURCE_RUN] == run_id
-        loaded_model = mlflow.openai.load_model(f"runs:/{run_id}/model")
+        loaded_model = qcflow.openai.load_model(f"runs:/{run_id}/model")
         assert loaded_model == {
             "model": "text-embedding-ada-002",
             "task": "embeddings",
         }
-        pyfunc_model = mlflow.pyfunc.load_model(f"runs:/{run_id}/model")
+        pyfunc_model = qcflow.pyfunc.load_model(f"runs:/{run_id}/model")
         output = pyfunc_model.predict("test")
         assert len(output) == 1
         assert len(output[0]) == 1536
@@ -338,42 +338,42 @@ def test_embeddings_autolog(client, log_models):
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 def test_autolog_with_registered_model_name(client):
     registered_model_name = "test_model"
-    mlflow.openai.autolog(log_models=True, registered_model_name=registered_model_name)
+    qcflow.openai.autolog(log_models=True, registered_model_name=registered_model_name)
     client.chat.completions.create(
         messages=[{"role": "user", "content": "test"}],
         model="gpt-4o-mini",
         temperature=0,
     )
-    registered_model = MlflowClient().get_registered_model(registered_model_name)
+    registered_model = QCFlowClient().get_registered_model(registered_model_name)
     assert registered_model.name == registered_model_name
 
 
 @pytest.mark.skipif(not is_v1, reason="Requires OpenAI SDK v1")
 @pytest.mark.parametrize("log_models", [True, False])
 def test_autolog_use_active_run_id(client, log_models):
-    mlflow.openai.autolog(log_models=log_models)
+    qcflow.openai.autolog(log_models=log_models)
 
     messages = [{"role": "user", "content": "test"}]
 
-    with mlflow.start_run() as run_1:
+    with qcflow.start_run() as run_1:
         client.chat.completions.create(messages=messages, model="gpt-4o-mini")
 
-    assert client.chat.completions._mlflow_run_id == run_1.info.run_id
+    assert client.chat.completions._qcflow_run_id == run_1.info.run_id
 
-    with mlflow.start_run() as run_2:
+    with qcflow.start_run() as run_2:
         client.chat.completions.create(messages=messages, model="gpt-4o-mini")
         client.chat.completions.create(messages=messages, model="gpt-4o-mini")
 
-    assert client.chat.completions._mlflow_run_id == run_2.info.run_id
+    assert client.chat.completions._qcflow_run_id == run_2.info.run_id
 
-    with mlflow.start_run() as run_3:
-        mlflow.openai.autolog(
+    with qcflow.start_run() as run_3:
+        qcflow.openai.autolog(
             log_models=log_models,
             extra_tags={"foo": "bar"},
         )
         client.chat.completions.create(messages=messages, model="gpt-4o-mini")
 
-    assert client.chat.completions._mlflow_run_id == run_3.info.run_id
+    assert client.chat.completions._qcflow_run_id == run_3.info.run_id
 
     traces = get_traces()[::-1]  # reverse order to sort by timestamp in ascending order
     assert len(traces) == 4
@@ -385,11 +385,11 @@ def test_autolog_use_active_run_id(client, log_models):
 
 
 def test_autolog_raw_response(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     messages = [{"role": "user", "content": "test"}]
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         resp = client.chat.completions.with_raw_response.create(
             model="gpt-4o-mini",
             messages=messages,
@@ -398,7 +398,7 @@ def test_autolog_raw_response(client):
         resp = resp.parse()  # ensure the raw response is returned
 
     assert resp.choices[0].message.content == '[{"role": "user", "content": "test"}]'
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert len(trace.data.spans) == 1
     span = trace.data.spans[0]
     assert isinstance(span.outputs, dict)
@@ -412,11 +412,11 @@ def test_autolog_raw_response(client):
 
 
 def test_autolog_raw_response_stream(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     messages = [{"role": "user", "content": "test"}]
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         resp = client.chat.completions.with_raw_response.create(
             model="gpt-4o-mini",
             messages=messages,
@@ -426,7 +426,7 @@ def test_autolog_raw_response_stream(client):
         resp = resp.parse()  # ensure the raw response is returned
 
     assert [c.choices[0].delta.content for c in resp] == ["Hello", " world"]
-    trace = mlflow.get_last_active_trace()
+    trace = qcflow.get_last_active_trace()
     assert len(trace.data.spans) == 1
     span = trace.data.spans[0]
     assert span.outputs == "Hello world"

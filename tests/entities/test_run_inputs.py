@@ -1,5 +1,5 @@
-from mlflow.entities import RunInputs
-from mlflow.entities.dataset_input import DatasetInput
+from qcflow.entities import RunInputs
+from qcflow.entities.dataset_input import DatasetInput
 
 
 def _check_inputs(run_datasets, datasets):

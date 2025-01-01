@@ -8,12 +8,12 @@ import cloudpickle
 import importlib_metadata
 import pytest
 
-import mlflow
-import mlflow.utils.requirements_utils
-from mlflow.exceptions import MlflowException
-from mlflow.utils.environment import infer_pip_requirements
-from mlflow.utils.os import is_windows
-from mlflow.utils.requirements_utils import (
+import qcflow
+import qcflow.utils.requirements_utils
+from qcflow.exceptions import QCFlowException
+from qcflow.utils.environment import infer_pip_requirements
+from qcflow.utils.os import is_windows
+from qcflow.utils.requirements_utils import (
     _capture_imported_modules,
     _get_installed_version,
     _get_pinned_requirement,
@@ -207,12 +207,12 @@ def test_normalize_package_name():
 
 
 def test_prune_packages():
-    assert _prune_packages(["mlflow"]) == {"mlflow"}
-    assert _prune_packages(["mlflow", "scikit-learn"]) == {"mlflow", "scikit-learn"}
+    assert _prune_packages(["qcflow"]) == {"qcflow"}
+    assert _prune_packages(["qcflow", "scikit-learn"]) == {"qcflow", "scikit-learn"}
 
 
 def test_capture_imported_modules():
-    from mlflow.utils._capture_modules import _CaptureImportedModules
+    from qcflow.utils._capture_modules import _CaptureImportedModules
 
     with _CaptureImportedModules() as cap:
         import math  # clint: disable=lazy-builtin-import  # noqa: F401
@@ -239,7 +239,7 @@ def test_get_installed_version(tmp_path, monkeypatch):
     import pandas as pd
     import sklearn
 
-    assert _get_installed_version("mlflow") == mlflow.__version__
+    assert _get_installed_version("qcflow") == qcflow.__version__
     assert _get_installed_version("numpy") == np.__version__
     assert _get_installed_version("pandas") == pd.__version__
     assert _get_installed_version("scikit-learn", module="sklearn") == sklearn.__version__
@@ -262,8 +262,8 @@ def test_package_with_mismatched_pypi_and_import_name():
 
 
 def test_get_pinned_requirement(tmp_path, monkeypatch):
-    assert _get_pinned_requirement("mlflow") == f"mlflow=={mlflow.__version__}"
-    assert _get_pinned_requirement("mlflow", version="1.2.3") == "mlflow==1.2.3"
+    assert _get_pinned_requirement("qcflow") == f"qcflow=={qcflow.__version__}"
+    assert _get_pinned_requirement("qcflow", version="1.2.3") == "qcflow==1.2.3"
 
     not_found_package = tmp_path.joinpath("not_found.py")
     not_found_package.write_text("__version__ = '1.2.3'")
@@ -279,7 +279,7 @@ def test_get_pinned_requirement_local_version_label(tmp_path, monkeypatch):
     package.write_text(f"__version__ = '1.2.3+{lvl}'")
     monkeypatch.syspath_prepend(str(tmp_path))
 
-    with mock.patch("mlflow.utils.requirements_utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.utils.requirements_utils._logger.warning") as mock_warning:
         req = _get_pinned_requirement("my_package")
         mock_warning.assert_called_once()
         (first_pos_arg,) = mock_warning.call_args[0]
@@ -289,27 +289,27 @@ def test_get_pinned_requirement_local_version_label(tmp_path, monkeypatch):
     assert req == "my_package==1.2.3"
 
 
-def test_infer_requirements_excludes_mlflow():
+def test_infer_requirements_excludes_qcflow():
     with mock.patch(
-        "mlflow.utils.requirements_utils._capture_imported_modules",
-        return_value=["mlflow", "pytest"],
+        "qcflow.utils.requirements_utils._capture_imported_modules",
+        return_value=["qcflow", "pytest"],
     ):
-        mlflow_package = "mlflow-skinny" if "MLFLOW_SKINNY" in os.environ else "mlflow"
-        assert mlflow_package in importlib_metadata.packages_distributions()["mlflow"]
+        qcflow_package = "qcflow-skinny" if "QCFLOW_SKINNY" in os.environ else "qcflow"
+        assert qcflow_package in importlib_metadata.packages_distributions()["qcflow"]
         assert _infer_requirements("path/to/model", "sklearn") == [f"pytest=={pytest.__version__}"]
 
 
 def test_infer_requirements_prints_warning_for_unrecognized_packages():
     with (
         mock.patch(
-            "mlflow.utils.requirements_utils._capture_imported_modules",
+            "qcflow.utils.requirements_utils._capture_imported_modules",
             return_value=["sklearn"],
         ),
         mock.patch(
-            "mlflow.utils.requirements_utils._PYPI_PACKAGE_INDEX",
+            "qcflow.utils.requirements_utils._PYPI_PACKAGE_INDEX",
             _PyPIPackageIndex(date="2022-01-01", package_names=set()),
         ),
-        mock.patch("mlflow.utils.requirements_utils._logger.warning") as mock_warning,
+        mock.patch("qcflow.utils.requirements_utils._logger.warning") as mock_warning,
     ):
         _infer_requirements("path/to/model", "sklearn")
 
@@ -324,21 +324,21 @@ def test_infer_requirements_prints_warning_for_unrecognized_packages():
 def test_infer_requirements_does_not_print_warning_for_recognized_packages():
     with (
         mock.patch(
-            "mlflow.utils.requirements_utils._capture_imported_modules",
+            "qcflow.utils.requirements_utils._capture_imported_modules",
             return_value=["sklearn"],
         ),
         mock.patch(
-            "mlflow.utils.requirements_utils._PYPI_PACKAGE_INDEX",
+            "qcflow.utils.requirements_utils._PYPI_PACKAGE_INDEX",
             _PyPIPackageIndex(date="2022-01-01", package_names={"scikit-learn"}),
         ),
-        mock.patch("mlflow.utils.requirements_utils._logger.warning") as mock_warning,
+        mock.patch("qcflow.utils.requirements_utils._logger.warning") as mock_warning,
     ):
         _infer_requirements("path/to/model", "sklearn")
         mock_warning.assert_not_called()
 
 
 def test_capture_imported_modules_scopes_databricks_imports(monkeypatch, tmp_path):
-    from mlflow.utils._capture_modules import _CaptureImportedModules
+    from qcflow.utils._capture_modules import _CaptureImportedModules
 
     monkeypatch.chdir(tmp_path)
     monkeypatch.syspath_prepend(str(tmp_path))
@@ -385,12 +385,12 @@ def test_capture_imported_modules_scopes_databricks_imports(monkeypatch, tmp_pat
 
 
 def test_infer_pip_requirements_scopes_databricks_imports():
-    mlflow.utils.requirements_utils._MODULES_TO_PACKAGES = None
-    mlflow.utils.requirements_utils._PACKAGES_TO_MODULES = None
+    qcflow.utils.requirements_utils._MODULES_TO_PACKAGES = None
+    qcflow.utils.requirements_utils._PACKAGES_TO_MODULES = None
 
     with (
         mock.patch(
-            "mlflow.utils.requirements_utils._capture_imported_modules",
+            "qcflow.utils.requirements_utils._capture_imported_modules",
             return_value=[
                 "databricks.automl",
                 "databricks.model_monitoring",
@@ -398,7 +398,7 @@ def test_infer_pip_requirements_scopes_databricks_imports():
             ],
         ),
         mock.patch(
-            "mlflow.utils.requirements_utils._get_installed_version",
+            "qcflow.utils.requirements_utils._get_installed_version",
             return_value="1.0",
         ),
         mock.patch(
@@ -416,11 +416,11 @@ def test_infer_pip_requirements_scopes_databricks_imports():
             "databricks-automl-runtime==1.0",
             "databricks-model-monitoring==1.0",
         ]
-        assert mlflow.utils.requirements_utils._MODULES_TO_PACKAGES["databricks"] == ["koalas"]
+        assert qcflow.utils.requirements_utils._MODULES_TO_PACKAGES["databricks"] == ["koalas"]
 
 
 def test_capture_imported_modules_include_deps_by_params():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             if params is not None:
                 import pandas as pd
@@ -431,8 +431,8 @@ def test_capture_imported_modules_include_deps_by_params():
 
     params = {"a": 1, "b": "string", "c": True}
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=(["input1"], params),
@@ -446,60 +446,60 @@ def test_capture_imported_modules_include_deps_by_params():
 @pytest.mark.parametrize(
     ("module_to_import", "should_capture_extra"),
     [
-        ("mlflow.gateway", True),
-        ("mlflow.deployments.server.config", True),
-        # The `mlflow[gateway]`` extra includes requirements for starting the deployment server,
+        ("qcflow.gateway", True),
+        ("qcflow.deployments.server.config", True),
+        # The `qcflow[gateway]`` extra includes requirements for starting the deployment server,
         # but it is not required when the model only uses the deployment client. These test
         # cases validate that importing the deployment client alone does not add the extra.
-        ("mlflow.deployments", False),
+        ("qcflow.deployments", False),
     ],
 )
 def test_capture_imported_modules_includes_gateway_extra(module_to_import, should_capture_extra):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, inputs, params=None):
             importlib.import_module(module_to_import)
 
             return inputs
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=([1, 2, 3]),
         )
 
     captured_modules = _capture_imported_modules(model_info.model_uri, "pyfunc")
-    assert ("mlflow.gateway" in captured_modules) == should_capture_extra
+    assert ("qcflow.gateway" in captured_modules) == should_capture_extra
 
     pip_requirements = infer_pip_requirements(model_info.model_uri, "pyfunc")
-    assert (f"mlflow[gateway]=={mlflow.__version__}" in pip_requirements) == should_capture_extra
+    assert (f"qcflow[gateway]=={qcflow.__version__}" in pip_requirements) == should_capture_extra
 
 
 def test_gateway_extra_not_captured_when_importing_deployment_client_only():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
-            from mlflow.deployments import get_deploy_client  # noqa: F401
+            from qcflow.deployments import get_deploy_client  # noqa: F401
 
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model",
             python_model=MyModel(),
             input_example=([1, 2, 3]),
         )
 
     captured_modules = _capture_imported_modules(model_info.model_uri, "pyfunc")
-    assert "mlflow.gateway" not in captured_modules
+    assert "qcflow.gateway" not in captured_modules
 
     pip_requirements = infer_pip_requirements(model_info.model_uri, "pyfunc")
-    assert f"mlflow[gateway]=={mlflow.__version__}" not in pip_requirements
+    assert f"qcflow[gateway]=={qcflow.__version__}" not in pip_requirements
 
 
 def test_warn_dependency_requirement_mismatches():
     import sklearn
 
-    with mock.patch("mlflow.utils.requirements_utils._logger.warning") as mock_warning:
+    with mock.patch("qcflow.utils.requirements_utils._logger.warning") as mock_warning:
         # Test case: all packages satisfy requirements.
         warn_dependency_requirement_mismatches(
             model_requirements=[
@@ -510,7 +510,7 @@ def test_warn_dependency_requirement_mismatches():
         mock_warning.assert_not_called()
         mock_warning.reset_mock()
 
-        original_get_installed_version_fn = mlflow.utils.requirements_utils._get_installed_version
+        original_get_installed_version_fn = qcflow.utils.requirements_utils._get_installed_version
 
         def gen_mock_get_installed_version_fn(mock_versions):
             def mock_get_installed_version_fn(package, module=None):
@@ -523,7 +523,7 @@ def test_warn_dependency_requirement_mismatches():
 
         # Test case: multiple mismatched packages
         with mock.patch(
-            "mlflow.utils.requirements_utils._get_installed_version",
+            "qcflow.utils.requirements_utils._get_installed_version",
             gen_mock_get_installed_version_fn(
                 {
                     "scikit-learn": "999.99.11",
@@ -542,7 +542,7 @@ def test_warn_dependency_requirement_mismatches():
 Detected one or more mismatches between the model's dependencies and the current Python environment:
  - cloudpickle (current: 999.99.22, required: cloudpickle=={cloudpickle.__version__})
  - scikit-learn (current: 999.99.11, required: scikit-learn=={sklearn.__version__})
-To fix the mismatches, call `mlflow.pyfunc.get_model_dependencies(model_uri)` to fetch the \
+To fix the mismatches, call `qcflow.pyfunc.get_model_dependencies(model_uri)` to fetch the \
 model's environment and install dependencies using the resulting environment file.
         """.strip()
         )
@@ -550,7 +550,7 @@ model's environment and install dependencies using the resulting environment fil
 
         # Test case: requirement with multiple version specifiers is satisfied
         with mock.patch(
-            "mlflow.utils.requirements_utils._get_installed_version",
+            "qcflow.utils.requirements_utils._get_installed_version",
             gen_mock_get_installed_version_fn({"scikit-learn": "0.8.1"}),
         ):
             warn_dependency_requirement_mismatches(model_requirements=["scikit-learn>=0.8,<=0.9"])
@@ -559,7 +559,7 @@ model's environment and install dependencies using the resulting environment fil
 
         # Test case: requirement with multiple version specifiers is not satisfied
         with mock.patch(
-            "mlflow.utils.requirements_utils._get_installed_version",
+            "qcflow.utils.requirements_utils._get_installed_version",
             gen_mock_get_installed_version_fn({"scikit-learn": "0.7.1"}),
         ):
             warn_dependency_requirement_mismatches(model_requirements=["scikit-learn>=0.8,<=0.9"])
@@ -578,16 +578,16 @@ model's environment and install dependencies using the resulting environment fil
         mock_warning.reset_mock()
 
         # Test case: requirement without version specifiers
-        warn_dependency_requirement_mismatches(model_requirements=["mlflow"])
+        warn_dependency_requirement_mismatches(model_requirements=["qcflow"])
         mock_warning.assert_not_called()
         mock_warning.reset_mock()
 
         # Test case: an unexpected error happens while detecting mismatched packages.
         with mock.patch(
-            "mlflow.utils.requirements_utils._check_requirement_satisfied",
+            "qcflow.utils.requirements_utils._check_requirement_satisfied",
             side_effect=RuntimeError("check_requirement_satisfied_fn_failed"),
         ):
-            warn_dependency_requirement_mismatches(model_requirements=["mlflow"])
+            warn_dependency_requirement_mismatches(model_requirements=["qcflow"])
         mock_warning.assert_called_once_with(
             AnyStringWith(
                 "Encountered an unexpected error "
@@ -612,8 +612,8 @@ model's environment and install dependencies using the resulting environment fil
     ],
 )
 def test_suppress_warn_dependency_requirement_mismatches_ignore_some_packages(ignore_package_name):
-    with mock.patch("mlflow.utils.requirements_utils._logger.warning") as mock_warning:
-        original_get_installed_version_fn = mlflow.utils.requirements_utils._get_installed_version
+    with mock.patch("qcflow.utils.requirements_utils._logger.warning") as mock_warning:
+        original_get_installed_version_fn = qcflow.utils.requirements_utils._get_installed_version
 
         def gen_mock_get_installed_version_fn(mock_versions):
             def mock_get_installed_version_fn(package, module=None):
@@ -626,7 +626,7 @@ def test_suppress_warn_dependency_requirement_mismatches_ignore_some_packages(ig
 
         # Test case: multiple mismatched packages
         with mock.patch(
-            "mlflow.utils.requirements_utils._get_installed_version",
+            "qcflow.utils.requirements_utils._get_installed_version",
             gen_mock_get_installed_version_fn(
                 {
                     ignore_package_name: "9.99.11",
@@ -644,29 +644,29 @@ def test_suppress_warn_dependency_requirement_mismatches_ignore_some_packages(ig
                 """
 Detected one or more mismatches between the model's dependencies and the current Python environment:
  - cloudpickle (current: 999.99.22, required: cloudpickle=={cloudpickle_version})
-To fix the mismatches, call `mlflow.pyfunc.get_model_dependencies(model_uri)` to fetch the \
+To fix the mismatches, call `qcflow.pyfunc.get_model_dependencies(model_uri)` to fetch the \
 model's environment and install dependencies using the resulting environment file.
 """.strip().format(cloudpickle_version=cloudpickle.__version__)
             )
 
 
 def test_capture_imported_modules_with_exception():
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             import pandas  # noqa: F401
 
             raise Exception("Test exception")
             import sklearn  # noqa: F401
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             input_example="test",
         )
 
-    with mock.patch("mlflow.utils.requirements_utils._logger.warning") as mock_warning:
-        modules = _capture_imported_modules(model_info.model_uri, mlflow.pyfunc.FLAVOR_NAME)
+    with mock.patch("qcflow.utils.requirements_utils._logger.warning") as mock_warning:
+        modules = _capture_imported_modules(model_info.model_uri, qcflow.pyfunc.FLAVOR_NAME)
         assert "pandas" in modules
         assert (
             "Failed to run predict on input_example, dependencies "
@@ -676,17 +676,17 @@ def test_capture_imported_modules_with_exception():
 
 
 def test_capture_imported_modules_raises_when_env_var_set(monkeypatch):
-    monkeypatch.setenv("MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", "True")
+    monkeypatch.setenv("QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", "True")
 
-    class BadModel(mlflow.pyfunc.PythonModel):
+    class BadModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             raise Exception("Intentional")
 
     with pytest.raises(
-        MlflowException, match="Encountered an error while capturing imported modules"
+        QCFlowException, match="Encountered an error while capturing imported modules"
     ):
-        with mlflow.start_run():
-            mlflow.pyfunc.log_model(
+        with qcflow.start_run():
+            qcflow.pyfunc.log_model(
                 "model",
                 python_model=BadModel(),
                 input_example="test",
@@ -694,37 +694,37 @@ def test_capture_imported_modules_raises_when_env_var_set(monkeypatch):
 
 
 def test_capture_imported_modules_correct(monkeypatch):
-    monkeypatch.setenv("MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", "true")
+    monkeypatch.setenv("QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", "true")
 
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             import pandas  # noqa: F401
             import sklearn  # noqa: F401
 
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             input_example="test",
         )
 
-    modules = _capture_imported_modules(model_info.model_uri, mlflow.pyfunc.FLAVOR_NAME)
+    modules = _capture_imported_modules(model_info.model_uri, qcflow.pyfunc.FLAVOR_NAME)
     assert "pandas" in modules
     assert "sklearn" in modules
 
 
 def test_capture_imported_modules_extra_env_vars(monkeypatch):
-    monkeypatch.setenv("MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", "true")
+    monkeypatch.setenv("QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", "true")
 
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             assert os.environ["TEST"] == "test"
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             input_example="test",
@@ -732,5 +732,5 @@ def test_capture_imported_modules_extra_env_vars(monkeypatch):
         )
 
     _capture_imported_modules(
-        model_info.model_uri, mlflow.pyfunc.FLAVOR_NAME, extra_env_vars={"TEST": "test"}
+        model_info.model_uri, qcflow.pyfunc.FLAVOR_NAME, extra_env_vars={"TEST": "test"}
     )

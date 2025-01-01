@@ -4,7 +4,7 @@ from threading import Thread
 
 import pytest
 
-from mlflow.pyfunc.context import (
+from qcflow.pyfunc.context import (
     Context,
     get_prediction_context,
     set_prediction_context,

@@ -4,10 +4,10 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities.model_registry import ModelVersion, ModelVersionTag, RegisteredModelTag
-from mlflow.entities.model_registry.model_version_status import ModelVersionStatus
-from mlflow.exceptions import MlflowException
-from mlflow.protos.model_registry_pb2 import (
+from qcflow.entities.model_registry import ModelVersion, ModelVersionTag, RegisteredModelTag
+from qcflow.entities.model_registry.model_version_status import ModelVersionStatus
+from qcflow.exceptions import QCFlowException
+from qcflow.protos.model_registry_pb2 import (
     CreateModelVersion,
     CreateRegisteredModel,
     DeleteModelVersion,
@@ -30,16 +30,16 @@ from mlflow.protos.model_registry_pb2 import (
     UpdateModelVersion,
     UpdateRegisteredModel,
 )
-from mlflow.store.model_registry.rest_store import RestStore
-from mlflow.utils.proto_json_utils import message_to_json
-from mlflow.utils.rest_utils import MlflowHostCreds
+from qcflow.store.model_registry.rest_store import RestStore
+from qcflow.utils.proto_json_utils import message_to_json
+from qcflow.utils.rest_utils import QCFlowHostCreds
 
 from tests.helper_functions import mock_http_request_200, mock_http_request_403_200
 
 
 @pytest.fixture
 def creds():
-    return MlflowHostCreds("https://hello")
+    return QCFlowHostCreds("https://hello")
 
 
 @pytest.fixture
@@ -48,7 +48,7 @@ def store(creds):
 
 
 def _args(host_creds, endpoint, method, json_body):
-    res = {"host_creds": host_creds, "endpoint": f"/api/2.0/mlflow/{endpoint}", "method": method}
+    res = {"host_creds": host_creds, "endpoint": f"/api/2.0/qcflow/{endpoint}", "method": method}
     if method == "GET":
         res["params"] = json.loads(json_body)
     else:
@@ -427,7 +427,7 @@ def test_get_model_version_by_alias(store, creds):
 
 
 @mock.patch(
-    "mlflow.store.model_registry.abstract_store.AWAIT_MODEL_VERSION_CREATE_SLEEP_INTERVAL_SECONDS",
+    "qcflow.store.model_registry.abstract_store.AWAIT_MODEL_VERSION_CREATE_SLEEP_INTERVAL_SECONDS",
     1,
 )
 def test_await_model_version_creation_pending(store):
@@ -439,7 +439,7 @@ def test_await_model_version_creation_pending(store):
     )
     with (
         mock.patch.object(store, "get_model_version", return_value=pending_mv),
-        pytest.raises(MlflowException, match="Exceeded max wait time"),
+        pytest.raises(QCFlowException, match="Exceeded max wait time"),
     ):
         store._await_model_version_creation(pending_mv, 0.5)
 
@@ -453,6 +453,6 @@ def test_await_model_version_creation_failed(store):
     )
     with (
         mock.patch.object(store, "get_model_version", return_value=pending_mv),
-        pytest.raises(MlflowException, match="Model version creation failed for model name"),
+        pytest.raises(QCFlowException, match="Model version creation failed for model name"),
     ):
         store._await_model_version_creation(pending_mv, 0.5)

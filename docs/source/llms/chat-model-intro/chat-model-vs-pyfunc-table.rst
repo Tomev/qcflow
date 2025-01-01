@@ -16,4 +16,4 @@
      - **Custom**. You need to define model signature or input example yourself.
    * - Complexity
      - **Low**. Standardized interface simplified model deployment and integration.
-     - **High**. Deploying and integrating the custom PythonModel may not be straightforward. E.g., The model needs to handle Pandas DataFrames as MLflow converts input data to DataFrames before passing it to PythonModel.
+     - **High**. Deploying and integrating the custom PythonModel may not be straightforward. E.g., The model needs to handle Pandas DataFrames as QCFlow converts input data to DataFrames before passing it to PythonModel.

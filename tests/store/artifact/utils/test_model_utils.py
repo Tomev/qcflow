@@ -2,10 +2,10 @@ from unittest import mock
 
 import pytest
 
-from mlflow import MlflowClient
-from mlflow.entities.model_registry import ModelVersion
-from mlflow.exceptions import MlflowException
-from mlflow.store.artifact.utils.models import _parse_model_uri, get_model_name_and_version
+from qcflow import QCFlowClient
+from qcflow.entities.model_registry import ModelVersion
+from qcflow.exceptions import QCFlowException
+from qcflow.store.artifact.utils.models import _parse_model_uri, get_model_name_and_version
 
 
 @pytest.mark.parametrize(
@@ -115,24 +115,24 @@ def test_parse_models_uri_with_alias(uri, expected_name, expected_alias):
     ],
 )
 def test_parse_models_uri_invalid_input(uri):
-    with pytest.raises(MlflowException, match="Not a proper models"):
+    with pytest.raises(QCFlowException, match="Not a proper models"):
         _parse_model_uri(uri)
 
 
 def test_get_model_name_and_version_with_version():
     with mock.patch.object(
-        MlflowClient, "get_latest_versions", return_value=[]
-    ) as mlflow_client_mock:
-        assert get_model_name_and_version(MlflowClient(), "models:/AdsModel1/123") == (
+        QCFlowClient, "get_latest_versions", return_value=[]
+    ) as qcflow_client_mock:
+        assert get_model_name_and_version(QCFlowClient(), "models:/AdsModel1/123") == (
             "AdsModel1",
             "123",
         )
-        mlflow_client_mock.assert_not_called()
+        qcflow_client_mock.assert_not_called()
 
 
 def test_get_model_name_and_version_with_stage():
     with mock.patch.object(
-        MlflowClient,
+        QCFlowClient,
         "get_latest_versions",
         return_value=[
             ModelVersion(
@@ -142,17 +142,17 @@ def test_get_model_name_and_version_with_stage():
                 name="mv2", version="15", creation_timestamp=124, current_stage="Production"
             ),
         ],
-    ) as mlflow_client_mock:
-        assert get_model_name_and_version(MlflowClient(), "models:/AdsModel1/Production") == (
+    ) as qcflow_client_mock:
+        assert get_model_name_and_version(QCFlowClient(), "models:/AdsModel1/Production") == (
             "AdsModel1",
             "15",
         )
-        mlflow_client_mock.assert_called_once_with("AdsModel1", ["Production"])
+        qcflow_client_mock.assert_called_once_with("AdsModel1", ["Production"])
 
 
 def test_get_model_name_and_version_with_latest():
     with mock.patch.object(
-        MlflowClient,
+        QCFlowClient,
         "get_latest_versions",
         return_value=[
             ModelVersion(
@@ -161,14 +161,14 @@ def test_get_model_name_and_version_with_latest():
             ModelVersion(name="mv3", version="20", creation_timestamp=125, current_stage="None"),
             ModelVersion(name="mv2", version="15", creation_timestamp=124, current_stage="Staging"),
         ],
-    ) as mlflow_client_mock:
-        assert get_model_name_and_version(MlflowClient(), "models:/AdsModel1/latest") == (
+    ) as qcflow_client_mock:
+        assert get_model_name_and_version(QCFlowClient(), "models:/AdsModel1/latest") == (
             "AdsModel1",
             "20",
         )
-        mlflow_client_mock.assert_called_once_with("AdsModel1", None)
+        qcflow_client_mock.assert_called_once_with("AdsModel1", None)
         # Check that "latest" is case insensitive.
-        assert get_model_name_and_version(MlflowClient(), "models:/AdsModel1/lATest") == (
+        assert get_model_name_and_version(QCFlowClient(), "models:/AdsModel1/lATest") == (
             "AdsModel1",
             "20",
         )
@@ -176,14 +176,14 @@ def test_get_model_name_and_version_with_latest():
 
 def test_get_model_name_and_version_with_alias():
     with mock.patch.object(
-        MlflowClient,
+        QCFlowClient,
         "get_model_version_by_alias",
         return_value=ModelVersion(
             name="mv1", version="10", creation_timestamp=123, aliases=["Champion"]
         ),
-    ) as mlflow_client_mock:
-        assert get_model_name_and_version(MlflowClient(), "models:/AdsModel1@Champion") == (
+    ) as qcflow_client_mock:
+        assert get_model_name_and_version(QCFlowClient(), "models:/AdsModel1@Champion") == (
             "AdsModel1",
             "10",
         )
-        mlflow_client_mock.assert_called_once_with("AdsModel1", "Champion")
+        qcflow_client_mock.assert_called_once_with("AdsModel1", "Champion")

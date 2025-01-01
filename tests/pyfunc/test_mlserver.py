@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from mlflow.pyfunc.mlserver import MLServerDefaultModelName, MLServerMLflowRuntime, get_cmd
+from qcflow.pyfunc.mlserver import MLServerDefaultModelName, MLServerQCFlowRuntime, get_cmd
 
 
 @pytest.mark.parametrize(
@@ -55,7 +55,7 @@ def test_get_cmd(params: dict, expected: dict):
 
     assert cmd_env == {
         "MLSERVER_MODEL_URI": model_uri,
-        "MLSERVER_MODEL_IMPLEMENTATION": MLServerMLflowRuntime,
+        "MLSERVER_MODEL_IMPLEMENTATION": MLServerQCFlowRuntime,
         **expected,
         **os.environ.copy(),
     }

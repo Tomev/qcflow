@@ -3,8 +3,8 @@ import json
 import pandas as pd
 import pytest
 
-import mlflow.data
-from mlflow.exceptions import MlflowException
+import qcflow.data
+from qcflow.exceptions import QCFlowException
 
 from tests.resources.data.dataset_source import SampleDatasetSource
 
@@ -26,22 +26,22 @@ def test_get_source_obtains_expected_file_source(tmp_path):
     df = pd.DataFrame([[1, 2, 3], [1, 2, 3]], columns=["a", "b", "c"])
     path = tmp_path / "temp.csv"
     df.to_csv(path)
-    pandas_ds = mlflow.data.from_pandas(df, source=path)
+    pandas_ds = qcflow.data.from_pandas(df, source=path)
 
-    source1 = mlflow.data.get_source(pandas_ds)
+    source1 = qcflow.data.get_source(pandas_ds)
     assert json.loads(source1.to_json()) == json.loads(pandas_ds.source.to_json())
 
-    with mlflow.start_run() as r:
-        mlflow.log_input(pandas_ds)
+    with qcflow.start_run() as r:
+        qcflow.log_input(pandas_ds)
 
-    run = mlflow.get_run(r.info.run_id)
+    run = qcflow.get_run(r.info.run_id)
 
     ds_input = run.inputs.dataset_inputs[0]
-    source2 = mlflow.data.get_source(ds_input)
+    source2 = qcflow.data.get_source(ds_input)
     assert json.loads(source2.to_json()) == json.loads(pandas_ds.source.to_json())
 
     ds_entity = run.inputs.dataset_inputs[0].dataset
-    source3 = mlflow.data.get_source(ds_entity)
+    source3 = qcflow.data.get_source(ds_entity)
     assert json.loads(source3.to_json()) == json.loads(pandas_ds.source.to_json())
 
     assert source1.load() == source2.load() == source3.load() == str(path)
@@ -49,25 +49,25 @@ def test_get_source_obtains_expected_file_source(tmp_path):
 
 def test_get_source_obtains_expected_code_source():
     df = pd.DataFrame([[1, 2, 3], [1, 2, 3]], columns=["a", "b", "c"])
-    pandas_ds = mlflow.data.from_pandas(df)
+    pandas_ds = qcflow.data.from_pandas(df)
 
-    source1 = mlflow.data.get_source(pandas_ds)
+    source1 = qcflow.data.get_source(pandas_ds)
     assert json.loads(source1.to_json()) == json.loads(pandas_ds.source.to_json())
 
-    with mlflow.start_run() as r:
-        mlflow.log_input(pandas_ds)
+    with qcflow.start_run() as r:
+        qcflow.log_input(pandas_ds)
 
-    run = mlflow.get_run(r.info.run_id)
+    run = qcflow.get_run(r.info.run_id)
 
     ds_input = run.inputs.dataset_inputs[0]
-    source2 = mlflow.data.get_source(ds_input)
+    source2 = qcflow.data.get_source(ds_input)
     assert json.loads(source2.to_json()) == json.loads(pandas_ds.source.to_json())
 
     ds_entity = run.inputs.dataset_inputs[0].dataset
-    source3 = mlflow.data.get_source(ds_entity)
+    source3 = qcflow.data.get_source(ds_entity)
     assert json.loads(source3.to_json()) == json.loads(pandas_ds.source.to_json())
 
 
 def test_get_source_throws_for_invalid_input(tmp_path):
-    with pytest.raises(MlflowException, match="Unrecognized dataset type.*str"):
-        mlflow.data.get_source(str(tmp_path))
+    with pytest.raises(QCFlowException, match="Unrecognized dataset type.*str"):
+        qcflow.data.get_source(str(tmp_path))

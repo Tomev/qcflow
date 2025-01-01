@@ -1,15 +1,15 @@
-CREATE DATABASE mlflowdb;
+CREATE DATABASE qcflowdb;
 GO
 
-USE mlflowdb;
+USE qcflowdb;
 
-CREATE LOGIN mlflowuser
+CREATE LOGIN qcflowuser
     WITH PASSWORD = 'Mlfl*wpassword1';
 GO
 
-CREATE USER mlflowuser FOR LOGIN mlflowuser;
+CREATE USER qcflowuser FOR LOGIN qcflowuser;
 GO
 
 ALTER ROLE db_owner
-    ADD MEMBER mlflowuser;
+    ADD MEMBER qcflowuser;
 GO

@@ -14,8 +14,8 @@ from unittest import mock
 
 import pytest
 
-import mlflow
-from mlflow.entities import (
+import qcflow
+from qcflow.entities import (
     Dataset,
     DatasetInput,
     ExperimentTag,
@@ -29,41 +29,41 @@ from mlflow.entities import (
     ViewType,
     _DatasetSummary,
 )
-from mlflow.entities.trace_info import TraceInfo
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.exceptions import MissingConfigException, MlflowException
-from mlflow.models import Model
-from mlflow.protos.databricks_pb2 import (
+from qcflow.entities.trace_info import TraceInfo
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.exceptions import MissingConfigException, QCFlowException
+from qcflow.models import Model
+from qcflow.protos.databricks_pb2 import (
     INTERNAL_ERROR,
     INVALID_PARAMETER_VALUE,
     RESOURCE_DOES_NOT_EXIST,
     ErrorCode,
 )
-from mlflow.store.entities.paged_list import PagedList
-from mlflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
-from mlflow.store.tracking.file_store import FileStore
-from mlflow.tracing.constant import TraceMetadataKey, TraceTagKey
-from mlflow.tracking._tracking_service.utils import _use_tracking_uri
-from mlflow.utils.file_utils import (
+from qcflow.store.entities.paged_list import PagedList
+from qcflow.store.tracking import SEARCH_MAX_RESULTS_DEFAULT
+from qcflow.store.tracking.file_store import FileStore
+from qcflow.tracing.constant import TraceMetadataKey, TraceTagKey
+from qcflow.tracking._tracking_service.utils import _use_tracking_uri
+from qcflow.utils.file_utils import (
     TempDir,
     path_to_local_file_uri,
     read_yaml,
     write_yaml,
 )
-from mlflow.utils.mlflow_tags import (
-    MLFLOW_DATASET_CONTEXT,
-    MLFLOW_LOGGED_MODELS,
-    MLFLOW_RUN_NAME,
+from qcflow.utils.qcflow_tags import (
+    QCFLOW_DATASET_CONTEXT,
+    QCFLOW_LOGGED_MODELS,
+    QCFLOW_RUN_NAME,
 )
-from mlflow.utils.name_utils import _EXPERIMENT_ID_FIXED_WIDTH, _GENERATOR_PREDICATES
-from mlflow.utils.os import is_windows
-from mlflow.utils.time import get_current_time_millis
-from mlflow.utils.uri import append_to_uri_path
-from mlflow.utils.validation import MAX_EXPERIMENT_NAME_LENGTH
+from qcflow.utils.name_utils import _EXPERIMENT_ID_FIXED_WIDTH, _GENERATOR_PREDICATES
+from qcflow.utils.os import is_windows
+from qcflow.utils.time import get_current_time_millis
+from qcflow.utils.uri import append_to_uri_path
+from qcflow.utils.validation import MAX_EXPERIMENT_NAME_LENGTH
 
 from tests.helper_functions import random_int, random_str, safe_edit_yaml
 
-FILESTORE_PACKAGE = "mlflow.store.tracking.file_store"
+FILESTORE_PACKAGE = "qcflow.store.tracking.file_store"
 
 
 @pytest.fixture
@@ -129,7 +129,7 @@ def test_attempting_to_remove_default_experiment(store):
     assert _is_default_in_experiments(ViewType.ACTIVE_ONLY)
 
     # Ensure experiment deletion of default id raises
-    with pytest.raises(MlflowException, match="Cannot delete the default experiment"):
+    with pytest.raises(QCFlowException, match="Cannot delete the default experiment"):
         store.delete_experiment(FileStore.DEFAULT_EXPERIMENT_ID)
 
 
@@ -271,10 +271,10 @@ def test_search_experiments_order_by(store):
     create_experiments(store, experiment_names)
 
     # Test the case where an experiment does not have a creation time by simulating a time of
-    # `None`. This is applicable to experiments created in older versions of MLflow where the
+    # `None`. This is applicable to experiments created in older versions of QCFlow where the
     # `creation_time` attribute did not exist
     with mock.patch(
-        "mlflow.store.tracking.file_store.get_current_time_millis",
+        "qcflow.store.tracking.file_store.get_current_time_millis",
         return_value=None,
     ):
         store.create_experiment("n")
@@ -350,19 +350,19 @@ def test_search_experiments_max_results(store):
 
 def test_search_experiments_max_results_validation(store):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value None for parameter 'max_results' supplied. "
         r"It must be a positive integer",
     ):
         store.search_experiments(max_results=None)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value 0 for parameter 'max_results' supplied. "
         r"It must be a positive integer",
     ):
         store.search_experiments(max_results=0)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value 1000000 for parameter 'max_results' supplied. "
         r"It must be at most 50000",
     ):
@@ -511,7 +511,7 @@ def test_record_logged_model(store):
         run_id=run_id,
         params=[],
         metrics=[],
-        tags=[RunTag(MLFLOW_LOGGED_MODELS, json.dumps([m.get_tags_dict()]))],
+        tags=[RunTag(QCFLOW_LOGGED_MODELS, json.dumps([m.get_tags_dict()]))],
     )
     m2 = Model(
         artifact_path="some/other/path",
@@ -526,7 +526,7 @@ def test_record_logged_model(store):
         metrics=[],
         tags=[
             RunTag(
-                MLFLOW_LOGGED_MODELS,
+                QCFLOW_LOGGED_MODELS,
                 json.dumps([m.get_tags_dict(), m2.get_tags_dict()]),
             )
         ],
@@ -544,7 +544,7 @@ def test_record_logged_model(store):
         metrics=[],
         tags=[
             RunTag(
-                MLFLOW_LOGGED_MODELS,
+                QCFLOW_LOGGED_MODELS,
                 json.dumps([m.get_tags_dict(), m2.get_tags_dict(), m3.get_tags_dict()]),
             )
         ],
@@ -563,7 +563,7 @@ def test_record_logged_model(store):
         metrics=[],
         tags=[
             RunTag(
-                MLFLOW_LOGGED_MODELS,
+                QCFLOW_LOGGED_MODELS,
                 json.dumps(
                     [
                         m.get_tags_dict(),
@@ -577,7 +577,7 @@ def test_record_logged_model(store):
     )
     with pytest.raises(
         TypeError,
-        match="Argument 'mlflow_model' should be mlflow.models.Model, got '<class 'dict'>'",
+        match="Argument 'qcflow_model' should be qcflow.models.Model, got '<class 'dict'>'",
     ):
         store.record_logged_model(run_id, m.get_tags_dict())
 
@@ -617,7 +617,7 @@ def test_get_experiment_retries_for_transient_empty_yaml_read(store):
             return read_yaml(*args, **kwargs)
 
     with mock.patch(
-        "mlflow.store.tracking.file_store.read_yaml", side_effect=mock_read_yaml_impl
+        "qcflow.store.tracking.file_store.read_yaml", side_effect=mock_read_yaml_impl
     ) as mock_read_yaml:
         fetched_experiment = store.get_experiment(exp_id)
         assert fetched_experiment.experiment_id == exp_id
@@ -663,7 +663,7 @@ def test_create_experiment(store):
         store.create_experiment(None)
     with pytest.raises(Exception, match="Invalid experiment name: ''"):
         store.create_experiment("")
-    with pytest.raises(MlflowException, match=r"'name' exceeds the maximum length"):
+    with pytest.raises(QCFlowException, match=r"'name' exceeds the maximum length"):
         store.create_experiment(name="x" * (MAX_EXPERIMENT_NAME_LENGTH + 1))
     name = random_str(25)  # since existing experiments are 10 chars long
     time_before_create = get_current_time_millis()
@@ -843,13 +843,13 @@ def test_hard_delete_run(store):
     exp_id = experiments[random_int(0, len(experiments) - 1)]
     run_id = exp_data[exp_id]["runs"][0]
     store._hard_delete_run(run_id)
-    with pytest.raises(MlflowException, match=f"Run '{run_id}' not found"):
+    with pytest.raises(QCFlowException, match=f"Run '{run_id}' not found"):
         store.get_run(run_id)
-    with pytest.raises(MlflowException, match=f"Run '{run_id}' not found"):
+    with pytest.raises(QCFlowException, match=f"Run '{run_id}' not found"):
         store.get_all_tags(run_id)
-    with pytest.raises(MlflowException, match=f"Run '{run_id}' not found"):
+    with pytest.raises(QCFlowException, match=f"Run '{run_id}' not found"):
         store.get_all_metrics(run_id)
-    with pytest.raises(MlflowException, match=f"Run '{run_id}' not found"):
+    with pytest.raises(QCFlowException, match=f"Run '{run_id}' not found"):
         store.get_all_params(run_id)
 
 
@@ -900,7 +900,7 @@ def test_create_run_returns_expected_run_data(store):
         run_name=None,
     )
     assert isinstance(tags_run.data, RunData)
-    assert tags_run.data.tags == {**tags_dict, MLFLOW_RUN_NAME: tags_run.info.run_name}
+    assert tags_run.data.tags == {**tags_dict, QCFLOW_RUN_NAME: tags_run.info.run_name}
 
     name_empty_str_run = store.create_run(
         experiment_id=FileStore.DEFAULT_EXPERIMENT_ID,
@@ -924,23 +924,23 @@ def test_create_run_sets_name(store):
 
     run = store.get_run(run.info.run_id)
     assert run.info.run_name == "my name"
-    assert run.data.tags.get(MLFLOW_RUN_NAME) == "my name"
+    assert run.data.tags.get(QCFLOW_RUN_NAME) == "my name"
 
     run_id = store.create_run(
         experiment_id=FileStore.DEFAULT_EXPERIMENT_ID,
         user_id="user",
         start_time=0,
         run_name=None,
-        tags=[RunTag(MLFLOW_RUN_NAME, "test")],
+        tags=[RunTag(QCFLOW_RUN_NAME, "test")],
     ).info.run_id
     run = store.get_run(run_id)
     assert run.info.run_name == "test"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape(
-            "Both 'run_name' argument and 'mlflow.runName' tag are specified, but with "
-            "different values (run_name='my name', mlflow.runName='test')."
+            "Both 'run_name' argument and 'qcflow.runName' tag are specified, but with "
+            "different values (run_name='my name', qcflow.runName='test')."
         ),
     ):
         store.create_run(
@@ -948,7 +948,7 @@ def test_create_run_sets_name(store):
             user_id="user",
             start_time=0,
             run_name="my name",
-            tags=[RunTag(MLFLOW_RUN_NAME, "test")],
+            tags=[RunTag(QCFLOW_RUN_NAME, "test")],
         )
 
 
@@ -1014,7 +1014,7 @@ def test_get_run_retries_for_transient_empty_yaml_read(store):
             return read_yaml(*args, **kwargs)
 
     with mock.patch(
-        "mlflow.store.tracking.file_store.read_yaml", side_effect=mock_read_yaml_impl
+        "qcflow.store.tracking.file_store.read_yaml", side_effect=mock_read_yaml_impl
     ) as mock_read_yaml:
         fetched_run = store.get_run(run.info.run_id)
         assert fetched_run.info.run_id == run.info.run_id
@@ -1107,7 +1107,7 @@ def test_log_metric_with_non_numeric_value_raises_exception(store):
         run_name="first name",
     ).info.run_id
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid value \"string\" for parameter \'value\' supplied",
     ):
         store.log_metric(run_id, Metric("test", "string", 0, 0))
@@ -1146,7 +1146,7 @@ def test_get_metric_history(store):
 
 def test_get_metric_history_paginated_request_raises(store):
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The FileStore backend does not support pagination for the `get_metric_history` "
         "API.",
     ):
@@ -1225,7 +1225,7 @@ def test_search_with_max_results(store):
         assert runs[: min(1200, n)] == _search(store, exp, max_results=n)
 
     with pytest.raises(
-        MlflowException, match="Invalid value for request parameter max_results. It "
+        QCFlowException, match="Invalid value for request parameter max_results. It "
     ):
         _search(store, exp, None, max_results=int(1e10))
 
@@ -1267,7 +1267,7 @@ def test_search_runs_run_name(store):
     assert [r.info.run_id for r in result] == [run1.info.run_id]
     result = store.search_runs(
         [exp_id],
-        filter_string="tags.`mlflow.runName` = 'run_name2'",
+        filter_string="tags.`qcflow.runName` = 'run_name2'",
         run_view_type=ViewType.ACTIVE_ONLY,
     )
     assert [r.info.run_id for r in result] == [run2.info.run_id]
@@ -1308,7 +1308,7 @@ def test_search_runs_run_name(store):
 
     # TODO: Test attribute-based search after set_tag
 
-    # Test run name filter works for runs logged in MLflow <= 1.29.0
+    # Test run name filter works for runs logged in QCFlow <= 1.29.0
     run_meta_path = Path(store.root_directory, exp_id, run1.info.run_id, "meta.yaml")
     without_run_name = run_meta_path.read_text().replace("run_name: new_run_name1\n", "")
     run_meta_path.write_text(without_run_name)
@@ -1320,7 +1320,7 @@ def test_search_runs_run_name(store):
     assert [r.info.run_id for r in result] == [run1.info.run_id]
     result = store.search_runs(
         [exp_id],
-        filter_string="tags.`mlflow.runName` = 'new_run_name1'",
+        filter_string="tags.`qcflow.runName` = 'new_run_name1'",
         run_view_type=ViewType.ACTIVE_ONLY,
     )
     assert [r.info.run_id for r in result] == [run1.info.run_id]
@@ -1491,9 +1491,9 @@ def test_search_runs_datasets(store):
         profile="profile3",
     )
 
-    test_tag = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="test")]
-    train_tag = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="train")]
-    eval_tag = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="eval")]
+    test_tag = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="test")]
+    train_tag = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="train")]
+    eval_tag = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="eval")]
 
     inputs_run1 = [DatasetInput(dataset1, train_tag), DatasetInput(dataset2, eval_tag)]
     inputs_run2 = [DatasetInput(dataset1, train_tag), DatasetInput(dataset3, eval_tag)]
@@ -1634,7 +1634,7 @@ def test_log_param_enforces_value_immutability(store):
     # Duplicate calls to `log_param` with the same key and value should succeed
     store.log_param(run_id, Param(param_name, "value1"))
     with pytest.raises(
-        MlflowException, match="Changing param values is not allowed. Param with key="
+        QCFlowException, match="Changing param values is not allowed. Param with key="
     ) as e:
         store.log_param(run_id, Param(param_name, "value2"))
     assert e.value.error_code == ErrorCode.Name(INVALID_PARAMETER_VALUE)
@@ -1650,11 +1650,11 @@ def test_log_param_max_length_value(store, monkeypatch):
     store.log_param(run_id, Param(param_name, param_value))
     run = store.get_run(run_id)
     assert run.data.params[param_name] == param_value
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "false")
-    with pytest.raises(MlflowException, match="exceeds the maximum length"):
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
+    with pytest.raises(QCFlowException, match="exceeds the maximum length"):
         store.log_param(run_id, Param(param_name, "x" * 6001))
 
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "true")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "true")
     store.log_param(run_id, Param(param_name, "x" * 6001))
 
 
@@ -1717,7 +1717,7 @@ def test_set_experiment_tags(store):
     assert experiment.tags["multiline_tag"] == "value2\nvalue2\nvalue2"
     # test cannot set tags on deleted experiments
     store.delete_experiment(exp_id)
-    with pytest.raises(MlflowException, match="must be in the 'active' lifecycle_stage"):
+    with pytest.raises(QCFlowException, match="must be in the 'active' lifecycle_stage"):
         store.set_experiment_tag(exp_id, ExperimentTag("should", "notset"))
 
 
@@ -1755,15 +1755,15 @@ def test_delete_tags(store):
     new_tags = store.get_run(run_id).data.tags
     assert "tag0" not in new_tags.keys()
     # test that you cannot delete tags that don't exist.
-    with pytest.raises(MlflowException, match="No tag with name"):
+    with pytest.raises(QCFlowException, match="No tag with name"):
         store.delete_tag(run_id, "fakeTag")
     # test that you cannot delete tags for nonexistent runs
-    with pytest.raises(MlflowException, match=r"Run .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Run .+ not found"):
         store.delete_tag("random_id", "tag0")
     store.delete_run(run_id)
     # test that you cannot delete tags for deleted runs.
     assert store.get_run(run_id).info.lifecycle_stage == LifecycleStage.DELETED
-    with pytest.raises(MlflowException, match="must be in 'active' lifecycle_stage"):
+    with pytest.raises(QCFlowException, match="must be in 'active' lifecycle_stage"):
         store.delete_tag(run_id, "tag0")
 
 
@@ -1798,17 +1798,17 @@ def test_set_deleted_run(store):
 
     assert store.get_run(run_id).info.lifecycle_stage == LifecycleStage.DELETED
     match = "must be in 'active' lifecycle_stage"
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         store.set_tag(run_id, RunTag("a", "b"))
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         store.log_metric(run_id, Metric("a", 0.0, timestamp=0, step=0))
-    with pytest.raises(MlflowException, match=match):
+    with pytest.raises(QCFlowException, match=match):
         store.log_param(run_id, Param("a", "b"))
 
 
 def test_default_experiment_attempted_deletion(store):
     _create_root(store)
-    with pytest.raises(MlflowException, match="Cannot delete the default experiment"):
+    with pytest.raises(QCFlowException, match="Cannot delete the default experiment"):
         store.delete_experiment(FileStore.DEFAULT_EXPERIMENT_ID)
     experiment = store.get_experiment(FileStore.DEFAULT_EXPERIMENT_ID)
     assert experiment.lifecycle_stage == LifecycleStage.ACTIVE
@@ -1869,9 +1869,9 @@ def test_malformed_metric(store):
     ).info.run_id
     store.log_metric(run_id, Metric("test", 1, 0, 0))
     with (
-        mock.patch("mlflow.store.tracking.file_store.read_file_lines", return_value=["0 1 0 2\n"]),
+        mock.patch("qcflow.store.tracking.file_store.read_file_lines", return_value=["0 1 0 2\n"]),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=f"Metric 'test' is malformed; persisted metric data contained "
             f"4 fields. Expected 2 or 3 fields. "
             f"Experiment id: {exp_id}",
@@ -1892,10 +1892,10 @@ def test_mismatching_experiment_id(store):
     path_new = os.path.join(store.root_directory, str(target))
     os.rename(path_orig, path_new)
 
-    with pytest.raises(MlflowException, match="Could not find experiment with ID"):
+    with pytest.raises(QCFlowException, match="Could not find experiment with ID"):
         store.get_experiment(FileStore.DEFAULT_EXPERIMENT_ID)
 
-    with pytest.raises(MlflowException, match="does not exist"):
+    with pytest.raises(QCFlowException, match="does not exist"):
         store.get_experiment(target)
     assert len(store.search_experiments(view_type=ViewType.ALL)) == experiments - 1
 
@@ -1915,7 +1915,7 @@ def test_bad_experiment_id_recorded_for_run(store):
     experiment_data["experiment_id"] = 1
     write_yaml(path, "meta.yaml", experiment_data, True)
 
-    with pytest.raises(MlflowException, match="metadata is in invalid state"):
+    with pytest.raises(QCFlowException, match="metadata is in invalid state"):
         store.get_run(bad_run_id)
 
     valid_runs = _search(store, exp_0.experiment_id)
@@ -1960,17 +1960,17 @@ def test_log_batch_max_length_value(store, monkeypatch):
     store.log_batch(run.info.run_id, (), param_entities, ())
     _verify_logged(store, run.info.run_id, (), expected_param_entities, ())
 
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "false")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "false")
     param_entities = [Param("long param", "x" * 6001), Param("short param", "xyz")]
-    with pytest.raises(MlflowException, match="exceeds the maximum length"):
+    with pytest.raises(QCFlowException, match="exceeds the maximum length"):
         store.log_batch(run.info.run_id, (), param_entities, ())
 
-    monkeypatch.setenv("MLFLOW_TRUNCATE_LONG_VALUES", "true")
+    monkeypatch.setenv("QCFLOW_TRUNCATE_LONG_VALUES", "true")
     store.log_batch(run.info.run_id, (), param_entities, ())
 
 
 def test_log_batch_internal_error(store):
-    # Verify that internal errors during log_batch result in MlflowExceptions
+    # Verify that internal errors during log_batch result in QCFlowExceptions
     run = store.create_run(
         experiment_id=FileStore.DEFAULT_EXPERIMENT_ID,
         user_id="user",
@@ -1997,14 +1997,14 @@ def test_log_batch_internal_error(store):
         ]:
             log_batch_kwargs = {"metrics": [], "params": [], "tags": []}
             log_batch_kwargs.update(kwargs)
-            with pytest.raises(MlflowException, match="Some internal error") as e:
+            with pytest.raises(QCFlowException, match="Some internal error") as e:
                 store.log_batch(run.info.run_id, **log_batch_kwargs)
             assert e.value.error_code == ErrorCode.Name(INTERNAL_ERROR)
 
 
 def test_log_batch_nonexistent_run(store):
     nonexistent_uuid = uuid.uuid4().hex
-    with pytest.raises(MlflowException, match=f"Run '{nonexistent_uuid}' not found") as e:
+    with pytest.raises(QCFlowException, match=f"Run '{nonexistent_uuid}' not found") as e:
         store.log_batch(nonexistent_uuid, [], [], [])
     assert e.value.error_code == ErrorCode.Name(RESOURCE_DOES_NOT_EXIST)
 
@@ -2112,7 +2112,7 @@ def test_log_batch_with_duplicate_params_errors_no_partial_write(store):
         tags=[],
         run_name="name",
     )
-    with pytest.raises(MlflowException, match="Duplicate parameter keys have been submitted") as e:
+    with pytest.raises(QCFlowException, match="Duplicate parameter keys have been submitted") as e:
         store.log_batch(
             run.info.run_id,
             metrics=[],
@@ -2134,37 +2134,37 @@ def test_update_run_name(store):
     run_id = run.info.run_id
 
     assert run.info.run_name == "name"
-    assert run.data.tags.get(MLFLOW_RUN_NAME) == "name"
+    assert run.data.tags.get(QCFLOW_RUN_NAME) == "name"
 
     store.update_run_info(run_id, RunStatus.FINISHED, 100, "new name")
     run = store.get_run(run_id)
     assert run.info.run_name == "new name"
-    assert run.data.tags.get(MLFLOW_RUN_NAME) == "new name"
+    assert run.data.tags.get(QCFLOW_RUN_NAME) == "new name"
 
     store.update_run_info(run_id, RunStatus.FINISHED, 100, None)
     run = store.get_run(run_id)
     assert run.info.run_name == "new name"
-    assert run.data.tags.get(MLFLOW_RUN_NAME) == "new name"
+    assert run.data.tags.get(QCFLOW_RUN_NAME) == "new name"
 
-    store.delete_tag(run_id, MLFLOW_RUN_NAME)
+    store.delete_tag(run_id, QCFLOW_RUN_NAME)
     run = store.get_run(run_id)
     assert run.info.run_name == "new name"
-    assert run.data.tags.get(MLFLOW_RUN_NAME) is None
+    assert run.data.tags.get(QCFLOW_RUN_NAME) is None
 
     store.update_run_info(run_id, RunStatus.FINISHED, 100, "another name")
     run = store.get_run(run_id)
-    assert run.data.tags.get(MLFLOW_RUN_NAME) == "another name"
+    assert run.data.tags.get(QCFLOW_RUN_NAME) == "another name"
     assert run.info.run_name == "another name"
 
-    store.set_tag(run_id, RunTag(MLFLOW_RUN_NAME, "yet another name"))
+    store.set_tag(run_id, RunTag(QCFLOW_RUN_NAME, "yet another name"))
     run = store.get_run(run_id)
     assert run.info.run_name == "yet another name"
-    assert run.data.tags.get(MLFLOW_RUN_NAME) == "yet another name"
+    assert run.data.tags.get(QCFLOW_RUN_NAME) == "yet another name"
 
-    store.log_batch(run_id, metrics=[], params=[], tags=[RunTag(MLFLOW_RUN_NAME, "batch name")])
+    store.log_batch(run_id, metrics=[], params=[], tags=[RunTag(QCFLOW_RUN_NAME, "batch name")])
     run = store.get_run(run_id)
     assert run.info.run_name == "batch name"
-    assert run.data.tags.get(MLFLOW_RUN_NAME) == "batch name"
+    assert run.data.tags.get(QCFLOW_RUN_NAME) == "batch name"
 
 
 def test_get_metric_history_on_non_existent_metric_key(store):
@@ -2798,9 +2798,9 @@ def test_search_datasets(store):
         profile="profile4",
     )
 
-    test_tag = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="test")]
-    train_tag = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="train")]
-    eval_tag = [InputTag(key=MLFLOW_DATASET_CONTEXT, value="eval")]
+    test_tag = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="test")]
+    train_tag = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="train")]
+    eval_tag = [InputTag(key=QCFLOW_DATASET_CONTEXT, value="eval")]
     no_context_tag = [InputTag(key="not_context", value="test")]
 
     inputs_run1 = [
@@ -2866,7 +2866,7 @@ def test_search_datasets_returns_no_more_than_max_results(store):
             schema="schema" + str(i),
             profile="profile" + str(i),
         )
-        input_tag = [InputTag(key=MLFLOW_DATASET_CONTEXT, value=str(i))]
+        input_tag = [InputTag(key=QCFLOW_DATASET_CONTEXT, value=str(i))]
         inputs.append(DatasetInput(dataset, input_tag))
 
     store.log_inputs(run.info.run_id, inputs)
@@ -2888,7 +2888,7 @@ def test_start_trace(store):
     assert trace_info.request_metadata == {}
     assert trace_info.tags == tags
 
-    with pytest.raises(MlflowException, match=r"Experiment fake_exp_id does not exist."):
+    with pytest.raises(QCFlowException, match=r"Experiment fake_exp_id does not exist."):
         store.start_trace("fake_exp_id", timestamp_ms, {}, {})
 
 
@@ -2899,7 +2899,7 @@ def test_end_trace(store_and_trace_info):
         TraceMetadataKey.INPUTS: {"query": "test"},
         TraceMetadataKey.OUTPUTS: "test",
     }
-    tags = {TraceTagKey.TRACE_NAME: "mlflow_trace"}
+    tags = {TraceTagKey.TRACE_NAME: "qcflow_trace"}
     trace_info = store.end_trace(
         trace.request_id, timestamp_ms, TraceStatus.OK, request_metadata, tags
     )
@@ -2910,7 +2910,7 @@ def test_end_trace(store_and_trace_info):
     assert trace_info.request_metadata == {**trace.request_metadata, **request_metadata}
     assert trace_info.tags == {**trace.tags, **tags}
 
-    with pytest.raises(MlflowException, match=r"Trace with request ID 'fake_request_id' not found"):
+    with pytest.raises(QCFlowException, match=r"Trace with request ID 'fake_request_id' not found"):
         store.end_trace("fake_request_id", timestamp_ms, TraceStatus.OK, request_metadata, tags)
 
 
@@ -2919,18 +2919,18 @@ def test_get_trace_info(store_and_trace_info):
     trace_info = store.get_trace_info(trace.request_id)
     assert trace_info == trace
 
-    with pytest.raises(MlflowException, match=r"Trace with request ID 'fake_request_id' not found"):
+    with pytest.raises(QCFlowException, match=r"Trace with request ID 'fake_request_id' not found"):
         store.get_trace_info("fake_request_id")
 
     mock_trace_info = deepcopy(trace_info)
     mock_trace_info.request_id = "invalid_request_id"
     with (
         mock.patch(
-            "mlflow.store.tracking.file_store.FileStore._get_trace_info_from_dir",
+            "qcflow.store.tracking.file_store.FileStore._get_trace_info_from_dir",
             return_value=mock_trace_info,
         ),
         pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=rf"Trace with request ID '{trace.request_id}' metadata is in invalid state.",
         ),
     ):
@@ -2953,7 +2953,7 @@ def test_set_trace_tag(store_and_trace_info):
     trace_info = store.get_trace_info(trace.request_id)
     assert trace_info.tags["int_key"] == "1234"
 
-    with pytest.raises(MlflowException, match=r"Missing value for required parameter \'key\'"):
+    with pytest.raises(QCFlowException, match=r"Missing value for required parameter \'key\'"):
         store.set_trace_tag(trace.request_id, None, "test")
 
 
@@ -2965,7 +2965,7 @@ def test_delete_trace_tag(store_and_trace_info):
     assert "some_key" not in trace_info.tags
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=rf"No tag with name: invalid_key in trace with request_id {trace.request_id}.",
     ):
         store.delete_trace_tag(trace.request_id, "invalid_key")
@@ -2996,25 +2996,25 @@ def test_delete_traces(store):
     assert len(store.search_traces([exp_id])[0]) == 0
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Either `max_timestamp_millis` or `request_ids` must be specified.",
     ):
         store.delete_traces(exp_id)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Only one of `max_timestamp_millis` and `request_ids` can be specified.",
     ):
         store.delete_traces(exp_id, max_timestamp_millis=100, request_ids=request_ids)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"`max_traces` can't be specified if `request_ids` is specified.",
     ):
         store.delete_traces(exp_id, max_traces=2, request_ids=request_ids)
     with pytest.raises(
-        MlflowException, match=r"`max_traces` must be a positive integer, received 0"
+        QCFlowException, match=r"`max_traces` must be a positive integer, received 0"
     ):
         store.delete_traces(exp_id, 100, max_traces=0)
-    with pytest.raises(MlflowException, match=r"Experiment non_existing_exp does not exist."):
+    with pytest.raises(QCFlowException, match=r"Experiment non_existing_exp does not exist."):
         store.delete_traces("non_existing_exp", 100, 2)
 
 
@@ -3241,7 +3241,7 @@ def test_search_traces_invalid_filter(generate_trace_infos, filter_string, error
     exp_id = generate_trace_infos.exp_id
 
     # Invalid filter key
-    with pytest.raises(MlflowException, match=error):
+    with pytest.raises(QCFlowException, match=error):
         store.search_traces([exp_id], filter_string)
 
 
@@ -3334,12 +3334,12 @@ def test_search_traces_raise_errors(generate_trace_infos):
 
     # unsupported order_by keys
     with pytest.raises(
-        MlflowException,
-        match=r"Invalid order_by entity `tag` with key `mlflow.traceName`",
+        QCFlowException,
+        match=r"Invalid order_by entity `tag` with key `qcflow.traceName`",
     ):
         store.search_traces([exp_id], "", order_by=["name DESC"])
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"Invalid order_by entity `request_metadata` "
         rf"with key `{TraceMetadataKey.SOURCE_RUN}`",
     ):
@@ -3362,10 +3362,10 @@ def test_search_traces_pagination(generate_trace_infos):
 
 def test_traces_not_listed_as_runs(tmp_path):
     with _use_tracking_uri(tmp_path.joinpath("mlruns").as_uri()):
-        client = mlflow.MlflowClient()
-        with mlflow.start_run() as run:
+        client = qcflow.QCFlowClient()
+        with qcflow.start_run() as run:
             client.start_trace("test")
 
-        with mock.patch("mlflow.store.tracking.file_store.logging.debug") as mock_debug:
+        with mock.patch("qcflow.store.tracking.file_store.logging.debug") as mock_debug:
             client.search_runs([run.info.experiment_id], "", ViewType.ALL, max_results=1)
             mock_debug.assert_not_called()

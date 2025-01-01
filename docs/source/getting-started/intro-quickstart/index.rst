@@ -1,15 +1,15 @@
-MLflow Tracking Quickstart
+QCFlow Tracking Quickstart
 ==========================
 
-Welcome to MLflow! 
+Welcome to QCFlow! 
 
-The purpose of this quickstart is to provide a quick guide to the most essential core APIs of MLflow Tracking. 
+The purpose of this quickstart is to provide a quick guide to the most essential core APIs of QCFlow Tracking. 
 Specifically, those that enable the logging, registering, and loading of a model for inference. 
 
 .. note::
     For a more in-depth and tutorial-based approach (if that is your style), please see the 
-    `Getting Started with MLflow <../logging-first-model/index.html>`_ tutorial. We recommend that you start here first, though, as this quickstart 
-    uses the most common and frequently-used APIs for MLflow Tracking and serves as a good foundation for the other tutorials in the documentation. 
+    `Getting Started with QCFlow <../logging-first-model/index.html>`_ tutorial. We recommend that you start here first, though, as this quickstart 
+    uses the most common and frequently-used APIs for QCFlow Tracking and serves as a good foundation for the other tutorials in the documentation. 
 
 What you will learn
 -------------------
@@ -17,9 +17,9 @@ What you will learn
 In just a few minutes of following along with this quickstart, you will learn:
 
 * How to **log** parameters, metrics, and a model
-* The basics of the **MLflow fluent API**
+* The basics of the **QCFlow fluent API**
 * How to **register** a model during logging 
-* How to navigate to a model in the **MLflow UI** 
+* How to navigate to a model in the **QCFlow UI** 
 * How to **load** a logged model for inference 
 
 If you would like to see this quickstart in a purely notebook format, we have a downloadable and viewable notebook-only version of this quickstart:
@@ -31,10 +31,10 @@ If you would like to see this quickstart in a purely notebook format, we have a 
             <div class="simple-card">
                 <a href="notebooks/tracking_quickstart.html" >
                     <div class="header">
-                        MLflow Tracking Quickstart Guide
+                        QCFlow Tracking Quickstart Guide
                     </div>
                     <p>
-                    Learn the basics of MLflow Tracking in a fast-paced guide with a focus on seeing your first model in the MLflow UI
+                    Learn the basics of QCFlow Tracking in a fast-paced guide with a focus on seeing your first model in the QCFlow UI
                     </p>
                 </a>
             </div>
@@ -48,10 +48,10 @@ If you would like to see this quickstart in a purely notebook format, we have a 
     notebooks/index
 
 
-Step 1 - Get MLflow
+Step 1 - Get QCFlow
 -------------------
 
-MLflow is available on PyPI.
+QCFlow is available on PyPI.
 
 Installing Stable Release
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -61,46 +61,46 @@ If you don't already have it installed on your system, you can install it with:
 .. code-section::
 
     .. code-block:: bash
-        :name: download-mlflow
+        :name: download-qcflow
 
-        pip install mlflow
+        pip install qcflow
 
 Installing a Release Candidate (RC)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are eager to test out new features and validate that an upcoming release of MLflow will work well in your infrastructure, installing the latest 
+If you are eager to test out new features and validate that an upcoming release of QCFlow will work well in your infrastructure, installing the latest 
 release candidate may be of interest to you. 
 
 .. note:: 
 
     Release Candidate builds are not recommended for actual use, rather they are intended only for testing validation. 
 
-To install the latest version of MLflow's release candidates for a given version, see the example below that uses MLflow 2.14.0 as an example:
+To install the latest version of QCFlow's release candidates for a given version, see the example below that uses QCFlow 2.14.0 as an example:
 
 .. code-section::
 
     .. code-block:: bash
-        :name: download-mlflow-rc
+        :name: download-qcflow-rc
 
         # install the latest release candidate
-        pip install --pre mlflow
+        pip install --pre qcflow
 
         # or install a specific rc version
-        pip install mlflow==2.14.0rc0
+        pip install qcflow==2.14.0rc0
 
 Step 2 - Start a Tracking Server
 --------------------------------
 
-Using a Managed MLflow Tracking Server
+Using a Managed QCFlow Tracking Server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For details on options for using a managed MLflow Tracking Server, including how to create a free Databricks Community Edition account with 
-managed MLflow, `see the guide for tracking server options <../running-notebooks/index.html>`_.
+For details on options for using a managed QCFlow Tracking Server, including how to create a free Databricks Community Edition account with 
+managed QCFlow, `see the guide for tracking server options <../running-notebooks/index.html>`_.
 
 (Optional) Run a local Tracking Server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We're going to start a local MLflow Tracking Server, which we will connect to for logging our data for this quickstart.
+We're going to start a local QCFlow Tracking Server, which we will connect to for logging our data for this quickstart.
 From a terminal, run:
 
 .. code-section::
@@ -108,31 +108,31 @@ From a terminal, run:
     .. code-block:: bash
         :name: tracking-server-start
 
-        mlflow server --host 127.0.0.1 --port 8080
+        qcflow server --host 127.0.0.1 --port 8080
 
 .. note::
     You can choose any port that you would like, provided that it's not already in use. 
 
-Set the Tracking Server URI (if not using a Databricks Managed MLflow Tracking Server)
+Set the Tracking Server URI (if not using a Databricks Managed QCFlow Tracking Server)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you're using a managed MLflow Tracking Server that is not provided by Databricks, or if you're running a local tracking server, 
+If you're using a managed QCFlow Tracking Server that is not provided by Databricks, or if you're running a local tracking server, 
 ensure that you set the tracking server's uri using:
 
 .. code-section::
     .. code-block:: python
         :name: set tracking uri
 
-        import mlflow
+        import qcflow
 
-        mlflow.set_tracking_uri(uri="http://<host>:<port>")
+        qcflow.set_tracking_uri(uri="http://<host>:<port>")
 
 If this is not set within your notebook or runtime environment, the runs will be logged to your local file system.
 
 Step 3 - Train a model and prepare metadata for logging
 -------------------------------------------------------
 
-In this section, we're going to log a model with MLflow. A quick overview of the steps are:
+In this section, we're going to log a model with QCFlow. A quick overview of the steps are:
 
 - Load and prepare the Iris dataset for modeling.
 - Train a Logistic Regression model and evaluate its performance.
@@ -144,8 +144,8 @@ In this section, we're going to log a model with MLflow. A quick overview of the
     .. code-block:: python
         :name: train-model
 
-        import mlflow
-        from mlflow.models import infer_signature
+        import qcflow
+        from qcflow.models import infer_signature
 
         import pandas as pd
         from sklearn import datasets
@@ -181,22 +181,22 @@ In this section, we're going to log a model with MLflow. A quick overview of the
         accuracy = accuracy_score(y_test, y_pred)
 
 
-Step 4 - Log the model and its metadata to MLflow
+Step 4 - Log the model and its metadata to QCFlow
 -------------------------------------------------
 
 In this next step, we're going to use the model that we trained, the hyperparameters that we specified for the model's fit, and the 
-loss metrics that were calculated by evaluating the model's performance on the test data to log to MLflow.
+loss metrics that were calculated by evaluating the model's performance on the test data to log to QCFlow.
 
 The steps that we will take are:
 
-- Initiate an MLflow **run** context to start a new run that we will log the model and metadata to.
+- Initiate an QCFlow **run** context to start a new run that we will log the model and metadata to.
 - **Log** model **parameters** and performance **metrics**.
 - **Tag** the run for easy retrieval.
-- **Register** the model in the MLflow Model Registry while **logging** (saving) the model.
+- **Register** the model in the QCFlow Model Registry while **logging** (saving) the model.
 
 .. note::
     While it can be valid to wrap the entire code within the ``start_run`` block, this is **not recommended**. If there as in issue with the 
-    training of the model or any other portion of code that is unrelated to MLflow-related actions, an empty or partially-logged run will be 
+    training of the model or any other portion of code that is unrelated to QCFlow-related actions, an empty or partially-logged run will be 
     created, which will necessitate manual cleanup of the invalid run. It is best to keep the training execution outside of the run context block 
     to ensure that the loggable content (parameters, metrics, artifacts, and the model) are fully materialized prior to logging. 
 
@@ -206,27 +206,27 @@ The steps that we will take are:
         :name: log-model
 
         # Set our tracking server uri for logging
-        mlflow.set_tracking_uri(uri="http://127.0.0.1:8080")
+        qcflow.set_tracking_uri(uri="http://127.0.0.1:8080")
 
-        # Create a new MLflow Experiment
-        mlflow.set_experiment("MLflow Quickstart")
+        # Create a new QCFlow Experiment
+        qcflow.set_experiment("QCFlow Quickstart")
 
-        # Start an MLflow run
-        with mlflow.start_run():
+        # Start an QCFlow run
+        with qcflow.start_run():
             # Log the hyperparameters
-            mlflow.log_params(params)
+            qcflow.log_params(params)
 
             # Log the loss metric
-            mlflow.log_metric("accuracy", accuracy)
+            qcflow.log_metric("accuracy", accuracy)
 
             # Set a tag that we can use to remind ourselves what this run was for
-            mlflow.set_tag("Training Info", "Basic LR model for iris data")
+            qcflow.set_tag("Training Info", "Basic LR model for iris data")
 
             # Infer the model signature
             signature = infer_signature(X_train, lr.predict(X_train))
 
             # Log the model
-            model_info = mlflow.sklearn.log_model(
+            model_info = qcflow.sklearn.log_model(
                 sk_model=lr,
                 artifact_path="iris_model",
                 signature=signature,
@@ -239,7 +239,7 @@ Step 5 - Load the model as a Python Function (pyfunc) and use it for inference
 
 After logging the model, we can perform inference by:
 
-- **Loading** the model using MLflow's `pyfunc` flavor.
+- **Loading** the model using QCFlow's `pyfunc` flavor.
 - Running **Predict** on new data using the loaded model.
 
 .. note::
@@ -252,7 +252,7 @@ After logging the model, we can perform inference by:
         :name: load-model 
 
         # Load the model back for predictions as a generic Python Function model
-        loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+        loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
         predictions = loaded_model.predict(X_test)
 
@@ -278,29 +278,29 @@ The output of this code will look something like this:
 | 6.0               | 2.9             | 4.5               | 1.5             | 1            | 1               |
 +-------------------+-----------------+-------------------+-----------------+--------------+-----------------+
 
-Step 6 - View the Run in the MLflow UI
+Step 6 - View the Run in the QCFlow UI
 --------------------------------------
 
-In order to see the results of our run, we can navigate to the MLflow UI. Since we have already started the Tracking Server at 
+In order to see the results of our run, we can navigate to the QCFlow UI. Since we have already started the Tracking Server at 
 `http://localhost:8080`, we can simply navigate to that URL in our browser.
 
 When opening the site, you will see a screen similar to the following:
 
 .. figure:: ../../_static/images/tutorials/introductory/quickstart-tracking/quickstart-our-experiment.png
-    :alt: MLflow UI Experiment view page
+    :alt: QCFlow UI Experiment view page
     :width: 1024px
     :align: center
 
-    The main MLflow Tracking page, showing Experiments that have been created
+    The main QCFlow Tracking page, showing Experiments that have been created
 
-Clicking on the name of the Experiment that we created ("MLflow Quickstart") will give us a list of runs associated with the 
+Clicking on the name of the Experiment that we created ("QCFlow Quickstart") will give us a list of runs associated with the 
 Experiment. You should see a random name that has been generated for the run and nothing else show up in the `Table` list view to the right. 
 
 Clicking on the name of the run will take you to the Run page, where the details of what we've logged will be shown. The elements have 
 been highlighted below to show how and where this data is recorded within the UI. 
 
 .. figure:: ../../_static/images/tutorials/introductory/quickstart-tracking/quickstart-our-run.png
-    :alt: MLflow UI Run view page
+    :alt: QCFlow UI Run view page
     :width: 1024px
     :align: center
 
@@ -309,9 +309,9 @@ been highlighted below to show how and where this data is recorded within the UI
 Conclusion
 ----------
 
-Congratulations on working through the MLflow Tracking Quickstart! You should now have a basic understanding of how to use the MLflow Tracking API to log 
+Congratulations on working through the QCFlow Tracking Quickstart! You should now have a basic understanding of how to use the QCFlow Tracking API to log 
 models. 
 
-If you are interested in a more in-depth tutorial, please see the `Getting Started with MLflow <../logging-first-model/index.html>`_ tutorial as a 
-good next step in increasing your knowledge about MLflow! 
+If you are interested in a more in-depth tutorial, please see the `Getting Started with QCFlow <../logging-first-model/index.html>`_ tutorial as a 
+good next step in increasing your knowledge about QCFlow! 
         

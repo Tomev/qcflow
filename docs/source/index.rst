@@ -1,31 +1,31 @@
-MLflow: A Tool for Managing the Machine Learning Lifecycle
+QCFlow: A Tool for Managing the Machine Learning Lifecycle
 ==========================================================
 
-MLflow is an open-source platform, purpose-built to assist machine learning practitioners and teams in
-handling the complexities of the machine learning process. MLflow focuses on the full lifecycle for
+QCFlow is an open-source platform, purpose-built to assist machine learning practitioners and teams in
+handling the complexities of the machine learning process. QCFlow focuses on the full lifecycle for
 machine learning projects, ensuring that each phase is manageable, traceable, and reproducible.
 
 
-MLflow Getting Started Resources
+QCFlow Getting Started Resources
 --------------------------------
 
-If this is your first time exploring MLflow, the tutorials and guides here are a great place to start. The emphasis in each of these is 
-getting you up to speed as quickly as possible with the basic functionality, terms, APIs, and general best practices of using MLflow in order to 
+If this is your first time exploring QCFlow, the tutorials and guides here are a great place to start. The emphasis in each of these is 
+getting you up to speed as quickly as possible with the basic functionality, terms, APIs, and general best practices of using QCFlow in order to 
 enhance your learning in area-specific guides and tutorials. 
 
 .. |getting-started| raw:: html
 
     <div class="main-container">
-        <h3>Learn about the core components of MLflow</h3>
+        <h3>Learn about the core components of QCFlow</h3>
         <div class="sub-container-two-columns">
             <div class="text-box">
                 <h4>Quickstarts</h4>
                 <p>
-                    Get Started with MLflow in our <a href="getting-started/intro-quickstart/index.html">5-minute tutorial</a>
+                    Get Started with QCFlow in our <a href="getting-started/intro-quickstart/index.html">5-minute tutorial</a>
                 </p> 
                 <h4>Guides</h4>
                 <p>
-                    Learn the core components of MLflow with <a href="getting-started/logging-first-model/index.html">this in-depth guide to Tracking</a>
+                    Learn the core components of QCFlow with <a href="getting-started/logging-first-model/index.html">this in-depth guide to Tracking</a>
                 </p>
             </div>
             <div class="image-box">
@@ -37,7 +37,7 @@ enhance your learning in area-specific guides and tutorials.
 .. |starting-guides| raw:: html
 
     <div class="main-container">
-        <h3>Learn how to perform common tasks in MLflow</h3>
+        <h3>Learn how to perform common tasks in QCFlow</h3>
         <div class="sub-container-two-columns">
             <div class="text-box">
                 <h4>Guides</h4>
@@ -45,13 +45,13 @@ enhance your learning in area-specific guides and tutorials.
                     <a href="tracking/autolog.html">Autologging tutorial</a> for effortless model tracking
                 </p>
                 <p>
-                    <a href="model/signatures.html">Model Signatures</a> and type validation in MLflow
+                    <a href="model/signatures.html">Model Signatures</a> and type validation in QCFlow
                 </p>
                 <p>
                     <a href="getting-started/quickstart-2/index.html">Model Deployment Quickstart</a>
                 </p>
                 <p>
-                    <a href="traditional-ml/hyperparameter-tuning-with-child-runs/index.html">Hyperparameter tuning</a> with MLflow
+                    <a href="traditional-ml/hyperparameter-tuning-with-child-runs/index.html">Hyperparameter tuning</a> with QCFlow
                 </p>
             </div>
             <div class="image-box">
@@ -63,7 +63,7 @@ enhance your learning in area-specific guides and tutorials.
 .. |model-topics| raw:: html
 
     <div class="main-container">
-        <h3>Learn about MLflow Model-related topics</h3>
+        <h3>Learn about QCFlow Model-related topics</h3>
         <div class="sub-container-two-columns">
             <div class="text-box">
                 <h4>Guides</h4>
@@ -71,14 +71,14 @@ enhance your learning in area-specific guides and tutorials.
                     Introduction to <a href="traditional-ml/creating-custom-pyfunc/index.html">Custom Python Models</a>
                 </p>
                 <p>
-                    <a href="model/dependencies.html">Model dependency management</a> in MLflow
+                    <a href="model/dependencies.html">Model dependency management</a> in QCFlow
                 </p>
                 <p>
                     <a href="model/signatures.html">Model Signatures</a> and type validation
                 </p>
             </div>
             <div class="image-box">
-                <img src="_static/images/intro/model-topics.png" alt="MLflow Model Topics">
+                <img src="_static/images/intro/model-topics.png" alt="QCFlow Model Topics">
             </div>
         </div>
     </div>
@@ -86,7 +86,7 @@ enhance your learning in area-specific guides and tutorials.
 .. |genai-quickstarts| raw:: html
 
     <div class="main-container">
-        <h3>Get started with MLflow's GenAI integrations</h3>
+        <h3>Get started with QCFlow's GenAI integrations</h3>
         <div class="sub-container-two-columns">
             <div class="text-box">
                 <h4>Quickstarts</h4>
@@ -104,7 +104,7 @@ enhance your learning in area-specific guides and tutorials.
                 </p>
             </div>
             <div class="image-box">
-                <img src="_static/images/intro/genai-integrations.png" alt="GenAI with MLflow">
+                <img src="_static/images/intro/genai-integrations.png" alt="GenAI with QCFlow">
             </div>
         </div>
     </div>
@@ -112,7 +112,7 @@ enhance your learning in area-specific guides and tutorials.
 .. |dl-quickstarts| raw:: html
 
     <div class="main-container">
-        <h3>Get started with MLflow's Deep Learning Library integrations</h3>
+        <h3>Get started with QCFlow's Deep Learning Library integrations</h3>
         <div class="sub-container-two-columns">
             <div class="text-box">
                 <h4>Quickstarts</h4>
@@ -127,7 +127,7 @@ enhance your learning in area-specific guides and tutorials.
                 </p>
             </div>
             <div class="image-box">
-                <img src="_static/images/intro/mlflow-deep-learning.png" alt="Deep Learning with MLflow">
+                <img src="_static/images/intro/qcflow-deep-learning.png" alt="Deep Learning with QCFlow">
             </div>
         </div>
     </div>
@@ -137,15 +137,15 @@ enhance your learning in area-specific guides and tutorials.
 
     .. tabs::
 
-        .. tab:: Learn about MLflow
+        .. tab:: Learn about QCFlow
 
             |getting-started|
         
-        .. tab:: MLflow Basics
+        .. tab:: QCFlow Basics
 
             |starting-guides|
         
-        .. tab:: MLflow Models Introduction
+        .. tab:: QCFlow Models Introduction
 
             |model-topics|
         
@@ -158,21 +158,21 @@ enhance your learning in area-specific guides and tutorials.
             |dl-quickstarts|
 
 
-GenAI and MLflow
+GenAI and QCFlow
 ----------------
 
-Explore the comprehensive GenAI-focused support in MLflow. From **MLflow Deployments for GenAI models** to the **Prompt Engineering UI** and native GenAI-focused MLflow flavors like 
+Explore the comprehensive GenAI-focused support in QCFlow. From **QCFlow Deployments for GenAI models** to the **Prompt Engineering UI** and native GenAI-focused QCFlow flavors like 
 **open-ai**, **transformers**, and **sentence-transformers**, the tutorials and guides here will help to get you started in leveraging the 
 benefits of these powerful models, services, and applications.  
-You'll learn how MLflow simplifies both using GenAI models and developing solutions that leverage them. Important tasks such as prompt development, evaluation of prompts, comparison of  
-foundation models, fine-tuning, logging, and deploying production-grade inference servers are all covered by MLflow. 
+You'll learn how QCFlow simplifies both using GenAI models and developing solutions that leverage them. Important tasks such as prompt development, evaluation of prompts, comparison of  
+foundation models, fine-tuning, logging, and deploying production-grade inference servers are all covered by QCFlow. 
 
 Explore the guides and tutorials below to start your journey!
 
 .. |genai-flavors| raw:: html
 
     <div class="main-container">
-        <h3>Explore the Native MLflow GenAI Integrations</h3>
+        <h3>Explore the Native QCFlow GenAI Integrations</h3>
         <div class="icon-container">
             <div class="icon-box">
                 <a href="llms/transformers/index.html">
@@ -210,27 +210,27 @@ Explore the guides and tutorials below to start your journey!
 .. |tracing| raw:: html
     
     <div class="main-container">
-        <h3>Learn about how to instrument your GenAI Workloads with MLflow Tracing</h3>
+        <h3>Learn about how to instrument your GenAI Workloads with QCFlow Tracing</h3>
         <div class="sub-container-two-columns">
             <div class="text-box">
                 <h4>Guides</h4>
                 <ul>
                     <li>
-                        Learn how to leverage <a href="llms/tracing/index.html">Tracing</a> in MLflow
+                        Learn how to leverage <a href="llms/tracing/index.html">Tracing</a> in QCFlow
                     </li>
                     <li>
                         View the <a href="llms/tracing/overview.html">Tracing Guide</a> for more information on tracing
                     </li>
                     <li>
-                        Learn how to use MLflow autologging with <a href="llms/openai/autologging.html">OpenAI</a> for automated trace logging
+                        Learn how to use QCFlow autologging with <a href="llms/openai/autologging.html">OpenAI</a> for automated trace logging
                     </li>
                     <li>
-                        Discover the automated <a href="llms/langchain/autologging.html">LangChain trace logging</a> with MLflow autologging
+                        Discover the automated <a href="llms/langchain/autologging.html">LangChain trace logging</a> with QCFlow autologging
                     </li>
                 </ul>
             </div>
             <div class="image-box">
-                <img src="_static/images/llms/tracing/tracing-top.gif" alt="MLflow Tracing">
+                <img src="_static/images/llms/tracing/tracing-top.gif" alt="QCFlow Tracing">
             </div>
         </div>
     </div>
@@ -256,19 +256,19 @@ Explore the guides and tutorials below to start your journey!
 .. |deployments-server| raw:: html
     
     <div class="main-container">
-        <h3>Learn about managed access to GenAI services with the MLflow AI Gateway</h3>
+        <h3>Learn about managed access to GenAI services with the QCFlow AI Gateway</h3>
         <div class="sub-container-two-columns">
             <div class="text-box">
                 <h4>Guides</h4>
                 <p>
-                    Learn how to use the <a href="llms/deployments/guides/index.html">MLflow AI Gateway</a>
+                    Learn how to use the <a href="llms/deployments/guides/index.html">QCFlow AI Gateway</a>
                 </p>
                 <p>
-                    View the <a href="llms/deployments/index.html">in-depth Guide for the MLflow AI Gateway</a>
+                    View the <a href="llms/deployments/index.html">in-depth Guide for the QCFlow AI Gateway</a>
                 </p>
             </div>
             <div class="image-box">
-                <img src="_static/images/intro/deployments-server.png" alt="MLflow AI Gateway">
+                <img src="_static/images/intro/deployments-server.png" alt="QCFlow AI Gateway">
             </div>
         </div>
     </div>
@@ -281,14 +281,14 @@ Explore the guides and tutorials below to start your journey!
             <div class="text-box">
                 <h4>Guides</h4>
                 <p>
-                    Learn how to <a href="llms/llm-evaluate/index.html">evaluate your GenAI applications</a> with MLflow
+                    Learn how to <a href="llms/llm-evaluate/index.html">evaluate your GenAI applications</a> with QCFlow
                 </p>
                 <p>
-                    Discover how to use <a href="llms/prompt-engineering/index.html#step-10-evaluate-the-new-prompt-template-on-previous-inputs">MLflow Evaluate</a> with the Prompt Engineering UI
+                    Discover how to use <a href="llms/prompt-engineering/index.html#step-10-evaluate-the-new-prompt-template-on-previous-inputs">QCFlow Evaluate</a> with the Prompt Engineering UI
                 </p>
             </div>
             <div class="image-box">
-                <img src="_static/images/intro/evaluate.png" alt="MLflow GenAI Evaluation">
+                <img src="_static/images/intro/evaluate.png" alt="QCFlow GenAI Evaluation">
             </div>
         </div>
     </div>
@@ -298,19 +298,19 @@ Explore the guides and tutorials below to start your journey!
 .. |rag| raw:: html
 
     <div class="main-container">
-        <h3>Learn about using Retrieval Augmented Generation (RAG) with MLflow</h3>
+        <h3>Learn about using Retrieval Augmented Generation (RAG) with QCFlow</h3>
         <div class="sub-container-two-columns">
             <div class="text-box">
                 <h4>Guides</h4>
                 <p>
-                    Learn how to <a href="llms/rag/index.html">work with RAG systems</a> in MLflow
+                    Learn how to <a href="llms/rag/index.html">work with RAG systems</a> in QCFlow
                 </p>
                 <p>
                     View the hands-on <a href="llms/langchain/notebooks/langchain-retriever.html">LangChain RAG Guide</a>
                 </p>
             </div>
             <div class="image-box">
-                <img src="_static/images/intro/rag.png" alt="MLflow RAG">
+                <img src="_static/images/intro/rag.png" alt="QCFlow RAG">
             </div>
         </div>
     </div>
@@ -334,7 +334,7 @@ Explore the guides and tutorials below to start your journey!
 
             |prompt-engineering-ui|
 
-        .. tab:: MLflow AI Gatway
+        .. tab:: QCFlow AI Gatway
 
             |deployments-server|
         
@@ -355,7 +355,7 @@ Explore the guides and tutorials below to start your journey!
     getting-started/index
     new-features/index
     llms/index
-    MLflow Tracing<llms/tracing/index>
+    QCFlow Tracing<llms/tracing/index>
     model-evaluation/index
     deep-learning/index
     traditional-ml/index

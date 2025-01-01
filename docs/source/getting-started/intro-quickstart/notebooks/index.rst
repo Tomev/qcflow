@@ -1,18 +1,18 @@
-MLflow Tracking Quickstart Notebook
+QCFlow Tracking Quickstart Notebook
 ===================================
 
-Welcome to the MLflow Tracking Quickstart! The notebook-based companion to the quickstart guide is tailored to help you quickly 
-understand the core features of MLflow Tracking. In just a few minutes, you'll gain hands-on experience with the fundamental aspects 
-of MLflow, including:
+Welcome to the QCFlow Tracking Quickstart! The notebook-based companion to the quickstart guide is tailored to help you quickly 
+understand the core features of QCFlow Tracking. In just a few minutes, you'll gain hands-on experience with the fundamental aspects 
+of QCFlow, including:
 
-- Installing MLflow.
-- Starting a local MLflow Tracking Server.
-- Logging and registering a model with MLflow.
-- Loading a logged model for inference using MLflow's `pyfunc` flavor.
-- Viewing the experiment results in the MLflow UI.
+- Installing QCFlow.
+- Starting a local QCFlow Tracking Server.
+- Logging and registering a model with QCFlow.
+- Loading a logged model for inference using QCFlow's `pyfunc` flavor.
+- Viewing the experiment results in the QCFlow UI.
 
-If you are new to MLflow, we recommend starting with this quickstart to familiarize yourself with the most commonly used 
-MLflow APIs before diving into more detailed tutorials.
+If you are new to QCFlow, we recommend starting with this quickstart to familiarize yourself with the most commonly used 
+QCFlow APIs before diving into more detailed tutorials.
 
 .. raw:: html
 
@@ -21,10 +21,10 @@ MLflow APIs before diving into more detailed tutorials.
             <div class="simple-card">
                 <a href="tracking_quickstart.html" >
                     <div class="header">
-                        MLflow Tracking Quickstart Guide
+                        QCFlow Tracking Quickstart Guide
                     </div>
                     <p>
-                    Learn the basics of MLflow Tracking in a fast-paced guide with a focus on seeing your first model in the MLflow UI
+                    Learn the basics of QCFlow Tracking in a fast-paced guide with a focus on seeing your first model in the QCFlow UI
                     </p>
                 </a>
             </div>

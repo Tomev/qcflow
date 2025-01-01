@@ -1,8 +1,8 @@
 from threading import Thread
 
-from mlflow import MlflowClient
-from mlflow.entities import Metric
-from mlflow.utils.autologging_utils.metrics_queue import (
+from qcflow import QCFlowClient
+from qcflow.entities import Metric
+from qcflow.utils.autologging_utils.metrics_queue import (
     _metrics_queue,
     _metrics_queue_lock,
     flush_metrics_queue,
@@ -11,13 +11,13 @@ from mlflow.utils.autologging_utils.metrics_queue import (
 
 def test_flush_metrics_queue_is_thread_safe():
     """
-    Autologging augments TensorBoard event logging hooks with MLflow `log_metric` API
+    Autologging augments TensorBoard event logging hooks with QCFlow `log_metric` API
     calls. To prevent these API calls from blocking TensorBoard event logs, `log_metric`
     API calls are scheduled via `_flush_queue` on a background thread. Accordingly, this test
     verifies that `_flush_queue` is thread safe.
     """
 
-    client = MlflowClient()
+    client = QCFlowClient()
     run = client.create_run(experiment_id="0")
     metric_queue_item = (run.info.run_id, Metric("foo", 0.1, 100, 1))
     _metrics_queue.append(metric_queue_item)

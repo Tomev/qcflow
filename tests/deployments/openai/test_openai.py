@@ -2,8 +2,8 @@ from unittest import mock
 
 import pytest
 
-from mlflow.deployments import get_deploy_client
-from mlflow.exceptions import MlflowException
+from qcflow.deployments import get_deploy_client
+from qcflow.exceptions import QCFlowException
 
 
 @pytest.fixture
@@ -197,7 +197,7 @@ def test_predict_azure_openai(mock_azure_openai_creds):
 
 def test_no_openai_api_key():
     client = get_deploy_client("openai")
-    with pytest.raises(MlflowException, match="OPENAI_API_KEY environment variable not set"):
+    with pytest.raises(QCFlowException, match="OPENAI_API_KEY environment variable not set"):
         client.predict(
             endpoint="test",
             inputs={

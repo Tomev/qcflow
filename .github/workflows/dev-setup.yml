@@ -17,7 +17,7 @@ on:
     inputs:
       repository:
         description: >
-          [Optional] Repository name with owner. For example, mlflow/mlflow.
+          [Optional] Repository name with owner. For example, qcflow/qcflow.
            Defaults to the repository that triggered a workflow.
         required: false
         default: ""
@@ -42,18 +42,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions: {}
-    if: github.event_name != 'schedule' || github.repository == 'mlflow-automation/mlflow'
+    if: github.event_name != 'schedule' || github.repository == 'qcflow-automation/qcflow'
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/free-disk-space
         with:
           submodules: recursive
-          repository: ${{ github.event_name == 'schedule' && 'mlflow/mlflow' || github.event.inputs.repository }}
+          repository: ${{ github.event_name == 'schedule' && 'qcflow/qcflow' || github.event.inputs.repository }}
           ref: ${{ github.event.inputs.ref }}
       - name: Setup environment
         run: |
           git config --global user.name "test"
-          git config --global user.email "test@mlflow.org"
+          git config --global user.email "test@qcflow.org"
       - name: Run Environment tests
         run: |
           TERM=xterm bash ./dev/test-dev-env-setup.sh

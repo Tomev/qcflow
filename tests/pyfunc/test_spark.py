@@ -39,13 +39,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 
-import mlflow
-import mlflow.pyfunc
-import mlflow.sklearn
-from mlflow.exceptions import MlflowException
-from mlflow.models import ModelSignature
-from mlflow.models.signature import infer_signature
-from mlflow.pyfunc import (
+import qcflow
+import qcflow.pyfunc
+import qcflow.sklearn
+from qcflow.exceptions import QCFlowException
+from qcflow.models import ModelSignature
+from qcflow.models.signature import infer_signature
+from qcflow.pyfunc import (
     PyFuncModel,
     PythonModel,
     _check_udf_return_type,
@@ -53,11 +53,11 @@ from mlflow.pyfunc import (
     build_model_env,
     spark_udf,
 )
-from mlflow.pyfunc.spark_model_cache import SparkModelCache
-from mlflow.types import ColSpec, Schema, TensorSpec
-from mlflow.types.schema import Array, DataType, Object, Property
-from mlflow.types.utils import _infer_schema
-from mlflow.utils._spark_utils import modified_environ
+from qcflow.pyfunc.spark_model_cache import SparkModelCache
+from qcflow.types import ColSpec, Schema, TensorSpec
+from qcflow.types.schema import Array, DataType, Object, Property
+from qcflow.types.utils import _infer_schema
+from qcflow.utils._spark_utils import modified_environ
 
 import tests
 
@@ -161,14 +161,14 @@ def sklearn_model():
 
 
 def test_spark_udf(spark, model_path):
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=model_path,
         loader_module=__name__,
         code_paths=[os.path.dirname(tests.__file__)],
     )
 
-    with mock.patch("mlflow.pyfunc.warn_dependency_requirement_mismatches") as mock_check_fn:
-        reloaded_pyfunc_model = mlflow.pyfunc.load_model(model_path)
+    with mock.patch("qcflow.pyfunc.warn_dependency_requirement_mismatches") as mock_check_fn:
+        reloaded_pyfunc_model = qcflow.pyfunc.load_model(model_path)
         mock_check_fn.assert_called_once()
 
     pandas_df = pd.DataFrame(data=np.ones((10, 10)), columns=[str(i) for i in range(10)])
@@ -216,7 +216,7 @@ def test_spark_udf(spark, model_path):
 def test_spark_udf_env_manager_can_restore_env(
     spark, model_path, sklearn_version, env_manager, monkeypatch
 ):
-    class EnvRestoringTestModel(mlflow.pyfunc.PythonModel):
+    class EnvRestoringTestModel(qcflow.pyfunc.PythonModel):
         def __init__(self):
             pass
 
@@ -227,7 +227,7 @@ def test_spark_udf_env_manager_can_restore_env(
 
     infer_spark_df = spark.createDataFrame(pd.DataFrame(data=[[1, 2]], columns=["a", "b"]))
 
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=model_path,
         python_model=EnvRestoringTestModel(),
         pip_requirements=[
@@ -238,10 +238,10 @@ def test_spark_udf_env_manager_can_restore_env(
         ],
     )
     # tests/helper_functions.py
-    from tests.helper_functions import _get_mlflow_home
+    from tests.helper_functions import _get_qcflow_home
 
-    monkeypatch.setenv("MLFLOW_HOME", _get_mlflow_home())
-    python_udf = mlflow.pyfunc.spark_udf(
+    monkeypatch.setenv("QCFLOW_HOME", _get_qcflow_home())
+    python_udf = qcflow.pyfunc.spark_udf(
         spark, model_path, env_manager=env_manager, result_type="string"
     )
     result = infer_spark_df.select(python_udf("a", "b").alias("result")).toPandas().result[0]
@@ -252,7 +252,7 @@ def test_spark_udf_env_manager_can_restore_env(
 def test_spark_udf_env_manager_predict_sklearn_model(spark, sklearn_model, model_path, env_manager):
     model, inference_data = sklearn_model
 
-    mlflow.sklearn.save_model(model, model_path)
+    qcflow.sklearn.save_model(model, model_path)
     expected_pred_result = model.predict(inference_data)
 
     infer_data = pd.DataFrame(inference_data, columns=["a", "b"])
@@ -273,10 +273,10 @@ def test_spark_udf_with_single_arg(spark):
         def predict(self, context, model_input, params=None):
             return [",".join(map(str, model_input.columns.tolist()))] * len(model_input)
 
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=TestModel())
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=TestModel())
 
-        udf = mlflow.pyfunc.spark_udf(
+        udf = qcflow.pyfunc.spark_udf(
             spark, f"runs:/{run.info.run_id}/model", result_type=StringType()
         )
 
@@ -304,10 +304,10 @@ def test_spark_udf_with_struct_return_type(spark):
                 "r7": ["abc"] * input_len,
             }
 
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=TestModel())
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=TestModel())
 
-        udf = mlflow.pyfunc.spark_udf(
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type=(
@@ -346,8 +346,8 @@ def test_spark_udf_colspec_struct_return_type_inference(spark):
                 "r4": ["abc"] * input_len,
             }
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=ModelSignature(
@@ -363,7 +363,7 @@ def test_spark_udf_colspec_struct_return_type_inference(spark):
             ),
         )
 
-        udf = mlflow.pyfunc.spark_udf(spark, model_info.model_uri)
+        udf = qcflow.pyfunc.spark_udf(spark, model_info.model_uri)
 
         data1 = spark.range(2).repartition(1)
         result_spark_df = data1.withColumn("res", udf("id")).select(
@@ -397,8 +397,8 @@ def test_spark_udf_tensorspec_struct_return_type_inference(spark):
                 "r5": np.array([[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]] * input_len),
             }
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=ModelSignature(
@@ -415,7 +415,7 @@ def test_spark_udf_tensorspec_struct_return_type_inference(spark):
             ),
         )
 
-        udf = mlflow.pyfunc.spark_udf(spark, model_info.model_uri)
+        udf = qcflow.pyfunc.spark_udf(spark, model_info.model_uri)
 
         data1 = spark.range(2).repartition(1)
         result_spark_df = data1.withColumn("res", udf("id")).select(
@@ -448,8 +448,8 @@ def test_spark_udf_single_1d_array_return_type_inference(spark):
             input_len = len(model_input)
             return [[1, 2]] * input_len
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=ModelSignature(
@@ -462,7 +462,7 @@ def test_spark_udf_single_1d_array_return_type_inference(spark):
             ),
         )
 
-        udf = mlflow.pyfunc.spark_udf(spark, model_info.model_uri)
+        udf = qcflow.pyfunc.spark_udf(spark, model_info.model_uri)
 
         data1 = spark.range(2).repartition(1)
         result_spark_df = data1.select(udf("id").alias("res"))
@@ -477,8 +477,8 @@ def test_spark_udf_single_2d_array_return_type_inference(spark):
             input_len = len(model_input)
             return [np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])] * input_len
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=ModelSignature(
@@ -491,7 +491,7 @@ def test_spark_udf_single_2d_array_return_type_inference(spark):
             ),
         )
 
-        udf = mlflow.pyfunc.spark_udf(spark, model_info.model_uri)
+        udf = qcflow.pyfunc.spark_udf(spark, model_info.model_uri)
 
         data1 = spark.range(2).repartition(1)
         result_spark_df = data1.select(udf("id").alias("res"))
@@ -508,8 +508,8 @@ def test_spark_udf_single_long_return_type_inference(spark):
             input_len = len(model_input)
             return [12] * input_len
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=ModelSignature(
@@ -522,7 +522,7 @@ def test_spark_udf_single_long_return_type_inference(spark):
             ),
         )
 
-        udf = mlflow.pyfunc.spark_udf(spark, model_info.model_uri)
+        udf = qcflow.pyfunc.spark_udf(spark, model_info.model_uri)
 
         data1 = spark.range(2).repartition(1)
         result_spark_df = data1.select(udf("id").alias("res"))
@@ -575,9 +575,9 @@ def test_spark_udf_autofills_no_arguments(spark):
     good_data = spark.createDataFrame(
         pd.DataFrame(columns=["a", "b", "c", "d"], data={"a": [1], "b": [2], "c": [3], "d": [4]})
     )
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
-        udf = mlflow.pyfunc.spark_udf(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type=ArrayType(StringType()),
@@ -615,24 +615,24 @@ def test_spark_udf_autofills_no_arguments(spark):
         inputs=Schema([ColSpec("long"), ColSpec("long"), ColSpec("long")]),
         outputs=Schema([ColSpec("integer")]),
     )
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=TestModel(), signature=nameless_signature)
-        udf = mlflow.pyfunc.spark_udf(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=TestModel(), signature=nameless_signature)
+        udf = qcflow.pyfunc.spark_udf(
             spark, f"runs:/{run.info.run_id}/model", result_type=ArrayType(StringType())
         )
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Cannot apply udf because no column names specified",
         ):
             good_data.withColumn("res", udf())
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         # model without signature
-        mlflow.pyfunc.log_model("model", python_model=TestModel())
-        udf = mlflow.pyfunc.spark_udf(
+        qcflow.pyfunc.log_model("model", python_model=TestModel())
+        udf = qcflow.pyfunc.spark_udf(
             spark, f"runs:/{run.info.run_id}/model", result_type=ArrayType(StringType())
         )
-        with pytest.raises(MlflowException, match="Attempting to apply udf on zero columns"):
+        with pytest.raises(QCFlowException, match="Attempting to apply udf on zero columns"):
             res = good_data.withColumn("res", udf()).select("res").toPandas()
 
     named_signature_with_optional_input = ModelSignature(
@@ -646,15 +646,15 @@ def test_spark_udf_autofills_no_arguments(spark):
         ),
         outputs=Schema([ColSpec("integer")]),
     )
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model(
             "model", python_model=TestModel(), signature=named_signature_with_optional_input
         )
-        udf = mlflow.pyfunc.spark_udf(
+        udf = qcflow.pyfunc.spark_udf(
             spark, f"runs:/{run.info.run_id}/model", result_type=ArrayType(StringType())
         )
         with pytest.raises(
-            MlflowException,
+            QCFlowException,
             match=r"Cannot apply UDF without column names specified when model "
             r"signature contains optional columns",
         ):
@@ -674,9 +674,9 @@ def test_spark_udf_autofills_column_names_with_schema(spark):
         inputs=Schema([ColSpec("long", "a"), ColSpec("long", "b"), ColSpec("long", "c")]),
         outputs=Schema([ColSpec("integer")]),
     )
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
-        udf = mlflow.pyfunc.spark_udf(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type=ArrayType(StringType()),
@@ -711,9 +711,9 @@ def test_spark_udf_with_datetime_columns(spark):
         inputs=Schema([ColSpec("datetime", "timestamp"), ColSpec("datetime", "date")]),
         outputs=Schema([ColSpec("integer")]),
     )
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
-        udf = mlflow.pyfunc.spark_udf(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type=ArrayType(StringType()),
@@ -746,9 +746,9 @@ def test_spark_udf_over_empty_partition(spark):
     spark_df = spark.createDataFrame(
         pd.DataFrame(columns=["x", "y"], data={"x": [11], "y": [21]})
     ).repartition(2)
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
-        python_udf = mlflow.pyfunc.spark_udf(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
+        python_udf = qcflow.pyfunc.spark_udf(
             spark, f"runs:/{run.info.run_id}/model", result_type=LongType()
         )
         res_df = spark_df.withColumn("res", python_udf("x", "y")).select("res").toPandas()
@@ -763,7 +763,7 @@ def test_spark_udf_over_empty_partition(spark):
 
 
 def test_model_cache(spark, model_path):
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=model_path,
         loader_module=__name__,
         code_paths=[os.path.dirname(tests.__file__)],
@@ -779,7 +779,7 @@ def test_model_cache(spark, model_path):
     def check_get_or_load_return_value(model_from_cache, model_path_from_cache):
         assert model_path_from_cache != model_path
         assert os.path.isdir(model_path_from_cache)
-        model2 = mlflow.pyfunc.load_model(model_path_from_cache)
+        model2 = qcflow.pyfunc.load_model(model_path_from_cache)
         for model in [model_from_cache, model2]:
             assert isinstance(model, PyFuncModel)
             # NB: Can not use instanceof test as remote does not know about ConstantPyfuncWrapper
@@ -816,20 +816,20 @@ def test_model_cache(spark, model_path):
 def test_spark_udf_embedded_model_server_killed_when_job_canceled(
     spark, sklearn_model, model_path, env_manager
 ):
-    from mlflow.models.flavor_backend_registry import get_flavor_backend
-    from mlflow.pyfunc.scoring_server.client import ScoringServerClient
+    from qcflow.models.flavor_backend_registry import get_flavor_backend
+    from qcflow.pyfunc.scoring_server.client import ScoringServerClient
 
-    mlflow.sklearn.save_model(sklearn_model.model, model_path)
+    qcflow.sklearn.save_model(sklearn_model.model, model_path)
 
     server_port = 51234
     timeout = 60
 
     @pandas_udf("int")
     def udf_with_model_server(it: Iterator[pd.Series]) -> Iterator[pd.Series]:
-        from mlflow.models.flavor_backend_registry import get_flavor_backend
+        from qcflow.models.flavor_backend_registry import get_flavor_backend
 
         get_flavor_backend(
-            model_path, env_manager=env_manager, workers=1, install_mlflow=False
+            model_path, env_manager=env_manager, workers=1, install_qcflow=False
         ).serve(
             model_uri=model_path,
             port=server_port,
@@ -844,10 +844,10 @@ def test_spark_udf_embedded_model_server_killed_when_job_canceled(
 
     def run_job():
         # Start a spark job with only one UDF task,
-        # and the udf task starts a mlflow model server process.
+        # and the udf task starts a qcflow model server process.
         spark.range(1).repartition(1).select(udf_with_model_server("id")).collect()
 
-    get_flavor_backend(model_path, env_manager=env_manager, install_mlflow=False).prepare_env(
+    get_flavor_backend(model_path, env_manager=env_manager, install_qcflow=False).prepare_env(
         model_uri=model_path
     )
 
@@ -888,13 +888,13 @@ def test_spark_udf_datetime_with_model_schema(spark):
     model.fit(X, y)
 
     timestamp_dtype = {"timestamp": "datetime64[ns]"}
-    with mlflow.start_run():
-        signature = mlflow.models.infer_signature(X.astype(timestamp_dtype), y)
-        model_info = mlflow.sklearn.log_model(model, "model", signature=signature)
+    with qcflow.start_run():
+        signature = qcflow.models.infer_signature(X.astype(timestamp_dtype), y)
+        model_info = qcflow.sklearn.log_model(model, "model", signature=signature)
 
     inference_sample = X.sample(n=10, random_state=42)
     infer_spark_df = spark.createDataFrame(inference_sample.astype(timestamp_dtype))
-    pyfunc_udf = mlflow.pyfunc.spark_udf(spark, model_info.model_uri, env_manager="conda")
+    pyfunc_udf = qcflow.pyfunc.spark_udf(spark, model_info.model_uri, env_manager="conda")
     result = infer_spark_df.select(pyfunc_udf(*X.columns).alias("predictions")).toPandas()
     np.testing.assert_almost_equal(result.to_numpy().squeeze(), model.predict(inference_sample))
 
@@ -919,13 +919,13 @@ def test_spark_udf_string_datetime_with_model_schema(spark):
     )
     model.fit(X, y)
 
-    with mlflow.start_run():
-        signature = mlflow.models.infer_signature(X, y)
-        model_info = mlflow.sklearn.log_model(model, "model", signature=signature)
+    with qcflow.start_run():
+        signature = qcflow.models.infer_signature(X, y)
+        model_info = qcflow.sklearn.log_model(model, "model", signature=signature)
 
     inference_sample = X.sample(n=10, random_state=42)
     infer_spark_df = spark.createDataFrame(inference_sample)
-    pyfunc_udf = mlflow.pyfunc.spark_udf(spark, model_info.model_uri, env_manager="conda")
+    pyfunc_udf = qcflow.pyfunc.spark_udf(spark, model_info.model_uri, env_manager="conda")
     result = infer_spark_df.select(pyfunc_udf(*X.columns).alias("predictions")).toPandas()
     np.testing.assert_almost_equal(result.to_numpy().squeeze(), model.predict(inference_sample))
 
@@ -973,9 +973,9 @@ def test_spark_udf_with_col_spec_type_input(spark):
         schema=spark_schema,
     ).repartition(1)
 
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
-        udf = mlflow.pyfunc.spark_udf(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model("model", python_model=TestModel(), signature=signature)
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type="c_int int, c_float float",
@@ -993,12 +993,12 @@ def test_spark_udf_stdin_scoring_server(spark):
     model = LogisticRegression().fit(X, y)
     model.fit(X, y)
 
-    with mlflow.start_run():
-        signature = mlflow.models.infer_signature(X, y)
-        model_info = mlflow.sklearn.log_model(model, "model", signature=signature)
+    with qcflow.start_run():
+        signature = qcflow.models.infer_signature(X, y)
+        model_info = qcflow.sklearn.log_model(model, "model", signature=signature)
 
-    with mock.patch("mlflow.pyfunc.check_port_connectivity", return_value=False):
-        udf = mlflow.pyfunc.spark_udf(
+    with mock.patch("qcflow.pyfunc.check_port_connectivity", return_value=False):
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             model_info.model_uri,
             env_manager="virtualenv",
@@ -1019,13 +1019,13 @@ def test_spark_udf_array_of_structs(spark):
 
     signature = ModelSignature(inputs=Schema([ColSpec("long", "a")]))
     good_data = spark.createDataFrame(pd.DataFrame({"a": [1, 2, 3]}))
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=signature,
         )
-        udf = mlflow.pyfunc.spark_udf(
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type=ArrayType(
@@ -1051,14 +1051,14 @@ def test_spark_udf_return_nullable_array_field(spark):
             values = [np.array([1.0, np.nan])] * (len(model_input) - 2) + [None, np.nan]
             return pd.DataFrame({"a": values})
 
-    with mlflow.start_run():
-        mlflow_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        qcflow_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
         )
-        udf = mlflow.pyfunc.spark_udf(
+        udf = qcflow.pyfunc.spark_udf(
             spark,
-            mlflow_info.model_uri,
+            qcflow_info.model_uri,
             result_type="a array<double>",
         )
         data1 = spark.range(3).repartition(1)
@@ -1080,7 +1080,7 @@ def test_spark_udf_with_params(spark):
         "long_param": 100,
     }
 
-    signature = mlflow.models.infer_signature(["input"], params=test_params)
+    signature = qcflow.models.infer_signature(["input"], params=test_params)
     spark_df = spark.createDataFrame(
         [
             ("input1",),
@@ -1089,13 +1089,13 @@ def test_spark_udf_with_params(spark):
         ],
         ["input_col"],
     )
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=signature,
         )
-        udf = mlflow.pyfunc.spark_udf(
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type=ArrayType(
@@ -1131,7 +1131,7 @@ def test_spark_udf_with_array_params(spark):
         "long_array": np.array([1, 2]),
     }
 
-    signature = mlflow.models.infer_signature(["input"], params=test_params)
+    signature = qcflow.models.infer_signature(["input"], params=test_params)
     spark_df = spark.createDataFrame(
         [
             ("input1",),
@@ -1140,13 +1140,13 @@ def test_spark_udf_with_array_params(spark):
         ],
         ["input_col"],
     )
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=signature,
         )
-        udf = mlflow.pyfunc.spark_udf(
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type=StructType(
@@ -1173,16 +1173,16 @@ def test_spark_udf_with_params_with_errors(spark):
             return [params.values[0]] * len(model_input)
 
     test_params = {"datetime_param": np.datetime64("2023-06-26 00:00:00")}
-    signature = mlflow.models.infer_signature(["input"], params=test_params)
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model(
+    signature = qcflow.models.infer_signature(["input"], params=test_params)
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=signature,
         )
 
-        with pytest.raises(MlflowException, match=r"Invalid 'spark_udf' result type"):
-            mlflow.pyfunc.spark_udf(
+        with pytest.raises(QCFlowException, match=r"Invalid 'spark_udf' result type"):
+            qcflow.pyfunc.spark_udf(
                 spark,
                 f"runs:/{run.info.run_id}/model",
                 result_type=TimestampType(),
@@ -1190,18 +1190,18 @@ def test_spark_udf_with_params_with_errors(spark):
             )
 
 
-def test_spark_udf_compatible_with_mlflow_2_4_0(tmp_path, spark):
+def test_spark_udf_compatible_with_qcflow_2_4_0(tmp_path, spark):
     """
-    # Code for logging the model in mlflow 2.4.0
-    import mlflow
+    # Code for logging the model in qcflow 2.4.0
+    import qcflow
 
-    class TestModel(mlflow.pyfunc.PythonModel):
+    class TestModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return ["string"] * len(model_input)
 
-    signature = mlflow.models.infer_signature(["input"])
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model(
+    signature = qcflow.models.infer_signature(["input"])
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=signature,
@@ -1216,10 +1216,10 @@ flavors:
     env:
       conda: conda.yaml
       virtualenv: python_env.yaml
-    loader_module: mlflow.pyfunc.model
+    loader_module: qcflow.pyfunc.model
     python_model: python_model.pkl
     python_version: 3.8.16
-mlflow_version: 2.4.0
+qcflow_version: 2.4.0
 model_uuid: 067c27bc09954838ad6d6bfc89c7eeed
 run_id: 054cfd4d129849f88210568366fea24b
 signature:
@@ -1241,7 +1241,7 @@ dependencies:
     )
     tmp_path.joinpath("requirements.txt").write_text(
         """
-mlflow==2.4.0
+qcflow==2.4.0
 cloudpickle==2.2.1
         """
     )
@@ -1255,7 +1255,7 @@ cloudpickle==2.2.1
     with open(tmp_path / "python_model.pkl", "wb") as out:
         cloudpickle.dump(python_model, out)
 
-    assert Version(mlflow.__version__) > Version("2.4.0")
+    assert Version(qcflow.__version__) > Version("2.4.0")
     model_uri = str(tmp_path)
 
     spark_df = spark.createDataFrame(
@@ -1263,7 +1263,7 @@ cloudpickle==2.2.1
         ["input_col"],
     )
 
-    udf = mlflow.pyfunc.spark_udf(
+    udf = qcflow.pyfunc.spark_udf(
         spark,
         model_uri,
         result_type=StringType(),
@@ -1281,7 +1281,7 @@ def test_spark_udf_with_model_serving(spark):
         "str_param": "str_a",
     }
 
-    signature = mlflow.models.infer_signature(["input"], params=test_params)
+    signature = qcflow.models.infer_signature(["input"], params=test_params)
     spark_df = spark.createDataFrame(
         [
             ("input1",),
@@ -1290,15 +1290,15 @@ def test_spark_udf_with_model_serving(spark):
         ],
         ["input_col"],
     )
-    with mlflow.start_run() as run:
-        mlflow.pyfunc.log_model(
+    with qcflow.start_run() as run:
+        qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=signature,
         )
 
-    with mock.patch("mlflow.pyfunc.check_port_connectivity", return_value=False):
-        udf = mlflow.pyfunc.spark_udf(
+    with mock.patch("qcflow.pyfunc.check_port_connectivity", return_value=False):
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             f"runs:/{run.info.run_id}/model",
             result_type=StringType(),
@@ -1315,19 +1315,19 @@ def test_spark_udf_set_extra_udf_env_vars(spark):
         def predict(self, context, model_input, params=None):
             return [os.environ["TEST_ENV_VAR"]] * len(model_input)
 
-    signature = mlflow.models.infer_signature(["input"])
+    signature = qcflow.models.infer_signature(["input"])
     spark_df = spark.createDataFrame(
         [("input1",), ("input2",), ("input3",)],
         ["input_col"],
     )
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=TestModel(),
             signature=signature,
         )
 
-    udf = mlflow.pyfunc.spark_udf(
+    udf = qcflow.pyfunc.spark_udf(
         spark,
         model_info.model_uri,
         result_type=StringType(),
@@ -1368,13 +1368,13 @@ def test_spark_df_schema_inference_for_map_type(spark):
 
     complex_df = spark.createDataFrame([{"map": {"nested_map": {"a": 1}}}])
     with pytest.raises(
-        MlflowException, match=r"Please construct spark DataFrame with schema using StructType"
+        QCFlowException, match=r"Please construct spark DataFrame with schema using StructType"
     ):
         _infer_schema(complex_df)
 
 
 def test_spark_udf_structs_and_arrays(spark, tmp_path):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return [str(" | ".join(map(str, row))) for _, row in model_input.iterrows()]
 
@@ -1425,13 +1425,13 @@ def test_spark_udf_structs_and_arrays(spark, tmp_path):
         ),
     )
     save_path = tmp_path / "1"
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=save_path,
         python_model=MyModel(),
-        signature=mlflow.models.infer_signature(df),
+        signature=qcflow.models.infer_signature(df),
     )
 
-    udf = mlflow.pyfunc.spark_udf(spark=spark, model_uri=save_path, result_type="string")
+    udf = qcflow.pyfunc.spark_udf(spark=spark, model_uri=save_path, result_type="string")
     pdf = df.withColumn("output", udf("str", "arr", "obj", "obj_arr")).toPandas()
     assert pdf["output"][0] == "a | [0] | {'bool': True} | [{'double': 0.1}]"
     assert pdf["output"][1] == "b | [1 2] | {'bool': False} | [{'double': 0.2} {'double': 0.3}]"
@@ -1467,19 +1467,19 @@ def test_spark_udf_structs_and_arrays(spark, tmp_path):
         ),
     )
     save_path = tmp_path / "2"
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=save_path,
         python_model=MyModel(),
-        signature=mlflow.models.infer_signature(df),
+        signature=qcflow.models.infer_signature(df),
     )
-    udf = mlflow.pyfunc.spark_udf(spark=spark, model_uri=save_path, result_type="string")
+    udf = qcflow.pyfunc.spark_udf(spark=spark, model_uri=save_path, result_type="string")
     pdf = df.withColumn("output", udf("test")).toPandas()
     assert pdf["output"][0] == "[{'arr': array([{'bool': True}], dtype=object)}]"
     assert pdf["output"][1] == "[{'arr': array([{'bool': False}], dtype=object)}]"
 
 
 def test_spark_udf_infer_return_type(spark, tmp_path):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return model_input
 
@@ -1532,14 +1532,14 @@ def test_spark_udf_infer_return_type(spark, tmp_path):
         schema=schema,
     )
 
-    signature = mlflow.models.infer_signature(df, df)
-    mlflow.pyfunc.save_model(
+    signature = qcflow.models.infer_signature(df, df)
+    qcflow.pyfunc.save_model(
         path=tmp_path,
         python_model=MyModel(),
         signature=signature,
     )
 
-    udf = mlflow.pyfunc.spark_udf(spark=spark, model_uri=tmp_path)
+    udf = qcflow.pyfunc.spark_udf(spark=spark, model_uri=tmp_path)
     df = df.withColumn("output", udf("str", "arr", "obj", "obj_arr"))
     assert df.schema["output"] == StructField("output", schema)
     pdf = df.toPandas()
@@ -1563,13 +1563,13 @@ def test_spark_udf_env_manager_with_invalid_pythonpath(
 
     model, inference_data = sklearn_model
 
-    mlflow.sklearn.save_model(model, model_path)
+    qcflow.sklearn.save_model(model, model_path)
     expected_pred_result = model.predict(inference_data)
 
     infer_data = pd.DataFrame(inference_data, columns=["a", "b"])
     infer_spark_df = spark.createDataFrame(infer_data)
 
-    with mock.patch("mlflow.utils.databricks_utils.is_in_databricks_runtime", return_value=True):
+    with mock.patch("qcflow.utils.databricks_utils.is_in_databricks_runtime", return_value=True):
         pyfunc_udf = spark_udf(spark, model_path, env_manager="virtualenv")
 
     result = (
@@ -1584,7 +1584,7 @@ def test_spark_udf_env_manager_with_invalid_pythonpath(
 def test_build_model_env(spark, sklearn_model, model_path, tmp_path, monkeypatch):
     import sklearn
 
-    from mlflow.pyfunc.dbconnect_artifact_cache import extract_archive_to_dir
+    from qcflow.pyfunc.dbconnect_artifact_cache import extract_archive_to_dir
 
     monkeypatch.setenv("DATABRICKS_RUNTIME_VERSION", "15.4.1")
     spark.udf.register(
@@ -1594,15 +1594,15 @@ def test_build_model_env(spark, sklearn_model, model_path, tmp_path, monkeypatch
     )
     model, inference_data = sklearn_model
 
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(
             model,
             "model",
             pip_requirements=[
                 f"scikit-learn=={sklearn.__version__}",
-                # `build_model_env` doesn't support building env with dev version MLflow,
-                # so add MLflow as a required dependency here.
-                "mlflow",
+                # `build_model_env` doesn't support building env with dev version QCFlow,
+                # so add QCFlow as a required dependency here.
+                "qcflow",
             ],
         )
 
@@ -1627,7 +1627,7 @@ def test_build_model_env(spark, sklearn_model, model_path, tmp_path, monkeypatch
         shutil.rmtree(f"/tmp/{archive_name}", ignore_errors=True)
 
 
-class CustomModelWithMlflowConfig(mlflow.pyfunc.PythonModel):
+class CustomModelWithQCFlowConfig(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input, params=None):
         alpha = context.model_config["alpha"]
         return [x + alpha for x in model_input[model_input.columns[0]]]
@@ -1638,15 +1638,15 @@ class CustomModelWithMlflowConfig(mlflow.pyfunc.PythonModel):
     [("local", None), ("virtualenv", False), ("virtualenv", True)],
 )
 def test_spark_udf_with_model_config(spark, model_path, monkeypatch, env_manager, use_stdin_serve):
-    model = CustomModelWithMlflowConfig()
-    mlflow.pyfunc.save_model(
+    model = CustomModelWithQCFlowConfig()
+    qcflow.pyfunc.save_model(
         model_path,
         python_model=model,
         model_config={"alpha": 0},
         code_paths=[os.path.dirname(tests.__file__)],
     )
-    with mock.patch("mlflow.pyfunc.check_port_connectivity", return_value=(not use_stdin_serve)):
-        udf = mlflow.pyfunc.spark_udf(
+    with mock.patch("qcflow.pyfunc.check_port_connectivity", return_value=(not use_stdin_serve)):
+        udf = qcflow.pyfunc.spark_udf(
             spark,
             model_path,
             result_type="long",

@@ -127,7 +127,7 @@ def _iter_code_blocks(docstring: str) -> Iterator[CodeBlock]:
             #     :option:           <- code block may have options
             #     :another-option:   <-
             #
-            #     import mlflow      <- code body starts from here
+            #     import qcflow      <- code body starts from here
             #     ...
             if not _CODE_BLOCK_OPTION_REGEX.match(line.lstrip()):
                 code_lines.append(line)
@@ -263,9 +263,9 @@ class Linter(ast.NodeVisitor):
         if node.name.startswith("test") and not node.name.startswith("test_"):
             self._check(Location.from_node(node), rules.TestNameTypo())
 
-    def _mlflow_class_name(self, node: ast.ClassDef) -> None:
-        if "MLflow" in node.name or "MLFlow" in node.name:
-            self._check(Location.from_node(node), rules.MlflowClassName())
+    def _qcflow_class_name(self, node: ast.ClassDef) -> None:
+        if "QCFlow" in node.name or "QCFlow" in node.name:
+            self._check(Location.from_node(node), rules.QCFlowClassName())
 
     def _is_in_test(self) -> bool:
         return (
@@ -277,7 +277,7 @@ class Linter(ast.NodeVisitor):
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self.stack.append(node)
         self._no_rst(node)
-        self._mlflow_class_name(node)
+        self._qcflow_class_name(node)
         self.generic_visit(node)
         self.stack.pop()
 
@@ -408,7 +408,7 @@ class Linter(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> None:
         if (
-            self.path.parts[0] in ["tests", "mlflow"]
+            self.path.parts[0] in ["tests", "qcflow"]
             and _is_log_model(node.func)
             and any(arg.arg == "artifact_path" for arg in node.keywords)
         ):

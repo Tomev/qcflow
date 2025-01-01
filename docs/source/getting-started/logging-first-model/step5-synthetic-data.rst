@@ -1,7 +1,7 @@
 Create a dataset about apples
 =============================
 
-In order to produce some meaningful data (and a model) for us to log to MLflow, we'll need a dataset.
+In order to produce some meaningful data (and a model) for us to log to QCFlow, we'll need a dataset.
 In the interests of sticking with our theme of modeling demand for produce sales, this data will
 actually need to be about apples.
 
@@ -133,4 +133,4 @@ Generate the data using the method we just prepared and save its result.
         data[-20:]
 
 In the next section, we'll both use this generator for its output (the data set), and as an example
-for how to leverage MLflow Tracking as part of a prototyping phase for a project.
+for how to leverage QCFlow Tracking as part of a prototyping phase for a project.

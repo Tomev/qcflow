@@ -3,16 +3,16 @@ Tutorial: Custom GenAI Models using ChatModel
 
 The rapidly evolving landscape of Generative Artificial Intelligence (GenAI) presents exciting opportunities and integration challenges.
 To leverage the latest GenAI advancements effectively, developers need a framework that balances flexibility with standardization. 
-MLflow addresses this need with the :py:class:`mlflow.pyfunc.ChatModel` class introduced in 
-`version 2.11.0 <https://mlflow.org/releases/2.11.0#chatmodel-interface-for-a-unified-chat-experience-with-pyfunc-models>`_, providing a 
+QCFlow addresses this need with the :py:class:`qcflow.pyfunc.ChatModel` class introduced in 
+`version 2.11.0 <https://qcflow.org/releases/2.11.0#chatmodel-interface-for-a-unified-chat-experience-with-pyfunc-models>`_, providing a 
 consistent interface for GenAI applications while simplifying deployment and testing.
 
 Choosing Between ChatModel and PythonModel
 ------------------------------------------
 
-When building GenAI applications in MLflow, it's essential to choose the right model abstraction that balances ease of use with the level of 
-customization you need. MLflow offers two primary classes for this purpose: :py:class:`mlflow.pyfunc.ChatModel` and 
-:py:class:`mlflow.pyfunc.PythonModel`. Each has its own strengths and trade-offs, making it crucial to understand which one best suits your use case.
+When building GenAI applications in QCFlow, it's essential to choose the right model abstraction that balances ease of use with the level of 
+customization you need. QCFlow offers two primary classes for this purpose: :py:class:`qcflow.pyfunc.ChatModel` and 
+:py:class:`qcflow.pyfunc.PythonModel`. Each has its own strengths and trade-offs, making it crucial to understand which one best suits your use case.
 
 .. include:: ../chat-model-intro/chat-model-vs-pyfunc-table.rst
 
@@ -20,14 +20,14 @@ customization you need. MLflow offers two primary classes for this purpose: :py:
 Purpose of this tutorial
 ------------------------
 
-This tutorial will guide you through the process of creating a custom chat agent using MLflow's :py:class:`mlflow.pyfunc.ChatModel` class. 
+This tutorial will guide you through the process of creating a custom chat agent using QCFlow's :py:class:`qcflow.pyfunc.ChatModel` class. 
 
 By the end of this tutorial you will:
 
-- Integrate `MLflow Tracing <../tracing/index.html>`_ into a custom :py:class:`mlflow.pyfunc.ChatModel` instance.
-- Customize your model using the ``model_config`` parameter within :py:func:`mlflow.pyfunc.log_model`.
+- Integrate `QCFlow Tracing <../tracing/index.html>`_ into a custom :py:class:`qcflow.pyfunc.ChatModel` instance.
+- Customize your model using the ``model_config`` parameter within :py:func:`qcflow.pyfunc.log_model`.
 - Leverage standardized signature interfaces for simplified deployment.
-- Recognize and avoid common pitfalls when extending the :py:class:`mlflow.pyfunc.ChatModel` class.
+- Recognize and avoid common pitfalls when extending the :py:class:`qcflow.pyfunc.ChatModel` class.
 
 .. contents::
    :local:
@@ -35,9 +35,9 @@ By the end of this tutorial you will:
 Prerequisites
 -------------
 
-- Familiarity with MLflow logging APIs and GenAI concepts.
-- MLflow version 2.11.0 or higher installed for use of :py:class:`mlflow.pyfunc.ChatModel`.
-- MLflow version 2.14.0 or higher installed for use of `MLflow Tracing <../tracing/index.html>`_.
+- Familiarity with QCFlow logging APIs and GenAI concepts.
+- QCFlow version 2.11.0 or higher installed for use of :py:class:`qcflow.pyfunc.ChatModel`.
+- QCFlow version 2.14.0 or higher installed for use of `QCFlow Tracing <../tracing/index.html>`_.
 
 This tutorial uses the `Databricks Foundation Model APIs <https://docs.databricks.com/en/machine-learning/foundation-models/index.html>`_ purely as
 an example of interfacing with an external service. You can easily swap the 
@@ -59,7 +59,7 @@ Core Concepts
         
         |
 
-        `MLflow Tracing <../tracing/index.html>`_ allows you to monitor and log the execution of your model's methods, providing valuable insights during debugging and performance optimization.
+        `QCFlow Tracing <../tracing/index.html>`_ allows you to monitor and log the execution of your model's methods, providing valuable insights during debugging and performance optimization.
 
         In our example ``BasicAgent`` implementation we utilize two separate APIs for the initiation of trace spans: the decorator API and the fluent API. 
 
@@ -69,7 +69,7 @@ Core Concepts
 
         .. code-block:: python
 
-            @mlflow.trace
+            @qcflow.trace
             def _get_system_message(self, role: str) -> Dict:
                 if role not in self.models:
                     raise ValueError(f"Unknown role: {role}")
@@ -77,13 +77,13 @@ Core Concepts
                 instruction = self.models[role]["instruction"]
                 return ChatMessage(role="system", content=instruction).to_dict()
         
-        Using the :py:func:`@mlflow.trace <mlflow.trace>` tracing decorator is the simplest way to add tracing functionality to functions and methods. By default, a span that is generated from 
+        Using the :py:func:`@qcflow.trace <qcflow.trace>` tracing decorator is the simplest way to add tracing functionality to functions and methods. By default, a span that is generated from 
         the application of this decorator will utilize the name of the function as the name of the span. It is possible to override this naming, as well as
         other parameters associated with the span, as follows:
 
         .. code-block:: python
 
-            @mlflow.trace(name="custom_span_name", attributes={"key": "value"}, span_type="func")
+            @qcflow.trace(name="custom_span_name", attributes={"key": "value"}, span_type="func")
             def _get_system_message(self, role: str) -> Dict:
                 if role not in self.models:
                     raise ValueError(f"Unknown role: {role}")
@@ -93,21 +93,21 @@ Core Concepts
         
         .. tip::
             It is always advised to set a human-readable name for any span that you generate, particularly if you are instrumenting private or generically 
-            named functions or methods. The MLflow Trace UI will display the name of the function or method by default, which can be confusing to follow 
+            named functions or methods. The QCFlow Trace UI will display the name of the function or method by default, which can be confusing to follow 
             if your functions and methods are ambiguously named.
 
         .. raw:: html
 
             <h4>Fluent API</h4>
 
-        The :py:func:`fluent APIs <mlflow.start_span>` context handler implementation for initiating spans is useful when you need full control of the logging of each aspect of the span's data. 
+        The :py:func:`fluent APIs <qcflow.start_span>` context handler implementation for initiating spans is useful when you need full control of the logging of each aspect of the span's data. 
         
         The example from our application for ensuring that we're capturing the parameters that are set when loading the model via the ``load_context`` method is 
         shown below. We are pulling from the instance attributes ``self.models_config`` and ``self.models`` to set the attributes of the span.
 
         .. code-block:: python
 
-            with mlflow.start_span("Audit Agent") as root_span:
+            with qcflow.start_span("Audit Agent") as root_span:
                 root_span.set_inputs(messages)
                 attributes = {**params.to_dict(), **self.models_config, **self.models}
                 root_span.set_attributes(attributes)
@@ -115,12 +115,12 @@ Core Concepts
 
         .. raw:: html
 
-            <h4>Traces in the MLflow UI</h4>
+            <h4>Traces in the QCFlow UI</h4>
 
         After running our example that includes these combined usage patterns for trace span generation and instrumentation, 
 
         .. figure:: ../../_static/images/llms/chat-model-guide/agent-trace-ui.png
-            :alt: Traces in the MLflow UI for the Agent example
+            :alt: Traces in the QCFlow UI for the Agent example
             :width: 100%
             :align: center
         
@@ -138,7 +138,7 @@ Core Concepts
         This functionality allows us to:
 
         - **Rapidly test** different configurations without having to make changes to source code
-        - **See the configuration** that was used when logging different iterations directly in the MLflow UI
+        - **See the configuration** that was used when logging different iterations directly in the QCFlow UI
         - **Simplify the model code** by decoupling the configuration from the implementation 
 
         .. note::
@@ -162,13 +162,13 @@ Core Concepts
 
         - **Defined when logging the model** and structured to support the needs of the model's behavior
         - **Used by the load_context method** and applied to the model when loading
-        - **Logged within the MLmodel file** and will be visible within the artifact viewer in the MLflow UI
+        - **Logged within the MLmodel file** and will be visible within the artifact viewer in the QCFlow UI
 
         The ``model_config`` values that are submitted for our ``BasicAgent`` example within this tutorial can be seen within the logged model's
         ``MLmodel`` file in the UI:
 
         .. figure:: ../../_static/images/llms/chat-model-guide/model-config-in-ui.png
-            :alt: Model configuration in the MLflow UI
+            :alt: Model configuration in the QCFlow UI
             :width: 50%
             :align: center
 
@@ -181,8 +181,8 @@ Core Concepts
         
         |
 
-        One of the more complex tasks associated with deploying a GenAI application with MLflow arises when attempting to build a custom implementation
-        that is based on subclassing the :py:class:`mlflow.pyfunc.PythonModel` abstraction. 
+        One of the more complex tasks associated with deploying a GenAI application with QCFlow arises when attempting to build a custom implementation
+        that is based on subclassing the :py:class:`qcflow.pyfunc.PythonModel` abstraction. 
 
         While ``PythonModel`` is recommended for custom Deep Learning and traditional Maching Learning models (such as ``sklearn`` or ``torch`` models that require
         additional processing logic apart from that of a base model), there are internal manipulations of the input data that occur
@@ -194,14 +194,14 @@ Core Concepts
         representation that makes intuitive sense, thereby creating a frustrating and complex conversion interface needed to make application deployment function
         correctly. 
 
-        To simplify this problem, the :py:class:`mlflow.pyfunc.ChatModel` class was created to provide a simpler interface for handling of the data
+        To simplify this problem, the :py:class:`qcflow.pyfunc.ChatModel` class was created to provide a simpler interface for handling of the data
         passed into and returned from a call to the ``predict()`` method on custom Python models serving GenAI use cases. 
 
         In the example tutorial code below, we subclass ``ChatModel`` in order to utilize this simplified interface with its immutable input and output 
         formats. Because of this immutability, we don't have to reason about model signatures, and can instead directly use API standards that have 
         been broadly accepted throughout the GenAI industry. 
 
-        To illustrate why it is preferred to use ``ChatModel`` as a super class to custom GenAI implementations in MLflow, here is the signature that
+        To illustrate why it is preferred to use ``ChatModel`` as a super class to custom GenAI implementations in QCFlow, here is the signature that
         would otherwise need to be defined and supplied during model logging to conform to the ``OpenAI`` API spec as of September 2024:
 
         **Input Schema** as a ``dict``:
@@ -237,29 +237,29 @@ Core Concepts
 
             Agent-based (tool-calling) schemas are significantly more complex than the simpler chat interface example shown above. As GenAI frameworks and services 
             evolve with increasingly sophisticated capabilities and features, the complexity of these interfaces will grow, making manual schema definitions a 
-            challenging and time-consuming task. The structured input validation provided by the MLflow :py:class:`mlflow.pyfunc.ChatModel` interface removes the burden of defining and 
+            challenging and time-consuming task. The structured input validation provided by the QCFlow :py:class:`qcflow.pyfunc.ChatModel` interface removes the burden of defining and 
             managing these intricate signatures manually. By leveraging these pre-defined schemas, you gain robust input type safety and validation, ensuring your 
             deployed applications handle inputs consistently and correctly without additional effort. This approach not only reduces the risk of errors but also 
             streamlines the development process, allowing you to focus on building impactful GenAI solutions without the overhead of managing complex input specifications.
 
 
-        By using :py:class:`mlflow.pyfunc.ChatModel` to base a custom implementation off of, we don't have to reason about this complex signature.
+        By using :py:class:`qcflow.pyfunc.ChatModel` to base a custom implementation off of, we don't have to reason about this complex signature.
         It is provided for us.
 
         The only two considerations to be aware of when interfacing with the static signatures of ``ChatModel`` are:
          
         - If the service that your custom implementation is interfacing with doesn't adhere to the ``OpenAI`` spec, you will need to extract data from the
-          standard structure of :py:class:`mlflow.types.llm.ChatMessage` and :py:class:`mlflow.types.llm.ChatParams` and ensure that it conforms to what 
+          standard structure of :py:class:`qcflow.types.llm.ChatMessage` and :py:class:`qcflow.types.llm.ChatParams` and ensure that it conforms to what 
           your service is expecting. 
 
         - The returned response from ``predict`` should adhere to the output structure defined within the ``ChatModel`` output signature: 
-          :py:class:`mlflow.types.llm.ChatCompletionResponse`.
+          :py:class:`qcflow.types.llm.ChatCompletionResponse`.
     
     .. tab:: Pitfalls
 
         .. raw:: html
 
-            <h3>Common GenAI pitfalls in MLflow</h3>
+            <h3>Common GenAI pitfalls in QCFlow</h3>
         
         |
 
@@ -270,8 +270,8 @@ Core Concepts
 
             <h4>Not using a supported flavor</h4>
 
-        If you're working with a library that is natively supported in MLflow, leveraging the built-in support for logging and loading your implementation
-        will always be easier than implementing a custom model. It is recommended to check the `supported GenAI flavors <../index.html#native-mlflow-flavors-for-llms>`_
+        If you're working with a library that is natively supported in QCFlow, leveraging the built-in support for logging and loading your implementation
+        will always be easier than implementing a custom model. It is recommended to check the `supported GenAI flavors <../index.html#native-qcflow-flavors-for-llms>`_
         to see if there is a built-in solution that will meet your use case needs in one of the many integrations that are available.
 
         .. raw:: html
@@ -287,7 +287,7 @@ Core Concepts
 
         .. code-block:: python
 
-            from mlflow.pyfunc import ChatModel
+            from qcflow.pyfunc import ChatModel
 
 
             class MyModel(ChatModel):
@@ -303,7 +303,7 @@ Core Concepts
 
         .. code-block:: python
             
-            from mlflow.pyfunc import ChatModel
+            from qcflow.pyfunc import ChatModel
 
 
             class MyModel(ChatModel):
@@ -319,7 +319,7 @@ Core Concepts
             <h4>Failing to Handle Secrets securely</h4>
         
         It might be tempting to simplify your model's deployment by specifying authentication secrets within a configuration. However, any configuration
-        data that is defined within your ``model_config`` parameters **is directly visible in the MLflow UI** and is not stored securely. 
+        data that is defined within your ``model_config`` parameters **is directly visible in the QCFlow UI** and is not stored securely. 
 
         The recommended approach for handling sensitive configuration data such as API keys or access tokens is to utilize a Secret Manager. 
         The configuration for **what to fetch** from your secrets management system can be stored within the ``model_config`` definition and 
@@ -333,11 +333,11 @@ Core Concepts
 
             <h4>Failing to use <code>input_example</code></h4>  
 
-        While it may seem that providing an ``input_example`` when logging a model in MLflow is purely for cosmetic purposes within the artifact view
-        display within the MLflow UI, there is an additional bit of functionality that makes providing this data very useful, particularly for GenAI
+        While it may seem that providing an ``input_example`` when logging a model in QCFlow is purely for cosmetic purposes within the artifact view
+        display within the QCFlow UI, there is an additional bit of functionality that makes providing this data very useful, particularly for GenAI
         use cases. 
 
-        When an ``input_example`` is provided, MLflow will call your model's ``predict`` method with the example data to validate that the input is
+        When an ``input_example`` is provided, QCFlow will call your model's ``predict`` method with the example data to validate that the input is
         compatible with the model object that you are logging. If there are any failures that occur, you will receive an error message detailing
         what is wrong with the input syntax. This is very beneficial to ensure that, at the point of logging, you can ensure that your expected
         input interface structure is what will be allowable for the deployed model, thereby saving you hours of debugging and troubleshooting later
@@ -365,10 +365,10 @@ Core Concepts
         serving environment, the last thing that you want to deal with is a model that is incapable of being served due to some issue with a decoded 
         JSON payload being submitted to your model's ``predict()`` method. 
 
-        MLflow offers the :py:func:`mlflow.models.validate_serving_input` API to ensure that the model that you have logged is capable of being interacted 
+        QCFlow offers the :py:func:`qcflow.models.validate_serving_input` API to ensure that the model that you have logged is capable of being interacted 
         with by emulating the data processing that occurs with a deployed model. 
 
-        To use this API, simply navigate to your logged model with the MLflow UI's artifact viewer. The model display pane on the right side of
+        To use this API, simply navigate to your logged model with the QCFlow UI's artifact viewer. The model display pane on the right side of
         the artifact viewer contains the code snippet that you can execute in an interactive environment to ensure that your model is ready to 
         deploy. 
 
@@ -376,11 +376,11 @@ Core Concepts
 
         .. code-block:: python
 
-            from mlflow.models import validate_serving_input
+            from qcflow.models import validate_serving_input
 
             model_uri = "runs:/8935b7aff5a84f559b5fcc2af3e2ea31/model"
 
-            # The model is logged with an input example. MLflow converts
+            # The model is logged with an input example. QCFlow converts
             # it into the serving payload format for the deployed model endpoint,
             # and saves it to 'serving_input_payload.json'
             serving_payload = """{
@@ -419,17 +419,17 @@ to execute in order for the object instantiation to function correctly.
 Example of a custom ChatModel
 -----------------------------
 
-In the full example below, we're creating a custom chat agent by subclassing the :py:class:`mlflow.pyfunc.ChatModel`. This agent, named ``BasicAgent``, 
+In the full example below, we're creating a custom chat agent by subclassing the :py:class:`qcflow.pyfunc.ChatModel`. This agent, named ``BasicAgent``, 
 takes advantage of several important features that help streamline the development, deployment, and tracking of GenAI applications. By subclassing ``ChatModel``, 
 we ensure a consistent interface for handling conversational agents, while also avoiding common pitfalls associated with more general-purpose models.
 
 The implementation below highlights the following key aspects:
 
-- **Tracing**: We leverage MLflow's tracing functionality to track and log critical operations using both the decorator and fluent API context handler approaches. 
+- **Tracing**: We leverage QCFlow's tracing functionality to track and log critical operations using both the decorator and fluent API context handler approaches. 
     
     - **Decorator API**: This is used to easily trace methods such as `_get_agent_response` and `_call_agent` for automatic span creation.
     - **Fluent API**: Provides fine-grained control over span creation, as shown in the `predict` method for auditing key inputs and outputs during agent interactions.
-    - **Tip**: We ensure human-readable span names for easier debugging in the MLflow Trace UI and when fetching logged traces via the client API.
+    - **Tip**: We ensure human-readable span names for easier debugging in the QCFlow Trace UI and when fetching logged traces via the client API.
 
 - **Custom Configuration**: 
     
@@ -450,15 +450,15 @@ The implementation below highlights the following key aspects:
 
 - **Common Pitfalls Avoided**:
     
-    - **Model Validation via Input Examples**: We provide an input example during model logging, allowing MLflow to validate the input interface and catch
+    - **Model Validation via Input Examples**: We provide an input example during model logging, allowing QCFlow to validate the input interface and catch
       structural issues early, reducing debugging time during deployment.
 
 .. code-block:: python
 
-    import mlflow
-    from mlflow.types.llm import ChatCompletionResponse, ChatMessage, ChatParams, ChatChoice
-    from mlflow.pyfunc import ChatModel
-    from mlflow import deployments
+    import qcflow
+    from qcflow.types.llm import ChatCompletionResponse, ChatMessage, ChatParams, ChatChoice
+    from qcflow.pyfunc import ChatModel
+    from qcflow import deployments
     from typing import List, Optional, Dict
 
 
@@ -492,7 +492,7 @@ The implementation below highlights the following key aspects:
             instruction = self.models[role]["instruction"]
             return ChatMessage(role="system", content=instruction).to_dict()
 
-        @mlflow.trace(name="Raw Agent Response")
+        @qcflow.trace(name="Raw Agent Response")
         def _get_agent_response(
             self, message_list: List[Dict], endpoint: str, params: Optional[dict] = None
         ) -> Dict:
@@ -512,7 +512,7 @@ The implementation below highlights the following key aspects:
             )
             return response["choices"][0]["message"]
 
-        @mlflow.trace(name="Agent Call")
+        @qcflow.trace(name="Agent Call")
         def _call_agent(
             self, message: ChatMessage, role: str, params: Optional[dict] = None
         ) -> Dict:
@@ -540,7 +540,7 @@ The implementation below highlights the following key aspects:
             self.conversation_history.extend([message.to_dict(), response])
             return response
 
-        @mlflow.trace(name="Assemble Conversation")
+        @qcflow.trace(name="Assemble Conversation")
         def _prepare_message_list(
             self, system_message: Dict, user_message: ChatMessage
         ) -> List[Dict]:
@@ -572,7 +572,7 @@ The implementation below highlights the following key aspects:
             Predict method to handle agent conversation.
 
             Args:
-                context: The MLflow context.
+                context: The QCFlow context.
                 messages (List[ChatMessage]): List of messages to process.
                 params (Optional[ChatParams]): Additional parameters for the conversation.
 
@@ -580,7 +580,7 @@ The implementation below highlights the following key aspects:
                 ChatCompletionResponse: The structured response object.
             """
             # Use the fluent API context handler to have added control over what is included in the span
-            with mlflow.start_span(name="Audit Agent") as root_span:
+            with qcflow.start_span(name="Audit Agent") as root_span:
                 # Add the user input to the root span
                 root_span.set_inputs(messages)
 
@@ -649,7 +649,7 @@ model's source code, leading to:
   a particular result becomes challenging.
 
 By setting these values externally via the ``model_config`` parameter, we make the model flexible and adaptable to different test scenarios. 
-This approach also integrates seamlessly with MLflow's evaluation tools, such as :py:func:`mlflow.evaluate`, which allows you to compare model 
+This approach also integrates seamlessly with QCFlow's evaluation tools, such as :py:func:`qcflow.evaluate`, which allows you to compare model 
 outputs across different configurations systematically.
 
 Defining the Model Configuration
@@ -710,11 +710,11 @@ Benefits of External Configuration
 - **Scalability**: As more agents are added to the system or new roles are introduced, we can extend this configuration without cluttering the model's 
   code. This separation keeps the codebase cleaner and more maintainable.
 
-- **Reproducibility and Comparison**: By keeping configuration external, we can log the specific settings used in each run with MLflow. This makes it 
+- **Reproducibility and Comparison**: By keeping configuration external, we can log the specific settings used in each run with QCFlow. This makes it 
   easier to reproduce results and compare different experiments, ensuring a robust evaluation and adjudication process to select the best performing
   configuration.
 
-With the configuration in place, we're now ready to log the model and run experiments using these settings. By leveraging MLflow's powerful tracking 
+With the configuration in place, we're now ready to log the model and run experiments using these settings. By leveraging QCFlow's powerful tracking 
 and logging features, we'll be able to manage the experiments efficiently and extract valuable insights from the agent's responses.
 
 Defining an Input Example
@@ -722,18 +722,18 @@ Defining an Input Example
 
 Before logging our model, it's important to provide an ``input_example`` that demonstrates how to interact with the model. This example serves several key purposes:
 
-- **Validation at Logging Time**: Including an ``input_example`` allows MLflow to execute the ``predict`` method using this example during the logging 
+- **Validation at Logging Time**: Including an ``input_example`` allows QCFlow to execute the ``predict`` method using this example during the logging 
   process. This helps validate that your model can handle the expected input format and catch any issues early.
 
-- **UI Representation**: The ``input_example`` is displayed in the MLflow UI under the model's artifacts. This provides a convenient reference for 
+- **UI Representation**: The ``input_example`` is displayed in the QCFlow UI under the model's artifacts. This provides a convenient reference for 
   users to understand the expected input structure when interacting with the deployed model.
 
 By providing an input example, you ensure that your model is tested with real data, increasing confidence that it will behave as expected when deployed.
 
 .. tip::
 
-    When defining your GenAI application using the :py:class:`mlflow.pyfunc.ChatModel`, a default placeholder input example will be used if none is provided. 
-    If you notice an unfamiliar or generic input example in the MLflow UI’s artifact viewer, it's likely the default placeholder assigned by the system. 
+    When defining your GenAI application using the :py:class:`qcflow.pyfunc.ChatModel`, a default placeholder input example will be used if none is provided. 
+    If you notice an unfamiliar or generic input example in the QCFlow UI’s artifact viewer, it's likely the default placeholder assigned by the system. 
     To avoid this, ensure you specify a custom input example when saving your model.
 
 
@@ -755,11 +755,11 @@ list of messages where each message includes a ``role`` and ``content``.
 
 **Benefits of Providing an Input Example:**
 
-- **Execution and Validation**: MLflow will pass this ``input_example`` to the model's ``predict`` method during logging to ensure that it can process 
+- **Execution and Validation**: QCFlow will pass this ``input_example`` to the model's ``predict`` method during logging to ensure that it can process 
   the input without errors. Any issues with input handling, such as incorrect data types or missing fields, will be caught at this stage, saving you time 
   debugging later.
 
-- **User Interface Display**: The ``input_example`` will be visible in the MLflow UI within the model artifact view section. This helps users understand 
+- **User Interface Display**: The ``input_example`` will be visible in the QCFlow UI within the model artifact view section. This helps users understand 
   the format of input data the model expects, making it easier to interact with the model once it's deployed.
 
 - **Deployment Confidence**: By validating the model with an example input upfront, you gain additional assurance that the model will function correctly 
@@ -772,19 +772,19 @@ receiving input from users.
 Logging and Loading our custom Agent
 ------------------------------------
 
-To log and load the model using MLflow, use:
+To log and load the model using QCFlow, use:
 
 .. code-block:: python
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "model",
             python_model=BasicAgent(),
             model_config=model_config,
             input_example=input_example,
         )
 
-    loaded = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded = qcflow.pyfunc.load_model(model_info.model_uri)
 
     response = loaded.predict(
         {
@@ -800,9 +800,9 @@ To log and load the model using MLflow, use:
 Conclusion
 ----------
 
-In this tutorial, you have explored the process of creating a custom GenAI chat agent using MLflow's :py:class:`mlflow.pyfunc.ChatModel` class.
+In this tutorial, you have explored the process of creating a custom GenAI chat agent using QCFlow's :py:class:`qcflow.pyfunc.ChatModel` class.
 We demonstrated how to implement a flexible, scalable, and standardized approach to managing the deployment of GenAI applications, enabling you 
-to harness the latest advancements in AI, even for libraries and frameworks that are not yet natively supported with a named flavor in MLflow.
+to harness the latest advancements in AI, even for libraries and frameworks that are not yet natively supported with a named flavor in QCFlow.
 
 By using ``ChatModel`` instead of the more generic ``PythonModel``, you can avoid many of the common pitfalls associated with deploying GenAI by
 leveraging the benefits of immutable signature interfaces that are consistent across any of your deployed GenAI interfaces, simplifying the
@@ -825,12 +825,12 @@ Key takeaways from this tutorial include:
   remains secure, robust, and reliable in production environments.
 
 - **Validation and Deployment Readiness**: The importance of validating your model before deployment cannot be overstated. By using tools 
-  like :py:func:`mlflow.models.validate_serving_input`, you can catch and resolve potential deployment issues early, saving time and effort 
+  like :py:func:`qcflow.models.validate_serving_input`, you can catch and resolve potential deployment issues early, saving time and effort 
   during the production deployment process.
 
 As the landscape of Generative AI continues to evolve, building adaptable and standardized models will be crucial to leveraging the exciting
 and powerful capabilities that will be unlocked in the months and years ahead. The approach covered in this tutorial equips you with a robust 
-framework for integrating and managing GenAI technologies within MLflow, empowering you to develop, track, and deploy sophisticated AI solutions with ease.
+framework for integrating and managing GenAI technologies within QCFlow, empowering you to develop, track, and deploy sophisticated AI solutions with ease.
 
 We encourage you to extend and customize this foundational example to suit your specific needs and explore further enhancements. By leveraging 
-MLflow's growing capabilities, you can continue to refine your GenAI models, ensuring they deliver impactful and reliable results in any application.
+QCFlow's growing capabilities, you can continue to refine your GenAI models, ensuring they deliver impactful and reliable results in any application.

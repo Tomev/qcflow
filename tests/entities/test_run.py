@@ -1,6 +1,6 @@
 import pytest
 
-from mlflow.entities import (
+from qcflow.entities import (
     Dataset,
     DatasetInput,
     LifecycleStage,
@@ -11,7 +11,7 @@ from mlflow.entities import (
     RunInputs,
     RunStatus,
 )
-from mlflow.exceptions import MlflowException
+from qcflow.exceptions import QCFlowException
 
 from tests.entities.test_run_data import _check as run_data_check
 from tests.entities.test_run_info import _check as run_info_check
@@ -123,5 +123,5 @@ def test_string_repr():
 
 def test_creating_run_with_absent_info_throws_exception(run_data, run_inputs):
     run_data = run_data[0]
-    with pytest.raises(MlflowException, match="run_info cannot be None"):
+    with pytest.raises(QCFlowException, match="run_info cannot be None"):
         Run(None, run_data, run_inputs)

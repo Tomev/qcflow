@@ -1,4 +1,4 @@
-MLflow Keras 3.0 Integration
+QCFlow Keras 3.0 Integration
 ============================
 
 Introduction
@@ -11,13 +11,13 @@ Keras 3.0 makes it possible to run Keras workflows on top of TensorFlow, JAX, an
 It also enables you to seamlessly integrate Keras components (like layers, models, or metrics) as part of 
 low-level TensorFlow, JAX, and PyTorch workflows.
 
-MLflow provides built-in support for Keras 3.0 workflows. It provides a callback that allows you to 
+QCFlow provides built-in support for Keras 3.0 workflows. It provides a callback that allows you to 
 log parameters and metrics during model training. Model logging is not currently supported.
 
-5 Minute Quick Start with MLflow + Keras 3.0
+5 Minute Quick Start with QCFlow + Keras 3.0
 --------------------------------------------
 
-To get a quick overview of how to use MLflow + Keras 3.0, please read the quickstart guide.
+To get a quick overview of how to use QCFlow + Keras 3.0, please read the quickstart guide.
 
 
 .. raw:: html
@@ -27,10 +27,10 @@ To get a quick overview of how to use MLflow + Keras 3.0, please read the quicks
             <div class="simple-card">
                 <a href="quickstart/quickstart_keras.html">
                     <div class="header">
-                        Get Started with Keras 3.0 + MLflow
+                        Get Started with Keras 3.0 + QCFlow
                     </div>
                     <p>
-                        Learn how to leverage the MLflow Keras callback for tracking experiments, as well as how to customize it.
+                        Learn how to leverage the QCFlow Keras callback for tracking experiments, as well as how to customize it.
                     </p>
                 </a>
             </div>

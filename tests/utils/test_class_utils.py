@@ -1,6 +1,6 @@
-import mlflow
-from mlflow.utils.class_utils import _get_class_from_string
+import qcflow
+from qcflow.utils.class_utils import _get_class_from_string
 
 
 def test_get_class_from_string():
-    assert _get_class_from_string("mlflow.MlflowClient") == mlflow.MlflowClient
+    assert _get_class_from_string("qcflow.QCFlowClient") == qcflow.QCFlowClient

@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from mlflow.protos.unity_catalog_oss_messages_pb2 import (
+from qcflow.protos.unity_catalog_oss_messages_pb2 import (
     AwsCredentials,
     CreateRegisteredModel,
     DeleteModelVersion,
@@ -18,10 +18,10 @@ from mlflow.protos.unity_catalog_oss_messages_pb2 import (
     UpdateModelVersion,
     UpdateRegisteredModel,
 )
-from mlflow.store._unity_catalog.registry.uc_oss_rest_store import UnityCatalogOssStore
-from mlflow.store.artifact.local_artifact_repo import LocalArtifactRepository
-from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
-from mlflow.utils.proto_json_utils import message_to_json
+from qcflow.store._unity_catalog.registry.uc_oss_rest_store import UnityCatalogOssStore
+from qcflow.store.artifact.local_artifact_repo import LocalArtifactRepository
+from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+from qcflow.utils.proto_json_utils import message_to_json
 
 from tests.helper_functions import mock_http_200
 from tests.store._unity_catalog.conftest import _REGISTRY_HOST_CREDS
@@ -29,14 +29,14 @@ from tests.store._unity_catalog.conftest import _REGISTRY_HOST_CREDS
 
 @pytest.fixture
 def store(mock_databricks_uc_oss_host_creds):
-    with mock.patch("mlflow.utils.oss_registry_utils.get_oss_host_creds"):
+    with mock.patch("qcflow.utils.oss_registry_utils.get_oss_host_creds"):
         yield UnityCatalogOssStore(store_uri="uc")
 
 
 @pytest.fixture
 def creds():
     with mock.patch(
-        "mlflow.store._unity_catalog.registry.uc_oss_rest_store.get_oss_host_creds",
+        "qcflow.store._unity_catalog.registry.uc_oss_rest_store.get_oss_host_creds",
         return_value=_REGISTRY_HOST_CREDS,
     ):
         yield

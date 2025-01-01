@@ -3,14 +3,14 @@ from unittest import mock
 
 import pytest
 
-from mlflow.entities.span import LiveSpan
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.tracing.constant import SpanAttributeKey
-from mlflow.tracing.processor.inference_table import (
+from qcflow.entities.span import LiveSpan
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.tracing.constant import SpanAttributeKey
+from qcflow.tracing.processor.inference_table import (
     _HEADER_REQUEST_ID_KEY,
     InferenceTableSpanProcessor,
 )
-from mlflow.tracing.trace_manager import InMemoryTraceManager
+from qcflow.tracing.trace_manager import InMemoryTraceManager
 
 from tests.tracing.helper import create_mock_otel_span, create_test_trace_info
 
@@ -21,7 +21,7 @@ _REQUEST_ID = f"tr-{_TRACE_ID}"
 @pytest.fixture
 def flask_request():
     with mock.patch(
-        "mlflow.tracing.processor.inference_table._get_flask_request"
+        "qcflow.tracing.processor.inference_table._get_flask_request"
     ) as mock_get_flask_request:
         request = mock_get_flask_request.return_value
         request.headers = {_HEADER_REQUEST_ID_KEY: _REQUEST_ID}

@@ -1,19 +1,19 @@
 .. _deployments:
 
 ========================================
-MLflow AI Gateway (Experimental)
+QCFlow AI Gateway (Experimental)
 ========================================
 
 .. warning::
 
-    MLflow AI Gateway does not support Windows.
+    QCFlow AI Gateway does not support Windows.
 
-The MLflow AI Gateway is a powerful tool designed to streamline the usage and management of
+The QCFlow AI Gateway is a powerful tool designed to streamline the usage and management of
 various large language model (LLM) providers, such as OpenAI and Anthropic, within an organization.
 It offers a high-level interface that simplifies the interaction with these services by providing
 a unified endpoint to handle specific LLM related requests.
 
-A major advantage of using the MLflow AI Gateway is its centralized management of API keys.
+A major advantage of using the QCFlow AI Gateway is its centralized management of API keys.
 By storing these keys in one secure location, organizations can significantly enhance their
 security posture by minimizing the exposure of sensitive API keys throughout the system. It also
 helps to prevent exposing these keys within code or requiring end-users to manage keys safely.
@@ -21,11 +21,11 @@ helps to prevent exposing these keys within code or requiring end-users to manag
 The gateway server is designed to be flexible and adaptable, capable of easily defining and managing endpoints by updating the
 configuration file. This enables the easy incorporation
 of new LLM providers or provider LLM types into the system without necessitating changes to
-applications that interface with the gateway server. This level of adaptability makes the MLflow AI Gateway
+applications that interface with the gateway server. This level of adaptability makes the QCFlow AI Gateway
 Service an invaluable tool in environments that require agility and quick response to changes.
 
 This simplification and centralization of language model interactions, coupled with the added
-layer of security for API key management, make the MLflow AI Gateway an ideal choice for
+layer of security for API key management, make the QCFlow AI Gateway an ideal choice for
 organizations that use LLMs on a regular basis.
 
 .. toctree::
@@ -37,7 +37,7 @@ organizations that use LLMs on a regular basis.
 Tutorials and Guides
 ====================
 
-If you're interested in diving right in to a step by step guide that will get you up and running with the MLflow AI Gateway
+If you're interested in diving right in to a step by step guide that will get you up and running with the QCFlow AI Gateway
 as fast as possible, the guides below will be your best first stop.
 
 .. raw:: html
@@ -52,16 +52,16 @@ Quickstart
 The following guide will assist you in getting up and running, using a 3-endpoint configuration to
 OpenAI services for chat, completions, and embeddings.
 
-Step 1: Install the MLflow AI Gateway
+Step 1: Install the QCFlow AI Gateway
 ---------------------------------------------
-First, you need to install the MLflow AI Gateway on your machine. You can do this using pip from PyPI or from the MLflow repository.
+First, you need to install the QCFlow AI Gateway on your machine. You can do this using pip from PyPI or from the QCFlow repository.
 
 Installing from PyPI
 ~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: sh
 
-    pip install 'mlflow[genai]'
+    pip install 'qcflow[genai]'
 
 Step 2: Set the OpenAI API Key(s) for each provider
 ---------------------------------------------------
@@ -84,7 +84,7 @@ system restart.
 Step 3: Create a gateway server Configuration File
 ------------------------------------------------------
 Next, you need to create a gateway server configuration file. This is a YAML file where you specify the
-endpoints that the MLflow AI Gateway should expose. Let's create a file with three endpoints using OpenAI as a provider: completions, chat, and embeddings.
+endpoints that the QCFlow AI Gateway should expose. Let's create a file with three endpoints using OpenAI as a provider: completions, chat, and embeddings.
 
 For details about the configuration file's parameters (including parameters for other providers besides OpenAI), see the :ref:`deployments_configuration_details` section below.
 
@@ -118,23 +118,23 @@ For details about the configuration file's parameters (including parameters for 
           config:
             openai_api_key: $OPENAI_API_KEY
 
-Save this file to a location on the system that is going to be running the MLflow AI Gateway.
+Save this file to a location on the system that is going to be running the QCFlow AI Gateway.
 
 Step 4: Start the gateway server
 ------------------------------------
 You're now ready to start the gateway server!
 
-Use the MLflow AI Gateway ``start-server`` command and specify the path to your configuration file:
+Use the QCFlow AI Gateway ``start-server`` command and specify the path to your configuration file:
 
 .. code-block:: sh
 
-    mlflow gateway start --config-path config.yaml --port {port} --host {host} --workers {worker count}
+    qcflow gateway start --config-path config.yaml --port {port} --host {host} --workers {worker count}
 
-The configuration file can also be set using the ``MLFLOW_DEPLOYMENTS_CONFIG`` environment variable:
+The configuration file can also be set using the ``QCFLOW_DEPLOYMENTS_CONFIG`` environment variable:
 
 .. code-block:: bash
 
-    export MLFLOW_DEPLOYMENTS_CONFIG=/path/to/config.yaml
+    export QCFLOW_DEPLOYMENTS_CONFIG=/path/to/config.yaml
 
 If you do not specify the host, a localhost address will be used.
 
@@ -144,7 +144,7 @@ The worker count for gunicorn defaults to 2 workers.
 
 Step 5: Access the Interactive API Documentation
 ------------------------------------------------
-The MLflow AI Gateway provides an interactive API documentation endpoint that you can use to explore
+The QCFlow AI Gateway provides an interactive API documentation endpoint that you can use to explore
 and test the exposed endpoints. Navigate to ``http://{host}:{port}/`` (or ``http://{host}:{port}/docs``) in your browser to access it.
 
 The docs endpoint allow for direct interaction with the endpoints and permits submitting actual requests to the
@@ -163,7 +163,7 @@ Step 8: Compare Provider Models
 -------------------------------
 Here's an example of adding a new model from a provider to determine which model instance is better for a given use case.
 
-Firstly, update the :ref:`MLflow AI Gateway config <deployments_configuration>` YAML file with the additional endpoint definition to test:
+Firstly, update the :ref:`QCFlow AI Gateway config <deployments_configuration>` YAML file with the additional endpoint definition to test:
 
 .. code-block:: yaml
 
@@ -193,29 +193,29 @@ If you no longer need an endpoint, you can delete it from the configuration YAML
 Step 9: Use gateway server endpoints for model development
 --------------------------------------------------------------
 
-Now that you have created several gateway server endpoints, you can create MLflow Models that query these
+Now that you have created several gateway server endpoints, you can create QCFlow Models that query these
 endpoints to build application-specific logic using techniques like prompt engineering. For more
-information, see :ref:`gateway server and MLflow Models <deployments_mlflow_models>`.
+information, see :ref:`gateway server and QCFlow Models <deployments_qcflow_models>`.
 
 .. _deployments-concepts:
 
 Concepts
 ========
 
-There are several concepts that are referred to within the MLflow AI Gateway APIs, the configuration definitions, examples, and documentation.
-Becoming familiar with these terms will help to simplify both configuring new endpoints and using the MLflow AI Gateway APIs.
+There are several concepts that are referred to within the QCFlow AI Gateway APIs, the configuration definitions, examples, and documentation.
+Becoming familiar with these terms will help to simplify both configuring new endpoints and using the QCFlow AI Gateway APIs.
 
 .. _deployments-providers:
 
 Providers
 ---------
-The MLflow AI Gateway is designed to support a variety of model providers.
+The QCFlow AI Gateway is designed to support a variety of model providers.
 A provider represents the source of the machine learning models, such as OpenAI, Anthropic, and so on.
-Each provider has its specific characteristics and configurations that are encapsulated within the model part of an endpoint in the MLflow AI Gateway.
+Each provider has its specific characteristics and configurations that are encapsulated within the model part of an endpoint in the QCFlow AI Gateway.
 
 Supported Providers
 ~~~~~~~~~~~~~~~~~~~
-The table below presents supported corresponding endpoint type for each LLM provider within the MLflow AI Gateway.
+The table below presents supported corresponding endpoint type for each LLM provider within the QCFlow AI Gateway.
 Note that ✅ mark does not mean all models from the provider are compatible with the endpoint types. For example, OpenAI provider supports all three endpoint types, but the model ``gpt-4`` is only compatible with the ``llm/v1/chat`` endpoint types.
 
 +------------------+------------------------+---------------------+------------------------+
@@ -233,7 +233,7 @@ Note that ✅ mark does not mean all models from the provider are compatible wit
 +------------------+------------------------+---------------------+------------------------+
 | PaLM             |          ✅            |          ✅         |          ✅            |
 +------------------+------------------------+---------------------+------------------------+
-| MLflow           |          ✅*           |          ✅*        |          ✅**          |
+| QCFlow           |          ✅*           |          ✅*        |          ✅**          |
 +------------------+------------------------+---------------------+------------------------+
 | HuggingFace TGI  |          ❌            |          ✅         |          ❌            |
 +------------------+------------------------+---------------------+------------------------+
@@ -250,10 +250,10 @@ Note that ✅ mark does not mean all models from the provider are compatible wit
 § For full compatibility references for ``OpenAI``, see the `OpenAI Model Compatibility Matrix <https://platform.openai.com/docs/models/model-endpoint-compatibility>`_.
 
 Within each model block in the configuration file, the provider field is used to specify the name
-of the provider for that model. This is a string value that needs to correspond to a provider the MLflow AI Gateway supports.
+of the provider for that model. This is a string value that needs to correspond to a provider the QCFlow AI Gateway supports.
 
 .. note::
-    `*` MLflow Model Serving will only work for chat or completions if the output return is in an endpoint-compatible format. The
+    `*` QCFlow Model Serving will only work for chat or completions if the output return is in an endpoint-compatible format. The
     response must conform to either an output of ``{"predictions": str}`` or ``{"predictions": {"candidates": str}}``. Any complex return type from a model that
     does not conform to these structures will raise an exception at query time.
 
@@ -279,7 +279,7 @@ Here's an example of a provider configuration within an endpoint:
 
 In the above configuration, ``openai`` is the `provider` for the model.
 
-As of now, the MLflow AI Gateway supports the following providers:
+As of now, the QCFlow AI Gateway supports the following providers:
 
 * **mosaicml**: This is used for models offered by `MosaicML <https://docs.mosaicml.com/en/latest/>`_.
 * **openai**: This is used for models offered by `OpenAI <https://platform.openai.com/>`_ and the `Azure <https://learn.microsoft.com/en-gb/azure/cognitive-services/openai/>`_ integrations for Azure OpenAI and Azure OpenAI with AAD.
@@ -292,24 +292,24 @@ As of now, the MLflow AI Gateway supports the following providers:
 * **mistral**: This is used for models offered by `Mistral <https://docs.mistral.ai/>`_.
 * **togetherai**: This is used for models offered by `TogetherAI <https://docs.together.ai/docs/>`_.
 
-More providers are being added continually. Check the latest version of the MLflow AI Gateway Docs for the
+More providers are being added continually. Check the latest version of the QCFlow AI Gateway Docs for the
 most up-to-date list of supported providers.
 
 If you would like to use a LLM model that is not offered by the above providers, or if you
 would like to integrate a private LLM model, you can create a :ref:`provider plugin <deployments_plugin>`
-to integrate with the MLflow AI Gateway.
+to integrate with the QCFlow AI Gateway.
 
 .. _deployments-endpoints:
 
 Endpoints
 ---------
 
-`Endpoints` are central to how the MLflow AI Gateway functions. Each endpoint acts as a proxy endpoint for the
+`Endpoints` are central to how the QCFlow AI Gateway functions. Each endpoint acts as a proxy endpoint for the
 user, forwarding requests to the underlying :ref:`deployments_models` and :ref:`deployments-providers` specified in the configuration file.
 
-an endpoint in the MLflow AI Gateway consists of the following fields:
+an endpoint in the QCFlow AI Gateway consists of the following fields:
 
-* **name**: This is the unique identifier for the endpoint. This will be part of the URL when making API calls via the MLflow AI Gateway.
+* **name**: This is the unique identifier for the endpoint. This will be part of the URL when making API calls via the QCFlow AI Gateway.
 
 * **type**: The type of the endpoint corresponds to the type of language model interaction you desire. For instance, ``llm/v1/completions`` for text completion operations, ``llm/v1/embeddings`` for text embeddings, and ``llm/v1/chat`` for chat operations.
 
@@ -343,13 +343,13 @@ Here's an example of an endpoint configuration:
 In the example above, a request sent to the completions endpoint would be forwarded to the
 ``gpt-4o-mini`` model provided by ``openai``.
 
-The endpoints in the configuration file can be updated at any time, and the MLflow AI Gateway will
+The endpoints in the configuration file can be updated at any time, and the QCFlow AI Gateway will
 automatically update its available endpoints without requiring a restart. This feature provides you
 with the flexibility to add, remove, or modify endpoints as your needs change. It enables 'hot-swapping'
-of endpoints, providing a seamless experience for any applications or services that interact with the MLflow AI Gateway.
+of endpoints, providing a seamless experience for any applications or services that interact with the QCFlow AI Gateway.
 
 When defining endpoints in the configuration file, ensure that each name is unique to prevent conflicts.
-Duplicate endpoint names will raise an ``MlflowException``.
+Duplicate endpoint names will raise an ``QCFlowException``.
 
 .. _deployments_models:
 
@@ -383,7 +383,7 @@ In the above configuration, ``text-embedding-ada-002`` is the model used for the
 
 When specifying a model, it is critical that the provider supports the model you are requesting.
 For instance, ``openai`` as a provider supports models like ``text-embedding-ada-002``, but other providers
-may not. If the model is not supported by the provider, the MLflow AI Gateway will return an HTTP 4xx error
+may not. If the model is not supported by the provider, the QCFlow AI Gateway will return an HTTP 4xx error
 when trying to route requests to that model.
 
 .. important::
@@ -401,7 +401,7 @@ Conversely, for generating embeddings of text, you would choose an embedding mod
 Configuring the gateway server
 ==================================
 
-The MLflow AI Gateway relies on a user-provided configuration file, written in YAML,
+The QCFlow AI Gateway relies on a user-provided configuration file, written in YAML,
 that defines the endpoints and providers available to the server. The configuration file dictates
 how the gateway server interacts with various language model providers and determines the end-points that
 users can access.
@@ -434,8 +434,8 @@ Here is an example of a single-endpoint configuration:
 In this example, we define an endpoint named ``chat`` that corresponds to the ``llm/v1/chat`` type, which
 will use the ``gpt-4o-mini`` model from OpenAI to return query responses from the OpenAI service, and accept up to 10 requests per minute.
 
-The MLflow AI Gateway configuration is very easy to update.
-Simply edit the configuration file and save your changes, and the MLflow AI Gateway will automatically
+The QCFlow AI Gateway configuration is very easy to update.
+Simply edit the configuration file and save your changes, and the QCFlow AI Gateway will automatically
 update the endpoints with zero disruption or down time. This allows you to try out new providers or model types while keeping your applications steady and reliable.
 
 In order to define an API key for a given provider, there are three primary options:
@@ -449,7 +449,7 @@ actual API key.
 
 .. warning::
 
-    The MLflow AI Gateway provides direct access to billed external LLM services. It is strongly recommended to restrict access to this server. See the section on :ref:`security <deployments_security>` for guidance.
+    The QCFlow AI Gateway provides direct access to billed external LLM services. It is strongly recommended to restrict access to this server. See the section on :ref:`security <deployments_security>` for guidance.
 
 If you prefer to use an environment variable (recommended), you can define it in your shell
 environment. For example:
@@ -465,7 +465,7 @@ environment. For example:
 AI Gateway server Configuration Details
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The MLflow AI Gateway relies on a user-provided configuration file. It defines how the gateway server interacts with various language model providers and dictates the endpoints that users can access.
+The QCFlow AI Gateway relies on a user-provided configuration file. It defines how the gateway server interacts with various language model providers and dictates the endpoints that users can access.
 
 The configuration file is written in YAML and includes a series of sections, each representing a unique endpoint. Each endpoint section has a name, a type, and a model specification, which includes the provider, model name, and provider-specific configuration details.
 
@@ -496,7 +496,7 @@ Each endpoint has the following configuration parameters:
     - "cohere"
     - "palm"
     - "azure" / "azuread"
-    - "mlflow-model-serving"
+    - "qcflow-model-serving"
     - "huggingface-text-generation-inference"
     - "ai21labs"
     - "bedrock"
@@ -621,7 +621,7 @@ To use key-based authentication, define an Amazon Bedrock endpoint with the requ
 | **aws_session_token**    | No       | None                         | Optional session token, if required                   |
 +--------------------------+----------+------------------------------+-------------------------------------------------------+
 
-Alternatively, for role-based authentication, an Amazon Bedrock endpoint can be defined and initialized with an a IAM Role  ARN that is authorized to access Bedrock.  The MLflow AI Gateway will attempt to assume this role with using the standard credential provider chain and will renew the role credentials if they have expired.
+Alternatively, for role-based authentication, an Amazon Bedrock endpoint can be defined and initialized with an a IAM Role  ARN that is authorized to access Bedrock.  The QCFlow AI Gateway will attempt to assume this role with using the standard credential provider chain and will renew the role credentials if they have expired.
 
 +--------------------------+----------+------------------------------+-------------------------------------------------------+
 | Configuration Parameter  | Required | Default                      | Description                                           |
@@ -636,16 +636,16 @@ Alternatively, for role-based authentication, an Amazon Bedrock endpoint can be 
 |**session_length_seconds**| No       | 900                          | The length of session to request.                     |
 +--------------------------+----------+------------------------------+-------------------------------------------------------+
 
-MLflow Model Serving
+QCFlow Model Serving
 ++++++++++++++++++++
 
 +-------------------------+----------+--------------------------+-------------------------------------------------------+
 | Configuration Parameter | Required | Default                  | Description                                           |
 +=========================+==========+==========================+=======================================================+
-| **model_server_url**    | Yes      | N/A                      | This is the url of the MLflow Model Server.           |
+| **model_server_url**    | Yes      | N/A                      | This is the url of the QCFlow Model Server.           |
 +-------------------------+----------+--------------------------+-------------------------------------------------------+
 
-Note that with MLflow model serving, the ``name`` parameter for the ``model`` definition is not used for validation and is only present for reference purposes. This alias can be
+Note that with QCFlow model serving, the ``name`` parameter for the ``model`` definition is not used for validation and is only present for reference purposes. This alias can be
 useful for understanding a particular version or endpoint definition that was used that can be referenced back to a deployed model. You may choose any name that you wish, provided that
 it is JSON serializable.
 
@@ -733,16 +733,16 @@ For specifying an API key, there are three options:
 Querying the AI Gateway server
 ==============================
 
-Once the MLflow AI Gateway has been configured and started, it is ready to receive traffic from users.
+Once the QCFlow AI Gateway has been configured and started, it is ready to receive traffic from users.
 
 .. _standard_deployments_parameters:
 
 Standard Query Parameters
 -------------------------
 
-The MLflow AI Gateway defines standard parameters for chat, completions, and embeddings that can be
+The QCFlow AI Gateway defines standard parameters for chat, completions, and embeddings that can be
 used when querying any endpoint regardless of its provider. Each parameter has a standard range and
-default value. When querying an endpoint with a particular provider, the MLflow AI Gateway automatically
+default value. When querying an endpoint with a particular provider, the QCFlow AI Gateway automatically
 scales parameter values according to the provider's value ranges for that parameter.
 
 Completions
@@ -836,11 +836,11 @@ In addition to the :ref:`standard_deployments_parameters`, you can pass any addi
 - ``presence_penalty`` (supported by OpenAI, Cohere, AI21 Labs)
 - ``stream`` (supported by OpenAI, Cohere)
 
-Below is an example of submitting a query request to an MLflow AI Gateway endpoint using additional parameters:
+Below is an example of submitting a query request to an QCFlow AI Gateway endpoint using additional parameters:
 
 .. code-block:: python
 
-    from mlflow.deployments import get_deploy_client
+    from qcflow.deployments import get_deploy_client
 
     client = get_deploy_client("http://my.deployments:8888")
 
@@ -945,15 +945,15 @@ Completions
 FastAPI Documentation ("/docs")
 -------------------------------
 
-FastAPI, the framework used for building the MLflow AI Gateway, provides an automatic interactive API
+FastAPI, the framework used for building the QCFlow AI Gateway, provides an automatic interactive API
 documentation interface, which is accessible at the "/docs" endpoint (e.g., ``http://my.deployments:9000/docs``).
 This interactive interface is very handy for exploring and testing the available API endpoints.
 
 As a convenience, accessing the root URL (e.g., ``http://my.deployments:9000``) redirects to this "/docs" endpoint.
 
-MLflow Python Client APIs
+QCFlow Python Client APIs
 -------------------------
-:class:`MlflowDeploymentClient <mlflow.deployments.MlflowDeploymentClient>` is the user-facing client API that is used to interact with the MLflow AI Gateway.
+:class:`QCFlowDeploymentClient <qcflow.deployments.QCFlowDeploymentClient>` is the user-facing client API that is used to interact with the QCFlow AI Gateway.
 It abstracts the HTTP requests to the gateway server via a simple, easy-to-use Python API.
 
 .. _deployments_client_api:
@@ -961,19 +961,19 @@ It abstracts the HTTP requests to the gateway server via a simple, easy-to-use P
 Client API
 ~~~~~~~~~~
 
-To use the ``MlflowDeploymentClient`` API, see the below examples for the available API methods:
+To use the ``QCFlowDeploymentClient`` API, see the below examples for the available API methods:
 
-1. Create an ``MlflowDeploymentClient``
+1. Create an ``QCFlowDeploymentClient``
 
     .. code-block:: python
 
-        from mlflow.deployments import get_deploy_client
+        from qcflow.deployments import get_deploy_client
 
         client = get_deploy_client("http://my.deployments:8888")
 
 2. List all endpoints:
 
-    The :meth:`list_endpoints() <mlflow.deployments.MlflowDeploymentClient.list_endpoints>` method returns a list of all endpoints.
+    The :meth:`list_endpoints() <qcflow.deployments.QCFlowDeploymentClient.list_endpoints>` method returns a list of all endpoints.
 
     .. code-block:: python
 
@@ -983,7 +983,7 @@ To use the ``MlflowDeploymentClient`` API, see the below examples for the availa
 
 3. Query an endpoint:
 
-    The :meth:`predict() <mlflow.deployments.MlflowDeploymentClient.predict>` method submits a query to a configured provider endpoint.
+    The :meth:`predict() <qcflow.deployments.QCFlowDeploymentClient.predict>` method submits a query to a configured provider endpoint.
     The data structure you send in the query depends on the endpoint.
 
     .. code-block:: python
@@ -998,17 +998,17 @@ To use the ``MlflowDeploymentClient`` API, see the below examples for the availa
 LangChain Integration
 ~~~~~~~~~~~~~~~~~~~~~
 
-`LangChain <https://github.com/langchain-ai/langchain>`_ supports `an integration for MLflow Deployments <https://python.langchain.com/docs/ecosystem/integrations/providers/mlflow>`_.
+`LangChain <https://github.com/langchain-ai/langchain>`_ supports `an integration for QCFlow Deployments <https://python.langchain.com/docs/ecosystem/integrations/providers/qcflow>`_.
 This integration enable users to use prompt engineering, retrieval augmented generation, and other techniques with LLMs in the gateway server.
 
 .. code-block:: python
     :caption: Example
 
-    import mlflow
+    import qcflow
     from langchain import LLMChain, PromptTemplate
-    from langchain.llms import Mlflow
+    from langchain.llms import QCFlow
 
-    llm = Mlflow(target_uri="http://127.0.0.1:5000", endpoint="completions")
+    llm = QCFlow(target_uri="http://127.0.0.1:5000", endpoint="completions")
     llm_chain = LLMChain(
         llm=llm,
         prompt=PromptTemplate(
@@ -1019,50 +1019,50 @@ This integration enable users to use prompt engineering, retrieval augmented gen
     result = llm_chain.run(adjective="funny")
     print(result)
 
-    with mlflow.start_run():
-        model_info = mlflow.langchain.log_model(llm_chain, "model")
+    with qcflow.start_run():
+        model_info = qcflow.langchain.log_model(llm_chain, "model")
 
-    model = mlflow.pyfunc.load_model(model_info.model_uri)
+    model = qcflow.pyfunc.load_model(model_info.model_uri)
     print(model.predict([{"adjective": "funny"}]))
 
 
-.. _deployments_mlflow_models:
+.. _deployments_qcflow_models:
 
-MLflow Models
+QCFlow Models
 ~~~~~~~~~~~~~
-Interfacing with MLflow Models can be done in two ways. With the use of a custom PyFunc Model, a query can be issued directly to a gateway server endpoint and used in a broader context within a model.
-Data may be augmented, manipulated, or used in a mixture of experts paradigm. The other means of utilizing the MLflow AI Gateway along with MLflow Models is to define a served MLflow model directly as
+Interfacing with QCFlow Models can be done in two ways. With the use of a custom PyFunc Model, a query can be issued directly to a gateway server endpoint and used in a broader context within a model.
+Data may be augmented, manipulated, or used in a mixture of experts paradigm. The other means of utilizing the QCFlow AI Gateway along with QCFlow Models is to define a served QCFlow model directly as
 an endpoint within a gateway server.
 
-Using the gateway server to Query a served MLflow Model
+Using the gateway server to Query a served QCFlow Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For a full walkthrough and example of using the MLflow serving integration to query a model directly through the MLflow AI Gateway, please see `the full example <https://github.com/mlflow/mlflow/tree/master/examples/deployments/mlflow_serving/README.md>`_.
-Within the guide, you will see the entire end-to-end process of serving multiple models from different servers and configuring an MLflow AI Gateway instance to provide a single unified point to handle queries from.
+For a full walkthrough and example of using the QCFlow serving integration to query a model directly through the QCFlow AI Gateway, please see `the full example <https://github.com/qcflow/qcflow/tree/master/examples/deployments/qcflow_serving/README.md>`_.
+Within the guide, you will see the entire end-to-end process of serving multiple models from different servers and configuring an QCFlow AI Gateway instance to provide a single unified point to handle queries from.
 
-Using an MLflow Model to Query the gateway server
+Using an QCFlow Model to Query the gateway server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can also build and deploy MLflow Models that call the MLflow AI Gateway.
+You can also build and deploy QCFlow Models that call the QCFlow AI Gateway.
 The example below demonstrates how to use a gateway server from within a custom ``pyfunc`` model.
 
 
 .. note::
     The custom ``Model`` shown in the example below is utilizing environment variables for the gateway server's uri. These values can also be set manually within the
-    definition or can be applied via :func:`mlflow.deployments.get_deployments_target` after the uri has been set. For the example below, the value for ``MLFLOW_DEPLOYMENTS_TARGET`` is
+    definition or can be applied via :func:`qcflow.deployments.get_deployments_target` after the uri has been set. For the example below, the value for ``QCFLOW_DEPLOYMENTS_TARGET`` is
     ``http://127.0.0.1:5000/``. For an actual deployment use case, this value would be set to the configured and production deployment server.
 
 .. code-block:: python
 
     import os
     import pandas as pd
-    import mlflow
+    import qcflow
 
 
     def predict(data):
-        from mlflow.deployments import get_deploy_client
+        from qcflow.deployments import get_deploy_client
 
-        client = get_deploy_client(os.environ["MLFLOW_DEPLOYMENTS_TARGET"])
+        client = get_deploy_client(os.environ["QCFLOW_DEPLOYMENTS_TARGET"])
 
         payload = data.to_dict(orient="records")
         return [
@@ -1074,12 +1074,12 @@ The example below demonstrates how to use a gateway server from within a custom 
     input_example = pd.DataFrame.from_dict(
         {"prompt": ["Where is the moon?", "What is a comet made of?"]}
     )
-    signature = mlflow.models.infer_signature(
+    signature = qcflow.models.infer_signature(
         input_example, ["Above our heads.", "It's mostly ice and rocks."]
     )
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             python_model=predict,
             registered_model_name="anthropic_completions",
             artifact_path="anthropic_completions",
@@ -1095,19 +1095,19 @@ The example below demonstrates how to use a gateway server from within a custom 
         }
     )
 
-    loaded_model = mlflow.pyfunc.load_model(model_info.model_uri)
+    loaded_model = qcflow.pyfunc.load_model(model_info.model_uri)
 
     print(loaded_model.predict(df))
 
-This custom MLflow model can be used in the same way as any other MLflow model. It can be used within a ``spark_udf``, used with :func:`mlflow.evaluate`, or `deploy <https://mlflow.org/docs/latest/models.html#built-in-deployment-tools>`_ like any other model.
+This custom QCFlow model can be used in the same way as any other QCFlow model. It can be used within a ``spark_udf``, used with :func:`qcflow.evaluate`, or `deploy <https://qcflow.org/docs/latest/models.html#built-in-deployment-tools>`_ like any other model.
 
 .. _deployments_rest_api:
 
 REST API
 ~~~~~~~~
-The REST API allows you to send HTTP requests directly to the MLflow AI Gateway. This is useful if you're not using Python or if you prefer to interact with a gateway server using HTTP directly.
+The REST API allows you to send HTTP requests directly to the QCFlow AI Gateway. This is useful if you're not using Python or if you prefer to interact with a gateway server using HTTP directly.
 
-Here are some examples for how you might use curl to interact with the MLflow AI Gateway:
+Here are some examples for how you might use curl to interact with the QCFlow AI Gateway:
 
 1. Get information about a particular endpoint: ``GET /api/2.0/endpoints/{name}``
 
@@ -1155,7 +1155,7 @@ Here are some examples for how you might use curl to interact with the MLflow AI
            -H "Content-Type: application/json" \
            -d '{"input": ["I would like to return my shipment of beanie babies, please", "Can I please speak to a human now?"]}'
 
-**Note:** Remember to replace ``my.deployments:8888`` with the URL of your actual MLflow AI Gateway.
+**Note:** Remember to replace ``my.deployments:8888`` with the URL of your actual QCFlow AI Gateway.
 
 .. _deployments_plugin:
 
@@ -1165,12 +1165,12 @@ Plugin LLM Provider (Experimental)
 .. attention::
     This feature is in active development and is marked as Experimental. It may change in a future release without warning.
 
-The MLflow AI Gateway supports the use of custom language model providers through the use of plugins.
+The QCFlow AI Gateway supports the use of custom language model providers through the use of plugins.
 A plugin is a Python package that provides a custom implementation of a language model provider.
-This allows users to integrate their own language model services with the MLflow AI Gateway.
+This allows users to integrate their own language model services with the QCFlow AI Gateway.
 
-To create a custom plugin, you need to implement a provider class that inherits from ``mlflow.gateway.providers.BaseProvider``,
-and a config class that inherits from ``mlflow.gateway.base_models.ConfigModel``.
+To create a custom plugin, you need to implement a provider class that inherits from ``qcflow.gateway.providers.BaseProvider``,
+and a config class that inherits from ``qcflow.gateway.base_models.ConfigModel``.
 
 .. code-block:: python
     :caption: Example
@@ -1179,10 +1179,10 @@ and a config class that inherits from ``mlflow.gateway.base_models.ConfigModel``
     from typing import AsyncIterable
 
     from pydantic import validator
-    from mlflow.gateway.base_models import ConfigModel
-    from mlflow.gateway.config import RouteConfig
-    from mlflow.gateway.providers import BaseProvider
-    from mlflow.gateway.schemas import chat, completions, embeddings
+    from qcflow.gateway.base_models import ConfigModel
+    from qcflow.gateway.config import RouteConfig
+    from qcflow.gateway.providers import BaseProvider
+    from qcflow.gateway.schemas import chat, completions, embeddings
 
 
     class MyLLMConfig(ConfigModel):
@@ -1239,7 +1239,7 @@ and a config class that inherits from ``mlflow.gateway.base_models.ConfigModel``
             ...
 
 Then, you need to create a Python package that contains the plugin implementation.
-You must specify an entry point under the ``mlflow.gateway.providers`` group, so that your plugin can be detected by MLflow.
+You must specify an entry point under the ``qcflow.gateway.providers`` group, so that your plugin can be detected by QCFlow.
 The entry point should be in the format ``<name> = <module>:<class>``.
 
 .. code-block:: toml
@@ -1249,7 +1249,7 @@ The entry point should be in the format ``<name> = <module>:<class>``.
     name = "my_llm"
     version = "1.0"
 
-    [project.entry-points."mlflow.gateway.providers"]
+    [project.entry-points."qcflow.gateway.providers"]
     my_llm = "my_llm.providers:MyLLMProvider"
 
     [tool.setuptools.packages.find]
@@ -1258,12 +1258,12 @@ The entry point should be in the format ``<name> = <module>:<class>``.
 
 You can specify more than one entry point in the same package if you have multiple providers.
 Note that entry point names must be globally unique. If two plugins specify the same entry point name,
-MLflow will raise an error at startup time.
+QCFlow will raise an error at startup time.
 
-MLflow already provides a number of providers by default. Your plugin name cannot be the same as any one
+QCFlow already provides a number of providers by default. Your plugin name cannot be the same as any one
 of them. See :ref:`deployments_configuration_details` for a complete list of default providers.
 
-Finally, you need to install the plugin package in the same environment as the MLflow AI Gateway.
+Finally, you need to install the plugin package in the same environment as the QCFlow AI Gateway.
 
 .. important::
 
@@ -1271,7 +1271,7 @@ Finally, you need to install the plugin package in the same environment as the M
     execute any arbitrary code that is defined within the plugin package.
 
 Then, you can specify the plugin provider according to the entry point name
-in the MLflow AI Gateway configuration file.
+in the QCFlow AI Gateway configuration file.
 
 .. code-block:: yaml
 
@@ -1287,10 +1287,10 @@ in the MLflow AI Gateway configuration file.
 Example
 -------
 
-A working example can be found in the MLflow repository at
-`examples/deployments/deployments_server/plugin <https://github.com/mlflow/mlflow/tree/master/examples/deployments/deployments_server/plugin>`__.
+A working example can be found in the QCFlow repository at
+`examples/deployments/deployments_server/plugin <https://github.com/qcflow/qcflow/tree/master/examples/deployments/deployments_server/plugin>`__.
 
-MLflow AI Gateway API Documentation
+QCFlow AI Gateway API Documentation
 ===========================================
 
 `API documentation <./api.html>`_
@@ -1298,7 +1298,7 @@ MLflow AI Gateway API Documentation
 OpenAI Compatibility
 ====================
 
-MLflow AI Gateway is compatible with OpenAI API and supports the ``chat``, ``completions``, and ``embeddings`` APIs.
+QCFlow AI Gateway is compatible with OpenAI API and supports the ``chat``, ``completions``, and ``embeddings`` APIs.
 The OpenAI client can be used to query the server as shown in the example below:
 
 1. Create a configuration file:
@@ -1318,7 +1318,7 @@ The OpenAI client can be used to query the server as shown in the example below:
 
 .. code-block:: shell
 
-    mlflow gateway start --config-path /path/to/config.yaml --port 7000
+    qcflow gateway start --config-path /path/to/config.yaml --port 7000
 
 3. Once the server is up and running, query the server using the OpenAI client:
 
@@ -1344,22 +1344,22 @@ Unity Catalog Integration
 
     uc_integration
 
-See `Unity Catalog Integration <./uc_integration.html>`_ for how to integrate the MLflow AI Gateway with Unity Catalog.
+See `Unity Catalog Integration <./uc_integration.html>`_ for how to integrate the QCFlow AI Gateway with Unity Catalog.
 
 .. _deployments_security:
 
 gateway server Security Considerations
 ==========================================
 
-Remember to ensure secure access to the system that the MLflow AI Gateway is running in to protect access to these keys.
+Remember to ensure secure access to the system that the QCFlow AI Gateway is running in to protect access to these keys.
 
-An effective way to secure your gateway server is by placing it behind a reverse proxy. This will allow the reverse proxy to handle incoming requests and forward them to the MLflow AI Gateway. The reverse proxy effectively shields your application from direct exposure to Internet traffic.
+An effective way to secure your gateway server is by placing it behind a reverse proxy. This will allow the reverse proxy to handle incoming requests and forward them to the QCFlow AI Gateway. The reverse proxy effectively shields your application from direct exposure to Internet traffic.
 
 A popular choice for a reverse proxy is `Nginx`. In addition to handling the traffic to your application, `Nginx` can also serve static files and load balance the traffic if you have multiple instances of your application running.
 
 Furthermore, to ensure the integrity and confidentiality of data between the client and the server, it's highly recommended to enable HTTPS on your reverse proxy.
 
-In addition to the reverse proxy, it's also recommended to add an authentication layer before the requests reach the MLflow AI Gateway. This could be HTTP Basic Authentication, OAuth, or any other method that suits your needs.
+In addition to the reverse proxy, it's also recommended to add an authentication layer before the requests reach the QCFlow AI Gateway. This could be HTTP Basic Authentication, OAuth, or any other method that suits your needs.
 
 For example, here's a simple configuration for Nginx with Basic Authentication:
 
@@ -1373,7 +1373,7 @@ For example, here's a simple configuration for Nginx with Basic Authentication:
                 auth_basic "Restricted Content";
                 auth_basic_user_file /etc/nginx/.htpasswd;
 
-                proxy_pass http://localhost:5000;  # Replace with the MLflow AI Gateway port
+                proxy_pass http://localhost:5000;  # Replace with the QCFlow AI Gateway port
             }
         }
     }

@@ -16,20 +16,20 @@ function wait_server_ready {
 
 mkdir -p outputs
 echo 'Running tracking server in the background'
-if [ -z "$MLFLOW_TRACKING_URI" ]; then
+if [ -z "$QCFLOW_TRACKING_URI" ]; then
   backend_store_uri=""
   default_artifact_root=""
 else
-  backend_store_uri="--backend-store-uri $MLFLOW_TRACKING_URI"
+  backend_store_uri="--backend-store-uri $QCFLOW_TRACKING_URI"
   default_artifact_root="--default-artifact-root mlruns"
 fi
 
-if [ ! -d "mlflow/server/js/node_modules" ]; then
-  pushd mlflow/server/js
+if [ ! -d "qcflow/server/js/node_modules" ]; then
+  pushd qcflow/server/js
   yarn install
   popd
 fi
 
-mlflow server $backend_store_uri $default_artifact_root --dev &
+qcflow server $backend_store_uri $default_artifact_root --dev &
 wait_server_ready localhost:5000/health
-yarn --cwd mlflow/server/js start
+yarn --cwd qcflow/server/js start

@@ -2,9 +2,9 @@ import re
 
 import pytest
 
-from mlflow.entities import Metric
-from mlflow.exceptions import MlflowException
-from mlflow.utils.time import get_current_time_millis
+from qcflow.entities import Metric
+from qcflow.exceptions import QCFlowException
+from qcflow.utils.time import get_current_time_millis
 
 from tests.helper_functions import random_int, random_str
 
@@ -73,7 +73,7 @@ def test_metric_from_dictionary_missing_keys():
     }
 
     with pytest.raises(
-        MlflowException, match=re.escape("Missing required keys ['step'] in metric dictionary")
+        QCFlowException, match=re.escape("Missing required keys ['step'] in metric dictionary")
     ):
         Metric.from_dictionary(incomplete_dict)
 
@@ -84,7 +84,7 @@ def test_metric_from_dictionary_missing_keys():
     }
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=re.escape("Missing required keys ['value', 'timestamp'] in metric dictionary"),
     ):
         Metric.from_dictionary(another_incomplete_dict)

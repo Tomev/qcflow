@@ -1,0 +1,280 @@
+# GENERATED FILE. PLEASE DON'T MODIFY.
+# Run python3 ./dev/proto_to_graphql/code_generator.py to regenerate.
+
+directive @component(name: String!) on QUERY | MUTATION
+
+type Query {
+  qcflowGetExperiment(input: QCFlowGetExperimentInput): QCFlowGetExperimentResponse
+  qcflowGetMetricHistoryBulkInterval(input: QCFlowGetMetricHistoryBulkIntervalInput): QCFlowGetMetricHistoryBulkIntervalResponse
+  qcflowGetRun(input: QCFlowGetRunInput): QCFlowGetRunResponse
+  qcflowListArtifacts(input: QCFlowListArtifactsInput): QCFlowListArtifactsResponse
+  qcflowSearchModelVersions(input: QCFlowSearchModelVersionsInput): QCFlowSearchModelVersionsResponse
+
+  """Simple echoing field"""
+  test(inputString: String): Test
+}
+
+type QCFlowGetExperimentResponse {
+  experiment: QCFlowExperiment
+  apiError: ApiError
+}
+
+type QCFlowExperiment {
+  experimentId: String
+  name: String
+  artifactLocation: String
+  lifecycleStage: String
+  lastUpdateTime: LongString
+  creationTime: LongString
+  tags: [QCFlowExperimentTag!]
+}
+
+"""
+LongString Scalar type to prevent truncation to max integer in JavaScript.
+"""
+scalar LongString
+
+type QCFlowExperimentTag {
+  key: String
+  value: String
+}
+
+type ApiError {
+  code: String
+  message: String
+  helpUrl: String
+  traceId: String
+  errorDetails: [ErrorDetail]
+}
+
+type ErrorDetail {
+  field: String
+  message: String
+}
+
+input QCFlowGetExperimentInput {
+  experimentId: String
+}
+
+type QCFlowGetMetricHistoryBulkIntervalResponse {
+  metrics: [QCFlowMetricWithRunId!]
+  apiError: ApiError
+}
+
+type QCFlowMetricWithRunId {
+  key: String
+  value: Float
+  timestamp: LongString
+  step: LongString
+  runId: String
+}
+
+input QCFlowGetMetricHistoryBulkIntervalInput {
+  runIds: [String]
+  metricKey: String
+  startStep: Int
+  endStep: Int
+  maxResults: Int
+}
+
+type QCFlowGetRunResponse {
+  run: QCFlowRunExtension
+  apiError: ApiError
+}
+
+type QCFlowRunExtension {
+  info: QCFlowRunInfo
+  data: QCFlowRunData
+  inputs: QCFlowRunInputs
+  experiment: QCFlowExperiment
+  modelVersions: [QCFlowModelVersion!]
+}
+
+type QCFlowRunInfo {
+  runId: String
+  runUuid: String
+  runName: String
+  experimentId: String
+  userId: String
+  status: QCFlowRunStatus
+  startTime: LongString
+  endTime: LongString
+  artifactUri: String
+  lifecycleStage: String
+}
+
+enum QCFlowRunStatus {
+  RUNNING
+  SCHEDULED
+  FINISHED
+  FAILED
+  KILLED
+}
+
+type QCFlowRunData {
+  metrics: [QCFlowMetric!]
+  params: [QCFlowParam!]
+  tags: [QCFlowRunTag!]
+}
+
+type QCFlowMetric {
+  key: String
+  value: Float
+  timestamp: LongString
+  step: LongString
+}
+
+type QCFlowParam {
+  key: String
+  value: String
+}
+
+type QCFlowRunTag {
+  key: String
+  value: String
+}
+
+type QCFlowRunInputs {
+  datasetInputs: [QCFlowDatasetInput!]
+}
+
+type QCFlowDatasetInput {
+  tags: [QCFlowInputTag!]
+  dataset: QCFlowDataset
+}
+
+type QCFlowInputTag {
+  key: String
+  value: String
+}
+
+type QCFlowDataset {
+  name: String
+  digest: String
+  sourceType: String
+  source: String
+  schema: String
+  profile: String
+}
+
+type QCFlowModelVersion {
+  name: String
+  version: String
+  creationTimestamp: LongString
+  lastUpdatedTimestamp: LongString
+  userId: String
+  currentStage: String
+  description: String
+  source: String
+  runId: String
+  status: QCFlowModelVersionStatus
+  statusMessage: String
+  tags: [QCFlowModelVersionTag!]
+  runLink: String
+  aliases: [String]
+}
+
+enum QCFlowModelVersionStatus {
+  PENDING_REGISTRATION
+  FAILED_REGISTRATION
+  READY
+}
+
+type QCFlowModelVersionTag {
+  key: String
+  value: String
+}
+
+input QCFlowGetRunInput {
+  runId: String
+  runUuid: String
+}
+
+type QCFlowListArtifactsResponse {
+  rootUri: String
+  files: [QCFlowFileInfo!]
+  nextPageToken: String
+  apiError: ApiError
+}
+
+type QCFlowFileInfo {
+  path: String
+  isDir: Boolean
+  fileSize: LongString
+}
+
+input QCFlowListArtifactsInput {
+  runId: String
+  runUuid: String
+  path: String
+  pageToken: String
+}
+
+type QCFlowSearchModelVersionsResponse {
+  modelVersions: [QCFlowModelVersion!]
+  nextPageToken: String
+  apiError: ApiError
+}
+
+input QCFlowSearchModelVersionsInput {
+  filter: String
+  maxResults: LongString
+  orderBy: [String]
+  pageToken: String
+}
+
+type Test {
+  """Echoes the input string"""
+  output: String
+}
+
+type Mutation {
+  qcflowSearchDatasets(input: QCFlowSearchDatasetsInput): QCFlowSearchDatasetsResponse
+  qcflowSearchRuns(input: QCFlowSearchRunsInput): QCFlowSearchRunsResponse
+
+  """Simple echoing field"""
+  testMutation(inputString: String): TestMutation
+}
+
+type QCFlowSearchDatasetsResponse {
+  datasetSummaries: [QCFlowDatasetSummary!]
+  apiError: ApiError
+}
+
+type QCFlowDatasetSummary {
+  experimentId: String
+  name: String
+  digest: String
+  context: String
+}
+
+input QCFlowSearchDatasetsInput {
+  experimentIds: [String]
+}
+
+type QCFlowSearchRunsResponse {
+  runs: [QCFlowRunExtension!]
+  nextPageToken: String
+  apiError: ApiError
+}
+
+input QCFlowSearchRunsInput {
+  experimentIds: [String]
+  filter: String
+  runViewType: QCFlowViewType = null
+  maxResults: Int
+  orderBy: [String]
+  pageToken: String
+}
+
+enum QCFlowViewType {
+  ACTIVE_ONLY
+  DELETED_ONLY
+  ALL
+}
+
+type TestMutation {
+  """Echoes the input string"""
+  output: String
+}
+

@@ -3,15 +3,15 @@ from unittest import mock
 import pytest
 from fastapi.encoders import jsonable_encoder
 
-from mlflow.gateway.config import (
+from qcflow.gateway.config import (
     AmazonBedrockConfig,
     AWSBaseConfig,
     AWSIdAndKey,
     AWSRole,
     RouteConfig,
 )
-from mlflow.gateway.providers.bedrock import AmazonBedrockModelProvider, AmazonBedrockProvider
-from mlflow.gateway.schemas import completions
+from qcflow.gateway.providers.bedrock import AmazonBedrockModelProvider, AmazonBedrockProvider
+from qcflow.gateway.schemas import completions
 
 from tests.gateway.providers.test_anthropic import (
     completions_response as anthropic_completions_response,
@@ -385,7 +385,7 @@ async def test_bedrock_request_response(
     with (
         mock.patch("time.time", return_value=1677858242),
         mock.patch(
-            "mlflow.gateway.providers.bedrock.AmazonBedrockProvider._request", return_value=response
+            "qcflow.gateway.providers.bedrock.AmazonBedrockProvider._request", return_value=response
         ) as mock_request,
     ):
         if not expected:

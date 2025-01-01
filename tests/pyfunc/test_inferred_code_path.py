@@ -6,8 +6,8 @@ import pytest
 import sklearn.datasets
 import sklearn.neighbors
 
-import mlflow
-from mlflow.models import Model
+import qcflow
+from qcflow.models import Model
 
 
 @pytest.fixture
@@ -49,11 +49,11 @@ def test_loader_module_model_save_load(
         pickle.dump(sklearn_knn_model, f)
 
     model_config = Model(run_id="test", artifact_path="testtest")
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=model_path,
         data_path=sk_model_path,
         loader_module="custom_model.loader",
-        mlflow_model=model_config,
+        qcflow_model=model_config,
         infer_code_paths=True,
     )
 
@@ -66,9 +66,9 @@ def test_loader_module_model_save_load(
         "custom_model/mod1/mod4.py",
     }
     assert model_config.__dict__ == reloaded_model_config.__dict__
-    assert mlflow.pyfunc.FLAVOR_NAME in reloaded_model_config.flavors
-    assert mlflow.pyfunc.PY_VERSION in reloaded_model_config.flavors[mlflow.pyfunc.FLAVOR_NAME]
-    reloaded_model = mlflow.pyfunc.load_model(model_path)
+    assert qcflow.pyfunc.FLAVOR_NAME in reloaded_model_config.flavors
+    assert qcflow.pyfunc.PY_VERSION in reloaded_model_config.flavors[qcflow.pyfunc.FLAVOR_NAME]
+    reloaded_model = qcflow.pyfunc.load_model(model_path)
     np.testing.assert_array_equal(
         sklearn_knn_model.predict(iris_data[0]), reloaded_model.predict(iris_data[0])
     )
@@ -82,7 +82,7 @@ def get_model_class():
     """
     from custom_model.mod1 import mod2
 
-    class CustomSklearnModel(mlflow.pyfunc.PythonModel):
+    class CustomSklearnModel(qcflow.pyfunc.PythonModel):
         def __init__(self):
             self.mod2 = mod2
 
@@ -100,7 +100,7 @@ def test_python_model_save_load(tmp_path, monkeypatch):
 
     pyfunc_model_path = tmp_path / "pyfunc_model"
 
-    mlflow.pyfunc.save_model(
+    qcflow.pyfunc.save_model(
         path=pyfunc_model_path,
         python_model=model_class(),
         infer_code_paths=True,
@@ -111,7 +111,7 @@ def test_python_model_save_load(tmp_path, monkeypatch):
         "custom_model/mod1/mod2/__init__.py",
         "custom_model/mod1/mod4.py",
     }
-    loaded_pyfunc_model = mlflow.pyfunc.load_model(model_uri=pyfunc_model_path)
+    loaded_pyfunc_model = qcflow.pyfunc.load_model(model_uri=pyfunc_model_path)
     np.testing.assert_array_equal(
         loaded_pyfunc_model.predict([1, 2, 3]),
         [11, 12, 13],

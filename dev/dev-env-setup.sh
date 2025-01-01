@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-MLFLOW_HOME="$(pwd)"
-directory="$MLFLOW_HOME/.venvs/mlflow-dev"
+QCFLOW_HOME="$(pwd)"
+directory="$QCFLOW_HOME/.venvs/qcflow-dev"
 REPO_ROOT=$(git rev-parse --show-toplevel)
 rd="$REPO_ROOT/requirements"
 VENV_DIR="$directory/bin/activate"
 # Progress file to resume the script from where it exited previously
-PROGRESS_FILE="$MLFLOW_HOME/dev-env-setup-progress"
+PROGRESS_FILE="$QCFLOW_HOME/dev-env-setup-progress"
 
 showHelp() {
 cat << EOF
@@ -27,9 +27,9 @@ This script will:
 
   Example usage:
 
-  From root of MLflow repository on local with a destination virtualenv path of <REPO_ROOT>/.venvs/mlflow-dev:
+  From root of QCFlow repository on local with a destination virtualenv path of <REPO_ROOT>/.venvs/qcflow-dev:
 
-  dev/dev-env-setup.sh -d $(pwd)/.venvs/mlflow-dev
+  dev/dev-env-setup.sh -d $(pwd)/.venvs/qcflow-dev
 
   Note: it is recommended to preface virtualenv locations with a directory name prefaced by '.' (i.e., ".venvs").
 
@@ -201,7 +201,7 @@ check_and_install_pyenv() {
           echo "PYENV_ROOT=$PYENV_ROOT" >>"$GITHUB_ENV"
         fi
       else
-        echo "Unsupported operating system environment: $machine. This setup script only supports MacOS and Linux. For other operating systems, please follow the manual setup instruction here: https://github.com/mlflow/mlflow/blob/master/CONTRIBUTING.md#manual-python-development-environment-configuration "
+        echo "Unsupported operating system environment: $machine. This setup script only supports MacOS and Linux. For other operating systems, please follow the manual setup instruction here: https://github.com/qcflow/qcflow/blob/master/CONTRIBUTING.md#manual-python-development-environment-configuration "
         exit 1
       fi
     else
@@ -216,7 +216,7 @@ check_and_install_min_py_version() {
   # Get the minimum supported version for development purposes
   min_py_version="3.9"
 
-  echo "The minimum version of Python to ensure backwards compatibility for MLflow development is: $(
+  echo "The minimum version of Python to ensure backwards compatibility for QCFlow development is: $(
     tput bold
     tput setaf 3
   )$min_py_version$(tput sgr0)"
@@ -271,9 +271,9 @@ create_virtualenv() {
   echo "$(tput setaf 3)Activated environment is located: $(tput bold) $directory/bin/activate$(tput sgr0)"
 }
 
-# Install mlflow dev version and required dependencies
-install_mlflow_and_dependencies() {
-  # Install current checked out version of mlflow (local)
+# Install qcflow dev version and required dependencies
+install_qcflow_and_dependencies() {
+  # Install current checked out version of qcflow (local)
   pip install -e .[extras]
 
   echo "Installing pip dependencies for development environment."
@@ -281,7 +281,7 @@ install_mlflow_and_dependencies() {
     # Install dev requirements
     pip install -r "$rd/dev-requirements.txt"
     # Install test plugin
-    pip install -e "$MLFLOW_HOME/tests/resources/mlflow-test-plugin"
+    pip install -e "$QCFLOW_HOME/tests/resources/qcflow-test-plugin"
   else
     files=("$rd/test-requirements.txt" "$rd/lint-requirements.txt" "$rd/doc-requirements.txt")
     for r in "${files[@]}"; do
@@ -325,7 +325,7 @@ check_and_install_pandoc() {
           sudo dpkg --install $(find $TEMP_DEB -name '*.deb') &&
           rm -rf $TEMP_DEB
       else
-        echo "Unsupported operating system environment: $machine. This setup script only supports MacOS and Linux. For other operating systems, please follow the manual setup instruction here: https://github.com/mlflow/mlflow/blob/master/CONTRIBUTING.md#manual-python-development-environment-configuration "
+        echo "Unsupported operating system environment: $machine. This setup script only supports MacOS and Linux. For other operating systems, please follow the manual setup instruction here: https://github.com/qcflow/qcflow/blob/master/CONTRIBUTING.md#manual-python-development-environment-configuration "
         exit 1
       fi
     fi
@@ -376,7 +376,7 @@ if [[ "$PROGRESS" -eq "2" ]]; then
   save_progress 3
 fi
 if [[ "$PROGRESS" -eq "3" ]]; then
-  install_mlflow_and_dependencies
+  install_qcflow_and_dependencies
   save_progress 4
 fi
 if [[ "$PROGRESS" -eq "4" ]]; then
@@ -394,4 +394,4 @@ set +exv
 check_and_install_pandoc
 check_docker
 
-echo "$(tput setaf 2)Your MLflow development environment can be activated by running: $(tput bold)source $VENV_DIR$(tput sgr0)"
+echo "$(tput setaf 2)Your QCFlow development environment can be activated by running: $(tput bold)source $VENV_DIR$(tput sgr0)"

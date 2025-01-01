@@ -57,7 +57,7 @@ def main():
         circle_session.headers.update({"Circle-Token": circle_token})
 
     # Get the ID of the build_doc job
-    repo = "mlflow/mlflow"
+    repo = "qcflow/qcflow"
     build_doc_job_name = "build_doc"
     job_id = None
     workflow_run_link = f"https://github.com/{repo}/actions/runs/{args.workflow_run_id}"

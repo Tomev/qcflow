@@ -1,10 +1,10 @@
 from typing import Any
 from urllib.parse import urlparse
 
-from mlflow.artifacts import download_artifacts
-from mlflow.data.dataset_source import DatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
+from qcflow.artifacts import download_artifacts
+from qcflow.data.dataset_source import DatasetSource
+from qcflow.exceptions import QCFlowException
+from qcflow.protos.databricks_pb2 import INVALID_PARAMETER_VALUE
 
 
 class SampleDatasetSource(DatasetSource):
@@ -46,7 +46,7 @@ class SampleDatasetSource(DatasetSource):
     def from_dict(cls, source_dict: dict[Any, Any]) -> DatasetSource:
         uri = source_dict.get("uri")
         if uri is None:
-            raise MlflowException(
+            raise QCFlowException(
                 'Failed to parse dummy dataset source. Missing expected key: "uri"',
                 INVALID_PARAMETER_VALUE,
             )

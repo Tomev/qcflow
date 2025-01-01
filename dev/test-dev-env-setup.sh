@@ -19,7 +19,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 export REPO_ROOT
 
 # Run the installation of the environment
-DEV_DIR=$REPO_ROOT/.venvs/mlflow-dev
+DEV_DIR=$REPO_ROOT/.venvs/qcflow-dev
 
 "$REPO_ROOT"/dev/dev-env-setup.sh -d "$DEV_DIR"
 

@@ -1,10 +1,10 @@
 import pytest
 
-import mlflow
-from mlflow.entities import Metric
-from mlflow.entities.assessment_source import AssessmentSource, AssessmentSourceType
-from mlflow.entities.evaluation_tag import EvaluationTag
-from mlflow.evaluation import Assessment, Evaluation, log_evaluations
+import qcflow
+from qcflow.entities import Metric
+from qcflow.entities.assessment_source import AssessmentSource, AssessmentSourceType
+from qcflow.entities.evaluation_tag import EvaluationTag
+from qcflow.evaluation import Assessment, Evaluation, log_evaluations
 
 from tests.evaluate.logging.utils import get_evaluation
 
@@ -12,7 +12,7 @@ from tests.evaluate.logging.utils import get_evaluation
 @pytest.fixture
 def end_run_at_test_end():
     yield
-    mlflow.end_run()
+    qcflow.end_run()
 
 
 def test_log_evaluations_with_minimal_params_succeeds():
@@ -22,7 +22,7 @@ def test_log_evaluations_with_minimal_params_succeeds():
     inputs2 = {"feature3": 3.0, "feature4": 4.0}
     outputs2 = {"prediction": 0.8}
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         # Create evaluation objects
         evaluation1 = Evaluation(inputs=inputs1, outputs=outputs1)
         evaluation2 = Evaluation(inputs=inputs2, outputs=outputs2)
@@ -38,7 +38,7 @@ def test_log_evaluations_with_minimal_params_succeeds():
             assert logged_evaluation.outputs == expected_evaluation.outputs
             retrieved_evaluation = get_evaluation(
                 evaluation_id=logged_evaluation.evaluation_id,
-                run_id=mlflow.active_run().info.run_id,
+                run_id=qcflow.active_run().info.run_id,
             )
             assert retrieved_evaluation is not None
             assert retrieved_evaluation.inputs == logged_evaluation.inputs
@@ -100,7 +100,7 @@ def test_log_evaluations_with_all_params():
     inputs_id = "unique-inputs-id"
     request_id = "unique-request-id"
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         run_id = run.info.run_id
 
         evaluations = []
@@ -185,14 +185,14 @@ def test_log_evaluations_starts_run_if_not_started(end_run_at_test_end):
     outputs = {"prediction": 0.5}
 
     # Ensure there is no active run
-    if mlflow.active_run() is not None:
-        mlflow.end_run()
+    if qcflow.active_run() is not None:
+        qcflow.end_run()
 
     # Log evaluation without explicitly starting a run
     logged_evaluation = log_evaluations(evaluations=[Evaluation(inputs=inputs, outputs=outputs)])[0]
 
     # Verify that a run has been started
-    active_run = mlflow.active_run()
+    active_run = qcflow.active_run()
     assert active_run is not None, "Expected a run to be started automatically."
 
     # Retrieve the evaluation using the run ID
@@ -203,18 +203,18 @@ def test_log_evaluations_starts_run_if_not_started(end_run_at_test_end):
 
 
 def test_evaluation_module_exposes_relevant_apis_for_logging():
-    import mlflow.evaluation
+    import qcflow.evaluation
 
-    assert hasattr(mlflow.evaluation, "log_evaluations")
-    assert hasattr(mlflow.evaluation, "Evaluation")
-    assert hasattr(mlflow.evaluation, "Assessment")
-    assert hasattr(mlflow.evaluation, "AssessmentSource")
-    assert hasattr(mlflow.evaluation, "AssessmentSourceType")
+    assert hasattr(qcflow.evaluation, "log_evaluations")
+    assert hasattr(qcflow.evaluation, "Evaluation")
+    assert hasattr(qcflow.evaluation, "Assessment")
+    assert hasattr(qcflow.evaluation, "AssessmentSource")
+    assert hasattr(qcflow.evaluation, "AssessmentSourceType")
 
 
 def test_log_evaluations_works_properly_with_empty_evaluations_list():
-    with mlflow.start_run():
+    with qcflow.start_run():
         log_evaluations(evaluations=[])
 
-        artifacts = mlflow.MlflowClient().list_artifacts(mlflow.active_run().info.run_id)
+        artifacts = qcflow.QCFlowClient().list_artifacts(qcflow.active_run().info.run_id)
         assert len(artifacts) == 0

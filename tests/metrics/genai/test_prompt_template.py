@@ -1,4 +1,4 @@
-from mlflow.metrics.genai.prompt_template import PromptTemplate
+from qcflow.metrics.genai.prompt_template import PromptTemplate
 
 
 def test_prompt_template_flat_str_no_variables():

@@ -7,16 +7,16 @@ from unittest.mock import ANY
 import pytest
 import requests
 
-from mlflow.protos.service_pb2 import FileInfo
-from mlflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
-from mlflow.store.artifact.s3_artifact_repo import (
+from qcflow.protos.service_pb2 import FileInfo
+from qcflow.store.artifact.optimized_s3_artifact_repo import OptimizedS3ArtifactRepository
+from qcflow.store.artifact.s3_artifact_repo import (
     _MAX_CACHE_SECONDS,
     _cached_get_s3_client,
 )
 
 from tests.helper_functions import set_boto_credentials  # noqa: F401
 
-S3_REPOSITORY_MODULE = "mlflow.store.artifact.optimized_s3_artifact_repo"
+S3_REPOSITORY_MODULE = "qcflow.store.artifact.optimized_s3_artifact_repo"
 S3_ARTIFACT_REPOSITORY = f"{S3_REPOSITORY_MODULE}.OptimizedS3ArtifactRepository"
 DEFAULT_REGION_NAME = "us_random_region"
 
@@ -59,7 +59,7 @@ def test_get_s3_client_hits_cache(s3_artifact_root, monkeypatch):
         assert cache_info.misses == 2
         assert cache_info.currsize == 2
 
-        monkeypatch.setenv("MLFLOW_EXPERIMENTAL_S3_SIGNATURE_VERSION", "s3v2")
+        monkeypatch.setenv("QCFLOW_EXPERIMENTAL_S3_SIGNATURE_VERSION", "s3v2")
         repo._get_s3_client()
         cache_info = _cached_get_s3_client.cache_info()
         assert cache_info.hits == 1
@@ -67,7 +67,7 @@ def test_get_s3_client_hits_cache(s3_artifact_root, monkeypatch):
         assert cache_info.currsize == 3
 
         with mock.patch(
-            "mlflow.store.artifact.s3_artifact_repo._get_utcnow_timestamp",
+            "qcflow.store.artifact.s3_artifact_repo._get_utcnow_timestamp",
             return_value=datetime.utcnow().timestamp() + _MAX_CACHE_SECONDS,
         ):
             repo._get_s3_client()
@@ -83,7 +83,7 @@ def test_get_s3_client_hits_cache(s3_artifact_root, monkeypatch):
 def test_get_s3_client_verify_param_set_correctly(
     s3_artifact_root, ignore_tls_env, verify, monkeypatch
 ):
-    monkeypatch.setenv("MLFLOW_S3_IGNORE_TLS", ignore_tls_env)
+    monkeypatch.setenv("QCFLOW_S3_IGNORE_TLS", ignore_tls_env)
     with mock.patch("boto3.client") as mock_get_s3_client:
         s3_client_mock = mock.Mock()
         s3_client_mock.head_bucket.return_value = {
@@ -213,7 +213,7 @@ def test_log_artifacts_in_parallel_when_necessary(
     with open(file_a_path, "w") as f:
         f.write(file_a_text)
 
-    monkeypatch.setenv("MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE", "0")
+    monkeypatch.setenv("QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE", "0")
     with mock.patch(
         f"{S3_ARTIFACT_REPOSITORY}._multipart_upload", return_value=None
     ) as multipart_upload_mock:
@@ -255,10 +255,10 @@ def test_download_file_in_parallel_when_necessary(
 def test_refresh_credentials():
     with (
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo._get_s3_client"
+            "qcflow.store.artifact.optimized_s3_artifact_repo._get_s3_client"
         ) as mock_get_s3_client,
         mock.patch(
-            "mlflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository._get_region_name"
+            "qcflow.store.artifact.optimized_s3_artifact_repo.OptimizedS3ArtifactRepository._get_region_name"
         ) as mock_get_region_name,
     ):
         s3_client_mock = mock.Mock()

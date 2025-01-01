@@ -4,31 +4,31 @@ from unittest.mock import patch
 import pytest
 import requests
 
-import mlflow
-import mlflow.gateway.utils
-from mlflow.exceptions import MlflowException
-from mlflow.gateway import MlflowGatewayClient, get_route, query, set_gateway_uri
-from mlflow.gateway.config import Route
-from mlflow.gateway.providers.ai21labs import AI21LabsProvider
-from mlflow.gateway.providers.anthropic import AnthropicProvider
-from mlflow.gateway.providers.bedrock import AmazonBedrockProvider
-from mlflow.gateway.providers.cohere import CohereProvider
-from mlflow.gateway.providers.huggingface import HFTextGenerationInferenceServerProvider
-from mlflow.gateway.providers.mistral import MistralProvider
-from mlflow.gateway.providers.mlflow import MlflowModelServingProvider
-from mlflow.gateway.providers.mosaicml import MosaicMLProvider
-from mlflow.gateway.providers.openai import OpenAIProvider
-from mlflow.gateway.providers.palm import PaLMProvider
-from mlflow.gateway.providers.togetherai import TogetherAIProvider
-from mlflow.utils.request_utils import _cached_get_request_session
+import qcflow
+import qcflow.gateway.utils
+from qcflow.exceptions import QCFlowException
+from qcflow.gateway import QCFlowGatewayClient, get_route, query, set_gateway_uri
+from qcflow.gateway.config import Route
+from qcflow.gateway.providers.ai21labs import AI21LabsProvider
+from qcflow.gateway.providers.anthropic import AnthropicProvider
+from qcflow.gateway.providers.bedrock import AmazonBedrockProvider
+from qcflow.gateway.providers.cohere import CohereProvider
+from qcflow.gateway.providers.huggingface import HFTextGenerationInferenceServerProvider
+from qcflow.gateway.providers.mistral import MistralProvider
+from qcflow.gateway.providers.qcflow import QCFlowModelServingProvider
+from qcflow.gateway.providers.mosaicml import MosaicMLProvider
+from qcflow.gateway.providers.openai import OpenAIProvider
+from qcflow.gateway.providers.palm import PaLMProvider
+from qcflow.gateway.providers.togetherai import TogetherAIProvider
+from qcflow.utils.request_utils import _cached_get_request_session
 
 from tests.gateway.tools import (
     UvicornGateway,
     log_completions_transformers_model,
     log_sentence_transformers_model,
     save_yaml,
-    start_mlflow_server,
-    stop_mlflow_server,
+    start_qcflow_server,
+    stop_qcflow_server,
 )
 
 
@@ -180,7 +180,7 @@ def basic_config_dict():
                 "name": "chat-oss",
                 "route_type": "llm/v1/chat",
                 "model": {
-                    "provider": "mlflow-model-serving",
+                    "provider": "qcflow-model-serving",
                     "name": "mpt-chatbot",
                     "config": {"model_server_url": "http://127.0.0.1:5000"},
                 },
@@ -189,7 +189,7 @@ def basic_config_dict():
                 "name": "completions-oss",
                 "route_type": "llm/v1/completions",
                 "model": {
-                    "provider": "mlflow-model-serving",
+                    "provider": "qcflow-model-serving",
                     "name": "completion-model",
                     "config": {"model_server_url": "http://127.0.0.1:6000"},
                 },
@@ -198,7 +198,7 @@ def basic_config_dict():
                 "name": "embeddings-oss",
                 "route_type": "llm/v1/embeddings",
                 "model": {
-                    "provider": "mlflow-model-serving",
+                    "provider": "qcflow-model-serving",
                     "name": "sentence-transformers",
                     "config": {"model_server_url": "http://127.0.0.1:5002"},
                 },
@@ -282,7 +282,7 @@ def basic_config_dict():
 
 @pytest.fixture(autouse=True)
 def clear_uri():
-    mlflow.gateway.utils._gateway_uri = None
+    qcflow.gateway.utils._gateway_uri = None
 
 
 @pytest.fixture
@@ -308,21 +308,21 @@ def env_setup(monkeypatch):
 @pytest.fixture
 def serve_embeddings_model():
     model_uri = log_sentence_transformers_model()
-    server = start_mlflow_server(port=5002, model_uri=model_uri)
+    server = start_qcflow_server(port=5002, model_uri=model_uri)
     yield server.url
-    stop_mlflow_server(server.pid)
+    stop_qcflow_server(server.pid)
 
 
 @pytest.fixture
 def serve_completions_model():
     model_uri = log_completions_transformers_model()
-    server = start_mlflow_server(port=6000, model_uri=model_uri)
+    server = start_qcflow_server(port=6000, model_uri=model_uri)
     yield server.url
-    stop_mlflow_server(server.pid)
+    stop_qcflow_server(server.pid)
 
 
 def test_create_gateway_client_with_declared_url(gateway):
-    gateway_client = MlflowGatewayClient(gateway_uri=gateway.url)
+    gateway_client = QCFlowGatewayClient(gateway_uri=gateway.url)
     assert gateway_client.gateway_uri == gateway.url
     assert isinstance(gateway_client.get_route("chat-openai"), Route)
     routes = gateway_client.search_routes()
@@ -368,7 +368,7 @@ def test_openai_chat(gateway):
 
 
 def test_openai_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-openai")
     expected_output = {
         "id": "chatcmpl-abc123",
@@ -390,7 +390,7 @@ def test_openai_completions(gateway):
 
 
 def test_openai_embeddings(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("embeddings-openai")
     expected_output = {
         "object": "list",
@@ -452,7 +452,7 @@ def test_anthropic_completions(gateway):
 
 
 def test_ai21labs_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-ai21labs")
     expected_output = {
         "id": None,
@@ -474,7 +474,7 @@ def test_ai21labs_completions(gateway):
 
 
 def test_cohere_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-cohere")
     expected_output = {
         "id": None,
@@ -502,7 +502,7 @@ def test_cohere_completions(gateway):
 
 
 def test_mosaicml_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-mosaicml")
     expected_output = {
         "id": None,
@@ -524,7 +524,7 @@ def test_mosaicml_completions(gateway):
 
 
 def test_mosaicml_chat(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("chat-mosaicml")
     expected_output = {
         "id": None,
@@ -561,7 +561,7 @@ def test_mosaicml_chat(gateway):
 
 
 def test_palm_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-palm")
     expected_output = {
         "id": None,
@@ -589,7 +589,7 @@ def test_palm_completions(gateway):
 
 
 def test_palm_chat(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("chat-palm")
     expected_output = {
         "id": None,
@@ -626,7 +626,7 @@ def test_palm_chat(gateway):
 
 
 def test_cohere_embeddings(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("embeddings-cohere")
     expected_output = {
         "object": "list",
@@ -656,7 +656,7 @@ def test_cohere_embeddings(gateway):
 
 
 def test_mosaicml_embeddings(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("embeddings-mosaicml")
     expected_output = {
         "object": "list",
@@ -686,7 +686,7 @@ def test_mosaicml_embeddings(gateway):
 
 
 def test_palm_embeddings(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("embeddings-palm")
     expected_output = {
         "object": "list",
@@ -745,9 +745,9 @@ def test_invalid_response_structure_raises(gateway):
         return _cached_get_request_session(1, 1, 0.5, retry_codes, True, os.getpid(), True)
 
     with (
-        patch("mlflow.utils.request_utils._get_request_session", _mock_request_session),
+        patch("qcflow.utils.request_utils._get_request_session", _mock_request_session),
         patch.object(OpenAIProvider, "chat", mock_chat),
-        pytest.raises(MlflowException, match=".*Max retries exceeded.*"),
+        pytest.raises(QCFlowException, match=".*Max retries exceeded.*"),
     ):
         query(route=route.name, data=data)
 
@@ -782,7 +782,7 @@ def test_invalid_response_structure_no_raises(gateway):
         return _cached_get_request_session(0, 1, 0.5, retry_codes, False, os.getpid(), True)
 
     with (
-        patch("mlflow.utils.request_utils._get_request_session", _mock_request_session),
+        patch("qcflow.utils.request_utils._get_request_session", _mock_request_session),
         patch.object(OpenAIProvider, "chat", mock_chat),
         pytest.raises(requests.exceptions.HTTPError, match=".*Internal Server Error.*"),
     ):
@@ -830,15 +830,15 @@ def test_invalid_query_request_raises(gateway):
         return _cached_get_request_session(2, 1, 0.5, retry_codes, True, os.getpid(), True)
 
     with (
-        patch("mlflow.utils.request_utils._get_request_session", _mock_request_session),
+        patch("qcflow.utils.request_utils._get_request_session", _mock_request_session),
         patch.object(OpenAIProvider, "chat", new=mock_chat),
         pytest.raises(requests.exceptions.HTTPError, match="Unprocessable Entity for"),
     ):
         query(route=route.name, data=data)
 
 
-def test_mlflow_chat(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+def test_qcflow_chat(gateway):
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("chat-oss")
     expected_output = {
         "id": None,
@@ -866,13 +866,13 @@ def test_mlflow_chat(gateway):
 
     data = {"messages": [{"role": "user", "content": "test"}]}
 
-    with patch.object(MlflowModelServingProvider, "chat", return_value=expected_output):
+    with patch.object(QCFlowModelServingProvider, "chat", return_value=expected_output):
         response = client.query(route=route.name, data=data)
     assert response == expected_output
 
 
-def test_mlflow_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+def test_qcflow_completions(gateway):
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-oss")
     expected_output = {
         "id": None,
@@ -891,12 +891,12 @@ def test_mlflow_completions(gateway):
 
     data = {"prompt": "this is a test"}
 
-    with patch.object(MlflowModelServingProvider, "completions", return_value=expected_output):
+    with patch.object(QCFlowModelServingProvider, "completions", return_value=expected_output):
         response = client.query(route=route.name, data=data)
     assert response == expected_output
 
 
-def test_mlflow_embeddings(gateway):
+def test_qcflow_embeddings(gateway):
     set_gateway_uri(gateway_uri=gateway.url)
     route = get_route("embeddings-oss")
     expected_output = {
@@ -925,12 +925,12 @@ def test_mlflow_embeddings(gateway):
 
     data = {"input": ["test1", "test2"]}
 
-    with patch.object(MlflowModelServingProvider, "embeddings", return_value=expected_output):
+    with patch.object(QCFlowModelServingProvider, "embeddings", return_value=expected_output):
         response = query(route=route.name, data=data)
     assert response == expected_output
 
 
-def test_gateway_query_mlflow_embeddings_model(serve_embeddings_model, gateway):
+def test_gateway_query_qcflow_embeddings_model(serve_embeddings_model, gateway):
     set_gateway_uri(gateway_uri=gateway.url)
     route = get_route("embeddings-oss")
 
@@ -950,8 +950,8 @@ def test_gateway_query_mlflow_embeddings_model(serve_embeddings_model, gateway):
     assert not usage_response["total_tokens"]
 
 
-def test_gateway_query_mlflow_completions_model(serve_completions_model, gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+def test_gateway_query_qcflow_completions_model(serve_completions_model, gateway):
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-oss")
 
     data = {"prompt": "test [MASK]"}
@@ -971,7 +971,7 @@ def test_gateway_query_mlflow_completions_model(serve_completions_model, gateway
 
 
 def test_huggingface_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-huggingface")
     expected_output = {
         "id": None,
@@ -1033,7 +1033,7 @@ def test_bedrock_completions(gateway):
 
 
 def test_mistral_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-mistral")
     expected_output = {
         "id": None,
@@ -1061,7 +1061,7 @@ def test_mistral_completions(gateway):
 
 
 def test_mistral_embeddings(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("embeddings-mistral")
     expected_output = {
         "object": "list",
@@ -1091,7 +1091,7 @@ def test_mistral_embeddings(gateway):
 
 
 def test_togetherai_completions(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("completions-togetherai")
 
     expected_output = {
@@ -1139,7 +1139,7 @@ def test_togetherai_completions(gateway):
 
 
 def test_togetherai_chat(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("chat-togetherai")
     expected_output = {
         "id": "8782fc033a48eea0-ATH",
@@ -1182,7 +1182,7 @@ def test_togetherai_chat(gateway):
 
 
 def test_togetherai_embeddings(gateway):
-    client = MlflowGatewayClient(gateway_uri=gateway.url)
+    client = QCFlowGatewayClient(gateway_uri=gateway.url)
     route = client.get_route("embeddings-togetherai")
     expected_output = {
         "object": "list",

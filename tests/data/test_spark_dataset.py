@@ -4,15 +4,15 @@ import os
 import pandas as pd
 import pytest
 
-import mlflow.data
-from mlflow.data.code_dataset_source import CodeDatasetSource
-from mlflow.data.delta_dataset_source import DeltaDatasetSource
-from mlflow.data.evaluation_dataset import EvaluationDataset
-from mlflow.data.spark_dataset import SparkDataset
-from mlflow.data.spark_dataset_source import SparkDatasetSource
-from mlflow.exceptions import MlflowException
-from mlflow.types.schema import Schema
-from mlflow.types.utils import _infer_schema
+import qcflow.data
+from qcflow.data.code_dataset_source import CodeDatasetSource
+from qcflow.data.delta_dataset_source import DeltaDatasetSource
+from qcflow.data.evaluation_dataset import EvaluationDataset
+from qcflow.data.spark_dataset import SparkDataset
+from qcflow.data.spark_dataset_source import SparkDatasetSource
+from qcflow.exceptions import QCFlowException
+from qcflow.types.schema import Schema
+from qcflow.types.utils import _infer_schema
 
 
 @pytest.fixture
@@ -84,7 +84,7 @@ def test_conversion_to_json_spark_dataset_source(spark_session, tmp_path, df):
     assert parsed_json["source_type"] == dataset.source._get_source_type()
     assert parsed_json["profile"] == json.dumps(dataset.profile)
 
-    schema_json = json.dumps(json.loads(parsed_json["schema"])["mlflow_colspec"])
+    schema_json = json.dumps(json.loads(parsed_json["schema"])["qcflow_colspec"])
     assert Schema.from_json(schema_json) == dataset.schema
 
 
@@ -110,7 +110,7 @@ def test_conversion_to_json_delta_dataset_source(spark_session, tmp_path, df):
     assert parsed_json["source_type"] == dataset.source._get_source_type()
     assert parsed_json["profile"] == json.dumps(dataset.profile)
 
-    schema_json = json.dumps(json.loads(parsed_json["schema"])["mlflow_colspec"])
+    schema_json = json.dumps(json.loads(parsed_json["schema"])["qcflow_colspec"])
     assert Schema.from_json(schema_json) == dataset.schema
 
 
@@ -167,7 +167,7 @@ def test_targets_property(spark_session, tmp_path, df):
     assert dataset_with_targets.targets == "c"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The specified Spark dataset does not contain the specified targets column",
     ):
         SparkDataset(
@@ -199,7 +199,7 @@ def test_predictions_property(spark_session, tmp_path, df):
     assert dataset_with_predictions.predictions == "b"
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="The specified Spark dataset does not contain the specified predictions column",
     ):
         SparkDataset(
@@ -212,12 +212,12 @@ def test_predictions_property(spark_session, tmp_path, df):
 
 def test_from_spark_no_source_specified(spark_session, df):
     df_spark = spark_session.createDataFrame(df)
-    mlflow_df = mlflow.data.from_spark(df_spark)
+    qcflow_df = qcflow.data.from_spark(df_spark)
 
-    assert isinstance(mlflow_df, SparkDataset)
+    assert isinstance(qcflow_df, SparkDataset)
 
-    assert isinstance(mlflow_df.source, CodeDatasetSource)
-    assert "mlflow.source.name" in mlflow_df.source.to_json()
+    assert isinstance(qcflow_df.source, CodeDatasetSource)
+    assert "qcflow.source.name" in qcflow_df.source.to_json()
 
 
 def test_from_spark_with_sql_and_version(spark_session, tmp_path, df):
@@ -225,11 +225,11 @@ def test_from_spark_with_sql_and_version(spark_session, tmp_path, df):
     path = str(tmp_path / "temp.parquet")
     df_spark.write.parquet(path)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="`version` may not be specified when `sql` is specified. `version` may only be"
         " specified when `table_name` or `path` is specified.",
     ):
-        mlflow.data.from_spark(df_spark, sql="SELECT * FROM table", version=1)
+        qcflow.data.from_spark(df_spark, sql="SELECT * FROM table", version=1)
 
 
 def test_from_spark_path(spark_session, tmp_path, df):
@@ -238,15 +238,15 @@ def test_from_spark_path(spark_session, tmp_path, df):
     df_spark.write.parquet(dir_path)
     assert os.path.isdir(dir_path)
 
-    mlflow_df_from_dir = mlflow.data.from_spark(df_spark, path=dir_path)
-    _check_spark_dataset(mlflow_df_from_dir, df, df_spark, SparkDatasetSource)
+    qcflow_df_from_dir = qcflow.data.from_spark(df_spark, path=dir_path)
+    _check_spark_dataset(qcflow_df_from_dir, df, df_spark, SparkDatasetSource)
 
     file_path = str(tmp_path / "df.parquet")
     df_spark.toPandas().to_parquet(file_path)
     assert not os.path.isdir(file_path)
 
-    mlflow_df_from_file = mlflow.data.from_spark(df_spark, path=file_path)
-    _check_spark_dataset(mlflow_df_from_file, df, df_spark, SparkDatasetSource)
+    qcflow_df_from_file = qcflow.data.from_spark(df_spark, path=file_path)
+    _check_spark_dataset(qcflow_df_from_file, df, df_spark, SparkDatasetSource)
 
 
 def test_from_spark_delta_path(spark_session, tmp_path, df):
@@ -254,27 +254,27 @@ def test_from_spark_delta_path(spark_session, tmp_path, df):
     path = str(tmp_path / "temp.delta")
     df_spark.write.format("delta").save(path)
 
-    mlflow_df = mlflow.data.from_spark(df_spark, path=path)
+    qcflow_df = qcflow.data.from_spark(df_spark, path=path)
 
-    _check_spark_dataset(mlflow_df, df, df_spark, DeltaDatasetSource)
+    _check_spark_dataset(qcflow_df, df, df_spark, DeltaDatasetSource)
 
 
 def test_from_spark_sql(spark_session, df):
     df_spark = spark_session.createDataFrame(df)
     df_spark.createOrReplaceTempView("table")
 
-    mlflow_df = mlflow.data.from_spark(df_spark, sql="SELECT * FROM table")
+    qcflow_df = qcflow.data.from_spark(df_spark, sql="SELECT * FROM table")
 
-    _check_spark_dataset(mlflow_df, df, df_spark, SparkDatasetSource)
+    _check_spark_dataset(qcflow_df, df, df_spark, SparkDatasetSource)
 
 
 def test_from_spark_table_name(spark_session, df):
     df_spark = spark_session.createDataFrame(df)
     df_spark.createOrReplaceTempView("my_spark_table")
 
-    mlflow_df = mlflow.data.from_spark(df_spark, table_name="my_spark_table")
+    qcflow_df = qcflow.data.from_spark(df_spark, table_name="my_spark_table")
 
-    _check_spark_dataset(mlflow_df, df, df_spark, SparkDatasetSource)
+    _check_spark_dataset(qcflow_df, df, df_spark, SparkDatasetSource)
 
 
 def test_from_spark_table_name_with_version(spark_session, df):
@@ -282,11 +282,11 @@ def test_from_spark_table_name_with_version(spark_session, df):
     df_spark.createOrReplaceTempView("my_spark_table")
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Version '1' was specified, but could not find a Delta table "
         "with name 'my_spark_table'",
     ):
-        mlflow.data.from_spark(df_spark, table_name="my_spark_table", version=1)
+        qcflow.data.from_spark(df_spark, table_name="my_spark_table", version=1)
 
 
 def test_from_spark_delta_table_name(spark_session, df):
@@ -294,9 +294,9 @@ def test_from_spark_delta_table_name(spark_session, df):
     # write to delta table
     df_spark.write.format("delta").mode("overwrite").saveAsTable("my_delta_table")
 
-    mlflow_df = mlflow.data.from_spark(df_spark, table_name="my_delta_table")
+    qcflow_df = qcflow.data.from_spark(df_spark, table_name="my_delta_table")
 
-    _check_spark_dataset(mlflow_df, df, df_spark, DeltaDatasetSource)
+    _check_spark_dataset(qcflow_df, df, df_spark, DeltaDatasetSource)
 
 
 def test_from_spark_delta_table_name_and_version(spark_session, df):
@@ -304,25 +304,25 @@ def test_from_spark_delta_table_name_and_version(spark_session, df):
     # write to delta table
     df_spark.write.format("delta").mode("overwrite").saveAsTable("my_delta_table")
 
-    mlflow_df = mlflow.data.from_spark(df_spark, table_name="my_delta_table", version=0)
+    qcflow_df = qcflow.data.from_spark(df_spark, table_name="my_delta_table", version=0)
 
-    _check_spark_dataset(mlflow_df, df, df_spark, DeltaDatasetSource)
+    _check_spark_dataset(qcflow_df, df, df_spark, DeltaDatasetSource)
 
 
 def test_load_delta_with_no_source_info():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Must specify exactly one of `table_name` or `path`.",
     ):
-        mlflow.data.load_delta()
+        qcflow.data.load_delta()
 
 
 def test_load_delta_with_both_table_name_and_path():
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Must specify exactly one of `table_name` or `path`.",
     ):
-        mlflow.data.load_delta(table_name="my_table", path="my_path")
+        qcflow.data.load_delta(table_name="my_table", path="my_path")
 
 
 def test_load_delta_path(spark_session, tmp_path, df):
@@ -330,9 +330,9 @@ def test_load_delta_path(spark_session, tmp_path, df):
     path = str(tmp_path / "temp.delta")
     df_spark.write.format("delta").mode("overwrite").save(path)
 
-    mlflow_df = mlflow.data.load_delta(path=path)
+    qcflow_df = qcflow.data.load_delta(path=path)
 
-    _check_spark_dataset(mlflow_df, df, df_spark, DeltaDatasetSource)
+    _check_spark_dataset(qcflow_df, df, df_spark, DeltaDatasetSource)
 
 
 def test_load_delta_path_with_version(spark_session, tmp_path, df):
@@ -347,8 +347,8 @@ def test_load_delta_path_with_version(spark_session, tmp_path, df):
     df_v1_spark = spark_session.createDataFrame(df)
     df_v1_spark.write.format("delta").mode("overwrite").save(path)
 
-    mlflow_df = mlflow.data.load_delta(path=path, version=1)
-    _check_spark_dataset(mlflow_df, df, df_v1_spark, DeltaDatasetSource)
+    qcflow_df = qcflow.data.load_delta(path=path, version=1)
+    _check_spark_dataset(qcflow_df, df, df_v1_spark, DeltaDatasetSource)
 
 
 def test_load_delta_table_name(spark_session, df):
@@ -356,9 +356,9 @@ def test_load_delta_table_name(spark_session, df):
     # write to delta table
     df_spark.write.format("delta").mode("overwrite").saveAsTable("my_delta_table")
 
-    mlflow_df = mlflow.data.load_delta(table_name="my_delta_table")
+    qcflow_df = qcflow.data.load_delta(table_name="my_delta_table")
 
-    _check_spark_dataset(mlflow_df, df, df_spark, DeltaDatasetSource, "my_delta_table@v0")
+    _check_spark_dataset(qcflow_df, df, df_spark, DeltaDatasetSource, "my_delta_table@v0")
 
 
 def test_load_delta_table_name_with_version(spark_session, df):
@@ -370,12 +370,12 @@ def test_load_delta_table_name_with_version(spark_session, df):
     df2_spark = spark_session.createDataFrame(df2)
     df2_spark.write.format("delta").mode("overwrite").saveAsTable("my_delta_table_versioned")
 
-    mlflow_df = mlflow.data.load_delta(table_name="my_delta_table_versioned", version=1)
+    qcflow_df = qcflow.data.load_delta(table_name="my_delta_table_versioned", version=1)
 
     _check_spark_dataset(
-        mlflow_df, df2, df2_spark, DeltaDatasetSource, "my_delta_table_versioned@v1"
+        qcflow_df, df2, df2_spark, DeltaDatasetSource, "my_delta_table_versioned@v1"
     )
-    pd.testing.assert_frame_equal(mlflow_df.df.toPandas(), df2)
+    pd.testing.assert_frame_equal(qcflow_df.df.toPandas(), df2)
 
 
 def test_to_evaluation_dataset(spark_session, tmp_path, df):

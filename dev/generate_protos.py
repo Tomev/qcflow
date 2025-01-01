@@ -10,7 +10,7 @@ from packaging.version import Version
 
 cache_dir = ".cache/protobuf_cache"
 
-mlflow_protos_dir = "mlflow/protos"
+qcflow_protos_dir = "qcflow/protos"
 test_protos_dir = "tests/protos"
 
 
@@ -47,7 +47,7 @@ basic_proto_files = [
     "service.proto",
     "model_registry.proto",
     "databricks_artifacts.proto",
-    "mlflow_artifacts.proto",
+    "qcflow_artifacts.proto",
     "internal.proto",
     "scalapb/scalapb.proto",
 ]
@@ -90,7 +90,7 @@ python_gencode_replacements = [
 
 def gen_python_protos(protoc_bin, protoc_include_path, out_dir):
     gen_protos(
-        mlflow_protos_dir, python_proto_files, "python", protoc_bin, protoc_include_path, out_dir
+        qcflow_protos_dir, python_proto_files, "python", protoc_bin, protoc_include_path, out_dir
     )
 
     gen_protos(
@@ -258,7 +258,7 @@ def main():
         gen_python_protos(protoc5260, protoc5260_include, proto5260_out)
 
         for proto_files, protos_dir in [
-            (python_proto_files, mlflow_protos_dir),
+            (python_proto_files, qcflow_protos_dir),
             (test_proto_files, test_protos_dir),
         ]:
             for file_name in proto_files:
@@ -272,12 +272,12 @@ def main():
 
     # generate java gencode using pinned protoc 3.19.4 version.
     gen_protos(
-        mlflow_protos_dir,
+        qcflow_protos_dir,
         basic_proto_files,
         "java",
         protoc3194,
         protoc3194_include,
-        "mlflow/java/client/src/main/java",
+        "qcflow/java/client/src/main/java",
     )
 
     # Graphql code generation.

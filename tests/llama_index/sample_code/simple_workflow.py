@@ -7,7 +7,7 @@ from llama_index.core.workflow import (
 )
 from llama_index.llms.openai import OpenAI
 
-import mlflow
+import qcflow
 
 
 class JokeEvent(Event):
@@ -34,4 +34,4 @@ class JokeFlow(Workflow):
 
 
 w = JokeFlow(timeout=10, verbose=False)
-mlflow.models.set_model(w)
+qcflow.models.set_model(w)

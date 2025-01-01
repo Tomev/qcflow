@@ -1,6 +1,6 @@
 import pytest
 
-from mlflow.utils import gorilla
+from qcflow.utils import gorilla
 
 
 class Delegator:

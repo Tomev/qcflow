@@ -15,24 +15,24 @@ from sklearn import preprocessing
 from sklearn.datasets import load_diabetes
 from sklearn.model_selection import train_test_split
 
-import mlflow.paddle
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow import pyfunc
-from mlflow.models import Model, ModelSignature
-from mlflow.models.utils import _read_example, load_serving_example
-from mlflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.types import DataType
-from mlflow.types.schema import ColSpec, Schema, TensorSpec
-from mlflow.utils.environment import _mlflow_conda_env
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.model_utils import _get_flavor_configuration
+import qcflow.paddle
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow import pyfunc
+from qcflow.models import Model, ModelSignature
+from qcflow.models.utils import _read_example, load_serving_example
+from qcflow.store.artifact.s3_artifact_repo import S3ArtifactRepository
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.types import DataType
+from qcflow.types.schema import ColSpec, Schema, TensorSpec
+from qcflow.utils.environment import _qcflow_conda_env
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.model_utils import _get_flavor_configuration
 
 from tests.helper_functions import (
     PROTOBUF_REQUIREMENT,
     _assert_pip_requirements,
     _compare_logged_code_paths,
-    _mlflow_major_version_string,
+    _qcflow_major_version_string,
     assert_register_model_called_with_local_model_path,
     pyfunc_serve_and_score_model,
 )
@@ -114,14 +114,14 @@ def model_path(tmp_path):
 @pytest.fixture
 def pd_custom_env(tmp_path):
     conda_env = os.path.join(tmp_path, "conda_env.yml")
-    _mlflow_conda_env(conda_env, additional_pip_deps=["paddle", "pytest"])
+    _qcflow_conda_env(conda_env, additional_pip_deps=["paddle", "pytest"])
     return conda_env
 
 
 def test_model_save_load(pd_model, model_path):
-    mlflow.paddle.save_model(pd_model=pd_model.model, path=model_path)
+    qcflow.paddle.save_model(pd_model=pd_model.model, path=model_path)
 
-    reloaded_pd_model = mlflow.paddle.load_model(model_uri=model_path)
+    reloaded_pd_model = qcflow.paddle.load_model(model_uri=model_path)
     reloaded_pyfunc = pyfunc.load_model(model_uri=model_path)
 
     np.testing.assert_array_almost_equal(
@@ -138,7 +138,7 @@ def test_model_save_load(pd_model, model_path):
 
 
 def test_model_load_from_remote_uri_succeeds(pd_model, model_path, mock_s3_bucket):
-    mlflow.paddle.save_model(pd_model=pd_model.model, path=model_path)
+    qcflow.paddle.save_model(pd_model=pd_model.model, path=model_path)
 
     artifact_root = f"s3://{mock_s3_bucket}"
     artifact_path = "model"
@@ -146,7 +146,7 @@ def test_model_load_from_remote_uri_succeeds(pd_model, model_path, mock_s3_bucke
     artifact_repo.log_artifacts(model_path, artifact_path=artifact_path)
 
     model_uri = artifact_root + "/" + artifact_path
-    reloaded_model = mlflow.paddle.load_model(model_uri=model_uri)
+    reloaded_model = qcflow.paddle.load_model(model_uri=model_uri)
     np.testing.assert_array_almost_equal(
         pd_model.model(paddle.to_tensor(pd_model.inference_dataframe)),
         reloaded_model(paddle.to_tensor(pd_model.inference_dataframe)),
@@ -159,13 +159,13 @@ def test_model_log(pd_model, model_path, tmp_path):
     try:
         artifact_path = "model"
         conda_env = os.path.join(tmp_path, "conda_env.yaml")
-        _mlflow_conda_env(conda_env, additional_pip_deps=["paddle"])
+        _qcflow_conda_env(conda_env, additional_pip_deps=["paddle"])
 
-        model_info = mlflow.paddle.log_model(model, artifact_path, conda_env=conda_env)
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+        model_info = qcflow.paddle.log_model(model, artifact_path, conda_env=conda_env)
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
         assert model_info.model_uri == model_uri
 
-        reloaded_pd_model = mlflow.paddle.load_model(model_uri=model_uri)
+        reloaded_pd_model = qcflow.paddle.load_model(model_uri=model_uri)
         np.testing.assert_array_almost_equal(
             model(paddle.to_tensor(pd_model.inference_dataframe)),
             reloaded_pd_model(paddle.to_tensor(pd_model.inference_dataframe)),
@@ -179,21 +179,21 @@ def test_model_log(pd_model, model_path, tmp_path):
         env_path = model_config.flavors[pyfunc.FLAVOR_NAME][pyfunc.ENV]["conda"]
         assert os.path.exists(os.path.join(model_path, env_path))
     finally:
-        mlflow.end_run()
+        qcflow.end_run()
 
 
 def test_log_model_calls_register_model(pd_model):
     artifact_path = "model"
-    register_model_patch = mock.patch("mlflow.tracking._model_registry.fluent._register_model")
-    with mlflow.start_run(), register_model_patch:
-        mlflow.paddle.log_model(
+    register_model_patch = mock.patch("qcflow.tracking._model_registry.fluent._register_model")
+    with qcflow.start_run(), register_model_patch:
+        qcflow.paddle.log_model(
             pd_model.model,
             artifact_path,
             registered_model_name="AdsModel1",
         )
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
         assert_register_model_called_with_local_model_path(
-            register_model_mock=mlflow.tracking._model_registry.fluent._register_model,
+            register_model_mock=qcflow.tracking._model_registry.fluent._register_model,
             model_uri=model_uri,
             registered_model_name="AdsModel1",
         )
@@ -201,16 +201,16 @@ def test_log_model_calls_register_model(pd_model):
 
 def test_log_model_no_registered_model_name(pd_model):
     artifact_path = "model"
-    register_model_patch = mock.patch("mlflow.tracking._model_registry.fluent._register_model")
-    with mlflow.start_run(), register_model_patch:
-        mlflow.paddle.log_model(pd_model.model, artifact_path)
-        mlflow.tracking._model_registry.fluent._register_model.assert_not_called()
+    register_model_patch = mock.patch("qcflow.tracking._model_registry.fluent._register_model")
+    with qcflow.start_run(), register_model_patch:
+        qcflow.paddle.log_model(pd_model.model, artifact_path)
+        qcflow.tracking._model_registry.fluent._register_model.assert_not_called()
 
 
-def test_model_save_persists_specified_conda_env_in_mlflow_model_directory(
+def test_model_save_persists_specified_conda_env_in_qcflow_model_directory(
     pd_model, model_path, pd_custom_env
 ):
-    mlflow.paddle.save_model(pd_model=pd_model.model, path=model_path, conda_env=pd_custom_env)
+    qcflow.paddle.save_model(pd_model=pd_model.model, path=model_path, conda_env=pd_custom_env)
 
     pyfunc_conf = _get_flavor_configuration(model_path=model_path, flavor_name=pyfunc.FLAVOR_NAME)
     saved_conda_env_path = os.path.join(model_path, pyfunc_conf[pyfunc.ENV]["conda"])
@@ -225,9 +225,9 @@ def test_model_save_persists_specified_conda_env_in_mlflow_model_directory(
 
 
 def test_model_save_accepts_conda_env_as_dict(pd_model, model_path):
-    conda_env = dict(mlflow.paddle.get_default_conda_env())
+    conda_env = dict(qcflow.paddle.get_default_conda_env())
     conda_env["dependencies"].append("pytest")
-    mlflow.paddle.save_model(pd_model=pd_model.model, path=model_path, conda_env=conda_env)
+    qcflow.paddle.save_model(pd_model=pd_model.model, path=model_path, conda_env=conda_env)
 
     pyfunc_conf = _get_flavor_configuration(model_path=model_path, flavor_name=pyfunc.FLAVOR_NAME)
     saved_conda_env_path = os.path.join(model_path, pyfunc_conf[pyfunc.ENV]["conda"])
@@ -245,25 +245,25 @@ def test_signature_and_examples_are_saved_correctly(pd_model, pd_model_signature
         for example in (None, example_):
             with TempDir() as tmp:
                 path = tmp.path("model")
-                mlflow.paddle.save_model(
+                qcflow.paddle.save_model(
                     pd_model.model, path=path, signature=signature, input_example=example
                 )
-                mlflow_model = Model.load(path)
+                qcflow_model = Model.load(path)
                 if signature is None and example is None:
-                    assert mlflow_model.signature is None
+                    assert qcflow_model.signature is None
                 else:
-                    assert mlflow_model.signature == pd_model_signature
+                    assert qcflow_model.signature == pd_model_signature
                 if example is None:
-                    assert mlflow_model.saved_input_example_info is None
+                    assert qcflow_model.saved_input_example_info is None
                 else:
-                    np.testing.assert_array_equal(_read_example(mlflow_model, path), example)
+                    np.testing.assert_array_equal(_read_example(qcflow_model, path), example)
 
 
-def test_model_log_persists_specified_conda_env_in_mlflow_model_directory(pd_model, pd_custom_env):
+def test_model_log_persists_specified_conda_env_in_qcflow_model_directory(pd_model, pd_custom_env):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.paddle.log_model(pd_model.model, artifact_path, conda_env=pd_custom_env)
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+    with qcflow.start_run():
+        qcflow.paddle.log_model(pd_model.model, artifact_path, conda_env=pd_custom_env)
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
 
     model_path = _download_artifact_from_uri(artifact_uri=model_uri)
     pyfunc_conf = _get_flavor_configuration(model_path=model_path, flavor_name=pyfunc.FLAVOR_NAME)
@@ -281,18 +281,18 @@ def test_model_log_persists_specified_conda_env_in_mlflow_model_directory(pd_mod
 def test_model_save_without_specified_conda_env_uses_default_env_with_expected_dependencies(
     pd_model, model_path
 ):
-    mlflow.paddle.save_model(pd_model=pd_model.model, path=model_path)
-    _assert_pip_requirements(model_path, mlflow.paddle.get_default_pip_requirements())
+    qcflow.paddle.save_model(pd_model=pd_model.model, path=model_path)
+    _assert_pip_requirements(model_path, qcflow.paddle.get_default_pip_requirements())
 
 
 def test_model_log_without_specified_conda_env_uses_default_env_with_expected_dependencies(
     pd_model,
 ):
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.paddle.log_model(pd_model.model, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
-    _assert_pip_requirements(model_uri, mlflow.paddle.get_default_pip_requirements())
+    with qcflow.start_run():
+        qcflow.paddle.log_model(pd_model.model, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
+    _assert_pip_requirements(model_uri, qcflow.paddle.get_default_pip_requirements())
 
 
 @pytest.fixture(scope="module")
@@ -327,9 +327,9 @@ def pd_model_built_in_high_level_api(get_dataset_built_in_high_level_api):
 def test_model_save_load_built_in_high_level_api(pd_model_built_in_high_level_api, model_path):
     model = pd_model_built_in_high_level_api.model
     test_dataset = pd_model_built_in_high_level_api.inference_dataframe
-    mlflow.paddle.save_model(pd_model=model, path=model_path)
+    qcflow.paddle.save_model(pd_model=model, path=model_path)
 
-    reloaded_pd_model = mlflow.paddle.load_model(model_uri=model_path)
+    reloaded_pd_model = qcflow.paddle.load_model(model_uri=model_path)
     reloaded_pyfunc = pyfunc.load_model(model_uri=model_path)
 
     low_level_test_dataset = [x[0] for x in test_dataset]
@@ -352,7 +352,7 @@ def test_model_built_in_high_level_api_load_from_remote_uri_succeeds(
 ):
     model = pd_model_built_in_high_level_api.model
     test_dataset = pd_model_built_in_high_level_api.inference_dataframe
-    mlflow.paddle.save_model(pd_model=model, path=model_path)
+    qcflow.paddle.save_model(pd_model=model, path=model_path)
 
     artifact_root = f"s3://{mock_s3_bucket}"
     artifact_path = "model"
@@ -360,7 +360,7 @@ def test_model_built_in_high_level_api_load_from_remote_uri_succeeds(
     artifact_repo.log_artifacts(model_path, artifact_path=artifact_path)
 
     model_uri = artifact_root + "/" + artifact_path
-    reloaded_model = mlflow.paddle.load_model(model_uri=model_uri)
+    reloaded_model = qcflow.paddle.load_model(model_uri=model_uri)
 
     low_level_test_dataset = [x[0] for x in test_dataset]
 
@@ -377,12 +377,12 @@ def test_model_built_in_high_level_api_log(pd_model_built_in_high_level_api, mod
     try:
         artifact_path = "model"
         conda_env = os.path.join(tmp_path, "conda_env.yaml")
-        _mlflow_conda_env(conda_env, additional_pip_deps=["paddle"])
+        _qcflow_conda_env(conda_env, additional_pip_deps=["paddle"])
 
-        mlflow.paddle.log_model(model, artifact_path, conda_env=conda_env)
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+        qcflow.paddle.log_model(model, artifact_path, conda_env=conda_env)
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
 
-        reloaded_pd_model = mlflow.paddle.load_model(model_uri=model_uri)
+        reloaded_pd_model = qcflow.paddle.load_model(model_uri=model_uri)
         low_level_test_dataset = [x[0] for x in test_dataset]
         np.testing.assert_array_almost_equal(
             np.array(model.predict(test_dataset)).squeeze(),
@@ -397,7 +397,7 @@ def test_model_built_in_high_level_api_log(pd_model_built_in_high_level_api, mod
         env_path = model_config.flavors[pyfunc.FLAVOR_NAME][pyfunc.ENV]["conda"]
         assert os.path.exists(os.path.join(model_path, env_path))
     finally:
-        mlflow.end_run()
+        qcflow.end_run()
 
 
 @pytest.fixture
@@ -413,21 +413,21 @@ def test_model_retrain_built_in_high_level_api(
     get_dataset_built_in_high_level_api,
 ):
     model = pd_model_built_in_high_level_api.model
-    mlflow.paddle.save_model(pd_model=model, path=model_path, training=True)
+    qcflow.paddle.save_model(pd_model=model, path=model_path, training=True)
 
     training_dataset, test_dataset = get_dataset_built_in_high_level_api
 
     model_retrain = paddle.Model(UCIHousing())
-    model_retrain = mlflow.paddle.load_model(model_uri=model_path, model=model_retrain)
+    model_retrain = qcflow.paddle.load_model(model_uri=model_path, model=model_retrain)
     optim = paddle.optimizer.Adam(learning_rate=0.015, parameters=model.parameters())
     model_retrain.prepare(optim, paddle.nn.MSELoss())
 
     model_retrain.fit(training_dataset, epochs=6, batch_size=8, verbose=1)
 
-    mlflow.paddle.save_model(pd_model=model_retrain, path=model_retrain_path, training=False)
+    qcflow.paddle.save_model(pd_model=model_retrain, path=model_retrain_path, training=False)
 
     with pytest.raises(TypeError, match="This model can't be loaded"):
-        mlflow.paddle.load_model(model_uri=model_retrain_path, model=model_retrain)
+        qcflow.paddle.load_model(model_uri=model_retrain_path, model=model_retrain)
 
     error_model = 0
     error_model_type = type(error_model)
@@ -435,9 +435,9 @@ def test_model_retrain_built_in_high_level_api(
         TypeError,
         match=f"Invalid object type `{error_model_type}` for `model`, must be `paddle.Model`",
     ):
-        mlflow.paddle.load_model(model_uri=model_retrain_path, model=error_model)
+        qcflow.paddle.load_model(model_uri=model_retrain_path, model=error_model)
 
-    reloaded_pd_model = mlflow.paddle.load_model(model_uri=model_retrain_path)
+    reloaded_pd_model = qcflow.paddle.load_model(model_uri=model_retrain_path)
     reloaded_pyfunc = pyfunc.load_model(model_uri=model_retrain_path)
     low_level_test_dataset = [x[0] for x in test_dataset]
 
@@ -463,15 +463,15 @@ def test_log_model_built_in_high_level_api(
     try:
         artifact_path = "model"
         conda_env = os.path.join(tmp_path, "conda_env.yaml")
-        _mlflow_conda_env(conda_env, additional_pip_deps=["paddle"])
+        _qcflow_conda_env(conda_env, additional_pip_deps=["paddle"])
 
-        mlflow.paddle.log_model(model, artifact_path, conda_env=conda_env, training=True)
-        model_uri = f"runs:/{mlflow.active_run().info.run_id}/{artifact_path}"
+        qcflow.paddle.log_model(model, artifact_path, conda_env=conda_env, training=True)
+        model_uri = f"runs:/{qcflow.active_run().info.run_id}/{artifact_path}"
 
         model_retrain = paddle.Model(UCIHousing())
         optim = paddle.optimizer.Adam(learning_rate=0.015, parameters=model.parameters())
         model_retrain.prepare(optim, paddle.nn.MSELoss())
-        model_retrain = mlflow.paddle.load_model(model_uri=model_uri, model=model_retrain)
+        model_retrain = qcflow.paddle.load_model(model_uri=model_uri, model=model_retrain)
 
         np.testing.assert_array_almost_equal(
             np.array(model.predict(test_dataset)).squeeze(),
@@ -485,68 +485,68 @@ def test_log_model_built_in_high_level_api(
         env_path = model_config.flavors[pyfunc.FLAVOR_NAME][pyfunc.ENV]["conda"]
         assert os.path.exists(os.path.join(model_path, env_path))
     finally:
-        mlflow.end_run()
+        qcflow.end_run()
 
 
 def test_log_model_with_pip_requirements(pd_model, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
     # Path to a requirements file
     req_file = tmp_path.joinpath("requirements.txt")
     req_file.write_text("a")
-    with mlflow.start_run():
-        mlflow.paddle.log_model(pd_model.model, "model", pip_requirements=str(req_file))
+    with qcflow.start_run():
+        qcflow.paddle.log_model(pd_model.model, "model", pip_requirements=str(req_file))
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, "a"], strict=True
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, "a"], strict=True
         )
 
     # List of requirements
-    with mlflow.start_run():
-        mlflow.paddle.log_model(pd_model.model, "model", pip_requirements=[f"-r {req_file}", "b"])
+    with qcflow.start_run():
+        qcflow.paddle.log_model(pd_model.model, "model", pip_requirements=[f"-r {req_file}", "b"])
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, "a", "b"], strict=True
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, "a", "b"], strict=True
         )
 
     # Constraints file
-    with mlflow.start_run():
-        mlflow.paddle.log_model(pd_model.model, "model", pip_requirements=[f"-c {req_file}", "b"])
+    with qcflow.start_run():
+        qcflow.paddle.log_model(pd_model.model, "model", pip_requirements=[f"-c {req_file}", "b"])
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "b", "-c constraints.txt"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "b", "-c constraints.txt"],
             ["a"],
             strict=True,
         )
 
 
 def test_log_model_with_extra_pip_requirements(pd_model, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
-    default_reqs = mlflow.paddle.get_default_pip_requirements()
+    expected_qcflow_version = _qcflow_major_version_string()
+    default_reqs = qcflow.paddle.get_default_pip_requirements()
 
     # Path to a requirements file
     req_file = tmp_path.joinpath("requirements.txt")
     req_file.write_text("a")
-    with mlflow.start_run():
-        mlflow.paddle.log_model(pd_model.model, "model", extra_pip_requirements=str(req_file))
+    with qcflow.start_run():
+        qcflow.paddle.log_model(pd_model.model, "model", extra_pip_requirements=str(req_file))
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, *default_reqs, "a"]
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, *default_reqs, "a"]
         )
 
     # List of requirements
-    with mlflow.start_run():
-        mlflow.paddle.log_model(
+    with qcflow.start_run():
+        qcflow.paddle.log_model(
             pd_model.model, "model", extra_pip_requirements=[f"-r {req_file}", "b"]
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"), [expected_mlflow_version, *default_reqs, "a", "b"]
+            qcflow.get_artifact_uri("model"), [expected_qcflow_version, *default_reqs, "a", "b"]
         )
 
     # Constraints file
-    with mlflow.start_run():
-        mlflow.paddle.log_model(
+    with qcflow.start_run():
+        qcflow.paddle.log_model(
             pd_model.model, "model", extra_pip_requirements=[f"-c {req_file}", "b"]
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, *default_reqs, "b", "-c constraints.txt"],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, *default_reqs, "b", "-c constraints.txt"],
             ["a"],
         )
 
@@ -554,8 +554,8 @@ def test_log_model_with_extra_pip_requirements(pd_model, tmp_path):
 def test_pyfunc_serve_and_score(pd_model):
     model, inference_dataframe = pd_model
     artifact_path = "model"
-    with mlflow.start_run():
-        model_info = mlflow.paddle.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.paddle.log_model(
             model,
             artifact_path,
             extra_pip_requirements=[PROTOBUF_REQUIREMENT]
@@ -581,35 +581,35 @@ def test_pyfunc_serve_and_score(pd_model):
 def test_log_model_with_code_paths(pd_model):
     artifact_path = "model"
     with (
-        mlflow.start_run(),
-        mock.patch("mlflow.paddle._add_code_from_conf_to_system_path") as add_mock,
+        qcflow.start_run(),
+        mock.patch("qcflow.paddle._add_code_from_conf_to_system_path") as add_mock,
     ):
-        mlflow.paddle.log_model(pd_model.model, artifact_path, code_paths=[__file__])
-        model_uri = mlflow.get_artifact_uri(artifact_path)
-        _compare_logged_code_paths(__file__, model_uri, mlflow.paddle.FLAVOR_NAME)
-        mlflow.paddle.load_model(model_uri)
+        qcflow.paddle.log_model(pd_model.model, artifact_path, code_paths=[__file__])
+        model_uri = qcflow.get_artifact_uri(artifact_path)
+        _compare_logged_code_paths(__file__, model_uri, qcflow.paddle.FLAVOR_NAME)
+        qcflow.paddle.load_model(model_uri)
         add_mock.assert_called()
 
 
 def test_model_save_load_with_metadata(pd_model, model_path):
-    mlflow.paddle.save_model(
+    qcflow.paddle.save_model(
         pd_model.model, path=model_path, metadata={"metadata_key": "metadata_value"}
     )
 
-    reloaded_model = mlflow.pyfunc.load_model(model_uri=model_path)
+    reloaded_model = qcflow.pyfunc.load_model(model_uri=model_path)
     assert reloaded_model.metadata.metadata["metadata_key"] == "metadata_value"
 
 
 def test_model_log_with_metadata(pd_model):
     artifact_path = "model"
 
-    with mlflow.start_run():
-        mlflow.paddle.log_model(
+    with qcflow.start_run():
+        qcflow.paddle.log_model(
             pd_model.model, artifact_path, metadata={"metadata_key": "metadata_value"}
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    reloaded_model = mlflow.pyfunc.load_model(model_uri=model_uri)
+    reloaded_model = qcflow.pyfunc.load_model(model_uri=model_uri)
     assert reloaded_model.metadata.metadata["metadata_key"] == "metadata_value"
 
 
@@ -618,9 +618,9 @@ def test_model_log_with_signature_inference(pd_model, pd_model_signature):
     test_dataset = pd_model.inference_dataframe
     example = test_dataset[:3, :]
 
-    with mlflow.start_run():
-        mlflow.paddle.log_model(pd_model.model, artifact_path, input_example=example)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.paddle.log_model(pd_model.model, artifact_path, input_example=example)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    mlflow_model = Model.load(model_uri)
-    assert mlflow_model.signature == pd_model_signature
+    qcflow_model = Model.load(model_uri)
+    assert qcflow_model.signature == pd_model_signature

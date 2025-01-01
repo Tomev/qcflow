@@ -6,8 +6,8 @@ from unittest import mock
 import pytest
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 
-import mlflow
-from mlflow.entities import SpanType
+import qcflow
+from qcflow.entities import SpanType
 
 from tests.openai.test_openai_autolog import client  # noqa: F401
 from tests.tracing.helper import get_traces
@@ -34,7 +34,7 @@ def mock_openai(oai_client, expected_responses):
 
 
 def test_autolog_swarm_agent(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     # NB: We have to mock the OpenAI SDK responses to make agent works
     DUMMY_RESPONSES = [
@@ -86,7 +86,7 @@ def test_autolog_swarm_agent(client):
 
 
 def test_autolog_swarm_agent_with_context_variables(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     DUMMY_RESPONSES = [
         _get_chat_completion(tool_call="print_account_details"),
@@ -151,7 +151,7 @@ def test_autolog_swarm_agent_with_context_variables(client):
 
 
 def test_autolog_swarm_agent_tool_exception(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     DUMMY_RESPONSES = [_get_chat_completion(tool_call="always_fail")]
 
@@ -180,7 +180,7 @@ def test_autolog_swarm_agent_tool_exception(client):
 
 
 def test_autolog_swarm_agent_completion_exception(client):
-    mlflow.openai.autolog()
+    qcflow.openai.autolog()
 
     swarm = Swarm(client=client)
     agent = Agent(name="Agent", instructions="You are an agent")

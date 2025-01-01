@@ -10,19 +10,19 @@ from scipy.sparse import csc_matrix, csr_matrix
 from sklearn import datasets
 from sklearn.base import BaseEstimator, ClassifierMixin
 
-import mlflow
-from mlflow.models import Model
-from mlflow.models.signature import ModelSignature, infer_signature
-from mlflow.models.utils import (
+import qcflow
+from qcflow.models import Model
+from qcflow.models.signature import ModelSignature, infer_signature
+from qcflow.models.utils import (
     _Example,
     _read_sparse_matrix_from_json,
     parse_inputs_data,
 )
-from mlflow.types import DataType
-from mlflow.types.schema import ColSpec, Schema, TensorSpec
-from mlflow.types.utils import TensorsNotSupportedException
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.proto_json_utils import dataframe_from_raw_json
+from qcflow.types import DataType
+from qcflow.types.schema import ColSpec, Schema, TensorSpec
+from qcflow.types.utils import TensorsNotSupportedException
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.proto_json_utils import dataframe_from_raw_json
 
 
 @pytest.fixture
@@ -334,31 +334,31 @@ def test_infer_signature_with_input_example(input_is_tabular, output_shape, expe
     artifact_path = "model"
     example = pd.DataFrame({"feature": ["value"]}) if input_is_tabular else np.array([[1]])
 
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(model, artifact_path, input_example=example)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(model, artifact_path, input_example=example)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    mlflow_model = Model.load(model_uri)
-    assert mlflow_model.signature == expected_signature
+    qcflow_model = Model.load(model_uri)
+    assert qcflow_model.signature == expected_signature
 
 
 def test_infer_signature_from_example_can_be_disabled():
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(
             DummySklearnModel(output_shape=()),
             artifact_path,
             input_example=np.array([[1]]),
             signature=False,
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    mlflow_model = Model.load(model_uri)
-    assert mlflow_model.signature is None
+    qcflow_model = Model.load(model_uri)
+    assert qcflow_model.signature is None
 
 
 def test_infer_signature_raises_if_predict_on_input_example_fails(monkeypatch):
-    monkeypatch.setenv("MLFLOW_TESTING", "false")
+    monkeypatch.setenv("QCFLOW_TESTING", "false")
 
     class ErrorModel(BaseEstimator, ClassifierMixin):
         def fit(self, X, y=None):
@@ -367,9 +367,9 @@ def test_infer_signature_raises_if_predict_on_input_example_fails(monkeypatch):
         def predict(self, X):
             raise Exception("oh no!")
 
-    with mock.patch("mlflow.models.model._logger.warning") as mock_warning:
-        with mlflow.start_run():
-            mlflow.sklearn.log_model(ErrorModel(), "model", input_example=np.array([[1]]))
+    with mock.patch("qcflow.models.model._logger.warning") as mock_warning:
+        with qcflow.start_run():
+            qcflow.sklearn.log_model(ErrorModel(), "model", input_example=np.array([[1]]))
         mock_warning.assert_called_once()
         assert "Failed to validate serving input example" in mock_warning.call_args[0][0]
 
@@ -404,15 +404,15 @@ def iris_model():
 def test_infer_signature_on_multi_column_input_examples(input_example, iris_model):
     artifact_path = "model"
 
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(iris_model, artifact_path, input_example=input_example)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(iris_model, artifact_path, input_example=input_example)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    mlflow_model = Model.load(model_uri)
-    input_columns = mlflow_model.signature.inputs.inputs
+    qcflow_model = Model.load(model_uri)
+    input_columns = qcflow_model.signature.inputs.inputs
     assert len(input_columns) == 4
     assert all(col.type == DataType.double for col in input_columns)
-    assert mlflow_model.signature.outputs == Schema([ColSpec(type=DataType.long)])
+    assert qcflow_model.signature.outputs == Schema([ColSpec(type=DataType.long)])
 
 
 @pytest.mark.parametrize(
@@ -431,12 +431,12 @@ def test_infer_signature_on_scalar_input_examples(input_example):
 
     artifact_path = "model"
 
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(IdentitySklearnModel(), artifact_path, input_example=input_example)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(IdentitySklearnModel(), artifact_path, input_example=input_example)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    mlflow_model = Model.load(model_uri)
-    signature = mlflow_model.signature
+    qcflow_model = Model.load(model_uri)
+    signature = qcflow_model.signature
     assert isinstance(signature, ModelSignature)
     assert signature.inputs.inputs[0].name is None
     t = DataType.string if isinstance(input_example, str) else DataType.binary
@@ -445,4 +445,4 @@ def test_infer_signature_on_scalar_input_examples(input_example):
         outputs=Schema([ColSpec(name=0, type=t)]),
     )
     # test that a single string still passes pyfunc schema enforcement
-    mlflow.pyfunc.load_model(model_uri).predict(input_example)
+    qcflow.pyfunc.load_model(model_uri).predict(input_example)

@@ -10,25 +10,25 @@ import sklearn.neighbors as knn
 import yaml
 from sklearn import datasets
 
-import mlflow
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow.exceptions import MlflowException
-from mlflow.models.model import METADATA_FILES
-from mlflow.models.utils import load_serving_example
-from mlflow.models.wheeled_model import _ORIGINAL_REQ_FILE_NAME, _WHEELS_FOLDER_NAME, WheeledModel
-from mlflow.pyfunc.model import MLMODEL_FILE_NAME, Model
-from mlflow.store.artifact.utils.models import _improper_model_uri_msg
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils.environment import (
+import qcflow
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow.exceptions import QCFlowException
+from qcflow.models.model import METADATA_FILES
+from qcflow.models.utils import load_serving_example
+from qcflow.models.wheeled_model import _ORIGINAL_REQ_FILE_NAME, _WHEELS_FOLDER_NAME, WheeledModel
+from qcflow.pyfunc.model import MLMODEL_FILE_NAME, Model
+from qcflow.store.artifact.utils.models import _improper_model_uri_msg
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils.environment import (
     _CONDA_ENV_FILE_NAME,
     _REQUIREMENTS_FILE_NAME,
     _is_pip_deps,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
 )
 
 from tests.helper_functions import (
     _is_available_on_pypi,
-    _mlflow_major_version_string,
+    _qcflow_major_version_string,
     pyfunc_serve_and_score_model,
 )
 
@@ -152,8 +152,8 @@ def test_model_log_load(tmp_path, sklearn_knn_model):
     artifact_path = "model"
 
     # Log a model
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             artifact_path,
             registered_model_name=model_name,
@@ -162,10 +162,10 @@ def test_model_log_load(tmp_path, sklearn_knn_model):
         original_model_config = Model.load(os.path.join(model_path, MLMODEL_FILE_NAME)).__dict__
 
     # Re-log with wheels
-    with mlflow.start_run():
+    with qcflow.start_run():
         WheeledModel.log_model(model_uri=model_uri)
         wheeled_model_path = _download_artifact_from_uri(wheeled_model_uri)
-        wheeled_model_run_id = mlflow.tracking.fluent._get_or_start_run().info.run_id
+        wheeled_model_run_id = qcflow.tracking.fluent._get_or_start_run().info.run_id
         wheeled_model_config = Model.load(
             os.path.join(wheeled_model_path, MLMODEL_FILE_NAME)
         ).__dict__
@@ -188,8 +188,8 @@ def test_model_save_load(tmp_path, sklearn_knn_model):
 
     os.mkdir(model_download_path)
     # Log a model
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             artifact_path,
             registered_model_name=model_name,
@@ -198,7 +198,7 @@ def test_model_save_load(tmp_path, sklearn_knn_model):
         original_model_config = Model.load(os.path.join(model_path, MLMODEL_FILE_NAME)).__dict__
 
     # Save with wheels
-    with mlflow.start_run():
+    with qcflow.start_run():
         wheeled_model = WheeledModel(model_uri=model_uri)
         wheeled_model_data = wheeled_model.save_model(path=wheeled_model_path)
         wheeled_model_config = Model.load(os.path.join(wheeled_model_path, MLMODEL_FILE_NAME))
@@ -219,15 +219,15 @@ def test_logging_and_saving_wheeled_model_throws(tmp_path, sklearn_knn_model):
     artifact_path = "model"
 
     # Log a model
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             artifact_path,
             registered_model_name=model_name,
         )
 
     # Re-log with wheels
-    with mlflow.start_run():
+    with qcflow.start_run():
         WheeledModel.log_model(
             model_uri=model_uri,
         )
@@ -235,16 +235,16 @@ def test_logging_and_saving_wheeled_model_throws(tmp_path, sklearn_knn_model):
     match = "Model libraries are already added"
 
     # Log wheeled model
-    with pytest.raises(MlflowException, match=re.escape(match)):
-        with mlflow.start_run():
+    with pytest.raises(QCFlowException, match=re.escape(match)):
+        with qcflow.start_run():
             WheeledModel.log_model(
                 model_uri=wheeled_model_uri,
             )
 
     # Saved a wheeled model
     saved_model_path = os.path.join(tmp_path, "test")
-    with pytest.raises(MlflowException, match=re.escape(match)):
-        with mlflow.start_run():
+    with pytest.raises(QCFlowException, match=re.escape(match)):
+        with qcflow.start_run():
             WheeledModel(wheeled_model_uri).save_model(saved_model_path)
 
 
@@ -252,20 +252,20 @@ def test_log_model_with_non_model_uri():
     model_uri = "runs:/beefe0b6b5bd4acf9938244cdc006b64/model"
 
     # Log with wheels
-    with pytest.raises(MlflowException, match=_improper_model_uri_msg(model_uri)):
-        with mlflow.start_run():
+    with pytest.raises(QCFlowException, match=_improper_model_uri_msg(model_uri)):
+        with qcflow.start_run():
             WheeledModel.log_model(
                 model_uri=model_uri,
             )
 
     # Save with wheels
-    with pytest.raises(MlflowException, match=_improper_model_uri_msg(model_uri)):
-        with mlflow.start_run():
+    with pytest.raises(QCFlowException, match=_improper_model_uri_msg(model_uri)):
+        with qcflow.start_run():
             WheeledModel(model_uri)
 
 
 def test_create_pip_requirement(tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
     model_name = f"wheels-test-{random_int()}"
     model_uri = f"models:/{model_name}/1"
     conda_env_path = os.path.join(tmp_path, "conda.yaml")
@@ -273,9 +273,9 @@ def test_create_pip_requirement(tmp_path):
 
     wm = WheeledModel(model_uri)
 
-    expected_pip_deps = [expected_mlflow_version, "cloudpickle==2.1.0", "psutil==5.8.0"]
-    _mlflow_conda_env(
-        path=conda_env_path, additional_pip_deps=expected_pip_deps, install_mlflow=False
+    expected_pip_deps = [expected_qcflow_version, "cloudpickle==2.1.0", "psutil==5.8.0"]
+    _qcflow_conda_env(
+        path=conda_env_path, additional_pip_deps=expected_pip_deps, install_qcflow=False
     )
     wm._create_pip_requirement(conda_env_path, pip_reqs_path)
     with open(pip_reqs_path) as f:
@@ -284,23 +284,23 @@ def test_create_pip_requirement(tmp_path):
 
 
 def test_update_conda_env_only_updates_pip_deps(tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
     model_name = f"wheels-test-{random_int()}"
     model_uri = f"models:/{model_name}/1"
     conda_env_path = os.path.join(tmp_path, "conda.yaml")
-    pip_deps = [expected_mlflow_version, "cloudpickle==2.1.0", "psutil==5.8.0"]
-    new_pip_deps = ["wheels/mlflow", "wheels/cloudpickle", "wheels/psutil"]
+    pip_deps = [expected_qcflow_version, "cloudpickle==2.1.0", "psutil==5.8.0"]
+    new_pip_deps = ["wheels/qcflow", "wheels/cloudpickle", "wheels/psutil"]
 
     wm = WheeledModel(model_uri)
     additional_conda_deps = ["add_conda_deps"]
     additional_conda_channels = ["add_conda_channels"]
 
-    _mlflow_conda_env(
+    _qcflow_conda_env(
         conda_env_path,
         additional_conda_deps,
         pip_deps,
         additional_conda_channels,
-        install_mlflow=False,
+        install_qcflow=False,
     )
     with open(conda_env_path) as f:
         old_conda_yaml = yaml.safe_load(f)
@@ -328,8 +328,8 @@ def test_serving_wheeled_model(sklearn_knn_model):
     (model, inference_data) = sklearn_knn_model
 
     # Log a model
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(
             model,
             artifact_path,
             registered_model_name=model_name,
@@ -337,7 +337,7 @@ def test_serving_wheeled_model(sklearn_knn_model):
         )
 
     # Re-log with wheels
-    with mlflow.start_run():
+    with qcflow.start_run():
         WheeledModel.log_model(model_uri=model_uri)
 
     inference_payload = load_serving_example(model_info.model_uri)
@@ -374,39 +374,39 @@ def test_wheel_download_override_option_works(tmp_path, monkeypatch):
 
     # Default option fails to download wheel
     with pytest.raises(
-        MlflowException, match="An error occurred while downloading the dependency wheels"
+        QCFlowException, match="An error occurred while downloading the dependency wheels"
     ):
         WheeledModel._download_wheels(requirements_file, wheel_dir)
 
     # Set option override
-    monkeypatch.setenv("MLFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS", "--prefer-binary")
+    monkeypatch.setenv("QCFLOW_WHEELED_MODEL_PIP_DOWNLOAD_OPTIONS", "--prefer-binary")
     WheeledModel._download_wheels(requirements_file, wheel_dir)
     assert len(os.listdir(wheel_dir))  # Wheel dir is not empty
 
 
 def test_wheel_download_dependency_conflicts(tmp_path):
     reqs_file = tmp_path / "requirements.txt"
-    reqs_file.write_text("mlflow==2.15.0\nmlflow==2.16.0")
+    reqs_file.write_text("qcflow==2.15.0\nqcflow==2.16.0")
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         # Ensure the error message contains conflict details
-        match=r"Cannot install mlflow==2\.15\.0 and mlflow==2\.16\.0.+The conflict is caused by",
+        match=r"Cannot install qcflow==2\.15\.0 and qcflow==2\.16\.0.+The conflict is caused by",
     ):
         WheeledModel._download_wheels(reqs_file, tmp_path / "wheels")
 
 
 def test_copy_metadata(mock_is_in_databricks, sklearn_knn_model):
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(
             sklearn_knn_model.model,
             "model",
             registered_model_name="sklearn_knn_model",
         )
 
-    with mlflow.start_run():
+    with qcflow.start_run():
         model_info = WheeledModel.log_model(model_uri="models:/sklearn_knn_model/1")
 
-    artifact_path = mlflow.artifacts.download_artifacts(model_info.model_uri)
+    artifact_path = qcflow.artifacts.download_artifacts(model_info.model_uri)
     metadata_path = os.path.join(artifact_path, "metadata")
     if mock_is_in_databricks.return_value:
         assert set(os.listdir(metadata_path)) == set(METADATA_FILES + [_ORIGINAL_REQ_FILE_NAME])

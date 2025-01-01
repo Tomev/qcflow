@@ -1,14 +1,14 @@
 Tutorial Overview
 =================
 
-The MLflow Model Registry has several core components:
+The QCFlow Model Registry has several core components:
 
-* A **Centralized Model Store** is a single location for your MLflow models, facilitating model 
+* A **Centralized Model Store** is a single location for your QCFlow models, facilitating model 
   versioning, sharing, and deployment in a consistent and efficient manner.
 * A **Set of APIs** that allow you to programmatically create, read, update, and delete models.
 * A **GUI** that allows you to manually view and manage models in the centralized model store.
 
-The MLflow Model Registry provides some additional functionality that is relevant to model 
+The QCFlow Model Registry provides some additional functionality that is relevant to model 
 development and deployment:
 
 * **Model Versioning** refers to logging different iterations of a model to facilitate comparison 
@@ -20,11 +20,11 @@ development and deployment:
   documentation and categorization.
 * **Model Annotations** are descriptive notes added to a model. 
 
-In this tutorial, you will get up and running with the MLflow model registry in the least amount of
+In this tutorial, you will get up and running with the QCFlow model registry in the least amount of
 steps possible. The topics in this tutorial cover:
 
 * Registering a model programmatically to the Model Registry while logging.
-* Viewing the registered model in the MLflow UI.
+* Viewing the registered model in the QCFlow UI.
 * Loading a registered model for inference.
 
 

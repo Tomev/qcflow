@@ -2,16 +2,16 @@
 
 import sys
 
-import mlflow
+import qcflow
 
 
 def call_tracking_apis():
-    mlflow.log_metric("some_key", 3)
+    qcflow.log_metric("some_key", 3)
 
 
 def main(use_start_run):
     if use_start_run:
-        with mlflow.start_run():
+        with qcflow.start_run():
             call_tracking_apis()
     else:
         call_tracking_apis()

@@ -1,7 +1,7 @@
 """
 Usage
 -----
-export MLFLOW_TRACKING_URI=sqlite:///mlruns.db
+export QCFLOW_TRACKING_URI=sqlite:///mlruns.db
 
 # pre migration
 python tests/db/check_migration.py pre-migration
@@ -18,14 +18,14 @@ import click
 import pandas as pd
 import sqlalchemy as sa
 
-import mlflow
-from mlflow.store.model_registry.dbmodels.models import (
+import qcflow
+from qcflow.store.model_registry.dbmodels.models import (
     SqlModelVersion,
     SqlModelVersionTag,
     SqlRegisteredModel,
     SqlRegisteredModelTag,
 )
-from mlflow.store.tracking.dbmodels.models import (
+from qcflow.store.tracking.dbmodels.models import (
     SqlExperiment,
     SqlExperimentTag,
     SqlLatestMetric,
@@ -51,21 +51,21 @@ TABLES = [
 SNAPSHOTS_DIR = Path(__file__).parent / "snapshots"
 
 
-class Model(mlflow.pyfunc.PythonModel):
+class Model(qcflow.pyfunc.PythonModel):
     def predict(self, context, model_input, params=None):
         return [0]
 
 
 def log_everything():
-    exp_id = mlflow.create_experiment(uuid.uuid4().hex, tags={"tag": "experiment"})
-    mlflow.set_experiment(experiment_id=exp_id)
-    with mlflow.start_run() as run:
-        mlflow.log_params({"param": "value"})
-        mlflow.log_metrics({"metric": 0.1})
-        mlflow.set_tags({"tag": "run"})
-        model_info = mlflow.pyfunc.log_model("model", python_model=Model())
+    exp_id = qcflow.create_experiment(uuid.uuid4().hex, tags={"tag": "experiment"})
+    qcflow.set_experiment(experiment_id=exp_id)
+    with qcflow.start_run() as run:
+        qcflow.log_params({"param": "value"})
+        qcflow.log_metrics({"metric": 0.1})
+        qcflow.set_tags({"tag": "run"})
+        model_info = qcflow.pyfunc.log_model("model", python_model=Model())
 
-    client = mlflow.MlflowClient()
+    client = qcflow.QCFlowClient()
     registered_model_name = uuid.uuid4().hex
     client.create_registered_model(
         registered_model_name, tags={"tag": "registered_model"}, description="description"
@@ -80,8 +80,8 @@ def log_everything():
     )
 
 
-def connect_to_mlflow_db():
-    return sa.create_engine(os.environ["MLFLOW_TRACKING_URI"]).connect()
+def connect_to_qcflow_db():
+    return sa.create_engine(os.environ["QCFLOW_TRACKING_URI"]).connect()
 
 
 @click.group()
@@ -95,7 +95,7 @@ def pre_migration(verbose):
     for _ in range(5):
         log_everything()
     SNAPSHOTS_DIR.mkdir(exist_ok=True)
-    with connect_to_mlflow_db() as conn:
+    with connect_to_qcflow_db() as conn:
         for table in TABLES:
             df = pd.read_sql(sa.text(f"SELECT * FROM {table}"), conn)
             df.to_pickle(SNAPSHOTS_DIR / f"{table}.pkl")
@@ -106,7 +106,7 @@ def pre_migration(verbose):
 
 @cli.command()
 def post_migration():
-    with connect_to_mlflow_db() as conn:
+    with connect_to_qcflow_db() as conn:
         for table in TABLES:
             df_actual = pd.read_sql(sa.text(f"SELECT * FROM {table}"), conn)
             df_expected = pd.read_pickle(SNAPSHOTS_DIR / f"{table}.pkl")

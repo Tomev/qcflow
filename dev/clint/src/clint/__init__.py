@@ -22,7 +22,7 @@ class Args:
 
     @classmethod
     def parse(cls) -> Args:
-        parser = argparse.ArgumentParser(description="Custom linter for mlflow.")
+        parser = argparse.ArgumentParser(description="Custom linter for qcflow.")
         parser.add_argument("files", nargs="+", help="Files to lint.")
         parser.add_argument("--output-format", default="text")
         args, _ = parser.parse_known_args()

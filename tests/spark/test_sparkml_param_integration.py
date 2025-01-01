@@ -1,7 +1,7 @@
 from pyspark.ml.param import Param as SparkMLParam
 from pyspark.ml.util import Identifiable
 
-from mlflow.entities import Param
+from qcflow.entities import Param
 
 
 def test_spark_integration():

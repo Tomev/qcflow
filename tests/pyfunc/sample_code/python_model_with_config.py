@@ -1,5 +1,5 @@
-from mlflow.models import ModelConfig, set_model
-from mlflow.pyfunc import PythonModel
+from qcflow.models import ModelConfig, set_model
+from qcflow.pyfunc import PythonModel
 
 base_config = ModelConfig(development_config="tests/pyfunc/sample_code/config.yml")
 

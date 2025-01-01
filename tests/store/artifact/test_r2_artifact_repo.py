@@ -4,8 +4,8 @@ from unittest.mock import ANY
 
 import pytest
 
-from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
-from mlflow.store.artifact.s3_artifact_repo import _cached_get_s3_client
+from qcflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from qcflow.store.artifact.s3_artifact_repo import _cached_get_s3_client
 
 from tests.helper_functions import set_boto_credentials  # noqa: F401
 
@@ -31,7 +31,7 @@ def test_parse_r2_uri(r2_artifact_root):
 
 def test_s3_client_config_set_correctly(r2_artifact_root):
     with mock.patch(
-        "mlflow.store.artifact.r2_artifact_repo.R2ArtifactRepository._get_region_name"
+        "qcflow.store.artifact.r2_artifact_repo.R2ArtifactRepository._get_region_name"
     ) as mock_method:
         mock_method.return_value = None
 

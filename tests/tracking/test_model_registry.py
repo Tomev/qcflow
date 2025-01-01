@@ -7,11 +7,11 @@ import time
 
 import pytest
 
-from mlflow import MlflowClient
-from mlflow.entities.model_registry import ModelVersion, RegisteredModel
-from mlflow.exceptions import MlflowException
-from mlflow.utils.os import is_windows
-from mlflow.utils.time import get_current_time_millis
+from qcflow import QCFlowClient
+from qcflow.entities.model_registry import ModelVersion, RegisteredModel
+from qcflow.exceptions import QCFlowException
+from qcflow.utils.os import is_windows
+from qcflow.utils.time import get_current_time_millis
 
 from tests.tracking.integration_test_utils import _init_server
 
@@ -27,7 +27,7 @@ def client(request, tmp_path):
     with _init_server(
         backend_uri=backend_uri, root_artifact_uri=tmp_path.joinpath("artifacts").as_uri()
     ) as url:
-        yield MlflowClient(url)
+        yield QCFlowClient(url)
 
 
 def assert_is_between(start_time, end_time, expected_time):
@@ -133,7 +133,7 @@ def test_update_registered_model_flow(client):
 
     # update with no args is an error
     with pytest.raises(
-        MlflowException, match="Attempting to update registered model with no new field values"
+        QCFlowException, match="Attempting to update registered model with no new field values"
     ):
         client.update_registered_model(name=name, description=None)
 
@@ -142,7 +142,7 @@ def test_update_registered_model_flow(client):
     start_time_2 = get_current_time_millis()
     client.rename_registered_model(name=name, new_name=new_name)
     end_time_2 = get_current_time_millis()
-    with pytest.raises(MlflowException, match="Registered Model with name=UpdateRMTest not found"):
+    with pytest.raises(QCFlowException, match="Registered Model with name=UpdateRMTest not found"):
         client.get_registered_model(name)
     registered_model_detailed_2 = client.get_registered_model(new_name)
     assert registered_model_detailed_2.name == new_name
@@ -187,7 +187,7 @@ def test_update_registered_model_flow(client):
     # old named models are not accessible
     for old_name in [previous_name, name, new_name]:
         with pytest.raises(
-            MlflowException, match=r"Registered Model with name=UpdateRMTest( \d)? not found"
+            QCFlowException, match=r"Registered Model with name=UpdateRMTest( \d)? not found"
         ):
             client.get_registered_model(old_name)
 
@@ -205,17 +205,17 @@ def test_delete_registered_model_flow(client):
     assert [rm.name for rm in client.search_registered_models() if rm.name == name] == [name]
 
     # cannot create a model with same name
-    with pytest.raises(MlflowException, match=r"Registered Model .+ already exists"):
+    with pytest.raises(QCFlowException, match=r"Registered Model .+ already exists"):
         client.create_registered_model(name)
 
     client.delete_registered_model(name)
 
     # cannot get a deleted model
-    with pytest.raises(MlflowException, match=r"Registered Model .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Registered Model .+ not found"):
         client.get_registered_model(name)
 
     # cannot update a deleted model
-    with pytest.raises(MlflowException, match=r"Registered Model .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Registered Model .+ not found"):
         client.rename_registered_model(name=name, new_name="something else")
 
     # list does not include deleted model
@@ -440,7 +440,7 @@ def test_get_model_version(client):
     assert model_version.version == "1"
 
     with pytest.raises(
-        MlflowException, match="INVALID_PARAMETER_VALUE: Model version must be an integer"
+        QCFlowException, match="INVALID_PARAMETER_VALUE: Model version must be an integer"
     ):
         client.get_model_version(name=name, version="something not correct")
 
@@ -602,13 +602,13 @@ def test_delete_model_version_flow(client):
     assert_is_between(start_time_2, end_time_2, rmd3.last_updated_timestamp)
 
     # cannot get a deleted model version
-    with pytest.raises(MlflowException, match=r"Model Version .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Model Version .+ not found"):
         client.delete_model_version(name, "1")
 
     # cannot update a deleted model version
-    with pytest.raises(MlflowException, match=r"Model Version .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Model Version .+ not found"):
         client.update_model_version(name=name, version=1, description="Test model")
-    with pytest.raises(MlflowException, match=r"Model Version .+ not found"):
+    with pytest.raises(QCFlowException, match=r"Model Version .+ not found"):
         client.transition_model_version_stage(name=name, version=1, stage="Staging")
 
     client.delete_model_version(name, 3)

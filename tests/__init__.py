@@ -1,3 +1,3 @@
-from mlflow.utils.logging_utils import _configure_mlflow_loggers
+from qcflow.utils.logging_utils import _configure_qcflow_loggers
 
-_configure_mlflow_loggers(root_module_name=__name__)
+_configure_qcflow_loggers(root_module_name=__name__)

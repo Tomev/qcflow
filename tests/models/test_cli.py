@@ -17,30 +17,30 @@ import sklearn.neighbors
 from click.testing import CliRunner
 from packaging.requirements import Requirement
 
-import mlflow
-import mlflow.models.cli as models_cli
-import mlflow.sklearn
-from mlflow.environment_variables import MLFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING
-from mlflow.exceptions import MlflowException
-from mlflow.models.flavor_backend_registry import get_flavor_backend
-from mlflow.models.model import get_model_requirements_files, update_model_requirements
-from mlflow.models.utils import load_serving_example
-from mlflow.protos.databricks_pb2 import BAD_REQUEST, ErrorCode
-from mlflow.pyfunc.backend import PyFuncBackend
-from mlflow.pyfunc.scoring_server import (
+import qcflow
+import qcflow.models.cli as models_cli
+import qcflow.sklearn
+from qcflow.environment_variables import QCFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING
+from qcflow.exceptions import QCFlowException
+from qcflow.models.flavor_backend_registry import get_flavor_backend
+from qcflow.models.model import get_model_requirements_files, update_model_requirements
+from qcflow.models.utils import load_serving_example
+from qcflow.protos.databricks_pb2 import BAD_REQUEST, ErrorCode
+from qcflow.pyfunc.backend import PyFuncBackend
+from qcflow.pyfunc.scoring_server import (
     CONTENT_TYPE_CSV,
     CONTENT_TYPE_JSON,
 )
-from mlflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
-from mlflow.utils import PYTHON_VERSION
-from mlflow.utils import env_manager as _EnvManager
-from mlflow.utils.conda import _get_conda_env_name
-from mlflow.utils.environment import (
+from qcflow.store.artifact.runs_artifact_repo import RunsArtifactRepository
+from qcflow.utils import PYTHON_VERSION
+from qcflow.utils import env_manager as _EnvManager
+from qcflow.utils.conda import _get_conda_env_name
+from qcflow.utils.environment import (
     _get_requirements_from_file,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
 )
-from mlflow.utils.file_utils import TempDir
-from mlflow.utils.process import ShellCommandException
+from qcflow.utils.file_utils import TempDir
+from qcflow.utils.process import ShellCommandException
 
 from tests.helper_functions import (
     PROTOBUF_REQUIREMENT,
@@ -56,15 +56,15 @@ from tests.helper_functions import (
 # NB: for now, windows tests do not have conda available.
 no_conda = ["--env-manager", "local"] if sys.platform == "win32" else []
 
-# NB: need to install mlflow since the pip version does not have mlflow models cli.
-install_mlflow = ["--install-mlflow"] if not no_conda else []
+# NB: need to install qcflow since the pip version does not have qcflow models cli.
+install_qcflow = ["--install-qcflow"] if not no_conda else []
 
-extra_options = no_conda + install_mlflow
+extra_options = no_conda + install_qcflow
 gunicorn_options = "--timeout 60 -w 5"
 
 
 def env_with_tracking_uri():
-    return {**os.environ, "MLFLOW_TRACKING_URI": mlflow.get_tracking_uri()}
+    return {**os.environ, "QCFLOW_TRACKING_URI": qcflow.get_tracking_uri()}
 
 
 @pytest.fixture(scope="module")
@@ -84,20 +84,20 @@ def sk_model(iris_data):
 
 
 @pytest.mark.allow_infer_pip_requirements_fallback
-def test_mlflow_is_not_installed_unless_specified():
+def test_qcflow_is_not_installed_unless_specified():
     if no_conda:
         pytest.skip("This test requires conda.")
     with TempDir(chdr=True) as tmp:
         fake_model_path = tmp.path("fake_model")
-        mlflow.pyfunc.save_model(fake_model_path, loader_module=__name__)
-        # Overwrite the logged `conda.yaml` to remove mlflow.
-        _mlflow_conda_env(path=os.path.join(fake_model_path, "conda.yaml"), install_mlflow=False)
-        # The following should fail because there should be no mlflow in the env:
+        qcflow.pyfunc.save_model(fake_model_path, loader_module=__name__)
+        # Overwrite the logged `conda.yaml` to remove qcflow.
+        _qcflow_conda_env(path=os.path.join(fake_model_path, "conda.yaml"), install_qcflow=False)
+        # The following should fail because there should be no qcflow in the env:
         prc = subprocess.run(
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "predict",
                 "-m",
@@ -113,13 +113,13 @@ def test_mlflow_is_not_installed_unless_specified():
         )
         assert prc.returncode != 0
         if PYTHON_VERSION.startswith("3"):
-            assert "ModuleNotFoundError: No module named 'mlflow'" in prc.stderr
+            assert "ModuleNotFoundError: No module named 'qcflow'" in prc.stderr
         else:
-            assert "ImportError: No module named mlflow.pyfunc.scoring_server" in prc.stderr
+            assert "ImportError: No module named qcflow.pyfunc.scoring_server" in prc.stderr
 
 
 def test_model_with_no_deployable_flavors_fails_pollitely():
-    from mlflow.models import Model
+    from qcflow.models import Model
 
     with TempDir(chdr=True) as tmp:
         m = Model(
@@ -132,7 +132,7 @@ def test_model_with_no_deployable_flavors_fails_pollitely():
         m.save(tmp.path("model", "MLmodel"))
         # The following should fail because there should be no suitable flavor
         prc = subprocess.run(
-            [sys.executable, "-m", "mlflow", "models", "predict", "-m", tmp.path("model")],
+            [sys.executable, "-m", "qcflow", "models", "predict", "-m", tmp.path("model")],
             stderr=subprocess.PIPE,
             cwd=tmp.path(""),
             check=False,
@@ -145,9 +145,9 @@ def test_model_with_no_deployable_flavors_fails_pollitely():
 def test_serve_gunicorn_opts(iris_data, sk_model):
     if sys.platform == "win32":
         pytest.skip("This test requires gunicorn which is not available on windows.")
-    with mlflow.start_run() as active_run:
+    with qcflow.start_run() as active_run:
         x, _ = iris_data
-        mlflow.sklearn.log_model(
+        qcflow.sklearn.log_model(
             sk_model, "model", registered_model_name="imlegit", input_example=pd.DataFrame(x)
         )
         run_id = active_run.info.run_id
@@ -175,15 +175,15 @@ def test_serve_gunicorn_opts(iris_data, sk_model):
         expected = sk_model.predict(x)
         assert all(expected == actual)
         expected_command_pattern = re.compile(
-            "gunicorn.*-w 3.*mlflow.pyfunc.scoring_server.wsgi:app"
+            "gunicorn.*-w 3.*qcflow.pyfunc.scoring_server.wsgi:app"
         )
         assert expected_command_pattern.search(stdout) is not None
 
 
 def test_predict(iris_data, sk_model):
     with TempDir(chdr=True) as tmp:
-        with mlflow.start_run() as active_run:
-            mlflow.sklearn.log_model(sk_model, "model", registered_model_name="impredicting")
+        with qcflow.start_run() as active_run:
+            qcflow.sklearn.log_model(sk_model, "model", registered_model_name="impredicting")
             model_uri = f"runs:/{active_run.info.run_id}/model"
         model_registry_uri = "models:/impredicting/None"
         input_json_path = tmp.path("input.json")
@@ -200,7 +200,7 @@ def test_predict(iris_data, sk_model):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "predict",
                 "-m",
@@ -222,12 +222,12 @@ def test_predict(iris_data, sk_model):
         expected = sk_model.predict(x)
         assert all(expected == actual)
 
-        # With conda + --install-mlflow
+        # With conda + --install-qcflow
         subprocess.run(
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "predict",
                 "-m",
@@ -251,7 +251,7 @@ def test_predict(iris_data, sk_model):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "predict",
                 "-m",
@@ -278,7 +278,7 @@ def test_predict(iris_data, sk_model):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "predict",
                 "-m",
@@ -304,7 +304,7 @@ def test_predict(iris_data, sk_model):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "predict",
                 "-m",
@@ -333,7 +333,7 @@ def test_predict(iris_data, sk_model):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "predict",
                 "-m",
@@ -356,8 +356,8 @@ def test_predict(iris_data, sk_model):
 
 
 def test_predict_check_content_type(iris_data, sk_model, tmp_path):
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(sk_model, "model", registered_model_name="impredicting")
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(sk_model, "model", registered_model_name="impredicting")
     model_registry_uri = "models:/impredicting/None"
     input_json_path = tmp_path / "input.json"
     input_csv_path = tmp_path / "input.csv"
@@ -374,7 +374,7 @@ def test_predict_check_content_type(iris_data, sk_model, tmp_path):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "models",
             "predict",
             "-m",
@@ -398,8 +398,8 @@ def test_predict_check_content_type(iris_data, sk_model, tmp_path):
 
 
 def test_predict_check_input_path(iris_data, sk_model, tmp_path):
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(sk_model, "model", registered_model_name="impredicting")
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(sk_model, "model", registered_model_name="impredicting")
     model_registry_uri = "models:/impredicting/None"
     input_json_path = tmp_path / "input with space.json"
     input_csv_path = tmp_path / "input.csv"
@@ -416,7 +416,7 @@ def test_predict_check_input_path(iris_data, sk_model, tmp_path):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "models",
             "predict",
             "-m",
@@ -441,7 +441,7 @@ def test_predict_check_input_path(iris_data, sk_model, tmp_path):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "models",
             "predict",
             "-m",
@@ -467,7 +467,7 @@ def test_predict_check_input_path(iris_data, sk_model, tmp_path):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "models",
             "predict",
             "-m",
@@ -493,8 +493,8 @@ def test_predict_check_input_path(iris_data, sk_model, tmp_path):
 
 
 def test_predict_check_output_path(iris_data, sk_model, tmp_path):
-    with mlflow.start_run():
-        mlflow.sklearn.log_model(sk_model, "model", registered_model_name="impredicting")
+    with qcflow.start_run():
+        qcflow.sklearn.log_model(sk_model, "model", registered_model_name="impredicting")
     model_registry_uri = "models:/impredicting/None"
     input_json_path = tmp_path / "input.json"
     input_csv_path = tmp_path / "input.csv"
@@ -510,7 +510,7 @@ def test_predict_check_output_path(iris_data, sk_model, tmp_path):
         [
             sys.executable,
             "-m",
-            "mlflow",
+            "qcflow",
             "models",
             "predict",
             "-m",
@@ -537,8 +537,8 @@ def test_prepare_env_passes(sk_model):
         pytest.skip("This test requires conda.")
 
     with TempDir(chdr=True):
-        with mlflow.start_run() as active_run:
-            mlflow.sklearn.log_model(sk_model, "model")
+        with qcflow.start_run() as active_run:
+            qcflow.sklearn.log_model(sk_model, "model")
             model_uri = f"runs:/{active_run.info.run_id}/model"
 
         # With conda
@@ -546,7 +546,7 @@ def test_prepare_env_passes(sk_model):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "prepare-env",
                 "-m",
@@ -561,7 +561,7 @@ def test_prepare_env_passes(sk_model):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "prepare-env",
                 "-m",
@@ -577,8 +577,8 @@ def test_prepare_env_fails(sk_model):
         pytest.skip("This test requires conda.")
 
     with TempDir(chdr=True):
-        with mlflow.start_run() as active_run:
-            mlflow.sklearn.log_model(
+        with qcflow.start_run() as active_run:
+            qcflow.sklearn.log_model(
                 sk_model, "model", pip_requirements=["does-not-exist-dep==abc"]
             )
             model_uri = f"runs:/{active_run.info.run_id}/model"
@@ -588,7 +588,7 @@ def test_prepare_env_fails(sk_model):
             [
                 sys.executable,
                 "-m",
-                "mlflow",
+                "qcflow",
                 "models",
                 "prepare-env",
                 "-m",
@@ -602,15 +602,15 @@ def test_prepare_env_fails(sk_model):
 
 @pytest.mark.parametrize("enable_mlserver", [True, False])
 def test_generate_dockerfile(sk_model, enable_mlserver, tmp_path):
-    with mlflow.start_run() as active_run:
+    with qcflow.start_run() as active_run:
         if enable_mlserver:
-            mlflow.sklearn.log_model(
-                sk_model, "model", extra_pip_requirements=["/opt/mlflow", PROTOBUF_REQUIREMENT]
+            qcflow.sklearn.log_model(
+                sk_model, "model", extra_pip_requirements=["/opt/qcflow", PROTOBUF_REQUIREMENT]
             )
         else:
-            mlflow.sklearn.log_model(sk_model, "model")
+            qcflow.sklearn.log_model(sk_model, "model")
         model_uri = f"runs:/{active_run.info.run_id}/model"
-    extra_args = ["--install-mlflow"]
+    extra_args = ["--install-qcflow"]
     if enable_mlserver:
         extra_args.append("--enable-mlserver")
 
@@ -630,19 +630,19 @@ def test_generate_dockerfile(sk_model, enable_mlserver, tmp_path):
 
 @pytest.mark.parametrize("enable_mlserver", [True, False])
 def test_build_docker(iris_data, sk_model, enable_mlserver):
-    with mlflow.start_run() as active_run:
+    with qcflow.start_run() as active_run:
         if enable_mlserver:
-            mlflow.sklearn.log_model(
-                sk_model, "model", extra_pip_requirements=["/opt/mlflow", PROTOBUF_REQUIREMENT]
+            qcflow.sklearn.log_model(
+                sk_model, "model", extra_pip_requirements=["/opt/qcflow", PROTOBUF_REQUIREMENT]
             )
         else:
-            mlflow.sklearn.log_model(sk_model, "model", extra_pip_requirements=["/opt/mlflow"])
+            qcflow.sklearn.log_model(sk_model, "model", extra_pip_requirements=["/opt/qcflow"])
         model_uri = f"runs:/{active_run.info.run_id}/model"
 
     x, _ = iris_data
     df = pd.DataFrame(x)
 
-    extra_args = ["--install-mlflow"]
+    extra_args = ["--install-qcflow"]
     if enable_mlserver:
         extra_args.append("--enable-mlserver")
 
@@ -657,15 +657,15 @@ def test_build_docker(iris_data, sk_model, enable_mlserver):
 
 
 def test_build_docker_virtualenv(iris_data, sk_model):
-    with mlflow.start_run():
-        model_info = mlflow.sklearn.log_model(
-            sk_model, "model", extra_pip_requirements=["/opt/mlflow"]
+    with qcflow.start_run():
+        model_info = qcflow.sklearn.log_model(
+            sk_model, "model", extra_pip_requirements=["/opt/qcflow"]
         )
 
     x, _ = iris_data
     df = pd.DataFrame(iris_data[0])
 
-    extra_args = ["--install-mlflow", "--env-manager", "virtualenv"]
+    extra_args = ["--install-qcflow", "--env-manager", "virtualenv"]
     image_name = pyfunc_build_image(
         model_info.model_uri,
         extra_args=extra_args,
@@ -678,18 +678,18 @@ def test_build_docker_virtualenv(iris_data, sk_model):
 
 @pytest.mark.parametrize("enable_mlserver", [True, False])
 def test_build_docker_with_env_override(iris_data, sk_model, enable_mlserver):
-    with mlflow.start_run() as active_run:
+    with qcflow.start_run() as active_run:
         if enable_mlserver:
-            mlflow.sklearn.log_model(
-                sk_model, "model", extra_pip_requirements=["/opt/mlflow", PROTOBUF_REQUIREMENT]
+            qcflow.sklearn.log_model(
+                sk_model, "model", extra_pip_requirements=["/opt/qcflow", PROTOBUF_REQUIREMENT]
             )
         else:
-            mlflow.sklearn.log_model(sk_model, "model", extra_pip_requirements=["/opt/mlflow"])
+            qcflow.sklearn.log_model(sk_model, "model", extra_pip_requirements=["/opt/qcflow"])
         model_uri = f"runs:/{active_run.info.run_id}/model"
     x, _ = iris_data
     df = pd.DataFrame(x)
 
-    extra_args = ["--install-mlflow"]
+    extra_args = ["--install-qcflow"]
     if enable_mlserver:
         extra_args.append("--enable-mlserver")
 
@@ -707,7 +707,7 @@ def test_build_docker_with_env_override(iris_data, sk_model, enable_mlserver):
 
 def test_build_docker_without_model_uri(iris_data, sk_model, tmp_path):
     model_path = tmp_path.joinpath("model")
-    mlflow.sklearn.save_model(sk_model, model_path, extra_pip_requirements=["/opt/mlflow"])
+    qcflow.sklearn.save_model(sk_model, model_path, extra_pip_requirements=["/opt/qcflow"])
     image_name = pyfunc_build_image(model_uri=None)
     host_port = get_safe_port()
     scoring_proc = pyfunc_serve_from_docker_image_with_env_override(
@@ -754,7 +754,7 @@ def _validate_with_rest_endpoint(scoring_proc, host_port, df, x, sk_model, enabl
 
 
 def test_env_manager_warning_for_use_of_conda(monkeypatch):
-    with mock.patch("mlflow.models.cli.get_flavor_backend") as mock_get_flavor_backend:
+    with mock.patch("qcflow.models.cli.get_flavor_backend") as mock_get_flavor_backend:
         with pytest.warns(UserWarning, match=r"Use of conda is discouraged"):
             CliRunner().invoke(
                 models_cli.serve,
@@ -764,7 +764,7 @@ def test_env_manager_warning_for_use_of_conda(monkeypatch):
 
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            monkeypatch.setenv(MLFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING.name, "TRUE")
+            monkeypatch.setenv(QCFLOW_DISABLE_ENV_MANAGER_CONDA_WARNING.name, "TRUE")
             CliRunner().invoke(
                 models_cli.serve,
                 ["--model-uri", "model", "--env-manager", "conda"],
@@ -775,7 +775,7 @@ def test_env_manager_warning_for_use_of_conda(monkeypatch):
 
 
 def test_env_manager_unsupported_value():
-    with pytest.raises(MlflowException, match=r"Invalid value for `env_manager`"):
+    with pytest.raises(QCFlowException, match=r"Invalid value for `env_manager`"):
         CliRunner().invoke(
             models_cli.serve,
             ["--model-uri", "model", "--env-manager", "abc"],
@@ -784,17 +784,17 @@ def test_env_manager_unsupported_value():
 
 
 def test_host_invalid_value():
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input):
             return model_input
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model", python_model=MyModel(), registered_model_name="model"
         )
 
     with mock.patch(
-        "mlflow.models.cli.get_flavor_backend",
+        "qcflow.models.cli.get_flavor_backend",
         return_value=PyFuncBackend({}, env_manager=_EnvManager.VIRTUALENV),
     ):
         with pytest.raises(ShellCommandException, match=r"Non-zero exit code: 1"):
@@ -809,14 +809,14 @@ def test_change_conda_env_root_location(tmp_path, sk_model):
     def _test_model(env_root_path, model_path, sklearn_ver):
         env_root_path.mkdir(exist_ok=True)
 
-        mlflow.sklearn.save_model(
+        qcflow.sklearn.save_model(
             sk_model, str(model_path), pip_requirements=[f"scikit-learn=={sklearn_ver}"]
         )
 
         env = get_flavor_backend(
             str(model_path),
             env_manager=_EnvManager.CONDA,
-            install_mlflow=False,
+            install_qcflow=False,
             env_root_dir=str(env_root_path),
         ).prepare_env(model_uri=str(model_path))
 
@@ -857,7 +857,7 @@ def test_change_conda_env_root_location(tmp_path, sk_model):
     [(True, False, False), (False, True, False), (False, False, True)],
 )
 def test_signature_enforcement_with_model_serving(input_schema, output_schema, params_schema):
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return ["test"]
 
@@ -865,12 +865,12 @@ def test_signature_enforcement_with_model_serving(input_schema, output_schema, p
     output_data = ["test_output"] if output_schema else None
     params = {"test": "test"} if params_schema else None
 
-    signature = mlflow.models.infer_signature(
+    signature = qcflow.models.infer_signature(
         model_input=input_data, model_output=output_data, params=params
     )
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model(
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model(
             "test_model", python_model=MyModel(), signature=signature
         )
 
@@ -897,12 +897,12 @@ def assert_base_model_reqs():
     """
     import cloudpickle
 
-    class MyModel(mlflow.pyfunc.PythonModel):
+    class MyModel(qcflow.pyfunc.PythonModel):
         def predict(self, context, model_input, params=None):
             return ["test"]
 
-    with mlflow.start_run():
-        model_info = mlflow.pyfunc.log_model("model", python_model=MyModel())
+    with qcflow.start_run():
+        model_info = qcflow.pyfunc.log_model("model", python_model=MyModel())
 
     resolved_uri = RunsArtifactRepository.get_underlying_uri(model_info.model_uri)
     local_paths = get_model_requirements_files(resolved_uri)
@@ -911,11 +911,11 @@ def assert_base_model_reqs():
     conda_env_file = local_paths.conda
 
     reqs = _get_requirements_from_file(requirements_txt_file)
-    assert Requirement(f"mlflow=={mlflow.__version__}") in reqs
+    assert Requirement(f"qcflow=={qcflow.__version__}") in reqs
     assert Requirement(f"cloudpickle=={cloudpickle.__version__}") in reqs
 
     reqs = _get_requirements_from_file(conda_env_file)
-    assert Requirement(f"mlflow=={mlflow.__version__}") in reqs
+    assert Requirement(f"qcflow=={qcflow.__version__}") in reqs
     assert Requirement(f"cloudpickle=={cloudpickle.__version__}") in reqs
 
     return model_info.model_uri
@@ -928,21 +928,21 @@ def test_update_requirements_cli_adds_reqs_successfully():
 
     CliRunner().invoke(
         models_cli.update_pip_requirements,
-        ["-m", f"{model_uri}", "add", "mlflow>=2.9, !=2.9.0", "coolpackage[extra]==8.8.8"],
+        ["-m", f"{model_uri}", "add", "qcflow>=2.9, !=2.9.0", "coolpackage[extra]==8.8.8"],
         catch_exceptions=False,
     )
 
     resolved_uri = RunsArtifactRepository.get_underlying_uri(model_uri)
     local_paths = get_model_requirements_files(resolved_uri)
 
-    # the tool should overwrite mlflow, add coolpackage, and leave cloudpickle alone
+    # the tool should overwrite qcflow, add coolpackage, and leave cloudpickle alone
     reqs = _get_requirements_from_file(local_paths.requirements)
-    assert Requirement("mlflow!=2.9.0,>=2.9") in reqs
+    assert Requirement("qcflow!=2.9.0,>=2.9") in reqs
     assert Requirement("coolpackage[extra]==8.8.8") in reqs
     assert Requirement(f"cloudpickle=={cloudpickle.__version__}") in reqs
 
     reqs = _get_requirements_from_file(local_paths.conda)
-    assert Requirement("mlflow!=2.9.0,>=2.9") in reqs
+    assert Requirement("qcflow!=2.9.0,>=2.9") in reqs
     assert Requirement("coolpackage[extra]==8.8.8") in reqs
     assert Requirement(f"cloudpickle=={cloudpickle.__version__}") in reqs
 
@@ -954,14 +954,14 @@ def test_update_requirements_cli_removes_reqs_successfully():
 
     CliRunner().invoke(
         models_cli.update_pip_requirements,
-        ["-m", f"{model_uri}", "remove", "mlflow"],
+        ["-m", f"{model_uri}", "remove", "qcflow"],
         catch_exceptions=False,
     )
 
     resolved_uri = RunsArtifactRepository.get_underlying_uri(model_uri)
     local_paths = get_model_requirements_files(resolved_uri)
 
-    # the tool should remove mlflow and leave cloudpickle alone
+    # the tool should remove qcflow and leave cloudpickle alone
     reqs = _get_requirements_from_file(local_paths.requirements)
     assert reqs == [Requirement(f"cloudpickle=={cloudpickle.__version__}")]
 
@@ -973,11 +973,11 @@ def test_update_requirements_cli_throws_on_incompatible_input():
     model_uri = assert_base_model_reqs()
 
     with pytest.raises(
-        MlflowException, match="The specified requirements versions are incompatible"
+        QCFlowException, match="The specified requirements versions are incompatible"
     ):
         CliRunner().invoke(
             models_cli.update_pip_requirements,
-            ["-m", f"{model_uri}", "add", "mlflow<2.6", "mlflow>2.7"],
+            ["-m", f"{model_uri}", "add", "qcflow<2.6", "qcflow>2.7"],
             catch_exceptions=False,
         )
 
@@ -987,20 +987,20 @@ def test_update_model_requirements_add():
 
     model_uri = assert_base_model_reqs()
     update_model_requirements(
-        model_uri, "add", ["mlflow>=2.9, !=2.9.0", "coolpackage[extra]==8.8.8"]
+        model_uri, "add", ["qcflow>=2.9, !=2.9.0", "coolpackage[extra]==8.8.8"]
     )
 
     resolved_uri = RunsArtifactRepository.get_underlying_uri(model_uri)
     local_paths = get_model_requirements_files(resolved_uri)
 
-    # the tool should overwrite mlflow, add coolpackage, and leave cloudpickle alone
+    # the tool should overwrite qcflow, add coolpackage, and leave cloudpickle alone
     reqs = _get_requirements_from_file(local_paths.requirements)
-    assert Requirement("mlflow!=2.9.0,>=2.9") in reqs
+    assert Requirement("qcflow!=2.9.0,>=2.9") in reqs
     assert Requirement("coolpackage[extra]==8.8.8") in reqs
     assert Requirement(f"cloudpickle=={cloudpickle.__version__}") in reqs
 
     reqs = _get_requirements_from_file(local_paths.conda)
-    assert Requirement("mlflow!=2.9.0,>=2.9") in reqs
+    assert Requirement("qcflow!=2.9.0,>=2.9") in reqs
     assert Requirement("coolpackage[extra]==8.8.8") in reqs
     assert Requirement(f"cloudpickle=={cloudpickle.__version__}") in reqs
 
@@ -1010,11 +1010,11 @@ def test_update_model_requirements_remove():
 
     model_uri = assert_base_model_reqs()
 
-    update_model_requirements(model_uri, "remove", ["mlflow"])
+    update_model_requirements(model_uri, "remove", ["qcflow"])
     resolved_uri = RunsArtifactRepository.get_underlying_uri(model_uri)
     local_paths = get_model_requirements_files(resolved_uri)
 
-    # the tool should remove mlflow and leave cloudpickle alone
+    # the tool should remove qcflow and leave cloudpickle alone
     reqs = _get_requirements_from_file(local_paths.requirements)
     assert reqs == [Requirement(f"cloudpickle=={cloudpickle.__version__}")]
 

@@ -10,17 +10,17 @@ from numba import njit
 from packaging.version import Version
 from sklearn.datasets import fetch_california_housing, load_diabetes
 
-import mlflow
-import mlflow.pyfunc.scoring_server as pyfunc_scoring_server
-from mlflow import MlflowClient
-from mlflow.tracking.artifact_utils import _download_artifact_from_uri
-from mlflow.utils import PYTHON_VERSION
-from mlflow.utils.model_utils import _get_flavor_configuration
+import qcflow
+import qcflow.pyfunc.scoring_server as pyfunc_scoring_server
+from qcflow import QCFlowClient
+from qcflow.tracking.artifact_utils import _download_artifact_from_uri
+from qcflow.utils import PYTHON_VERSION
+from qcflow.utils.model_utils import _get_flavor_configuration
 
 from tests.helper_functions import (
     _assert_pip_requirements,
     _compare_logged_code_paths,
-    _mlflow_major_version_string,
+    _qcflow_major_version_string,
     pyfunc_serve_and_score_model,
 )
 
@@ -41,10 +41,10 @@ def get_housing_data():
 
 def test_sklearn_log_explainer():
     """
-    Tests mlflow.shap log_explainer with mlflow serialization of the underlying model
+    Tests qcflow.shap log_explainer with qcflow serialization of the underlying model
     """
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         run_id = run.info.run_id
 
         X, y = get_housing_data()
@@ -55,20 +55,20 @@ def test_sklearn_log_explainer():
         explainer_original = shap.Explainer(model.predict, X, algorithm="permutation")
         shap_values_original = explainer_original(X[:5])
 
-        mlflow.shap.log_explainer(explainer_original, "test_explainer")
+        qcflow.shap.log_explainer(explainer_original, "test_explainer")
 
         explainer_uri = "runs:/" + run_id + "/test_explainer"
 
-        explainer_loaded = mlflow.shap.load_explainer(explainer_uri)
+        explainer_loaded = qcflow.shap.load_explainer(explainer_uri)
         shap_values_new = explainer_loaded(X[:5])
 
         explainer_path = _download_artifact_from_uri(artifact_uri=explainer_uri)
         flavor_conf = _get_flavor_configuration(
-            model_path=explainer_path, flavor_name=mlflow.shap.FLAVOR_NAME
+            model_path=explainer_path, flavor_name=qcflow.shap.FLAVOR_NAME
         )
         underlying_model_flavor = flavor_conf["underlying_model_flavor"]
 
-        assert underlying_model_flavor == mlflow.sklearn.FLAVOR_NAME
+        assert underlying_model_flavor == qcflow.sklearn.FLAVOR_NAME
         np.testing.assert_array_equal(shap_values_original.base_values, shap_values_new.base_values)
         np.testing.assert_allclose(
             shap_values_original.values, shap_values_new.values, rtol=100, atol=100
@@ -77,10 +77,10 @@ def test_sklearn_log_explainer():
 
 def test_sklearn_log_explainer_self_serialization():
     """
-    Tests mlflow.shap log_explainer with SHAP internal serialization of the underlying model
+    Tests qcflow.shap log_explainer with SHAP internal serialization of the underlying model
     """
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         run_id = run.info.run_id
 
         X, y = get_housing_data()
@@ -91,18 +91,18 @@ def test_sklearn_log_explainer_self_serialization():
         explainer_original = shap.Explainer(model.predict, X, algorithm="permutation")
         shap_values_original = explainer_original(X[:5])
 
-        mlflow.shap.log_explainer(
-            explainer_original, "test_explainer", serialize_model_using_mlflow=False
+        qcflow.shap.log_explainer(
+            explainer_original, "test_explainer", serialize_model_using_qcflow=False
         )
 
         explainer_uri = "runs:/" + run_id + "/test_explainer"
 
-        explainer_loaded = mlflow.shap.load_explainer("runs:/" + run_id + "/test_explainer")
+        explainer_loaded = qcflow.shap.load_explainer("runs:/" + run_id + "/test_explainer")
         shap_values_new = explainer_loaded(X[:5])
 
         explainer_path = _download_artifact_from_uri(artifact_uri=explainer_uri)
         flavor_conf = _get_flavor_configuration(
-            model_path=explainer_path, flavor_name=mlflow.shap.FLAVOR_NAME
+            model_path=explainer_path, flavor_name=qcflow.shap.FLAVOR_NAME
         )
         underlying_model_flavor = flavor_conf["underlying_model_flavor"]
 
@@ -115,11 +115,11 @@ def test_sklearn_log_explainer_self_serialization():
 
 def test_sklearn_log_explainer_pyfunc():
     """
-    Tests mlflow.shap log_explainer with mlflow
+    Tests qcflow.shap log_explainer with qcflow
     serialization of the underlying model using pyfunc flavor
     """
 
-    with mlflow.start_run() as run:
+    with qcflow.start_run() as run:
         run_id = run.info.run_id
 
         X, y = get_housing_data()
@@ -130,9 +130,9 @@ def test_sklearn_log_explainer_pyfunc():
         explainer_original = shap.Explainer(model.predict, X, algorithm="permutation")
         shap_values_original = explainer_original(X[:2])
 
-        mlflow.shap.log_explainer(explainer_original, "test_explainer")
+        qcflow.shap.log_explainer(explainer_original, "test_explainer")
 
-        explainer_pyfunc = mlflow.pyfunc.load_model("runs:/" + run_id + "/test_explainer")
+        explainer_pyfunc = qcflow.pyfunc.load_model("runs:/" + run_id + "/test_explainer")
         shap_values_new = explainer_pyfunc.predict(X[:2])
 
         np.testing.assert_allclose(shap_values_original.values, shap_values_new, rtol=100, atol=100)
@@ -140,24 +140,24 @@ def test_sklearn_log_explainer_pyfunc():
 
 def test_log_explanation_doesnt_create_autologged_run():
     try:
-        mlflow.sklearn.autolog(disable=False, exclusive=False)
+        qcflow.sklearn.autolog(disable=False, exclusive=False)
         X, y = sklearn.datasets.load_diabetes(return_X_y=True, as_frame=True)
         X = X.iloc[:50, :4]
         y = y.iloc[:50]
         model = sklearn.linear_model.LinearRegression()
         model.fit(X, y)
 
-        with mlflow.start_run() as run:
-            mlflow.shap.log_explanation(model.predict, X)
+        with qcflow.start_run() as run:
+            qcflow.shap.log_explanation(model.predict, X)
 
-        run_data = MlflowClient().get_run(run.info.run_id).data
+        run_data = QCFlowClient().get_run(run.info.run_id).data
         metrics, params, tags = run_data.metrics, run_data.params, run_data.tags
         assert not metrics
         assert not params
-        assert all("mlflow." in key for key in tags)
-        assert "mlflow.autologging" not in tags
+        assert all("qcflow." in key for key in tags)
+        assert "qcflow.autologging" not in tags
     finally:
-        mlflow.sklearn.autolog(disable=True)
+        qcflow.sklearn.autolog(disable=True)
 
 
 def test_load_pyfunc(tmp_path):
@@ -169,19 +169,19 @@ def test_load_pyfunc(tmp_path):
     explainer_original = shap.Explainer(model.predict, X, algorithm="permutation")
     shap_values_original = explainer_original(X[:2])
     path = str(tmp_path.joinpath("pyfunc_test"))
-    mlflow.shap.save_explainer(explainer_original, path)
+    qcflow.shap.save_explainer(explainer_original, path)
 
-    explainer_pyfunc = mlflow.shap._load_pyfunc(path)
+    explainer_pyfunc = qcflow.shap._load_pyfunc(path)
     shap_values_new = explainer_pyfunc.predict(X[:2])
 
     np.testing.assert_allclose(shap_values_original.values, shap_values_new, rtol=100, atol=100)
 
 
 def test_merge_environment():
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
     test_shap_env = {
         "channels": ["conda-forge"],
-        "dependencies": ["python=3.8.5", "pip", {"pip": [expected_mlflow_version, "shap==0.38.0"]}],
+        "dependencies": ["python=3.8.5", "pip", {"pip": [expected_qcflow_version, "shap==0.38.0"]}],
     }
 
     test_model_env = {
@@ -189,19 +189,19 @@ def test_merge_environment():
         "dependencies": [
             "python=3.8.5",
             "pip",
-            {"pip": [expected_mlflow_version, "scikit-learn==0.24.0", "cloudpickle==1.6.0"]},
+            {"pip": [expected_qcflow_version, "scikit-learn==0.24.0", "cloudpickle==1.6.0"]},
         ],
     }
 
     expected_merged_env = {
-        "name": "mlflow-env",
+        "name": "qcflow-env",
         "channels": ["conda-forge"],
         "dependencies": [
             f"python={PYTHON_VERSION}",
             "pip",
             {
                 "pip": [
-                    expected_mlflow_version,
+                    expected_qcflow_version,
                     "scikit-learn==0.24.0",
                     "cloudpickle==1.6.0",
                     "shap==0.38.0",
@@ -210,14 +210,14 @@ def test_merge_environment():
         ],
     }
 
-    actual_merged_env = mlflow.shap._merge_environments(test_shap_env, test_model_env)
+    actual_merged_env = qcflow.shap._merge_environments(test_shap_env, test_model_env)
 
     assert sorted(expected_merged_env["channels"]) == sorted(actual_merged_env["channels"])
 
-    expected_conda_deps, expected_pip_deps = mlflow.shap._get_conda_and_pip_dependencies(
+    expected_conda_deps, expected_pip_deps = qcflow.shap._get_conda_and_pip_dependencies(
         expected_merged_env
     )
-    actual_conda_deps, actual_pip_deps = mlflow.shap._get_conda_and_pip_dependencies(
+    actual_conda_deps, actual_pip_deps = qcflow.shap._get_conda_and_pip_dependencies(
         actual_merged_env
     )
 
@@ -226,7 +226,7 @@ def test_merge_environment():
 
 
 def test_merge_environment_with_duplicates():
-    expected_mlflow_version = _mlflow_major_version_string()
+    expected_qcflow_version = _qcflow_major_version_string()
     duplicate_dependency = "numpy==1.19.2"
 
     # Introduce the duplicate in both environments
@@ -235,7 +235,7 @@ def test_merge_environment_with_duplicates():
         "dependencies": [
             "python=3.8.5",
             "pip",
-            {"pip": [expected_mlflow_version, "shap==0.38.0", duplicate_dependency]},
+            {"pip": [expected_qcflow_version, "shap==0.38.0", duplicate_dependency]},
         ],
     }
 
@@ -246,7 +246,7 @@ def test_merge_environment_with_duplicates():
             "pip",
             {
                 "pip": [
-                    expected_mlflow_version,
+                    expected_qcflow_version,
                     "scikit-learn==0.24.0",
                     "cloudpickle==1.6.0",
                     duplicate_dependency,
@@ -257,14 +257,14 @@ def test_merge_environment_with_duplicates():
 
     # The expected merged environment should not have duplicates
     expected_merged_env = {
-        "name": "mlflow-env",
+        "name": "qcflow-env",
         "channels": ["conda-forge"],
         "dependencies": [
             f"python={PYTHON_VERSION}",
             "pip",
             {
                 "pip": [
-                    expected_mlflow_version,
+                    expected_qcflow_version,
                     "scikit-learn==0.24.0",
                     "cloudpickle==1.6.0",
                     "shap==0.38.0",
@@ -274,14 +274,14 @@ def test_merge_environment_with_duplicates():
         ],
     }
 
-    actual_merged_env = mlflow.shap._merge_environments(test_shap_env, test_model_env)
+    actual_merged_env = qcflow.shap._merge_environments(test_shap_env, test_model_env)
 
     assert sorted(expected_merged_env["channels"]) == sorted(actual_merged_env["channels"])
 
-    expected_conda_deps, expected_pip_deps = mlflow.shap._get_conda_and_pip_dependencies(
+    expected_conda_deps, expected_pip_deps = qcflow.shap._get_conda_and_pip_dependencies(
         expected_merged_env
     )
-    actual_conda_deps, actual_pip_deps = mlflow.shap._get_conda_and_pip_dependencies(
+    actual_conda_deps, actual_pip_deps = qcflow.shap._get_conda_and_pip_dependencies(
         actual_merged_env
     )
 
@@ -292,73 +292,73 @@ def test_merge_environment_with_duplicates():
 
 
 def test_log_model_with_pip_requirements(shap_model, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
-    sklearn_default_reqs = mlflow.sklearn.get_default_pip_requirements(include_cloudpickle=True)
+    expected_qcflow_version = _qcflow_major_version_string()
+    sklearn_default_reqs = qcflow.sklearn.get_default_pip_requirements(include_cloudpickle=True)
     # Path to a requirements file
     req_file = tmp_path.joinpath("requirements.txt")
     req_file.write_text("a")
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(shap_model, "model", pip_requirements=str(req_file))
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(shap_model, "model", pip_requirements=str(req_file))
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "a", *sklearn_default_reqs],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "a", *sklearn_default_reqs],
             strict=False,
         )
 
     # List of requirements
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(shap_model, "model", pip_requirements=[f"-r {req_file}", "b"])
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(shap_model, "model", pip_requirements=[f"-r {req_file}", "b"])
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "a", "b", *sklearn_default_reqs],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "a", "b", *sklearn_default_reqs],
             strict=False,
         )
 
     # Constraints file
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(shap_model, "model", pip_requirements=[f"-c {req_file}", "b"])
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(shap_model, "model", pip_requirements=[f"-c {req_file}", "b"])
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, "b", "-c constraints.txt", *sklearn_default_reqs],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, "b", "-c constraints.txt", *sklearn_default_reqs],
             ["a"],
             strict=False,
         )
 
 
 def test_log_model_with_extra_pip_requirements(shap_model, tmp_path):
-    expected_mlflow_version = _mlflow_major_version_string()
-    shap_default_reqs = mlflow.shap.get_default_pip_requirements()
-    sklearn_default_reqs = mlflow.sklearn.get_default_pip_requirements(include_cloudpickle=True)
+    expected_qcflow_version = _qcflow_major_version_string()
+    shap_default_reqs = qcflow.shap.get_default_pip_requirements()
+    sklearn_default_reqs = qcflow.sklearn.get_default_pip_requirements(include_cloudpickle=True)
 
     # Path to a requirements file
     req_file = tmp_path.joinpath("requirements.txt")
     req_file.write_text("a")
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(shap_model, "model", extra_pip_requirements=str(req_file))
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(shap_model, "model", extra_pip_requirements=str(req_file))
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, *shap_default_reqs, "a", *sklearn_default_reqs],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, *shap_default_reqs, "a", *sklearn_default_reqs],
         )
 
     # List of requirements
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(
             shap_model, "model", extra_pip_requirements=[f"-r {req_file}", "b"]
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
-            [expected_mlflow_version, *shap_default_reqs, "a", "b", *sklearn_default_reqs],
+            qcflow.get_artifact_uri("model"),
+            [expected_qcflow_version, *shap_default_reqs, "a", "b", *sklearn_default_reqs],
         )
 
     # Constraints file
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(
             shap_model, "model", extra_pip_requirements=[f"-c {req_file}", "b"]
         )
         _assert_pip_requirements(
-            mlflow.get_artifact_uri("model"),
+            qcflow.get_artifact_uri("model"),
             [
-                expected_mlflow_version,
+                expected_qcflow_version,
                 *shap_default_reqs,
                 "b",
                 "-c constraints.txt",
@@ -406,9 +406,9 @@ def test_pyfunc_serve_and_score_njit():
         link=identity_function,
     )
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(model, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(model, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     resp = pyfunc_serve_and_score_model(
         model_uri,
@@ -442,9 +442,9 @@ def test_pyfunc_serve_and_score():
         link=create_identity_function(),
     )
     artifact_path = "model"
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(model, artifact_path)
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(model, artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
     resp = pyfunc_serve_and_score_model(
         model_uri,
@@ -459,34 +459,34 @@ def test_pyfunc_serve_and_score():
 def test_log_model_with_code_paths(shap_model):
     artifact_path = "model"
     with (
-        mlflow.start_run(),
-        mock.patch("mlflow.shap._add_code_from_conf_to_system_path") as add_mock,
+        qcflow.start_run(),
+        mock.patch("qcflow.shap._add_code_from_conf_to_system_path") as add_mock,
     ):
-        mlflow.shap.log_explainer(shap_model, artifact_path, code_paths=[__file__])
-        model_uri = mlflow.get_artifact_uri(artifact_path)
-        _compare_logged_code_paths(__file__, model_uri, mlflow.shap.FLAVOR_NAME)
-        mlflow.shap.load_explainer(model_uri)
+        qcflow.shap.log_explainer(shap_model, artifact_path, code_paths=[__file__])
+        model_uri = qcflow.get_artifact_uri(artifact_path)
+        _compare_logged_code_paths(__file__, model_uri, qcflow.shap.FLAVOR_NAME)
+        qcflow.shap.load_explainer(model_uri)
         add_mock.assert_called()
 
 
 def test_model_save_load_with_metadata(shap_model, tmp_path):
     model_path = str(tmp_path.joinpath("pyfunc_test"))
-    mlflow.shap.save_explainer(
+    qcflow.shap.save_explainer(
         shap_model, path=model_path, metadata={"metadata_key": "metadata_value"}
     )
 
-    reloaded_model = mlflow.pyfunc.load_model(model_uri=model_path)
+    reloaded_model = qcflow.pyfunc.load_model(model_uri=model_path)
     assert reloaded_model.metadata.metadata["metadata_key"] == "metadata_value"
 
 
 def test_model_log_with_metadata(shap_model):
     artifact_path = "model"
 
-    with mlflow.start_run():
-        mlflow.shap.log_explainer(
+    with qcflow.start_run():
+        qcflow.shap.log_explainer(
             shap_model, artifact_path=artifact_path, metadata={"metadata_key": "metadata_value"}
         )
-        model_uri = mlflow.get_artifact_uri(artifact_path)
+        model_uri = qcflow.get_artifact_uri(artifact_path)
 
-    reloaded_model = mlflow.pyfunc.load_model(model_uri=model_uri)
+    reloaded_model = qcflow.pyfunc.load_model(model_uri=model_uri)
     assert reloaded_model.metadata.metadata["metadata_key"] == "metadata_value"

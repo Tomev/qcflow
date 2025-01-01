@@ -5,9 +5,9 @@ on:
     inputs:
       repository:
         description: >
-          [Optional] Repository name with owner. For example, mlflow/recipes-examples.
+          [Optional] Repository name with owner. For example, qcflow/recipes-examples.
         required: true
-        default: "mlflow/recipes-examples"
+        default: "qcflow/recipes-examples"
       ref:
         description: >
           [Optional] The branch, tag or SHA to checkout. When checking out the repository that
@@ -29,7 +29,7 @@ defaults:
 env:
   # Note miniconda is pre-installed in the virtual environments for GitHub Actions:
   # https://github.com/actions/virtual-environments/blob/main/images/linux/scripts/installers/miniconda.sh
-  MLFLOW_CONDA_HOME: /usr/share/miniconda
+  QCFLOW_CONDA_HOME: /usr/share/miniconda
   PYTHONUTF8: "1"
 
 jobs:

@@ -2,8 +2,8 @@ import os
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.regression.v1.recipe import RegressionRecipe
+from qcflow.exceptions import QCFlowException
+from qcflow.recipes.regression.v1.recipe import RegressionRecipe
 
 
 @pytest.fixture
@@ -31,7 +31,7 @@ def test_create_recipe_fails_with_invalid_input(
 ):
     recipe_root_path = os.path.join(os.path.dirname(enter_recipe_example_directory), recipe_name)
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match=r"(Failed to find|Did not find the YAML configuration)",
     ):
         RegressionRecipe(recipe_root_path=recipe_root_path, profile=profile)

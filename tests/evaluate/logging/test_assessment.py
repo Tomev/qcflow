@@ -2,9 +2,9 @@ from unittest.mock import patch
 
 import pytest
 
-from mlflow.entities.assessment_source import AssessmentSource
-from mlflow.evaluation import Assessment
-from mlflow.exceptions import MlflowException
+from qcflow.entities.assessment_source import AssessmentSource
+from qcflow.evaluation import Assessment
+from qcflow.exceptions import QCFlowException
 
 
 def test_assessment_equality():
@@ -125,12 +125,12 @@ def test_assessment_value_validation():
             error_code="E001",
             error_message="Error",
         )
-    except MlflowException:
+    except QCFlowException:
         pytest.fail("Valid value raised exception")
 
     # Invalid case: more than one value type specified
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Exactly one of value or error_code must be specified for an assessment.",
     ):
         Assessment(
@@ -142,7 +142,7 @@ def test_assessment_value_validation():
 
     # Invalid case: no value type specified
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Exactly one of value or error_code must be specified for an assessment.",
     ):
         Assessment(
@@ -152,7 +152,7 @@ def test_assessment_value_validation():
 
     # Invalid case: error_message specified with another value type
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="error_message cannot be specified when value is specified.",
     ):
         Assessment(
@@ -163,7 +163,7 @@ def test_assessment_value_validation():
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="error_message cannot be specified when value is specified.",
     ):
         Assessment(
@@ -174,7 +174,7 @@ def test_assessment_value_validation():
         )
 
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="error_message cannot be specified when value is specified.",
     ):
         Assessment(
@@ -331,7 +331,7 @@ def test_assessment_to_entity_fail_without_source():
 
     evaluation_id = "evaluation_1"
     with pytest.raises(
-        MlflowException,
+        QCFlowException,
         match="Assessment source must be specified.",
     ):
         assessment._to_entity(evaluation_id)

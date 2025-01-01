@@ -1,11 +1,11 @@
 import pandas as pd
 import pytest
 
-import mlflow
-import mlflow.utils
-import mlflow.utils.autologging_utils
-from mlflow.metrics import latency
-from mlflow.tracing.constant import TraceMetadataKey
+import qcflow
+import qcflow.utils
+import qcflow.utils.autologging_utils
+from qcflow.metrics import latency
+from qcflow.tracing.constant import TraceMetadataKey
 
 from tests.openai.test_openai_evaluate import purge_traces
 from tests.tracing.helper import get_traces, reset_autolog_state  # noqa: F401
@@ -13,11 +13,11 @@ from tests.tracing.helper import get_traces, reset_autolog_state  # noqa: F401
 _EVAL_DATA = pd.DataFrame(
     {
         "inputs": [
-            "What is MLflow?",
+            "What is QCFlow?",
             "What is Spark?",
         ],
         "ground_truth": [
-            "MLflow is an open-source platform to manage the ML lifecycle.",
+            "QCFlow is an open-source platform to manage the ML lifecycle.",
             "Spark is a unified analytics engine for big data processing.",
         ],
     }
@@ -35,8 +35,8 @@ _EVAL_DATA = pd.DataFrame(
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_llama_index_evaluate(single_index, config):
     if config:
-        mlflow.llama_index.autolog(**config)
-        mlflow.openai.autolog(**config)  # Our model contains OpenAI call as well
+        qcflow.llama_index.autolog(**config)
+        qcflow.openai.autolog(**config)  # Our model contains OpenAI call as well
 
     is_trace_disabled = config and not config.get("log_traces", True)
     is_trace_enabled = config and config.get("log_traces", True)
@@ -46,8 +46,8 @@ def test_llama_index_evaluate(single_index, config):
     def model(inputs):
         return [engine.query(question) for question in inputs["inputs"]]
 
-    with mlflow.start_run() as run:
-        eval_result = mlflow.evaluate(
+    with qcflow.start_run() as run:
+        eval_result = qcflow.evaluate(
             model,
             data=_EVAL_DATA,
             targets="ground_truth",
@@ -72,14 +72,14 @@ def test_llama_index_evaluate(single_index, config):
 @pytest.mark.parametrize("engine_type", ["query", "chat"])
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_llama_index_pyfunc_evaluate(engine_type, single_index):
-    with mlflow.start_run() as run:
-        model_info = mlflow.llama_index.log_model(
+    with qcflow.start_run() as run:
+        model_info = qcflow.llama_index.log_model(
             single_index,
             "llama_index",
             engine_type=engine_type,
         )
 
-        eval_result = mlflow.evaluate(
+        eval_result = qcflow.evaluate(
             model_info.model_uri,
             data=_EVAL_DATA,
             targets="ground_truth",
@@ -96,17 +96,17 @@ def test_llama_index_pyfunc_evaluate(engine_type, single_index):
 @pytest.mark.usefixtures("reset_autolog_state")
 def test_llama_index_evaluate_should_not_log_traces_when_disabled(single_index, globally_disabled):
     if globally_disabled:
-        mlflow.autolog(disable=True)
+        qcflow.autolog(disable=True)
     else:
-        mlflow.llama_index.autolog(disable=True)
-        mlflow.openai.autolog(disable=True)  # Our model contains OpenAI call as well
+        qcflow.llama_index.autolog(disable=True)
+        qcflow.openai.autolog(disable=True)  # Our model contains OpenAI call as well
 
     def model(inputs):
         engine = single_index.as_query_engine()
         return [engine.query(question) for question in inputs["inputs"]]
 
-    with mlflow.start_run():
-        eval_result = mlflow.evaluate(
+    with qcflow.start_run():
+        eval_result = qcflow.evaluate(
             model,
             data=_EVAL_DATA,
             targets="ground_truth",

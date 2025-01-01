@@ -1,26 +1,26 @@
 .. _local_model_deployment:
  
-Deploy MLflow Model as a Local Inference Server
+Deploy QCFlow Model as a Local Inference Server
 ===============================================
 
-MLflow allows you to deploy your model as a locally using just a single command.
+QCFlow allows you to deploy your model as a locally using just a single command.
 This approach is ideal for lightweight applications or for testing your model locally before moving it to a staging or production environment.
 
-If you are new to MLflow model deployment, please read the guide on `MLflow Deployment <index.html>`_ first to understand the basic concepts of MLflow models and deployments. 
+If you are new to QCFlow model deployment, please read the guide on `QCFlow Deployment <index.html>`_ first to understand the basic concepts of QCFlow models and deployments. 
 
 
 Deploying Inference Server
 --------------------------
 
-Before deploying, you must have an MLflow Model. If you don't have one, you can create a sample scikit-learn model by following the `MLflow Tracking Quickstart <../getting-started/index.html>`_.
-Remember to note down the model URI, such as ``runs:/<run_id>/<artifact_path>`` (or ``models:/<model_name>/<model_version>`` if you registered the model in the `MLflow Model Registry <../model-registry.html>`_).
+Before deploying, you must have an QCFlow Model. If you don't have one, you can create a sample scikit-learn model by following the `QCFlow Tracking Quickstart <../getting-started/index.html>`_.
+Remember to note down the model URI, such as ``runs:/<run_id>/<artifact_path>`` (or ``models:/<model_name>/<model_version>`` if you registered the model in the `QCFlow Model Registry <../model-registry.html>`_).
 
-Once you have the model ready, deploying to a local server is straightforward. Use the `mlflow models serve <../cli.html#mlflow-models-serve>`_ command for a one-step deployment.
+Once you have the model ready, deploying to a local server is straightforward. Use the `qcflow models serve <../cli.html#qcflow-models-serve>`_ command for a one-step deployment.
 This command starts a local server that listens on the specified port and serves your model.
 
 .. code-block:: bash
 
-    mlflow models serve -m runs:/<run_id>/model -p 5000
+    qcflow models serve -m runs:/<run_id>/model -p 5000
 
 
 You can then send a test request to the server as follows:
@@ -31,9 +31,9 @@ You can then send a test request to the server as follows:
 
 
 Several command line options are available to customize the server's behavior. For instance, the ``--env-manager`` option allows you to
-choose a specific environment manager, like Anaconda, to create the virtual environment. The `mlflow models` module also provides
+choose a specific environment manager, like Anaconda, to create the virtual environment. The `qcflow models` module also provides
 additional useful commands, such as building a Docker image or generating a Dockerfile. For comprehensive details, please refer 
-to the `MLflow CLI Reference <../cli.html#mlflow-models>`_.
+to the `QCFlow CLI Reference <../cli.html#qcflow-models>`_.
 
 
 .. _local-inference-server-spec:
@@ -51,7 +51,7 @@ The inference server provides 4 endpoints:
 
 * ``/health``: Same as /ping
 
-* ``/version``: Returns the MLflow version.
+* ``/version``: Returns the QCFlow version.
 
 Accepted Input Formats
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -115,7 +115,7 @@ the required payload format, you can leverage the dict payload structures below.
 .. code-block:: python
   :caption: Example
 
-  # Prerequisite: serve a custom pyfunc OpenAI model (not mlflow.openai) on localhost:5678
+  # Prerequisite: serve a custom pyfunc OpenAI model (not qcflow.openai) on localhost:5678
   #   that defines inputs in the below format and params of `temperature` and `max_tokens`
 
   import json
@@ -139,7 +139,7 @@ the required payload format, you can leverage the dict payload structures below.
 
 The JSON input can also include an optional ``params`` field for passing additional parameters.
 Valid parameter types are ``Union[DataType, List[DataType], None]``, where DataType is
-:py:class:`MLflow data types <mlflow.types.DataType>`. To pass parameters,
+:py:class:`QCFlow data types <qcflow.types.DataType>`. To pass parameters,
 a valid :ref:`Model Signature <model-signature>` with ``params`` must be defined.
 
 .. code-block:: bash
@@ -150,7 +150,7 @@ a valid :ref:`Model Signature <model-signature>` with ``params`` must be defined
         "params": {"max_answer_len": 10}
     }'
 
-.. note:: Since JSON discards type information, MLflow will cast the JSON input to the input type specified
+.. note:: Since JSON discards type information, QCFlow will cast the JSON input to the input type specified
     in the model's schema if available. If your model is sensitive to input types, it is recommended that
     a schema is provided for the model to ensure that type mismatch errors do not occur at inference time.
     In particular, Deep Learning models are typically strict about input types and will need a model schema in order
@@ -159,7 +159,7 @@ a valid :ref:`Model Signature <model-signature>` with ``params`` must be defined
 Raw Payload Dict
 ^^^^^^^^^^^^^^^^
 
-If your payload is in a format that your mlflow served model will accept and it's in the supported
+If your payload is in a format that your qcflow served model will accept and it's in the supported
 models below, you can pass a raw payload dict.
 
 .. list-table::
@@ -180,7 +180,7 @@ models below, you can pass a raw payload dict.
               "temperature": 0.0,
           }
 
-† Note that the ``model`` argument **should not** be included when using the OpenAI APIs, due to its configuration being set by the MLflow model instance. All other parameters can be freely used, provided that they are defined within the ``params`` argument within the logged model signature.
+† Note that the ``model`` argument **should not** be included when using the OpenAI APIs, due to its configuration being set by the QCFlow model instance. All other parameters can be freely used, provided that they are defined within the ``params`` argument within the logged model signature.
 
 .. code-block:: python
   :caption: Example
@@ -211,14 +211,14 @@ Encoding complex data
 *********************
 
 Complex data types, such as dates or binary, do not have a native JSON representation. If you include a model
-signature, MLflow can automatically decode supported data types from JSON. The following data type conversions
+signature, QCFlow can automatically decode supported data types from JSON. The following data type conversions
 are supported:
 
-* binary: data is expected to be base64 encoded, MLflow will automatically base64 decode.
+* binary: data is expected to be base64 encoded, QCFlow will automatically base64 decode.
 
 * datetime: data is expected to be encoded as a string according to
   `ISO 8601 specification <https://www.iso.org/iso-8601-date-and-time-format.html>`_.
-  MLflow will parse this into the appropriate datetime representation on the given platform.
+  QCFlow will parse this into the appropriate datetime representation on the given platform.
 
 Example requests:
 
@@ -242,9 +242,9 @@ Example requests:
 
 Serving Frameworks
 ------------------
-By default, MLflow uses `Flask <https://flask.palletsprojects.com/en/1.1.x/>`_, a lightweight WSGI web application framework for Python, to serve the
+By default, QCFlow uses `Flask <https://flask.palletsprojects.com/en/1.1.x/>`_, a lightweight WSGI web application framework for Python, to serve the
 inference endpoint. However, Flask is mainly designed for a lightweight application and might not be suitable for production use cases at scale.
-To address this gap, MLflow integrates with `MLServer <https://mlserver.readthedocs.io/en/latest/>`_ as an alternative serving engine. MLServer achieves
+To address this gap, QCFlow integrates with `MLServer <https://mlserver.readthedocs.io/en/latest/>`_ as an alternative serving engine. MLServer achieves
 higher performance and scalability by leveraging asynchronous request/response paradigm and workload offloading. Also MLServer is used as the core Python
 inference server in Kubernetes-native frameworks like `Seldon Core <https://docs.seldon.io/projects/seldon-core/en/latest/>`_ and
 `KServe (formerly known as KFServing) <https://kserve.github.io/website/>`_, hence which provides advanced features such as canary deployment and
@@ -275,7 +275,7 @@ auto scaling out of the box.
       - Lightweight purpose including local testing.
       - High-scale production environment.
     * - **Set Up**
-      - Flask is installed by default with MLflow.
+      - Flask is installed by default with QCFlow.
       - Needs to be installed separately.
     * - **Performance**
       - Suitable for lightweight applications but not optimized for high performance, as being a WSGI application.
@@ -283,7 +283,7 @@ auto scaling out of the box.
         blocking nature. ML prediction typically involves heavy computation and can take a long time to complete,
         hence blocking the server while the request is being processed is not ideal.
         While Flask can be augmented with asynchronous frameworks such as `Uvicorn <https://www.uvicorn.org/>`_,
-        MLflow does not support them out of the box and simply uses Flask's default synchronous behavior.
+        QCFlow does not support them out of the box and simply uses Flask's default synchronous behavior.
       - Designed for high-performance ML workloads, often delivering better throughput and efficiency. MLServer
         support asynchronous request/response paradigm, by offloading ML inference workload to a separate worker
         pool (processes), so that the server can continue to accept new requests while the inference is being processed.
@@ -294,39 +294,39 @@ auto scaling out of the box.
       - Not inherently scalable with the same reason as performance.
       - Additionally to the support for parallel inference as mentioned above, MLServer is used as the core
         inference server in Kubernetes-native frameworks such as `Seldon Core <https://docs.seldon.io/projects/seldon-core/en/latest/>`_
-        and `KServe <https://kserve.github.io/website/>`_ (formerly known as KFServing). By deploying `MLflow models
+        and `KServe <https://kserve.github.io/website/>`_ (formerly known as KFServing). By deploying `QCFlow models
         to Kubernetes with MLServer <deploy-model-to-kubernetes/index.html>`_, you can leverage the advanced features of these frameworks
         such as autoscaling to achieve high scalability.
 
 
 MLServer exposes the same scoring API through the ``/invocations`` endpoint.
-To deploy with MLServer, first install additional dependencies with ``pip install mlflow[extras]``,
+To deploy with MLServer, first install additional dependencies with ``pip install qcflow[extras]``,
 then execute the deployment command with the ``--enable-mlserver`` option. For example,
 
 .. code-block:: bash
 
-       mlflow models serve -m runs:/<run_id>/model -p 5000 --enable-mlserver
+       qcflow models serve -m runs:/<run_id>/model -p 5000 --enable-mlserver
 
-To read more about the integration between MLflow and MLServer, please check the `end-to-end example <https://mlserver.readthedocs.io/en/latest/examples/mlflow/README.html>`_ in the MLServer documentation.
-You can also find guides to deploy MLflow models to a Kubernetes cluster using MLServer in `Deploying a model to Kubernetes <deploy-model-to-kubernetes/index.html>`_.
+To read more about the integration between QCFlow and MLServer, please check the `end-to-end example <https://mlserver.readthedocs.io/en/latest/examples/qcflow/README.html>`_ in the MLServer documentation.
+You can also find guides to deploy QCFlow models to a Kubernetes cluster using MLServer in `Deploying a model to Kubernetes <deploy-model-to-kubernetes/index.html>`_.
 
 Running Batch Inference
 -----------------------
 Instead of running an online inference endpoint, you can execute a single batch inference job on local files using
-the `mlflow models predict <../cli.html#mlflow-models-predict>`_ command. The following command runs the model
+the `qcflow models predict <../cli.html#qcflow-models-predict>`_ command. The following command runs the model
 prediction on ``input.csv`` and outputs the results to ``output.csv``.
 
 .. tabs::
 
     .. code-tab:: bash
 
-       mlflow models predict -m runs:/<run_id>/model -i input.csv -o output.csv
+       qcflow models predict -m runs:/<run_id>/model -i input.csv -o output.csv
 
     .. code-tab:: python
 
-       import mlflow
+       import qcflow
 
-       model = mlflow.pyfunc.load_model("runs:/<run_id>/model")
+       model = qcflow.pyfunc.load_model("runs:/<run_id>/model")
        predictions = model.predict(pd.read_csv("input.csv"))
        predictions.to_csv("output.csv")
 

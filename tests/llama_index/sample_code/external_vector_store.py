@@ -9,7 +9,7 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
-import mlflow
+import qcflow
 
 # Run Qdrant with in-memory mode for testing purpose
 client = QdrantClient(location=":memory:")
@@ -33,4 +33,4 @@ vector_store = QdrantVectorStore(client=client, collection_name="test")
 index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
 
 
-mlflow.models.set_model(index)
+qcflow.models.set_model(index)

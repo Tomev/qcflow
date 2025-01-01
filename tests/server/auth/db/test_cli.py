@@ -3,7 +3,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from mlflow.server.auth.db import cli
+from qcflow.server.auth.db import cli
 
 
 def test_upgrade(tmp_path: Path) -> None:

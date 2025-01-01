@@ -1,39 +1,39 @@
 ## This file describes extra ML library dependencies that you, as an end user,
-## must install in order to use various MLflow Python modules.
-# Required by mlflow.fastai
+## must install in order to use various QCFlow Python modules.
+# Required by qcflow.fastai
 fastai>=2.4.1
-# Required by mlflow.spacy
-# TODO: Remove `<3.8` once we bump the minimim supported python version of MLflow to 3.9.
+# Required by qcflow.spacy
+# TODO: Remove `<3.8` once we bump the minimim supported python version of QCFlow to 3.9.
 spacy>=3.3.0,<3.8
-# Required by mlflow.tensorflow
+# Required by qcflow.tensorflow
 tensorflow>=2.10.0
 # tensorflow-macos>=2.10.0  # Comment out the line above and uncomment this line if setting up dev
                             # environment on local ARM macOS.
                             # Only do this for the purpose of setting up the dev environment, do not
                             # commit this change to the repo.
-# Required by mlflow.pytorch
+# Required by qcflow.pytorch
 torch>=1.11.0
 torchvision>=0.12.0
 lightning>=1.8.1
-# Required by mlflow.xgboost
+# Required by qcflow.xgboost
 xgboost>=0.82
-# Required by mlflow.lightgbm
+# Required by qcflow.lightgbm
 lightgbm
-# Required by mlflow.catboost
+# Required by qcflow.catboost
 catboost
-# Required by mlflow.statsmodels
+# Required by qcflow.statsmodels
 statsmodels
-# Required by mlflow.h2o
+# Required by qcflow.h2o
 h2o
-# Required by mlflow.onnx
+# Required by qcflow.onnx
 onnx>=1.11.0
 onnxruntime
 tf2onnx
-# Required by mlflow.spark and using Delta with MLflow Tracking datasets
+# Required by qcflow.spark and using Delta with QCFlow Tracking datasets
 pyspark
-# Required by mlflow.paddle
+# Required by qcflow.paddle
 paddlepaddle
-# Required by mlflow.prophet
+# Required by qcflow.prophet
 # NOTE: Prophet's whl build process will fail with dependencies not being present.
 #   Installation will default to setup.py in order to install correctly.
 #   To install in dev environment, ensure that gcc>=8 is installed to allow pystan
@@ -41,43 +41,43 @@ paddlepaddle
 # Avoid 0.25 due to https://github.com/dr-prodigy/python-holidays/issues/1200
 holidays!=0.25
 prophet
-# Required by mlflow.shap
+# Required by qcflow.shap
 # and shap evaluation functionality
 shap>=0.42.1
-# Required by mlflow.pmdarima
+# Required by qcflow.pmdarima
 pmdarima
-# Required by mlflow.diviner
+# Required by qcflow.diviner
 diviner
-# Required for using Hugging Face datasets with MLflow Tracking
+# Required for using Hugging Face datasets with QCFlow Tracking
 datasets
-# Required by mlflow.transformers
+# Required by qcflow.transformers
 transformers
 sentencepiece
 setfit
 librosa
 ffmpeg
 accelerate
-# Required by mlflow.openai
+# Required by qcflow.openai
 openai
 tiktoken
 tenacity
-# Required by mlflow.llama_index
+# Required by qcflow.llama_index
 llama_index
-# Required for an agent example of mlflow.llama_index
+# Required for an agent example of qcflow.llama_index
 llama-index-agent-openai
-# Required by mlflow.langchain
+# Required by qcflow.langchain
 langchain
-# Required by mlflow.promptflow
+# Required by qcflow.promptflow
 promptflow
-# Required by mlflow.sentence_transformers
+# Required by qcflow.sentence_transformers
 sentence-transformers
-# Required by mlflow.anthropic
+# Required by qcflow.anthropic
 anthropic
-# Required by mlflow.autogen
+# Required by qcflow.autogen
 autogen
-# Required by mlflow.dspy
+# Required by qcflow.dspy
 dspy
-# Required by mlflow.litellm
+# Required by qcflow.litellm
 litellm
-# Required by mlflow.gemini
+# Required by qcflow.gemini
 google-generativeai

@@ -18,15 +18,15 @@ from llama_index.llms.openai import OpenAI
 from openai.types.chat import ChatCompletionMessageToolCall
 from packaging.version import Version
 
-import mlflow
-import mlflow.tracking._tracking_service
-from mlflow.entities.span import SpanType
-from mlflow.entities.span_status import SpanStatusCode
-from mlflow.entities.trace import Trace
-from mlflow.entities.trace_status import TraceStatus
-from mlflow.llama_index.tracer import remove_llama_index_tracer, set_llama_index_tracer
-from mlflow.tracking._tracking_service.utils import _use_tracking_uri
-from mlflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
+import qcflow
+import qcflow.tracking._tracking_service
+from qcflow.entities.span import SpanType
+from qcflow.entities.span_status import SpanStatusCode
+from qcflow.entities.trace import Trace
+from qcflow.entities.trace_status import TraceStatus
+from qcflow.llama_index.tracer import remove_llama_index_tracer, set_llama_index_tracer
+from qcflow.tracking._tracking_service.utils import _use_tracking_uri
+from qcflow.tracking.default_experiment import DEFAULT_EXPERIMENT_ID
 
 llama_core_version = Version(importlib_metadata.version("llama-index-core"))
 llama_oai_version = Version(importlib_metadata.version("llama-index-llms-openai"))
@@ -42,7 +42,7 @@ def set_handlers():
 
 def _get_all_traces() -> list[Trace]:
     """Utility function to get all traces in the test experiment."""
-    return mlflow.MlflowClient().search_traces(experiment_ids=[DEFAULT_EXPERIMENT_ID])
+    return qcflow.QCFlowClient().search_traces(experiment_ids=[DEFAULT_EXPERIMENT_ID])
 
 
 @pytest.mark.parametrize("is_async", [True, False])
@@ -588,7 +588,7 @@ async def test_tracer_parallel_workflow_with_custom_spans():
         async def process_data(self, ev: ProcessEvent) -> ResultEvent:
             # Simulate some time-consuming processing
             await asyncio.sleep(random.randint(1, 2))
-            with mlflow.start_span(name="custom_inner_span_worker"):
+            with qcflow.start_span(name="custom_inner_span_worker"):
                 pass
             return ResultEvent(result=ev.data)
 
@@ -599,7 +599,7 @@ async def test_tracer_parallel_workflow_with_custom_spans():
             if results is None:
                 return None
 
-            with mlflow.start_span(name="custom_inner_result_span") as span:
+            with qcflow.start_span(name="custom_inner_result_span") as span:
                 span.set_inputs(results)
                 combined_result = ", ".join(sorted([event.result for event in results]))
                 span.set_outputs(combined_result)

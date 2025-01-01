@@ -152,7 +152,7 @@ def test_no_dev():
 @mock_pypi_api(MOCK_PYPI_API_RESPONSES)
 def test_changed_files():
     with mock_ml_package_versions_yml(MOCK_YAML_SOURCE, MOCK_YAML_SOURCE) as path_args:
-        matrix = generate_matrix([*path_args, "--changed-files", "mlflow/foo/__init__.py"])
+        matrix = generate_matrix([*path_args, "--changed-files", "qcflow/foo/__init__.py"])
         flavors = {x.flavor for x in matrix}
         versions = {str(x.version) for x in matrix}
         assert set(flavors) == {"foo"}

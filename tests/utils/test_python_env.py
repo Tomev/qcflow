@@ -2,8 +2,8 @@ from unittest import mock
 
 import pytest
 
-from mlflow.utils import PYTHON_VERSION
-from mlflow.utils.environment import _PythonEnv
+from qcflow.utils import PYTHON_VERSION
+from qcflow.utils.environment import _PythonEnv
 
 
 def test_constructor_argument_validation():
@@ -137,7 +137,7 @@ dependencies:
 """
     yaml_path = tmp_path / "conda.yaml"
     yaml_path.write_text(content)
-    with mock.patch("mlflow.utils.environment._logger.warning") as mock_warning:
+    with mock.patch("qcflow.utils.environment._logger.warning") as mock_warning:
         _PythonEnv.from_conda_yaml(yaml_path)
         mock_warning.assert_called_with(
             "The following conda dependencies will not be installed "

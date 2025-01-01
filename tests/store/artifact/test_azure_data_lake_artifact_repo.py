@@ -15,11 +15,11 @@ from azure.storage.filedatalake import (
     PathProperties,
 )
 
-from mlflow.exceptions import MlflowException, MlflowTraceDataCorrupted
-from mlflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
-from mlflow.protos.service_pb2 import FileInfo
-from mlflow.store.artifact.artifact_repo import try_read_trace_data
-from mlflow.store.artifact.azure_data_lake_artifact_repo import (
+from qcflow.exceptions import QCFlowException, QCFlowTraceDataCorrupted
+from qcflow.protos.databricks_artifacts_pb2 import ArtifactCredentialInfo
+from qcflow.protos.service_pb2 import FileInfo
+from qcflow.store.artifact.artifact_repo import try_read_trace_data
+from qcflow.store.artifact.azure_data_lake_artifact_repo import (
     AzureDataLakeArtifactRepository,
     _parse_abfss_uri,
 )
@@ -28,7 +28,7 @@ TEST_ROOT_PATH = "some/path"
 TEST_DATA_LAKE_URI_BASE = "abfss://filesystem@account.dfs.core.windows.net"
 TEST_DATA_LAKE_URI = posixpath.join(TEST_DATA_LAKE_URI_BASE, TEST_ROOT_PATH)
 
-ADLS_REPOSITORY_PACKAGE = "mlflow.store.artifact.azure_data_lake_artifact_repo"
+ADLS_REPOSITORY_PACKAGE = "qcflow.store.artifact.azure_data_lake_artifact_repo"
 ADLS_ARTIFACT_REPOSITORY = f"{ADLS_REPOSITORY_PACKAGE}.AzureDataLakeArtifactRepository"
 
 
@@ -45,7 +45,7 @@ class MockPathList:
 def mock_data_lake_client():
     mock_adls_client = mock.MagicMock(autospec=DataLakeServiceClient)
     with mock.patch(
-        "mlflow.store.artifact.azure_data_lake_artifact_repo._get_data_lake_client",
+        "qcflow.store.artifact.azure_data_lake_artifact_repo._get_data_lake_client",
         return_value=mock_adls_client,
     ):
         yield mock_adls_client
@@ -139,12 +139,12 @@ def test_parse_valid_abfss_uri(uri, filesystem, account, region_suffix, path):
     ],
 )
 def test_parse_invalid_abfss_uri(uri):
-    with pytest.raises(MlflowException, match="ABFSS URI must be of the form"):
+    with pytest.raises(QCFlowException, match="ABFSS URI must be of the form"):
         _parse_abfss_uri(uri)
 
 
 def test_parse_invalid_abfss_uri_bad_scheme():
-    with pytest.raises(MlflowException, match="Not an ABFSS URI"):
+    with pytest.raises(QCFlowException, match="Not an ABFSS URI"):
         _parse_abfss_uri("abfs://cont@acct.dfs.core.windows.net/path")
 
 
@@ -255,7 +255,7 @@ def test_log_artifacts_in_parallel_when_necessary(tmp_path, monkeypatch):
     parentd.mkdir()
     parentd.joinpath("a.txt").write_text("ABCDE")
 
-    monkeypatch.setenv("MLFLOW_MULTIPART_UPLOAD_CHUNK_SIZE", "0")
+    monkeypatch.setenv("QCFLOW_MULTIPART_UPLOAD_CHUNK_SIZE", "0")
     with (
         mock.patch(
             f"{ADLS_ARTIFACT_REPOSITORY}._multipart_upload", return_value=None
@@ -405,23 +405,23 @@ def test_refresh_credentials():
 
 def test_trace_data(mock_data_lake_client, tmp_path):
     repo = AzureDataLakeArtifactRepository(TEST_DATA_LAKE_URI, None)
-    with pytest.raises(MlflowException, match=r"Trace data not found for path="):
+    with pytest.raises(QCFlowException, match=r"Trace data not found for path="):
         repo.download_trace_data()
     trace_data_path = tmp_path.joinpath("traces.json")
     trace_data_path.write_text("invalid data")
     with (
         mock.patch(
-            "mlflow.store.artifact.artifact_repo.try_read_trace_data",
+            "qcflow.store.artifact.artifact_repo.try_read_trace_data",
             side_effect=lambda x: try_read_trace_data(trace_data_path),
         ),
-        pytest.raises(MlflowTraceDataCorrupted, match=r"Trace data is corrupted for path="),
+        pytest.raises(QCFlowTraceDataCorrupted, match=r"Trace data is corrupted for path="),
     ):
         repo.download_trace_data()
 
     mock_trace_data = {"spans": [], "request": {"test": 1}, "response": {"test": 2}}
     trace_data_path.write_text(json.dumps(mock_trace_data))
     with mock.patch(
-        "mlflow.store.artifact.artifact_repo.try_read_trace_data",
+        "qcflow.store.artifact.artifact_repo.try_read_trace_data",
         side_effect=lambda x: try_read_trace_data(trace_data_path),
     ):
         assert repo.download_trace_data() == mock_trace_data

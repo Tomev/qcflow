@@ -1,4 +1,4 @@
-from mlflow.metrics.base import MetricValue
+from qcflow.metrics.base import MetricValue
 
 
 def test_metric_value():

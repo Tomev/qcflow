@@ -6,8 +6,8 @@ from llama_index.core import QueryBundle
 from llama_index.core.llms import ChatMessage
 from packaging.version import Version
 
-import mlflow
-from mlflow.llama_index.pyfunc_wrapper import (
+import qcflow
+from qcflow.llama_index.pyfunc_wrapper import (
     _CHAT_MESSAGE_HISTORY_PARAMETER_NAME,
     CHAT_ENGINE_NAME,
     QUERY_ENGINE_NAME,
@@ -226,13 +226,13 @@ def test_format_predict_input_correct_schema_complex(single_index, engine_type):
     ],
 )
 def test_spark_udf_retriever_and_query_engine(model_path, spark, single_index, engine_type, input):
-    mlflow.llama_index.save_model(
+    qcflow.llama_index.save_model(
         llama_index_model=single_index,
         engine_type=engine_type,
         path=model_path,
         input_example=input,
     )
-    udf = mlflow.pyfunc.spark_udf(spark, model_path, result_type="string")
+    udf = qcflow.pyfunc.spark_udf(spark, model_path, result_type="string")
     df = spark.createDataFrame([{"query_str": "hi"}])
     df = df.withColumn("predictions", udf())
     pdf = df.toPandas()
@@ -248,13 +248,13 @@ def test_spark_udf_chat(model_path, spark, single_index):
             _CHAT_MESSAGE_HISTORY_PARAMETER_NAME: [[{"role": "user", "content": "string"}]],
         }
     )
-    mlflow.llama_index.save_model(
+    qcflow.llama_index.save_model(
         llama_index_model=single_index,
         engine_type=engine_type,
         path=model_path,
         input_example=input,
     )
-    udf = mlflow.pyfunc.spark_udf(spark, model_path, result_type="string")
+    udf = qcflow.pyfunc.spark_udf(spark, model_path, result_type="string")
     df = spark.createDataFrame(input)
     df = df.withColumn("predictions", udf())
     pdf = df.toPandas()

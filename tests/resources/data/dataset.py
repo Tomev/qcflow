@@ -6,9 +6,9 @@ from typing import Any, Optional
 import numpy as np
 import pandas as pd
 
-from mlflow.data.dataset import Dataset
-from mlflow.types import Schema
-from mlflow.types.utils import _infer_schema
+from qcflow.data.dataset import Dataset
+from qcflow.types import Schema
+from qcflow.types.utils import _infer_schema
 
 from tests.resources.data.dataset_source import SampleDatasetSource
 
@@ -44,7 +44,7 @@ class SampleDataset(Dataset):
         config = super().to_dict()
         config.update(
             {
-                "schema": json.dumps({"mlflow_colspec": self.schema.to_dict()}),
+                "schema": json.dumps({"qcflow_colspec": self.schema.to_dict()}),
                 "profile": json.dumps(self.profile),
             }
         )

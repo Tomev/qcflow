@@ -1,7 +1,7 @@
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.tracing.utils.search import _FieldParser, _parse_fields, _ParsedField
+from qcflow.exceptions import QCFlowException
+from qcflow.tracing.utils.search import _FieldParser, _parse_fields, _ParsedField
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,7 @@ def test_field_parser(field, expected):
     ],
 )
 def test_field_parser_invalid_value(input_string, error_message):
-    with pytest.raises(MlflowException, match=error_message):
+    with pytest.raises(QCFlowException, match=error_message):
         _FieldParser(input_string).parse()
 
 

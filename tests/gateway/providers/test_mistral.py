@@ -6,11 +6,11 @@ from aiohttp import ClientTimeout
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 
-from mlflow.gateway.config import RouteConfig
-from mlflow.gateway.constants import MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
-from mlflow.gateway.exceptions import AIGatewayException
-from mlflow.gateway.providers.mistral import MistralProvider
-from mlflow.gateway.schemas import completions, embeddings
+from qcflow.gateway.config import RouteConfig
+from qcflow.gateway.constants import QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS
+from qcflow.gateway.exceptions import AIGatewayException
+from qcflow.gateway.providers.mistral import MistralProvider
+from qcflow.gateway.schemas import completions, embeddings
 
 from tests.gateway.tools import MockAsyncResponse
 
@@ -94,7 +94,7 @@ async def test_completions():
                 "model": "mistral-tiny",
                 "temperature": 0.0,
             },
-            timeout=ClientTimeout(total=MLFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
+            timeout=ClientTimeout(total=QCFLOW_GATEWAY_ROUTE_TIMEOUT_SECONDS),
         )
 
 

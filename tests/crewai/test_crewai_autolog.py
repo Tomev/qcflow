@@ -6,8 +6,8 @@ from crewai import Agent, Crew, Task
 from crewai.flow.flow import Flow, start
 from packaging.version import Version
 
-import mlflow
-from mlflow.entities.span import SpanType
+import qcflow
+from qcflow.entities.span import SpanType
 
 from tests.tracing.helper import get_traces
 
@@ -118,19 +118,19 @@ def task_2(simple_agent_2):
 
 def global_autolog():
     # Libraries used within tests or crewai library
-    mlflow.autolog(exclude_flavors=["openai", "litellm"])
-    mlflow.utils.import_hooks.notify_module_loaded(crewai)
+    qcflow.autolog(exclude_flavors=["openai", "litellm"])
+    qcflow.utils.import_hooks.notify_module_loaded(crewai)
 
 
 def clear_autolog_state():
-    from mlflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS
+    from qcflow.utils.autologging_utils import AUTOLOGGING_INTEGRATIONS
 
     for key in AUTOLOGGING_INTEGRATIONS.keys():
         AUTOLOGGING_INTEGRATIONS[key].clear()
-    mlflow.utils.import_hooks._post_import_hooks = {}
+    qcflow.utils.import_hooks._post_import_hooks = {}
 
 
-@pytest.fixture(params=[mlflow.crewai.autolog, global_autolog])
+@pytest.fixture(params=[qcflow.crewai.autolog, global_autolog])
 def autolog(request):
     clear_autolog_state()
 
@@ -214,7 +214,7 @@ def test_kickoff_enable_disable_autolog(simple_agent_1, task_1, autolog):
     assert span_4.outputs is None
 
     with patch("litellm.completion", return_value=SIMPLE_CHAT_COMPLETION):
-        mlflow.crewai.autolog(disable=True)
+        qcflow.crewai.autolog(disable=True)
         crew.kickoff()
 
     # No new trace should be created

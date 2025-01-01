@@ -6,7 +6,7 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 
-import mlflow
+import qcflow
 
 
 class FakeOpenAI(ChatOpenAI, extra="allow"):
@@ -40,4 +40,4 @@ llm = FakeOpenAI()
 tools = [get_weather]
 graph = create_react_agent(llm, tools)
 
-mlflow.models.set_model(graph)
+qcflow.models.set_model(graph)

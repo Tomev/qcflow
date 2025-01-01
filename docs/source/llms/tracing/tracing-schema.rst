@@ -1,7 +1,7 @@
-MLflow Tracing Schema
+QCFlow Tracing Schema
 =====================
 
-This document provides a detailed view of the schema for traces and its ingredients. MLflow traces are **compatible to OpenTelemetry specs**, but we also define a few additional layers of structure upon the OpenTelemetry Spans to provide additional metadata about the trace.
+This document provides a detailed view of the schema for traces and its ingredients. QCFlow traces are **compatible to OpenTelemetry specs**, but we also define a few additional layers of structure upon the OpenTelemetry Spans to provide additional metadata about the trace.
 
 
 Structure of Traces
@@ -14,13 +14,13 @@ Structure of Traces
         <div class=""main-container"">
             <div>
                 <h4>Trace Structure</h4>
-                <p>A <a href="../../python_api/mlflow.entities.html#mlflow.entities.Trace">Trace</a> in MLflow consists of two components: 
-                   <a href="../../python_api/mlflow.entities.html#mlflow.entities.TraceInfo">Trace Info</a> and 
-                   <a href="../../python_api/mlflow.entities.html#mlflow.entities.TraceData">Trace Data</a>. 
+                <p>A <a href="../../python_api/qcflow.entities.html#qcflow.entities.Trace">Trace</a> in QCFlow consists of two components: 
+                   <a href="../../python_api/qcflow.entities.html#qcflow.entities.TraceInfo">Trace Info</a> and 
+                   <a href="../../python_api/qcflow.entities.html#qcflow.entities.TraceData">Trace Data</a>. 
                 </p>
                 <p>The metadata that aids in explaining the origination
                    of the trace, the status of the trace, and the information about the total execution time is stored within the Trace Info. The Trace 
-                   Data is comprised entirely of the instrumented <a href="../../python_api/mlflow.entities.html#mlflow.entities.Span">Span</a> 
+                   Data is comprised entirely of the instrumented <a href="../../python_api/qcflow.entities.html#qcflow.entities.Span">Span</a> 
                    objects that make up the core of the trace.
                 </p>
             </div>
@@ -34,7 +34,7 @@ Structure of Traces
         <div class=""main-container"">
             <div>
               <h4>Trace Info Structure</h4>
-              <p> The Trace Info within MLflow's tracing feature aims to provide a lightweight snapshot of critical data about the overall trace. 
+              <p> The Trace Info within QCFlow's tracing feature aims to provide a lightweight snapshot of critical data about the overall trace. 
                 This includes the logistical information about the trace, such as the experiment_id, providing the storage location for the trace, 
                 as well as trace-level data such as start time and total execution time. The Trace Info also includes tags and status information for 
                 the trace as a whole.
@@ -50,8 +50,8 @@ Structure of Traces
         <div class=""main-container"">
             <div>
               <h4>Trace Data Structure</h4>
-              <p> The Trace Data within MLflow's tracing feature provides the core of the trace information. Within this object is a list of 
-                <a href="../../python_api/mlflow.entities.html#mlflow.entities.Span">Span</a> objects that represent the individual steps of the trace. 
+              <p> The Trace Data within QCFlow's tracing feature provides the core of the trace information. Within this object is a list of 
+                <a href="../../python_api/qcflow.entities.html#qcflow.entities.Span">Span</a> objects that represent the individual steps of the trace. 
                 These spans are associated with one another in a hierarchical relationship, providing a clear order-of-operations linkage of what 
                 happened within your application during the trace.
               </p>
@@ -66,7 +66,7 @@ Structure of Traces
         <div class=""main-container"">
             <div>
               <h4>Span Structure</h4>
-              <p> The Span object within MLflow's tracing feature provides detailed information about the individual steps of the trace. It complies to the <a href="https://opentelemetry.io/docs/concepts/signals/traces/#spans">OpenTelemetry Span spec</a>.
+              <p> The Span object within QCFlow's tracing feature provides detailed information about the individual steps of the trace. It complies to the <a href="https://opentelemetry.io/docs/concepts/signals/traces/#spans">OpenTelemetry Span spec</a>.
                 Each Span object contains information about the step being instrumented, including the span_id, name, start_time, parent_id, status, 
                 inputs, outputs, attributes, and events.
               </p>
@@ -103,9 +103,9 @@ Trace
 
 A trace is a root object composed of two components:
 
-- :py:func:`mlflow.entities.trace_info.TraceInfo`
+- :py:func:`qcflow.entities.trace_info.TraceInfo`
 
-- :py:func:`mlflow.entities.trace_data.TraceData`
+- :py:func:`qcflow.entities.trace_data.TraceData`
 
 .. tip::
     Check the API documentation for helper methods on these dataclass objects for more information on how to convert or extract data from them.
@@ -115,19 +115,19 @@ Trace Info
 ----------
 
 Trace Info is a dataclass object that contains metadata about the trace. This metadata includes information about the trace's origin, status, and 
-various other data that aids in retrieving and filtering traces when used with :py:meth:`mlflow.client.MlflowClient.search_traces` and for 
-navigation of traces within the MLflow UI.
+various other data that aids in retrieving and filtering traces when used with :py:meth:`qcflow.client.QCFlowClient.search_traces` and for 
+navigation of traces within the QCFlow UI.
 
 To learn more about how ``TraceInfo`` metadata is used for searching, you can see examples :ref:`here <search_traces>`.
 
-The data that is contained in the ``TraceInfo`` object is used to populate the trace view page within the MLflow tracking UI, as shown below.
+The data that is contained in the ``TraceInfo`` object is used to populate the trace view page within the QCFlow tracking UI, as shown below.
 
 .. figure:: ../../_static/images/llms/tracing/schema/trace_info_in_ui.png
-    :alt: TraceInfo as it is used in the MLflow UI
+    :alt: TraceInfo as it is used in the QCFlow UI
     :width: 100%
     :align: center
 
-The primary components of MLflow :py:class:`TraceInfo <mlflow.entities.trace_info.TraceInfo>` objects are listed below.
+The primary components of QCFlow :py:class:`TraceInfo <qcflow.entities.trace_info.TraceInfo>` objects are listed below.
 
 .. list-table::
     :widths: 20 40 40
@@ -139,12 +139,12 @@ The primary components of MLflow :py:class:`TraceInfo <mlflow.entities.trace_inf
       - **Note**
 
     * - **request_id**
-      - A unique identifier for the trace. The identifier is used within MLflow and integrated system to resolve the event being captured and to provide associations for external systems to map the logged trace to the originating caller.
-      - This value is generated by the tracing backend and is immutable. Within the tracing client APIs, you will need to deliberately pass this value to the :py:meth:`span creation API<mlflow.client.MlflowClient.start_span>` to ensure that a given span is associated with a trace.
+      - A unique identifier for the trace. The identifier is used within QCFlow and integrated system to resolve the event being captured and to provide associations for external systems to map the logged trace to the originating caller.
+      - This value is generated by the tracing backend and is immutable. Within the tracing client APIs, you will need to deliberately pass this value to the :py:meth:`span creation API<qcflow.client.QCFlowClient.start_span>` to ensure that a given span is associated with a trace.
 
     * - **experiment_id**
       - The ID of the experiment in which the trace was logged. All logged traces are associated with the current active experiment when the trace is generated (during invocation of an instrumented object).
-      - This value is immutable and is set by the tracing backend. It is a system-controlled value that is very useful when using the :py:meth:`Search Traces <mlflow.client.MlflowClient.search_traces>` API.
+      - This value is immutable and is set by the tracing backend. It is a system-controlled value that is very useful when using the :py:meth:`Search Traces <qcflow.client.QCFlowClient.search_traces>` API.
 
     * - **timestamp_ms**
       - The time that marks the moment when the root span of the trace was created. This is a Unix timestamp in milliseconds.
@@ -165,7 +165,7 @@ The primary components of MLflow :py:class:`TraceInfo <mlflow.entities.trace_inf
 
     * - **request_metadata**
       - The request metadata are additional key-value pairs of information that are associated with the Trace, set and modified by the tracing backend. 
-      - These are not open for addition or modification by the user, but can provide additional context about the trace, such as an MLflow ``run_id`` that is associated with the trace. 
+      - These are not open for addition or modification by the user, but can provide additional context about the trace, such as an QCFlow ``run_id`` that is associated with the trace. 
 
     * - **tags**
       - User-defined key-value pairs that can be applied to a trace for applying additional context, aid in :ref:`search functionality <search_traces>`, or to provide additional information during the creation or after the successful logging of a trace. 
@@ -175,7 +175,7 @@ The primary components of MLflow :py:class:`TraceInfo <mlflow.entities.trace_inf
 Trace Data
 ----------
 
-The MLflow :py:class:`TraceData <mlflow.entities.trace_data.TraceData>` object is a dataclass object that holds the core of the trace data. This object contains
+The QCFlow :py:class:`TraceData <qcflow.entities.trace_data.TraceData>` object is a dataclass object that holds the core of the trace data. This object contains
 the following elements:
 
 .. list-table::
@@ -189,10 +189,10 @@ the following elements:
 
     * - **request**
       - The ``request`` property is the input data for the entire trace. The input ``str`` is a JSON-serialized string that contains the input data for the trace, typically the end-user request that was submitted as a call to the application.
-      - Due to the varied structures of inputs that could go to a given application that is being instrumented by MLflow Tracing, all inputs are JSON serialized for compatibility's sake. This allows for the input data to be stored in a consistent format, regardless of the input data's structure.
+      - Due to the varied structures of inputs that could go to a given application that is being instrumented by QCFlow Tracing, all inputs are JSON serialized for compatibility's sake. This allows for the input data to be stored in a consistent format, regardless of the input data's structure.
     
     * - **spans**
-      - This property is a list of :py:class:`Span <mlflow.entities.span.Span>` objects that represent the individual steps of the trace.
+      - This property is a list of :py:class:`Span <qcflow.entities.span.Span>` objects that represent the individual steps of the trace.
       - For further information on the structure of Span objects, see the section below.
 
     * - **response**
@@ -204,10 +204,10 @@ Span Schema
 
 Spans are the core of the trace data. They record key, critical data about each of the steps within your genai application. 
 
-When you view your traces within the MLflow UI, you're looking at a collection of spans, as shown below. 
+When you view your traces within the QCFlow UI, you're looking at a collection of spans, as shown below. 
 
-.. figure:: ../../_static/images/llms/tracing/schema/spans_in_mlflow_ui.png
-    :alt: Spans within the MLflow UI
+.. figure:: ../../_static/images/llms/tracing/schema/spans_in_qcflow_ui.png
+    :alt: Spans within the QCFlow UI
     :width: 100%
     :align: center
 
@@ -242,7 +242,7 @@ The sections below provide a detailed view of the structure of a span.
     
     * - **events**
       - Events are a system-level property that is optionally applied to a span only if there was an issue during the execution of the span. These events contain information about exceptions that were thrown in the instrumented call, as well as the stack trace.
-      - This data is structured within a :py:class:`SpanEvent <mlflow.entities.SpanEvent>` object, containing the properties:
+      - This data is structured within a :py:class:`SpanEvent <qcflow.entities.SpanEvent>` object, containing the properties:
           
           * **name**
           * **timestamp**
@@ -286,7 +286,7 @@ The sections below provide a detailed view of the structure of a span.
 Schema for specific span types
 ------------------------------
 
-MLflow has a set of 10 predefined types of spans (see :py:class:`mlflow.entities.SpanType`), and
+QCFlow has a set of 10 predefined types of spans (see :py:class:`qcflow.entities.SpanType`), and
 certain span types have properties that are required in order to enable additional functionality
 within the UI and downstream tasks such as evaluation.
 
@@ -310,19 +310,19 @@ documents from a vector store). The ``RETRIEVER`` span type has the following sc
       -
     
     * - **Output**
-      - The output must be of type ``List[`` :py:class:`mlflow.entities.Document` ``]``, or a dict matching the structure of the dataclass\*. 
+      - The output must be of type ``List[`` :py:class:`qcflow.entities.Document` ``]``, or a dict matching the structure of the dataclass\*. 
         The dataclass contains the following properties:
 
         * **id** (``Optional[str]``) - An optional unique identifier for the document.
         * **page_content** (``str``) - The text content of the document.
-        * **metadata** (``Optional[Dict[str,any]]``) - The metadata associated with the document. There are two important metadata keys that are reserved for the MLflow UI and evaluation metrics: 
+        * **metadata** (``Optional[Dict[str,any]]``) - The metadata associated with the document. There are two important metadata keys that are reserved for the QCFlow UI and evaluation metrics: 
 
           * ``"doc_uri" (str)``: The URI for the document. This is used for rendering a link in the UI.
           * ``"chunk_id" (str)``: If your document is broken up into chunks in your data store, this key can be used to
             identify the chunk that the document is a part of. This is used by some evaluation metrics.
 
-      - This output structure is guaranteed to be provided if the traces are generated via MLflow autologging for the LangChain and LlamaIndex flavors.
-        By conforming to this specification, ``RETRIEVER`` spans will be rendered in a more user-friendly manner in the MLflow UI, and downstream tasks
+      - This output structure is guaranteed to be provided if the traces are generated via QCFlow autologging for the LangChain and LlamaIndex flavors.
+        By conforming to this specification, ``RETRIEVER`` spans will be rendered in a more user-friendly manner in the QCFlow UI, and downstream tasks
         such as evaluation will function as expected.
 
     * - **Attributes**
@@ -354,33 +354,33 @@ custom attributes for standardized chat messages and tool defintions:
       - **Description**
       - **Note**
 
-    * - **mlflow.chat.messages**
+    * - **qcflow.chat.messages**
       - This attribute represents the system/user/assistant messages involved in the
         conversation with the chat model. It enables rich conversation rendering in the UI,
-        and will also be used in MLflow evaluation in the future. 
+        and will also be used in QCFlow evaluation in the future. 
         
-        The type must be ``List[`` :py:class:`ChatMessage <mlflow.types.chat.ChatMessage>` ``]``
-      - This attribute can be conveniently set using the :py:func:`mlflow.tracing.set_span_chat_messages` function. This function
+        The type must be ``List[`` :py:class:`ChatMessage <qcflow.types.chat.ChatMessage>` ``]``
+      - This attribute can be conveniently set using the :py:func:`qcflow.tracing.set_span_chat_messages` function. This function
         will throw a validation error if the data does not conform to the spec.
     
-    * - **mlflow.chat.tools**
+    * - **qcflow.chat.tools**
       - This attribute represents the tools that were available for the chat model to call. In the OpenAI
         context, this would be equivalent to the `tools <https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools>`_ 
         param in the Chat Completions API.
 
-        The type must be ``List[`` :py:class:`ChatTool <mlflow.types.chat.ChatTool>` ``]``
-      - This attribute can be conveniently set using the :py:func:`mlflow.tracing.set_span_chat_tools` function. This function
+        The type must be ``List[`` :py:class:`ChatTool <qcflow.types.chat.ChatTool>` ``]``
+      - This attribute can be conveniently set using the :py:func:`qcflow.tracing.set_span_chat_tools` function. This function
         will throw a validation error if the data does not conform to the spec.
 
 Please refer to the example below for a quick demonstration of how to use the utility functions described above, as well as
-how to retrieve them using the :py:class:`span.get_attribute() <mlflow.entities.Span.get_attribute>` function:
+how to retrieve them using the :py:class:`span.get_attribute() <qcflow.entities.Span.get_attribute>` function:
 
 .. code-block:: python
 
-  import mlflow
-  from mlflow.entities.span import SpanType
-  from mlflow.tracing.constant import SpanAttributeKey
-  from mlflow.tracing import set_span_chat_messages, set_span_chat_tools
+  import qcflow
+  from qcflow.entities.span import SpanType
+  from qcflow.tracing.constant import SpanAttributeKey
+  from qcflow.tracing import set_span_chat_messages, set_span_chat_tools
 
   # example messages and tools
   messages = [
@@ -410,7 +410,7 @@ how to retrieve them using the :py:class:`span.get_attribute() <mlflow.entities.
   ]
 
 
-  @mlflow.trace(span_type=SpanType.CHAT_MODEL)
+  @qcflow.trace(span_type=SpanType.CHAT_MODEL)
   def call_chat_model(messages, tools):
       # mocking a response
       response = {
@@ -426,7 +426,7 @@ how to retrieve them using the :py:class:`span.get_attribute() <mlflow.entities.
 
       combined_messages = messages + [response]
 
-      span = mlflow.get_current_active_span()
+      span = qcflow.get_current_active_span()
       set_span_chat_messages(span, combined_messages)
       set_span_chat_tools(span, tools)
 
@@ -435,7 +435,7 @@ how to retrieve them using the :py:class:`span.get_attribute() <mlflow.entities.
 
   call_chat_model(messages, tools)
 
-  trace = mlflow.get_last_active_trace()
+  trace = qcflow.get_last_active_trace()
   span = trace.data.spans[0]
 
   print("Messages: ", span.get_attribute(SpanAttributeKey.CHAT_MESSAGES))

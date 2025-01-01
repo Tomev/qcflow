@@ -2,8 +2,8 @@ import uuid
 
 import pytest
 
-from mlflow.exceptions import MlflowException
-from mlflow.recipes.cards import BaseCard, CardTab
+from qcflow.exceptions import QCFlowException
+from qcflow.recipes.cards import BaseCard, CardTab
 
 
 def test_verify_card_information():
@@ -56,7 +56,7 @@ def test_card_tab_works():
 
 
 def test_card_tab_fails_with_invalid_variable():
-    with pytest.raises(MlflowException, match=r"(not a valid template variable)"):
+    with pytest.raises(QCFlowException, match=r"(not a valid template variable)"):
         CardTab("tab", "{{MARKDOWN_1}}").add_html("HTML_1", "<span style='color:blue'>blue</span>")
 
 

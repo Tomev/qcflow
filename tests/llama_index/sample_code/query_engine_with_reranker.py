@@ -11,7 +11,7 @@ from llama_index.core.postprocessor import LLMRerank
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore
 
-import mlflow
+import qcflow
 
 index = VectorStoreIndex.from_documents(documents=[Document.example()])
 
@@ -40,4 +40,4 @@ query_engine = index.as_query_engine(
 )
 
 
-mlflow.models.set_model(query_engine)
+qcflow.models.set_model(query_engine)

@@ -5,15 +5,15 @@ from unittest import mock
 import pytest
 import yaml
 
-from mlflow.exceptions import MlflowException
-from mlflow.utils.environment import (
-    _contains_mlflow_requirement,
+from qcflow.exceptions import QCFlowException
+from qcflow.utils.environment import (
+    _contains_qcflow_requirement,
     _deduplicate_requirements,
     _get_pip_deps,
     _get_pip_requirement_specifier,
-    _is_mlflow_requirement,
+    _is_qcflow_requirement,
     _is_pip_deps,
-    _mlflow_conda_env,
+    _qcflow_conda_env,
     _overwrite_pip_deps,
     _parse_pip_requirements,
     _process_conda_env,
@@ -22,7 +22,7 @@ from mlflow.utils.environment import (
     infer_pip_requirements,
 )
 
-from tests.helper_functions import _mlflow_major_version_string
+from tests.helper_functions import _qcflow_major_version_string
 
 
 @pytest.fixture
@@ -30,8 +30,8 @@ def conda_env_path(tmp_path):
     return os.path.join(tmp_path, "conda_env.yaml")
 
 
-def test_mlflow_conda_env_returns_none_when_output_path_is_specified(conda_env_path):
-    env_creation_output = _mlflow_conda_env(
+def test_qcflow_conda_env_returns_none_when_output_path_is_specified(conda_env_path):
+    env_creation_output = _qcflow_conda_env(
         path=conda_env_path,
         additional_conda_deps=["conda-dep-1=0.0.1", "conda-dep-2"],
         additional_pip_deps=["pip-dep-1", "pip-dep2==0.1.0"],
@@ -40,18 +40,18 @@ def test_mlflow_conda_env_returns_none_when_output_path_is_specified(conda_env_p
     assert env_creation_output is None
 
 
-def test_mlflow_conda_env_returns_expected_env_dict_when_output_path_is_not_specified():
+def test_qcflow_conda_env_returns_expected_env_dict_when_output_path_is_not_specified():
     conda_deps = ["conda-dep-1=0.0.1", "conda-dep-2"]
-    env = _mlflow_conda_env(path=None, additional_conda_deps=conda_deps)
+    env = _qcflow_conda_env(path=None, additional_conda_deps=conda_deps)
 
     for conda_dep in conda_deps:
         assert conda_dep in env["dependencies"]
 
 
 @pytest.mark.parametrize("conda_deps", [["conda-dep-1=0.0.1", "conda-dep-2"], None])
-def test_mlflow_conda_env_includes_pip_dependencies_but_pip_is_not_specified(conda_deps):
+def test_qcflow_conda_env_includes_pip_dependencies_but_pip_is_not_specified(conda_deps):
     additional_pip_deps = ["pip-dep==0.0.1"]
-    env = _mlflow_conda_env(
+    env = _qcflow_conda_env(
         path=None, additional_conda_deps=conda_deps, additional_pip_deps=additional_pip_deps
     )
     if conda_deps is not None:
@@ -62,10 +62,10 @@ def test_mlflow_conda_env_includes_pip_dependencies_but_pip_is_not_specified(con
 
 
 @pytest.mark.parametrize("pip_specification", ["pip", "pip==20.0.02"])
-def test_mlflow_conda_env_includes_pip_dependencies_and_pip_is_specified(pip_specification):
+def test_qcflow_conda_env_includes_pip_dependencies_and_pip_is_specified(pip_specification):
     conda_deps = ["conda-dep-1=0.0.1", "conda-dep-2", pip_specification]
     additional_pip_deps = ["pip-dep==0.0.1"]
-    env = _mlflow_conda_env(
+    env = _qcflow_conda_env(
         path=None, additional_conda_deps=conda_deps, additional_pip_deps=additional_pip_deps
     )
     for conda_dep in conda_deps:
@@ -110,8 +110,8 @@ def test_parse_pip_requirements(tmp_path):
         [],
     )
     # GitHub URI
-    mlflow_repo_uri = "git+https://github.com/mlflow/mlflow.git"
-    assert _parse_pip_requirements([mlflow_repo_uri]) == ([mlflow_repo_uri], [])
+    qcflow_repo_uri = "git+https://github.com/qcflow/qcflow.git"
+    assert _parse_pip_requirements([qcflow_repo_uri]) == ([qcflow_repo_uri], [])
     # Local file
     fake_whl = tmp_path.joinpath("fake.whl")
     fake_whl.write_text("")
@@ -204,75 +204,75 @@ def test_validate_env_arguments():
         _validate_env_arguments(conda_env={}, pip_requirements=[], extra_pip_requirements=[])
 
 
-def test_is_mlflow_requirement():
-    assert _is_mlflow_requirement("mlflow")
-    assert _is_mlflow_requirement("MLFLOW")
-    assert _is_mlflow_requirement("MLflow")
-    assert _is_mlflow_requirement("mlflow==1.2.3")
-    assert _is_mlflow_requirement("mlflow < 1.2.3")
-    assert _is_mlflow_requirement("mlflow; python_version < '3.8'")
-    assert _is_mlflow_requirement("mlflow @ https://github.com/mlflow/mlflow.git")
-    assert _is_mlflow_requirement("mlflow @ file:///path/to/mlflow")
-    assert _is_mlflow_requirement("mlflow-skinny==1.2.3")
-    assert not _is_mlflow_requirement("foo")
-    # Ensure packages that look like mlflow are NOT considered as mlflow.
-    assert not _is_mlflow_requirement("mlflow-foo")
-    assert not _is_mlflow_requirement("mlflow_foo")
+def test_is_qcflow_requirement():
+    assert _is_qcflow_requirement("qcflow")
+    assert _is_qcflow_requirement("QCFLOW")
+    assert _is_qcflow_requirement("QCFlow")
+    assert _is_qcflow_requirement("qcflow==1.2.3")
+    assert _is_qcflow_requirement("qcflow < 1.2.3")
+    assert _is_qcflow_requirement("qcflow; python_version < '3.8'")
+    assert _is_qcflow_requirement("qcflow @ https://github.com/qcflow/qcflow.git")
+    assert _is_qcflow_requirement("qcflow @ file:///path/to/qcflow")
+    assert _is_qcflow_requirement("qcflow-skinny==1.2.3")
+    assert not _is_qcflow_requirement("foo")
+    # Ensure packages that look like qcflow are NOT considered as qcflow.
+    assert not _is_qcflow_requirement("qcflow-foo")
+    assert not _is_qcflow_requirement("qcflow_foo")
 
 
-def test_contains_mlflow_requirement():
-    assert _contains_mlflow_requirement(["mlflow"])
-    assert _contains_mlflow_requirement(["mlflow==1.2.3"])
-    assert _contains_mlflow_requirement(["mlflow", "foo"])
-    assert _contains_mlflow_requirement(["mlflow-skinny"])
-    assert not _contains_mlflow_requirement([])
-    assert not _contains_mlflow_requirement(["foo"])
+def test_contains_qcflow_requirement():
+    assert _contains_qcflow_requirement(["qcflow"])
+    assert _contains_qcflow_requirement(["qcflow==1.2.3"])
+    assert _contains_qcflow_requirement(["qcflow", "foo"])
+    assert _contains_qcflow_requirement(["qcflow-skinny"])
+    assert not _contains_qcflow_requirement([])
+    assert not _contains_qcflow_requirement(["foo"])
 
 
 def test_get_pip_requirement_specifier():
     assert _get_pip_requirement_specifier("") == ""
     assert _get_pip_requirement_specifier(" ") == " "
-    assert _get_pip_requirement_specifier("mlflow") == "mlflow"
-    assert _get_pip_requirement_specifier("mlflow==1.2.3") == "mlflow==1.2.3"
+    assert _get_pip_requirement_specifier("qcflow") == "qcflow"
+    assert _get_pip_requirement_specifier("qcflow==1.2.3") == "qcflow==1.2.3"
     assert _get_pip_requirement_specifier("-r reqs.txt") == ""
     assert _get_pip_requirement_specifier("  -r reqs.txt") == " "
-    assert _get_pip_requirement_specifier("mlflow==1.2.3 --hash=foo") == "mlflow==1.2.3"
-    assert _get_pip_requirement_specifier("mlflow==1.2.3       --hash=foo") == "mlflow==1.2.3      "
-    assert _get_pip_requirement_specifier("mlflow-skinny==1.2 --foo=bar") == "mlflow-skinny==1.2"
+    assert _get_pip_requirement_specifier("qcflow==1.2.3 --hash=foo") == "qcflow==1.2.3"
+    assert _get_pip_requirement_specifier("qcflow==1.2.3       --hash=foo") == "qcflow==1.2.3      "
+    assert _get_pip_requirement_specifier("qcflow-skinny==1.2 --foo=bar") == "qcflow-skinny==1.2"
 
 
 def test_process_pip_requirements(tmp_path):
-    expected_mlflow_ver = _mlflow_major_version_string()
+    expected_qcflow_ver = _qcflow_major_version_string()
     conda_env, reqs, cons = _process_pip_requirements(["a"])
-    assert _get_pip_deps(conda_env) == [expected_mlflow_ver, "a"]
-    assert reqs == [expected_mlflow_ver, "a"]
+    assert _get_pip_deps(conda_env) == [expected_qcflow_ver, "a"]
+    assert reqs == [expected_qcflow_ver, "a"]
     assert cons == []
 
     conda_env, reqs, cons = _process_pip_requirements(["a"], pip_requirements=["b"])
-    assert _get_pip_deps(conda_env) == [expected_mlflow_ver, "b"]
-    assert reqs == [expected_mlflow_ver, "b"]
+    assert _get_pip_deps(conda_env) == [expected_qcflow_ver, "b"]
+    assert reqs == [expected_qcflow_ver, "b"]
     assert cons == []
 
-    # Ensure a requirement for mlflow is preserved
-    conda_env, reqs, cons = _process_pip_requirements(["a"], pip_requirements=["mlflow==1.2.3"])
-    assert _get_pip_deps(conda_env) == ["mlflow==1.2.3"]
-    assert reqs == ["mlflow==1.2.3"]
+    # Ensure a requirement for qcflow is preserved
+    conda_env, reqs, cons = _process_pip_requirements(["a"], pip_requirements=["qcflow==1.2.3"])
+    assert _get_pip_deps(conda_env) == ["qcflow==1.2.3"]
+    assert reqs == ["qcflow==1.2.3"]
     assert cons == []
 
-    # Ensure a requirement for mlflow is preserved when package hashes are specified
+    # Ensure a requirement for qcflow is preserved when package hashes are specified
     hash1 = "sha256:963c22532e82a93450674ab97d62f9e528ed0906b580fadb7c003e696197557c"
     hash2 = "sha256:b15ff0c7e5e64f864a0b40c99b9a582227315eca2065d9f831db9aeb8f24637b"
     conda_env, reqs, cons = _process_pip_requirements(
         ["a"],
-        pip_requirements=[f"mlflow==1.20.2 --hash={hash1} --hash={hash2}"],
+        pip_requirements=[f"qcflow==1.20.2 --hash={hash1} --hash={hash2}"],
     )
-    assert _get_pip_deps(conda_env) == [f"mlflow==1.20.2 --hash={hash1} --hash={hash2}"]
-    assert reqs == [f"mlflow==1.20.2 --hash={hash1} --hash={hash2}"]
+    assert _get_pip_deps(conda_env) == [f"qcflow==1.20.2 --hash={hash1} --hash={hash2}"]
+    assert reqs == [f"qcflow==1.20.2 --hash={hash1} --hash={hash2}"]
     assert cons == []
 
     conda_env, reqs, cons = _process_pip_requirements(["a"], extra_pip_requirements=["b"])
-    assert _get_pip_deps(conda_env) == [expected_mlflow_ver, "a", "b"]
-    assert reqs == [expected_mlflow_ver, "a", "b"]
+    assert _get_pip_deps(conda_env) == [expected_qcflow_ver, "a", "b"]
+    assert reqs == [expected_qcflow_ver, "a", "b"]
     assert cons == []
 
     con_file = tmp_path.joinpath("constraints.txt")
@@ -280,64 +280,64 @@ def test_process_pip_requirements(tmp_path):
     conda_env, reqs, cons = _process_pip_requirements(
         ["a"], pip_requirements=["b", f"-c {con_file}"]
     )
-    assert _get_pip_deps(conda_env) == [expected_mlflow_ver, "b", "-c constraints.txt"]
-    assert reqs == [expected_mlflow_ver, "b", "-c constraints.txt"]
+    assert _get_pip_deps(conda_env) == [expected_qcflow_ver, "b", "-c constraints.txt"]
+    assert reqs == [expected_qcflow_ver, "b", "-c constraints.txt"]
     assert cons == ["c"]
 
     conda_env, reqs, cons = _process_pip_requirements(["a"], extra_pip_requirements=["a[extras]"])
-    assert _get_pip_deps(conda_env) == [expected_mlflow_ver, "a[extras]"]
-    assert reqs == [expected_mlflow_ver, "a[extras]"]
+    assert _get_pip_deps(conda_env) == [expected_qcflow_ver, "a[extras]"]
+    assert reqs == [expected_qcflow_ver, "a[extras]"]
     assert cons == []
 
     conda_env, reqs, cons = _process_pip_requirements(
-        ["mlflow==1.2.3", "b[extra1]", "a==1.2.3"],
+        ["qcflow==1.2.3", "b[extra1]", "a==1.2.3"],
         extra_pip_requirements=["b[extra2]", "a[extras]"],
     )
-    assert _get_pip_deps(conda_env) == ["mlflow==1.2.3", "b[extra1,extra2]", "a[extras]==1.2.3"]
-    assert reqs == ["mlflow==1.2.3", "b[extra1,extra2]", "a[extras]==1.2.3"]
+    assert _get_pip_deps(conda_env) == ["qcflow==1.2.3", "b[extra1,extra2]", "a[extras]==1.2.3"]
+    assert reqs == ["qcflow==1.2.3", "b[extra1,extra2]", "a[extras]==1.2.3"]
     assert cons == []
 
 
 def test_process_conda_env(tmp_path):
     def make_conda_env(pip_deps):
         return {
-            "name": "mlflow-env",
+            "name": "qcflow-env",
             "channels": ["conda-forge"],
             "dependencies": ["python=3.8.15", "pip", {"pip": pip_deps}],
         }
 
-    expected_mlflow_ver = _mlflow_major_version_string()
+    expected_qcflow_ver = _qcflow_major_version_string()
 
     conda_env, reqs, cons = _process_conda_env(make_conda_env(["a"]))
-    assert _get_pip_deps(conda_env) == [expected_mlflow_ver, "a"]
-    assert reqs == [expected_mlflow_ver, "a"]
+    assert _get_pip_deps(conda_env) == [expected_qcflow_ver, "a"]
+    assert reqs == [expected_qcflow_ver, "a"]
     assert cons == []
 
     conda_env_file = tmp_path.joinpath("conda_env.yaml")
     conda_env_file.write_text(yaml.dump(make_conda_env(["a"])))
     conda_env, reqs, cons = _process_conda_env(str(conda_env_file))
-    assert _get_pip_deps(conda_env) == [expected_mlflow_ver, "a"]
-    assert reqs == [expected_mlflow_ver, "a"]
+    assert _get_pip_deps(conda_env) == [expected_qcflow_ver, "a"]
+    assert reqs == [expected_qcflow_ver, "a"]
     assert cons == []
 
-    # Ensure a requirement for mlflow is preserved
-    conda_env, reqs, cons = _process_conda_env(make_conda_env(["mlflow==1.2.3"]))
-    assert _get_pip_deps(conda_env) == ["mlflow==1.2.3"]
-    assert reqs == ["mlflow==1.2.3"]
+    # Ensure a requirement for qcflow is preserved
+    conda_env, reqs, cons = _process_conda_env(make_conda_env(["qcflow==1.2.3"]))
+    assert _get_pip_deps(conda_env) == ["qcflow==1.2.3"]
+    assert reqs == ["qcflow==1.2.3"]
     assert cons == []
 
     con_file = tmp_path.joinpath("constraints.txt")
     con_file.write_text("c")
     conda_env, reqs, cons = _process_conda_env(make_conda_env(["a", f"-c {con_file}"]))
-    assert _get_pip_deps(conda_env) == [expected_mlflow_ver, "a", "-c constraints.txt"]
-    assert reqs == [expected_mlflow_ver, "a", "-c constraints.txt"]
+    assert _get_pip_deps(conda_env) == [expected_qcflow_ver, "a", "-c constraints.txt"]
+    assert reqs == [expected_qcflow_ver, "a", "-c constraints.txt"]
     assert cons == ["c"]
 
-    # NB: mlflow-skinny is not automatically attached to any model. If specified, it is
+    # NB: qcflow-skinny is not automatically attached to any model. If specified, it is
     # up to the user to pin a version.
-    conda_env, reqs, cons = _process_conda_env(make_conda_env(["mlflow-skinny", "a", "b"]))
-    assert _get_pip_deps(conda_env) == ["mlflow-skinny", "a", "b"]
-    assert reqs == ["mlflow-skinny", "a", "b"]
+    conda_env, reqs, cons = _process_conda_env(make_conda_env(["qcflow-skinny", "a", "b"]))
+    assert _get_pip_deps(conda_env) == ["qcflow-skinny", "a", "b"]
+    assert reqs == ["qcflow-skinny", "a", "b"]
     assert cons == []
 
     with pytest.raises(TypeError, match=r"Expected .+, but got `int`"):
@@ -357,19 +357,19 @@ def test_process_conda_env(tmp_path):
     ],
 )
 def test_infer_requirements_error_handling(env_var, fallbacks, should_raise, monkeypatch):
-    monkeypatch.setenv("MLFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", str(env_var))
+    monkeypatch.setenv("QCFLOW_REQUIREMENTS_INFERENCE_RAISE_ERRORS", str(env_var))
 
     call_args = ("path/to/model", "sklearn", fallbacks)
     with mock.patch(
-        "mlflow.utils.requirements_utils._capture_imported_modules",
-        side_effect=MlflowException("Failed to capture imported modules"),
+        "qcflow.utils.requirements_utils._capture_imported_modules",
+        side_effect=QCFlowException("Failed to capture imported modules"),
     ):
         if should_raise:
-            with pytest.raises(MlflowException, match="Failed to capture imported module"):
+            with pytest.raises(QCFlowException, match="Failed to capture imported module"):
                 infer_pip_requirements(*call_args)
         else:
             # Should just pass with warning
-            with mock.patch("mlflow.utils.environment._logger.warning") as warning_mock:
+            with mock.patch("qcflow.utils.environment._logger.warning") as warning_mock:
                 infer_pip_requirements(*call_args)
             warning_mock.assert_called_once()
             warning_text = warning_mock.call_args[0][0]
@@ -432,6 +432,6 @@ def test_deduplicate_requirements_resolve_correctly(input_requirements, expected
 )
 def test_invalid_requirements_raise(input_requirements):
     with pytest.raises(
-        MlflowException, match="The specified requirements versions are incompatible"
+        QCFlowException, match="The specified requirements versions are incompatible"
     ):
         _deduplicate_requirements(input_requirements)

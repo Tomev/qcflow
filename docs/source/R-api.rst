@@ -4,35 +4,35 @@
 R API
 ========
 
-The MLflow `R <https://www.r-project.org/about.html>`_ API allows you to use MLflow :doc:`Tracking <tracking>`, :doc:`Projects <projects/>` and :doc:`Models <models/>`.
+The QCFlow `R <https://www.r-project.org/about.html>`_ API allows you to use QCFlow :doc:`Tracking <tracking>`, :doc:`Projects <projects/>` and :doc:`Models <models/>`.
 
 Prerequisites
 =============
 
-To use the MLflow R API, you must install `the MLflow Python package <https://pypi.org/project/mlflow/>`_.
+To use the QCFlow R API, you must install `the QCFlow Python package <https://pypi.org/project/qcflow/>`_.
 
 .. code-block:: bash
 
-    pip install mlflow
+    pip install qcflow
 
 Installing with an Available Conda Environment example:
 
 .. code-block:: bash
     
-    conda create -n mlflow-env python
-    conda activate mlflow-env
-    pip install mlflow
+    conda create -n qcflow-env python
+    conda activate qcflow-env
+    pip install qcflow
 
-The above provided commands create a new Conda environment named mlflow-env, specifying the default Python version. It then activates this environment, making it the active working environment. Finally, it installs the MLflow package using pip, ensuring that MLflow is isolated within this environment, allowing for independent Python and package management for MLflow-related tasks.
+The above provided commands create a new Conda environment named qcflow-env, specifying the default Python version. It then activates this environment, making it the active working environment. Finally, it installs the QCFlow package using pip, ensuring that QCFlow is isolated within this environment, allowing for independent Python and package management for QCFlow-related tasks.
 
-Optionally, you can set the ``MLFLOW_PYTHON_BIN`` and ``MLFLOW_BIN`` environment variables to specify the Python and MLflow binaries to use. By default, the R client automatically finds them using ``Sys.which('python')`` and ``Sys.which('mlflow')``.
+Optionally, you can set the ``QCFLOW_PYTHON_BIN`` and ``QCFLOW_BIN`` environment variables to specify the Python and QCFlow binaries to use. By default, the R client automatically finds them using ``Sys.which('python')`` and ``Sys.which('qcflow')``.
 
 .. code-block:: bash
 
-    export MLFLOW_PYTHON_BIN=/path/to/bin/python
-    export MLFLOW_BIN=/path/to/bin/mlflow
+    export QCFLOW_PYTHON_BIN=/path/to/bin/python
+    export QCFLOW_BIN=/path/to/bin/qcflow
 
-You can use the R API to start the `user interface <mlflow_ui_>`_, `create experiment <mlflow_create_experiment_>`_ and `search experiments <mlflow_search_experiments_>`_, `save models <mlflow_save_model.crate_>`_, `run projects <mlflow_run_>`_ and `serve models <mlflow_rfunc_serve_>`_ among many other functions available in the R API.
+You can use the R API to start the `user interface <qcflow_ui_>`_, `create experiment <qcflow_create_experiment_>`_ and `search experiments <qcflow_search_experiments_>`_, `save models <qcflow_save_model.crate_>`_, `run projects <qcflow_run_>`_ and `serve models <qcflow_rfunc_serve_>`_ among many other functions available in the R API.
 
 .. contents:: Table of Contents
     :local:
@@ -45,7 +45,7 @@ Get information from a Databricks job execution context
 
 Parses the data from a job execution context when running on Databricks
 in a non-interactive mode. This function extracts relevant data that
-MLflow needs in order to properly utilize the MLflow APIs from this
+QCFlow needs in order to properly utilize the QCFlow APIs from this
 context.
 
 .. code:: r
@@ -64,7 +64,7 @@ Argument     Description
 Value
 -----
 
-A list of tags to be set by the run context when creating MLflow runs in
+A list of tags to be set by the run context when creating QCFlow runs in
 the current Databricks Job environment
 
 ``build_context_tags_from_databricks_notebook_info``
@@ -74,7 +74,7 @@ Get information from Databricks Notebook environment
 
 Retrieves the notebook id, path, url, name, version, and type from the
 Databricks Notebook execution environment and sets them to a list to be
-used for setting the configured environment for executing an MLflow run
+used for setting the configured environment for executing an QCFlow run
 in R from Databricks.
 
 .. code:: r
@@ -98,20 +98,20 @@ Arguments
 Value
 -----
 
-A list of tags to be set by the run context when creating MLflow runs in
+A list of tags to be set by the run context when creating QCFlow runs in
 the current Databricks Notebook environment
 
-``mlflow_client``
+``qcflow_client``
 =================
 
-Initialize an MLflow Client
+Initialize an QCFlow Client
 
-Initializes and returns an MLflow client that communicates with the
+Initializes and returns an QCFlow client that communicates with the
 tracking server or store at the specified URI.
 
 .. code:: r
 
-   mlflow_client(tracking_uri = NULL)
+   qcflow_client(tracking_uri = NULL)
 
 .. _arguments-2:
 
@@ -123,19 +123,19 @@ Arguments
 +===============================+======================================+
 | ``tracking_uri``              | The tracking URI. If not provided,   |
 |                               | defaults to the service set by       |
-|                               | ``mlflow_set_tracking_uri()``.       |
+|                               | ``qcflow_set_tracking_uri()``.       |
 +-------------------------------+--------------------------------------+
 
-``mlflow_create_experiment``
+``qcflow_create_experiment``
 ============================
 
 Create Experiment
 
-Creates an MLflow experiment and returns its id.
+Creates an QCFlow experiment and returns its id.
 
 .. code:: r
 
-   mlflow_create_experiment(
+   qcflow_create_experiment(
      name,
      artifact_location = NULL,
      client = NULL,
@@ -158,13 +158,13 @@ Arguments
 |                               | provided, the remote server will     |
 |                               | select an appropriate default.       |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
@@ -172,7 +172,7 @@ Arguments
 |                               | experiment upon experiment creation. |
 +-------------------------------+--------------------------------------+
 
-``mlflow_create_model_version``
+``qcflow_create_model_version``
 ===============================
 
 Create a model version
@@ -181,7 +181,7 @@ Create a model version
 
 .. code:: r
 
-   mlflow_create_model_version(
+   qcflow_create_model_version(
      name,
      source,
      run_id = NULL,
@@ -204,30 +204,30 @@ Arguments
 | ``source``                    | URI indicating the location of the   |
 |                               | model artifacts.                     |
 +-------------------------------+--------------------------------------+
-| ``run_id``                    | MLflow run ID for correlation, if    |
+| ``run_id``                    | QCFlow run ID for correlation, if    |
 |                               | ``source`` was generated by an       |
-|                               | experiment run in MLflow Tracking.   |
+|                               | experiment run in QCFlow Tracking.   |
 +-------------------------------+--------------------------------------+
 | ``tags``                      | Additional metadata.                 |
 +-------------------------------+--------------------------------------+
-| ``run_link``                  | MLflow run link - This is the exact  |
+| ``run_link``                  | QCFlow run link - This is the exact  |
 |                               | link of the run that generated this  |
 |                               | model version.                       |
 +-------------------------------+--------------------------------------+
 | ``description``               | Description for model version.       |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_create_registered_model``
+``qcflow_create_registered_model``
 ==================================
 
 Create registered model
@@ -236,7 +236,7 @@ Creates a new registered model in the model registry
 
 .. code:: r
 
-   mlflow_create_registered_model(
+   qcflow_create_registered_model(
      name,
      tags = NULL,
      description = NULL,
@@ -259,18 +259,18 @@ Arguments
 | ``description``               | Description for the registered model |
 |                               | (Optional).                          |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_delete_experiment``
+``qcflow_delete_experiment``
 ============================
 
 Delete Experiment
@@ -281,7 +281,7 @@ experiment are also deleted.
 
 .. code:: r
 
-   mlflow_delete_experiment(experiment_id, client = NULL)
+   qcflow_delete_experiment(experiment_id, client = NULL)
 
 .. _arguments-6:
 
@@ -294,18 +294,18 @@ Arguments
 | ``experiment_id``             | ID of the associated experiment.     |
 |                               | This field is required.              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_delete_model_version``
+``qcflow_delete_model_version``
 ===============================
 
 Delete a model version
@@ -314,7 +314,7 @@ Delete a model version
 
 .. code:: r
 
-   mlflow_delete_model_version(name, version, client = NULL)
+   qcflow_delete_model_version(name, version, client = NULL)
 
 .. _arguments-7:
 
@@ -328,18 +328,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``version``                   | Model version number.                |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_delete_registered_model``
+``qcflow_delete_registered_model``
 ==================================
 
 Delete registered model
@@ -348,7 +348,7 @@ Deletes an existing registered model by name
 
 .. code:: r
 
-   mlflow_delete_registered_model(name, client = NULL)
+   qcflow_delete_registered_model(name, client = NULL)
 
 .. _arguments-8:
 
@@ -360,18 +360,18 @@ Arguments
 +===============================+======================================+
 | ``name``                      | The name of the model to delete      |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_delete_run``
+``qcflow_delete_run``
 =====================
 
 Delete a Run
@@ -380,7 +380,7 @@ Deletes the run with the specified ID.
 
 .. code:: r
 
-   mlflow_delete_run(run_id, client = NULL)
+   qcflow_delete_run(run_id, client = NULL)
 
 .. _arguments-9:
 
@@ -392,18 +392,18 @@ Arguments
 +===============================+======================================+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_delete_tag``
+``qcflow_delete_tag``
 =====================
 
 Delete Tag
@@ -413,7 +413,7 @@ can be updated during a run and after a run completes.
 
 .. code:: r
 
-   mlflow_delete_tag(key, run_id = NULL, client = NULL)
+   qcflow_delete_tag(key, run_id = NULL, client = NULL)
 
 .. _arguments-10:
 
@@ -428,18 +428,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_download_artifacts``
+``qcflow_download_artifacts``
 =============================
 
 Download Artifacts
@@ -449,7 +449,7 @@ if applicable, and return a local path for it.
 
 .. code:: r
 
-   mlflow_download_artifacts(path, run_id = NULL, client = NULL)
+   qcflow_download_artifacts(path, run_id = NULL, client = NULL)
 
 .. _arguments-11:
 
@@ -464,18 +464,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_end_run``
+``qcflow_end_run``
 ==================
 
 End a Run
@@ -485,7 +485,7 @@ is not specified.
 
 .. code:: r
 
-   mlflow_end_run(
+   qcflow_end_run(
      status = c("FINISHED", "FAILED", "KILLED"),
      end_time = NULL,
      run_id = NULL,
@@ -509,18 +509,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_get_experiment``
+``qcflow_get_experiment``
 =========================
 
 Get Experiment
@@ -531,7 +531,7 @@ Attempts to obtain the active experiment if both ``experiment_id`` and
 
 .. code:: r
 
-   mlflow_get_experiment(experiment_id = NULL, name = NULL, client = NULL)
+   qcflow_get_experiment(experiment_id = NULL, name = NULL, client = NULL)
 
 .. _arguments-13:
 
@@ -547,18 +547,18 @@ Arguments
 |                               | ``name`` or ``experiment_id`` should |
 |                               | be specified.                        |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_get_latest_versions``
+``qcflow_get_latest_versions``
 ==============================
 
 Get latest model versions
@@ -567,7 +567,7 @@ Retrieves a list of the latest model versions for a given model.
 
 .. code:: r
 
-   mlflow_get_latest_versions(name, stages = list(), client = NULL)
+   qcflow_get_latest_versions(name, stages = list(), client = NULL)
 
 .. _arguments-14:
 
@@ -583,18 +583,18 @@ Arguments
 |                               | input list is NULL, return latest    |
 |                               | versions for ALL_STAGES.             |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_get_metric_history``
+``qcflow_get_metric_history``
 =============================
 
 Get Metric History
@@ -603,7 +603,7 @@ Get a list of all values for the specified metric for a given run.
 
 .. code:: r
 
-   mlflow_get_metric_history(metric_key, run_id = NULL, client = NULL)
+   qcflow_get_metric_history(metric_key, run_id = NULL, client = NULL)
 
 .. _arguments-15:
 
@@ -617,18 +617,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_get_model_version``
+``qcflow_get_model_version``
 ============================
 
 Get a model version
@@ -637,7 +637,7 @@ Get a model version
 
 .. code:: r
 
-   mlflow_get_model_version(name, version, client = NULL)
+   qcflow_get_model_version(name, version, client = NULL)
 
 .. _arguments-16:
 
@@ -651,18 +651,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``version``                   | Model version number.                |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_get_registered_model``
+``qcflow_get_registered_model``
 ===============================
 
 Get a registered model
@@ -671,7 +671,7 @@ Retrieves a registered model from the Model Registry.
 
 .. code:: r
 
-   mlflow_get_registered_model(name, client = NULL)
+   qcflow_get_registered_model(name, client = NULL)
 
 .. _arguments-17:
 
@@ -683,18 +683,18 @@ Arguments
 +===============================+======================================+
 | ``name``                      | The name of the model to retrieve.   |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_get_run``
+``qcflow_get_run``
 ==================
 
 Get Run
@@ -705,7 +705,7 @@ largest step.
 
 .. code:: r
 
-   mlflow_get_run(run_id = NULL, client = NULL)
+   qcflow_get_run(run_id = NULL, client = NULL)
 
 .. _arguments-18:
 
@@ -717,18 +717,18 @@ Arguments
 +===============================+======================================+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_get_tracking_uri``
+``qcflow_get_tracking_uri``
 ===========================
 
 Get Remote Tracking URI
@@ -737,9 +737,9 @@ Gets the remote tracking URI.
 
 .. code:: r
 
-   mlflow_get_tracking_uri()
+   qcflow_get_tracking_uri()
 
-``mlflow_id``
+``qcflow_id``
 =============
 
 Get Run or Experiment ID
@@ -748,9 +748,9 @@ Extracts the ID of the run or experiment.
 
 .. code:: r
 
-   mlflow_id(object)
-   list(list("mlflow_id"), list("mlflow_run"))(object)
-   list(list("mlflow_id"), list("mlflow_experiment"))(object)
+   qcflow_id(object)
+   list(list("qcflow_id"), list("qcflow_run"))(object)
+   list(list("qcflow_id"), list("qcflow_experiment"))(object)
 
 .. _arguments-19:
 
@@ -760,10 +760,10 @@ Arguments
 ========== ==================================================
 Argument   Description
 ========== ==================================================
-``object`` An ``mlflow_run`` or ``mlflow_experiment`` object.
+``object`` An ``qcflow_run`` or ``qcflow_experiment`` object.
 ========== ==================================================
 
-``mlflow_list_artifacts``
+``qcflow_list_artifacts``
 =========================
 
 List Artifacts
@@ -772,7 +772,7 @@ Gets a list of artifacts.
 
 .. code:: r
 
-   mlflow_list_artifacts(path = NULL, run_id = NULL, client = NULL)
+   qcflow_list_artifacts(path = NULL, run_id = NULL, client = NULL)
 
 .. _arguments-20:
 
@@ -788,31 +788,31 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_load_flavor``
+``qcflow_load_flavor``
 ======================
 
-Load MLflow Model Flavor
+Load QCFlow Model Flavor
 
-Loads an MLflow model using a specific flavor. This method is called
-internally by `mlflow_load_model <#mlflow-load-model>`__ , but is
-exposed for package authors to extend the supported MLflow models. See
-https://mlflow.org/docs/latest/models.html#storage-format for more info
-on MLflow model flavors.
+Loads an QCFlow model using a specific flavor. This method is called
+internally by `qcflow_load_model <#qcflow-load-model>`__ , but is
+exposed for package authors to extend the supported QCFlow models. See
+https://qcflow.org/docs/latest/models.html#storage-format for more info
+on QCFlow model flavors.
 
 .. code:: r
 
-   mlflow_load_flavor(flavor, model_path)
+   qcflow_load_flavor(flavor, model_path)
 
 .. _arguments-21:
 
@@ -822,28 +822,28 @@ Arguments
 +-------------------------------+--------------------------------------+
 | Argument                      | Description                          |
 +===============================+======================================+
-| ``flavor``                    | An MLflow flavor object loaded by    |
+| ``flavor``                    | An QCFlow flavor object loaded by    |
 |                               | `mlflo                               |
-|                               | w_load_model <#mlflow-load-model>`__ |
+|                               | w_load_model <#qcflow-load-model>`__ |
 |                               | , with class loaded from the flavor  |
 |                               | field in an MLmodel file.            |
 +-------------------------------+--------------------------------------+
-| ``model_path``                | The path to the MLflow model wrapped |
+| ``model_path``                | The path to the QCFlow model wrapped |
 |                               | in the correct class.                |
 +-------------------------------+--------------------------------------+
 
-``mlflow_load_model``
+``qcflow_load_model``
 =====================
 
-Load MLflow Model
+Load QCFlow Model
 
-Loads an MLflow model. MLflow models can have multiple model flavors.
+Loads an QCFlow model. QCFlow models can have multiple model flavors.
 Not all flavors / models can be loaded in R. This method by default
-searches for a flavor supported by R/MLflow.
+searches for a flavor supported by R/QCFlow.
 
 .. code:: r
 
-   mlflow_load_model(model_uri, flavor = NULL, client = mlflow_client())
+   qcflow_load_model(model_uri, flavor = NULL, client = qcflow_client())
 
 .. _arguments-22:
 
@@ -854,20 +854,20 @@ Arguments
 | Argument                      | Description                          |
 +===============================+======================================+
 | ``model_uri``                 | The location, in URI format, of the  |
-|                               | MLflow model.                        |
+|                               | QCFlow model.                        |
 +-------------------------------+--------------------------------------+
 | ``flavor``                    | Optional flavor specification        |
 |                               | (string). Can be used to load a      |
 |                               | particular flavor in case there are  |
 |                               | multiple flavors available.          |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
@@ -875,23 +875,23 @@ Arguments
 Details
 -------
 
-The URI scheme must be supported by MLflow - i.e. there has to be an
-MLflow artifact repository corresponding to the scheme of the URI. The
+The URI scheme must be supported by QCFlow - i.e. there has to be an
+QCFlow artifact repository corresponding to the scheme of the URI. The
 content is expected to point to a directory containing MLmodel. The
 following are examples of valid model uris:
 
 -  ``file:///absolute/path/to/local/model``
 -  ``file:relative/path/to/local/model``
 -  ``s3://my_bucket/path/to/model``
--  ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+-  ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 -  ``models:/<model_name>/<model_version>``
 -  ``models:/<model_name>/<stage>``
 
 For more information about supported URI schemes, see the Artifacts
 Documentation at
-https://www.mlflow.org/docs/latest/tracking.html#artifact-stores.
+https://www.qcflow.org/docs/latest/tracking.html#artifact-stores.
 
-``mlflow_log_artifact``
+``qcflow_log_artifact``
 =======================
 
 Log Artifact
@@ -900,7 +900,7 @@ Logs a specific file or directory as an artifact for a run.
 
 .. code:: r
 
-   mlflow_log_artifact(path, artifact_path = NULL, run_id = NULL, client = NULL)
+   qcflow_log_artifact(path, artifact_path = NULL, run_id = NULL, client = NULL)
 
 .. _arguments-23:
 
@@ -918,13 +918,13 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
@@ -942,7 +942,7 @@ Additionally, at least the ``AWS_ACCESS_KEY_ID`` and
 ``AWS_SECRET_ACCESS_KEY`` environment variables must be set to the
 corresponding key and secrets provided by Amazon IAM.
 
-``mlflow_log_batch``
+``qcflow_log_batch``
 ====================
 
 Log Batch
@@ -954,7 +954,7 @@ request), partial data may be written.
 
 .. code:: r
 
-   mlflow_log_batch(
+   qcflow_log_batch(
      metrics = NULL,
      params = NULL,
      tags = NULL,
@@ -990,30 +990,30 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_log_metric``
+``qcflow_log_metric``
 =====================
 
 Log Metric
 
 Logs a metric for a run. Metrics key-value pair that records a single
 float measure. During a single execution of a run, a particular metric
-can be logged several times. The MLflow Backend keeps track of
+can be logged several times. The QCFlow Backend keeps track of
 historical metric values along two axes: timestamp and step.
 
 .. code:: r
 
-   mlflow_log_metric(
+   qcflow_log_metric(
      key,
      value,
      timestamp = NULL,
@@ -1048,28 +1048,28 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_log_model``
+``qcflow_log_model``
 ====================
 
 Log Model
 
-Logs a model for this run. Similar to ``mlflow_save_model()`` but stores
+Logs a model for this run. Similar to ``qcflow_save_model()`` but stores
 model as an artifact within the active run.
 
 .. code:: r
 
-   mlflow_log_model(model, artifact_path, ...)
+   qcflow_log_model(model, artifact_path, ...)
 
 .. _arguments-26:
 
@@ -1082,11 +1082,11 @@ Arguments
 | ``model``                     | The model that will perform a        |
 |                               | prediction.                          |
 +-------------------------------+--------------------------------------+
-| ``artifact_path``             | Destination path where this MLflow   |
+| ``artifact_path``             | Destination path where this QCFlow   |
 |                               | compatible model will be saved.      |
 +-------------------------------+--------------------------------------+
 | ``...``                       | Optional additional arguments passed |
-|                               | to ``mlflow_save_model()`` when      |
+|                               | to ``qcflow_save_model()`` when      |
 |                               | persisting the model. For example,   |
 |                               | ``conda_env = /path/to/conda.yaml``  |
 |                               | may be passed to specify a conda     |
@@ -1095,7 +1095,7 @@ Arguments
 |                               | environments.                        |
 +-------------------------------+--------------------------------------+
 
-``mlflow_log_param``
+``qcflow_log_param``
 ====================
 
 Log Parameter
@@ -1107,7 +1107,7 @@ allowed to be logged only once.
 
 .. code:: r
 
-   mlflow_log_param(key, value, run_id = NULL, client = NULL)
+   qcflow_log_param(key, value, run_id = NULL, client = NULL)
 
 .. _arguments-27:
 
@@ -1123,30 +1123,30 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_param``
+``qcflow_param``
 ================
 
 Read Command-Line Parameter
 
-Reads a command-line parameter passed to an MLflow project MLflow allows
+Reads a command-line parameter passed to an QCFlow project QCFlow allows
 you to define named, typed input parameters to your R scripts via the
-mlflow_param API. This is useful for experimentation, e.g. tracking
+qcflow_param API. This is useful for experimentation, e.g. tracking
 multiple invocations of the same script with different parameters.
 
 .. code:: r
 
-   mlflow_param(name, default = NULL, type = NULL, description = NULL)
+   qcflow_param(name, default = NULL, type = NULL, description = NULL)
 
 .. _arguments-28:
 
@@ -1174,31 +1174,31 @@ Examples
 
 .. code:: r
 
-   # This parametrized script trains a GBM model on the Iris dataset and can be run as an MLflow
+   # This parametrized script trains a GBM model on the Iris dataset and can be run as an QCFlow
    # project. You can run this script (assuming it's saved at /some/directory/params_example.R)
    # with custom parameters via:
-   # mlflow_run(entry_point = "params_example.R", uri = "/some/directory",
+   # qcflow_run(entry_point = "params_example.R", uri = "/some/directory",
    #   parameters = list(num_trees = 200, learning_rate = 0.1))
    install.packages("gbm")
-   library(mlflow)
+   library(qcflow)
    library(gbm)
    # define and read input parameters
-   num_trees <- mlflow_param(name = "num_trees", default = 200, type = "integer")
-   lr <- mlflow_param(name = "learning_rate", default = 0.1, type = "numeric")
+   num_trees <- qcflow_param(name = "num_trees", default = 200, type = "integer")
+   lr <- qcflow_param(name = "learning_rate", default = 0.1, type = "numeric")
    # use params to fit a model
    ir.adaboost <- gbm(Species ~., data=iris, n.trees=num_trees, shrinkage=lr)
 
-``mlflow_predict``
+``qcflow_predict``
 ==================
 
-Generate Prediction with MLflow Model
+Generate Prediction with QCFlow Model
 
-Performs prediction over a model loaded using ``mlflow_load_model()`` ,
-to be used by package authors to extend the supported MLflow models.
+Performs prediction over a model loaded using ``qcflow_load_model()`` ,
+to be used by package authors to extend the supported QCFlow models.
 
 .. code:: r
 
-   mlflow_predict(model, data, ...)
+   qcflow_predict(model, data, ...)
 
 .. _arguments-29:
 
@@ -1208,7 +1208,7 @@ Arguments
 +-----------+---------------------------------------------------------+
 | Argument  | Description                                             |
 +===========+=========================================================+
-| ``model`` | The loaded MLflow model flavor.                         |
+| ``model`` | The loaded QCFlow model flavor.                         |
 +-----------+---------------------------------------------------------+
 | ``data``  | A data frame to perform scoring.                        |
 +-----------+---------------------------------------------------------+
@@ -1216,12 +1216,12 @@ Arguments
 |           | predict methods.                                        |
 +-----------+---------------------------------------------------------+
 
-``mlflow_register_external_observer``
+``qcflow_register_external_observer``
 =====================================
 
-Register an external MLflow observer
+Register an external QCFlow observer
 
-Registers an external MLflow observer that will receive a
+Registers an external QCFlow observer that will receive a
 ``register_tracking_event(event_name, data)`` callback on any model
 tracking event such as “create_run”, “delete_run”, or “log_metric”. Each
 observer should have a ``register_tracking_event(event_name, data)``
@@ -1233,7 +1233,7 @@ ignored.
 
 .. code:: r
 
-   mlflow_register_external_observer(observer)
+   qcflow_register_external_observer(observer)
 
 .. _arguments-30:
 
@@ -1253,16 +1253,16 @@ Examples
 
 .. code:: r
 
-   library(mlflow)
+   library(qcflow)
 
    observer <- structure(list())
    observer$register_tracking_event <- function(event_name, data) {
    print(event_name)
    print(data)
    }
-   mlflow_register_external_observer(observer)
+   qcflow_register_external_observer(observer)
 
-``mlflow_rename_experiment``
+``qcflow_rename_experiment``
 ============================
 
 Rename Experiment
@@ -1271,7 +1271,7 @@ Renames an experiment.
 
 .. code:: r
 
-   mlflow_rename_experiment(new_name, experiment_id = NULL, client = NULL)
+   qcflow_rename_experiment(new_name, experiment_id = NULL, client = NULL)
 
 .. _arguments-31:
 
@@ -1288,18 +1288,18 @@ Arguments
 | ``experiment_id``             | ID of the associated experiment.     |
 |                               | This field is required.              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_rename_registered_model``
+``qcflow_rename_registered_model``
 ==================================
 
 Rename a registered model
@@ -1308,7 +1308,7 @@ Renames a model in the Model Registry.
 
 .. code:: r
 
-   mlflow_rename_registered_model(name, new_name, client = NULL)
+   qcflow_rename_registered_model(name, new_name, client = NULL)
 
 .. _arguments-32:
 
@@ -1322,18 +1322,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``new_name``                  | The new name for the model.          |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_restore_experiment``
+``qcflow_restore_experiment``
 =============================
 
 Restore Experiment
@@ -1345,7 +1345,7 @@ restored.
 
 .. code:: r
 
-   mlflow_restore_experiment(experiment_id, client = NULL)
+   qcflow_restore_experiment(experiment_id, client = NULL)
 
 .. _arguments-33:
 
@@ -1358,13 +1358,13 @@ Arguments
 | ``experiment_id``             | ID of the associated experiment.     |
 |                               | This field is required.              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
@@ -1377,7 +1377,7 @@ Details
 Throws ``RESOURCE_DOES_NOT_EXIST`` if the experiment was never created
 or was permanently deleted.
 
-``mlflow_restore_run``
+``qcflow_restore_run``
 ======================
 
 Restore a Run
@@ -1386,7 +1386,7 @@ Restores the run with the specified ID.
 
 .. code:: r
 
-   mlflow_restore_run(run_id, client = NULL)
+   qcflow_restore_run(run_id, client = NULL)
 
 .. _arguments-34:
 
@@ -1398,33 +1398,33 @@ Arguments
 +===============================+======================================+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_rfunc_serve``
+``qcflow_rfunc_serve``
 ======================
 
-Serve an RFunc MLflow Model
+Serve an RFunc QCFlow Model
 
-Serves an RFunc MLflow model as a local REST API server. This interface
-provides similar functionality to ``mlflow models serve`` cli command,
+Serves an RFunc QCFlow model as a local REST API server. This interface
+provides similar functionality to ``qcflow models serve`` cli command,
 however, it can only be used to deploy models that include RFunc flavor.
-The deployed server supports standard mlflow models interface with /ping
+The deployed server supports standard qcflow models interface with /ping
 and /invocation endpoints. In addition, R function models also support
 deprecated /predict endpoint for generating predictions. The /predict
-endpoint will be removed in a future version of mlflow.
+endpoint will be removed in a future version of qcflow.
 
 .. code:: r
 
-   mlflow_rfunc_serve(
+   qcflow_rfunc_serve(
      model_uri,
      host = "127.0.0.1",
      port = 8090,
@@ -1442,7 +1442,7 @@ Arguments
 | Argument                      | Description                          |
 +===============================+======================================+
 | ``model_uri``                 | The location, in URI format, of the  |
-|                               | MLflow model.                        |
+|                               | QCFlow model.                        |
 +-------------------------------+--------------------------------------+
 | ``host``                      | Address to use to serve model, as a  |
 |                               | string.                              |
@@ -1462,7 +1462,7 @@ Arguments
 |                               | page?                                |
 +-------------------------------+--------------------------------------+
 | ``...``                       | Optional arguments passed to         |
-|                               | ``mlflow_predict()``.                |
+|                               | ``qcflow_predict()``.                |
 +-------------------------------+--------------------------------------+
 
 .. _details-3:
@@ -1470,21 +1470,21 @@ Arguments
 Details
 -------
 
-The URI scheme must be supported by MLflow - i.e. there has to be an
-MLflow artifact repository corresponding to the scheme of the URI. The
+The URI scheme must be supported by QCFlow - i.e. there has to be an
+QCFlow artifact repository corresponding to the scheme of the URI. The
 content is expected to point to a directory containing MLmodel. The
 following are examples of valid model uris:
 
 -  ``file:///absolute/path/to/local/model``
 -  ``file:relative/path/to/local/model``
 -  ``s3://my_bucket/path/to/model``
--  ``runs:/<mlflow_run_id>/run-relative/path/to/model``
+-  ``runs:/<qcflow_run_id>/run-relative/path/to/model``
 -  ``models:/<model_name>/<model_version>``
 -  ``models:/<model_name>/<stage>``
 
 For more information about supported URI schemes, see the Artifacts
 Documentation at
-https://www.mlflow.org/docs/latest/tracking.html#artifact-stores.
+https://www.qcflow.org/docs/latest/tracking.html#artifact-stores.
 
 .. _examples-2:
 
@@ -1493,28 +1493,28 @@ Examples
 
 .. code:: r
 
-   library(mlflow)
+   library(qcflow)
 
    # save simple model with constant prediction
-   mlflow_save_model(function(df) 1, "mlflow_constant")
+   qcflow_save_model(function(df) 1, "qcflow_constant")
 
    # serve an existing model over a web interface
-   mlflow_rfunc_serve("mlflow_constant")
+   qcflow_rfunc_serve("qcflow_constant")
 
    # request prediction from server
    httr::POST("http://127.0.0.1:8090/predict/")
 
-``mlflow_run``
+``qcflow_run``
 ==============
 
-Run an MLflow Project
+Run an QCFlow Project
 
-Wrapper for the ``mlflow run`` CLI command. See
-https://www.mlflow.org/docs/latest/cli.html#mlflow-run for more info.
+Wrapper for the ``qcflow run`` CLI command. See
+https://www.qcflow.org/docs/latest/cli.html#qcflow-run for more info.
 
 .. code:: r
 
-   mlflow_run(
+   qcflow_run(
      uri = ".",
      entry_point = NULL,
      version = NULL,
@@ -1569,7 +1569,7 @@ Arguments
 |                               | and ‘conda’.                         |
 +-------------------------------+--------------------------------------+
 | ``storage_dir``               | Valid only when ``backend`` is       |
-|                               | local. MLflow downloads artifacts    |
+|                               | local. QCFlow downloads artifacts    |
 |                               | from distributed URIs passed to      |
 |                               | parameters of type ``path`` to       |
 |                               | subdirectories of ``storage_dir``.   |
@@ -1589,36 +1589,36 @@ Examples
 
 .. code:: r
 
-   # This parametrized script trains a GBM model on the Iris dataset and can be run as an MLflow
+   # This parametrized script trains a GBM model on the Iris dataset and can be run as an QCFlow
    # project. You can run this script (assuming it's saved at /some/directory/params_example.R)
    # with custom parameters via:
-   # mlflow_run(entry_point = "params_example.R", uri = "/some/directory",
+   # qcflow_run(entry_point = "params_example.R", uri = "/some/directory",
    #   parameters = list(num_trees = 200, learning_rate = 0.1))
    install.packages("gbm")
-   library(mlflow)
+   library(qcflow)
    library(gbm)
    # define and read input parameters
-   num_trees <- mlflow_param(name = "num_trees", default = 200, type = "integer")
-   lr <- mlflow_param(name = "learning_rate", default = 0.1, type = "numeric")
+   num_trees <- qcflow_param(name = "num_trees", default = 200, type = "integer")
+   lr <- qcflow_param(name = "learning_rate", default = 0.1, type = "numeric")
    # use params to fit a model
    ir.adaboost <- gbm(Species ~., data=iris, n.trees=num_trees, shrinkage=lr)
 
-``mlflow_save_model.crate``
+``qcflow_save_model.crate``
 ===========================
 
-Save Model for MLflow
+Save Model for QCFlow
 
-Saves model in MLflow format that can later be used for prediction and
+Saves model in QCFlow format that can later be used for prediction and
 serving. This method is generic to allow package authors to save custom
 model types.
 
 .. code:: r
 
-   list(list("mlflow_save_model"), list("crate"))(model, path, model_spec = list(), ...)
-   mlflow_save_model(model, path, model_spec = list(), ...)
-   list(list("mlflow_save_model"), list("H2OModel"))(model, path, model_spec = list(), conda_env = NULL, ...)
-   list(list("mlflow_save_model"), list("keras.engine.training.Model"))(model, path, model_spec = list(), conda_env = NULL, ...)
-   list(list("mlflow_save_model"), list("xgb.Booster"))(model, path, model_spec = list(), conda_env = NULL, ...)
+   list(list("qcflow_save_model"), list("crate"))(model, path, model_spec = list(), ...)
+   qcflow_save_model(model, path, model_spec = list(), ...)
+   list(list("qcflow_save_model"), list("H2OModel"))(model, path, model_spec = list(), conda_env = NULL, ...)
+   list(list("qcflow_save_model"), list("keras.engine.training.Model"))(model, path, model_spec = list(), conda_env = NULL, ...)
+   list(list("qcflow_save_model"), list("xgb.Booster"))(model, path, model_spec = list(), conda_env = NULL, ...)
 
 .. _arguments-37:
 
@@ -1630,10 +1630,10 @@ Arguments
 +================+====================================================+
 | ``model``      | The model that will perform a prediction.          |
 +----------------+----------------------------------------------------+
-| ``path``       | Destination path where this MLflow compatible      |
+| ``path``       | Destination path where this QCFlow compatible      |
 |                | model will be saved.                               |
 +----------------+----------------------------------------------------+
-| ``model_spec`` | MLflow model config this model flavor is being     |
+| ``model_spec`` | QCFlow model config this model flavor is being     |
 |                | added to.                                          |
 +----------------+----------------------------------------------------+
 | ``...``        | Optional additional arguments.                     |
@@ -1641,7 +1641,7 @@ Arguments
 | ``conda_env``  | Path to Conda dependencies file.                   |
 +----------------+----------------------------------------------------+
 
-``mlflow_search_experiments``
+``qcflow_search_experiments``
 =============================
 
 Search Experiments
@@ -1650,7 +1650,7 @@ Search for experiments that satisfy specified criteria.
 
 .. code:: r
 
-   mlflow_search_experiments(
+   qcflow_search_experiments(
      filter = NULL,
      experiment_view_type = c("ACTIVE_ONLY", "DELETED_ONLY", "ALL"),
      max_results = 1000,
@@ -1688,18 +1688,18 @@ Arguments
 | ``page_token``                | Pagination token to go to the next   |
 |                               | page based on a previous query.      |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_search_registered_models``
+``qcflow_search_registered_models``
 ===================================
 
 List registered models
@@ -1708,7 +1708,7 @@ Retrieves a list of registered models.
 
 .. code:: r
 
-   mlflow_search_registered_models(
+   qcflow_search_registered_models(
      filter = NULL,
      max_results = 100,
      order_by = list(),
@@ -1741,18 +1741,18 @@ Arguments
 | ``page_token``                | Pagination token to go to the next   |
 |                               | page based on a previous query.      |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_search_runs``
+``qcflow_search_runs``
 ======================
 
 Search Runs
@@ -1762,7 +1762,7 @@ Metric and Param keys.
 
 .. code:: r
 
-   mlflow_search_runs(
+   qcflow_search_runs(
      filter = NULL,
      run_view_type = c("ACTIVE_ONLY", "DELETED_ONLY", "ALL"),
      experiment_ids = NULL,
@@ -1796,27 +1796,27 @@ Arguments
 | ``order_by``                  | List of properties to order by.      |
 |                               | Example: “metrics.acc DESC”.         |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_server``
+``qcflow_server``
 =================
 
-Run MLflow Tracking Server
+Run QCFlow Tracking Server
 
-Wrapper for ``mlflow server``.
+Wrapper for ``qcflow server``.
 
 .. code:: r
 
-   mlflow_server(
+   qcflow_server(
      file_store = "mlruns",
      default_artifact_root = NULL,
      host = "127.0.0.1",
@@ -1857,7 +1857,7 @@ Arguments
 |                               | FALSE).                              |
 +-------------------------------+--------------------------------------+
 
-``mlflow_set_experiment_tag``
+``qcflow_set_experiment_tag``
 =============================
 
 Set Experiment Tag
@@ -1867,7 +1867,7 @@ metadata that can be updated.
 
 .. code:: r
 
-   mlflow_set_experiment_tag(key, value, experiment_id = NULL, client = NULL)
+   qcflow_set_experiment_tag(key, value, experiment_id = NULL, client = NULL)
 
 .. _arguments-42:
 
@@ -1890,18 +1890,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``experiment_id``             | ID of the experiment.                |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_set_experiment``
+``qcflow_set_experiment``
 =========================
 
 Set Experiment
@@ -1913,7 +1913,7 @@ provided name. Returns the ID of the active experiment.
 
 .. code:: r
 
-   mlflow_set_experiment(
+   qcflow_set_experiment(
      experiment_name = NULL,
      experiment_id = NULL,
      artifact_location = NULL
@@ -1937,7 +1937,7 @@ Arguments
 |                               | select an appropriate default.       |
 +-------------------------------+--------------------------------------+
 
-``mlflow_set_model_version_tag``
+``qcflow_set_model_version_tag``
 ================================
 
 Set Model version tag
@@ -1948,7 +1948,7 @@ parameter will result in error.
 
 .. code:: r
 
-   mlflow_set_model_version_tag(
+   qcflow_set_model_version_tag(
      name,
      version = NULL,
      key = NULL,
@@ -1975,18 +1975,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``stage``                     | Registered model stage.              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_set_tag``
+``qcflow_set_tag``
 ==================
 
 Set Tag
@@ -1996,7 +1996,7 @@ run and after a run completes.
 
 .. code:: r
 
-   mlflow_set_tag(key, value, run_id = NULL, client = NULL)
+   qcflow_set_tag(key, value, run_id = NULL, client = NULL)
 
 .. _arguments-45:
 
@@ -2015,28 +2015,28 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``run_id``                    | Run ID.                              |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_set_tracking_uri``
+``qcflow_set_tracking_uri``
 ===========================
 
 Set Remote Tracking URI
 
-Specifies the URI to the remote MLflow server that will be used to track
+Specifies the URI to the remote QCFlow server that will be used to track
 experiments.
 
 .. code:: r
 
-   mlflow_set_tracking_uri(uri)
+   qcflow_set_tracking_uri(uri)
 
 .. _arguments-46:
 
@@ -2046,20 +2046,20 @@ Arguments
 ======== ====================================
 Argument Description
 ======== ====================================
-``uri``  The URI to the remote MLflow server.
+``uri``  The URI to the remote QCFlow server.
 ======== ====================================
 
-``mlflow_source``
+``qcflow_source``
 =================
 
-Source a Script with MLflow Params
+Source a Script with QCFlow Params
 
 This function should not be used interactively. It is designed to be
-called via ``Rscript`` from the terminal or through the MLflow CLI.
+called via ``Rscript`` from the terminal or through the QCFlow CLI.
 
 .. code:: r
 
-   mlflow_source(uri)
+   qcflow_source(uri)
 
 .. _arguments-47:
 
@@ -2072,7 +2072,7 @@ Argument Description
 ``uri``  Path to an R script, can be a quoted or unquoted string.
 ======== ========================================================
 
-``mlflow_start_run``
+``qcflow_start_run``
 ====================
 
 Start Run
@@ -2085,7 +2085,7 @@ can be provided.
 
 .. code:: r
 
-   mlflow_start_run(
+   qcflow_start_run(
      run_id = NULL,
      experiment_id = NULL,
      start_time = NULL,
@@ -2124,13 +2124,13 @@ Arguments
 |                               | key-value pairs. Only used when      |
 |                               | ``client`` is specified.             |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
@@ -2146,11 +2146,11 @@ Examples
 
 .. code:: r
 
-   with(mlflow_start_run(), {
-   mlflow_log_metric("test", 10)
+   with(qcflow_start_run(), {
+   qcflow_log_metric("test", 10)
    })
 
-``mlflow_transition_model_version_stage``
+``qcflow_transition_model_version_stage``
 =========================================
 
 Transition ModelVersion Stage
@@ -2159,7 +2159,7 @@ Transition a model version to a different stage.
 
 .. code:: r
 
-   mlflow_transition_model_version_stage(
+   qcflow_transition_model_version_stage(
      name,
      version,
      stage,
@@ -2184,27 +2184,27 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``archive_existing_versions`` | (Optional)                           |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_ui``
+``qcflow_ui``
 =============
 
-Run MLflow User Interface
+Run QCFlow User Interface
 
-Launches the MLflow user interface.
+Launches the QCFlow user interface.
 
 .. code:: r
 
-   mlflow_ui(client, ...)
+   qcflow_ui(client, ...)
 
 .. _arguments-50:
 
@@ -2214,18 +2214,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | Argument                      | Description                          |
 +===============================+======================================+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 | ``...``                       | Optional arguments passed to         |
-|                               | ``mlflow_server()`` when ``x`` is a  |
+|                               | ``qcflow_server()`` when ``x`` is a  |
 |                               | path to a file store.                |
 +-------------------------------+--------------------------------------+
 
@@ -2236,16 +2236,16 @@ Examples
 
 .. code:: r
 
-   library(mlflow)
+   library(qcflow)
 
-   # launch mlflow ui locally
-   mlflow_ui()
+   # launch qcflow ui locally
+   qcflow_ui()
 
-   # launch mlflow ui for existing mlflow server
-   mlflow_set_tracking_uri("http://tracking-server:5000")
-   mlflow_ui()
+   # launch qcflow ui for existing qcflow server
+   qcflow_set_tracking_uri("http://tracking-server:5000")
+   qcflow_ui()
 
-``mlflow_update_model_version``
+``qcflow_update_model_version``
 ===============================
 
 Update model version
@@ -2254,7 +2254,7 @@ Updates a model version
 
 .. code:: r
 
-   mlflow_update_model_version(name, version, description, client = NULL)
+   qcflow_update_model_version(name, version, description, client = NULL)
 
 .. _arguments-51:
 
@@ -2270,18 +2270,18 @@ Arguments
 +-------------------------------+--------------------------------------+
 | ``description``               | Description of this model version.   |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+
 
-``mlflow_update_registered_model``
+``qcflow_update_registered_model``
 ==================================
 
 Update a registered model
@@ -2290,7 +2290,7 @@ Updates a model in the Model Registry.
 
 .. code:: r
 
-   mlflow_update_registered_model(name, description, client = NULL)
+   qcflow_update_registered_model(name, description, client = NULL)
 
 .. _arguments-52:
 
@@ -2305,13 +2305,13 @@ Arguments
 | ``description``               | The updated description for this     |
 |                               | registered model.                    |
 +-------------------------------+--------------------------------------+
-| ``client``                    | (Optional) An MLflow client object   |
+| ``client``                    | (Optional) An QCFlow client object   |
 |                               | returned from                        |
-|                               | `mlflow_client <#mlflow-client>`__ . |
-|                               | If specified, MLflow will use the    |
+|                               | `qcflow_client <#qcflow-client>`__ . |
+|                               | If specified, QCFlow will use the    |
 |                               | tracking server associated with the  |
 |                               | passed-in client. If unspecified     |
-|                               | (the common case), MLflow will use   |
+|                               | (the common case), QCFlow will use   |
 |                               | the tracking server associated with  |
 |                               | the current tracking URI.            |
 +-------------------------------+--------------------------------------+

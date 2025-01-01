@@ -8,7 +8,7 @@ from botocore.exceptions import NoCredentialsError
 from botocore.response import StreamingBody
 from packaging.version import Version
 
-import mlflow
+import qcflow
 
 from tests.tracing.helper import get_traces
 
@@ -188,7 +188,7 @@ def _create_dummy_invoke_model_response(llm_response):
     ],
 )
 def test_bedrock_autolog_invoke_model_llm(model_id, llm_request, llm_response):
-    mlflow.bedrock.autolog()
+    qcflow.bedrock.autolog()
 
     client = boto3.client("bedrock-runtime", region_name="us-west-2")
     request_body = json.dumps(llm_request)
@@ -220,7 +220,7 @@ def test_bedrock_autolog_invoke_model_llm(model_id, llm_request, llm_response):
 
 
 def test_bedrock_autolog_invoke_model_embeddings():
-    mlflow.bedrock.autolog()
+    qcflow.bedrock.autolog()
 
     client = boto3.client("bedrock-runtime", region_name="us-west-2")
 
@@ -254,7 +254,7 @@ def test_bedrock_autolog_invoke_model_embeddings():
 
 
 def test_bedrock_autolog_invoke_model_capture_exception():
-    mlflow.bedrock.autolog()
+    qcflow.bedrock.autolog()
 
     client = boto3.client("bedrock-runtime", region_name="us-west-2")
 
@@ -295,7 +295,7 @@ def test_bedrock_autolog_invoke_model_capture_exception():
 
 @pytest.mark.parametrize("config", [{"disable": True}, {"log_traces": False}])
 def test_bedrock_autolog_trace_disabled(config):
-    mlflow.bedrock.autolog(**config)
+    qcflow.bedrock.autolog(**config)
 
     client = boto3.client("bedrock-runtime", region_name="us-west-2")
     request_body = json.dumps(_ANTHROPIC_REQUEST)
@@ -317,7 +317,7 @@ def test_bedrock_autolog_trace_disabled(config):
 
 @pytest.mark.skipif(not _IS_CONVERSE_API_AVAILABLE, reason="Converse API is not available")
 def test_bedrock_autolog_converse():
-    mlflow.bedrock.autolog()
+    qcflow.bedrock.autolog()
 
     client = boto3.client("bedrock-runtime", region_name="us-west-2")
 

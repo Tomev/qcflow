@@ -1,6 +1,6 @@
 import warnings
 
-from mlflow.utils.docstring_utils import (
+from qcflow.utils.docstring_utils import (
     ParamDocs,
     _indent,
     docstring_version_compatibility_warning,
@@ -167,11 +167,11 @@ def test_docstring_version_compatibility_warning():
         func()
 
     # Exclude irrelevant warnings
-    warns = [x for x in w if "MLflow Models integration is known to be compatible" in str(x)]
+    warns = [x for x in w if "QCFlow Models integration is known to be compatible" in str(x)]
     assert len(warns) == 0
 
     with warnings.catch_warnings(record=True) as w:
         another_func()
 
-    warns = [x for x in w if "MLflow Models integration is known to be compatible" in str(x)]
+    warns = [x for x in w if "QCFlow Models integration is known to be compatible" in str(x)]
     assert len(warns) == 0
